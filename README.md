@@ -2,7 +2,7 @@
 ## Jupyter notebook for tensorflow based syllable segmentation and annotation
 This code utilizes the 'tensorflow' library to create, train, and use a deep neural-network algorithm for parsing and tagging birdsong spectrograms. For further details see section `Model structure`.
 ## Installing tensorflow
-Please go to [link] (https://www.tensorflow.org/install/)
+Please go to https://www.tensorflow.org/install/
 ## Data and folder structures
 To use this code the data has to be arranged in a certain format and in a specific folder structure.
 ### Spectrograms and labels
