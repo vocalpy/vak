@@ -41,4 +41,16 @@ Labels of new data, in the folder set by the variable `test_data_directory`, are
 This file will contain two cell arrays:
 * keys - Contains all file names.
 * estimates - Contains all estimated labels.
+
 __It is recommended to apply post processing when extracting the actual syllable tag and onset and offset timesfrom the estimates.__
+## Model structure
+The architecture of this deep neural network is based on these papers:
+* S. Böck and M. Schedl, "Polyphonic piano note transcription with recurrent neural networks," 2012 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), Kyoto, 2012, pp. 121-124.
+doi: 10.1109/ICASSP.2012.6287832 (http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6287832&isnumber=6287775)
+* Parascandolo, Huttunen, and Virtanen, “Recurrent Neural Networks for Polyphonic Sound Event Detection in Real Life Recordings.” (https://arxiv.org/abs/1604.00861)
+The deep net. structure, used in this code, contains 3 elements:
+* 2 convolutional and max pooling layers - A convolutional layer convolves the spectrogram with a set of tunable features and the max pooling is used to limit the number of parameters. These layers allow extracting local spectral and temporal features of syllables and noise.
+* A long-short-term-memory recurrent layer (LSTM) - This layer allows the model to incorporate the temporal dependencies in the signal, such as canary trills and the duration of various syllables.
+* A projection layer -  For each time bin, this layer projects the previous layer's output on the set of possible syllables. 
+
+
