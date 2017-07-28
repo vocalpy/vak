@@ -3,7 +3,7 @@
 This code utilizes the 'tensorflow' library to create, train, and use a deep neural-network algorithm for parsing and tagging birdsong spectrograms. For further details see section `Model structure`.
 To install Jupyter notebook follow http://jupyter.readthedocs.io/en/latest/install.html
 ## Installing tensorflow
-Please go to https://www.tensorflow.org/install/
+Please go to https://www.tensorflow.org/install/.
 It is recommended to create an environment (e.g. using Anaconda as in https://www.tensorflow.org/install/install_mac). The code was developed with tensorflow version 1.1.0 and may be incompatible with other versions. 
 ## Data and folder structures
 To use this code, the data has to be arranged in a certain format and in a specific folder structure.
