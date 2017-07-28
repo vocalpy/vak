@@ -1,5 +1,6 @@
 # tf_syllable_segmentation_annotation
 ![alt text](https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation/blob/master/img/sample_phrase_annotation.png)
+(The phrase segmentation of a canary song)
 ## Jupyter notebook for tensorflow based syllable segmentation and annotation
 This code utilizes the 'tensorflow' library to create, train, and use a deep neural-network algorithm for parsing and tagging birdsong spectrograms. For further details see section `Model structure`.
 To install Jupyter notebook follow http://jupyter.readthedocs.io/en/latest/install.html
