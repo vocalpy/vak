@@ -24,9 +24,9 @@ The code also requires specifying the name of the results file (the variable 're
 * The following parameters must be correctly defined:
   * input_vec_size - Must match the number of frequency bins in the spectrograms (current value is 513).
   * n_syllables - Must be the correct number of tags, including zero for non-syllable.
-  * time_steps - The number of bins in a training snippet (current value is 370). The code concatenates all training data and trains the deep network using batches, containing snippets of length 'time_steps' from different points in the data.
+  * time_steps - The number of bins in a training snippet (current value is 87). The code concatenates all training data and trains the deep network using batches, containing snippets of length 'time_steps' from different points in the data.
 * The following parameters can be changed if needed:
-  * n_max_iter - The maximal number of training steps (currently 14001).
+  * n_max_iter - The maximal number of training steps (currently 18001).
   * batch_size - The number of snippets in each training batch (currently 11)
   * learning_rate - The training step rate coefficient (currently 0.001)
 Other parameters that specify the network itself can be changed in the code but require knowledge of tensorflow.
@@ -50,7 +50,6 @@ doi: 10.1109/ICASSP.2012.6287832 (http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=
 * Parascandolo, Huttunen, and Virtanen, “Recurrent Neural Networks for Polyphonic Sound Event Detection in Real Life Recordings.” (https://arxiv.org/abs/1604.00861)
 The deep net. structure, used in this code, contains 3 elements:
 * 2 convolutional and max pooling layers - A convolutional layer convolves the spectrogram with a set of tunable features and the max pooling is used to limit the number of parameters. These layers allow extracting local spectral and temporal features of syllables and noise.
-* A long-short-term-memory recurrent layer (LSTM) - This layer allows the model to incorporate the temporal dependencies in the signal, such as canary trills and the duration of various syllables.
+* A long-short-term-memory recurrent layer (LSTM) - This layer allows the model to incorporate the temporal dependencies in the signal, such as canary trills and the duration of various syllables. The code contains an option to adding more LSTM layers but, since it isn't needed, those are not used.
 * A projection layer -  For each time bin, this layer projects the previous layer's output on the set of possible syllables. 
-
 
