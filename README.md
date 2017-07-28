@@ -32,4 +32,5 @@ The code also requires specifying the name of the results file (the variable 're
 
 Other parameters that specify the network itself can be changed in the code but require knowledge of tensorflow.
 ## Results of running the code
-
+The code contains a section for evaluating performance in the training set and a section for labeling new data.
+Labels of new data, in the folder set by the variable `test_data_directory`   
