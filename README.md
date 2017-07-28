@@ -24,7 +24,7 @@ The code also requires specifying the name of the results file (the variable 're
 * The following parameters must be correctly defined:
   * input_vec_size - Must match the number of frequency bins in the spectrograms (current value is 513).
   * n_syllables - Must be the correct number of tags, including zero for non-syllable.
-  * time_steps - The number of bins in a training snippet (current value is 87). The code concatenates all training data and trains the deep network using batches, containing snippets of length 'time_steps' from different points in the data.
+  * time_steps - The number of bins in a training snippet (current value is 87). The code concatenates all training data and trains the deep network using batches, containing snippets of length 'time_steps' from different points in the data. It is recommended to set 'time_steps' such that the snippets are of about 1 second.
 * The following parameters can be changed if needed:
   * n_max_iter - The maximal number of training steps (currently 18001).
   * batch_size - The number of snippets in each training batch (currently 11)
