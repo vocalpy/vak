@@ -11,7 +11,7 @@ To use this code, the data has to be arranged in a certain format and in a speci
 Currently, all data files must be in Matlab format. Each training file should contain 2 variables:
 * s - A Nf x Nt real matrix of the spectrogram. Nt is the number of time steps. Nf is the number of frequency bins (the current code assumes 513 but this can be changed by updating the variable __input_vec_size__). 
 The values in this matrix should range from 0 to 0.8 with 0 indicating low energy in the time-spectral bin.
-* labels - A 1 x Nt real vector that contains the manually annotated label for each time step. Use 0 to annotate silence or non-syllable noise.
+* labels - A 1 x Nt real vector that contains the manually annotated label for each time step. Use 0 to annotate silence or non-syllable noise. For any time bins during a syllable, use an integer. It is recommended to use the sequence [1,2, ... # of syllables] as labels and not large and sparse numbers.  
 Testing or unlabeled files need to contain only the variable `s`.
 ### Folders and lists
 The code contains variables for holding the names of four folders:
@@ -29,8 +29,16 @@ The code also requires specifying the name of the results file (the variable 're
   * n_max_iter - The maximal number of training steps (currently 14001).
   * batch_size - The number of snippets in each training batch (currently 11)
   * learning_rate - The training step rate coefficient (currently 0.001)
-
 Other parameters that specify the network itself can be changed in the code but require knowledge of tensorflow.
+## Preparing training files
+It is possible to train on any manually annotated data but there are some useful guidelines:
+* __Use as many examples as possible__ - The results will just be better. Specifically, this code will not label correctly syllables it did not encounter while training and will most probably generalize to the nearest sample or ignore the syllable.
+* __Use noise examples__ - This will make the code very good in ignoring noise.
+* __Examples of syllables on noise are important__ - It is a good practice to start with clean recordings. The code will not perform miracles and is most likely to fail if the audio is too corrupt or masked by noise. Still, training with examples of syllables on the background of cage noises will be beneficial.
 ## Results of running the code
 The code contains a section for evaluating performance in the training set and a section for labeling new data.
-Labels of new data, in the folder set by the variable `test_data_directory`   
+Labels of new data, in the folder set by the variable `test_data_directory`, are saved in a matlab format file whos name is defined by the variable `results_file`.
+This file will contain two cell arrays:
+* keys - Contains all file names.
+* estimates - Contains all estimated labels.
+__It is recommended to apply post processing when extracting the actual syllable tag and onset and offset timesfrom the estimates.__
