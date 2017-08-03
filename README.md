@@ -22,7 +22,7 @@ The code contains variables for holding the names of four folders:
 The code also requires specifying the name of the results file (the variable 'results_file') which will be saved in the results folder.
 ## Parameters
 * The following parameters must be correctly defined:
-  * input_vec_size - Must match the number of frequency bins in the spectrograms (current value is 513).
+  * input_vec_size - Must match the number of frequency bins in the spectrograms. Current value is 513 and changing it will require additional code changes.
   * n_syllables - Must be the correct number of tags, including zero for non-syllable.
   * time_steps - The number of bins in a training snippet (current value is 370). The code concatenates all training data and trains the deep network using batches, containing snippets of length 'time_steps' from different points in the data.
 * The following parameters can be changed if needed:
