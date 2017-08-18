@@ -35,4 +35,4 @@ Other parameters that specify the network itself can be changed in the code but 
 The code contains a section for evaluating performance in the training set and a section for labeling new data.
 Labels of new data, in the folder set by the variable `test_data_directory`, are saved in a single Matlab file, whos name is set by `results_file`. The file contains two cell arrays:
 * keys - contains the original file names.
-* estimates - contains the estimates labels for all time bins as a real vector.
+* estimates - contains the estimated labels for all time bins as a real vector.
