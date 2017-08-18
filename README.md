@@ -11,7 +11,7 @@ To use this code, the data has to be arranged in a certain format and in a speci
 Currently, all data files must be in Matlab format. Each training file should contain 2 variables:
 * s - A Nf x Nt real matrix of the spectrogram. Nt is the number of time steps. Nf is the number of frequency bins (the current code assumes 513. This can be changed by updating the variable __input_vec_size__ but also requires changing parameters of the neural network convolutional and max pooling layers). 
 The values in this matrix should range from 0 to 0.8 with 0 indicating low energy in the time-spectral bin.
-* labels - A 1 x Nt real vector that contains the manually annotated label for each time step. Use 0 to annotate silence or non-syllable noise.
+* labels - A 1 x Nt real vector that contains the manually annotated label for each time step. Use 0 to annotate silence or non-syllable noise, and positive integers to indicate syllable identities.
 Testing or unlabeled files need to contain only the variable `s`.
 ### Folders and lists
 The code contains variables for holding the names of four folders:
