@@ -19,7 +19,7 @@ if 'preds' in locals():
 for b in range(num_batches):  # "b" is "batch number"
     d = {X: X_train_subset[:, b * time_steps: (b + 1) * time_steps, :],
          Y: Y_train_subset[:, b * time_steps: (b + 1) * time_steps],
-         lng: time_steps * batch_size}
+         lng: [time_steps] * batch_size}
 
     if 'preds' in locals():
         preds = np.concatenate((preds,

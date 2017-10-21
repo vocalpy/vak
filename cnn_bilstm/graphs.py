@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 def inference(spectrogram,
               num_hidden,
               seq_length,
@@ -117,3 +118,44 @@ def train(logits, lbls, rate, batch_size):
     global_step = tf.Variable(0, name='global_step', trainable=False)
     train_op = optimizer.minimize(cost, global_step=global_step)
     return train_op, cost
+
+
+def get_full_graph(input_vec_size=513, num_hidden=512,
+                   n_syllables=16, learning_rate=0.001, batch_size=11):
+
+    full_graph = tf.Graph()
+    with full_graph.as_default():
+            # Generate placeholders for the spectrograms and labels.
+            # X holds spectrograms batch_size,time_steps
+            X = tf.placeholder("float",
+                               [None,
+                                None,
+                                input_vec_size],
+                               name="Xdata")
+            Y = tf.placeholder("int32",
+                               [None, None],
+                               name="Ylabels")  # holds labels batch_size
+            lng = tf.placeholder("int32",
+                                 name="nSteps")  # holds the sequence length
+            tf.add_to_collection("specs", X)  # Remember this Op.
+            tf.add_to_collection("labels", Y)  # Remember this Op.
+            tf.add_to_collection("lng", lng)  # Remember this Op.
+            # Build a Graph that computes predictions from the inference model.
+            logits, outputs = inference(X,
+                                        num_hidden,
+                                        lng,
+                                        n_syllables,
+                                        batch_size,
+                                        input_vec_size)  # lstm_size
+            tf.add_to_collection("logits", logits)  # Remember this Op.
+
+            # Add to the Graph the Ops that calculate and apply gradients.
+            train_op, cost = train(logits, Y, learning_rate, batch_size)
+
+            init = tf.global_variables_initializer()
+
+            # Create a saver for writing training checkpoints.
+            saver = tf.train.Saver(max_to_keep=10)
+
+    return (full_graph, train_op, cost,
+            init, saver, logits, X, Y, lng)
