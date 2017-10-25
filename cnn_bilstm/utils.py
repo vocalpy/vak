@@ -177,3 +177,18 @@ def get_inds_for_dur(song_durations,
                 break
 
     return inds_to_use
+
+
+def reshape_data_for_batching(X, Y, batch_size, time_steps, input_vec_size):
+    """reshape to feed to network in batches"""
+    # need to loop through train data in chunks, can't fit on GPU all at once
+    # First zero pad
+    num_batches = X.shape[0] // batch_size // time_steps
+    rows_to_append = ((num_batches + 1) * time_steps * batch_size) - X.shape[0]
+    X = np.concatenate((X, np.zeros((rows_to_append, input_vec_size))),
+                       axis=0)
+    Y = np.concatenate((Y, np.zeros((rows_to_append, 1), dtype=int)), axis=0)
+    num_batches = num_batches + 1
+    X = X.reshape((batch_size, num_batches * time_steps, -1))
+    Y = Y.reshape((batch_size, -1))
+    return X, Y, num_batches

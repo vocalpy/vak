@@ -7,21 +7,6 @@ import numpy as np
 
 import cnn_bilstm.utils
 
-
-def reshape_data_for_batching(X, Y, batch_size, time_steps, input_vec_size):
-    """reshape to feed to network in batches"""
-    # need to loop through train data in chunks, can't fit on GPU all at once
-    # First zero pad
-    num_batches = X.shape[0] // batch_size // time_steps
-    rows_to_append = ((num_batches + 1) * time_steps * batch_size) - X.shape[0]
-    X = np.append(X, np.zeros((rows_to_append, input_vec_size)),
-                               axis=0)
-    Y = np.append(Y, np.zeros((rows_to_append, 1)), axis=0)
-    num_batches = num_batches + 1
-    X = X.reshape((batch_size, num_batches * time_steps, -1))
-    Y = Y.reshape((batch_size, -1))
-    return X, Y, num_batches
-
 batch_size = 11
 time_steps = 87
 input_vec_size = 513
@@ -54,11 +39,11 @@ Y_test = np.concatenate(test_song_labels, axis=0)
 Y_test_arr = Y_test  # for comparing with predictions below
 (X_test,
  Y_test,
- num_batches_test) = reshape_data_for_batching(X_test,
-                                               Y_test,
-                                               batch_size,
-                                               time_steps,
-                                               input_vec_size)
+ num_batches_test) = cnn_bilstm.utils.reshape_data_for_batching(X_test,
+                                                                Y_test,
+                                                                batch_size,
+                                                                time_steps,
+                                                                input_vec_size)
 
 results_dirname = 'C:\\workspace\\tf_syl_seg_fork\\results_171021_164437'
 
@@ -86,11 +71,11 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
         Y_train_subset = Y_train[train_inds]
         (X_train_subset,
          Y_train_subset,
-         num_batches_train) = reshape_data_for_batching(X_train_subset,
-                                                        Y_train_subset,
-                                                        batch_size,
-                                                        time_steps,
-                                                        input_vec_size)
+         num_batches_train) = cnn_bilstm.utils.reshape_data_for_batching(X_train_subset,
+                                                                         Y_train_subset,
+                                                                         batch_size,
+                                                                         time_steps,
+                                                                         input_vec_size)
 
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
@@ -121,7 +106,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                 if 'Y_pred' in locals():
                     preds = sess.run(eval_op, feed_dict=d)[1]
                     preds = preds.reshape(batch_size, -1)
-                    Y_pred = np.concatenate((Y_pred,preds), axis=1)
+                    Y_pred = np.concatenate((Y_pred, preds), axis=1)
                 else:
                     Y_pred = sess.run(eval_op, feed_dict=d)[1]
                     Y_pred = Y_pred.reshape(batch_size, -1)
@@ -144,7 +129,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                 if 'Y_pred' in locals():
                     preds = sess.run(eval_op, feed_dict=d)[1]
                     preds = preds.reshape(batch_size, -1)
-                    Y_pred = np.concatenate((Y_pred,preds), axis=1)
+                    Y_pred = np.concatenate((Y_pred, preds), axis=1)
                 else:
                     Y_pred = sess.run(eval_op, feed_dict=d)[1]
                     Y_pred = Y_pred.reshape(batch_size, -1)
@@ -157,5 +142,5 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
 with open('train_err','wb') as train_err_file:
     pickle.dump(train_err_arr, train_err_file)
 
-with open('train_err', 'wb') as test_err_file:
+with open('test_err', 'wb') as test_err_file:
     pickle.dump(test_err_arr, test_err_file)
