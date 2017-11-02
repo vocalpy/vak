@@ -1,6 +1,8 @@
+import sys
 import os
 import pickle
 from datetime import datetime
+from configparser import ConfigParser
 
 import tensorflow as tf
 import numpy as np
@@ -9,32 +11,51 @@ from cnn_bilstm.graphs import get_full_graph
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
+    config_file = sys.argv[1]
+    if not config_file.endswith('.ini'):
+        raise ValueError('{} is not a valid config file, must have .ini extension'
+                         .format(config_file))
+    config = ConfigParser()
+    parser.read(config_file)
+
     print('loading data for training')
-    labelset = list('iabcdefghjk')
-    data_dir = 'C:\\DATA\\gy6or6\\032212\\'
+    labelset = list(config['DATA']['labelset'])
+    data_dir = config['DATA']['data_dir']
+    number_song_files = int(config['DATA']['number_song_files'])
     song_spects, all_labels, timebin_dur = cnn_bilstm.utils.load_data(labelset,
                                                                       data_dir,
-                                                                      number_files=40)
+                                                                      number_song_files)
 
     # reshape training data
-    num_train_songs = 20
+    num_train_songs = int(config['DATA']['num_train_songs'])
     train_spects = song_spects[:num_train_songs]
     X_train = np.concatenate(train_spects, axis=0)
     X_train_durations = [spec.shape[0] for spec in train_spects]  # rows are time bins
     Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
 
-    n_max_iter = 18000
-
-    X_val = song_spects[30:]
-    Y_val = all_labels[30:]
+    num_val_songs = int(config['DATA']['num_val_songs'])
+    if num_train_songs + num_val_songs > number_song_files:
+        raise ValueError('Total number of training songs ({0}), '
+                         'and validation songs ({1}), '
+                         'is {2}.\n This is greater than the number of '
+                         'songfiles, {3}, and would result in training data '
+                         'in the validation set. Please increaes the number '
+                         'of songfiles or decrease the size of the training '
+                         'or validation set.'
+                         .format(num_train_songs,
+                                 num_val_songs,
+                                 num_train_songs + num_val_songs,
+                                 number_song_files))
+    X_val = song_spects[-num_val_songs:]
+    Y_val = all_labels[-num_val_songs:]
 
     Y_val_arr = np.concatenate(Y_val, axis=0)
 
-    val_error_step = 150
-    checkpoint_step = 600
+    val_error_step = config['TRAIN']['val_error_step']
+    checkpoint_step = config['TRAIN']['checkpoint_step']
     patience = None
     # TRAIN_SET_DURS = [5, 15, 30, 45, 60, 75, 90, 105, 120]
-    TRAIN_SET_DURS = [5, 15, 30, 45]
+    TRAIN_SET_DURS = [60, 75, 90, 105]
     REPLICATES = list(range(5))
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
@@ -44,6 +65,8 @@ if __name__ == "__main__":
     # set params used for sending data to graph in batches
     batch_size = 11
     time_steps = 87  # 370
+
+    n_max_iter = config['DEFAULTS']['n_max_iter']
 
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
@@ -197,7 +220,6 @@ if __name__ == "__main__":
                             pickle.dump(costs, costs_file)
                         with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
                             pickle.dump(val_errs, val_errs_file)
-                        break
                         break
 
 
