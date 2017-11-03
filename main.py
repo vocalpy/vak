@@ -16,7 +16,7 @@ if __name__ == "__main__":
         raise ValueError('{} is not a valid config file, must have .ini extension'
                          .format(config_file))
     config = ConfigParser()
-    parser.read(config_file)
+    config.read(config_file)
 
     print('loading data for training')
     labelset = list(config['DATA']['labelset'])
@@ -53,20 +53,32 @@ if __name__ == "__main__":
 
     val_error_step = config['TRAIN']['val_error_step']
     checkpoint_step = config['TRAIN']['checkpoint_step']
-    patience = None
-    # TRAIN_SET_DURS = [5, 15, 30, 45, 60, 75, 90, 105, 120]
-    TRAIN_SET_DURS = [60, 75, 90, 105]
-    REPLICATES = list(range(5))
+    patience = config['TRAIN']['checkpoint_step']
+    try:
+        patience = int(patience)
+    except ValueError:
+        if patience == 'None':
+            patience = None
+        else:
+            raise TypeError('patience must be an int or None, but'
+                            'is {} and parsed as type {}'
+                            .format(patience, type(patience)))
+    TRAIN_SET_DURS = [int(element)
+                      for element in
+                      config['TRAIN']['train_set_durs'].split(',')]
+    REPLICATES = [int(element)
+                  for element in
+                  config['TRAIN']['replicates'].split(',')]
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     dirname = os.path.join('.', 'results_' + timenow)
     os.mkdir(dirname)
 
     # set params used for sending data to graph in batches
-    batch_size = 11
-    time_steps = 87  # 370
+    batch_size = int(config['NETWORK']['batch_size'])
+    time_steps = int(config['NETWORK']['time_steps'])
 
-    n_max_iter = config['DEFAULTS']['n_max_iter']
+    n_max_iter = config['TRAIN']['n_max_iter']
 
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
@@ -109,11 +121,11 @@ if __name__ == "__main__":
             if len(iter_order) > n_max_iter:
                 iter_order = iter_order[0:n_max_iter]
 
-            input_vec_size = 513
-            num_hidden = 512
-            n_syllables = 16
-            learning_rate = 0.001
-            batch_size = 11
+            input_vec_size = int(config['NETWORK']['input_vec_size'])
+            num_hidden = int(config['NETWORK']['num_hidden'])
+            n_syllables = int(config['NETWORK']['n_syllables'])
+            learning_rate = float(config['NETWORK']['learning_rate'])
+            batch_size = int(config['NETWORK']['batch_size'])
 
             print('creating graph')
             (full_graph, train_op, cost,
