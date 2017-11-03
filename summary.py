@@ -33,9 +33,9 @@ input_vec_size = int(config['NETWORK']['input_vec_size'])
 TRAIN_SET_DURS = [int(element)
                   for element in
                   config['TRAIN']['train_set_durs'].split(',')]
-REPLICATES = [int(element)
-              for element in
-              config['TRAIN']['replicates'].split(',')]
+num_replicates = int(config['TRAIN']['replicates'])
+REPLICATES = range(num_replicates)
+
 train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 
