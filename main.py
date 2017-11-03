@@ -1,6 +1,8 @@
+import sys
 import os
 import pickle
 from datetime import datetime
+from configparser import ConfigParser
 
 import tensorflow as tf
 import numpy as np
@@ -9,40 +11,74 @@ from cnn_bilstm.graphs import get_full_graph
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
+    config_file = sys.argv[1]
+    if not config_file.endswith('.ini'):
+        raise ValueError('{} is not a valid config file, must have .ini extension'
+                         .format(config_file))
+    config = ConfigParser()
+    config.read(config_file)
+
     print('loading data for training')
-    labelset = list('iabcdefghjk')
-    data_dir = 'C:\\DATA\\gy6or6\\032212\\'
+    labelset = list(config['DATA']['labelset'])
+    data_dir = config['DATA']['data_dir']
+    number_song_files = int(config['DATA']['number_song_files'])
     song_spects, all_labels, timebin_dur = cnn_bilstm.utils.load_data(labelset,
                                                                       data_dir,
-                                                                      number_files=40)
+                                                                      number_song_files)
 
     # reshape training data
-    num_train_songs = 20
+    num_train_songs = int(config['DATA']['num_train_songs'])
     train_spects = song_spects[:num_train_songs]
     X_train = np.concatenate(train_spects, axis=0)
     X_train_durations = [spec.shape[0] for spec in train_spects]  # rows are time bins
     Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
 
-    n_max_iter = 18001
-
-    X_val = song_spects[30:]
-    Y_val = all_labels[30:]
+    num_val_songs = int(config['DATA']['num_val_songs'])
+    if num_train_songs + num_val_songs > number_song_files:
+        raise ValueError('Total number of training songs ({0}), '
+                         'and validation songs ({1}), '
+                         'is {2}.\n This is greater than the number of '
+                         'songfiles, {3}, and would result in training data '
+                         'in the validation set. Please increaes the number '
+                         'of songfiles or decrease the size of the training '
+                         'or validation set.'
+                         .format(num_train_songs,
+                                 num_val_songs,
+                                 num_train_songs + num_val_songs,
+                                 number_song_files))
+    X_val = song_spects[-num_val_songs:]
+    Y_val = all_labels[-num_val_songs:]
 
     Y_val_arr = np.concatenate(Y_val, axis=0)
 
-    val_error_step = 50
-    checkpoint_step = 100
-    patience = 10
-    TRAIN_SET_DURS = [5, 15, 30, 45, 60, 75, 90, 105, 120]
-    REPLICATES = list(range(5))
+    val_error_step = config['TRAIN']['val_error_step']
+    checkpoint_step = config['TRAIN']['checkpoint_step']
+    patience = config['TRAIN']['checkpoint_step']
+    try:
+        patience = int(patience)
+    except ValueError:
+        if patience == 'None':
+            patience = None
+        else:
+            raise TypeError('patience must be an int or None, but'
+                            'is {} and parsed as type {}'
+                            .format(patience, type(patience)))
+    TRAIN_SET_DURS = [int(element)
+                      for element in
+                      config['TRAIN']['train_set_durs'].split(',')]
+    REPLICATES = [int(element)
+                  for element in
+                  config['TRAIN']['replicates'].split(',')]
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     dirname = os.path.join('.', 'results_' + timenow)
     os.mkdir(dirname)
 
     # set params used for sending data to graph in batches
-    batch_size = 11
-    time_steps = 87  # 370
+    batch_size = int(config['NETWORK']['batch_size'])
+    time_steps = int(config['NETWORK']['time_steps'])
+
+    n_max_iter = config['TRAIN']['n_max_iter']
 
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
@@ -85,11 +121,11 @@ if __name__ == "__main__":
             if len(iter_order) > n_max_iter:
                 iter_order = iter_order[0:n_max_iter]
 
-            input_vec_size = 513
-            num_hidden = 512
-            n_syllables = 16
-            learning_rate = 0.001
-            batch_size = 11
+            input_vec_size = int(config['NETWORK']['input_vec_size'])
+            num_hidden = int(config['NETWORK']['num_hidden'])
+            n_syllables = int(config['NETWORK']['n_syllables'])
+            learning_rate = float(config['NETWORK']['learning_rate'])
+            batch_size = int(config['NETWORK']['batch_size'])
 
             print('creating graph')
             (full_graph, train_op, cost,
@@ -158,26 +194,44 @@ if __name__ == "__main__":
                         val_errs.append(np.sum(preds - Y_val_arr != 0) / Y_val_arr.shape[0])
                         print("step {}, validation error: {}".format(step, val_errs[-1]))
 
-                        if val_errs[-1] < curr_min_err:
-                            # error went down, set as new min and reset counter
-                            curr_min_err = val_errs[-1]
-                            err_patience_counter = 0
+                        if patience:
+                            if val_errs[-1] < curr_min_err:
+                                # error went down, set as new min and reset counter
+                                curr_min_err = val_errs[-1]
+                                err_patience_counter = 0
+                                checkpoint_path = os.path.join(training_records_dir, checkpoint_filename)
+                                print("Validation error improved.\n"
+                                      "Saving checkpoint to {}".format(checkpoint_path))
+                                saver.save(sess, checkpoint_path)
+                            else:
+                                err_patience_counter += 1
+                                if err_patience_counter > patience:
+                                    print("stopping because validation error has not improved in {} steps"
+                                          .format(patience))
+                                    with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
+                                        pickle.dump(costs, costs_file)
+                                    with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
+                                        pickle.dump(val_errs, val_errs_file)
+                                    break
+
+                    if checkpoint_step:
+                        if step % checkpoint_step == 0:
+                            "Saving checkpoint."
                             checkpoint_path = os.path.join(training_records_dir, checkpoint_filename)
-                            print("Validation error improved.\n"
-                                  "Saving checkpoint to {}".format(checkpoint_path))
                             saver.save(sess, checkpoint_path)
-                        else:
-                            err_patience_counter += 1
-                            if err_patience_counter > patience:
-                                print("stopping because validation error has not improved in {} steps"
-                                      .format(patience))
-                                with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
-                                    pickle.dump(costs, costs_file)
-                                with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
-                                    pickle.dump(val_errs, val_errs_file)
-                                break
+                            with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
+                                pickle.dump(costs, costs_file)
+                            with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
+                                pickle.dump(val_errs, val_errs_file)
 
                     if step > n_max_iter:  # ok don't actually loop forever
+                        "Reached max. number of iterations, saving checkpoint."
+                        checkpoint_path = os.path.join(training_records_dir, checkpoint_filename)
+                        saver.save(sess, checkpoint_path)
+                        with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
+                            pickle.dump(costs, costs_file)
+                        with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
+                            pickle.dump(val_errs, val_errs_file)
                         break
 
 
