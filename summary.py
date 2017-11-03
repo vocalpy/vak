@@ -1,39 +1,65 @@
+import sys
 import os
 import pickle
 from glob import glob
+from configparser import ConfigParser
 
 import tensorflow as tf
 import numpy as np
 
 import cnn_bilstm.utils
 
-batch_size = 11
-time_steps = 87
-input_vec_size = 513
+if len(sys.argv[1:]) != 2:
+    raise ValueError('there should be two arguments to this function, '
+                     'the first being the .ini file and the second being '
+                     'the results dir. Instead got {} arguments: {}'
+                     .format(len(sys.argv[1:]), sys.argv[1:]))
 
-TRAIN_SET_DURS = [5, 15, 30, 45, 60, 75, 90, 105, 120]
-REPLICATES = list(range(5))
+if not os.path.isdir(sys.argv[2]):
+    raise FileNotFoundError('{} directory is not found.'
+                            .format(sys.argv[2]))
+
+config_file = sys.argv[1]
+if not config_file.endswith('.ini'):
+    raise ValueError('{} is not a valid config file, must have .ini extension'
+                     .format(config_file))
+config = ConfigParser()
+config.read(config_file)
+
+batch_size = int(config['NETWORK']['batch_size'])
+time_steps = int(config['NETWORK']['time_steps'])
+input_vec_size = int(config['NETWORK']['input_vec_size'])
+
+TRAIN_SET_DURS = [int(element)
+                  for element in
+                  config['TRAIN']['train_set_durs'].split(',')]
+REPLICATES = [int(element)
+              for element in
+              config['TRAIN']['replicates'].split(',')]
 train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 
 print('loading training data')
-labelset = list('iabcdefghjk')
-train_data_dir = 'C:\\DATA\\gy6or6\\032212\\'
+labelset = list(config['DATA']['labelset'])
+train_data_dir = config['DATA']['data_dir']
+number_song_files = int(config['DATA']['number_song_files'])
 (train_song_spects,
  train_song_labels,
  timebin_dur) = cnn_bilstm.utils.load_data(labelset,
                                            train_data_dir,
-                                           number_files=20)
+                                           number_song_files)
 # reshape training data
 X_train = np.concatenate(train_song_spects, axis=0)
 Y_train = np.concatenate(train_song_labels, axis=0)
 
 print('loading testing data')
-test_data_dir = 'C:\\DATA\\gy6or6\\032312\\'
+test_data_dir = config['DATA']['test_data_dir']
+number_test_song_files = int(config['DATA']['number_test_song_files'])
 (test_song_spects,
  test_song_labels) = cnn_bilstm.utils.load_data(labelset,
                                                 train_data_dir,
-                                                number_files=20)[:2]  # don't need timebin durs again
+                                                number_test_song_files)[:2]  # [:2] cuz don't need timebin durs again
+
 X_test = np.concatenate(test_song_spects, axis=0)
 Y_test = np.concatenate(test_song_labels, axis=0)
 Y_test_arr = Y_test  # for comparing with predictions below
@@ -45,7 +71,7 @@ Y_test_arr = Y_test  # for comparing with predictions below
                                                                 time_steps,
                                                                 input_vec_size)
 
-results_dirname = 'C:\\workspace\\tf_syl_seg_fork\\results_171021_164437'
+results_dirname = sys.argv[2]
 
 for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
     for rep_ind, replicate in enumerate(REPLICATES):
