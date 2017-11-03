@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 import pickle
 from datetime import datetime
 from configparser import ConfigParser
@@ -11,12 +12,24 @@ from cnn_bilstm.graphs import get_full_graph
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
+    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+    results_dirname = os.path.join('.', 'results_' + timenow)
+    os.mkdir(results_dirname)
+
+    logfile_name = os.path.join(results_dirname,
+                                'metadata_from_running_main_' + timenow + '.log')
+    logger = logging.getLogger(__name__)
+    logger.setLevel('INFO')
+    logger.addHandler(logging.FileHandler(logfile_name))
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+
     config_file = sys.argv[1]
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, must have .ini extension'
                          .format(config_file))
     config = ConfigParser()
     config.read(config_file)
+    logger.info('Using config file: {}'.format(config_file))
 
     print('loading data for training')
     labelset = list(config['DATA']['labelset'])
@@ -25,6 +38,11 @@ if __name__ == "__main__":
     song_spects, all_labels, timebin_dur = cnn_bilstm.utils.load_data(labelset,
                                                                       data_dir,
                                                                       number_song_files)
+    logger.info('Loading training data from {}'.format(data_dir))
+    logger.info('Using first {} songs'.format(number_song_files))
+
+    # note that training songs are taken from the start of the training data
+    # and validation songs are taken starting from the end
 
     # reshape training data
     num_train_songs = int(config['DATA']['num_train_songs'])
@@ -32,8 +50,29 @@ if __name__ == "__main__":
     X_train = np.concatenate(train_spects, axis=0)
     X_train_durations = [spec.shape[0] for spec in train_spects]  # rows are time bins
     Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
+    total_train_set_duration = sum(X_train_durations) / 1000
+    logger.info('Total duration of training set (in s): '
+                .format(total_train_set_duration))
+
+    TRAIN_SET_DURS = [int(element)
+                      for element in
+                      config['TRAIN']['train_set_durs'].split(',')]
+    logger.info('Will train network with training sets of '
+                'following durations (in s): {}'.format(TRAIN_SET_DURS))
+    max_train_set_dur = np.max(TRAIN_SET_DURS)
+    if max_train_set_dur > total_train_set_duration:
+        raise ValueError('Largest duration for a training set of {} '
+                         'is greater than total duration of training set, {}'
+                         .format(max_train_set_dur, total_train_set_duration))
+
+    num_replicates = int(config['TRAIN']['replicates'])
+    REPLICATES = range(num_replicates)
+    logger.info('will replicate training {} times for each duration of training set'
+                .format(num_replicates))
 
     num_val_songs = int(config['DATA']['num_val_songs'])
+    logger.info('validation set used during training will contain {} songs'
+                .format(num_val_songs))
     if num_train_songs + num_val_songs > number_song_files:
         raise ValueError('Total number of training songs ({0}), '
                          'and validation songs ({1}), '
@@ -51,8 +90,12 @@ if __name__ == "__main__":
 
     Y_val_arr = np.concatenate(Y_val, axis=0)
 
-    val_error_step = config['TRAIN']['val_error_step']
-    checkpoint_step = config['TRAIN']['checkpoint_step']
+    val_error_step = int(config['TRAIN']['val_error_step'])
+    logger.info('will measure error on validation set '
+                'every {} steps of training'.format(val_error_step))
+    checkpoint_step = int(config['TRAIN']['checkpoint_step'])
+    logger.info('will save a checkpoint file '
+                'every {} steps of training'.format(checkpoint_step))
     patience = config['TRAIN']['checkpoint_step']
     try:
         patience = int(patience)
@@ -63,22 +106,18 @@ if __name__ == "__main__":
             raise TypeError('patience must be an int or None, but'
                             'is {} and parsed as type {}'
                             .format(patience, type(patience)))
-    TRAIN_SET_DURS = [int(element)
-                      for element in
-                      config['TRAIN']['train_set_durs'].split(',')]
-    REPLICATES = [int(element)
-                  for element in
-                  config['TRAIN']['replicates'].split(',')]
-
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    dirname = os.path.join('.', 'results_' + timenow)
-    os.mkdir(dirname)
+    logger.info('\'patience\' is set to: {}'.format(patience))
 
     # set params used for sending data to graph in batches
     batch_size = int(config['NETWORK']['batch_size'])
     time_steps = int(config['NETWORK']['time_steps'])
+    logger.info('will train network with batches of size {}, '
+                'where each spectrogram in batch contains {} time steps'
+                .format(batch_size, time_steps))
 
-    n_max_iter = config['TRAIN']['n_max_iter']
+    n_max_iter = int(config['TRAIN']['n_max_iter'])
+    logger.info('maximum number of training steps will be {}'
+                .format(n_max_iter))
 
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
@@ -87,9 +126,9 @@ if __name__ == "__main__":
             curr_min_err = 1  # i.e. 100%
             err_patience_counter = 0
 
-            print("training with training set duration of {} seconds,"
-                  "replicate #{}".format(train_set_dur, replicate))
-            training_records_dir = os.path.join(dirname,
+            logger.info("training with training set duration of {} seconds,"
+                        "replicate #{}".format(train_set_dur, replicate))
+            training_records_dir = os.path.join(results_dirname,
                 ('records_for_training_set_with_duration_of_'
                                     + str(train_set_dur) + '_sec_replicate_'
                                     + str(replicate))
@@ -122,12 +161,15 @@ if __name__ == "__main__":
                 iter_order = iter_order[0:n_max_iter]
 
             input_vec_size = int(config['NETWORK']['input_vec_size'])
+            logger.debug('input vec size: '.format(input_vec_size))
             num_hidden = int(config['NETWORK']['num_hidden'])
+            logger.debug('num_hidden: '.format(num_hidden))
             n_syllables = int(config['NETWORK']['n_syllables'])
+            logger.debug('n_syllables: '.format(n_syllables))
             learning_rate = float(config['NETWORK']['learning_rate'])
-            batch_size = int(config['NETWORK']['batch_size'])
+            logger.debug('learning rate: '.format(learning_rate))
 
-            print('creating graph')
+            logger.debug('creating graph')
             (full_graph, train_op, cost,
              init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
                                                               num_hidden,
