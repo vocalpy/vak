@@ -48,6 +48,7 @@ number_song_files = int(config['DATA']['number_song_files'])
  timebin_dur) = cnn_bilstm.utils.load_data(labelset,
                                            train_data_dir,
                                            number_song_files)
+
 # reshape training data
 X_train = np.concatenate(train_song_spects, axis=0)
 Y_train = np.concatenate(train_song_labels, axis=0)
