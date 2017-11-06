@@ -51,7 +51,7 @@ if __name__ == "__main__":
     X_train_durations = [spec.shape[0] for spec in train_spects]  # rows are time bins
     Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
     total_train_set_duration = sum(X_train_durations) / 1000
-    logger.info('Total duration of training set (in s): '
+    logger.info('Total duration of training set (in s): {}'
                 .format(total_train_set_duration))
 
     TRAIN_SET_DURS = [int(element)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     checkpoint_step = int(config['TRAIN']['checkpoint_step'])
     logger.info('will save a checkpoint file '
                 'every {} steps of training'.format(checkpoint_step))
-    patience = config['TRAIN']['checkpoint_step']
+    patience = config['TRAIN']['patience']
     try:
         patience = int(patience)
     except ValueError:
