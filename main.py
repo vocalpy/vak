@@ -7,6 +7,7 @@ from configparser import ConfigParser
 
 import tensorflow as tf
 import numpy as np
+from sklearn.externals import joblib
 
 from cnn_bilstm.graphs import get_full_graph
 import cnn_bilstm.utils
@@ -47,7 +48,16 @@ if __name__ == "__main__":
     # reshape training data
     num_train_songs = int(config['DATA']['num_train_songs'])
     train_spects = song_spects[:num_train_songs]
+
     X_train = np.concatenate(train_spects, axis=0)
+    normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
+    if normalize_spectrograms:
+        logger.info('normalizing spectrograms')
+        spect_scaler = cnn_bilstm.utils.SpectScaler()
+        X_train = spect_scaler.fit_transform(X_train)
+        joblib.dump(spect_scaler, os.path.join(results_dirname, 'spect_scaler'))
+
+    joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
     X_train_durations = [spec.shape[0] for spec in train_spects]  # rows are time bins
     Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
     total_train_set_duration = sum(X_train_durations) / 1000
@@ -86,6 +96,10 @@ if __name__ == "__main__":
                                  num_train_songs + num_val_songs,
                                  number_song_files))
     X_val = song_spects[-num_val_songs:]
+    if normalize_spectrograms:
+        logger.info('normalizing validation set to match training set')
+        X_val = spect_scaler.transform(X_val)
+    joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
     Y_val = all_labels[-num_val_songs:]
 
     Y_val_arr = np.concatenate(Y_val, axis=0)
