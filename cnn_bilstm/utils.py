@@ -6,6 +6,99 @@ import numpy as np
 import hvc
 
 
+# adapted from: https://github.com/NickleDave/hybrid-vocal-classifier/blob/master/hvc/neuralnet/utils.py
+class SpectScaler:
+    """class that scales spectrograms that all have the
+    same number of frequency bins. Any input spectrogram
+    will be scaled by subtracting off the mean of each
+    frequency bin from the 'fit' set of spectrograms, and
+    then dividing by the standard deviation of each
+    frequency bin from the 'fit' set.
+    """
+
+    def __init__(self):
+        pass
+
+    def fit(self, one_long_spect):
+        """fit a SpectScaler.
+        Input should be one long concatenated spectrogram,
+        oriented so that the columns are frequency bins.
+        Fit funciton finds the mean and standard deviation of
+        each frequency bin, which are used by `transform` method
+        to scale other spectrograms.
+
+        Parameters
+        ----------
+        one_long_spect : 2-d numpy array
+            with dimensions (time bins, frequency bins)
+        """
+
+        if one_long_spect.ndim != 2:
+            raise ValueError('input spectrogram should be a 2-d array')
+
+        self.columnMeans = np.mean(one_long_spect)  # mean across axis 0 by default
+        self.columnStds = np.std(one_long_spect)  # std across axis 0 by default
+
+    def _transform(self, spect):
+        """transforms input spectrogram by subtracting off fit mean
+        and then dividing by standard deviation
+        """
+
+        return (spect - self.columnMeans) / self.columnStds
+
+    def transform(self, spects):
+        """normalizes input spectrograms with fit parameters
+        Assumes spectrograms are oriented with columns being frequency bins
+        and rows being time bins.
+
+        Parameters
+        ----------
+        spects : 2-d numpy array or list of 2-d numpy arrays
+            with dimensions (time bins, frequency bins)
+
+        """
+
+        if any([not hasattr(self, attr) for attr in ['columnMeans',
+                                                     'columnStds']]):
+            raise AttributeError('SpectScaler properties are set to None,'
+                                 'must call fit method first to set the'
+                                 'value of these properties before calling'
+                                 'transform')
+
+        if type(spects) != np.ndarray and type(spects) != list:
+            raise TypeError('type {} is not valid for spects'
+                            .format(type(spects)))
+
+        if type(spects) == np.ndarray:
+            if spects.ndim != 2:
+                raise ValueError('array passed as spects to transform should be 2-d')
+
+            return self._transform(spects)
+
+        if type(spects) == list:
+            z_norm_spects = []
+            for spect in spects:
+                z_norm_spects.append(self._transform(spect))
+
+            return z_norm_spects
+
+    def fit_transform(self, spects):
+        """first calls fit and then returns normalized spects
+        transformed using the fit parameters"""
+
+        if type(spects) != np.ndarray:
+            raise TypeError('spects passed to fit_transform '
+                            'should be numpy array, not {}'
+                            .format(type(spects)))
+
+        if spects.ndim != 2:
+            raise ValueError('ndims of spects should be 2, not {}'
+                             .format(spects.ndim))
+
+        self.fit(spects)
+        return self.transform(spects)
+
+
 def make_labels_mapping(data_dir):
     """make mapping
     from the set of unique string labels: [i,a,b,c,d,h,j,k]
@@ -103,6 +196,10 @@ def load_data(labelset, data_dir, number_files):
     for cbin in cbins[:number_files]:
         dat, fs = hvc.evfuncs.load_cbin(cbin)
         spect, freqbins, timebins = spect_maker.make(dat, fs)
+        #####################################################
+        # note that we 'transpose' the spectrogram          #
+        # so that rows are time and columns are frequencies #
+        #####################################################
         song_spects.append(spect.T)
         notmat_dict = hvc.evfuncs.load_notmat(cbin)
         labels = [labels_mapping[ord(label)]
