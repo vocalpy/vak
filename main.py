@@ -1,5 +1,6 @@
 import sys
 import os
+import copy
 import logging
 import pickle
 from datetime import datetime
@@ -50,12 +51,6 @@ if __name__ == "__main__":
     train_spects = song_spects[:num_train_songs]
 
     X_train = np.concatenate(train_spects, axis=0)
-    normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
-    if normalize_spectrograms:
-        logger.info('normalizing spectrograms')
-        spect_scaler = cnn_bilstm.utils.SpectScaler()
-        X_train = spect_scaler.fit_transform(X_train)
-        joblib.dump(spect_scaler, os.path.join(results_dirname, 'spect_scaler'))
 
     joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
     X_train_durations = [spec.shape[0] for spec in train_spects]  # rows are time bins
@@ -96,10 +91,8 @@ if __name__ == "__main__":
                                  num_train_songs + num_val_songs,
                                  number_song_files))
     X_val = song_spects[-num_val_songs:]
-    if normalize_spectrograms:
-        logger.info('normalizing validation set to match training set')
-        X_val = spect_scaler.transform(X_val)
     joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
+    X_val_copy = copy.deepcopy(X_val)  # need a copy if we scale X_val below
     Y_val = all_labels[-num_val_songs:]
 
     Y_val_arr = np.concatenate(Y_val, axis=0)
@@ -133,6 +126,10 @@ if __name__ == "__main__":
     logger.info('maximum number of training steps will be {}'
                 .format(n_max_iter))
 
+    normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
+    if normalize_spectrograms:
+        logger.info('will normalize spectrograms for each training set')
+
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
             costs = []
@@ -161,6 +158,16 @@ if __name__ == "__main__":
                 pickle.dump(train_inds, train_inds_file)
             X_train_subset = X_train[train_inds, :]
             Y_train_subset = Y_train[train_inds]
+
+            if normalize_spectrograms:
+                spect_scaler = cnn_bilstm.utils.SpectScaler()
+                X_train_subset = spect_scaler.fit_transform(X_train_subset)
+                logger.info('normalizing validation set to match training set')
+                X_val = spect_scaler.transform(X_val_copy)
+                scaler_name = ('spect_scaler_duration_{}_replicate_{}'
+                               .format(train_set_dur, replicate))
+                joblib.dump(spect_scaler,
+                            os.path.join(results_dirname, scaler_name))
 
             batch_spec_rows = len(train_inds) // batch_size
             X_train_subset = \
