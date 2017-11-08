@@ -130,6 +130,19 @@ if __name__ == "__main__":
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
 
+    gpu = config['NETWORK']['GPU']
+    try:
+        gpu = int(gpu)
+        logger.info('using gpu {}'.format(gpu))
+    except ValueError:
+        if gpu == 'None':  # None means use whichever gpu is default
+            gpu = None
+            logger.info('using default gpu')
+        else:
+            raise TypeError('gpu must be an int or None, but'
+                            'is {} and parsed as type {}'
+                            .format(patience, type(patience)))
+
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
             costs = []
@@ -191,18 +204,32 @@ if __name__ == "__main__":
             logger.debug('learning rate: '.format(learning_rate))
 
             logger.debug('creating graph')
-            (full_graph, train_op, cost,
-             init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
-                                                              num_hidden,
-                                                              n_syllables,
-                                                              learning_rate,
-                                                              batch_size)
-            # Add an Op that chooses the top k predictions.
-            eval_op = tf.nn.top_k(logits)
+
+            # ugly hack to get gpu choice to work
+            if gpu:
+                with tf.device('/gpu:{}'.format(gpu)):
+                    (full_graph, train_op, cost,
+                     init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
+                                                                      num_hidden,
+                                                                      n_syllables,
+                                                                      learning_rate,
+                                                                      batch_size)
+                    # Add an Op that chooses the top k predictions.
+                    eval_op = tf.nn.top_k(logits)
+            else:
+                (full_graph, train_op, cost,
+                 init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
+                                                                  num_hidden,
+                                                                  n_syllables,
+                                                                  learning_rate,
+                                                                  batch_size)
+                # Add an Op that chooses the top k predictions.
+                eval_op = tf.nn.top_k(logits)
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
-                                intra_op_parallelism_threads=512)
+                                intra_op_parallelism_threads=512,
+                                log_device_placement=True)
                             ) as sess:
                 # ,config = tf.ConfigProto(intra_op_parallelism_threads = 1)
                 # Run the Op to initialize the variables.
