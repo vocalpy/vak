@@ -19,32 +19,39 @@ class SpectScaler:
     def __init__(self):
         pass
 
-    def fit(self, one_long_spect):
+    def fit(self, spect):
         """fit a SpectScaler.
-        Input should be one long concatenated spectrogram,
+        Input should be spectrogram,
         oriented so that the columns are frequency bins.
-        Fit funciton finds the mean and standard deviation of
+        Fit function finds the mean and standard deviation of
         each frequency bin, which are used by `transform` method
         to scale other spectrograms.
 
         Parameters
         ----------
-        one_long_spect : 2-d numpy array
+        spect : 2-d numpy array
             with dimensions (time bins, frequency bins)
         """
 
-        if one_long_spect.ndim != 2:
+        if spect.ndim != 2:
             raise ValueError('input spectrogram should be a 2-d array')
 
-        self.columnMeans = np.mean(one_long_spect)  # mean across axis 0 by default
-        self.columnStds = np.std(one_long_spect)  # std across axis 0 by default
+        self.columnMeans = np.mean(spect, axis=0)
+        self.columnStds = np.std(spect, axis=0)
+        assert self.columnMeans.shape[-1] == spect.shape[-1]
+        assert self.columnStds.shape[-1] == spect.shape[-1]
+        self.nonZeroStd = np.argwhere(self.columnStds != 0)
 
     def _transform(self, spect):
         """transforms input spectrogram by subtracting off fit mean
         and then dividing by standard deviation
         """
 
-        return (spect - self.columnMeans) / self.columnStds
+        transformed = spect - self.columnMeans
+        # to keep any zero stds from causing NaNs
+        transformed[:, self.nonZeroStd] = (
+            transformed[:, self.nonZeroStd] / self.columnStds[self.nonZeroStd])
+        return transformed
 
     def transform(self, spects):
         """normalizes input spectrograms with fit parameters
@@ -70,12 +77,14 @@ class SpectScaler:
                             .format(type(spects)))
 
         if type(spects) == np.ndarray:
-            if spects.ndim != 2:
-                raise ValueError('array passed as spects to transform should be 2-d')
-
+            if spects.shape[-1] != self.columnMeans.shape[-1]:
+                raise ValueError('number of columns in spects, {}, '
+                                 'does not match shape of self.columnMeans, {},'
+                                 'i.e. the number of columns from the spectrogram'
+                                 'to which the scaler was fit originally')
             return self._transform(spects)
 
-        if type(spects) == list:
+        elif type(spects) == list:
             z_norm_spects = []
             for spect in spects:
                 z_norm_spects.append(self._transform(spect))

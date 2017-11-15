@@ -205,9 +205,8 @@ if __name__ == "__main__":
 
             logger.debug('creating graph')
 
-            # ugly hack to get gpu choice to work
             if gpu:
-                with tf.device('/gpu:{}'.format(gpu)):
+                with tf.device('/device:GPU:{}'.format(gpu)):
                     (full_graph, train_op, cost,
                      init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
                                                                       num_hidden,
@@ -228,10 +227,9 @@ if __name__ == "__main__":
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
-                                intra_op_parallelism_threads=512,
-                                log_device_placement=True)
-                            ) as sess:
-                # ,config = tf.ConfigProto(intra_op_parallelism_threads = 1)
+                                intra_op_parallelism_threads=512
+                                # log_device_placement=True)
+                            )) as sess:
                 # Run the Op to initialize the variables.
                 sess.run(init)
                 # Start the training loop.
