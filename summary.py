@@ -1,11 +1,13 @@
 import sys
 import os
+import copy
 import pickle
 from glob import glob
 from configparser import ConfigParser
 
 import tensorflow as tf
 import numpy as np
+from sklearn.externals import joblib
 
 import cnn_bilstm.utils
 
@@ -35,6 +37,7 @@ TRAIN_SET_DURS = [int(element)
                   config['TRAIN']['train_set_durs'].split(',')]
 num_replicates = int(config['TRAIN']['replicates'])
 REPLICATES = range(num_replicates)
+normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
 
 train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
@@ -74,6 +77,7 @@ Y_test_arr = Y_test  # for comparing with predictions below
 
 results_dirname = sys.argv[2]
 
+
 for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
     for rep_ind, replicate in enumerate(REPLICATES):
         print("getting train and test error for "
@@ -103,6 +107,14 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                                                                          batch_size,
                                                                          time_steps,
                                                                          input_vec_size)
+
+        if normalize_spectrograms:
+            scaler_name = ('spect_scaler_duration_{}_replicate_{}'
+                           .format(train_set_dur, replicate))
+            spect_scaler = joblib.load(os.path.join(results_dirname, scaler_name))
+            import pdb;pdb.set_trace()
+            X_train_subset = spect_scaler.transform(X_train_subset)
+            X_test = spect_scaler.transform(X_test_copy)
 
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
