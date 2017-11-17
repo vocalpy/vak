@@ -3,10 +3,11 @@ import random
 
 import numpy as np
 
-import hvc
+from . import evfuncs, spect_utils
 
 
-# adapted from: https://github.com/NickleDave/hybrid-vocal-classifier/blob/master/hvc/neuralnet/utils.py
+# adapted from:
+# https://github.com/NickleDave/hybrid-vocal-classifier/blob/master/hvc/neuralnet/utils.py
 class SpectScaler:
     """class that scales spectrograms that all have the
     same number of frequency bins. Any input spectrogram
@@ -118,7 +119,7 @@ def make_labels_mapping(data_dir):
     notmats = glob(data_dir + '*.not.mat')
     labels = []
     for notmat in notmats:
-        notmat_dict = hvc.evfuncs.load_notmat(notmat)
+        notmat_dict = evfuncs.load_notmat(notmat)
         label_arr = np.asarray([ord(label)
                                 for label in notmat_dict['labels']]
                                )
@@ -170,7 +171,7 @@ def make_labeled_timebins_vector(labels,
     return label_vec
 
 
-def load_data(labelset, data_dir, number_files):
+def load_data(labelset, data_dir, number_files, spect_params):
     """
 
     Parameters
@@ -183,6 +184,8 @@ def load_data(labelset, data_dir, number_files):
     number_files : int
         number of files in list of song files to process
         assumes files is cbins
+    spect_params : dict
+        parameters for computing spectrogram. Loaded by main.py from .ini file.
 
     Returns
     -------
@@ -195,22 +198,31 @@ def load_data(labelset, data_dir, number_files):
         estimated from last spectrogram processed
     """
 
-    spect_maker = hvc.audiofileIO.Spectrogram(nperseg=1024,
-                                              noverlap=992,
-                                              freq_cutoffs=[500, 10000])
     labels_mapping = make_labels_mapping(data_dir)
     cbins = glob(data_dir + '*.cbin')
     song_spects = []
     all_labels = []
     for cbin in cbins[:number_files]:
-        dat, fs = hvc.evfuncs.load_cbin(cbin)
-        spect, freqbins, timebins = spect_maker.make(dat, fs)
+        dat, fs = evfuncs.load_cbin(cbin)
+        if 'freq_cutoffs' in spect_params:
+            dat = spect_utils.butter_bandpass_filter(dat,
+                                                     spect_params['freq_cutoffs'][0],
+                                                     spect_params['freq_cutoffs'][1],
+                                                     fs)
+
+        spect, freqbins, timebins = spect_utils.spectrogram(dat, fs,
+                                                            thresh=spect_params['thresh'])
+        if 'freq_cutoffs' in spect_params:
+            f_inds = np.nonzero((freqbins >= spect_params['freq_cutoffs'][0]) &
+                                (freqbins < spect_params['freq_cutoffs'][1]))[0]  # returns tuple
+            spect = spect[f_inds, :]
+
         #####################################################
         # note that we 'transpose' the spectrogram          #
         # so that rows are time and columns are frequencies #
         #####################################################
         song_spects.append(spect.T)
-        notmat_dict = hvc.evfuncs.load_notmat(cbin)
+        notmat_dict = evfuncs.load_notmat(cbin)
         labels = [labels_mapping[ord(label)]
                   for label in notmat_dict['labels']]
         labels = make_labeled_timebins_vector(labels,
