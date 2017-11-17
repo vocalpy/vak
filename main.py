@@ -4,7 +4,8 @@ import copy
 import logging
 import pickle
 from datetime import datetime
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError
+
 
 import tensorflow as tf
 import numpy as np
@@ -33,15 +34,34 @@ if __name__ == "__main__":
     config.read(config_file)
     logger.info('Using config file: {}'.format(config_file))
 
+    spect_params = {}
+    for spect_param_name in ['freq_cutoffs', 'thresh']:
+        try:
+            if spect_param_name == 'freq_cutoffs':
+                freq_cutoffs = [float(element)
+                                for element in
+                                config['SPECTROGRAM']['freq_cutoffs'].split(',')]
+                spect_params['freq_cutoffs'] = freq_cutoffs
+            elif spect_param_name == 'thresh':
+                spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+
+        except NoOptionError:
+            logger.info('Parameter for computing spectrogram, {}, not specified. '
+                        'Will use default.'.format(spect_param_name))
+            continue
+
     print('loading data for training')
     labelset = list(config['DATA']['labelset'])
     data_dir = config['DATA']['data_dir']
     number_song_files = int(config['DATA']['number_song_files'])
-    song_spects, all_labels, timebin_dur = cnn_bilstm.utils.load_data(labelset,
-                                                                      data_dir,
-                                                                      number_song_files)
     logger.info('Loading training data from {}'.format(data_dir))
     logger.info('Using first {} songs'.format(number_song_files))
+    song_spects, all_labels, timebin_dur = cnn_bilstm.utils.load_data(labelset,
+                                                                      data_dir,
+                                                                      number_song_files,
+                                                                      spect_params)
+    logger.info('Size of each timebin in spectrogram, in seconds: {}'
+                .format(timebin_dur))
 
     # note that training songs are taken from the start of the training data
     # and validation songs are taken starting from the end
@@ -49,26 +69,31 @@ if __name__ == "__main__":
     # reshape training data
     num_train_songs = int(config['DATA']['num_train_songs'])
     train_spects = song_spects[:num_train_songs]
-
-    X_train = np.concatenate(train_spects, axis=0)
-
-    joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
-    X_train_durations = [spec.shape[0] for spec in train_spects]  # rows are time bins
-    Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
-    total_train_set_duration = sum(X_train_durations) / 1000
+    X_train_timebins = np.array(
+        [spec.shape[0] for spec in train_spects]
+        # spec.shape[0] because rows are time bins
+    )  # convert to seconds by multiplying by size of time bin
+    X_train_durations = X_train_timebins * timebin_dur
+    total_train_set_duration = sum(X_train_durations)
     logger.info('Total duration of training set (in s): {}'
                 .format(total_train_set_duration))
-
     TRAIN_SET_DURS = [int(element)
                       for element in
                       config['TRAIN']['train_set_durs'].split(',')]
-    logger.info('Will train network with training sets of '
-                'following durations (in s): {}'.format(TRAIN_SET_DURS))
     max_train_set_dur = np.max(TRAIN_SET_DURS)
+
     if max_train_set_dur > total_train_set_duration:
         raise ValueError('Largest duration for a training set of {} '
                          'is greater than total duration of training set, {}'
                          .format(max_train_set_dur, total_train_set_duration))
+
+    logger.info('Will train network with training sets of '
+                'following durations (in s): {}'.format(TRAIN_SET_DURS))
+
+    X_train = np.concatenate(train_spects, axis=0)
+    # save training set to get training accuracy in summary.py
+    joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
+    Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
 
     num_replicates = int(config['TRAIN']['replicates'])
     REPLICATES = range(num_replicates)
@@ -163,7 +188,7 @@ if __name__ == "__main__":
                                    + str(replicate))
             if not os.path.isdir(training_records_dir):
                 os.mkdir(training_records_dir)
-            train_inds = cnn_bilstm.utils.get_inds_for_dur(X_train_durations,
+            train_inds = cnn_bilstm.utils.get_inds_for_dur(X_train_timebins,
                                                            train_set_dur,
                                                            timebin_dur)
             with open(os.path.join(training_records_dir, 'train_inds'),
@@ -205,30 +230,19 @@ if __name__ == "__main__":
 
             logger.debug('creating graph')
 
-            if gpu:
-                with tf.device('/device:GPU:{}'.format(gpu)):
-                    (full_graph, train_op, cost,
-                     init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
-                                                                      num_hidden,
-                                                                      n_syllables,
-                                                                      learning_rate,
-                                                                      batch_size)
-                    # Add an Op that chooses the top k predictions.
-                    eval_op = tf.nn.top_k(logits)
-            else:
-                (full_graph, train_op, cost,
-                 init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
-                                                                  num_hidden,
-                                                                  n_syllables,
-                                                                  learning_rate,
-                                                                  batch_size)
-                # Add an Op that chooses the top k predictions.
-                eval_op = tf.nn.top_k(logits)
+            (full_graph, train_op, cost,
+             init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
+                                                              num_hidden,
+                                                              n_syllables,
+                                                              learning_rate,
+                                                              batch_size)
+            # Add an Op that chooses the top k predictions.
+            eval_op = tf.nn.top_k(logits)
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
-                                intra_op_parallelism_threads=512
-                                # log_device_placement=True)
+                                log_device_placement=True
+                                # intra_op_parallelism_threads=512
                             )) as sess:
                 # Run the Op to initialize the variables.
                 sess.run(init)

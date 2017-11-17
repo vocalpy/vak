@@ -234,7 +234,7 @@ def load_data(labelset, data_dir, number_files, spect_params):
     return song_spects, all_labels, timebin_dur
 
 
-def get_inds_for_dur(song_durations,
+def get_inds_for_dur(song_timebins,
                      target_duration,
                      timebin_dur_in_s=0.001):
     """for getting a training set with random songs but constant duration
@@ -244,16 +244,16 @@ def get_inds_for_dur(song_durations,
 
     Parameters
     ----------
-    song_durations : list
-        list of song durations,
-        where duration is number of rows in a spectrogram
+    song_timebins : list
+        list of number of timebins for each songfile,
+        where timebines is number of rows in a spectrogram
         e.g.,
         [song_spect.shape[0] for song_spect in song_spectrograms]
         (rows are time instead of frequency,
         because network is set up with input this way)
     target_duration : float
         target duration of training set in s
-    timebind_dur_in_s : float
+    timebin_dur_in_s : float
         duration of each timebin, i.e. each column in spectrogram,
         in seconds.
         default is 0.001 s (1 ms)
@@ -266,8 +266,8 @@ def get_inds_for_dur(song_durations,
         training spectrograms concatenated, and each row being one timebin)
     """
 
-    for song_ind, song_duration in enumerate(song_durations):
-        inds = np.ones((song_duration,), dtype=int) * song_ind
+    for song_ind, num_timebins_in_song in enumerate(song_timebins):
+        inds = np.ones((num_timebins_in_song,), dtype=int) * song_ind
         if 'song_inds_arr' in locals():
             song_inds_arr = np.concatenate((song_inds_arr, inds))
         else:
@@ -275,7 +275,7 @@ def get_inds_for_dur(song_durations,
 
     song_id_list = []
     total_dur_in_timebins = 0
-    num_songs = len(song_durations)
+    num_songs = len(song_timebins)
     while 1:
         song_id = random.randrange(num_songs)
         if song_id in song_id_list:
@@ -287,11 +287,13 @@ def get_inds_for_dur(song_durations,
                 inds_to_use = np.concatenate((inds_to_use, song_id_inds))
             else:
                 inds_to_use = song_id_inds
-            total_dur_in_timebins = total_dur_in_timebins + song_durations[song_id]
+            total_dur_in_timebins = total_dur_in_timebins + song_timebins[song_id]
             if total_dur_in_timebins * timebin_dur_in_s >= target_duration:
+                # if total_dur greater than target, need to truncate
                 if total_dur_in_timebins * timebin_dur_in_s > target_duration:
                     correct_length = np.round(target_duration / timebin_dur_in_s).astype(int)
                     inds_to_use = inds_to_use[:correct_length]
+                # (if equal to target, don't need to do anything)
                 break
 
     return inds_to_use
