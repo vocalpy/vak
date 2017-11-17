@@ -8,6 +8,7 @@ from configparser import ConfigParser, NoOptionError
 
 
 import tensorflow as tf
+from tensorflow.python import debug as tf_debug
 import numpy as np
 from sklearn.externals import joblib
 
@@ -108,7 +109,7 @@ if __name__ == "__main__":
                          'and validation songs ({1}), '
                          'is {2}.\n This is greater than the number of '
                          'songfiles, {3}, and would result in training data '
-                         'in the validation set. Please increaes the number '
+                         'in the validation set. Please increase the number '
                          'of songfiles or decrease the size of the training '
                          'or validation set.'
                          .format(num_train_songs,
@@ -219,7 +220,7 @@ if __name__ == "__main__":
             if len(iter_order) > n_max_iter:
                 iter_order = iter_order[0:n_max_iter]
 
-            input_vec_size = int(config['NETWORK']['input_vec_size'])
+            input_vec_size = X_train_subset.shape[-1]  # number of columns
             logger.debug('input vec size: '.format(input_vec_size))
             num_hidden = int(config['NETWORK']['num_hidden'])
             logger.debug('num_hidden: '.format(num_hidden))
@@ -241,11 +242,15 @@ if __name__ == "__main__":
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
-                                log_device_placement=True
+                                # log_device_placement=True
                                 # intra_op_parallelism_threads=512
                             )) as sess:
                 # Run the Op to initialize the variables.
                 sess.run(init)
+
+                if '--debug' in sys.argv:
+                    sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+
                 # Start the training loop.
 
                 step = 1
