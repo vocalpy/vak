@@ -68,7 +68,7 @@ def inference(spectrogram,
     lstm_b1 = tf.contrib.rnn.BasicLSTMCell(num_hidden, forget_bias=1.0, state_is_tuple=True, reuse=None)
     outputs, _states = tf.nn.bidirectional_dynamic_rnn(lstm_f1,
                                                        lstm_b1,
-                                                       tf.reshape(pool2, [batch_size, -1, 512]),
+                                                       tf.reshape(pool2, [batch_size, -1, num_hidden]),
                                                        time_major=False,
                                                        dtype=tf.float32,
                                                        sequence_length=seq_length)
