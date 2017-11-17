@@ -73,7 +73,7 @@ def inference(spectrogram,
                                                        dtype=tf.float32,
                                                        sequence_length=seq_length)
 
-    # Third, projection on the number of syllables creates logits    time_steps
+    # Third, projection on the number of syllables creates logits time_steps
     with tf.name_scope('Projection'):
         W_f = tf.Variable(tf.random_normal([num_hidden, n_syllables]))
         W_b = tf.Variable(tf.random_normal([num_hidden, n_syllables]))
