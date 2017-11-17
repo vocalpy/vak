@@ -120,8 +120,8 @@ def train(logits, lbls, rate, batch_size):
     return train_op, cost
 
 
-def get_full_graph(input_vec_size=513, num_hidden=512,
-                   n_syllables=16, learning_rate=0.001, batch_size=11):
+def get_full_graph(input_vec_size=513, num_hidden=512, n_syllables=16,
+                   learning_rate=0.001, batch_size=11):
 
     full_graph = tf.Graph()
     with full_graph.as_default():
