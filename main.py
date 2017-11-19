@@ -255,21 +255,31 @@ if __name__ == "__main__":
             logger.debug('creating graph')
 
             (full_graph, train_op, cost,
-             init, saver, logits, X, Y, lng) = get_full_graph(input_vec_size,
-                                                              num_hidden,
-                                                              n_syllables,
-                                                              learning_rate,
-                                                              batch_size)
+             init, saver, logits, X, Y, lng,
+             merged_summary_op) = get_full_graph(input_vec_size,
+                                                 num_hidden,
+                                                 n_syllables,
+                                                 learning_rate,
+                                                 batch_size)
+
             # Add an Op that chooses the top k predictions.
             eval_op = tf.nn.top_k(logits)
+
+            logs_path = os.path.join(results_dirname,'logs')
+            os.mkdir(logs_path)
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
                                 log_device_placement=True
                                 # intra_op_parallelism_threads=512
                             )) as sess:
+
                 # Run the Op to initialize the variables.
                 sess.run(init)
+
+                # op to write logs to Tensorboard
+                summary_writer = tf.summary.FileWriter(logs_path,
+                                                       graph=tf.get_default_graph())
 
                 if '--debug' in sys.argv:
                     sess = tf_debug.LocalCLIDebugWrapperSession(sess)
@@ -290,8 +300,10 @@ if __name__ == "__main__":
                     d = {X: X_train_subset[:, iternum:iternum + time_steps, :],
                          Y: Y_train_subset[:, iternum:iternum + time_steps],
                          lng: [time_steps] * batch_size}
-                    _cost, _ = sess.run((cost, train_op), feed_dict=d)
+                    _cost, _, summary = sess.run((cost, train_op, merged_summary_op),
+                                        feed_dict=d)
                     costs.append(_cost)
+                    summary_writer.add_summary(summary, step)
                     print("step {}, iteration {}, cost: {}".format(step, iternum, _cost))
                     step = step + 1
 
@@ -308,18 +320,18 @@ if __name__ == "__main__":
                             X_val_song_reshape = X_val_song_padded[0:temp_n * batch_size].reshape((batch_size, temp_n, -1))
                             Y_val_song_reshape = Y_val_song_padded[0:temp_n * batch_size].reshape((batch_size, -1))
 
-                            d = {X: X_val_song_reshape,
-                                 Y: Y_val_song_reshape,
-                                 lng: [temp_n] * batch_size
-                                 }
+                            d_val = {X: X_val_song_reshape,
+                                     Y: Y_val_song_reshape,
+                                     lng: [temp_n] * batch_size
+                                     }
 
                             unpadded_length = Y_val_song.shape[0]
 
                             if 'preds' in locals():
                                 preds = np.concatenate((preds,
-                                                        sess.run(eval_op, feed_dict=d)[1][:unpadded_length]))
+                                                        sess.run(eval_op, feed_dict=d_val)[1][:unpadded_length]))
                             else:
-                                preds = sess.run(eval_op, feed_dict=d)[1][:unpadded_length]  # eval_op
+                                preds = sess.run(eval_op, feed_dict=d_val)[1][:unpadded_length]  # eval_op
 
                         val_errs.append(np.sum(preds - Y_val_arr != 0) / Y_val_arr.shape[0])
                         print("step {}, validation error: {}".format(step, val_errs[-1]))
@@ -351,8 +363,6 @@ if __name__ == "__main__":
                             if save_only_single_checkpoint_file is False:
                                 checkpoint_path += '_{}'.format(step)
                             saver.save(sess, checkpoint_path)
-                            with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
-                                pickle.dump(costs, costs_file)
                             with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
 
