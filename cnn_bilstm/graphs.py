@@ -152,10 +152,15 @@ def get_full_graph(input_vec_size=513, num_hidden=512, n_syllables=16,
             # Add to the Graph the Ops that calculate and apply gradients.
             train_op, cost = train(logits, Y, learning_rate, batch_size)
 
+            # Create a summary to monitor cost tensor
+            tf.summary.scalar("loss", cost)
+            # Merge all summaries into a single op
+            merged_summary_op = tf.summary.merge_all()
+
             init = tf.global_variables_initializer()
 
             # Create a saver for writing training checkpoints.
             saver = tf.train.Saver(max_to_keep=10)
 
     return (full_graph, train_op, cost,
-            init, saver, logits, X, Y, lng)
+            init, saver, logits, X, Y, lng, merged_summary_op)
