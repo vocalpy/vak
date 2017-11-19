@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 import copy
 import logging
 import pickle
@@ -16,16 +17,7 @@ from cnn_bilstm.graphs import get_full_graph
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    results_dirname = os.path.join('.', 'results_' + timenow)
-    os.mkdir(results_dirname)
 
-    logfile_name = os.path.join(results_dirname,
-                                'metadata_from_running_main_' + timenow + '.log')
-    logger = logging.getLogger(__name__)
-    logger.setLevel('INFO')
-    logger.addHandler(logging.FileHandler(logfile_name))
-    logger.addHandler(logging.StreamHandler(sys.stdout))
 
     config_file = sys.argv[1]
     if not config_file.endswith('.ini'):
@@ -33,6 +25,26 @@ if __name__ == "__main__":
                          .format(config_file))
     config = ConfigParser()
     config.read(config_file)
+
+    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+    if config.has_section('OUTPUT'):
+        if config.has_option('OUTPUT','output_dir'):
+            output_dir = config['OUTPUT']['output_dir']
+            results_dirname = os.path.join(output_dir,
+                                           'results_' + timenow)
+    else:
+        results_dirname = os.path.join('.', 'results_' + timenow)
+    os.mkdir(results_dirname)
+    # copy config file into results dir now that we've made the dir
+    shutil.copy(config_file, results_dirname)
+
+    logfile_name = os.path.join(results_dirname,
+                                'metadata_from_running_main_' + timenow + '.log')
+    logger = logging.getLogger(__name__)
+    logger.setLevel('INFO')
+    logger.addHandler(logging.FileHandler(logfile_name))
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.info('Logging results to {}'.format(results_dirname))
     logger.info('Using config file: {}'.format(config_file))
 
     spect_params = {}
@@ -129,6 +141,17 @@ if __name__ == "__main__":
     checkpoint_step = int(config['TRAIN']['checkpoint_step'])
     logger.info('will save a checkpoint file '
                 'every {} steps of training'.format(checkpoint_step))
+    save_only_single_checkpoint_file = config.getboolean('TRAIN',
+                                                         'save_only_single_checkpoint_file')
+    if save_only_single_checkpoint_file:
+        logger.info('save_only_single_checkpoint_file = True\n'
+                    'will save only one checkpoint file'
+                    'and overwrite every {} steps of training'.format(checkpoint_step))
+    else:
+        logger.info('save_only_single_checkpoint_file = False\n'
+                    'will save a separate checkpoint file '
+                    'every {} steps of training'.format(checkpoint_step))
+
     patience = config['TRAIN']['patience']
     try:
         patience = int(patience)
@@ -156,18 +179,18 @@ if __name__ == "__main__":
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
 
-    gpu = config['NETWORK']['GPU']
-    try:
-        gpu = int(gpu)
-        logger.info('using gpu {}'.format(gpu))
-    except ValueError:
-        if gpu == 'None':  # None means use whichever gpu is default
-            gpu = None
-            logger.info('using default gpu')
-        else:
-            raise TypeError('gpu must be an int or None, but'
-                            'is {} and parsed as type {}'
-                            .format(patience, type(patience)))
+    # gpu = config['NETWORK']['GPU']
+    # try:
+    #     gpu = int(gpu)
+    #     logger.info('using gpu {}'.format(gpu))
+    # except ValueError:
+    #     if gpu == 'None':  # None means use whichever gpu is default
+    #         gpu = None
+    #         logger.info('using default gpu')
+    #     else:
+    #         raise TypeError('gpu must be an int or None, but'
+    #                         'is {} and parsed as type {}'
+    #                         .format(patience, type(patience)))
 
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
@@ -242,7 +265,7 @@ if __name__ == "__main__":
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
-                                # log_device_placement=True
+                                log_device_placement=True
                                 # intra_op_parallelism_threads=512
                             )) as sess:
                 # Run the Op to initialize the variables.
@@ -325,6 +348,8 @@ if __name__ == "__main__":
                         if step % checkpoint_step == 0:
                             "Saving checkpoint."
                             checkpoint_path = os.path.join(training_records_dir, checkpoint_filename)
+                            if save_only_single_checkpoint_file is False:
+                                checkpoint_path += '_{}'.format(step)
                             saver.save(sess, checkpoint_path)
                             with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
                                 pickle.dump(costs, costs_file)
