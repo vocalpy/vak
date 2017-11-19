@@ -266,7 +266,8 @@ if __name__ == "__main__":
             eval_op = tf.nn.top_k(logits)
 
             logs_path = os.path.join(results_dirname,'logs')
-            os.mkdir(logs_path)
+            if not os.path.isdir(logs_path):
+                os.mkdir(logs_path)
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
