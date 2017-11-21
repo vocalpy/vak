@@ -1,6 +1,5 @@
 import sys
 import os
-import copy
 import pickle
 from glob import glob
 from configparser import ConfigParser
@@ -11,16 +10,6 @@ from sklearn.externals import joblib
 
 import cnn_bilstm.utils
 
-if len(sys.argv[1:]) != 2:
-    raise ValueError('there should be two arguments to this function, '
-                     'the first being the .ini file and the second being '
-                     'the results dir. Instead got {} arguments: {}'
-                     .format(len(sys.argv[1:]), sys.argv[1:]))
-
-if not os.path.isdir(sys.argv[2]):
-    raise FileNotFoundError('{} directory is not found.'
-                            .format(sys.argv[2]))
-
 config_file = sys.argv[1]
 if not config_file.endswith('.ini'):
     raise ValueError('{} is not a valid config file, must have .ini extension'
@@ -28,9 +17,13 @@ if not config_file.endswith('.ini'):
 config = ConfigParser()
 config.read(config_file)
 
+results_dirname = config['OUTPUT']['output_dir']
+if not os.path.isdir(results_dirname):
+    raise FileNotFoundError('{} directory is not found.'
+                            .format(results_dirname))
+
 batch_size = int(config['NETWORK']['batch_size'])
 time_steps = int(config['NETWORK']['time_steps'])
-input_vec_size = int(config['NETWORK']['input_vec_size'])
 
 TRAIN_SET_DURS = [int(element)
                   for element in
@@ -38,6 +31,24 @@ TRAIN_SET_DURS = [int(element)
 num_replicates = int(config['TRAIN']['replicates'])
 REPLICATES = range(num_replicates)
 normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
+
+spect_params = {}
+for spect_param_name in ['freq_cutoffs', 'thresh']:
+    try:
+        if spect_param_name == 'freq_cutoffs':
+            freq_cutoffs = [float(element)
+                            for element in
+                            config['SPECTROGRAM']['freq_cutoffs'].split(',')]
+            spect_params['freq_cutoffs'] = freq_cutoffs
+        elif spect_param_name == 'thresh':
+            spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+
+    except NoOptionError:
+        logger.info('Parameter for computing spectrogram, {}, not specified. '
+                    'Will use default.'.format(spect_param_name))
+        continue
+if spect_params == {}:
+    spect_params = None
 
 train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
@@ -50,11 +61,13 @@ number_song_files = int(config['DATA']['number_song_files'])
  train_song_labels,
  timebin_dur) = cnn_bilstm.utils.load_data(labelset,
                                            train_data_dir,
-                                           number_song_files)
+                                           number_song_files,
+                                           spect_params)
 
 # reshape training data
 X_train = np.concatenate(train_song_spects, axis=0)
 Y_train = np.concatenate(train_song_labels, axis=0)
+input_vec_size = X_train.shape[-1]
 
 print('loading testing data')
 test_data_dir = config['DATA']['test_data_dir']
@@ -62,21 +75,17 @@ number_test_song_files = int(config['DATA']['number_test_song_files'])
 (test_song_spects,
  test_song_labels) = cnn_bilstm.utils.load_data(labelset,
                                                 train_data_dir,
-                                                number_test_song_files)[:2]  # [:2] cuz don't need timebin durs again
+                                                number_test_song_files,
+                                                spect_params)[:2]  # [:2] cuz don't need timebin durs again
 
 X_test = np.concatenate(test_song_spects, axis=0)
+# copy X_test because it gets scaled and reshape in main loop
+X_test_copy = np.copy(X_test)
 Y_test = np.concatenate(test_song_labels, axis=0)
-Y_test_arr = Y_test  # for comparing with predictions below
-(X_test,
- Y_test,
- num_batches_test) = cnn_bilstm.utils.reshape_data_for_batching(X_test,
-                                                                Y_test,
-                                                                batch_size,
-                                                                time_steps,
-                                                                input_vec_size)
-
-results_dirname = sys.argv[2]
-
+# also need copy of Y_test
+# because it also gets reshaped in loop
+# and because we need to compare with Y_pred
+Y_test_copy = np.copy(Y_test)
 
 for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
     for rep_ind, replicate in enumerate(REPLICATES):
@@ -100,6 +109,16 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
         # get training set
         X_train_subset = X_train[train_inds, :]
         Y_train_subset = Y_train[train_inds]
+        # normalize before reshaping to avoid even more convoluted array reshaping
+        if normalize_spectrograms:
+            scaler_name = ('spect_scaler_duration_{}_replicate_{}'
+                           .format(train_set_dur, replicate))
+            spect_scaler = joblib.load(os.path.join(results_dirname, scaler_name))
+            X_train_subset = spect_scaler.transform(X_train_subset)
+            X_test = spect_scaler.transform(X_test_copy)
+            Y_test = np.copy(Y_test_copy)
+
+        # now that we normalized, we can reshape
         (X_train_subset,
          Y_train_subset,
          num_batches_train) = cnn_bilstm.utils.reshape_data_for_batching(X_train_subset,
@@ -107,14 +126,13 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                                                                          batch_size,
                                                                          time_steps,
                                                                          input_vec_size)
-
-        if normalize_spectrograms:
-            scaler_name = ('spect_scaler_duration_{}_replicate_{}'
-                           .format(train_set_dur, replicate))
-            spect_scaler = joblib.load(os.path.join(results_dirname, scaler_name))
-            import pdb;pdb.set_trace()
-            X_train_subset = spect_scaler.transform(X_train_subset)
-            X_test = spect_scaler.transform(X_test_copy)
+        (X_test,
+         Y_test,
+         num_batches_test) = cnn_bilstm.utils.reshape_data_for_batching(X_test,
+                                                                        Y_test,
+                                                                        batch_size,
+                                                                        time_steps,
+                                                                        input_vec_size)
 
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
@@ -173,13 +191,17 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                     Y_pred = sess.run(eval_op, feed_dict=d)[1]
                     Y_pred = Y_pred.reshape(batch_size, -1)
 
-            Y_pred = Y_pred.ravel()[:Y_test_arr.shape[0], np.newaxis]
-            test_err = np.sum(Y_pred - Y_test_arr != 0) / Y_test_arr.shape[0]
+            Y_pred = Y_pred.ravel()[:Y_test_copy.shape[0], np.newaxis]
+            test_err = np.sum(Y_pred - Y_test_copy != 0) / Y_test_copy.shape[0]
             test_err_arr[dur_ind, rep_ind] = test_err
             print('test error was {}'.format(test_err))
 
-with open('train_err','wb') as train_err_file:
+train_err_filename = os.path.join(training_records_dir,
+                                  'train_err')
+with open(train_err_filename,'wb') as train_err_file:
     pickle.dump(train_err_arr, train_err_file)
 
-with open('test_err', 'wb') as test_err_file:
+test_err_filename = os.path.join(training_records_dir,
+                                  'test_err')
+with open(test_err_filename, 'wb') as test_err_file:
     pickle.dump(test_err_arr, test_err_file)
