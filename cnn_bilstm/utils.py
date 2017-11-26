@@ -109,7 +109,7 @@ class SpectScaler:
         return self.transform(spects)
 
 
-def make_labels_mapping(data_dir):
+def make_labels_mapping_from_dir(data_dir):
     """make mapping
     from the set of unique string labels: [i,a,b,c,d,h,j,k]
     to a sequence of integers: [0,1,2,3,...
@@ -172,8 +172,9 @@ def make_labeled_timebins_vector(labels,
 
 
 def load_data(labelset, data_dir, number_files,
-              spect_params, labels_mapping=None):
-    """
+              spect_params, labels_mapping,
+              skip_files_with_labels_not_in_labelset):
+    """function to load data
 
     Parameters
     ----------
@@ -190,9 +191,8 @@ def load_data(labelset, data_dir, number_files,
     labels_mapping: dict
         dictionary that maps integer representation of string label to consecutive
         integer numbers.
-        If None, a new mapping is found using all the annotation files in data_dir
-        and returned.
-        Default is None.
+    skip_files_with_labels_not_in_labelset: bool
+        if True, skips files that have labels not found in 'labelset'
 
     Returns
     -------
@@ -205,13 +205,24 @@ def load_data(labelset, data_dir, number_files,
         estimated from last spectrogram processed
     """
 
-    if labels_mapping is None:
-        labels_mapping = make_labels_mapping(data_dir)
-
     cbins = glob(data_dir + '*.cbin')
     song_spects = []
     all_labels = []
+    # need to keep track of name of files used
+    # since we may skip some
+    cbins_used = []
+
     for cbin in cbins[:number_files]:
+        notmat_dict = evfuncs.load_notmat(cbin)
+        labels = notmat_dict['labels']
+        if skip_files_with_labels_not_in_labelset:
+            labels_set = set(labels)
+            # below, set(labels_mapping) is a set of that dict's keys
+            if labels_set > set(labels_mapping):
+            # because there's some label in labels
+            # that's not in labels_mapping
+                continue
+
         dat, fs = evfuncs.load_cbin(cbin)
         if 'freq_cutoffs' in spect_params:
             dat = spect_utils.butter_bandpass_filter(dat,
@@ -231,16 +242,17 @@ def load_data(labelset, data_dir, number_files,
         # so that rows are time and columns are frequencies #
         #####################################################
         song_spects.append(spect.T)
-        notmat_dict = evfuncs.load_notmat(cbin)
-        labels = [labels_mapping[ord(label)]
-                  for label in notmat_dict['labels']]
+        labels = [labels_mapping[label]
+                  for label in labels]
         labels = make_labeled_timebins_vector(labels,
                                               notmat_dict['onsets']/1000,
                                               notmat_dict['offsets']/1000,
                                               timebins)
         all_labels.append(labels)
+        cbins_used.append(cbin)
+
     timebin_dur = np.around(np.mean(np.diff(timebins)), decimals=3)
-    return song_spects, all_labels, timebin_dur, labels_mapping
+    return song_spects, all_labels, timebin_dur, cbins_used
 
 
 def get_inds_for_dur(song_timebins,
