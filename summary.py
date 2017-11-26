@@ -3,10 +3,12 @@ import os
 import pickle
 from glob import glob
 from configparser import ConfigParser
+from datetime import datetime
 
 import tensorflow as tf
 import numpy as np
 from sklearn.externals import joblib
+import scipy.io
 
 import cnn_bilstm.utils
 
@@ -22,12 +24,19 @@ if not os.path.isdir(results_dirname):
     raise FileNotFoundError('{} directory is not found.'
                             .format(results_dirname))
 
+timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+summary_dirname = os.path.join(results_dirname,
+                               'summary_' + timenow)
+os.makedirs(summary_dirname)
+
+
 batch_size = int(config['NETWORK']['batch_size'])
 time_steps = int(config['NETWORK']['time_steps'])
 
 TRAIN_SET_DURS = [int(element)
                   for element in
                   config['TRAIN']['train_set_durs'].split(',')]
+
 num_replicates = int(config['TRAIN']['replicates'])
 REPLICATES = range(num_replicates)
 normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
@@ -50,19 +59,21 @@ for spect_param_name in ['freq_cutoffs', 'thresh']:
 if spect_params == {}:
     spect_params = None
 
-train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
-test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
-
 print('loading training data')
 labelset = list(config['DATA']['labelset'])
 train_data_dir = config['DATA']['data_dir']
 number_song_files = int(config['DATA']['number_song_files'])
 (train_song_spects,
  train_song_labels,
- timebin_dur) = cnn_bilstm.utils.load_data(labelset,
-                                           train_data_dir,
-                                           number_song_files,
-                                           spect_params)
+ timebin_dur,
+ train_labels_mapping) = cnn_bilstm.utils.load_data(labelset,
+                                                    train_data_dir,
+                                                    number_song_files,
+                                                    spect_params)
+train_spects_filename = os.path.join(summary_dirname,'train_spects')
+joblib.dump(train_song_spects, train_spects_filename)
+scipy.io.savemat(train_spects_filename, {'train_spects': train_song_spects,
+                                         'train_song_labels': train_song_labels})
 
 # reshape training data
 X_train = np.concatenate(train_song_spects, axis=0)
@@ -72,11 +83,18 @@ input_vec_size = X_train.shape[-1]
 print('loading testing data')
 test_data_dir = config['DATA']['test_data_dir']
 number_test_song_files = int(config['DATA']['number_test_song_files'])
+# below, [:2] because don't need timebin duration or mapping
 (test_song_spects,
  test_song_labels) = cnn_bilstm.utils.load_data(labelset,
-                                                train_data_dir,
+                                                test_data_dir,
                                                 number_test_song_files,
-                                                spect_params)[:2]  # [:2] cuz don't need timebin durs again
+                                                spect_params,
+                                                train_labels_mapping)[:2]
+
+test_spects_filename = os.path.join(summary_dirname,'test_spects')
+joblib.dump(test_song_spects, test_spects_filename)
+scipy.io.savemat(test_spects_filename, {'test_spects': test_song_spects,
+                                         'test_song_labels': test_song_labels})
 
 X_test = np.concatenate(test_song_spects, axis=0)
 # copy X_test because it gets scaled and reshape in main loop
@@ -87,7 +105,17 @@ Y_test = np.concatenate(test_song_labels, axis=0)
 # and because we need to compare with Y_pred
 Y_test_copy = np.copy(Y_test)
 
+# initialize arrays to hold summary results
+Y_pred_test_all = []  # will be a nested list
+Y_pred_train_all = [] # will be a nested list
+train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
+test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
+
 for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
+
+    Y_pred_test_this_dur = []
+    Y_pred_train_this_dur = []
+
     for rep_ind, replicate in enumerate(REPLICATES):
         print("getting train and test error for "
               "training set with duration of {} seconds, "
@@ -118,6 +146,14 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             X_test = spect_scaler.transform(X_test_copy)
             Y_test = np.copy(Y_test_copy)
 
+        scaled_data_filename = os.path.join(summary_dirname,
+                                            'scaled_spects_duration_{}_replicate_{}'
+                                            .format(train_set_dur, replicate))
+        scaled_data_dict = {'X_train_subset_scaled': X_train_subset,
+                            'X_test_scaled': X_test}
+        joblib.dump(scaled_data_dict, scaled_data_filename)
+        scipy.io.savemat(scaled_data_filename, scaled_data_dict)
+
         # now that we normalized, we can reshape
         (X_train_subset,
          Y_train_subset,
@@ -133,6 +169,16 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                                                                         batch_size,
                                                                         time_steps,
                                                                         input_vec_size)
+
+        scaled_reshaped_data_filename = os.path.join(summary_dirname,
+                                            'scaled_reshaped_spects_duration_{}_replicate_{}'
+                                            .format(train_set_dur, replicate))
+        scaled_reshaped_data_dict = {'X_train_subset_scaled_reshaped': X_train_subset,
+                                     'Y_train_subset_reshaped': Y_train_subset,
+                                     'X_test_scaled_reshaped': X_test,
+                                     'Y_test_reshaped': Y_test}
+        joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
+        scipy.io.savemat(scaled_reshaped_data_filename, scaled_reshaped_data_dict)
 
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
@@ -151,8 +197,8 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             # Add an Op that chooses the top k predictions.
             eval_op = tf.nn.top_k(logits)
 
-            if 'Y_pred' in locals():
-                del Y_pred
+            if 'Y_pred_train' in locals():
+                del Y_pred_train
 
             print('calculating training set error')
             for b in range(num_batches_train):  # "b" is "batch number"
@@ -160,22 +206,24 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                      Y: Y_train_subset[:, b * time_steps: (b + 1) * time_steps],
                      lng: [time_steps] * batch_size}
 
-                if 'Y_pred' in locals():
+                if 'Y_pred_train' in locals():
                     preds = sess.run(eval_op, feed_dict=d)[1]
                     preds = preds.reshape(batch_size, -1)
-                    Y_pred = np.concatenate((Y_pred, preds), axis=1)
+                    Y_pred_train = np.concatenate((Y_pred_train, preds), axis=1)
                 else:
-                    Y_pred = sess.run(eval_op, feed_dict=d)[1]
-                    Y_pred = Y_pred.reshape(batch_size, -1)
+                    Y_pred_train = sess.run(eval_op, feed_dict=d)[1]
+                    Y_pred_train = Y_pred_train.reshape(batch_size, -1)
 
             Y_train_arr = Y_train[train_inds]
-            Y_pred = Y_pred.ravel()[:Y_train_arr.shape[0], np.newaxis]
-            train_err = np.sum(Y_pred - Y_train_arr != 0) / Y_train_arr.shape[0]
+            # get rid of predictions to zero padding that don't matter
+            Y_pred_train = Y_pred_train.ravel()[:Y_train_arr.shape[0], np.newaxis]
+            train_err = np.sum(Y_pred_train - Y_train_arr != 0) / Y_train_arr.shape[0]
             train_err_arr[dur_ind, rep_ind] = train_err
             print('train error was {}'.format(train_err))
+            Y_pred_train_this_dur.append(Y_pred_train)
 
-            if 'Y_pred' in locals():
-                del Y_pred
+            if 'Y_pred_test' in locals():
+                del Y_pred_test
 
             print('calculating test set error')
             for b in range(num_batches_test):  # "b" is "batch number"
@@ -183,25 +231,49 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                      Y: Y_test[:, b * time_steps: (b + 1) * time_steps],
                      lng: [time_steps] * batch_size}
 
-                if 'Y_pred' in locals():
+                if 'Y_pred_test' in locals():
                     preds = sess.run(eval_op, feed_dict=d)[1]
                     preds = preds.reshape(batch_size, -1)
-                    Y_pred = np.concatenate((Y_pred, preds), axis=1)
+                    Y_pred_test = np.concatenate((Y_pred_test, preds), axis=1)
                 else:
-                    Y_pred = sess.run(eval_op, feed_dict=d)[1]
-                    Y_pred = Y_pred.reshape(batch_size, -1)
+                    Y_pred_test = sess.run(eval_op, feed_dict=d)[1]
+                    Y_pred_test = Y_pred_test.reshape(batch_size, -1)
 
-            Y_pred = Y_pred.ravel()[:Y_test_copy.shape[0], np.newaxis]
-            test_err = np.sum(Y_pred - Y_test_copy != 0) / Y_test_copy.shape[0]
+            # again get rid of zero padding predictions
+            Y_pred_test = Y_pred_test.ravel()[:Y_test_copy.shape[0], np.newaxis]
+            test_err = np.sum(Y_pred_test - Y_test_copy != 0) / Y_test_copy.shape[0]
             test_err_arr[dur_ind, rep_ind] = test_err
             print('test error was {}'.format(test_err))
+            Y_pred_test_this_dur.append(Y_pred_test)
 
-train_err_filename = os.path.join(training_records_dir,
+    Y_pred_train_all.append(Y_pred_train_this_dur)
+    Y_pred_test_all.append(Y_pred_test_this_dur)
+
+Y_pred_train_filename = os.path.join(summary_dirname,
+                                  'Y_pred_train_all')
+with open(Y_pred_train_filename,'wb') as Y_pred_train_file:
+    pickle.dump(Y_pred_train_all, Y_pred_train_file)
+
+Y_pred_test_filename = os.path.join(summary_dirname,
+                                  'Y_pred_test_all')
+with open(Y_pred_test_filename,'wb') as Y_pred_test_file:
+    pickle.dump(Y_pred_test_all, Y_pred_test_file)
+
+train_err_filename = os.path.join(summary_dirname,
                                   'train_err')
 with open(train_err_filename,'wb') as train_err_file:
     pickle.dump(train_err_arr, train_err_file)
 
-test_err_filename = os.path.join(training_records_dir,
+test_err_filename = os.path.join(summary_dirname,
                                   'test_err')
 with open(test_err_filename, 'wb') as test_err_file:
     pickle.dump(test_err_arr, test_err_file)
+
+pred_and_err_dict = {'Y_pred_train_all': Y_pred_train_all,
+                     'Y_pred_test_all': Y_pred_test_all,
+                     'train_err': train_err,
+                     'test_err': test_err}
+
+pred_err_dict_filename = os.path.join(summary_dirname,
+                                      'y_preds_and_err_for_train_and_test')
+scipy.io.savemat(pred_err_dict_filename, pred_and_err_dict)
