@@ -63,13 +63,22 @@ print('loading training data')
 labelset = list(config['DATA']['labelset'])
 train_data_dir = config['DATA']['data_dir']
 number_song_files = int(config['DATA']['number_song_files'])
+skip_files_with_labels_not_in_labelset = config.getboolean(
+    'DATA',
+    'skip_files_with_labels_not_in_labelset')
+labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
+with open(labels_mapping_file, 'rb') as labels_map_file_obj:
+    labels_mapping = pickle.load(labels_map_file_obj)
+
 (train_song_spects,
  train_song_labels,
  timebin_dur,
  putative_cbins_used) = cnn_bilstm.utils.load_data(labelset,
                                                    train_data_dir,
                                                    number_song_files,
-                                                   spect_params)
+                                                   spect_params,
+                                                   labels_mapping,
+                                                   skip_files_with_labels_not_in_labelset)
 train_spects_filename = os.path.join(summary_dirname, 'train_spects')
 
 cbins_used_filename = os.path.join(results_dirname, 'training_cbins_used')
@@ -79,7 +88,7 @@ assert putative_cbins_used == cbins_used
 
 train_spect_dict = {'train_spects': train_song_spects,
                     'train_song_labels': train_song_labels,
-                    'train_labels_mapping': train_labels_mapping}
+                    'labels_mapping': labels_mapping}
 joblib.dump(train_spect_dict, train_spects_filename)
 scipy.io.savemat(train_spects_filename, train_spect_dict)
 
@@ -101,7 +110,8 @@ number_test_song_files = int(config['DATA']['number_test_song_files'])
                                                 test_data_dir,
                                                 number_test_song_files,
                                                 spect_params,
-                                                train_labels_mapping)[:2]
+                                                labels_mapping,
+                                                skip_files_with_labels_not_in_labelset)[:2]
 
 test_spects_filename = os.path.join(summary_dirname,'test_spects')
 joblib.dump(test_song_spects, test_spects_filename)
