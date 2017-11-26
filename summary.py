@@ -71,9 +71,12 @@ number_song_files = int(config['DATA']['number_song_files'])
                                                     number_song_files,
                                                     spect_params)
 train_spects_filename = os.path.join(summary_dirname,'train_spects')
-joblib.dump(train_song_spects, train_spects_filename)
-scipy.io.savemat(train_spects_filename, {'train_spects': train_song_spects,
-                                         'train_song_labels': train_song_labels})
+import pdb;pdb.set_trace()
+train_spect_dict = {'train_spects': train_song_spects,
+                    'train_song_labels': train_song_labels,
+                    'train_labels_mapping': train_labels_mapping}
+joblib.dump(train_spect_dict, train_spects_filename)
+scipy.io.savemat(train_spects_filename, train_spect_dict)
 
 # reshape training data
 X_train = np.concatenate(train_song_spects, axis=0)

@@ -17,8 +17,6 @@ from cnn_bilstm.graphs import get_full_graph
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
-
-
     config_file = sys.argv[1]
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, must have .ini extension'
@@ -62,9 +60,15 @@ if __name__ == "__main__":
             logger.info('Parameter for computing spectrogram, {}, not specified. '
                         'Will use default.'.format(spect_param_name))
             continue
+    skip_files_with_labels_not_in_labelset = config.getboolean(
+        'DATA',
+        'skip_files_with_labels_not_in_labelset')
 
     print('loading data for training')
     labelset = list(config['DATA']['labelset'])
+    labels_mapping = dict(zip(labelset,
+                             range(1, len(labelset)+1)))
+
     data_dir = config['DATA']['data_dir']
     number_song_files = int(config['DATA']['number_song_files'])
     logger.info('Loading training data from {}'.format(data_dir))
@@ -72,12 +76,20 @@ if __name__ == "__main__":
     (song_spects,
      all_labels,
      timebin_dur,
-     labels_mapping)= cnn_bilstm.utils.load_data(labelset,
-                                                 data_dir,
-                                                 number_song_files,
-                                                 spect_params)
+     cbins_used)= cnn_bilstm.utils.load_data(labelset,
+                                             data_dir,
+                                             number_song_files,
+                                             spect_params,
+                                             labels_mapping,
+                                             skip_files_with_labels_not_in_labelset)
     logger.info('Size of each timebin in spectrogram, in seconds: {}'
                 .format(timebin_dur))
+    labels_mapping_file = os.path.join(results_dirname,'labels_mapping')
+    with open(labels_mapping_file, 'wb') as labels_map_file_obj:
+        pickle.dump(labels_mapping, labels_map_file_obj)
+    cbins_used_filename = os.path.join(results_dirname, 'training_cbins_used')
+    with open(cbins_used_filename, 'wb') as cbins_used_file:
+        pickle.dump(cbins_used, cbins_used_file)
 
     # note that training songs are taken from the start of the training data
     # and validation songs are taken starting from the end
@@ -182,19 +194,6 @@ if __name__ == "__main__":
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
 
-    # gpu = config['NETWORK']['GPU']
-    # try:
-    #     gpu = int(gpu)
-    #     logger.info('using gpu {}'.format(gpu))
-    # except ValueError:
-    #     if gpu == 'None':  # None means use whichever gpu is default
-    #         gpu = None
-    #         logger.info('using default gpu')
-    #     else:
-    #         raise TypeError('gpu must be an int or None, but'
-    #                         'is {} and parsed as type {}'
-    #                         .format(patience, type(patience)))
-
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
             costs = []
@@ -224,6 +223,7 @@ if __name__ == "__main__":
             X_train_subset = X_train[train_inds, :]
             Y_train_subset = Y_train[train_inds]
 
+
             if normalize_spectrograms:
                 spect_scaler = cnn_bilstm.utils.SpectScaler()
                 X_train_subset = spect_scaler.fit_transform(X_train_subset)
@@ -234,6 +234,13 @@ if __name__ == "__main__":
                 joblib.dump(spect_scaler,
                             os.path.join(results_dirname, scaler_name))
 
+            scaled_data_filename = os.path.join(training_records_dir,
+                                                'scaled_spects_duration_{}_replicate_{}'
+                                                .format(train_set_dur, replicate))
+            scaled_data_dict = {'X_train_subset_scaled': X_train_subset,
+                                'X_val_scaled': X_val}
+            joblib.dump(scaled_data_dict, scaled_data_filename)
+
             batch_spec_rows = len(train_inds) // batch_size
             X_train_subset = \
                 X_train_subset[0:batch_spec_rows * batch_size].reshape((batch_size,
@@ -242,6 +249,15 @@ if __name__ == "__main__":
             Y_train_subset = \
                 Y_train_subset[0:batch_spec_rows * batch_size].reshape((batch_size,
                                                                         -1))
+
+            scaled_reshaped_data_filename = os.path.join(training_records_dir,
+                                                         'scaled_reshaped_spects_duration_{}_replicate_{}'
+                                                         .format(train_set_dur, replicate))
+            scaled_reshaped_data_dict = {'X_train_subset_scaled_reshaped': X_train_subset,
+                                         'Y_train_subset_reshaped': Y_train_subset}
+            joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
+
+
             iter_order = np.random.permutation(X_train.shape[1] - time_steps)
             if len(iter_order) > n_max_iter:
                 iter_order = iter_order[0:n_max_iter]
@@ -250,7 +266,10 @@ if __name__ == "__main__":
             logger.debug('input vec size: '.format(input_vec_size))
             num_hidden = int(config['NETWORK']['num_hidden'])
             logger.debug('num_hidden: '.format(num_hidden))
-            n_syllables = int(config['NETWORK']['n_syllables'])
+            # n_syllables, i.e., number of label classes to predict
+            # is length of labels mapping plus one for "silent gap"
+            # class
+            n_syllables = len(labels_mapping) + 1
             logger.debug('n_syllables: '.format(n_syllables))
             learning_rate = float(config['NETWORK']['learning_rate'])
             logger.debug('learning rate: '.format(learning_rate))
