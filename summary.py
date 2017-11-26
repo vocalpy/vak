@@ -66,21 +66,30 @@ number_song_files = int(config['DATA']['number_song_files'])
 (train_song_spects,
  train_song_labels,
  timebin_dur,
- train_labels_mapping) = cnn_bilstm.utils.load_data(labelset,
-                                                    train_data_dir,
-                                                    number_song_files,
-                                                    spect_params)
-train_spects_filename = os.path.join(summary_dirname,'train_spects')
-import pdb;pdb.set_trace()
+ putative_cbins_used) = cnn_bilstm.utils.load_data(labelset,
+                                                   train_data_dir,
+                                                   number_song_files,
+                                                   spect_params)
+train_spects_filename = os.path.join(summary_dirname, 'train_spects')
+
+cbins_used_filename = os.path.join(results_dirname, 'training_cbins_used')
+with open(cbins_used_filename, 'rb') as cbins_used_file:
+    cbins_used = pickle.load(cbins_used_file)
+assert putative_cbins_used == cbins_used
+
 train_spect_dict = {'train_spects': train_song_spects,
                     'train_song_labels': train_song_labels,
                     'train_labels_mapping': train_labels_mapping}
 joblib.dump(train_spect_dict, train_spects_filename)
 scipy.io.savemat(train_spects_filename, train_spect_dict)
 
+# num train songs is different from num train song files
+# because we take training and validation data from same training song file directory
+num_train_songs = int(config['DATA']['num_train_songs'])
+
 # reshape training data
-X_train = np.concatenate(train_song_spects, axis=0)
-Y_train = np.concatenate(train_song_labels, axis=0)
+X_train = np.concatenate(train_song_spects[:num_train_songs], axis=0)
+Y_train = np.concatenate(train_song_labels[:num_train_songs], axis=0)
 input_vec_size = X_train.shape[-1]
 
 print('loading testing data')
@@ -99,6 +108,8 @@ joblib.dump(test_song_spects, test_spects_filename)
 scipy.io.savemat(test_spects_filename, {'test_spects': test_song_spects,
                                          'test_song_labels': test_song_labels})
 
+# here there's no "validation test set" so we just concatenate all test spects
+# from all the files we loaded, unlike with training set
 X_test = np.concatenate(test_song_spects, axis=0)
 # copy X_test because it gets scaled and reshape in main loop
 X_test_copy = np.copy(X_test)
