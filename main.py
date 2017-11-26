@@ -69,10 +69,13 @@ if __name__ == "__main__":
     number_song_files = int(config['DATA']['number_song_files'])
     logger.info('Loading training data from {}'.format(data_dir))
     logger.info('Using first {} songs'.format(number_song_files))
-    song_spects, all_labels, timebin_dur = cnn_bilstm.utils.load_data(labelset,
-                                                                      data_dir,
-                                                                      number_song_files,
-                                                                      spect_params)
+    (song_spects,
+     all_labels,
+     timebin_dur,
+     labels_mapping)= cnn_bilstm.utils.load_data(labelset,
+                                                 data_dir,
+                                                 number_song_files,
+                                                 spect_params)
     logger.info('Size of each timebin in spectrogram, in seconds: {}'
                 .format(timebin_dur))
 
