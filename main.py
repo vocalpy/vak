@@ -84,7 +84,7 @@ if __name__ == "__main__":
                                              skip_files_with_labels_not_in_labelset)
     logger.info('Size of each timebin in spectrogram, in seconds: {}'
                 .format(timebin_dur))
-    labels_mapping_file = os.path.join(results_dirname,'labels_mapping')
+    labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'wb') as labels_map_file_obj:
         pickle.dump(labels_mapping, labels_map_file_obj)
     cbins_used_filename = os.path.join(results_dirname, 'training_cbins_used')
