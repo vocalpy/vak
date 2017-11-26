@@ -1,3 +1,4 @@
+import os
 from glob import glob
 import random
 
@@ -203,9 +204,11 @@ def load_data(labelset, data_dir, number_files,
     timebin_dur : float
         duration of a timebin in seconds from spectrograms
         estimated from last spectrogram processed
+    cbins_used : list
+        of str, filenames of .cbin files used to generate spects, to have a record
     """
 
-    cbins = glob(data_dir + '*.cbin')
+    cbins = glob(os.path.join(data_dir, '*.cbin'))
     song_spects = []
     all_labels = []
     # need to keep track of name of files used
