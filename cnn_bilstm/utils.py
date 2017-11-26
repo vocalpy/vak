@@ -171,7 +171,8 @@ def make_labeled_timebins_vector(labels,
     return label_vec
 
 
-def load_data(labelset, data_dir, number_files, spect_params):
+def load_data(labelset, data_dir, number_files,
+              spect_params, labels_mapping=None):
     """
 
     Parameters
@@ -186,6 +187,12 @@ def load_data(labelset, data_dir, number_files, spect_params):
         assumes files is cbins
     spect_params : dict
         parameters for computing spectrogram. Loaded by main.py from .ini file.
+    labels_mapping: dict
+        dictionary that maps integer representation of string label to consecutive
+        integer numbers.
+        If None, a new mapping is found using all the annotation files in data_dir
+        and returned.
+        Default is None.
 
     Returns
     -------
@@ -198,7 +205,9 @@ def load_data(labelset, data_dir, number_files, spect_params):
         estimated from last spectrogram processed
     """
 
-    labels_mapping = make_labels_mapping(data_dir)
+    if labels_mapping is None:
+        labels_mapping = make_labels_mapping(data_dir)
+
     cbins = glob(data_dir + '*.cbin')
     song_spects = []
     all_labels = []
@@ -231,7 +240,7 @@ def load_data(labelset, data_dir, number_files, spect_params):
                                               timebins)
         all_labels.append(labels)
     timebin_dur = np.around(np.mean(np.diff(timebins)), decimals=3)
-    return song_spects, all_labels, timebin_dur
+    return song_spects, all_labels, timebin_dur, labels_mapping
 
 
 def get_inds_for_dur(song_timebins,
@@ -312,3 +321,53 @@ def reshape_data_for_batching(X, Y, batch_size, time_steps, input_vec_size):
     X = X.reshape((batch_size, num_batches * time_steps, -1))
     Y = Y.reshape((batch_size, -1))
     return X, Y, num_batches
+
+
+def levenshtein(source, target):
+    """levenshtein distance
+    from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
+    """
+
+    if len(source) < len(target):
+        return levenshtein(target, source)
+
+    # So now we have len(source) >= len(target).
+    if len(target) == 0:
+        return len(source)
+
+    # We call tuple() to force strings to be used as sequences
+    # ('c', 'a', 't', 's') - numpy uses them as values by default.
+    source = np.array(tuple(source))
+    target = np.array(tuple(target))
+
+    # We use a dynamic programming algorithm, but with the
+    # added optimization that we only need the last two rows
+    # of the matrix.
+    previous_row = np.arange(target.size + 1)
+    for s in source:
+        # Insertion (target grows longer than source):
+        current_row = previous_row + 1
+
+        # Substitution or matching:
+        # Target and source items are aligned, and either
+        # are different (cost of 1), or are the same (cost of 0).
+        current_row[1:] = np.minimum(
+                current_row[1:],
+                np.add(previous_row[:-1], target != s))
+
+        # Deletion (target grows shorter than source):
+        current_row[1:] = np.minimum(
+                current_row[1:],
+                current_row[0:-1] + 1)
+
+        previous_row = current_row
+
+    return previous_row[-1]
+
+
+def syllable_error_rate(true, pred):
+    """syllable error rate: word error rate, but with songbird syllables
+    Levenshtein/edit distance normalized by length of true sequence
+
+    Parameters:
+    """
