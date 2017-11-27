@@ -327,6 +327,7 @@ def reshape_data_for_batching(X, Y, batch_size, time_steps, input_vec_size):
     """reshape to feed to network in batches"""
     # need to loop through train data in chunks, can't fit on GPU all at once
     # First zero pad
+    import pdb;pdb.set_trace()
     num_batches = X.shape[0] // batch_size // time_steps
     rows_to_append = ((num_batches + 1) * time_steps * batch_size) - X.shape[0]
     X = np.concatenate((X, np.zeros((rows_to_append, input_vec_size))),
