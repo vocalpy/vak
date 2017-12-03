@@ -51,8 +51,13 @@ for counter, spect_file in enumerate(train_spect_files):
     if 'freq_bins' not in locals() and 'time_bins' not in locals():
         freq_bins = mat_dict['f']        
         time_bins = mat_dict['t']
+        timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
     else:
         assert np.array_equal(mat_dict['f'], freq_bins)
+        curr_file_timebin_dur = np.around(np.mean(np.diff(mat_dict['t'])),
+                                          decimals=3)
+        assert curr_file_timebin_dur == timebin_dur
+
 
     spect = mat_dict['s']
     labels = mat_dict['labels']
@@ -72,10 +77,21 @@ data_dict = {'spects': spects,
              'filenames': spect_files_used,
              'freq_bins': freq_bins,
              'time_bins': all_time_bins,
-             'labeled_timebins': labeled_timebins}
+             'labeled_timebins': labeled_timebins,
+             'timebin_dur': timebin_dur,
+             'spect_params': None,
+             'labels_mapping': None}
+}
 
 print(f'saving data dictionary in {data_dir}')
 joblib.dump(data_dict, 'data_dict')
 
-# # get train_keys cell array out of .mat file and convert to list of str
-# train_spect_files = loadmat('train_keys.mat',squeeze_me=True)['train_keys'].tolist()
+def convert_train_keys_to_txt(train_keys_path):
+    """get train_keys cell array out of .mat file, convert to list of str, save as .txt
+    """
+    train_spect_files = loadmat(train_keys_path,
+                                squeeze_me=True)['train_keys'].tolist()
+    txt_filename = os.path.join(os.path.head(train_keys_path),
+                                'training_filenames')
+    with open(txt_filename, 'w') as fileobj:
+        fileobj.writelines(train_spect_files)
