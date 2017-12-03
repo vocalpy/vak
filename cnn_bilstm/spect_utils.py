@@ -24,11 +24,11 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     return y
 
 
-def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=6.25, log=True):
+def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=6.25, log_transform=True):
     """creates a spectrogram
     data : ndarray
         audio signal
-    log: bool
+    log_transform: bool
         if True, take the log of the spectrogram
     thresh: int
         threshold minimum power for log spectrogram
@@ -39,7 +39,7 @@ def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=6.25, log=Tr
     # below only take [:3] from return of specgram because we don't need the image
     spec, freqbins, timebins = specgram(data, fft_size, samp_freq, noverlap=noverlap)[:3]
 
-    if log:
+    if log_transform:
         spec /= spec.max()  # volume normalize to max 1
         spec = np.log10(spec)  # take log
         spec[spec < -thresh] = -thresh  # set anything less than the threshold as the threshold
