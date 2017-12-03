@@ -93,10 +93,26 @@ if __name__ == "__main__":
         train_data_dict_path = os.path.join(train_data_dir,
                                             'data_dict')
         train_data_dict = joblib.load(train_data_dict_path)
-        if train_data_dict['spect_params'] != spect_params:
-            raise ValueError(f'Spectrogram parameters in {train_data_dict_path} '
-                             f'do not match parameters specified in data_dict '
+        if train_data_dict['spect_params'] is None:
+            logger.warning('spect_params is None in data_dict loaded,'
+                           'probably because spectrograms were generated'
+                           ' in Matlab.\nNot checking whether parameters '
+                           'match those specified in .ini file.')
+        else:
+            if train_data_dict['spect_params'] != spect_params:
+                raise ValueError(f'Spectrogram parameters in {train_data_dict_path} '
+                                 f'do not match parameters specified in data_dict '
                              f'from {train_data_dir}.')
+        if train_data_dict['labels_mapping'] is None:
+            logger.warning('labels_mapping is None in data_dict loaded,'
+                           'probably because spectrograms were generated'
+                           ' in Matlab.\nNot checking whether parameters '
+                           'match those specified in .ini file.')
+        else:
+            if train_data_dict['labels_mapping'] != labels_mapping:
+                raise ValueError(f'labels_mapping in {train_data_dict_path} '
+                                 f'do not match labels_mapping generated '
+                                 f'from .ini file.')
 
     # copy training data to results dir so we have it stored with results
     logger.info(f'copying {train_data_dict_path} to {results_dirname}')
@@ -119,7 +135,7 @@ if __name__ == "__main__":
     # to be consistent with what the matlab helper function does
     files_used_filename = os.path.join(results_dirname, 'training_filenames')
     with open(files_used_filename, 'w') as files_used_fileobj:
-        files_used_fileobj.writelines(files_used)
+        files_used_fileobj.write('\n'.join(files_used))
 
     # reshape training data
     num_train_songs = int(config['DATA']['num_train_songs'])
