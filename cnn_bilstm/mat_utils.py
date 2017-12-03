@@ -34,7 +34,7 @@ def make_data_from_matlab_spects(data_dir):
     all_time_bins = []
     labeled_timebins = []
 
-    for counter, spect_file in enumerate(train_spect_files):
+    for counter, spect_file in enumerate(spect_files):
         print(f'loading {spect_file}')
         mat_dict = loadmat(spect_file, squeeze_me=True)
 
@@ -77,8 +77,8 @@ def make_data_from_matlab_spects(data_dir):
                  'labeled_timebins': labeled_timebins,
                  'timebin_dur': timebin_dur,
                  'spect_params': None,
-                 'labels_mapping': None}
-    }
+                 'labels_mapping': None
+                 }
 
     print(f'saving data dictionary in {data_dir}')
     joblib.dump(data_dict, 'data_dict')
