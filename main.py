@@ -71,6 +71,9 @@ if __name__ == "__main__":
     spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
                                                       'log_transform')
 
+    # need to know number_song_files regardless of
+    # whether we make data or load from file
+    number_song_files = int(config['DATA']['number_song_files'])
     make_train_data = config.getboolean('DATA', 'make_train_data')
 
     if make_train_data:
@@ -79,7 +82,6 @@ if __name__ == "__main__":
         skip_files_with_labels_not_in_labelset = config.getboolean(
             'DATA',
             'skip_files_with_labels_not_in_labelset')
-        number_song_files = int(config['DATA']['number_song_files'])
         logger.info(f'Using first {number_song_files} songs')
 
         (train_data_dict,
