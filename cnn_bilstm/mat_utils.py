@@ -43,7 +43,8 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
     if training_filenames is None:
         spect_files = glob('*.mat')
     else:
-        spect_files = training_filenames
+        with open(training_filenames,'r') as fileobj:
+            spect_files = fileobj.read().splitlines()
 
     spects = []
     spect_files_used = []
@@ -70,7 +71,6 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
             curr_file_timebin_dur = np.around(np.mean(np.diff(mat_dict['t'])),
                                               decimals=3)
             assert curr_file_timebin_dur == timebin_dur
-
 
         spect = mat_dict['s']
         labels = mat_dict['labels']
@@ -108,4 +108,4 @@ def convert_train_keys_to_txt(train_keys_path):
     txt_filename = os.path.join(os.path.split(train_keys_path)[0],
                                 'training_filenames')
     with open(txt_filename, 'w') as fileobj:
-        fileobj.writelines(train_spect_files)
+        fileobj.write('\n'.join(train_spect_files))
