@@ -13,7 +13,7 @@ import numpy as np
 import joblib
 
 from cnn_bilstm.graphs import get_full_graph
-from cnn_bilstm.utils import make_data_dict
+from cnn_bilstm.utils import make_data_dict, reshape_data_for_batching
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
@@ -46,6 +46,8 @@ if __name__ == "__main__":
     logger.info(f'Using config file: {config_file}')
 
     labelset = list(config['DATA']['labelset'])
+    # make mapping from syllable labels to consecutive integers
+    # start at 1, because 0 is assumed to be label for silent gaps
     labels_mapping = dict(zip(labelset,
                              range(1, len(labelset)+1)))
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
@@ -96,6 +98,13 @@ if __name__ == "__main__":
                              f'do not match parameters specified in data_dict '
                              f'from {train_data_dir}.')
 
+    # copy training data to results dir so we have it stored with results
+    logger.info(f'copying {train_data_dict_path} to {results_dirname}')
+    # rename to 'train_data_dict' so we don't write over with 'data_dict' from testing
+    train_data_copy_filename = os.path.join(results_dirname,
+                                            'train_data_dict')
+    shutil.copy(train_data_dict_path, train_data_copy_filename)
+
     (train_data_spects,
      train_labeled_timebins,
      timebin_dur,
@@ -112,12 +121,10 @@ if __name__ == "__main__":
     with open(files_used_filename, 'w') as files_used_fileobj:
         files_used_fileobj.writelines(files_used)
 
+    # reshape training data
+    num_train_songs = int(config['DATA']['num_train_songs'])
     # note that training songs are taken from the start of the training data
     # and validation songs are taken starting from the end
-
-    # reshape training data
-
-    num_train_songs = int(config['DATA']['num_train_songs'])
     spects_for_X_train = train_data_spects[:num_train_songs]
     #####################################################
     # note that we 'transpose' the spectrogram          #
@@ -148,7 +155,8 @@ if __name__ == "__main__":
     X_train = np.concatenate(spects_for_X_train, axis=0)
     # save training set to get training accuracy in summary.py
     joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
-    Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
+    Y_train = np.concatenate(train_labeled_timebins[:num_train_songs], axis=0)
+    joblib.dump(Y_train, os.path.join(results_dirname, 'Y_train'))
 
     num_replicates = int(config['TRAIN']['replicates'])
     REPLICATES = range(num_replicates)
@@ -171,15 +179,15 @@ if __name__ == "__main__":
                                  num_train_songs + num_val_songs,
                                  number_song_files))
     X_val = train_data_spects[-num_val_songs:]
-    X_val = [spect.T for spect in X_val]
     #####################################################
     # note that we 'transpose' the spectrogram          #
     # so that rows are time and columns are frequencies #
     #####################################################
+    X_val = [spect.T for spect in X_val]
     joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
     X_val_copy = copy.deepcopy(X_val)  # need a copy if we scale X_val below
-    Y_val = all_labels[-num_val_songs:]
-
+    Y_val = train_labeled_timebins[-num_val_songs:]
+    joblib.dump(X_val, os.path.join(results_dirname, 'Y_val'))
     Y_val_arr = np.concatenate(Y_val, axis=0)
 
     val_error_step = int(config['TRAIN']['val_error_step'])
@@ -255,7 +263,6 @@ if __name__ == "__main__":
             X_train_subset = X_train[train_inds, :]
             Y_train_subset = Y_train[train_inds]
 
-
             if normalize_spectrograms:
                 spect_scaler = cnn_bilstm.utils.SpectScaler()
                 X_train_subset = spect_scaler.fit_transform(X_train_subset)
@@ -273,7 +280,21 @@ if __name__ == "__main__":
                                 'X_val_scaled': X_val}
             joblib.dump(scaled_data_dict, scaled_data_filename)
 
+            # reshape data for network
             batch_spec_rows = len(train_inds) // batch_size
+
+            # not sure of best way to reshape without losing a few data bins
+            # or adding unnecessary 'recycled' time bins or zero padding
+            # (X_train_subset,
+            #  Y_train_subset,
+            #  num_batches_train) = reshape_data_for_batching(X_train_subset,
+            #                                                 Y_train_subset,
+            #                                                 batch_size,
+            #                                                 time_steps,
+            #                                                 input_vec_size)
+
+            # this is the original way reshaping was done
+            # note that reshaping this way can truncate data set
             X_train_subset = \
                 X_train_subset[0:batch_spec_rows * batch_size].reshape((batch_size,
                                                                         batch_spec_rows,
@@ -281,14 +302,19 @@ if __name__ == "__main__":
             Y_train_subset = \
                 Y_train_subset[0:batch_spec_rows * batch_size].reshape((batch_size,
                                                                         -1))
+            reshape_size = Y_train_subset.ravel().shape[-1]
+            diff = train_inds.shape[-1] - reshape_size
+            logger.info(f'Number of time bins after reshaping training data: {reshape_size}.')
+            logger.info(f'Number of time bins less than specified {train_inds.shape[-1]}: {diff}')
+            logger.info(f'Difference in seconds: {diff * timebin_dur}')
 
+            # save scaled reshaped data
             scaled_reshaped_data_filename = os.path.join(training_records_dir,
                                                          'scaled_reshaped_spects_duration_{}_replicate_{}'
                                                          .format(train_set_dur, replicate))
             scaled_reshaped_data_dict = {'X_train_subset_scaled_reshaped': X_train_subset,
                                          'Y_train_subset_reshaped': Y_train_subset}
             joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
-
 
             iter_order = np.random.permutation(X_train.shape[1] - time_steps)
             if len(iter_order) > n_max_iter:
@@ -430,5 +456,3 @@ if __name__ == "__main__":
                         with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
                             pickle.dump(val_errs, val_errs_file)
                         break
-
-
