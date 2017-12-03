@@ -3,6 +3,7 @@ from glob import glob
 import random
 
 import numpy as np
+import joblib
 
 from . import evfuncs, spect_utils
 
@@ -172,58 +173,70 @@ def make_labeled_timebins_vector(labels,
     return label_vec
 
 
-def load_data(labelset, data_dir, number_files,
-              spect_params, labels_mapping,
-              skip_files_with_labels_not_in_labelset):
-    """function to load data
+def make_data_dict(labels_mapping, data_dir, number_files,
+              spect_params, skip_files_with_labels_not_in_labelset):
+    """function that loads data and saves in dictionary
 
     Parameters
     ----------
-    labelset : list
-        all labels to consider in song
-        e.g., 'iabcdefghjk'
+    labels_mapping: dict
+        dictionary that maps integer representation of string label to consecutive
+        integer numbers. e.g. maps 'iabcde' to [0,1,2,3,4,5]
     data_dir : str
         directory of data
     number_files : int
         number of files in list of song files to process
-        assumes files is cbins
+        assumes files are .cbin format
     spect_params : dict
         parameters for computing spectrogram. Loaded by main.py from .ini file.
-    labels_mapping: dict
-        dictionary that maps integer representation of string label to consecutive
-        integer numbers.
     skip_files_with_labels_not_in_labelset: bool
         if True, skips files that have labels not found in 'labelset'
 
     Returns
     -------
-    spects : list
-        of 2-d ndarrays, spectrograms
-    labels : list
-        of strings, labels corresponding to each spectrogram
-    timebin_dur : float
-        duration of a timebin in seconds from spectrograms
-        estimated from last spectrogram processed
-    cbins_used : list
-        of str, filenames of .cbin files used to generate spects, to have a record
+    data_dict : dictionary
+        dictionary with following structure
+
+        {'spects': spects,
+         'filenames': cbins_used,
+         'freq_bins': freq_bins,
+         'time_bins': all_time_bins,
+         'labeled_timebins': labeled_timebins,
+         'timebin_dur': timebin_dur}
+
+        where:
+            labels : list
+                of strings, labels corresponding to each spectrogram
+            timebin_dur : float
+                duration of a timebin in seconds from spectrograms
+                estimated from last spectrogram processed
+            cbins_used : list
+                of str, filenames of .cbin files used to generate spects,
+                to have a record
+
+    data_dict_path : str
+        path to data_dict file saved by this function
     """
 
     cbins = glob(os.path.join(data_dir, '*.cbin'))
-    song_spects = []
-    all_labels = []
+    spects = []
+    labels = []
+    all_time_bins = []
+    labeled_timebins = []
     # need to keep track of name of files used
     # since we may skip some
     cbins_used = []
 
     for cbin in cbins[:number_files]:
         notmat_dict = evfuncs.load_notmat(cbin)
-        labels = notmat_dict['labels']
+        this_labels = notmat_dict['labels']
         if skip_files_with_labels_not_in_labelset:
-            labels_set = set(labels)
+            labels_set = set(this_labels)
             # below, set(labels_mapping) is a set of that dict's keys
             if labels_set > set(labels_mapping):
             # because there's some label in labels
             # that's not in labels_mapping
+                print(f'found labels in {cbin} not in labels_mapping, skipping file')
                 continue
 
         dat, fs = evfuncs.load_cbin(cbin)
@@ -233,29 +246,47 @@ def load_data(labelset, data_dir, number_files,
                                                      spect_params['freq_cutoffs'][1],
                                                      fs)
 
-        spect, freqbins, timebins = spect_utils.spectrogram(dat, fs,
-                                                            thresh=spect_params['thresh'])
-        if 'freq_cutoffs' in spect_params:
-            f_inds = np.nonzero((freqbins >= spect_params['freq_cutoffs'][0]) &
-                                (freqbins < spect_params['freq_cutoffs'][1]))[0]  # returns tuple
-            spect = spect[f_inds, :]
+        spect, freq_bins, time_bins = spect_utils.spectrogram(dat, fs,
+                                                              spect_params['fft_size'],
+                                                              spect_params['step_size'],
+                                                              spect_params['thresh'],
+                                                              spect_params['log_transform'])
+        all_time_bins.append(time_bins)
 
-        #####################################################
-        # note that we 'transpose' the spectrogram          #
-        # so that rows are time and columns are frequencies #
-        #####################################################
-        song_spects.append(spect.T)
-        labels = [labels_mapping[label]
-                  for label in labels]
-        labels = make_labeled_timebins_vector(labels,
-                                              notmat_dict['onsets']/1000,
-                                              notmat_dict['offsets']/1000,
-                                              timebins)
-        all_labels.append(labels)
+        if 'freq_cutoffs' in spect_params:
+            f_inds = np.nonzero((freq_bins >= spect_params['freq_cutoffs'][0]) &
+                                (freq_bins < spect_params['freq_cutoffs'][1]))[0]  # returns tuple
+            spect = spect[f_inds, :]
+            freq_bins = freq_bins[f_inds]
+
+        spects.append(spect)
+        this_labels = [labels_mapping[label]
+                  for label in this_labels]
+        this_labeled_timebins = make_labeled_timebins_vector(this_labels,
+                                                             notmat_dict['onsets'] / 1000,
+                                                             notmat_dict['offsets'] / 1000,
+                                                             time_bins)
+        labels.append(this_labels)
+        labeled_timebins.append(this_labeled_timebins)
         cbins_used.append(cbin)
 
-    timebin_dur = np.around(np.mean(np.diff(timebins)), decimals=3)
-    return song_spects, all_labels, timebin_dur, cbins_used
+    timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
+
+    data_dict = {'spects': spects,
+                 'filenames': cbins_used,
+                 'freq_bins': freq_bins,
+                 'time_bins': all_time_bins,
+                 'labels': labels,
+                 'labeled_timebins': labeled_timebins,
+                 'timebin_dur': timebin_dur,
+                 'spect_params': spect_params,
+                 'labels_mapping': labels_mapping}
+
+    print(f'saving data dictionary in {data_dir}')
+    data_dict_path = os.path.join(data_dir, 'data_dict')
+    joblib.dump(data_dict, data_dict_path)
+
+    return data_dict, data_dict_path
 
 
 def get_inds_for_dur(song_timebins,

@@ -7,26 +7,26 @@ import pickle
 from datetime import datetime
 from configparser import ConfigParser, NoOptionError
 
-
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 import numpy as np
-from sklearn.externals import joblib
+import joblib
 
 from cnn_bilstm.graphs import get_full_graph
+from cnn_bilstm.utils import make_data_dict
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
     config_file = sys.argv[1]
     if not config_file.endswith('.ini'):
-        raise ValueError('{} is not a valid config file, must have .ini extension'
-                         .format(config_file))
+        raise ValueError(f'{config_file} is not a valid config file, '
+                         f'must have .ini extension')
     config = ConfigParser()
     config.read(config_file)
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     if config.has_section('OUTPUT'):
-        if config.has_option('OUTPUT','output_dir'):
+        if config.has_option('OUTPUT', 'output_dir'):
             output_dir = config['OUTPUT']['output_dir']
             results_dirname = os.path.join(output_dir,
                                            'results_' + timenow)
@@ -37,68 +37,95 @@ if __name__ == "__main__":
     shutil.copy(config_file, results_dirname)
 
     logfile_name = os.path.join(results_dirname,
-                                'metadata_from_running_main_' + timenow + '.log')
+                                'logfile_from_running_main_' + timenow + '.log')
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
     logger.addHandler(logging.FileHandler(logfile_name))
     logger.addHandler(logging.StreamHandler(sys.stdout))
-    logger.info('Logging results to {}'.format(results_dirname))
-    logger.info('Using config file: {}'.format(config_file))
+    logger.info(f'Logging results to {results_dirname}')
+    logger.info(f'Using config file: {config_file}')
 
-    spect_params = {}
-    for spect_param_name in ['freq_cutoffs', 'thresh']:
-        try:
-            if spect_param_name == 'freq_cutoffs':
-                freq_cutoffs = [float(element)
-                                for element in
-                                config['SPECTROGRAM']['freq_cutoffs'].split(',')]
-                spect_params['freq_cutoffs'] = freq_cutoffs
-            elif spect_param_name == 'thresh':
-                spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-
-        except NoOptionError:
-            logger.info('Parameter for computing spectrogram, {}, not specified. '
-                        'Will use default.'.format(spect_param_name))
-            continue
-    skip_files_with_labels_not_in_labelset = config.getboolean(
-        'DATA',
-        'skip_files_with_labels_not_in_labelset')
-
-    print('loading data for training')
     labelset = list(config['DATA']['labelset'])
     labels_mapping = dict(zip(labelset,
                              range(1, len(labelset)+1)))
-
-    data_dir = config['DATA']['data_dir']
-    number_song_files = int(config['DATA']['number_song_files'])
-    logger.info('Loading training data from {}'.format(data_dir))
-    logger.info('Using first {} songs'.format(number_song_files))
-    (song_spects,
-     all_labels,
-     timebin_dur,
-     cbins_used)= cnn_bilstm.utils.load_data(labelset,
-                                             data_dir,
-                                             number_song_files,
-                                             spect_params,
-                                             labels_mapping,
-                                             skip_files_with_labels_not_in_labelset)
-    logger.info('Size of each timebin in spectrogram, in seconds: {}'
-                .format(timebin_dur))
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'wb') as labels_map_file_obj:
         pickle.dump(labels_mapping, labels_map_file_obj)
-    cbins_used_filename = os.path.join(results_dirname, 'training_cbins_used')
-    with open(cbins_used_filename, 'wb') as cbins_used_file:
-        pickle.dump(cbins_used, cbins_used_file)
+
+    train_data_dir = config['DATA']['train_data_dir']
+    logger.info(f'Loading training data from {train_data_dir}')
+
+    # require user to specify parameters for spectrogram
+    # instead of having defaults (as was here previously)
+    # helps ensure we don't mix up different params
+    spect_params = {}
+    spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
+    spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
+    spect_params['freq_cutoffs'] = [float(element)
+                                    for element in
+                                    config['SPECTROGRAM']['freq_cutoffs']
+                                        .split(',')]
+    spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+    spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
+                                                      'log_transform')
+
+    make_train_data = config.getboolean('DATA', 'make_train_data')
+
+    if make_train_data:
+        logger.info('make_train_data = Yes')
+        logger.info(f'will make training data from: {train_data_dir}')
+        skip_files_with_labels_not_in_labelset = config.getboolean(
+            'DATA',
+            'skip_files_with_labels_not_in_labelset')
+        number_song_files = int(config['DATA']['number_song_files'])
+        logger.info(f'Using first {number_song_files} songs')
+
+        (train_data_dict,
+         train_data_dict_path) = make_data_dict(labels_mapping,
+                                                train_data_dir,
+                                                number_song_files,
+                                                spect_params,
+                                                skip_files_with_labels_not_in_labelset)
+        logger.info(f'saved training data as {train_data_dict_path}')
+    else:
+        train_data_dict_path = os.path.join(train_data_dir,
+                                            'data_dict')
+        train_data_dict = joblib.load(train_data_dict_path)
+        if train_data_dict['spect_params'] != spect_params:
+            raise ValueError(f'Spectrogram parameters in {train_data_dict_path} '
+                             f'do not match parameters specified in data_dict '
+                             f'from {train_data_dir}.')
+
+    (train_data_spects,
+     train_labeled_timebins,
+     timebin_dur,
+     files_used) = (train_data_dict['spects'],
+                    train_data_dict['labeled_timebins'],
+                    train_data_dict['timebin_dur'],
+                    train_data_dict['filenames'])
+
+    logger.info('Size of each timebin in spectrogram, in seconds: {}'
+                .format(timebin_dur))
+    # dump filenames to a text file
+    # to be consistent with what the matlab helper function does
+    files_used_filename = os.path.join(results_dirname, 'training_filenames')
+    with open(files_used_filename, 'w') as files_used_fileobj:
+        files_used_fileobj.writelines(files_used)
 
     # note that training songs are taken from the start of the training data
     # and validation songs are taken starting from the end
 
     # reshape training data
+
     num_train_songs = int(config['DATA']['num_train_songs'])
-    train_spects = song_spects[:num_train_songs]
+    spects_for_X_train = train_data_spects[:num_train_songs]
+    #####################################################
+    # note that we 'transpose' the spectrogram          #
+    # so that rows are time and columns are frequencies #
+    #####################################################
+    spects_for_X_train = [spect.T for spect in spects_for_X_train]
     X_train_timebins = np.array(
-        [spec.shape[0] for spec in train_spects]
+        [spec.shape[0] for spec in spects_for_X_train]
         # spec.shape[0] because rows are time bins
     )  # convert to seconds by multiplying by size of time bin
     X_train_durations = X_train_timebins * timebin_dur
@@ -118,7 +145,7 @@ if __name__ == "__main__":
     logger.info('Will train network with training sets of '
                 'following durations (in s): {}'.format(TRAIN_SET_DURS))
 
-    X_train = np.concatenate(train_spects, axis=0)
+    X_train = np.concatenate(spects_for_X_train, axis=0)
     # save training set to get training accuracy in summary.py
     joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
     Y_train = np.concatenate(all_labels[:num_train_songs], axis=0)
@@ -143,7 +170,12 @@ if __name__ == "__main__":
                                  num_val_songs,
                                  num_train_songs + num_val_songs,
                                  number_song_files))
-    X_val = song_spects[-num_val_songs:]
+    X_val = train_data_spects[-num_val_songs:]
+    X_val = [spect.T for spect in X_val]
+    #####################################################
+    # note that we 'transpose' the spectrogram          #
+    # so that rows are time and columns are frequencies #
+    #####################################################
     joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
     X_val_copy = copy.deepcopy(X_val)  # need a copy if we scale X_val below
     Y_val = all_labels[-num_val_songs:]

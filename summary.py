@@ -7,7 +7,7 @@ from datetime import datetime
 
 import tensorflow as tf
 import numpy as np
-from sklearn.externals import joblib
+import joblib
 import scipy.io
 
 import cnn_bilstm.utils
