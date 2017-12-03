@@ -84,7 +84,7 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
         assert labels.shape[-1] == mat_dict['t'].shape[-1]
         labeled_timebins.append(labels)
 
-        spect_files_used.append(spect)
+        spect_files_used.append(spect_file)
 
     data_dict = {'spects': spects,
                  'filenames': spect_files_used,
