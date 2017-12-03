@@ -5,13 +5,23 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
-def make_data_from_matlab_spects(data_dir):
+def make_data_from_matlab_spects(data_dir, training_filenames=None):
     """makes data_dict just like utils.make_data, but
     loads spectrograms and labeled timebin vectors generated in matlab
 
-    takes as a command line argument the name of the directory with the .mat files
+    Parameters
+    ----------
+    data_dir : str
+        path to directory containing .mat files
+    training_filenames : str
+        optional, filename of a .txt file
+        that contains a list of .mat files to load.
+        Default is None. If None, load all .mat files in the directory
+        that contain the keys specified below.
+        The list can be generated from a cell array of filenames using
+        the function 'cnn_bilstm.mat_utils.convert_train_keys_to_txt'
 
-    Each .mat file contains:
+    Each .mat file should contains the following keys:
         s : ndarray
             the spectrogram
         f : ndarray
@@ -21,13 +31,19 @@ def make_data_from_matlab_spects(data_dir):
         labels : ndarray
             vector of same length as t where each value is a label for that time bin
     containing the spectrograms.
+
+    If a .mat file does not contain these keys, the function skips that file.
     """
+
     if not os.path.isdir(data_dir):
         raise ValueError(f'{data_dir} is not recognized as a directory')
     else:
         os.chdir(data_dir)
 
-    spect_files = glob('*.mat')
+    if training_filenames is None:
+        spect_files = glob('*.mat')
+    else:
+        spect_files = training_filenames
 
     spects = []
     spect_files_used = []
@@ -89,7 +105,7 @@ def convert_train_keys_to_txt(train_keys_path):
     """
     train_spect_files = loadmat(train_keys_path,
                                 squeeze_me=True)['train_keys'].tolist()
-    txt_filename = os.path.join(os.path.head(train_keys_path),
+    txt_filename = os.path.join(os.path.split(train_keys_path)[0],
                                 'training_filenames')
     with open(txt_filename, 'w') as fileobj:
         fileobj.writelines(train_spect_files)
