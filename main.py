@@ -19,8 +19,8 @@ import cnn_bilstm.utils
 if __name__ == "__main__":
     config_file = sys.argv[1]
     if not config_file.endswith('.ini'):
-        raise ValueError(f'{config_file} is not a valid config file, '
-                         f'must have .ini extension')
+        raise ValueError('{} is not a valid config file, '
+                         'must have .ini extension'.format(config_file))
     config = ConfigParser()
     config.read(config_file)
 
@@ -42,8 +42,8 @@ if __name__ == "__main__":
     logger.setLevel('INFO')
     logger.addHandler(logging.FileHandler(logfile_name))
     logger.addHandler(logging.StreamHandler(sys.stdout))
-    logger.info(f'Logging results to {results_dirname}')
-    logger.info(f'Using config file: {config_file}')
+    logger.info('Logging results to {}'.format(results_dirname))
+    logger.info('Using config file: {}'.format(config_file))
 
     labelset = list(config['DATA']['labelset'])
     # make mapping from syllable labels to consecutive integers
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         pickle.dump(labels_mapping, labels_map_file_obj)
 
     train_data_dir = config['DATA']['train_data_dir']
-    logger.info(f'Loading training data from {train_data_dir}')
+    logger.info('Loading training data from {}'.format(train_data_dir))
 
     # require user to specify parameters for spectrogram
     # instead of having defaults (as was here previously)
@@ -78,11 +78,11 @@ if __name__ == "__main__":
 
     if make_train_data:
         logger.info('make_train_data = Yes')
-        logger.info(f'will make training data from: {train_data_dir}')
+        logger.info('will make training data from: {}'.format(train_data_dir))
         skip_files_with_labels_not_in_labelset = config.getboolean(
             'DATA',
             'skip_files_with_labels_not_in_labelset')
-        logger.info(f'Using first {number_song_files} songs')
+        logger.info('Using first {} songs'.format(number_song_files))
 
         (train_data_dict,
          train_data_dict_path) = make_data_dict(labels_mapping,
@@ -90,7 +90,7 @@ if __name__ == "__main__":
                                                 number_song_files,
                                                 spect_params,
                                                 skip_files_with_labels_not_in_labelset)
-        logger.info(f'saved training data as {train_data_dict_path}')
+        logger.info('saved training data as {}'.format(train_data_dict_path))
     else:
         train_data_dict_path = os.path.join(train_data_dir,
                                             'data_dict')
@@ -102,9 +102,10 @@ if __name__ == "__main__":
                            'match those specified in .ini file.')
         else:
             if train_data_dict['spect_params'] != spect_params:
-                raise ValueError(f'Spectrogram parameters in {train_data_dict_path} '
-                                 f'do not match parameters specified in data_dict '
-                             f'from {train_data_dir}.')
+                raise ValueError('Spectrogram parameters in {} '
+                                 'do not match parameters specified in data_dict '
+                                 'from {}.'.format(train_data_dict_path,
+                                                   train_data_dir))
         if train_data_dict['labels_mapping'] is None:
             logger.warning('labels_mapping is None in data_dict loaded,'
                            'probably because spectrograms were generated'
@@ -117,12 +118,13 @@ if __name__ == "__main__":
             labels_mapping = dict(zip(uniq_labels, uniq_labels))
         else:
             if train_data_dict['labels_mapping'] != labels_mapping:
-                raise ValueError(f'labels_mapping in {train_data_dict_path} '
-                                 f'do not match labels_mapping generated '
-                                 f'from .ini file.')
+                raise ValueError('labels_mapping in {} '
+                                 'do not match labels_mapping generated '
+                                 'from .ini file.'.format(train_data_dict_path))
 
     # copy training data to results dir so we have it stored with results
-    logger.info(f'copying {train_data_dict_path} to {results_dirname}')
+    logger.info('copying {} to {}'.format(train_data_dict_path,
+                                          results_dirname))
     # rename to 'train_data_dict' so we don't write over with 'data_dict' from testing
     train_data_copy_filename = os.path.join(results_dirname,
                                             'train_data_dict')
@@ -327,9 +329,12 @@ if __name__ == "__main__":
                                                                         -1))
             reshape_size = Y_train_subset.ravel().shape[-1]
             diff = train_inds.shape[-1] - reshape_size
-            logger.info(f'Number of time bins after reshaping training data: {reshape_size}.')
-            logger.info(f'Number of time bins less than specified {train_inds.shape[-1]}: {diff}')
-            logger.info(f'Difference in seconds: {diff * timebin_dur}')
+            logger.info('Number of time bins after '
+                        'reshaping training data: {}.'.format(reshape_size))
+            logger.info('Number of time bins less '
+                        'than specified {}: {}'.format(train_inds.shape[-1],
+                                                       diff))
+            logger.info('Difference in seconds: {}'.format(diff * timebin_dur))
 
             # save scaled reshaped data
             scaled_reshaped_data_filename = os.path.join(training_records_dir,
