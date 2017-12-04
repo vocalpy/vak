@@ -74,7 +74,7 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
 
         spect = mat_dict['s']
         labels = mat_dict['labels']
-        # number of freq. bins should equaL number of rows
+        # number of freq. bins should equal number of rows
         assert mat_dict['f'].shape[-1] == spect.shape[0]
         # number of time bins should equal number of columns
         assert mat_dict['t'].shape[-1] == spect.shape[1]
@@ -82,6 +82,15 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
         all_time_bins.append(time_bins)
 
         assert labels.shape[-1] == mat_dict['t'].shape[-1]
+        if labels.ndim != 2:
+            if labels.ndim == 1:
+                # make same shape as output of utils.make_labeled_timebins
+                # so main.py doesn't crash when concatenating
+                # with zero-pad vector
+                labels = labels[:, np.newaxis]
+            else:
+                raise ValueError(f'labels from {spect_file} has invalid'
+                                 f'number of dimensions: {labels.ndim}')
         labeled_timebins.append(labels)
 
         spect_files_used.append(spect_file)
