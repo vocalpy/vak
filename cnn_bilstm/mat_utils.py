@@ -36,7 +36,7 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
     """
 
     if not os.path.isdir(data_dir):
-        raise ValueError(f'{data_dir} is not recognized as a directory')
+        raise ValueError('{} is not recognized as a directory'.format(data_dir))
     else:
         os.chdir(data_dir)
 
@@ -52,14 +52,15 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
     labeled_timebins = []
 
     for counter, spect_file in enumerate(spect_files):
-        print(f'loading {spect_file}')
+        print('loading {}'.format(spect_file))
         mat_dict = loadmat(spect_file, squeeze_me=True)
 
         if spect_file == 'train_keys.mat':
             continue
 
         if 's' not in mat_dict:
-            print(f'Did not find a spectrogram in {spect_file}. Skipping this file.')
+            print('Did not find a spectrogram in {}. '
+                  'Skipping this file.'.format(spect_file))
             continue
 
         if 'freq_bins' not in locals() and 'time_bins' not in locals():
@@ -89,8 +90,9 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
                 # with zero-pad vector
                 labels = labels[:, np.newaxis]
             else:
-                raise ValueError(f'labels from {spect_file} has invalid'
-                                 f'number of dimensions: {labels.ndim}')
+                raise ValueError('labels from {} has invalid'
+                                 'number of dimensions: {}'
+                                 .format(spect_file, labels.ndim))
         labeled_timebins.append(labels)
 
         spect_files_used.append(spect_file)
@@ -105,7 +107,7 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
                  'labels_mapping': None
                  }
 
-    print(f'saving data dictionary in {data_dir}')
+    print('saving data dictionary in {}'.format(data_dir))
     joblib.dump(data_dict, 'data_dict')
 
 
