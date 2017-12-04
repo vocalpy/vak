@@ -218,6 +218,10 @@ def make_data_dict(labels_mapping, data_dir, number_files,
         path to data_dict file saved by this function
     """
 
+    if not os.path.isdir(data_dir):
+        raise NotADirectoryError(f'{data_dir} not recognized '
+                                 f'as a directory')
+
     cbins = glob(os.path.join(data_dir, '*.cbin'))
     spects = []
     labels = []
