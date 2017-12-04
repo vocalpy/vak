@@ -121,7 +121,6 @@ if __name__ == "__main__":
                                  f'do not match labels_mapping generated '
                                  f'from .ini file.')
 
-
     # copy training data to results dir so we have it stored with results
     logger.info(f'copying {train_data_dict_path} to {results_dirname}')
     # rename to 'train_data_dict' so we don't write over with 'data_dict' from testing
@@ -340,7 +339,10 @@ if __name__ == "__main__":
                                          'Y_train_subset_reshaped': Y_train_subset}
             joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
 
-            iter_order = np.random.permutation(X_train.shape[1] - time_steps)
+            # note that X_train_subset has shape of (batch, time_bins, frequency_bins)
+            # so we permute starting indices from the number of time_bins
+            # i.e. X_train_subset.shape[1]
+            iter_order = np.random.permutation(X_train_subset.shape[1] - time_steps)
             if len(iter_order) > n_max_iter:
                 iter_order = iter_order[0:n_max_iter]
 
