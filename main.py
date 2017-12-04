@@ -110,11 +110,17 @@ if __name__ == "__main__":
                            'probably because spectrograms were generated'
                            ' in Matlab.\nNot checking whether parameters '
                            'match those specified in .ini file.')
+            logger.info('setting labels_mapping to np.unique(labeled_timebins)')
+            uniq_labels = np.unique(
+                np.concatenate(
+                    train_data_dict['labeled_timebins']))
+            labels_mapping = dict(zip(uniq_labels, uniq_labels))
         else:
             if train_data_dict['labels_mapping'] != labels_mapping:
                 raise ValueError(f'labels_mapping in {train_data_dict_path} '
                                  f'do not match labels_mapping generated '
                                  f'from .ini file.')
+
 
     # copy training data to results dir so we have it stored with results
     logger.info(f'copying {train_data_dict_path} to {results_dirname}')
