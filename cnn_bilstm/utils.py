@@ -219,8 +219,8 @@ def make_data_dict(labels_mapping, data_dir, number_files,
     """
 
     if not os.path.isdir(data_dir):
-        raise NotADirectoryError(f'{data_dir} not recognized '
-                                 f'as a directory')
+        raise NotADirectoryError('{} not recognized '
+                                 'as a directory'.format(data_dir))
 
     cbins = glob(os.path.join(data_dir, '*.cbin'))
     spects = []
@@ -240,7 +240,8 @@ def make_data_dict(labels_mapping, data_dir, number_files,
             if labels_set > set(labels_mapping):
             # because there's some label in labels
             # that's not in labels_mapping
-                print(f'found labels in {cbin} not in labels_mapping, skipping file')
+                print('found labels in {} not in labels_mapping, '
+                      'skipping file'.format(cbin))
                 continue
 
         dat, fs = evfuncs.load_cbin(cbin)
@@ -286,7 +287,7 @@ def make_data_dict(labels_mapping, data_dir, number_files,
                  'spect_params': spect_params,
                  'labels_mapping': labels_mapping}
 
-    print(f'saving data dictionary in {data_dir}')
+    print('saving data dictionary in {}'.format(data_dir))
     data_dict_path = os.path.join(data_dir, 'data_dict')
     joblib.dump(data_dict, data_dict_path)
 
