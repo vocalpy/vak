@@ -8,7 +8,6 @@ from datetime import datetime
 import tensorflow as tf
 import numpy as np
 import joblib
-import scipy.io
 
 import cnn_bilstm.utils
 
@@ -28,7 +27,6 @@ timenow = datetime.now().strftime('%y%m%d_%H%M%S')
 summary_dirname = os.path.join(results_dirname,
                                'summary_' + timenow)
 os.makedirs(summary_dirname)
-
 
 batch_size = int(config['NETWORK']['batch_size'])
 time_steps = int(config['NETWORK']['time_steps'])
@@ -70,28 +68,6 @@ labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
 with open(labels_mapping_file, 'rb') as labels_map_file_obj:
     labels_mapping = pickle.load(labels_map_file_obj)
 
-(train_song_spects,
- train_song_labels,
- timebin_dur,
- putative_cbins_used) = cnn_bilstm.utils.load_data(labelset,
-                                                   train_data_dir,
-                                                   number_song_files,
-                                                   spect_params,
-                                                   labels_mapping,
-                                                   skip_files_with_labels_not_in_labelset)
-train_spects_filename = os.path.join(summary_dirname, 'train_spects')
-
-cbins_used_filename = os.path.join(results_dirname, 'training_cbins_used')
-with open(cbins_used_filename, 'rb') as cbins_used_file:
-    cbins_used = pickle.load(cbins_used_file)
-assert putative_cbins_used == cbins_used
-
-train_spect_dict = {'train_spects': train_song_spects,
-                    'train_song_labels': train_song_labels,
-                    'labels_mapping': labels_mapping}
-joblib.dump(train_spect_dict, train_spects_filename)
-scipy.io.savemat(train_spects_filename, train_spect_dict)
-
 # num train songs is different from num train song files
 # because we take training and validation data from same training song file directory
 num_train_songs = int(config['DATA']['num_train_songs'])
@@ -115,8 +91,7 @@ number_test_song_files = int(config['DATA']['number_test_song_files'])
 
 test_spects_filename = os.path.join(summary_dirname,'test_spects')
 joblib.dump(test_song_spects, test_spects_filename)
-scipy.io.savemat(test_spects_filename, {'test_spects': test_song_spects,
-                                         'test_song_labels': test_song_labels})
+
 
 # here there's no "validation test set" so we just concatenate all test spects
 # from all the files we loaded, unlike with training set
@@ -176,7 +151,6 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
         scaled_data_dict = {'X_train_subset_scaled': X_train_subset,
                             'X_test_scaled': X_test}
         joblib.dump(scaled_data_dict, scaled_data_filename)
-        scipy.io.savemat(scaled_data_filename, scaled_data_dict)
 
         # now that we normalized, we can reshape
         (X_train_subset,
@@ -202,7 +176,6 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                                      'X_test_scaled_reshaped': X_test,
                                      'Y_test_reshaped': Y_test}
         joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
-        scipy.io.savemat(scaled_reshaped_data_filename, scaled_reshaped_data_dict)
 
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
@@ -300,4 +273,3 @@ pred_and_err_dict = {'Y_pred_train_all': Y_pred_train_all,
 
 pred_err_dict_filename = os.path.join(summary_dirname,
                                       'y_preds_and_err_for_train_and_test')
-scipy.io.savemat(pred_err_dict_filename, pred_and_err_dict)
