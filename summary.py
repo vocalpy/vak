@@ -57,7 +57,6 @@ for spect_param_name in ['freq_cutoffs', 'thresh']:
 if spect_params == {}:
     spect_params = None
 
-print('loading training data')
 labelset = list(config['DATA']['labelset'])
 train_data_dir = config['DATA']['data_dir']
 number_song_files = int(config['DATA']['number_song_files'])
@@ -68,37 +67,48 @@ labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
 with open(labels_mapping_file, 'rb') as labels_map_file_obj:
     labels_mapping = pickle.load(labels_map_file_obj)
 
-# num train songs is different from num train song files
-# because we take training and validation data from same training song file directory
-num_train_songs = int(config['DATA']['num_train_songs'])
+Y_train = joblib.load(os.path.join(
+    results_dirname, 'Y_train'))
 
-# reshape training data
-X_train = np.concatenate(train_song_spects[:num_train_songs], axis=0)
-Y_train = np.concatenate(train_song_labels[:num_train_songs], axis=0)
-input_vec_size = X_train.shape[-1]
+# we load actual X_train from each training_records_dir below
+input_vec_size = joblib.load(
+    os.path.join(
+        results_dirname,
+        'X_train')).shape[-1]
 
 print('loading testing data')
-test_data_dir = config['DATA']['test_data_dir']
-number_test_song_files = int(config['DATA']['number_test_song_files'])
-# below, [:2] because don't need timebin duration or mapping
-(test_song_spects,
- test_song_labels) = cnn_bilstm.utils.load_data(labelset,
-                                                test_data_dir,
-                                                number_test_song_files,
-                                                spect_params,
-                                                labels_mapping,
-                                                skip_files_with_labels_not_in_labelset)[:2]
+make_test_data = config.getboolean('DATA', 'make_test_data')
+if make_test_data:
+    test_data_dir = config['DATA']['test_data_dir']
+    number_test_song_files = int(config['DATA']['number_test_song_files'])
+    (test_data_dict,
+     test_data_dict_path) = cnn_bilstm.utils.make_data_dict(label_mapping,
+                                                            test_data_dir,
+                                                            number_test_song_files,
+                                                            spect_params,
+                                                            skip_files_with_labels_not_in_labelset)
+else:
+    if config.has_option('DATA', 'test_data_path'):
+        test_data_dict_path = config['DATA']['test_data_path']
+    elif config.has_option('DATA', 'test_data_dir'):
+        test_data_dict_path = os.path.join(test_data_dir,
+                                            'data_dict')
+    test_data_dict = joblib.load(test_data_dict_path)
 
-test_spects_filename = os.path.join(summary_dirname,'test_spects')
-joblib.dump(test_song_spects, test_spects_filename)
-
+(test_data_spects,
+ test_labeled_timebins,
+ timebin_dur,
+ files_used) = (train_data_dict['spects'],
+                train_data_dict['labeled_timebins'],
+                train_data_dict['timebin_dur'],
+                train_data_dict['filenames'])
 
 # here there's no "validation test set" so we just concatenate all test spects
 # from all the files we loaded, unlike with training set
-X_test = np.concatenate(test_song_spects, axis=0)
+X_test = np.concatenate(test_data_spects, axis=0)
 # copy X_test because it gets scaled and reshape in main loop
 X_test_copy = np.copy(X_test)
-Y_test = np.concatenate(test_song_labels, axis=0)
+Y_test = np.concatenate(test_labeled_timebins, axis=0)
 # also need copy of Y_test
 # because it also gets reshaped in loop
 # and because we need to compare with Y_pred
@@ -134,23 +144,30 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             train_inds = pickle.load(train_inds_file)
 
         # get training set
-        X_train_subset = X_train[train_inds, :]
         Y_train_subset = Y_train[train_inds]
-        # normalize before reshaping to avoid even more convoluted array reshaping
+        X_train_subset = joblib.load(os.path.join(
+            training_records_dir,
+            'scaled_spects_duration_{}_replicate_{}'
+                .format(train_set_dur, replicate)))['X_train_subset_scaled']
+        assert Y_train_subset.shape[0] == X_train_subset.shape[0],\
+            "mismatch between X and Y train subset shapes"
+
+        # Normalize before reshaping to avoid even more convoluted array reshaping.
+        # Train spectrograms were already normalized
+        # just need to normalize test spects
         if normalize_spectrograms:
             scaler_name = ('spect_scaler_duration_{}_replicate_{}'
                            .format(train_set_dur, replicate))
             spect_scaler = joblib.load(os.path.join(results_dirname, scaler_name))
-            X_train_subset = spect_scaler.transform(X_train_subset)
             X_test = spect_scaler.transform(X_test_copy)
             Y_test = np.copy(Y_test_copy)
 
-        scaled_data_filename = os.path.join(summary_dirname,
-                                            'scaled_spects_duration_{}_replicate_{}'
-                                            .format(train_set_dur, replicate))
-        scaled_data_dict = {'X_train_subset_scaled': X_train_subset,
-                            'X_test_scaled': X_test}
-        joblib.dump(scaled_data_dict, scaled_data_filename)
+        # save scaled spectrograms. Note we already saved training data scaled
+        scaled_test_data_filename = os.path.join(summary_dirname,
+                                                 'scaled_test_spects_duration_{}_replicate_{}'
+                                                 .format(train_set_dur, replicate))
+        scaled_test_data_dict = {'X_test_scaled': X_test}
+        joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
 
         # now that we normalized, we can reshape
         (X_train_subset,
