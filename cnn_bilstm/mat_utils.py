@@ -5,7 +5,7 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
-def make_data_from_matlab_spects(data_dir, training_filenames=None):
+def make_data_from_matlab_spects(data_dir, mat_filenames=None, data_dict_filename='data_dict'):
     """makes data_dict just like utils.make_data, but
     loads spectrograms and labeled timebin vectors generated in matlab
 
@@ -13,13 +13,17 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
     ----------
     data_dir : str
         path to directory containing .mat files
-    training_filenames : str
+    mat_filenames : str
         optional, filename of a .txt file
         that contains a list of .mat files to load.
         Default is None. If None, load all .mat files in the directory
         that contain the keys specified below.
         The list can be generated from a cell array of filenames using
         the function 'cnn_bilstm.mat_utils.convert_train_keys_to_txt'
+    data_dict_filename : str
+        name of file that contains data_dict object, saved by joblib.
+        Default is `data_dict`
+
 
     Each .mat file should contains the following keys:
         s : ndarray
@@ -40,11 +44,17 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
     else:
         os.chdir(data_dir)
 
-    if training_filenames is None:
+    if mat_filenames is None:
         spect_files = glob('*.mat')
     else:
-        with open(training_filenames,'r') as fileobj:
+        with open(mat_filenames,'r') as fileobj:
             spect_files = fileobj.read().splitlines()
+
+    if os.path.isfile(data_dict_filename):
+        raise FileExistsError("A file named {} already exists in {}.\n"
+                              "Please pass a string for data_dict_filename "
+                              "to this function that specifies some other name."
+                              .format(data_dict_filename, data_dir))
 
     spects = []
     spect_files_used = []
@@ -107,16 +117,29 @@ def make_data_from_matlab_spects(data_dir, training_filenames=None):
                  'labels_mapping': None
                  }
 
-    print('saving data dictionary in {}'.format(data_dir))
-    joblib.dump(data_dict, 'data_dict')
+    print('saving data dictionary in {} as {}'
+          .format(data_dir, data_dict_filename))
+    joblib.dump(data_dict, data_dict_filename)
 
 
-def convert_train_keys_to_txt(train_keys_path):
+def convert_train_keys_to_txt(train_keys_path, txt_filename = 'training_filenames'):
     """get train_keys cell array out of .mat file, convert to list of str, save as .txt
+
+    Parameters
+    ----------
+    train_keys_path : str
+        path to folder with train_keys.mat file
+    txt_filename : str
+        filename for .txt file that contains list of .mat filenames
+        Default is `training_filenames`
+
+    Returns
+    -------
+    None. Saves .txt file in train_keys_path.
     """
     train_spect_files = loadmat(train_keys_path,
                                 squeeze_me=True)['train_keys'].tolist()
     txt_filename = os.path.join(os.path.split(train_keys_path)[0],
-                                'training_filenames')
+                                txt_filename)
     with open(txt_filename, 'w') as fileobj:
         fileobj.write('\n'.join(train_spect_files))
