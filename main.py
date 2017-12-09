@@ -350,6 +350,11 @@ if __name__ == "__main__":
             iter_order = np.random.permutation(X_train_subset.shape[1] - time_steps)
             if len(iter_order) > n_max_iter:
                 iter_order = iter_order[0:n_max_iter]
+            with open(
+                    os.path.join(training_records_dir,
+                                 "iter_order"),
+                    'wb') as iter_order_file:
+                pickle.dump(iter_order, iter_order_file)
 
             input_vec_size = X_train_subset.shape[-1]  # number of columns
             logger.debug('input vec size: '.format(input_vec_size))
