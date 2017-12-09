@@ -92,9 +92,14 @@ if __name__ == "__main__":
                                                 skip_files_with_labels_not_in_labelset)
         logger.info('saved training data as {}'.format(train_data_dict_path))
     else:
-        train_data_dict_path = os.path.join(train_data_dir,
-                                            'data_dict')
+        if config.has_option('DATA', 'train_data_path'):
+            train_data_dict_path = config['DATA']['train_data_path']
+        elif config.has_option('DATA', 'train_data_dir'):
+            train_data_dict_path = os.path.join(train_data_dir,
+                                               'data_dict')
+
         train_data_dict = joblib.load(train_data_dict_path)
+
         if train_data_dict['spect_params'] is None:
             logger.warning('spect_params is None in data_dict loaded,'
                            'probably because spectrograms were generated'
