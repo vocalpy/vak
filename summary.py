@@ -18,7 +18,7 @@ if not config_file.endswith('.ini'):
 config = ConfigParser()
 config.read(config_file)
 
-results_dirname = config['OUTPUT']['output_dir']
+results_dirname = config['OUTPUT']['results_dir_made_by_main_script']
 if not os.path.isdir(results_dirname):
     raise FileNotFoundError('{} directory is not found.'
                             .format(results_dirname))
@@ -58,7 +58,7 @@ if spect_params == {}:
     spect_params = None
 
 labelset = list(config['DATA']['labelset'])
-train_data_dir = config['DATA']['data_dir']
+train_data_dir = config['DATA']['train_data_dir']
 number_song_files = int(config['DATA']['number_song_files'])
 skip_files_with_labels_not_in_labelset = config.getboolean(
     'DATA',
@@ -98,21 +98,23 @@ else:
 (test_data_spects,
  test_labeled_timebins,
  timebin_dur,
- files_used) = (train_data_dict['spects'],
-                train_data_dict['labeled_timebins'],
-                train_data_dict['timebin_dur'],
-                train_data_dict['filenames'])
+ files_used) = (test_data_dict['spects'],
+                test_data_dict['labeled_timebins'],
+                test_data_dict['timebin_dur'],
+                test_data_dict['filenames'])
 
 # here there's no "validation test set" so we just concatenate all test spects
 # from all the files we loaded, unlike with training set
-X_test = np.concatenate(test_data_spects, axis=0)
+X_test = np.concatenate([spect.T
+                         for spect in test_data_spects],
+                        axis=0)
 # copy X_test because it gets scaled and reshape in main loop
 X_test_copy = np.copy(X_test)
-Y_test = np.concatenate(test_labeled_timebins, axis=0)
-# also need copy of Y_test
-# because it also gets reshaped in loop
-# and because we need to compare with Y_pred
-Y_test_copy = np.copy(Y_test)
+
+# also need Y_test as a copy
+# because Y_test also gets reshaped in loop
+# and because we need to compare ("un-reshaped") with Y_pred
+Y_test_copy = np.concatenate(test_labeled_timebins, axis=0)
 
 # initialize arrays to hold summary results
 Y_pred_test_all = []  # will be a nested list
@@ -160,7 +162,12 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                            .format(train_set_dur, replicate))
             spect_scaler = joblib.load(os.path.join(results_dirname, scaler_name))
             X_test = spect_scaler.transform(X_test_copy)
-            Y_test = np.copy(Y_test_copy)
+        else:
+            # get back "un-reshaped" X_test
+            X_test = np.copy(X_test_copy)
+
+        # need to get Y_test from copy because it gets reshaped every time through loop
+        Y_test = np.copy(Y_test_copy)
 
         # save scaled spectrograms. Note we already saved training data scaled
         scaled_test_data_filename = os.path.join(summary_dirname,
@@ -177,6 +184,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                                                                          batch_size,
                                                                          time_steps,
                                                                          input_vec_size)
+
         (X_test,
          Y_test,
          num_batches_test) = cnn_bilstm.utils.reshape_data_for_batching(X_test,
