@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     if config.has_section('OUTPUT'):
-        if config.has_option('OUTPUT', 'output_dir'):
-            output_dir = config['OUTPUT']['output_dir']
+        if config.has_option('OUTPUT', 'results_dir'):
+            output_dir = config['OUTPUT']['results_dir']
             results_dirname = os.path.join(output_dir,
                                            'results_' + timenow)
     else:
@@ -44,18 +44,6 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler(sys.stdout))
     logger.info('Logging results to {}'.format(results_dirname))
     logger.info('Using config file: {}'.format(config_file))
-
-    labelset = list(config['DATA']['labelset'])
-    # make mapping from syllable labels to consecutive integers
-    # start at 1, because 0 is assumed to be label for silent gaps
-    labels_mapping = dict(zip(labelset,
-                             range(1, len(labelset)+1)))
-    labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
-    with open(labels_mapping_file, 'wb') as labels_map_file_obj:
-        pickle.dump(labels_mapping, labels_map_file_obj)
-
-    train_data_dir = config['DATA']['train_data_dir']
-    logger.info('Loading training data from {}'.format(train_data_dir))
 
     # require user to specify parameters for spectrogram
     # instead of having defaults (as was here previously)
@@ -78,11 +66,19 @@ if __name__ == "__main__":
 
     if make_train_data:
         logger.info('make_train_data = Yes')
+        train_data_dir = config['DATA']['train_data_dir']
         logger.info('will make training data from: {}'.format(train_data_dir))
+
+        labelset = list(config['DATA']['labelset'])
+        # make mapping from syllable labels to consecutive integers
+        # start at 1, because 0 is assumed to be label for silent gaps
+        labels_mapping = dict(zip(labelset,
+                                  range(1, len(labelset) + 1)))
         skip_files_with_labels_not_in_labelset = config.getboolean(
             'DATA',
             'skip_files_with_labels_not_in_labelset')
         logger.info('Using first {} songs'.format(number_song_files))
+
 
         (train_data_dict,
          train_data_dict_path) = make_data_dict(labels_mapping,
@@ -94,11 +90,16 @@ if __name__ == "__main__":
     else:
         if config.has_option('DATA', 'train_data_path'):
             train_data_dict_path = config['DATA']['train_data_path']
+            logger.info('Loading training data from {}'.format(
+                os.path.dirname(
+                    train_data_dict_path)))
         elif config.has_option('DATA', 'train_data_dir'):
+            train_data_dir = config['DATA']['train_data_dir']
             train_data_dict_path = os.path.join(train_data_dir,
                                                'data_dict')
-
+            logger.info('Loading training data from {}'.format(train_data_dir))
         train_data_dict = joblib.load(train_data_dict_path)
+        labels_mapping = train_data_dict['labels_mapping']
 
         if train_data_dict['spect_params'] is None:
             logger.warning('spect_params is None in data_dict loaded,'
@@ -111,21 +112,11 @@ if __name__ == "__main__":
                                  'do not match parameters specified in data_dict '
                                  'from {}.'.format(train_data_dict_path,
                                                    train_data_dir))
-        if train_data_dict['labels_mapping'] is None:
-            logger.warning('labels_mapping is None in data_dict loaded,'
-                           'probably because spectrograms were generated'
-                           ' in Matlab.\nNot checking whether parameters '
-                           'match those specified in .ini file.')
-            logger.info('setting labels_mapping to np.unique(labeled_timebins)')
-            uniq_labels = np.unique(
-                np.concatenate(
-                    train_data_dict['labeled_timebins']))
-            labels_mapping = dict(zip(uniq_labels, uniq_labels))
-        else:
-            if train_data_dict['labels_mapping'] != labels_mapping:
-                raise ValueError('labels_mapping in {} '
-                                 'do not match labels_mapping generated '
-                                 'from .ini file.'.format(train_data_dict_path))
+
+    # save copy of labels_mapping in results directory
+    labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
+    with open(labels_mapping_file, 'wb') as labels_map_file_obj:
+        pickle.dump(labels_mapping, labels_map_file_obj)
 
     # copy training data to results dir so we have it stored with results
     logger.info('copying {} to {}'.format(train_data_dict_path,
