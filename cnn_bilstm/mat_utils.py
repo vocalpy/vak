@@ -5,7 +5,8 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
-def make_data_from_matlab_spects(data_dir, mat_filenames=None, data_dict_filename='data_dict'):
+def make_data_from_matlab_spects(data_dir, mat_filenames=None,
+                                 data_dict_filename='data_dict'):
     """makes data_dict just like utils.make_data, but
     loads spectrograms and labeled timebin vectors generated in matlab
 
@@ -23,7 +24,6 @@ def make_data_from_matlab_spects(data_dir, mat_filenames=None, data_dict_filenam
     data_dict_filename : str
         name of file that contains data_dict object, saved by joblib.
         Default is `data_dict`
-
 
     Each .mat file should contains the following keys:
         s : ndarray
@@ -107,6 +107,13 @@ def make_data_from_matlab_spects(data_dir, mat_filenames=None, data_dict_filenam
 
         spect_files_used.append(spect_file)
 
+    greatest_integer_label = np.max(
+        np.unique(
+            np.concatenate(labeled_timebins)
+        ))
+    labels_mapping = dict(zip(np.arange(greatest_integer_label + 1),
+                              np.arange(greatest_integer_label + 1)))
+
     data_dict = {'spects': spects,
                  'filenames': spect_files_used,
                  'freq_bins': freq_bins,
@@ -114,7 +121,7 @@ def make_data_from_matlab_spects(data_dir, mat_filenames=None, data_dict_filenam
                  'labeled_timebins': labeled_timebins,
                  'timebin_dur': timebin_dur,
                  'spect_params': None,
-                 'labels_mapping': None
+                 'labels_mapping': labels_mapping
                  }
 
     print('saving data dictionary in {} as {}'
