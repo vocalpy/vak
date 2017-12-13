@@ -58,7 +58,6 @@ if spect_params == {}:
     spect_params = None
 
 labelset = list(config['DATA']['labelset'])
-train_data_dir = config['DATA']['train_data_dir']
 number_song_files = int(config['DATA']['number_song_files'])
 skip_files_with_labels_not_in_labelset = config.getboolean(
     'DATA',
