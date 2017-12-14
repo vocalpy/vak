@@ -208,7 +208,7 @@ if __name__ == "__main__":
     joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
     X_val_copy = copy.deepcopy(X_val)  # need a copy if we scale X_val below
     Y_val = train_labeled_timebins[-num_val_songs:]
-    joblib.dump(X_val, os.path.join(results_dirname, 'Y_val'))
+    joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
     Y_val_arr = np.concatenate(Y_val, axis=0)
 
     val_error_step = int(config['TRAIN']['val_error_step'])
