@@ -158,7 +158,9 @@ def make_labeled_timebins_vector(labels,
 
     Returns
     -------
-
+    label_vec : ndarray
+        same length as time_bins, with each element a label for
+        each time bin
     """
 
     labels = [int(label) for label in labels]
@@ -173,13 +175,35 @@ def make_labeled_timebins_vector(labels,
     return label_vec
 
 
+def get_filenames_for_data_set(data_dir, target_duration, labelset,
+                               skip_files_with_labels_not_in_labelset=True,
+                               filename='files_for_dataset'):
+    """
+    Parameters
+    ----------
+    data_dir : str
+        path to directory containing data
+    target_duration : float
+        target duration of data set in seconds
+    labelset : str
+        labels
+    skip_files_with_labels_not_in_labelset
+
+    Returns
+    -------
+    None
+
+    """
+
+    pass
+
 def make_data_dict(labels_mapping, data_dir, number_files,
               spect_params, skip_files_with_labels_not_in_labelset):
     """function that loads data and saves in dictionary
 
     Parameters
     ----------
-    labels_mapping: dict
+    labels_mapping : dict
         dictionary that maps integer representation of string label to consecutive
         integer numbers. e.g. maps 'iabcde' to [0,1,2,3,4,5]
     data_dir : str
@@ -232,14 +256,20 @@ def make_data_dict(labels_mapping, data_dir, number_files,
     cbins_used = []
 
     for cbin in cbins[:number_files]:
-        notmat_dict = evfuncs.load_notmat(cbin)
+        try:
+            notmat_dict = evfuncs.load_notmat(cbin)
+        except FileNotFoundError:
+            print('Did not find .not.mat file for {}, skipping file.'
+                  .format(cbin))
+            continue
+
         this_labels = notmat_dict['labels']
         if skip_files_with_labels_not_in_labelset:
             labels_set = set(this_labels)
             # below, set(labels_mapping) is a set of that dict's keys
-            if labels_set > set(labels_mapping):
-            # because there's some label in labels
-            # that's not in labels_mapping
+            if not labels_set.issubset(set(labels_mapping)):
+                # because there's some label in labels
+                # that's not in labels_mapping
                 print('found labels in {} not in labels_mapping, '
                       'skipping file'.format(cbin))
                 continue
@@ -265,8 +295,11 @@ def make_data_dict(labels_mapping, data_dir, number_files,
             freq_bins = freq_bins[f_inds]
 
         spects.append(spect)
-        this_labels = [labels_mapping[label]
-                  for label in this_labels]
+        try:
+            this_labels = [labels_mapping[label]
+                      for label in this_labels]
+        except KeyError:
+            import pdb;pdb.set_trace()
         this_labeled_timebins = make_labeled_timebins_vector(this_labels,
                                                              notmat_dict['onsets'] / 1000,
                                                              notmat_dict['offsets'] / 1000,
