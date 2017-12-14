@@ -7,7 +7,8 @@ under BSD license
 https://github.com/NickleDave/hybrid-vocal-classifier/blob/master/LICENSE
 """
 
-# from third-party
+import os
+
 import numpy as np
 from scipy.io import loadmat
 
@@ -147,4 +148,7 @@ def load_notmat(filename):
         raise ValueError("Filename should have extension .cbin.not.mat or"
                          " .cbin")
 
-    return loadmat(filename, squeeze_me=True)
+    if not os.path.isfile(filename):
+        raise FileNotFoundError
+    else:
+        return loadmat(filename, squeeze_me=True)
