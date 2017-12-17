@@ -80,8 +80,20 @@ make_test_data = config.getboolean('DATA', 'make_test_data')
 if make_test_data:
     test_data_dir = config['DATA']['test_data_dir']
     number_test_song_files = int(config['DATA']['number_test_song_files'])
+
+    spect_params = {}
+    spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
+    spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
+    spect_params['freq_cutoffs'] = [float(element)
+                                    for element in
+                                    config['SPECTROGRAM']['freq_cutoffs']
+                                        .split(',')]
+    spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+    spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
+                                                      'log_transform')
+
     (test_data_dict,
-     test_data_dict_path) = cnn_bilstm.utils.make_data_dict(label_mapping,
+     test_data_dict_path) = cnn_bilstm.utils.make_data_dict(labels_mapping,
                                                             test_data_dir,
                                                             number_test_song_files,
                                                             spect_params,
