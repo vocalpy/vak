@@ -298,7 +298,8 @@ if __name__ == "__main__":
                                                 'scaled_spects_duration_{}_replicate_{}'
                                                 .format(train_set_dur, replicate))
             scaled_data_dict = {'X_train_subset_scaled': X_train_subset,
-                                'X_val_scaled': X_val}
+                                'X_val_scaled': X_val,
+                                'Y_train_subset': Y_train_subset}
             joblib.dump(scaled_data_dict, scaled_data_filename)
 
             # reshape data for network
