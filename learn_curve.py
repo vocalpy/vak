@@ -45,6 +45,13 @@ if __name__ == "__main__":
     logger.info('Logging results to {}'.format(results_dirname))
     logger.info('Using config file: {}'.format(config_file))
 
+    train_data_dict_path = config['DATA']['train_data_path']
+    logger.info('Loading training data from {}'.format(
+        os.path.dirname(
+            train_data_dict_path)))
+    train_data_dict = joblib.load(train_data_dict_path)
+    labels_mapping = train_data_dict['labels_mapping']
+
     # require user to specify parameters for spectrogram
     # instead of having defaults (as was here previously)
     # helps ensure we don't mix up different params
@@ -59,59 +66,17 @@ if __name__ == "__main__":
     spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
                                                       'log_transform')
 
-    # need to know number_song_files regardless of
-    # whether we make data or load from file
-    number_song_files = int(config['DATA']['number_song_files'])
-    make_train_data = config.getboolean('DATA', 'make_train_data')
-
-    if make_train_data:
-        logger.info('make_train_data = Yes')
-        train_data_dir = config['DATA']['train_data_dir']
-        logger.info('will make training data from: {}'.format(train_data_dir))
-
-        labelset = list(config['DATA']['labelset'])
-        # make mapping from syllable labels to consecutive integers
-        # start at 1, because 0 is assumed to be label for silent gaps
-        labels_mapping = dict(zip(labelset,
-                                  range(1, len(labelset) + 1)))
-        skip_files_with_labels_not_in_labelset = config.getboolean(
-            'DATA',
-            'skip_files_with_labels_not_in_labelset')
-        logger.info('Using first {} songs'.format(number_song_files))
-
-
-        (train_data_dict,
-         train_data_dict_path) = make_data_dict(labels_mapping,
-                                                train_data_dir,
-                                                number_song_files,
-                                                spect_params,
-                                                skip_files_with_labels_not_in_labelset)
-        logger.info('saved training data as {}'.format(train_data_dict_path))
+    if train_data_dict['spect_params'] is None:
+        logger.warning('spect_params is None in data_dict loaded,'
+                       'probably because spectrograms were generated'
+                       ' in Matlab.\nNot checking whether parameters '
+                       'match those specified in .ini file.')
     else:
-        if config.has_option('DATA', 'train_data_path'):
-            train_data_dict_path = config['DATA']['train_data_path']
-            logger.info('Loading training data from {}'.format(
-                os.path.dirname(
-                    train_data_dict_path)))
-        elif config.has_option('DATA', 'train_data_dir'):
-            train_data_dir = config['DATA']['train_data_dir']
-            train_data_dict_path = os.path.join(train_data_dir,
-                                               'data_dict')
-            logger.info('Loading training data from {}'.format(train_data_dir))
-        train_data_dict = joblib.load(train_data_dict_path)
-        labels_mapping = train_data_dict['labels_mapping']
-
-        if train_data_dict['spect_params'] is None:
-            logger.warning('spect_params is None in data_dict loaded,'
-                           'probably because spectrograms were generated'
-                           ' in Matlab.\nNot checking whether parameters '
-                           'match those specified in .ini file.')
-        else:
-            if train_data_dict['spect_params'] != spect_params:
-                raise ValueError('Spectrogram parameters in {} '
-                                 'do not match parameters specified in data_dict '
-                                 'from {}.'.format(train_data_dict_path,
-                                                   train_data_dir))
+        if train_data_dict['spect_params'] != spect_params:
+            raise ValueError('Spectrogram parameters in {} '
+                             'do not match parameters specified in data_dict '
+                             'from {}.'.format(train_data_dict_path,
+                                               train_data_dir))
 
     # save copy of labels_mapping in results directory
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
