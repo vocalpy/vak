@@ -197,6 +197,115 @@ def get_filenames_for_data_set(data_dir, target_duration, labelset,
 
     pass
 
+def make_spects_from_list_of_cbins(cbins,
+                                   spect_params,
+                                   output_dir,
+                                   labels_mapping,
+                                   skip_files_with_labels_not_in_labelset=True):
+    """
+    Parameters
+    ----------
+    cbins : list
+         of str, full paths to .cbin files from which to make spectrograms
+    spect_params : dict
+        parameters for computing spectrogram, from .ini file
+    output_dir : str
+        directory in which to save .data file generated for each .cbin file,
+        containing the following:
+            spect : ndarray
+                spectrogram
+            freq_bins : ndarray
+                frequency vector from spectrogram
+            time_bins : ndarray
+                vector of centers of tme bins from spectrogram
+            labeled_timebins : ndarray
+                same length as time_bins, but value of each element is a label
+                corresponding to that time bin
+    labels_mapping : dict
+        maps str labels to consecutive integer values {0,1,2,...N} where N
+        is the number of classes / label types
+    skip_files_with_labels_not_in_labelset : bool
+        if True, skip .cbin files where the 'labels' array in the corresponding
+        .cbin.not.mat file contains str labels not found in labels_mapping
+
+    Returns
+    -------
+    cbins_used_with_durs : list
+        of two-element tuples, where the first element is a filename
+        and the second is the duration of the spectrogram from that file.
+        Used when building data sets of a specific duration.
+    """
+
+    # need to keep track of name of files used since we may skip some.
+    # also keep track of duration of each spectrogram, to use when
+    # building data sets of a specific duration
+    cbins_used_with_durs = []
+
+    for cbin in cbins[:number_files]:
+        try:
+            notmat_dict = evfuncs.load_notmat(cbin)
+        except FileNotFoundError:
+            print('Did not find .not.mat file for {}, skipping file.'
+                  .format(cbin))
+            continue
+
+        this_labels = notmat_dict['labels']
+        if skip_files_with_labels_not_in_labelset:
+            labels_set = set(this_labels)
+            # below, set(labels_mapping) is a set of that dict's keys
+            if not labels_set.issubset(set(labels_mapping)):
+                # because there's some label in labels
+                # that's not in labels_mapping
+                print('found labels in {} not in labels_mapping, '
+                      'skipping file'.format(cbin))
+                continue
+
+        dat, fs = evfuncs.load_cbin(cbin)
+        if 'freq_cutoffs' in spect_params:
+            dat = spect_utils.butter_bandpass_filter(dat,
+                                                     spect_params['freq_cutoffs'][0],
+                                                     spect_params['freq_cutoffs'][1],
+                                                     fs)
+
+        spect, freq_bins, time_bins = spect_utils.spectrogram(dat, fs,
+                                                              spect_params['fft_size'],
+                                                              spect_params['step_size'],
+                                                              spect_params['thresh'],
+                                                              spect_params['log_transform'])
+
+        if 'freq_cutoffs' in spect_params:
+            f_inds = np.nonzero((freq_bins >= spect_params['freq_cutoffs'][0]) &
+                                (freq_bins < spect_params['freq_cutoffs'][1]))[0]  # returns tuple
+            spect = spect[f_inds, :]
+            freq_bins = freq_bins[f_inds]
+
+        this_labels = [labels_mapping[label]
+                  for label in this_labels]
+        this_labeled_timebins = make_labeled_timebins_vector(this_labels,
+                                                             notmat_dict['onsets'] / 1000,
+                                                             notmat_dict['offsets'] / 1000,
+                                                             time_bins)
+
+        if not 'timebin_dur' in locals():
+            timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
+        else:
+            curr_timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
+            assert curr_timebin_dur == timebin_dur, \
+                "curr_timebin_dur didn't match timebin_dur"
+        spect_dur = time_bins.shape[-1] * timebin_dur
+
+        cbins_used_with_durs.append((cbin, spect_dur))
+
+        data_dict = {'spect': spect,
+                     'freq_bins': freq_bins,
+                     'time_bins': time_bins,
+                     'labeled_timebins': this_labeled_timebins}
+        data_dict_filename = cbin + '.data'
+        joblib.dump(data_dict, data_dict_filename)
+
+        return cbins_used_with_durs
+
+
 def make_data_dict(labels_mapping, data_dir, number_files,
               spect_params, skip_files_with_labels_not_in_labelset):
     """function that loads data and saves in dictionary
@@ -212,7 +321,7 @@ def make_data_dict(labels_mapping, data_dir, number_files,
         number of files in list of song files to process
         assumes files are .cbin format
     spect_params : dict
-        parameters for computing spectrogram. Loaded by main.py from .ini file.
+        parameters for computing spectrogram. Loaded by learn_curve.py from .ini file.
     skip_files_with_labels_not_in_labelset: bool
         if True, skips files that have labels not found in 'labelset'
 
