@@ -1,6 +1,7 @@
 import os
 from glob import glob
 import random
+import copy
 
 import numpy as np
 import joblib
@@ -175,34 +176,13 @@ def make_labeled_timebins_vector(labels,
     return label_vec
 
 
-def get_filenames_for_data_set(data_dir, target_duration, labelset,
-                               skip_files_with_labels_not_in_labelset=True,
-                               filename='files_for_dataset'):
-    """
-    Parameters
-    ----------
-    data_dir : str
-        path to directory containing data
-    target_duration : float
-        target duration of data set in seconds
-    labelset : str
-        labels
-    skip_files_with_labels_not_in_labelset
-
-    Returns
-    -------
-    None
-
-    """
-
-    pass
-
 def make_spects_from_list_of_cbins(cbins,
                                    spect_params,
                                    output_dir,
                                    labels_mapping,
                                    skip_files_with_labels_not_in_labelset=True):
-    """
+    """makes spectrograms from a list of .cbin audio files
+
     Parameters
     ----------
     cbins : list
@@ -210,17 +190,8 @@ def make_spects_from_list_of_cbins(cbins,
     spect_params : dict
         parameters for computing spectrogram, from .ini file
     output_dir : str
-        directory in which to save .data file generated for each .cbin file,
-        containing the following:
-            spect : ndarray
-                spectrogram
-            freq_bins : ndarray
-                frequency vector from spectrogram
-            time_bins : ndarray
-                vector of centers of tme bins from spectrogram
-            labeled_timebins : ndarray
-                same length as time_bins, but value of each element is a label
-                corresponding to that time bin
+        directory in which to save .spect file generated for each .cbin file,
+        as described below
     labels_mapping : dict
         maps str labels to consecutive integer values {0,1,2,...N} where N
         is the number of classes / label types
@@ -230,16 +201,33 @@ def make_spects_from_list_of_cbins(cbins,
 
     Returns
     -------
-    cbins_used_with_durs : list
-        of two-element tuples, where the first element is a filename
-        and the second is the duration of the spectrogram from that file.
+    cbins_used_path : str
+        Full path to cbins_used file
+        which contains a list of three-element tuples:
+            cbin : str, filename
+            spect_dur : float, duration of the spectrogram from cbin
+            labels : str, labels from .cbin.not.mat associated with .cbin
+                     (string labels for syllables in spectrogram)
         Used when building data sets of a specific duration.
+
+    For each .cbin filename in the list, a "pickled" Python dictionary is saved
+    containing the following keys:
+        spect : ndarray
+            spectrogram
+        freq_bins : ndarray
+            vector of centers of frequency bins from spectrogram
+        time_bins : ndarray
+            vector of centers of tme bins from spectrogram
+        labeled_timebins : ndarray
+            same length as time_bins, but value of each element is a label
+            corresponding to that time bin
+
+    Each dictionary is saved with ".spect" appended to the .cbin file name.
     """
 
     # need to keep track of name of files used since we may skip some.
-    # also keep track of duration of each spectrogram, to use when
-    # building data sets of a specific duration
-    cbins_used_with_durs = []
+    # (cbins_used is actually a list of tuples as defined in docstring)
+    cbins_used = []
 
     for cbin in cbins[:number_files]:
         try:
@@ -294,47 +282,54 @@ def make_spects_from_list_of_cbins(cbins,
                 "curr_timebin_dur didn't match timebin_dur"
         spect_dur = time_bins.shape[-1] * timebin_dur
 
-        cbins_used_with_durs.append((cbin, spect_dur))
+        cbins_used_with_durs.append((cbin, spect_dur, labels))
 
         data_dict = {'spect': spect,
                      'freq_bins': freq_bins,
                      'time_bins': time_bins,
+                     'labels': this_labels,
                      'labeled_timebins': this_labeled_timebins}
-        data_dict_filename = cbin + '.data'
+        data_dict_filename = cbin + '.spect'
         joblib.dump(data_dict, data_dict_filename)
 
-        return cbins_used_with_durs
+    cbins_used_path = os.path.join(output_dir, 'cbins_used','w')
+    joblib.dump(cbins_used, cbins_used_path)
+
+    return cbins_used_path
 
 
-def make_data_dict(labels_mapping, data_dir, number_files,
-              spect_params, skip_files_with_labels_not_in_labelset):
-    """function that loads data and saves in dictionary
+def make_data_dicts(output_dir,
+                    total_train_set_duration,
+                    validation_set_duration,
+                    test_set_duration,
+                    cbins_used=None):
+    """function that loads data and saves in dictionaries
 
     Parameters
     ----------
-    labels_mapping : dict
-        dictionary that maps integer representation of string label to consecutive
-        integer numbers. e.g. maps 'iabcde' to [0,1,2,3,4,5]
-    data_dir : str
-        directory of data
-    number_files : int
-        number of files in list of song files to process
-        assumes files are .cbin format
-    spect_params : dict
-        parameters for computing spectrogram. Loaded by learn_curve.py from .ini file.
-    skip_files_with_labels_not_in_labelset: bool
-        if True, skips files that have labels not found in 'labelset'
+    output_dir : str
+        path to output_dir containing .spect files
+    total_train_set_duration : float
+    validation_set_duration : float
+    test_set_duration : float
+        all in seconds
+    cbins_used : str
+        full path to file containing 'cbins_used' list of tuples
+        saved by function make_spects_from_list_of_cbins.
+        Default is None, in which case this function looks for
+        a file named 'cbins_used' in output_dir.
 
     Returns
     -------
-    data_dict : dictionary
-        dictionary with following structure
+    None
 
-        {'spects': spects,
+    Saves three 'data_dict' files (train, validation, and test)
+    in output_dir, with following structure:
+        {'X': spects,
          'filenames': cbins_used,
          'freq_bins': freq_bins,
          'time_bins': all_time_bins,
-         'labeled_timebins': labeled_timebins,
+         'Y': labeled_timebins,
          'timebin_dur': timebin_dur}
 
         where:
@@ -342,82 +337,83 @@ def make_data_dict(labels_mapping, data_dir, number_files,
                 of strings, labels corresponding to each spectrogram
             timebin_dur : float
                 duration of a timebin in seconds from spectrograms
-                estimated from last spectrogram processed
             cbins_used : list
                 of str, filenames of .cbin files used to generate spects,
                 to have a record
 
-    data_dict_path : str
-        path to data_dict file saved by this function
     """
 
-    if not os.path.isdir(data_dir):
+    if not os.path.isdir(output_dir):
         raise NotADirectoryError('{} not recognized '
                                  'as a directory'.format(data_dir))
 
-    cbins = glob(os.path.join(data_dir, '*.cbin'))
-    spects = []
-    labels = []
-    all_time_bins = []
-    labeled_timebins = []
-    # need to keep track of name of files used
-    # since we may skip some
-    cbins_used = []
+    if cbins_used is None:
+        cbins_used = glob(os.path.join(output_dir,'cbins_used'))
+        if cbins_used == []:
+            raise FileNotFoundError("did not find 'cbins_used' file in {}"
+                                    .format(output_dir))
 
-    for cbin in cbins[:number_files]:
-        try:
-            notmat_dict = evfuncs.load_notmat(cbin)
-        except FileNotFoundError:
-            print('Did not find .not.mat file for {}, skipping file.'
-                  .format(cbin))
-            continue
 
-        this_labels = notmat_dict['labels']
-        if skip_files_with_labels_not_in_labelset:
-            labels_set = set(this_labels)
-            # below, set(labels_mapping) is a set of that dict's keys
-            if not labels_set.issubset(set(labels_mapping)):
-                # because there's some label in labels
-                # that's not in labels_mapping
-                print('found labels in {} not in labels_mapping, '
-                      'skipping file'.format(cbin))
-                continue
+    if not os.path.isfile(cbins_used):
+        raise FileNotFoundError('{} not recognized as a file'
+                                .format(cbins_used))
 
-        dat, fs = evfuncs.load_cbin(cbin)
-        if 'freq_cutoffs' in spect_params:
-            dat = spect_utils.butter_bandpass_filter(dat,
-                                                     spect_params['freq_cutoffs'][0],
-                                                     spect_params['freq_cutoffs'][1],
-                                                     fs)
+    cbins_used = joblib.load(cbins_used)
 
-        spect, freq_bins, time_bins = spect_utils.spectrogram(dat, fs,
-                                                              spect_params['fft_size'],
-                                                              spect_params['step_size'],
-                                                              spect_params['thresh'],
-                                                              spect_params['log_transform'])
-        all_time_bins.append(time_bins)
+    total_cbins_dur = sum([cbin[1] for cbin in cbins_used])
+    total_dataset_dur = sum([total_train_set_duration,
+                             validation_set_duration,
+                             test_set_duration])
+    if total_cbins_dur < total_dataset_dur:
+        raise ValueError('Total duration of all .cbin files, {} seconds,'
+                         ' is less than total target duration of '
+                         'training, validation, and test sets, '
+                         '{} seconds'
+                         .format(total_cbins_dur, total_dataset_dur))
 
-        if 'freq_cutoffs' in spect_params:
-            f_inds = np.nonzero((freq_bins >= spect_params['freq_cutoffs'][0]) &
-                                (freq_bins < spect_params['freq_cutoffs'][1]))[0]  # returns tuple
-            spect = spect[f_inds, :]
-            freq_bins = freq_bins[f_inds]
+    while 1:
+        cbins_used_copy = copy.deepcopy(cbins_used)
 
-        spects.append(spect)
-        try:
-            this_labels = [labels_mapping[label]
-                      for label in this_labels]
-        except KeyError:
-            import pdb;pdb.set_trace()
-        this_labeled_timebins = make_labeled_timebins_vector(this_labels,
-                                                             notmat_dict['onsets'] / 1000,
-                                                             notmat_dict['offsets'] / 1000,
-                                                             time_bins)
-        labels.append(this_labels)
-        labeled_timebins.append(this_labeled_timebins)
-        cbins_used.append(cbin)
+        train_cbins = []
+        val_cbins = []
+        test_cbins = []
 
-    timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
+        total_train_dur = 0
+        val_dur = 0
+        test_dur = 0
+
+        choice = ['train', 'val', 'test']
+
+        while 1:
+            ind = random.randint(len(cbins_used_copy))
+            a_cbin = cbins_used_copy.pop(ind)
+            which_set = random.randint(len(cbins_used_copy))
+            which_set = choice[which_set]
+            if which_set == 'train':
+                train_cbins.append(a_cbin)
+                total_train_dur += a_cbin[1]  # ind 1 is duration
+                if total_train_dur > total_train_set_duration:
+                    choice.pop(choice.index('train'))
+            elif which_set == 'val':
+                val_cbins.append(a_cbin)
+                val_dur += a_cbin[1]  # ind 1 is duration
+                if val_dur > validation_set_duration:
+                    choice.pop(choice.index('val'))
+            elif which_set == 'test':
+                test_cbins.append(a_cbin)
+                test_dur += a_cbin[1]  # ind 1 is duration
+                if test_dur > test_set_duration:
+                    choice.pop(choice.index('test'))
+
+            if len(choice) < 1:
+                break
+
+        assert everything
+        if everything_works:
+            break
+
+
+
 
     data_dict = {'spects': spects,
                  'filenames': cbins_used,
