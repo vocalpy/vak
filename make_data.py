@@ -1,7 +1,11 @@
+import os
 import sys
+from glob import glob
 from datetime import datetime
 import logging
 from configparser import ConfigParser
+
+from cnn_bilstm.utils import make_spects_from_list_of_cbins
 
 if __name__ == "__main__":
     config_file = sys.argv[1]
@@ -28,18 +32,16 @@ if __name__ == "__main__":
     spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
                                                       'log_transform')
 
-    # given directory, makes a new directory of .spect files from each .cbin file
-    # also go into sub-directories
     data_dir = config['DATA']['data_dir']
     logger.info('will make training data from: {}'.format(data_dir))
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     if config.has_option('DATA','output_dir'):
-        data_dirname = os.path.join(output_dir,
-                                       'cnn_bilstm_data_' + timenow)
+        output_dir = os.path.join(config['DATA']['output_dir'],
+                                  'spectrograms_' + timenow)
     else:
-        data_dirname = os.path.join(data_dir,
-                                       'cnn_bilstm_data_' + timenow)
-    os.mkdir(data_dirname)
+        output_dir = os.path.join(data_dir,
+                                  'spectrograms_' + timenow)
+    os.mkdir(output_dir)
 
     labelset = list(config['DATA']['labelset'])
     # make mapping from syllable labels to consecutive integers
@@ -56,6 +58,7 @@ if __name__ == "__main__":
 
     cbins = glob(os.path.join(data_dir, '*.cbin'))
     if len(cbins) == 0:
+        # if we don't find .cbins in data_dir, look in sub-directories
         cbins = []
         subdirs = glob(os.path.join(data_dir,'*/'))
         for subdir in subdirs:
@@ -67,26 +70,29 @@ if __name__ == "__main__":
                                 'immediate sub-directories'
                                 .format(data_dir))
 
+    cbins_used_path = \
+        make_spects_from_list_of_cbins(cbins,
+                                       spect_params,
+                                       output_dir,
+                                       labels_mapping,
+                                       skip_files_with_labels_not_in_labelset)
+
+    make_data_dicts(output_dir,
+                    config['DATA']['total_train_set_duration'],
+                    config['DATA']['validation_set_duration'],
+                    config['DATA']['test_set_duration'],
+                    cbins_used_path)
+
+    spects = []
+    labels = []
+    all_time_bins = []
+    labeled_timebins = []
+    all_time_bins.append(time_bins)
+    spects.append(spect)
+    labels.append(this_labels)
+    labeled_timebins.append(this_labeled_timebins)
 
 
-        spects = []
-        labels = []
-        all_time_bins = []
-        labeled_timebins = []
-        all_time_bins.append(time_bins)
-        spects.append(spect)
-        labels.append(this_labels)
-        labeled_timebins.append(this_labeled_timebins)
-
-
-
-
-    (train_data_dict,
-     train_data_dict_path) = make_data_dict(labels_mapping,
-                                            train_data_dir,
-                                            number_song_files,
-                                            spect_params,
-                                            skip_files_with_labels_not_in_labelset)
 
     total_data_set_duration =
     assert total_dur_from_spects == total_data_set_duration
