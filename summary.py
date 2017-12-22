@@ -37,7 +37,7 @@ TRAIN_SET_DURS = [int(element)
 
 num_replicates = int(config['TRAIN']['replicates'])
 REPLICATES = range(num_replicates)
-normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
+normalize_spectrograms = config.getboolean('TRAIN', 'normalize_spectrograms')
 
 spect_params = {}
 for spect_param_name in ['freq_cutoffs', 'thresh']:
