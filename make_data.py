@@ -5,13 +5,16 @@ from datetime import datetime
 import logging
 from configparser import ConfigParser
 
-from cnn_bilstm.utils import make_spects_from_list_of_cbins
+from cnn_bilstm.utils import make_spects_from_list_of_cbins, make_data_dicts
 
 if __name__ == "__main__":
-    config_file = sys.argv[1]
+    config_file = os.path.normpath(sys.argv[1])
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
+    if not os.path.isfile(config_file):
+        raise FileNotFoundError('config file {} is not found'
+                                .format(config_file))
     config = ConfigParser()
     config.read(config_file)
 
@@ -70,7 +73,7 @@ if __name__ == "__main__":
                                 'immediate sub-directories'
                                 .format(data_dir))
 
-    cbins_used_path = \
+    spect_files_path = \
         make_spects_from_list_of_cbins(cbins,
                                        spect_params,
                                        output_dir,
@@ -78,10 +81,11 @@ if __name__ == "__main__":
                                        skip_files_with_labels_not_in_labelset)
 
     make_data_dicts(output_dir,
-                    config['DATA']['total_train_set_duration'],
-                    config['DATA']['validation_set_duration'],
-                    config['DATA']['test_set_duration'],
-                    cbins_used_path)
+                    float(config['DATA']['total_train_set_duration']),
+                    float(config['DATA']['validation_set_duration']),
+                    float(config['DATA']['test_set_duration']),
+                    labelset,
+                    spect_files_path)
 
     spects = []
     labels = []
@@ -91,8 +95,3 @@ if __name__ == "__main__":
     spects.append(spect)
     labels.append(this_labels)
     labeled_timebins.append(this_labeled_timebins)
-
-
-
-    total_data_set_duration =
-    assert total_dur_from_spects == total_data_set_duration

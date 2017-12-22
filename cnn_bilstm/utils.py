@@ -2,6 +2,7 @@ import os
 from glob import glob
 import random
 import copy
+import itertools
 
 import numpy as np
 import joblib
@@ -201,17 +202,18 @@ def make_spects_from_list_of_cbins(cbins,
 
     Returns
     -------
-    cbins_used_path : str
-        Full path to cbins_used file
+    spects_used_path : str
+        Full path to file called 'spect_files'
         which contains a list of three-element tuples:
-            cbin : str, filename
+            spect_filename : str, filename of `.spect` file
             spect_dur : float, duration of the spectrogram from cbin
             labels : str, labels from .cbin.not.mat associated with .cbin
                      (string labels for syllables in spectrogram)
         Used when building data sets of a specific duration.
 
-    For each .cbin filename in the list, a "pickled" Python dictionary is saved
-    containing the following keys:
+    For each .cbin filename in the list, a '.spect' file is saved.
+    Each '.spect' file contains a "pickled" Python dictionary
+    with the following key, value pairs:
         spect : ndarray
             spectrogram
         freq_bins : ndarray
@@ -220,16 +222,14 @@ def make_spects_from_list_of_cbins(cbins,
             vector of centers of tme bins from spectrogram
         labeled_timebins : ndarray
             same length as time_bins, but value of each element is a label
-            corresponding to that time bin
-
-    Each dictionary is saved with ".spect" appended to the .cbin file name.
+            corresponding to that time bin    
     """
 
     # need to keep track of name of files used since we may skip some.
     # (cbins_used is actually a list of tuples as defined in docstring)
-    cbins_used = []
+    spect_files = []
 
-    for cbin in cbins[:number_files]:
+    for cbin in cbins:
         try:
             notmat_dict = evfuncs.load_notmat(cbin)
         except FileNotFoundError:
@@ -237,9 +237,9 @@ def make_spects_from_list_of_cbins(cbins,
                   .format(cbin))
             continue
 
-        this_labels = notmat_dict['labels']
+        this_labels_str = notmat_dict['labels']
         if skip_files_with_labels_not_in_labelset:
-            labels_set = set(this_labels)
+            labels_set = set(this_labels_str)
             # below, set(labels_mapping) is a set of that dict's keys
             if not labels_set.issubset(set(labels_mapping)):
                 # because there's some label in labels
@@ -248,6 +248,7 @@ def make_spects_from_list_of_cbins(cbins,
                       'skipping file'.format(cbin))
                 continue
 
+        print('making .spect file for {}'.format(cbin))
         dat, fs = evfuncs.load_cbin(cbin)
         if 'freq_cutoffs' in spect_params:
             dat = spect_utils.butter_bandpass_filter(dat,
@@ -268,7 +269,7 @@ def make_spects_from_list_of_cbins(cbins,
             freq_bins = freq_bins[f_inds]
 
         this_labels = [labels_mapping[label]
-                  for label in this_labels]
+                  for label in this_labels_str]
         this_labeled_timebins = make_labeled_timebins_vector(this_labels,
                                                              notmat_dict['onsets'] / 1000,
                                                              notmat_dict['offsets'] / 1000,
@@ -282,27 +283,34 @@ def make_spects_from_list_of_cbins(cbins,
                 "curr_timebin_dur didn't match timebin_dur"
         spect_dur = time_bins.shape[-1] * timebin_dur
 
-        cbins_used_with_durs.append((cbin, spect_dur, labels))
+        spect_dict = {'spect': spect,
+                      'freq_bins': freq_bins,
+                      'time_bins': time_bins,
+                      'labels': this_labels_str,
+                      'labeled_timebins': this_labeled_timebins,
+                      'timebin_dur': timebin_dur,
+                      'spect_params': spect_params,
+                      'labels_mapping': labels_mapping}
 
-        data_dict = {'spect': spect,
-                     'freq_bins': freq_bins,
-                     'time_bins': time_bins,
-                     'labels': this_labels,
-                     'labeled_timebins': this_labeled_timebins}
-        data_dict_filename = cbin + '.spect'
-        joblib.dump(data_dict, data_dict_filename)
+        spect_dict_filename = os.path.join(
+            os.path.normpath(output_dir),
+            os.path.basename(cbin) + '.spect')
+        joblib.dump(spect_dict, spect_dict_filename)
 
-    cbins_used_path = os.path.join(output_dir, 'cbins_used','w')
-    joblib.dump(cbins_used, cbins_used_path)
+        spect_files.append((spect_dict_filename, spect_dur, this_labels_str))
 
-    return cbins_used_path
+    spect_files_path = os.path.join(output_dir, 'spect_files')
+    joblib.dump(spect_files, spect_files_path)
+
+    return spect_files_path
 
 
 def make_data_dicts(output_dir,
                     total_train_set_duration,
                     validation_set_duration,
                     test_set_duration,
-                    cbins_used=None):
+                    labelset,
+                    spect_files=None):
     """function that loads data and saves in dictionaries
 
     Parameters
@@ -313,11 +321,13 @@ def make_data_dicts(output_dir,
     validation_set_duration : float
     test_set_duration : float
         all in seconds
-    cbins_used : str
-        full path to file containing 'cbins_used' list of tuples
+    labelset : list
+        of str, labels used
+    spect_files : str
+        full path to file containing 'spect_files' list of tuples
         saved by function make_spects_from_list_of_cbins.
         Default is None, in which case this function looks for
-        a file named 'cbins_used' in output_dir.
+        a file named 'spect_files' in output_dir.
 
     Returns
     -------
@@ -345,38 +355,43 @@ def make_data_dicts(output_dir,
 
     if not os.path.isdir(output_dir):
         raise NotADirectoryError('{} not recognized '
-                                 'as a directory'.format(data_dir))
+                                 'as a directory'.format(output_dir))
 
-    if cbins_used is None:
-        cbins_used = glob(os.path.join(output_dir,'cbins_used'))
-        if cbins_used == []:
-            raise FileNotFoundError("did not find 'cbins_used' file in {}"
+    if spect_files is None:
+        spect_files = glob(os.path.join(output_dir,'spect_files'))
+        if spect_files == []:
+            raise FileNotFoundError("did not find 'spect_files' file in {}"
                                     .format(output_dir))
+        elif len(spect_files) > 1:
+            raise ValueError("found than more than one 'spect_files' in {}:\n{}"
+                             .format(output_dir, spect_files))
+        else:
+            spect_files = spect_files[0]
 
-
-    if not os.path.isfile(cbins_used):
+    if not os.path.isfile(spect_files):
         raise FileNotFoundError('{} not recognized as a file'
-                                .format(cbins_used))
+                                .format(spect_files))
 
-    cbins_used = joblib.load(cbins_used)
+    spect_files = joblib.load(spect_files)
 
-    total_cbins_dur = sum([cbin[1] for cbin in cbins_used])
+    total_spects_dur = sum([spect[1] for spect in spect_files])
     total_dataset_dur = sum([total_train_set_duration,
                              validation_set_duration,
                              test_set_duration])
-    if total_cbins_dur < total_dataset_dur:
+    if total_spects_dur < total_dataset_dur:
         raise ValueError('Total duration of all .cbin files, {} seconds,'
                          ' is less than total target duration of '
                          'training, validation, and test sets, '
                          '{} seconds'
-                         .format(total_cbins_dur, total_dataset_dur))
+                         .format(total_spects_dur, total_dataset_dur))
 
+    # main loop that gets datasets
     while 1:
-        cbins_used_copy = copy.deepcopy(cbins_used)
+        spect_files_copy = copy.deepcopy(spect_files)
 
-        train_cbins = []
-        val_cbins = []
-        test_cbins = []
+        train_spects = []
+        val_spects = []
+        test_spects = []
 
         total_train_dur = 0
         val_dur = 0
@@ -385,51 +400,134 @@ def make_data_dicts(output_dir,
         choice = ['train', 'val', 'test']
 
         while 1:
-            ind = random.randint(len(cbins_used_copy))
-            a_cbin = cbins_used_copy.pop(ind)
-            which_set = random.randint(len(cbins_used_copy))
+            # pop tuples off cbins_used list and append to randomly-chosen
+            # list, either train, val, or test set.
+            # Do this until the total duration for each data set is equal
+            # to or greater than the target duration for each set.
+            ind = random.randint(0, len(spect_files_copy)-1)
+            a_spect = spect_files_copy.pop(ind)
+            which_set = random.randint(0, len(choice)-1)
             which_set = choice[which_set]
             if which_set == 'train':
-                train_cbins.append(a_cbin)
-                total_train_dur += a_cbin[1]  # ind 1 is duration
-                if total_train_dur > total_train_set_duration:
+                train_spects.append(a_spect)
+                total_train_dur += a_spect[1]  # ind 1 is duration
+                if total_train_dur >= total_train_set_duration:
                     choice.pop(choice.index('train'))
             elif which_set == 'val':
-                val_cbins.append(a_cbin)
-                val_dur += a_cbin[1]  # ind 1 is duration
-                if val_dur > validation_set_duration:
+                val_spects.append(a_spect)
+                val_dur += a_spect[1]  # ind 1 is duration
+                if val_dur >= validation_set_duration:
                     choice.pop(choice.index('val'))
             elif which_set == 'test':
-                test_cbins.append(a_cbin)
-                test_dur += a_cbin[1]  # ind 1 is duration
-                if test_dur > test_set_duration:
+                test_spects.append(a_spect)
+                test_dur += a_spect[1]  # ind 1 is duration
+                if test_dur >= test_set_duration:
                     choice.pop(choice.index('test'))
 
             if len(choice) < 1:
                 break
 
-        assert everything
-        if everything_works:
+        # make sure no contamination between data sets.
+        # If this is true, each set of filenames should be disjoint from others
+        train_spect_files = [tup[0] for tup in train_spects]  # tup = a tuple
+        val_spect_files = [tup[0] for tup in val_spects]
+        test_spect_files = [tup[0] for tup in test_spects]
+        assert set(train_spect_files).isdisjoint(val_spect_files)
+        assert set(train_spect_files).isdisjoint(test_spect_files)
+        assert set(val_spect_files).isdisjoint(test_spect_files)
+
+        # make sure that each set contains all classes we
+        # want the network to learn
+        train_labels = itertools.chain.from_iterable(
+            [spect[2] for spect in train_spects])
+        train_labels = set(train_labels)  # make set to get unique values
+
+        val_labels = itertools.chain.from_iterable(
+            [spect[2] for spect in val_spects])
+        val_labels = set(val_labels)
+
+        test_labels = itertools.chain.from_iterable(
+            [spect[2] for spect in test_spects])
+        test_labels = set(test_labels)
+
+        if train_labels != set(labelset):
+            print('Train labels did not contain all labels in labelset. '
+                  'Getting new training set.')
+            continue
+        elif val_labels != set(labelset):
+            print('Validation labels did not contain all labels in labelset. '
+                  'Getting new validation set.')
+            continue
+        elif test_labels != set(labelset):
+            print('Test labels did not contain all labels in labelset. '
+                  'Getting new validation set.')
+            continue
+        else:
             break
 
+    for dict_name, spect_list, target_dur in zip(['train','val','test'],
+                                                 [train_spects,val_spects,test_spects],
+                                                 [total_train_set_duration,
+                                                  validation_set_duration,
+                                                  test_set_duration]):
 
+        spects = []
+        filenames = []
+        all_time_bins = []
+        labels = []
+        labeled_timebins = []
 
+        for spect_file in spect_list:
+            spect_dict = joblib.load(spect_file[0])
+            spects.append(spect_dict['spect'])
+            filenames.append(spect_file[0])
+            all_time_bins.append(spect_dict['time_bins'])
+            labels.append(spect_dict['labels'])
+            labeled_timebins.append(spect_dict['labeled_timebins'])
 
-    data_dict = {'spects': spects,
-                 'filenames': cbins_used,
-                 'freq_bins': freq_bins,
-                 'time_bins': all_time_bins,
-                 'labels': labels,
-                 'labeled_timebins': labeled_timebins,
-                 'timebin_dur': timebin_dur,
-                 'spect_params': spect_params,
-                 'labels_mapping': labels_mapping}
+            if 'freq_bins' in locals():
+                assert np.array_equal(spect_dict['freq_bins'],freq_bins)
+            else:
+                freq_bins = spect_dict['freq_bins']
 
-    print('saving data dictionary in {}'.format(data_dir))
-    data_dict_path = os.path.join(data_dir, 'data_dict')
-    joblib.dump(data_dict, data_dict_path)
+            if 'labels_mapping' in locals():
+                assert spect_dict['labels_mapping'] == labels_mapping
+            else:
+                labels_mapping = spect_dict['labels_mapping']
 
-    return data_dict, data_dict_path
+            if 'timebin_dur' in locals():
+                assert spect_dict['timebin_dur'] == timebin_dur
+            else:
+                timebin_dur = spect_dict['timebin_dur']
+
+            if 'spect_params' in locals():
+                assert spect_dict['spect_params'] == spect_params
+            else:
+                spect_params = spect_dict['spect_params']
+
+        X = np.concatenate(spects, axis=1)
+        Y = np.concatenate(labeled_timebins)
+        assert X.shape[-1] == Y.shape[0]  # Y has shape (timebins, 1)
+        if X.shape[-1] > target_dur / timebin_dur:
+            correct_length = np.round(target_dur / timebin_dur).astype(int)
+            X = X[:, correct_length]
+            Y = Y[:correct_length, :]
+
+        data_dict = {'spects': spects,
+                     'filenames': filenames,
+                     'freq_bins': freq_bins,
+                     'time_bins': all_time_bins,
+                     'labels': labels,
+                     'labeled_timebins': labeled_timebins,
+                     'X_' + dict_name: X,
+                     'Y_' + dict_name: Y,
+                     'timebin_dur': timebin_dur,
+                     'spect_params': spect_params,
+                     'labels_mapping': labels_mapping}
+
+        print('saving data dictionary in {}'.format(output_dir))
+        data_dict_path = os.path.join(output_dir, dict_name + '_data_dict')
+        joblib.dump(data_dict, data_dict_path)
 
 
 def get_inds_for_dur(song_timebins,
