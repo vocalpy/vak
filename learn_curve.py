@@ -13,14 +13,16 @@ import numpy as np
 import joblib
 
 from cnn_bilstm.graphs import get_full_graph
-from cnn_bilstm.utils import make_data_dict, reshape_data_for_batching
 import cnn_bilstm.utils
 
 if __name__ == "__main__":
-    config_file = sys.argv[1]
+    config_file = os.path.normpath(sys.argv[1])
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
+    if not os.path.isfile(config_file):
+        raise FileNotFoundError('config file {} is not found'
+                                .format(config_file))
     config = ConfigParser()
     config.read(config_file)
 
@@ -216,7 +218,7 @@ if __name__ == "__main__":
     logger.info('maximum number of training steps will be {}'
                 .format(n_max_iter))
 
-    normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
+    normalize_spectrograms = config.getboolean('TRAIN', 'normalize_spectrograms')
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
 
