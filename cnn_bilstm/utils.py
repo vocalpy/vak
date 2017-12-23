@@ -273,7 +273,8 @@ def make_spects_from_list_of_cbins(cbins,
         this_labeled_timebins = make_labeled_timebins_vector(this_labels,
                                                              notmat_dict['onsets'] / 1000,
                                                              notmat_dict['offsets'] / 1000,
-                                                             time_bins)
+                                                             time_bins,
+                                                             labels_mapping['silent_gap_label'])
 
         if not 'timebin_dur' in locals():
             timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
@@ -534,7 +535,7 @@ def make_data_dicts(output_dir,
         assert X.shape[-1] == Y.shape[0]  # Y has shape (timebins, 1)
         if X.shape[-1] > target_dur / timebin_dur:
             correct_length = np.round(target_dur / timebin_dur).astype(int)
-            X = X[:, correct_length]
+            X = X[:, :correct_length]
             Y = Y[:correct_length, :]
             spect_ID_vector = spect_ID_vector[:correct_length]
 
@@ -556,7 +557,9 @@ def make_data_dicts(output_dir,
         joblib.dump(data_dict, data_dict_path)
 
 
-def get_inds_for_dur(song_timebins,
+def get_inds_for_dur(spect_ID_vector,
+                     labeled_timebins_vector,
+                     labels_mapping,
                      target_duration,
                      timebin_dur_in_s=0.001):
     """for getting a training set with random songs but constant duration
@@ -566,13 +569,18 @@ def get_inds_for_dur(song_timebins,
 
     Parameters
     ----------
-    song_timebins : list
-        list of number of timebins for each songfile,
-        where timebines is number of rows in a spectrogram
-        e.g.,
-        [song_spect.shape[0] for song_spect in song_spectrograms]
-        (rows are time instead of frequency,
-        because network is set up with input this way)
+    spect_ID_vector : ndarray
+            Vector where each element is an ID for a song. Used to randomly grab subsets
+            of data of a target duration while still having the subset be composed of
+            individual songs as much as possible. So this vector will look like:
+            [0, 0, 0, ..., 1, 1, 1, ... , n, n, n] where n is equal to or (a little) less
+            than the length of spects. spect_ID_vector.shape[-1] is the same as X.shape[-1]
+            and Y.shape[0].
+    labeled_timebins_vector : ndarray
+            Vector of same length as spect_ID_vector but each value is a class.
+    labels_mapping : dict
+        maps str labels to consecutive integers.
+        Used to check that the randomly drawn data set contains all classes.
     target_duration : float
         target duration of training set in s
     timebin_dur_in_s : float
@@ -588,28 +596,22 @@ def get_inds_for_dur(song_timebins,
         training spectrograms concatenated, and each row being one timebin)
     """
 
-    for song_ind, num_timebins_in_song in enumerate(song_timebins):
-        inds = np.ones((num_timebins_in_song,), dtype=int) * song_ind
-        if 'song_inds_arr' in locals():
-            song_inds_arr = np.concatenate((song_inds_arr, inds))
-        else:
-            song_inds_arr = inds
+    spect_ids, spect_timebins = np.unique(spect_ID_vector, return_counts=True)
 
-    song_id_list = []
-    total_dur_in_timebins = 0
-    num_songs = len(song_timebins)
     while 1:
-        song_id = random.randrange(num_songs)
-        if song_id in song_id_list:
-            continue
-        else:
-            song_id_list.append(song_id)
-            song_id_inds = np.where(song_inds_arr == song_id)[0]  # 0 because where np.returns tuple
+        shuffle_inds = np.random.permutation(spect_ids.shape[-1])
+
+        spect_id_list = []
+        total_dur_in_timebins = 0
+
+        for ind in shuffle_inds:
+            spect_id_list.append(spect_ids[ind])
+            spect_id_inds = np.where(spect_ID_vector == spect_ids[ind])[0]  # 0 because where np.returns tuple
             if 'inds_to_use' in locals():
-                inds_to_use = np.concatenate((inds_to_use, song_id_inds))
+                inds_to_use = np.concatenate((inds_to_use, spect_id_inds))
             else:
-                inds_to_use = song_id_inds
-            total_dur_in_timebins = total_dur_in_timebins + song_timebins[song_id]
+                inds_to_use = spect_id_inds
+            total_dur_in_timebins += spect_timebins[ind]
             if total_dur_in_timebins * timebin_dur_in_s >= target_duration:
                 # if total_dur greater than target, need to truncate
                 if total_dur_in_timebins * timebin_dur_in_s > target_duration:
@@ -617,6 +619,13 @@ def get_inds_for_dur(song_timebins,
                     inds_to_use = inds_to_use[:correct_length]
                 # (if equal to target, don't need to do anything)
                 break
+
+        if set(np.unique(labeled_timebins_vector[inds_to_use])) != set(labels_mapping.values()):
+            print('Randomly drawn subset of training data did not contain all '
+                  'values in labels mapping. Getting new randomly drawn set.')
+            continue
+        else:
+            break
 
     return inds_to_use
 
