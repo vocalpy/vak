@@ -51,6 +51,11 @@ if __name__ == "__main__":
     # start at 1, because 0 is assumed to be label for silent gaps
     labels_mapping = dict(zip(labelset,
                               range(1, len(labelset) + 1)))
+    if config.has_option('DATA', 'silent_gap_label'):
+        silent_gap_label = int(config['DATA']['silent_gap_label'])
+        labels_mapping['silent_gap_label'] = silent_gap_label
+    else:
+        labels_mapping['silent_gap_label'] = 0
     skip_files_with_labels_not_in_labelset = config.getboolean(
         'DATA',
         'skip_files_with_labels_not_in_labelset')

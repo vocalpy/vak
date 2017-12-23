@@ -76,35 +76,9 @@ input_vec_size = joblib.load(
         'X_train')).shape[-1]
 
 print('loading testing data')
-make_test_data = config.getboolean('DATA', 'make_test_data')
-if make_test_data:
-    test_data_dir = config['DATA']['test_data_dir']
-    number_test_song_files = int(config['DATA']['number_test_song_files'])
 
-    spect_params = {}
-    spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
-    spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
-    spect_params['freq_cutoffs'] = [float(element)
-                                    for element in
-                                    config['SPECTROGRAM']['freq_cutoffs']
-                                        .split(',')]
-    spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-    spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
-                                                      'log_transform')
-
-    (test_data_dict,
-     test_data_dict_path) = cnn_bilstm.utils.make_data_dict(labels_mapping,
-                                                            test_data_dir,
-                                                            number_test_song_files,
-                                                            spect_params,
-                                                            skip_files_with_labels_not_in_labelset)
-else:
-    if config.has_option('DATA', 'test_data_path'):
-        test_data_dict_path = config['DATA']['test_data_path']
-    elif config.has_option('DATA', 'test_data_dir'):
-        test_data_dict_path = os.path.join(test_data_dir,
-                                            'data_dict')
-    test_data_dict = joblib.load(test_data_dict_path)
+test_data_dict_path = config['DATA']['test_data_path']
+test_data_dict = joblib.load(test_data_dict_path)
 
 (test_data_spects,
  test_labeled_timebins,
