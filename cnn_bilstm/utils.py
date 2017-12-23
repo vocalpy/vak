@@ -222,7 +222,7 @@ def make_spects_from_list_of_cbins(cbins,
             vector of centers of tme bins from spectrogram
         labeled_timebins : ndarray
             same length as time_bins, but value of each element is a label
-            corresponding to that time bin    
+            corresponding to that time bin
     """
 
     # need to keep track of name of files used since we may skip some.
@@ -335,22 +335,43 @@ def make_data_dicts(output_dir,
 
     Saves three 'data_dict' files (train, validation, and test)
     in output_dir, with following structure:
-        {'X': spects,
-         'filenames': cbins_used,
-         'freq_bins': freq_bins,
-         'time_bins': all_time_bins,
-         'Y': labeled_timebins,
-         'timebin_dur': timebin_dur}
-
-        where:
-            labels : list
-                of strings, labels corresponding to each spectrogram
-            timebin_dur : float
-                duration of a timebin in seconds from spectrograms
-            cbins_used : list
-                of str, filenames of .cbin files used to generate spects,
-                to have a record
-
+        spects : list
+            of ndarray, spectrograms from audio files
+        filenames : list
+            same length as spects, filename of each audio file that was converted to spectrogram
+        freq_bins : ndarray
+            vector of frequencies where each value is a bin center. Same for all spectrograms
+        time_bins : list
+            of ndarrays, each a vector of times where each value is a bin center.
+            One for each spectrogram
+        labels : list
+            of strings, labels corresponding to each spectrogram
+        labeled_timebins : list
+            of ndarrays, each same length as time_bins but value is a label for that bin.
+            In other words, the labels vector is mapped onto the time_bins vector for the
+            spectrogram.
+        X : ndarray
+            X_train, X_val, or X_test, depending on which data_dict you are looking at.
+            Some number of spectrograms concatenated, enough so that the total duration
+            of the spectrogram in time bins is equal to or greater than the target duration.
+            If greater than target, then X is truncated so it is equal to the target.
+        Y : ndarray
+            Concatenated labeled_timebins vectors corresponding to the spectrograms in X.
+        spect_ID_vector : ndarray
+            Vector where each element is an ID for a song. Used to randomly grab subsets
+            of data of a target duration while still having the subset be composed of
+            individual songs as much as possible. So this vector will look like:
+            [0, 0, 0, ..., 1, 1, 1, ... , n, n, n] where n is equal to or (a little) less
+            than the length of spects. spect_ID_vector.shape[-1] is the same as X.shape[-1]
+            and Y.shape[0].
+        timebin_dur : float
+            duration of a timebin in seconds from spectrograms
+        spect_params : dict
+            parameters for computing spectrogram as specified in config.ini file.
+            Will be checked against .ini file when running other scripts such as learn_curve.py
+        labels_mapping : dict
+            maps str labels for syllables to consecutive integers.
+            As explained in docstring for make_spects_from_list_of_cbins.
     """
 
     if not os.path.isdir(output_dir):
@@ -359,7 +380,7 @@ def make_data_dicts(output_dir,
 
     if spect_files is None:
         spect_files = glob(os.path.join(output_dir,'spect_files'))
-        if spect_files == []:
+        if spect_files == []:  # if glob didn't find anything
             raise FileNotFoundError("did not find 'spect_files' file in {}"
                                     .format(output_dir))
         elif len(spect_files) > 1:
@@ -476,17 +497,19 @@ def make_data_dicts(output_dir,
         all_time_bins = []
         labels = []
         labeled_timebins = []
+        spect_ID_vector = []
 
-        for spect_file in spect_list:
+        for spect_ind, spect_file in enumerate(spect_list):
             spect_dict = joblib.load(spect_file[0])
             spects.append(spect_dict['spect'])
             filenames.append(spect_file[0])
             all_time_bins.append(spect_dict['time_bins'])
             labels.append(spect_dict['labels'])
             labeled_timebins.append(spect_dict['labeled_timebins'])
+            spect_ID_vector.extend([spect_ind] * spect_dict['time_bins'].shape[-1])
 
             if 'freq_bins' in locals():
-                assert np.array_equal(spect_dict['freq_bins'],freq_bins)
+                assert np.array_equal(spect_dict['freq_bins'], freq_bins)
             else:
                 freq_bins = spect_dict['freq_bins']
 
@@ -507,11 +530,13 @@ def make_data_dicts(output_dir,
 
         X = np.concatenate(spects, axis=1)
         Y = np.concatenate(labeled_timebins)
+        spect_ID_vector = np.asarray(spect_ID_vector, dtype='int')
         assert X.shape[-1] == Y.shape[0]  # Y has shape (timebins, 1)
         if X.shape[-1] > target_dur / timebin_dur:
             correct_length = np.round(target_dur / timebin_dur).astype(int)
             X = X[:, correct_length]
             Y = Y[:correct_length, :]
+            spect_ID_vector = spect_ID_vector[:correct_length]
 
         data_dict = {'spects': spects,
                      'filenames': filenames,
@@ -519,6 +544,7 @@ def make_data_dicts(output_dir,
                      'time_bins': all_time_bins,
                      'labels': labels,
                      'labeled_timebins': labeled_timebins,
+                     'spect_ID_vector': spect_ID_vector,
                      'X_' + dict_name: X,
                      'Y_' + dict_name: Y,
                      'timebin_dur': timebin_dur,

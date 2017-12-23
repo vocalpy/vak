@@ -86,12 +86,3 @@ if __name__ == "__main__":
                     float(config['DATA']['test_set_duration']),
                     labelset,
                     spect_files_path)
-
-    spects = []
-    labels = []
-    all_time_bins = []
-    labeled_timebins = []
-    all_time_bins.append(time_bins)
-    spects.append(spect)
-    labels.append(this_labels)
-    labeled_timebins.append(this_labeled_timebins)
