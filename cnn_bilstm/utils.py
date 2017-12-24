@@ -623,6 +623,7 @@ def get_inds_for_dur(spect_ID_vector,
         if set(np.unique(labeled_timebins_vector[inds_to_use])) != set(labels_mapping.values()):
             print('Randomly drawn subset of training data did not contain all '
                   'values in labels mapping. Getting new randomly drawn set.')
+            import pdb;pdb.set_trace()
             continue
         else:
             break
