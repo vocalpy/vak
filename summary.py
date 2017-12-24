@@ -37,7 +37,7 @@ TRAIN_SET_DURS = [int(element)
 
 num_replicates = int(config['TRAIN']['replicates'])
 REPLICATES = range(num_replicates)
-normalize_spectrograms = config.getboolean('DATA', 'normalize_spectrograms')
+normalize_spectrograms = config.getboolean('TRAIN', 'normalize_spectrograms')
 
 spect_params = {}
 for spect_param_name in ['freq_cutoffs', 'thresh']:
@@ -58,7 +58,6 @@ if spect_params == {}:
     spect_params = None
 
 labelset = list(config['DATA']['labelset'])
-number_song_files = int(config['DATA']['number_song_files'])
 skip_files_with_labels_not_in_labelset = config.getboolean(
     'DATA',
     'skip_files_with_labels_not_in_labelset')
@@ -69,67 +68,46 @@ with open(labels_mapping_file, 'rb') as labels_map_file_obj:
 Y_train = joblib.load(os.path.join(
     results_dirname, 'Y_train'))
 
-# we load actual X_train from each training_records_dir below
+train_data_dict_path = config['TRAIN']['train_data_path']
+train_data_dict = joblib.load(train_data_dict_path)
+(train_timebin_dur,
+train_spect_params) = (train_data_dict['timebin_dur'],
+                       train_data_dict['spect_params'])
+
+# we load actual X_train for each replicate
+# from each training_records_dir below
 input_vec_size = joblib.load(
     os.path.join(
         results_dirname,
         'X_train')).shape[-1]
 
 print('loading testing data')
-make_test_data = config.getboolean('DATA', 'make_test_data')
-if make_test_data:
-    test_data_dir = config['DATA']['test_data_dir']
-    number_test_song_files = int(config['DATA']['number_test_song_files'])
 
-    spect_params = {}
-    spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
-    spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
-    spect_params['freq_cutoffs'] = [float(element)
-                                    for element in
-                                    config['SPECTROGRAM']['freq_cutoffs']
-                                        .split(',')]
-    spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-    spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
-                                                      'log_transform')
+test_data_dict_path = config['TRAIN']['test_data_path']
+test_data_dict = joblib.load(test_data_dict_path)
 
-    (test_data_dict,
-     test_data_dict_path) = cnn_bilstm.utils.make_data_dict(labels_mapping,
-                                                            test_data_dir,
-                                                            number_test_song_files,
-                                                            spect_params,
-                                                            skip_files_with_labels_not_in_labelset)
-else:
-    if config.has_option('DATA', 'test_data_path'):
-        test_data_dict_path = config['DATA']['test_data_path']
-    elif config.has_option('DATA', 'test_data_dir'):
-        test_data_dict_path = os.path.join(test_data_dir,
-                                            'data_dict')
-    test_data_dict = joblib.load(test_data_dict_path)
+# notice data is called `X_test_copy` and `Y_test_copy`
+# because main loop below needs a copy of the original
+# to normalize and reshape
+(X_test_copy,
+ Y_test_copy,
+ test_timebin_dur,
+ files_used,
+ test_spect_params) = (test_data_dict['X_test'],
+                       test_data_dict['Y_test'],
+                       test_data_dict['timebin_dur'],
+                       test_data_dict['filenames'],
+                       test_data_dict['spect_params'])
 
-(test_data_spects,
- test_labeled_timebins,
- timebin_dur,
- files_used) = (test_data_dict['spects'],
-                test_data_dict['labeled_timebins'],
-                test_data_dict['timebin_dur'],
-                test_data_dict['filenames'])
+assert train_spect_params == test_spect_params
+assert train_timebin_dur == test_timebin_dur
 
-# here there's no "validation test set" so we just concatenate all test spects
-# from all the files we loaded, unlike with training set
-X_test = np.concatenate([spect.T
-                         for spect in test_data_spects],
-                        axis=0)
-# copy X_test because it gets scaled and reshape in main loop
-X_test_copy = np.copy(X_test)
-
-# also need Y_test as a copy
-# because Y_test also gets reshaped in loop
-# and because we need to compare ("un-reshaped") with Y_pred
-Y_test_copy = np.concatenate(test_labeled_timebins, axis=0)
+# have to transpose X_test so rows are timebins and columns are frequencies
+X_test_copy = X_test_copy.T
 
 # initialize arrays to hold summary results
 Y_pred_test_all = []  # will be a nested list
-Y_pred_train_all = [] # will be a nested list
+Y_pred_train_all = []  # will be a nested list
 train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 
@@ -160,8 +138,9 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
         Y_train_subset = Y_train[train_inds]
         X_train_subset = joblib.load(os.path.join(
             training_records_dir,
-            'scaled_spects_duration_{}_replicate_{}'
-                .format(train_set_dur, replicate)))['X_train_subset_scaled']
+            'scaled_spects_duration_{}_replicate_{}'.format(
+                train_set_dur, replicate)
+        ))['X_train_subset_scaled']
         assert Y_train_subset.shape[0] == X_train_subset.shape[0],\
             "mismatch between X and Y train subset shapes"
 
