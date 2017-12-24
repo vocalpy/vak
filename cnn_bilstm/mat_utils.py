@@ -96,7 +96,7 @@ def make_data_from_matlab_spects(data_dir, mat_filenames=None,
         if labels.ndim != 2:
             if labels.ndim == 1:
                 # make same shape as output of utils.make_labeled_timebins
-                # so main.py doesn't crash when concatenating
+                # so learn_curve.py doesn't crash when concatenating
                 # with zero-pad vector
                 labels = labels[:, np.newaxis]
             else:
