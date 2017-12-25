@@ -236,8 +236,8 @@ if __name__ == "__main__":
                                    + str(train_set_dur) +
                                    '_sec_replicate_'
                                    + str(replicate))
-            if not os.path.isdir(training_records_dir):
-                os.mkdir(training_records_dir)
+            if not os.path.isdir(training_records_path):
+                os.mkdir(training_records_path)
 
             if use_train_subsets_from_previous_run:
                 train_inds_path = os.path.join(previous_run_path,
@@ -251,7 +251,7 @@ if __name__ == "__main__":
                                                                labels_mapping,
                                                                train_set_dur,
                                                                timebin_dur)
-            with open(os.path.join(training_records_dir, 'train_inds'),
+            with open(os.path.join(training_records_path, 'train_inds'),
                       'wb') as train_inds_file:
                 pickle.dump(train_inds, train_inds_file)
             X_train_subset = X_train[train_inds, :]
@@ -267,7 +267,7 @@ if __name__ == "__main__":
                 joblib.dump(spect_scaler,
                             os.path.join(results_dirname, scaler_name))
 
-            scaled_data_filename = os.path.join(training_records_dir,
+            scaled_data_filename = os.path.join(training_records_path,
                                                 'scaled_spects_duration_{}_replicate_{}'
                                                 .format(train_set_dur, replicate))
             scaled_data_dict = {'X_train_subset_scaled': X_train_subset,
@@ -303,7 +303,7 @@ if __name__ == "__main__":
             if len(iter_order) > n_max_iter:
                 iter_order = iter_order[0:n_max_iter]
             with open(
-                    os.path.join(training_records_dir,
+                    os.path.join(training_records_path,
                                  "iter_order"),
                     'wb') as iter_order_file:
                 pickle.dump(iter_order, iter_order_file)
@@ -320,7 +320,7 @@ if __name__ == "__main__":
                                                                            input_vec_size)
 
             # save scaled reshaped data
-            scaled_reshaped_data_filename = os.path.join(training_records_dir,
+            scaled_reshaped_data_filename = os.path.join(training_records_path,
                                                          'scaled_reshaped_spects_duration_{}_replicate_{}'
                                                          .format(train_set_dur, replicate))
             scaled_reshaped_data_dict = {'X_train_subset_scaled_reshaped': X_train_subset,
@@ -423,7 +423,7 @@ if __name__ == "__main__":
                                 # error went down, set as new min and reset counter
                                 curr_min_err = val_errs[-1]
                                 err_patience_counter = 0
-                                checkpoint_path = os.path.join(training_records_dir, checkpoint_filename)
+                                checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                                 print("Validation error improved.\n"
                                       "Saving checkpoint to {}".format(checkpoint_path))
                                 saver.save(sess, checkpoint_path)
@@ -432,28 +432,28 @@ if __name__ == "__main__":
                                 if err_patience_counter > patience:
                                     print("stopping because validation error has not improved in {} steps"
                                           .format(patience))
-                                    with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
+                                    with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
                                         pickle.dump(costs, costs_file)
-                                    with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
+                                    with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                         pickle.dump(val_errs, val_errs_file)
                                     break
 
                     if checkpoint_step:
                         if step % checkpoint_step == 0:
                             "Saving checkpoint."
-                            checkpoint_path = os.path.join(training_records_dir, checkpoint_filename)
+                            checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                             if save_only_single_checkpoint_file is False:
                                 checkpoint_path += '_{}'.format(step)
                             saver.save(sess, checkpoint_path)
-                            with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
+                            with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
 
                     if step > n_max_iter:  # ok don't actually loop forever
                         "Reached max. number of iterations, saving checkpoint."
-                        checkpoint_path = os.path.join(training_records_dir, checkpoint_filename)
+                        checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                         saver.save(sess, checkpoint_path)
-                        with open(os.path.join(training_records_dir, "costs"), 'wb') as costs_file:
+                        with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
                             pickle.dump(costs, costs_file)
-                        with open(os.path.join(training_records_dir, "val_errs"), 'wb') as val_errs_file:
+                        with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                             pickle.dump(val_errs, val_errs_file)
                         break
