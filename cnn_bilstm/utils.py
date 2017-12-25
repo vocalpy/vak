@@ -646,6 +646,56 @@ def reshape_data_for_batching(X, Y, batch_size, time_steps, input_vec_size):
     return X, Y, num_batches
 
 
+def convert_timebins_to_labels(labeled_timebins,
+                               labels_mapping,
+                               spect_ID_vector=None):
+    """converts output of cnn-bilstm from label for each frame
+    to one label for each continuous segment
+
+    Parameters
+    ----------
+    labeled_timebins : ndarray
+        where each element is a label for a time bin.
+        Such an array is the output of the cnn-bilstm network.
+    labels_mapping : dict
+        that maps str labels to consecutive integers.
+        The mapping is inverted to convert back to str labels.
+    spect_ID_vector : ndarray
+        of same length as labeled_timebins, where each element
+        is an ID # for the spectrogram from which labeled_timebins
+        was taken.
+        If provided, used to split the converted labels back to
+        a list of label str, with one for each spectrogram.
+        Default is None, in which case the return value is one long str.
+
+    Returns
+    -------
+    labels : str or list
+        labeled_timebins mapped back to label str.
+        If spect_ID_vector was prvodied, then labels is split into a list of str,
+        where each str corresponds to predicted labels for each predicted
+        segment in each spectrogram as identified by spect_ID_vector.
+    """
+
+    # remove silent gap label
+    silent_gap_label = labels_mapping['silent_gap_label']
+    labeled_timebins = labeled_timebins[labeled_timebins != silent_gap_label]
+
+    idx = np.diff(labeled_timebins, axis=0).astype(np.bool)
+    idx = np.insert(idx, 0, True)
+
+    labels = labeled_timebins[idx].tolist()
+
+    inverse_labels_mapping = dict((v, k) for k, v in labels_mapping.items())
+    labels = [inverse_labels_mapping[label] for label in labels]
+
+    if spect_ID_vector:
+        spect_ID_vector = spect_ID_vector[idx]
+        return labels, spect_ID_vector
+    else:
+        return labels
+
+
 def levenshtein(source, target):
     """levenshtein distance
     from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
@@ -693,4 +743,4 @@ def syllable_error_rate(true, pred):
     Levenshtein/edit distance normalized by length of true sequence
 
     Parameters:
-    """
+        """
