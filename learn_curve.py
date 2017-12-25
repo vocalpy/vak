@@ -205,6 +205,18 @@ if __name__ == "__main__":
         # need a copy of X_val when we normalize it below
         X_val_copy = copy.deepcopy(X_val)
 
+    use_train_subsets_from_previous_run = config.getboolean(
+        'TRAIN', 'use_train_subsets_from_previous_run')
+    if use_train_subsets_from_previous_run:
+        try:
+            previous_run_path = config['TRAIN']['previous_run_path']
+        except NoOptionError:
+            raise ('In config.file {}, '
+                   'use_train_subsets_from_previous_run = Yes, but'
+                   'no previous_run_path option was found.\n'
+                   'Please add previous_run_path to config file.'
+                   .format(config_file))
+
     for train_set_dur in TRAIN_SET_DURS:
         for replicate in REPLICATES:
             costs = []
@@ -214,22 +226,30 @@ if __name__ == "__main__":
 
             logger.info("training with training set duration of {} seconds,"
                         "replicate #{}".format(train_set_dur, replicate))
-            training_records_dir = os.path.join(results_dirname,
-                ('records_for_training_set_with_duration_of_'
+            training_records_dir = ('records_for_training_set_with_duration_of_'
                                     + str(train_set_dur) + '_sec_replicate_'
                                     + str(replicate))
-                                                )
+            training_records_path = os.path.join(results_dirname,
+                                                 training_records_dir)
+
             checkpoint_filename = ('checkpoint_train_set_dur_'
                                    + str(train_set_dur) +
                                    '_sec_replicate_'
                                    + str(replicate))
             if not os.path.isdir(training_records_dir):
                 os.mkdir(training_records_dir)
-            train_inds = cnn_bilstm.utils.get_inds_for_dur(X_train_spect_ID_vector,
-                                                           Y_train,
-                                                           labels_mapping,
-                                                           train_set_dur,
-                                                           timebin_dur)
+
+            if use_train_subsets_from_previous_run:
+                train_inds_path = os.path.join(previous_run_path,
+                                               training_records_dir,
+                                               'train_inds')
+                train_inds = pickle.load(train_inds_path)
+            else:
+                train_inds = cnn_bilstm.utils.get_inds_for_dur(X_train_spect_ID_vector,
+                                                               Y_train,
+                                                               labels_mapping,
+                                                               train_set_dur,
+                                                               timebin_dur)
             with open(os.path.join(training_records_dir, 'train_inds'),
                       'wb') as train_inds_file:
                 pickle.dump(train_inds, train_inds_file)
