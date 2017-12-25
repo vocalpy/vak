@@ -244,7 +244,7 @@ if __name__ == "__main__":
                                                training_records_dir,
                                                'train_inds')
                 with open(train_inds_path, 'rb') as f:
-                    train_inds = pickle.load(train_inds_path)
+                    train_inds = pickle.load(f)
             else:
                 train_inds = cnn_bilstm.utils.get_inds_for_dur(X_train_spect_ID_vector,
                                                                Y_train,
