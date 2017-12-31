@@ -251,10 +251,13 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             print('train error was {}'.format(train_err))
             Y_pred_train_this_dur.append(Y_pred_train)
 
-            Y_pred_train_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_train)
+            Y_pred_train_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_train,
+                                                                              labels_mapping)
             Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
-            train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels, Y_train_labels)
-            train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_train_labels, Y_train_labels)
+            train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels,
+                                                       Y_train_labels)
+            train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_train_labels,
+                                                                        Y_train_labels)
 
             if 'Y_pred_test' in locals():
                 del Y_pred_test
@@ -280,10 +283,13 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             print('test error was {}'.format(test_err))
             Y_pred_test_this_dur.append(Y_pred_test)
 
-            Y_pred_test_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_test)
+            Y_pred_test_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_test,
+                                                                             labels_mapping)
             Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
-            test_lev = cnn_bilstm.metrics.levenshtein(Y_pred_test_labels, Y_test_labels)
-            test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_test_labels, Y_test_labels)
+            test_lev = cnn_bilstm.metrics.levenshtein(Y_pred_test_labels,
+                                                      Y_test_labels)
+            test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_test_labels,
+                                                                       Y_test_labels)
 
     Y_pred_train_all.append(Y_pred_train_this_dur)
     Y_pred_test_all.append(Y_pred_test_this_dur)
