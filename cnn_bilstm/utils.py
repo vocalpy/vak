@@ -672,7 +672,7 @@ def convert_timebins_to_labels(labeled_timebins,
     -------
     labels : str or list
         labeled_timebins mapped back to label str.
-        If spect_ID_vector was prvodied, then labels is split into a list of str,
+        If spect_ID_vector was provided, then labels is split into a list of str,
         where each str corresponds to predicted labels for each predicted
         segment in each spectrogram as identified by spect_ID_vector.
     """
@@ -690,7 +690,16 @@ def convert_timebins_to_labels(labeled_timebins,
     labels = [inverse_labels_mapping[label] for label in labels]
 
     if spect_ID_vector:
+        labels_list = []
         spect_ID_vector = spect_ID_vector[idx]
-        return labels, spect_ID_vector
+        labels_arr = np.asarray(labels)
+        # need to split up labels by spect_ID_vector
+        # this is probably not the most efficient way:
+        spect_IDs = np.unique(spect_ID_vector)
+        for spect_ID in spect_IDs:
+            these = np.where(spect_ID_vector == spect_ID)
+            labels_list.append(
+                ''.join(labels_arr[these].tolist()))
+        return labels_list, spect_ID_vector
     else:
-        return labels
+        return ''.join(labels)
