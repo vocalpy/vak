@@ -332,9 +332,8 @@ if __name__ == "__main__":
             num_hidden = int(config['NETWORK']['num_hidden'])
             logger.debug('num_hidden: '.format(num_hidden))
             # n_syllables, i.e., number of label classes to predict
-            # is length of labels mapping plus one for "silent gap"
-            # class
-            n_syllables = len(labels_mapping) + 1
+            # Note that mapping includes label for silent gap b/t syllables
+            n_syllables = len(labels_mapping)
             logger.debug('n_syllables: '.format(n_syllables))
             learning_rate = float(config['NETWORK']['learning_rate'])
             logger.debug('learning rate: '.format(learning_rate))
