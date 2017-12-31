@@ -10,6 +10,7 @@ import numpy as np
 import joblib
 
 import cnn_bilstm.utils
+import cnn_bilstm.metrics
 
 config_file = sys.argv[1]
 if not config_file.endswith('.ini'):
@@ -71,8 +72,11 @@ Y_train = joblib.load(os.path.join(
 train_data_dict_path = config['TRAIN']['train_data_path']
 train_data_dict = joblib.load(train_data_dict_path)
 (train_timebin_dur,
-train_spect_params) = (train_data_dict['timebin_dur'],
-                       train_data_dict['spect_params'])
+train_spect_params,
+train_labels) = (train_data_dict['timebin_dur'],
+                 train_data_dict['spect_params'],
+                 train_data_dict['labels'])
+Y_train_labels = ''.join(train_labels)
 
 # we load actual X_train for each replicate
 # from each training_records_dir below
@@ -93,11 +97,13 @@ test_data_dict = joblib.load(test_data_dict_path)
  Y_test_copy,
  test_timebin_dur,
  files_used,
- test_spect_params) = (test_data_dict['X_test'],
-                       test_data_dict['Y_test'],
-                       test_data_dict['timebin_dur'],
-                       test_data_dict['filenames'],
-                       test_data_dict['spect_params'])
+ test_spect_params,
+ test_labels) = (test_data_dict['X_test'],
+                 test_data_dict['Y_test'],
+                 test_data_dict['timebin_dur'],
+                 test_data_dict['filenames'],
+                 test_data_dict['spect_params'],
+                 test_data_dict['labels'])
 
 assert train_spect_params == test_spect_params
 assert train_timebin_dur == test_timebin_dur
@@ -105,16 +111,27 @@ assert train_timebin_dur == test_timebin_dur
 # have to transpose X_test so rows are timebins and columns are frequencies
 X_test_copy = X_test_copy.T
 
+# used for Levenshtein distance + syllable error rate
+Y_test_labels = ''.join(test_labels)
+
 # initialize arrays to hold summary results
 Y_pred_test_all = []  # will be a nested list
 Y_pred_train_all = []  # will be a nested list
+Y_pred_test_labels_all = []
+Y_pred_train_labels_all = []
 train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
+train_lev_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
+test_lev_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
+train_syl_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
+test_syl_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
 
 for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
 
     Y_pred_test_this_dur = []
     Y_pred_train_this_dur = []
+    Y_pred_test_labels_this_dur = []
+    Y_pred_train_labels_this_dur = []
 
     for rep_ind, replicate in enumerate(REPLICATES):
         print("getting train and test error for "
@@ -234,6 +251,11 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             print('train error was {}'.format(train_err))
             Y_pred_train_this_dur.append(Y_pred_train)
 
+            Y_pred_train_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_train)
+            Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
+            train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels, Y_train_labels)
+            train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_train_labels, Y_train_labels)
+
             if 'Y_pred_test' in locals():
                 del Y_pred_test
 
@@ -258,8 +280,15 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             print('test error was {}'.format(test_err))
             Y_pred_test_this_dur.append(Y_pred_test)
 
+            Y_pred_test_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_test)
+            Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
+            test_lev = cnn_bilstm.metrics.levenshtein(Y_pred_test_labels, Y_test_labels)
+            test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_test_labels, Y_test_labels)
+
     Y_pred_train_all.append(Y_pred_train_this_dur)
     Y_pred_test_all.append(Y_pred_test_this_dur)
+    Y_pred_train_labels_all.append(Y_pred_train_labels_this_dur)
+    Y_pred_test_labels_all.append(Y_pred_test_labels_this_dur)
 
 Y_pred_train_filename = os.path.join(summary_dirname,
                                   'Y_pred_train_all')
@@ -283,8 +312,16 @@ with open(test_err_filename, 'wb') as test_err_file:
 
 pred_and_err_dict = {'Y_pred_train_all': Y_pred_train_all,
                      'Y_pred_test_all': Y_pred_test_all,
+                     'Y_pred_train_labels_all': Y_pred_train_labels_all,
+                     'Y_pred_test_labels_all': Y_pred_test_labels_all,
+                     'Y_train_labels': Y_train_labels,
+                     'Y_test_labels': Y_test_labels,
                      'train_err': train_err,
-                     'test_err': test_err}
+                     'test_err': test_err,
+                     'train_lev': train_lev,
+                     'train_syl_err_rate': train_syl_err_rate,
+                     'test_lev': test_lev,
+                     'test_syl_err_rate': test_syl_err_rate}
 
 pred_err_dict_filename = os.path.join(summary_dirname,
                                       'y_preds_and_err_for_train_and_test')
