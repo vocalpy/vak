@@ -243,22 +243,24 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                     Y_pred_train = sess.run(eval_op, feed_dict=d)[1]
                     Y_pred_train = Y_pred_train.reshape(batch_size, -1)
 
-            Y_train_arr = Y_train[train_inds]
+            Y_train_subset = Y_train[train_inds]  # get back "unreshaped" Y_train_subset
             # get rid of predictions to zero padding that don't matter
-            Y_pred_train = Y_pred_train.ravel()[:Y_train_arr.shape[0], np.newaxis]
-            train_err = np.sum(Y_pred_train - Y_train_arr != 0) / Y_train_arr.shape[0]
+            Y_pred_train = Y_pred_train.ravel()[:Y_train_subset.shape[0], np.newaxis]
+            train_err = np.sum(Y_pred_train - Y_train_subset != 0) / Y_train_subset.shape[0]
             train_err_arr[dur_ind, rep_ind] = train_err
             print('train error was {}'.format(train_err))
             Y_pred_train_this_dur.append(Y_pred_train)
 
+            Y_train_subset_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_train_subset,
+                                                                                labels_mapping)
             Y_pred_train_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_train,
                                                                               labels_mapping)
             Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
             train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels,
-                                                       Y_train_labels)
+                                                       Y_train_subset_labels)
             train_lev_arr[dur_ind, rep_ind] = train_lev
             print('Levenshtein distance for train set was {}'.format(train_lev))
-            train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_train_labels,
+            train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_train_subset_labels,
                                                                         Y_pred_train_labels)
             train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
             print('Syllable error rate for train set was {}'.format(train_syl_err_rate))
@@ -298,6 +300,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                                                                        Y_pred_test_labels)
             print('Syllable error rate for test set was {}'.format(test_syl_err_rate))
             test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
+
 
     Y_pred_train_all.append(Y_pred_train_this_dur)
     Y_pred_test_all.append(Y_pred_test_this_dur)
