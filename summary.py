@@ -256,8 +256,10 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
             train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels,
                                                        Y_train_labels)
+            print('Levenshtein distance for train set was {}'.format(train_lev))
             train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_train_labels,
                                                                         Y_train_labels)
+            print('Syllable error rate for train set was {}'.format(train_syl_err_rate))
 
             if 'Y_pred_test' in locals():
                 del Y_pred_test
@@ -288,8 +290,10 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
             test_lev = cnn_bilstm.metrics.levenshtein(Y_pred_test_labels,
                                                       Y_test_labels)
+            print('Levenshtein distance for test set was {}'.format(test_lev))
             test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_test_labels,
                                                                        Y_test_labels)
+            print('Syllable error rate for test set was {}'.format(test_syl_err_rate))
 
     Y_pred_train_all.append(Y_pred_train_this_dur)
     Y_pred_test_all.append(Y_pred_test_this_dur)
@@ -331,3 +335,4 @@ pred_and_err_dict = {'Y_pred_train_all': Y_pred_train_all,
 
 pred_err_dict_filename = os.path.join(summary_dirname,
                                       'y_preds_and_err_for_train_and_test')
+joblib.dump(pred_and_err_dict, pred_err_dict_filename)
