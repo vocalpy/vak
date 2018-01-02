@@ -677,14 +677,15 @@ def convert_timebins_to_labels(labeled_timebins,
         segment in each spectrogram as identified by spect_ID_vector.
     """
 
-    # remove silent gap label
-    silent_gap_label = labels_mapping['silent_gap_label']
-    labeled_timebins = labeled_timebins[labeled_timebins != silent_gap_label]
-
     idx = np.diff(labeled_timebins, axis=0).astype(np.bool)
     idx = np.insert(idx, 0, True)
 
-    labels = labeled_timebins[idx].tolist()
+    labels = labeled_timebins[idx]
+
+    # remove silent gap label
+    silent_gap_label = labels_mapping['silent_gap_label']
+    labels = labels[labels != silent_gap_label]
+    labels = labels.tolist()
 
     inverse_labels_mapping = dict((v, k) for k, v in labels_mapping.items())
     labels = [inverse_labels_mapping[label] for label in labels]
