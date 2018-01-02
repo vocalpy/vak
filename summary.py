@@ -256,9 +256,11 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
             train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels,
                                                        Y_train_labels)
+            train_lev_arr[dur_ind, rep_ind] = train_lev
             print('Levenshtein distance for train set was {}'.format(train_lev))
-            train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_train_labels,
-                                                                        Y_train_labels)
+            train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_train_labels,
+                                                                        Y_pred_train_labels)
+            train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
             print('Syllable error rate for train set was {}'.format(train_syl_err_rate))
 
             if 'Y_pred_test' in locals():
@@ -290,10 +292,12 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
             test_lev = cnn_bilstm.metrics.levenshtein(Y_pred_test_labels,
                                                       Y_test_labels)
+            test_lev_arr[dur_ind, rep_ind] = test_lev
             print('Levenshtein distance for test set was {}'.format(test_lev))
-            test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_pred_test_labels,
-                                                                       Y_test_labels)
+            test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_test_labels,
+                                                                       Y_pred_test_labels)
             print('Syllable error rate for test set was {}'.format(test_syl_err_rate))
+            test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
 
     Y_pred_train_all.append(Y_pred_train_this_dur)
     Y_pred_test_all.append(Y_pred_test_this_dur)
@@ -326,12 +330,13 @@ pred_and_err_dict = {'Y_pred_train_all': Y_pred_train_all,
                      'Y_pred_test_labels_all': Y_pred_test_labels_all,
                      'Y_train_labels': Y_train_labels,
                      'Y_test_labels': Y_test_labels,
-                     'train_err': train_err,
-                     'test_err': test_err,
-                     'train_lev': train_lev,
-                     'train_syl_err_rate': train_syl_err_rate,
-                     'test_lev': test_lev,
-                     'test_syl_err_rate': test_syl_err_rate}
+                     'train_err': train_err_arr,
+                     'test_err': test_err_arr,
+                     'train_lev': train_lev_arr,
+                     'train_syl_err_rate': train_syl_err_arr,
+                     'test_lev': test_lev_arr,
+                     'test_syl_err_rate': test_syl_err_arr,
+                     'train_set_durs': TRAIN_SET_DURS}
 
 pred_err_dict_filename = os.path.join(summary_dirname,
                                       'y_preds_and_err_for_train_and_test')
