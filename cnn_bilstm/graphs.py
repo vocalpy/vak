@@ -1,12 +1,22 @@
+from math import ceil
+
 import tensorflow as tf
 
+def out_width(in_width, filter_width, stride):
+    return ceil(float(in_width - filter_width + 1) / float(stride))
 
 def inference(spectrogram,
-              num_hidden,
               seq_length,
               n_syllables,
+              num_hidden=None,
               batch_size=11,
-              input_vec_size=513):
+              input_vec_size=513,
+              conv1_filters=32,
+              conv2_filters=64,
+              pool1_size=(1,8),
+              pool1_strides=(1,8),
+              pool2_size=(1,8),
+              pool2_strides=(1, 8),):
     """inference graph for 'inferring' labels of birdsong syllables
     hybrid convolutional neural net with bidirectional LSTM layer
 
@@ -40,6 +50,15 @@ def inference(spectrogram,
     logits : tensorflow tensor
 
     """
+
+    if num_hidden is None:
+        freq_bins_after_pool1 = out_width(input_vec_size,
+                                          pool1_size[1],
+                                          pool1_strides[1])
+        freq_bins_after_pool2 = out_width(freq_bins_after_pool1,
+                                          pool2_size[1],
+                                          pool2_strides[1])
+        num_hidden = freq_bins_after_pool2 * conv2_filters
 
     # First convolutional layers
     # Convolutional Layer #1
