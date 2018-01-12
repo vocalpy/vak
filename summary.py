@@ -232,7 +232,6 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             print('calculating training set error')
             for b in range(num_batches_train):  # "b" is "batch number"
                 d = {X: X_train_subset[:, b * time_steps: (b + 1) * time_steps, :],
-                     Y: Y_train_subset[:, b * time_steps: (b + 1) * time_steps],
                      lng: [time_steps] * batch_size}
 
                 if 'Y_pred_train' in locals():
@@ -271,7 +270,6 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             print('calculating test set error')
             for b in range(num_batches_test):  # "b" is "batch number"
                 d = {X: X_test[:, b * time_steps: (b + 1) * time_steps, :],
-                     Y: Y_test[:, b * time_steps: (b + 1) * time_steps],
                      lng: [time_steps] * batch_size}
 
                 if 'Y_pred_test' in locals():
