@@ -329,8 +329,6 @@ if __name__ == "__main__":
                                          'Y_val_batch': Y_val_batch}
             joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
 
-            num_hidden = int(config['NETWORK']['num_hidden'])
-            logger.debug('num_hidden: '.format(num_hidden))
             # n_syllables, i.e., number of label classes to predict
             # Note that mapping includes label for silent gap b/t syllables
             n_syllables = len(labels_mapping)
@@ -343,7 +341,6 @@ if __name__ == "__main__":
             (full_graph, train_op, cost,
              init, saver, logits, X, Y, lng,
              merged_summary_op) = get_full_graph(input_vec_size,
-                                                 num_hidden,
                                                  n_syllables,
                                                  learning_rate,
                                                  batch_size)
