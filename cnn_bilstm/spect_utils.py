@@ -26,12 +26,23 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
 
 def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=6.25, log_transform=True):
     """creates a spectrogram
+
+    Parameters
+    ----------
     data : ndarray
         audio signal
     log_transform: bool
         if True, take the log of the spectrogram
     thresh: int
         threshold minimum power for log spectrogram
+
+    Return
+    ------
+    spec : ndarray
+
+    freqbins : ndarray
+
+    timebins : ndarray
     """
 
     noverlap = fft_size - step_size
