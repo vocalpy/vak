@@ -1,3 +1,1 @@
-from . import mat_utils
-from . import spect_utils
-from . import utils
+from . import curvefit, evfuncs, graphs, mat_utils, metrics, spect_utils, utils
