@@ -594,11 +594,14 @@ def get_inds_for_dur(spect_ID_vector,
         all classes in labels mapping.
         Defaults is 1000.
     method : str
-        {'rand', 'decfreq'}
+        {'rand', 'incfreq'}
         method by which to obtain subset from training set
         'rand' grabs songs totally at random
-        'incfreq' grabs songs at random but from the subset that includes the
-        least frequently occurring class. Continues
+        'incfreq' grabs songs at random but starts from the subset
+        that includes the least frequently occurring class. Continues
+        to grab randomly in order of ascending frequency until all
+        classes are present, and then goes back to 'rand' method.
+        Default is 'incfreq'.
 
     Returns
     -------
