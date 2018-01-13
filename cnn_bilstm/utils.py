@@ -561,7 +561,9 @@ def get_inds_for_dur(spect_ID_vector,
                      labeled_timebins_vector,
                      labels_mapping,
                      target_duration,
-                     timebin_dur_in_s=0.001):
+                     timebin_dur_in_s=0.001,
+                     max_iter=1000,
+                     method='incfreq'):
     """for getting a training set with random songs but constant duration
     draws songs at random and adds to list
     until total duration of all songs => target_duration
@@ -587,6 +589,16 @@ def get_inds_for_dur(spect_ID_vector,
         duration of each timebin, i.e. each column in spectrogram,
         in seconds.
         default is 0.001 s (1 ms)
+    max_iter : int
+        number of iterations to try drawing random subset of song that contains
+        all classes in labels mapping.
+        Defaults is 1000.
+    method : str
+        {'rand', 'decfreq'}
+        method by which to obtain subset from training set
+        'rand' grabs songs totally at random
+        'incfreq' grabs songs at random but from the subset that includes the
+        least frequently occurring class. Continues
 
     Returns
     -------
@@ -596,22 +608,62 @@ def get_inds_for_dur(spect_ID_vector,
         training spectrograms concatenated, and each row being one timebin)
     """
 
-    spect_ids, spect_timebins = np.unique(spect_ID_vector, return_counts=True)
+    labeled_timebins_vector = np.squeeze(labeled_timebins_vector)
 
-    while 1:
-        shuffle_inds = np.random.permutation(spect_ids.shape[-1])
+    if labeled_timebins_vector.ndim > 1:
+        raise ValueError('number of dimensions of labeled_timebins_vector should be 1 '
+                         '(after np.squeeze), but was equal to {}'
+                         .format(labeled_timebins_vector.ndim))
 
-        spect_id_list = []
+
+    iter = 1
+    while 1:  # keep iterating until we randomly draw subset that meets our criteria
+        spect_IDs, spect_timebins = np.unique(spect_ID_vector, return_counts=True)
+
+        if iter == 1:
+            # sanity check:
+            # spect_IDs should always start from 0
+            # and go to n-1 where n is # of spectrograms
+            assert np.array_equal(spect_IDs, np.arange(spect_IDs.shape[-1]))
+
+        spect_IDs = spect_IDs.tolist()  # because we need to pop off ids for 'incfreq'
+
+        spect_IDs_in_subset = []
         total_dur_in_timebins = 0
 
-        for ind in shuffle_inds:
-            spect_id_list.append(spect_ids[ind])
-            spect_id_inds = np.where(spect_ID_vector == spect_ids[ind])[0]  # 0 because where np.returns tuple
+        if method == 'incfreq':
+            classes, counts = np.unique(spect_ID_vector, return_counts=True)
+            freq_rank = np.argsort(counts).tolist()
+
+            # reason for doing it in this Schliemel-the-painter-looking way is that
+            # I want to make sure all classes are represented first, but then
+            # go back to just grabbing songs completely at random
+            while freq_rank:  # is not an empty list yet
+                curr_class = classes[freq_rank.pop[0]]
+
+                # if curr_class already represented in subset, skip it
+                if 'inds_to_use' in locals():
+                    classes_already_in_subset = np.unique(
+                        labeled_timebins_vector[inds_to_use])
+                    if curr_class in classes_already_in_subset:
+                        continue
+
+                inds_this_class = np.where(labeled_timebins_vector==curr_class)[0]
+                spect_IDs_this_class = np.unique(spect_ID_vector[inds_this_class])
+                # keep only the spect IDs we haven't popped off main list already
+                spect_IDs_this_class = [spect_ID_this_class
+                                        for spect_ID_this_class in spect_IDs_this_class
+                                        if spect_ID_this_class in spect_IDs]
+                rand_spect_ID = np.random.choice(spect_IDs_this_class)
+                spect_IDs_in_subset.append(rand_spect_ID)
+                spect_IDs.pop(rand_spect_ID)  # so as not to reuse it
+                # below, [0] because np.where returns tuple
+                spect_ID_inds = np.where(spect_ID_vector == rand_spect_ID)[0]
             if 'inds_to_use' in locals():
-                inds_to_use = np.concatenate((inds_to_use, spect_id_inds))
+                inds_to_use = np.concatenate((inds_to_use, spect_ID_inds))
             else:
-                inds_to_use = spect_id_inds
-            total_dur_in_timebins += spect_timebins[ind]
+                inds_to_use = spect_ID_inds
+            total_dur_in_timebins += spect_timebins[spect_ID]
             if total_dur_in_timebins * timebin_dur_in_s >= target_duration:
                 # if total_dur greater than target, need to truncate
                 if total_dur_in_timebins * timebin_dur_in_s > target_duration:
@@ -620,11 +672,43 @@ def get_inds_for_dur(spect_ID_vector,
                 # (if equal to target, don't need to do anything)
                 break
 
+        # if
+        if method=='rand' or \
+                total_dur_in_timebins * timebin_dur_in_s < target_duration:
+
+            shuffled_spect_IDs = np.random.permutation(spect_IDs)
+
+            for spect_ID in shuffled_spect_IDs:
+                spect_IDs_in_subset.append(spect_ID)
+                # below, [0] because np.where returns tuple
+                spect_ID_inds = np.where(spect_ID_vector == spect_ID)[0]
+                if 'inds_to_use' in locals():
+                    inds_to_use = np.concatenate((inds_to_use, spect_ID_inds))
+                else:
+                    inds_to_use = spect_ID_inds
+                total_dur_in_timebins += spect_timebins[spect_ID]
+                if total_dur_in_timebins * timebin_dur_in_s >= target_duration:
+                    # if total_dur greater than target, need to truncate
+                    if total_dur_in_timebins * timebin_dur_in_s > target_duration:
+                        correct_length = np.round(target_duration / timebin_dur_in_s).astype(int)
+                        inds_to_use = inds_to_use[:correct_length]
+                    # (if equal to target, don't need to do anything)
+                    break
+
         if set(np.unique(labeled_timebins_vector[inds_to_use])) != set(labels_mapping.values()):
             print('Randomly drawn subset of training data did not contain all '
                   'values in labels mapping. Getting new randomly drawn set.')
-            import pdb;pdb.set_trace()
-            continue
+            iter += 1
+
+            if iter > max_iter:
+                raise ValueError('Attempted to draw subset of songs at random '
+                                 'that contained all classes '
+                                 'more than {} times unsuccessfully. Make sure '
+                                 'that all classes are present in training data '
+                                 'set.'.format(max_iter))
+
+            else:
+                continue
         else:
             break
 
