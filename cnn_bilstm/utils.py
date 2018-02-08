@@ -635,14 +635,18 @@ def get_inds_for_dur(spect_ID_vector,
         total_dur_in_timebins = 0
 
         if method == 'incfreq':
-            classes, counts = np.unique(spect_ID_vector, return_counts=True)
+            classes, counts = np.unique(labeled_timebins_vector, return_counts=True)
+            if classes.shape[0] != len(labels_mapping):
+                raise ValueError('number of classes in labeled_timebins_vector '
+                                 'does not equal number of classes '
+                                 'in labels_mapping.')
             freq_rank = np.argsort(counts).tolist()
 
             # reason for doing it in this Schliemel-the-painter-looking way is that
             # I want to make sure all classes are represented first, but then
             # go back to just grabbing songs completely at random
             while freq_rank:  # is not an empty list yet
-                curr_class = classes[freq_rank.pop[0]]
+                curr_class = classes[freq_rank.pop(0)]
 
                 # if curr_class already represented in subset, skip it
                 if 'inds_to_use' in locals():
@@ -658,6 +662,7 @@ def get_inds_for_dur(spect_ID_vector,
                                         for spect_ID_this_class in spect_IDs_this_class
                                         if spect_ID_this_class in spect_IDs]
                 rand_spect_ID = np.random.choice(spect_IDs_this_class)
+
                 spect_IDs_in_subset.append(rand_spect_ID)
                 spect_IDs.pop(rand_spect_ID)  # so as not to reuse it
                 # below, [0] because np.where returns tuple
@@ -666,7 +671,7 @@ def get_inds_for_dur(spect_ID_vector,
                 inds_to_use = np.concatenate((inds_to_use, spect_ID_inds))
             else:
                 inds_to_use = spect_ID_inds
-            total_dur_in_timebins += spect_timebins[spect_ID]
+            total_dur_in_timebins += spect_timebins[rand_spect_ID]
             if total_dur_in_timebins * timebin_dur_in_s >= target_duration:
                 # if total_dur greater than target, need to truncate
                 if total_dur_in_timebins * timebin_dur_in_s > target_duration:
