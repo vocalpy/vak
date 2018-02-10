@@ -105,7 +105,6 @@ if __name__ == "__main__":
 
     total_train_set_duration = float(config['DATA']['total_train_set_duration'])
     if X_train.shape[-1] * timebin_dur != total_train_set_duration:
-        import pdb; pdb.set_trace()
         raise ValueError('Duration of X_train in seconds from train_data_dict '
                          'does not match duration specified in config file.\n'
                          'train_data_dict: {}\n'
