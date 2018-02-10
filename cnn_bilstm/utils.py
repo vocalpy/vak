@@ -611,6 +611,8 @@ def get_inds_for_dur(spect_ID_vector,
         training spectrograms concatenated, and each row being one timebin)
     """
 
+    #import pdb;pdb.set_trace()
+
     labeled_timebins_vector = np.squeeze(labeled_timebins_vector)
 
     if labeled_timebins_vector.ndim > 1:
@@ -664,23 +666,22 @@ def get_inds_for_dur(spect_ID_vector,
                 rand_spect_ID = np.random.choice(spect_IDs_this_class)
 
                 spect_IDs_in_subset.append(rand_spect_ID)
-                spect_IDs.pop(rand_spect_ID)  # so as not to reuse it
+                spect_IDs.pop(spect_IDs.index(rand_spect_ID))  # so as not to reuse it
                 # below, [0] because np.where returns tuple
                 spect_ID_inds = np.where(spect_ID_vector == rand_spect_ID)[0]
-            if 'inds_to_use' in locals():
-                inds_to_use = np.concatenate((inds_to_use, spect_ID_inds))
-            else:
-                inds_to_use = spect_ID_inds
-            total_dur_in_timebins += spect_timebins[rand_spect_ID]
-            if total_dur_in_timebins * timebin_dur_in_s >= target_duration:
-                # if total_dur greater than target, need to truncate
-                if total_dur_in_timebins * timebin_dur_in_s > target_duration:
-                    correct_length = np.round(target_duration / timebin_dur_in_s).astype(int)
-                    inds_to_use = inds_to_use[:correct_length]
-                # (if equal to target, don't need to do anything)
-                break
+                if 'inds_to_use' in locals():
+                    inds_to_use = np.concatenate((inds_to_use, spect_ID_inds))
+                else:
+                    inds_to_use = spect_ID_inds
+                total_dur_in_timebins += spect_timebins[rand_spect_ID]
+                if total_dur_in_timebins * timebin_dur_in_s >= target_duration:
+                    # if total_dur greater than target, need to truncate
+                    if total_dur_in_timebins * timebin_dur_in_s > target_duration:
+                        correct_length = np.round(target_duration / timebin_dur_in_s).astype(int)
+                        inds_to_use = inds_to_use[:correct_length]
+                    # (if equal to target, don't need to do anything)
+                    break
 
-        # if
         if method=='rand' or \
                 total_dur_in_timebins * timebin_dur_in_s < target_duration:
 
