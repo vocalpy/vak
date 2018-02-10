@@ -611,8 +611,6 @@ def get_inds_for_dur(spect_ID_vector,
         training spectrograms concatenated, and each row being one timebin)
     """
 
-    #import pdb;pdb.set_trace()
-
     labeled_timebins_vector = np.squeeze(labeled_timebins_vector)
 
     if labeled_timebins_vector.ndim > 1:
@@ -623,6 +621,9 @@ def get_inds_for_dur(spect_ID_vector,
 
     iter = 1
     while 1:  # keep iterating until we randomly draw subset that meets our criteria
+        if 'inds_to_use' in locals():
+            del inds_to_use
+
         spect_IDs, spect_timebins = np.unique(spect_ID_vector, return_counts=True)
 
         if iter == 1:
@@ -715,13 +716,8 @@ def get_inds_for_dur(spect_ID_vector,
                                  'more than {} times unsuccessfully. Make sure '
                                  'that all classes are present in training data '
                                  'set.'.format(max_iter))
-
-            else:
-                continue
         else:
-            break
-
-    return inds_to_use
+            return inds_to_use
 
 
 def reshape_data_for_batching(X, Y, batch_size, time_steps, input_vec_size):
