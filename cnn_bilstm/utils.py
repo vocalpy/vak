@@ -408,84 +408,131 @@ def make_data_dicts(output_dir,
                          .format(total_spects_dur, total_dataset_dur))
 
     # main loop that gets datasets
-    while 1:
-        spect_files_copy = copy.deepcopy(spect_files)
+    subsets_of_sufficient_dur = False
+    all_labels_in_all_subsets = False
+    all_labels_iter = 1
 
-        train_spects = []
-        val_spects = []
-        test_spects = []
+    while not(subsets_of_sufficient_dur and all_labels_in_all_subsets):
+        subsets_dur_iter = 1
 
-        total_train_dur = 0
-        val_dur = 0
-        test_dur = 0
+        while subsets_of_sufficient_dur == False:
 
-        choice = ['train', 'val', 'test']
+            spect_files_copy = copy.deepcopy(spect_files)
 
-        while 1:
-            # pop tuples off cbins_used list and append to randomly-chosen
-            # list, either train, val, or test set.
-            # Do this until the total duration for each data set is equal
-            # to or greater than the target duration for each set.
-            ind = random.randint(0, len(spect_files_copy)-1)
-            a_spect = spect_files_copy.pop(ind)
-            which_set = random.randint(0, len(choice)-1)
-            which_set = choice[which_set]
-            if which_set == 'train':
-                train_spects.append(a_spect)
-                total_train_dur += a_spect[1]  # ind 1 is duration
-                if total_train_dur >= total_train_set_duration:
-                    choice.pop(choice.index('train'))
-            elif which_set == 'val':
-                val_spects.append(a_spect)
-                val_dur += a_spect[1]  # ind 1 is duration
-                if val_dur >= validation_set_duration:
-                    choice.pop(choice.index('val'))
-            elif which_set == 'test':
-                test_spects.append(a_spect)
-                test_dur += a_spect[1]  # ind 1 is duration
-                if test_dur >= test_set_duration:
-                    choice.pop(choice.index('test'))
+            train_spects = []
+            val_spects = []
+            test_spects = []
 
-            if len(choice) < 1:
-                break
+            total_train_dur = 0
+            val_dur = 0
+            test_dur = 0
 
-        # make sure no contamination between data sets.
-        # If this is true, each set of filenames should be disjoint from others
-        train_spect_files = [tup[0] for tup in train_spects]  # tup = a tuple
-        val_spect_files = [tup[0] for tup in val_spects]
-        test_spect_files = [tup[0] for tup in test_spects]
-        assert set(train_spect_files).isdisjoint(val_spect_files)
-        assert set(train_spect_files).isdisjoint(test_spect_files)
-        assert set(val_spect_files).isdisjoint(test_spect_files)
+            choice = ['train', 'val', 'test']
 
-        # make sure that each set contains all classes we
-        # want the network to learn
-        train_labels = itertools.chain.from_iterable(
-            [spect[2] for spect in train_spects])
-        train_labels = set(train_labels)  # make set to get unique values
+            while subsets_of_sufficient_dur == False:
+                # pop tuples off cbins_used list and append to randomly-chosen
+                # list, either train, val, or test set.
+                # Do this until the total duration for each data set is equal
+                # to or greater than the target duration for each set.
+                try:
+                    ind = random.randint(0, len(spect_files_copy)-1)
+                except ValueError:
+                    if len(spect_files_copy) == 0:
+                        print('Ran out of spectrograms while dividing data into training, '
+                              'validation, and test sets of specified durations. Iteration {}'
+                              .format(subsets_dur_iter))
+                        subsets_dur_iter += 1
+                        break  # do next iteration
+                    else:
+                        raise
+                a_spect = spect_files_copy.pop(ind)
+                which_set = random.randint(0, len(choice)-1)
+                which_set = choice[which_set]
+                if which_set == 'train':
+                    train_spects.append(a_spect)
+                    total_train_dur += a_spect[1]  # ind 1 is duration
+                    if total_train_dur >= total_train_set_duration:
+                        choice.pop(choice.index('train'))
+                elif which_set == 'val':
+                    val_spects.append(a_spect)
+                    val_dur += a_spect[1]  # ind 1 is duration
+                    if val_dur >= validation_set_duration:
+                        choice.pop(choice.index('val'))
+                elif which_set == 'test':
+                    test_spects.append(a_spect)
+                    test_dur += a_spect[1]  # ind 1 is duration
+                    if test_dur >= test_set_duration:
+                        choice.pop(choice.index('test'))
 
-        val_labels = itertools.chain.from_iterable(
-            [spect[2] for spect in val_spects])
-        val_labels = set(val_labels)
+                if len(choice) < 1:
+                    if np.sum(total_train_dur +
+                                      val_dur +
+                                      test_dur) < total_dataset_dur:
+                        raise ValueError('Loop to find subsets completed but '
+                                         'total duration of subsets is less than '
+                                         'total duration specified by config file.')
+                    else:
+                        subsets_of_sufficient_dur = True
+                    break
 
-        test_labels = itertools.chain.from_iterable(
-            [spect[2] for spect in test_spects])
-        test_labels = set(test_labels)
+            if subsets_dur_iter > 1000:
+                raise ValueError('Did not successfully divide data into training, '
+                                 'validation, and test sets of sufficient duration '
+                                 'after 1000 iterations.'
+                                 ' Try increasing the total size of the data set.')
 
-        if train_labels != set(labelset):
-            print('Train labels did not contain all labels in labelset. '
-                  'Getting new training set.')
-            continue
-        elif val_labels != set(labelset):
-            print('Validation labels did not contain all labels in labelset. '
-                  'Getting new validation set.')
-            continue
-        elif test_labels != set(labelset):
-            print('Test labels did not contain all labels in labelset. '
-                  'Getting new validation set.')
-            continue
-        else:
-            break
+        while all_labels_in_all_subsets == False:
+
+            # make sure no contamination between data sets.
+            # If this is true, each set of filenames should be disjoint from others
+            train_spect_files = [tup[0] for tup in train_spects]  # tup = a tuple
+            val_spect_files = [tup[0] for tup in val_spects]
+            test_spect_files = [tup[0] for tup in test_spects]
+            assert set(train_spect_files).isdisjoint(val_spect_files)
+            assert set(train_spect_files).isdisjoint(test_spect_files)
+            assert set(val_spect_files).isdisjoint(test_spect_files)
+
+            # make sure that each set contains all classes we
+            # want the network to learn
+            train_labels = itertools.chain.from_iterable(
+                [spect[2] for spect in train_spects])
+            train_labels = set(train_labels)  # make set to get unique values
+
+            val_labels = itertools.chain.from_iterable(
+                [spect[2] for spect in val_spects])
+            val_labels = set(val_labels)
+
+            test_labels = itertools.chain.from_iterable(
+                [spect[2] for spect in test_spects])
+            test_labels = set(test_labels)
+
+            if train_labels != set(labelset):
+                print('Train labels did not contain all labels in labelset. '
+                      'Getting new training set. Iteration {}'
+                      .format(all_labels_iter))
+                all_labels_iter += 1
+                continue
+            elif val_labels != set(labelset):
+                print('Validation labels did not contain all labels in labelset. '
+                      'Getting new validation set. Iteration {}'
+                      .format(all_labels_iter))
+                all_labels_iter += 1
+                continue
+            elif test_labels != set(labelset):
+                print('Test labels did not contain all labels in labelset. '
+                      'Getting new validation set. Iteration {}'
+                      .format(all_labels_iter))
+                all_labels_iter += 1
+                continue
+            else:
+                all_labels_in_all_subsets = True
+
+            if all_labels_iter > 1000:
+                raise ValueError('Did not successfully divide data into training, '
+                                 'validation, and test sets of sufficient duration, '
+                                 'that each contained all labels in labelset, '
+                                 'after 1000 iterations.'
+                                 'Try increasing the total size of the data set.')
 
     for dict_name, spect_list, target_dur in zip(['train','val','test'],
                                                  [train_spects,val_spects,test_spects],
