@@ -34,7 +34,7 @@ if __name__ == "__main__":
                                            'results_' + timenow)
     else:
         results_dirname = os.path.join('.', 'results_' + timenow)
-    os.mkdir(results_dirname)
+    os.makedirs(results_dirname)
     # copy config file into results dir now that we've made the dir
     shutil.copy(config_file, results_dirname)
 
@@ -236,7 +236,7 @@ if __name__ == "__main__":
                                    '_sec_replicate_'
                                    + str(replicate))
             if not os.path.isdir(training_records_path):
-                os.mkdir(training_records_path)
+                os.makedirs(training_records_path)
 
             if use_train_subsets_from_previous_run:
                 train_inds_path = os.path.join(previous_run_path,
@@ -349,7 +349,7 @@ if __name__ == "__main__":
 
             logs_path = os.path.join(results_dirname,'logs')
             if not os.path.isdir(logs_path):
-                os.mkdir(logs_path)
+                os.makedirs(logs_path)
 
             with tf.Session(graph=full_graph,
                             config=tf.ConfigProto(
