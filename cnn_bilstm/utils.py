@@ -5,6 +5,7 @@ import copy
 import itertools
 
 import numpy as np
+from scipy.io import wavfile, loadmat
 import joblib
 
 from . import evfuncs, spect_utils
@@ -113,28 +114,6 @@ class SpectScaler:
         return self.transform(spects)
 
 
-def make_labels_mapping_from_dir(data_dir):
-    """make mapping
-    from the set of unique string labels: [i,a,b,c,d,h,j,k]
-    to a sequence of integers: [0,1,2,3,...
-    for converting labels into integers
-    that can then be converted to one-hot vectors
-    for training outputs of a neural network"""
-    notmats = glob(data_dir + '*.not.mat')
-    labels = []
-    for notmat in notmats:
-        notmat_dict = evfuncs.load_notmat(notmat)
-        label_arr = np.asarray([ord(label)
-                                for label in notmat_dict['labels']]
-                               )
-        labels.append(label_arr)
-    labels = np.concatenate(labels)
-    uniq_labels = np.unique(labels)
-    labels_to_map_to = range(1, uniq_labels.shape[-1] + 1)
-    # skip 0 so 0 can be used as label for 'silent gap' across training/testing data
-    return dict(zip(uniq_labels, labels_to_map_to))
-
-
 def make_labeled_timebins_vector(labels,
                                  onsets,
                                  offsets,
@@ -177,17 +156,19 @@ def make_labeled_timebins_vector(labels,
     return label_vec
 
 
-def make_spects_from_list_of_cbins(cbins,
+def make_spects_from_list_of_files(filelist,
                                    spect_params,
                                    output_dir,
                                    labels_mapping,
-                                   skip_files_with_labels_not_in_labelset=True):
+                                   skip_files_with_labels_not_in_labelset=True,
+                                   annotation_file=None):
     """makes spectrograms from a list of .cbin audio files
 
     Parameters
     ----------
-    cbins : list
-         of str, full paths to .cbin files from which to make spectrograms
+    filelist : list
+        of str, full paths to .cbin or .wav files
+        from which to make spectrograms
     spect_params : dict
         parameters for computing spectrogram, from .ini file
     output_dir : str
@@ -199,6 +180,12 @@ def make_spects_from_list_of_cbins(cbins,
     skip_files_with_labels_not_in_labelset : bool
         if True, skip .cbin files where the 'labels' array in the corresponding
         .cbin.not.mat file contains str labels not found in labels_mapping
+    annotation_file : str
+        full path to file with annotations. Required for .wav files. Expected to
+        be a .mat file containing the variables 'keys' and 'elements', where 'keys'
+        is a list of .wav filenames and 'elements' are the associated annotations
+        for each filename.
+        Default is None.
 
     Returns
     -------
@@ -224,20 +211,60 @@ def make_spects_from_list_of_cbins(cbins,
             same length as time_bins, but value of each element is a label
             corresponding to that time bin
     """
+    if all(['.cbin' in filename for filename in filelist]):
+        filetype = 'cbin'
+    elif all(['.wav' in filename for filename in filelist]):
+        filetype = 'wav'
+    else:
+        raise ValueError('Could not determine whether filelist is '
+                         'a list of .cbin files or of .wav files. '
+                         'All files must be of the same type.')
+
+    if filetype == 'wav' and annotation_file is None:
+        raise ValueError('annotation_file is required when using .wav files')
+    else:
+        # the complicated nested structure of the annotation.mat files
+        # (a cell array of Matlab structs)
+        # makes it hard for loadmat to load them into numpy arrays.
+        # Some of the weird looking things below, like accessing fields and
+        # then converting them to lists, are work-arounds to deal with
+        # the result of loading the complicated structure.
+        # Setting squeeze_me=True gets rid of some but not all of the weirdness.
+        annotations = loadmat(annotation_file, squeeze_me=True)
+        annot_keys = annotations['keys'].tolist()
+        annot_elements = annotations['elements']
 
     # need to keep track of name of files used since we may skip some.
     # (cbins_used is actually a list of tuples as defined in docstring)
     spect_files = []
 
-    for cbin in cbins:
-        try:
-            notmat_dict = evfuncs.load_notmat(cbin)
-        except FileNotFoundError:
-            print('Did not find .not.mat file for {}, skipping file.'
-                  .format(cbin))
-            continue
 
-        this_labels_str = notmat_dict['labels']
+    for filename in filelist:
+        if filetype == 'cbin':
+            try:
+                notmat_dict = evfuncs.load_notmat(filename)
+            except FileNotFoundError:
+                print('Did not find .not.mat file for {}, skipping file.'
+                      .format(filename))
+                continue
+            this_labels_str = notmat_dict['labels']
+            onsets = notmat_dict['onsets'] / 1000
+            offsets = notmat_dict['offsets'] / 1000
+            dat, fs = evfuncs.load_cbin(filename)
+
+        elif filetype == 'wav':
+
+            ind = annot_keys.index(os.path.basename(filename))
+            annotation = annot_elements[ind]
+            # The .tolist() methods calls below are to get the
+            # array out of the weird lengthless object array
+            # that scipy.io.loadmat produces when trying to load
+            # the annotation files.
+            this_labels_str = annotation['segType'].tolist()
+            onsets = annotation['segFileStartTimes'].tolist()
+            offsets = annotation['segFileEndTimes'].tolist()
+            fs, dat = wavfile.read(filename)
+
         if skip_files_with_labels_not_in_labelset:
             labels_set = set(this_labels_str)
             # below, set(labels_mapping) is a set of that dict's keys
@@ -245,11 +272,11 @@ def make_spects_from_list_of_cbins(cbins,
                 # because there's some label in labels
                 # that's not in labels_mapping
                 print('found labels in {} not in labels_mapping, '
-                      'skipping file'.format(cbin))
+                      'skipping file'.format(filename))
                 continue
 
-        print('making .spect file for {}'.format(cbin))
-        dat, fs = evfuncs.load_cbin(cbin)
+        print('making .spect file for {}'.format(filename))
+
         if 'freq_cutoffs' in spect_params:
             dat = spect_utils.butter_bandpass_filter(dat,
                                                      spect_params['freq_cutoffs'][0],
@@ -271,8 +298,8 @@ def make_spects_from_list_of_cbins(cbins,
         this_labels = [labels_mapping[label]
                   for label in this_labels_str]
         this_labeled_timebins = make_labeled_timebins_vector(this_labels,
-                                                             notmat_dict['onsets'] / 1000,
-                                                             notmat_dict['offsets'] / 1000,
+                                                             onsets,
+                                                             offsets,
                                                              time_bins,
                                                              labels_mapping['silent_gap_label'])
 
@@ -295,7 +322,7 @@ def make_spects_from_list_of_cbins(cbins,
 
         spect_dict_filename = os.path.join(
             os.path.normpath(output_dir),
-            os.path.basename(cbin) + '.spect')
+            os.path.basename(filename) + '.spect')
         joblib.dump(spect_dict, spect_dict_filename)
 
         spect_files.append((spect_dict_filename, spect_dur, this_labels_str))
@@ -326,7 +353,7 @@ def make_data_dicts(output_dir,
         of str, labels used
     spect_files : str
         full path to file containing 'spect_files' list of tuples
-        saved by function make_spects_from_list_of_cbins.
+        saved by function make_spects_from_list_of_files.
         Default is None, in which case this function looks for
         a file named 'spect_files' in output_dir.
 
@@ -372,9 +399,8 @@ def make_data_dicts(output_dir,
             Will be checked against .ini file when running other scripts such as learn_curve.py
         labels_mapping : dict
             maps str labels for syllables to consecutive integers.
-            As explained in docstring for make_spects_from_list_of_cbins.
+            As explained in docstring for make_spects_from_list_of_files.
     """
-
     if not os.path.isdir(output_dir):
         raise NotADirectoryError('{} not recognized '
                                  'as a directory'.format(output_dir))
@@ -408,131 +434,126 @@ def make_data_dicts(output_dir,
                          .format(total_spects_dur, total_dataset_dur))
 
     # main loop that gets datasets
-    subsets_of_sufficient_dur = False
-    all_labels_in_all_subsets = False
-    all_labels_iter = 1
+    iter = 1
+    all_labels_err = ('Did not successfully divide data into training, '
+                      'validation, and test sets of sufficient duration '
+                      'after 1000 iterations.'
+                      ' Try increasing the total size of the data set.')
 
-    while not(subsets_of_sufficient_dur and all_labels_in_all_subsets):
-        subsets_dur_iter = 1
+    while 1:
+        spect_files_copy = copy.deepcopy(spect_files)
 
-        while subsets_of_sufficient_dur == False:
+        train_spects = []
+        val_spects = []
+        test_spects = []
 
-            spect_files_copy = copy.deepcopy(spect_files)
+        total_train_dur = 0
+        val_dur = 0
+        test_dur = 0
 
-            train_spects = []
-            val_spects = []
-            test_spects = []
+        choice = ['train', 'val', 'test']
 
-            total_train_dur = 0
-            val_dur = 0
-            test_dur = 0
+        while 1:
+            # pop tuples off cbins_used list and append to randomly-chosen
+            # list, either train, val, or test set.
+            # Do this until the total duration for each data set is equal
+            # to or greater than the target duration for each set.
+            try:
+                ind = random.randint(0, len(spect_files_copy)-1)
+            except ValueError:
+                if len(spect_files_copy) == 0:
+                    print('Ran out of spectrograms while dividing data into training, '
+                          'validation, and test sets of specified durations. Iteration {}'
+                          .format(iter))
+                    iter += 1
+                    break  # do next iteration
+                else:
+                    raise
+            a_spect = spect_files_copy.pop(ind)
+            which_set = random.randint(0, len(choice)-1)
+            which_set = choice[which_set]
+            if which_set == 'train':
+                train_spects.append(a_spect)
+                total_train_dur += a_spect[1]  # ind 1 is duration
+                if total_train_dur >= total_train_set_duration:
+                    choice.pop(choice.index('train'))
+            elif which_set == 'val':
+                val_spects.append(a_spect)
+                val_dur += a_spect[1]  # ind 1 is duration
+                if val_dur >= validation_set_duration:
+                    choice.pop(choice.index('val'))
+            elif which_set == 'test':
+                test_spects.append(a_spect)
+                test_dur += a_spect[1]  # ind 1 is duration
+                if test_dur >= test_set_duration:
+                    choice.pop(choice.index('test'))
 
-            choice = ['train', 'val', 'test']
-
-            while subsets_of_sufficient_dur == False:
-                # pop tuples off cbins_used list and append to randomly-chosen
-                # list, either train, val, or test set.
-                # Do this until the total duration for each data set is equal
-                # to or greater than the target duration for each set.
-                try:
-                    ind = random.randint(0, len(spect_files_copy)-1)
-                except ValueError:
-                    if len(spect_files_copy) == 0:
-                        print('Ran out of spectrograms while dividing data into training, '
-                              'validation, and test sets of specified durations. Iteration {}'
-                              .format(subsets_dur_iter))
-                        subsets_dur_iter += 1
-                        break  # do next iteration
-                    else:
-                        raise
-                a_spect = spect_files_copy.pop(ind)
-                which_set = random.randint(0, len(choice)-1)
-                which_set = choice[which_set]
-                if which_set == 'train':
-                    train_spects.append(a_spect)
-                    total_train_dur += a_spect[1]  # ind 1 is duration
-                    if total_train_dur >= total_train_set_duration:
-                        choice.pop(choice.index('train'))
-                elif which_set == 'val':
-                    val_spects.append(a_spect)
-                    val_dur += a_spect[1]  # ind 1 is duration
-                    if val_dur >= validation_set_duration:
-                        choice.pop(choice.index('val'))
-                elif which_set == 'test':
-                    test_spects.append(a_spect)
-                    test_dur += a_spect[1]  # ind 1 is duration
-                    if test_dur >= test_set_duration:
-                        choice.pop(choice.index('test'))
-
-                if len(choice) < 1:
-                    if np.sum(total_train_dur +
-                                      val_dur +
-                                      test_dur) < total_dataset_dur:
-                        raise ValueError('Loop to find subsets completed but '
-                                         'total duration of subsets is less than '
-                                         'total duration specified by config file.')
-                    else:
-                        subsets_of_sufficient_dur = True
+            if len(choice) < 1:
+                if np.sum(total_train_dur +
+                                  val_dur +
+                                  test_dur) < total_dataset_dur:
+                    raise ValueError('Loop to find subsets completed but '
+                                     'total duration of subsets is less than '
+                                     'total duration specified by config file.')
+                else:
                     break
 
-            if subsets_dur_iter > 1000:
-                raise ValueError('Did not successfully divide data into training, '
-                                 'validation, and test sets of sufficient duration '
-                                 'after 1000 iterations.'
-                                 ' Try increasing the total size of the data set.')
+            if iter > 1000:
+                raise ValueError('Could not find subsets of sufficient duration in '
+                                 'less than 1000 iterations.')
 
-        while all_labels_in_all_subsets == False:
+        # make sure no contamination between data sets.
+        # If this is true, each set of filenames should be disjoint from others
+        train_spect_files = [tup[0] for tup in train_spects]  # tup = a tuple
+        val_spect_files = [tup[0] for tup in val_spects]
+        test_spect_files = [tup[0] for tup in test_spects]
+        assert set(train_spect_files).isdisjoint(val_spect_files)
+        assert set(train_spect_files).isdisjoint(test_spect_files)
+        assert set(val_spect_files).isdisjoint(test_spect_files)
 
-            # make sure no contamination between data sets.
-            # If this is true, each set of filenames should be disjoint from others
-            train_spect_files = [tup[0] for tup in train_spects]  # tup = a tuple
-            val_spect_files = [tup[0] for tup in val_spects]
-            test_spect_files = [tup[0] for tup in test_spects]
-            assert set(train_spect_files).isdisjoint(val_spect_files)
-            assert set(train_spect_files).isdisjoint(test_spect_files)
-            assert set(val_spect_files).isdisjoint(test_spect_files)
+        # make sure that each set contains all classes we
+        # want the network to learn
+        train_labels = itertools.chain.from_iterable(
+            [spect[2] for spect in train_spects])
+        train_labels = set(train_labels)  # make set to get unique values
 
-            # make sure that each set contains all classes we
-            # want the network to learn
-            train_labels = itertools.chain.from_iterable(
-                [spect[2] for spect in train_spects])
-            train_labels = set(train_labels)  # make set to get unique values
+        val_labels = itertools.chain.from_iterable(
+            [spect[2] for spect in val_spects])
+        val_labels = set(val_labels)
 
-            val_labels = itertools.chain.from_iterable(
-                [spect[2] for spect in val_spects])
-            val_labels = set(val_labels)
+        test_labels = itertools.chain.from_iterable(
+            [spect[2] for spect in test_spects])
+        test_labels = set(test_labels)
 
-            test_labels = itertools.chain.from_iterable(
-                [spect[2] for spect in test_spects])
-            test_labels = set(test_labels)
-
-            if train_labels != set(labelset):
+        if train_labels != set(labelset):
+            iter += 1
+            if iter > 1000:
+                raise ValueError(all_labels_err)
+            else:
                 print('Train labels did not contain all labels in labelset. '
                       'Getting new training set. Iteration {}'
-                      .format(all_labels_iter))
-                all_labels_iter += 1
+                      .format(iter))
                 continue
-            elif val_labels != set(labelset):
+        elif val_labels != set(labelset):
+            iter += 1
+            if iter > 1000:
+                raise ValueError(all_labels_err)
+            else:
                 print('Validation labels did not contain all labels in labelset. '
                       'Getting new validation set. Iteration {}'
-                      .format(all_labels_iter))
-                all_labels_iter += 1
+                      .format(iter))
                 continue
-            elif test_labels != set(labelset):
-                print('Test labels did not contain all labels in labelset. '
-                      'Getting new validation set. Iteration {}'
-                      .format(all_labels_iter))
-                all_labels_iter += 1
-                continue
+        elif test_labels != set(labelset):
+            iter += 1
+            if iter > 1000:
+                raise ValueError(all_labels_err)
             else:
-                all_labels_in_all_subsets = True
-
-            if all_labels_iter > 1000:
-                raise ValueError('Did not successfully divide data into training, '
-                                 'validation, and test sets of sufficient duration, '
-                                 'that each contained all labels in labelset, '
-                                 'after 1000 iterations.'
-                                 'Try increasing the total size of the data set.')
+                print('Test labels did not contain all labels in labelset. '
+                      'Getting new test set. Iteration {}'
+                      .format(iter))
+                continue
+        else:
+            break
 
     for dict_name, spect_list, target_dur in zip(['train','val','test'],
                                                  [train_spects,val_spects,test_spects],
@@ -686,10 +707,11 @@ def get_inds_for_dur(spect_ID_vector,
 
         if method == 'incfreq':
             classes, counts = np.unique(labeled_timebins_vector, return_counts=True)
-            if classes.shape[0] != len(labels_mapping):
-                raise ValueError('number of classes in labeled_timebins_vector '
-                                 'does not equal number of classes '
-                                 'in labels_mapping.')
+            int_labels_without_int_flag = [val for val in labels_mapping.values()
+                                           if type(val) is int]
+            if set(classes) != set(int_labels_without_int_flag):
+                raise ValueError('classes in labeled_timebins_vector '
+                                 'do not match classes in labels_mapping.')
             freq_rank = np.argsort(counts).tolist()
 
             # reason for doing it in this Schliemel-the-painter-looking way is that
