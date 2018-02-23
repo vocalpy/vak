@@ -845,7 +845,8 @@ def convert_timebins_to_labels(labeled_timebins,
     labels = labels[labels != silent_gap_label]
     labels = labels.tolist()
 
-    inverse_labels_mapping = dict((v, k) for k, v in labels_mapping.items())
+    inverse_labels_mapping = dict((v, k) for k, v
+                                  in labels_mapping.items())
     labels = [inverse_labels_mapping[label] for label in labels]
 
     if spect_ID_vector:
@@ -855,10 +856,17 @@ def convert_timebins_to_labels(labeled_timebins,
         # need to split up labels by spect_ID_vector
         # this is probably not the most efficient way:
         spect_IDs = np.unique(spect_ID_vector)
+
         for spect_ID in spect_IDs:
             these = np.where(spect_ID_vector == spect_ID)
-            labels_list.append(
-                ''.join(labels_arr[these].tolist()))
+            curr_labels = labels_arr[these].tolist()
+            if all([type(el) is str for el in curr_labels]):
+                labels_list.append(''.join(curr_labels))
+            elif all([type(el) is int for el in curr_labels]):
+                labels_list.append(curr_labels)
         return labels_list, spect_ID_vector
     else:
-        return ''.join(labels)
+        if all([type(el) is str for el in labels]):
+            return ''.join(labels)
+        elif all([type(el) is int for el in labels]):
+            return labels
