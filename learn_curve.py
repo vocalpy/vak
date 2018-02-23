@@ -330,6 +330,7 @@ if __name__ == "__main__":
 
             # n_syllables, i.e., number of label classes to predict
             # Note that mapping includes label for silent gap b/t syllables
+            import pdb;pdb.set_trace()
             n_syllables = len(labels_mapping)
             logger.debug('n_syllables: '.format(n_syllables))
             learning_rate = float(config['NETWORK']['learning_rate'])

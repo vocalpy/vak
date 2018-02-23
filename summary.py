@@ -76,7 +76,15 @@ train_spect_params,
 train_labels) = (train_data_dict['timebin_dur'],
                  train_data_dict['spect_params'],
                  train_data_dict['labels'])
-Y_train_labels = ''.join(train_labels)
+# only get this just to have in summary file if needed
+if all(type(labels_el) is str for labels_el in train_labels):
+    # when taken from .not.mat files associated with .cbin audio files
+    Y_train_labels = ''.join(train_labels)
+    Y_train_labels_for_lev = Y_train_labels
+elif all(type(labels_el) is np.ndarray for labels_el in train_labels):
+    # when taken from annotation.mat supplied with .wav audio files
+    Y_train_labels = np.concatenate(train_labels).tolist()
+    Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
 
 # we load actual X_train for each replicate
 # from each training_records_dir below
@@ -112,7 +120,15 @@ assert train_timebin_dur == test_timebin_dur
 X_test_copy = X_test_copy.T
 
 # used for Levenshtein distance + syllable error rate
-Y_test_labels = ''.join(test_labels)
+if all(type(labels_el) is str for labels_el in test_labels):
+    # when taken from .not.mat files associated with .cbin audio files
+    Y_test_labels = ''.join(test_labels)
+    Y_test_labels_for_lev = Y_test_labels
+elif all(type(labels_el) is np.ndarray for labels_el in test_labels):
+    # when taken from annotation.mat supplied with .wav audio files
+    Y_test_labels = np.concatenate(test_labels).tolist()
+    Y_test_labels_for_lev = ''.join([chr(lbl) for lbl in Y_test_labels])
+
 
 # initialize arrays to hold summary results
 Y_pred_test_all = []  # will be a nested list
@@ -211,7 +227,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
 
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
-
+http://time.com/5171097/mozilla-vimeo-fcc-net-neutrality-lawsuit-ajit-pai/
         with tf.Session(graph=tf.Graph()) as sess:
             tf.logging.set_verbosity(tf.logging.ERROR)
             saver = tf.train.import_meta_graph(meta_file)
@@ -255,6 +271,17 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             Y_pred_train_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_train,
                                                                               labels_mapping)
             Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
+
+            if all([type(el) is int for el in Y_train_subset_labels]):
+                # if labels are ints instead of str
+                # convert to str just to calculate Levenshtein distance
+                # and syllable error rate.
+                # Let them be weird characters (e.g. '\t') because that doesn't matter
+                # for calculating Levenshtein distance / syl err rate
+                Y_train_subset_labels = ''.join([chr(el) for el in Y_train_subset_labels])
+                Y_pred_train_labels = ''.join([chr(el) for el in Y_pred_train_labels])
+
+
             train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels,
                                                        Y_train_subset_labels)
             train_lev_arr[dur_ind, rep_ind] = train_lev
@@ -290,11 +317,21 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
             Y_pred_test_labels = cnn_bilstm.utils.convert_timebins_to_labels(Y_pred_test,
                                                                              labels_mapping)
             Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
+            if all([type(el) is int for el in Y_pred_test_labels]):
+                # if labels are ints instead of str
+                # convert to str just to calculate Levenshtein distance
+                # and syllable error rate.
+                # Let them be weird characters (e.g. '\t') because that doesn't matter
+                # for calculating Levenshtein distance / syl err rate
+                Y_pred_test_labels = ''.join([chr(el) for el in Y_pred_test_labels])
+                # already converted actual Y_test_labels from int to str above,
+                # stored in variable `Y_test_labels_for_lev`
+
             test_lev = cnn_bilstm.metrics.levenshtein(Y_pred_test_labels,
-                                                      Y_test_labels)
+                                                      Y_test_labels_for_lev)
             test_lev_arr[dur_ind, rep_ind] = test_lev
             print('Levenshtein distance for test set was {}'.format(test_lev))
-            test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_test_labels,
+            test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(Y_test_labels_for_lev,
                                                                        Y_pred_test_labels)
             print('Syllable error rate for test set was {}'.format(test_syl_err_rate))
             test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate

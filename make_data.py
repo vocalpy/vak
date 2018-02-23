@@ -94,31 +94,27 @@ if __name__ == "__main__":
     os.mkdir(output_dir)
 
     labelset = config['DATA']['labelset']
+    labels_mapping = {}
     # make mapping from syllable labels to consecutive integers
     # start at 1, because 0 is assumed to be label for silent gaps
     if '-' in labelset or ',' in labelset:
         # if user specified range of ints using a str
         labelset = range_str(labelset)
-        # since labels are ints, don't actually change them.
-        labels_mapping = dict(zip(labelset, labelset))
-        labels_mapping['labels_are_ints'] = 'Yes'
     else:  # assume labelset is characters
         labelset = list(labelset)
-        labels_mapping = dict(zip(labelset,
-                                  range(1, len(labelset) + 1)))
-        labels_mapping['labels_are_ints'] = 'No'
 
-    if config.has_option('DATA', 'silent_gap_label'):
-        silent_gap_label = int(config['DATA']['silent_gap_label'])
-        labels_mapping['silent_gap_label'] = silent_gap_label
-    else:
-        if 0 not in labels_mapping.values():
-            # default to 0 as silent gap label
-            labels_mapping['silent_gap_label'] = 0
-        else:
-            # failing that, just use max int value plus one
-            labels_mapping['silent_gap_label'] = \
-                max(labels_mapping.values()) + 1
+    # map to series of consecutive integers from 0 to n inclusive
+    # where 0 is the label for silent periods between syllables
+    # and n is the number of syllable labels
+    labels_mapping = dict(zip(labelset,
+                              range(1, len(labelset) + 1)))
+    labels_mapping['silent_gap_label'] = 0
+
+    if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
+        raise ValueError('Labels mapping does not map to a consecutive'
+                         'series of integers from 0 to n (where 0 is the '
+                         'silent gap label and n is the number of syllable'
+                         'labels).')
 
     skip_files_with_labels_not_in_labelset = config.getboolean(
         'DATA',
