@@ -330,7 +330,14 @@ if __name__ == "__main__":
 
             # n_syllables, i.e., number of label classes to predict
             # Note that mapping includes label for silent gap b/t syllables
-            import pdb;pdb.set_trace()
+            # Error checking code to ensure that it is in fact a consecutive
+            # series of integers from 0 to n, so we don't predict classes that
+            # don't exist
+            if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
+                raise ValueError('Labels mapping does not map to a consecutive'
+                                 'series of integers from 0 to n (where 0 is the '
+                                 'silent gap label and n is the number of syllable'
+                                 'labels).')
             n_syllables = len(labels_mapping)
             logger.debug('n_syllables: '.format(n_syllables))
             learning_rate = float(config['NETWORK']['learning_rate'])
