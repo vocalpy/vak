@@ -134,19 +134,25 @@ if __name__ == "__main__":
                                            subdir,
                                            '*.cbin')))
     if cbins == []:
+        # try looking for .wav files
         wavs = glob(os.path.join(data_dir, '*.wav'))
+
+        if cbins == [] and wavs == []:
+            raise FileNotFoundError('No .cbin or .wav files found in {} or'
+                                    'immediate sub-directories'
+                                    .format(data_dir))
+        # look for canary annotation
         annotation_file = glob(os.path.join(data_dir, '*annotation*.mat'))
         if len(annotation_file) == 1:
             annotation_file = annotation_file[0]
-        else:
-            raise ValueError('Found more than one annotation.mat file: {}. '
-                             'Please include only one such file in the directory.'
-                             .format(annotation_file))
-
-    if cbins == [] and wavs == []:
-        raise FileNotFoundError('No .cbin or .wav files found in {} or'
-                                'immediate sub-directories'
-                                .format(data_dir))
+        else:  # try Koumura song annotation
+            annotation_file = glob(os.path.join(data_dir, '../Annotation.xml'))
+            if len(annotation_file) == 1:
+                annotation_file = annotation_file[0]
+            else:
+                raise ValueError('Found more than one annotation.mat file: {}. '
+                                 'Please include only one such file in the directory.'
+                                 .format(annotation_file))
 
     if cbins:
         spect_files_path = \
