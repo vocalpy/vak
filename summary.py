@@ -85,6 +85,12 @@ elif all(type(labels_el) is np.ndarray for labels_el in train_labels):
     # when taken from annotation.mat supplied with .wav audio files
     Y_train_labels = np.concatenate(train_labels).tolist()
     Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
+elif all(type(labels_el) is list for labels_el in train_labels):
+    # when taken from annotation.xml supplied with Koumura .wav audio files
+    Y_train_labels = [lbl for lbl_list in train_labels for lbl in lbl_list]
+    Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
+else:
+    raise TypeError('Not able to determine type of labels in test data')
 
 # we load actual X_train for each replicate
 # from each training_records_dir below
@@ -128,7 +134,12 @@ elif all(type(labels_el) is np.ndarray for labels_el in test_labels):
     # when taken from annotation.mat supplied with .wav audio files
     Y_test_labels = np.concatenate(test_labels).tolist()
     Y_test_labels_for_lev = ''.join([chr(lbl) for lbl in Y_test_labels])
-
+elif all(type(labels_el) is list for labels_el in test_labels):
+    # when taken from annotation.xml supplied with Koumura .wav audio files
+    Y_test_labels = [lbl for lbl_list in test_labels for lbl in lbl_list]
+    Y_test_labels_for_lev = ''.join([chr(lbl) for lbl in Y_test_labels])
+else:
+    raise TypeError('Not able to determine type of labels in test data')
 
 # initialize arrays to hold summary results
 Y_pred_test_all = []  # will be a nested list
@@ -227,7 +238,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
 
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
-http://time.com/5171097/mozilla-vimeo-fcc-net-neutrality-lawsuit-ajit-pai/
+
         with tf.Session(graph=tf.Graph()) as sess:
             tf.logging.set_verbosity(tf.logging.ERROR)
             saver = tf.train.import_meta_graph(meta_file)

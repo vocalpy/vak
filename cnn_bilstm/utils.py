@@ -285,8 +285,6 @@ def make_spects_from_list_of_files(filelist,
             elif annotation_file.endswith('.xml'):
                 filename_key = os.path.basename(filename)
                 this_labels_str = annotation_dict[filename_key]['labels']
-                # convert from str to int
-                this_labels_str = [int(lbl) for lbl in this_labels_str]
                 onsets = annotation_dict[filename_key]['onsets'] / fs
                 offsets = annotation_dict[filename_key]['offsets'] / fs
 
