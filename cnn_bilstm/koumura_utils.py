@@ -2,14 +2,11 @@
 Python functions to facilitate interacting with the dataset from Koumura and
 Okanoya 2016 [1].
 
+data: https://figshare.com/articles/BirdsongRecognition/3470165
+
 The original code was released under the GNU license:
 https://github.com/cycentum/birdsong-recognition/blob/master/
 birdsong-recognition/src/computation/ViterbiSequencer.java
-
-Note that the Python implementations are not based directly on the Java code but
-they have been tested to see whether they produce the same results.
-
-data: https://figshare.com/articles/BirdsongRecognition/3470165
 
 [1] Koumura T, Okanoya K (2016) Automatic Recognition of Element Classes and
 Boundaries in the Birdsong with Variable Sequences. PLoS ONE 11(7): e0159188.
@@ -18,7 +15,6 @@ doi:10.1371/journal.pone.0159188
 
 #from standard library
 import os
-import glob
 import xml.etree.ElementTree as ET
 
 #from dependencies
@@ -84,7 +80,7 @@ class Sequence:
 
 def parse_xml(xml_file,concat_seqs_into_songs=False):
     """
-    parses Annotation.xml files.
+    parses Annotation.xml files from BirdsongRecognition dataset.
 
     Parameters
     ----------
@@ -157,7 +153,7 @@ def load_song_annot(songfiles, annotation_file):
     Parameters
     ----------
     songfiles: list
-        of str, filenames of .wav file from Koumura dataset
+        of str, filenames of .wav files from BirdsongRecogntion dataset
     annotation_file: str
         path to Annotation.xml file
 
@@ -185,3 +181,17 @@ def load_song_annot(songfiles, annotation_file):
         }
         annotation_dict[songfile] = songfile_dict
     return annotation_dict
+
+
+def determine_unique_labels(annotation_file):
+    """given an annotation.xml file
+    from a bird in BirdsongRecognition dataset,
+    determine unique set of labels applied to syllables from that bird"""
+    annotation = parse_xml(annotation_file,
+                           concat_seqs_into_songs=True)
+    lbls = [syl.label
+            for seq in annotation
+            for syl in seq.syls]
+    unique_lbls = np.unique(lbls).tolist()
+    unique_lbls = ''.join(unique_lbls)  # convert from list to string
+    return unique_lbls
