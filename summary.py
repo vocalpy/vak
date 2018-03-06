@@ -88,9 +88,15 @@ elif all(type(labels_el) is np.ndarray for labels_el in train_labels):
 elif all(type(labels_el) is list for labels_el in train_labels):
     # when taken from annotation.xml supplied with Koumura .wav audio files
     Y_train_labels = [lbl for lbl_list in train_labels for lbl in lbl_list]
-    Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
+    if all([type(lbl) is int for lbl in Y_train_labels]):
+        Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
+    elif all([type(lbl) is str for lbl in Y_train_labels]):
+        pass  # don't need to do anything
+    else:
+        raise TypeError('Couldn\'t determine type for training labels in {}'
+                        .format(type(train_data_dict_path)))
 else:
-    raise TypeError('Not able to determine type of labels in test data')
+    raise TypeError('Not able to determine type of labels in train data')
 
 # we load actual X_train for each replicate
 # from each training_records_dir below
@@ -137,7 +143,13 @@ elif all(type(labels_el) is np.ndarray for labels_el in test_labels):
 elif all(type(labels_el) is list for labels_el in test_labels):
     # when taken from annotation.xml supplied with Koumura .wav audio files
     Y_test_labels = [lbl for lbl_list in test_labels for lbl in lbl_list]
-    Y_test_labels_for_lev = ''.join([chr(lbl) for lbl in Y_test_labels])
+    if all([type(lbl) is int for lbl in Y_train_labels]):
+        Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
+    elif all([type(lbl) is str for lbl in Y_train_labels]):
+        pass  # don't need to do anything
+    else:
+        raise TypeError('Couldn\'t determine type for test labels in {}'
+                        .format(type(test_data_dict_path)))
 else:
     raise TypeError('Not able to determine type of labels in test data')
 
