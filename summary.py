@@ -91,7 +91,7 @@ elif all(type(labels_el) is list for labels_el in train_labels):
     if all([type(lbl) is int for lbl in Y_train_labels]):
         Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
     elif all([type(lbl) is str for lbl in Y_train_labels]):
-        pass  # don't need to do anything
+        Y_train_labels_for_lev = ''.join(Y_train_labels)
     else:
         raise TypeError('Couldn\'t determine type for training labels in {}'
                         .format(type(train_data_dict_path)))
@@ -144,9 +144,9 @@ elif all(type(labels_el) is list for labels_el in test_labels):
     # when taken from annotation.xml supplied with Koumura .wav audio files
     Y_test_labels = [lbl for lbl_list in test_labels for lbl in lbl_list]
     if all([type(lbl) is int for lbl in Y_train_labels]):
-        Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
+        Y_test_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
     elif all([type(lbl) is str for lbl in Y_train_labels]):
-        pass  # don't need to do anything
+        Y_test_labels_for_lev = ''.join(Y_test_labels)
     else:
         raise TypeError('Couldn\'t determine type for test labels in {}'
                         .format(type(test_data_dict_path)))
