@@ -105,6 +105,47 @@ patience = None
 replicates = 5
 ```
 
+`train_data_path` : str  
+    absolute path to `train_data_dict` created by `make_data.py`  
+`val_data_path` : str  
+    absolute path to `val_data_dict` created by `make_data.py`  
+`test_data_path` : str  
+    absolute path to `test_data_dict` created by `make_data.py`  
+`use_train_subsets_from_previous_run` : bool  
+    if `Yes` or `True` then re-use the randomly drawn subsets from a 
+    previous run.  
+`previous_run_path` : str  
+    absolute path to a previous run (the subdirectory created in `results_dir`
+    by `learn_curves.py`  
+`normalize_spectrograms` : bool  
+    If `Yes` or `True`, normalize spectrograms.  
+    Normalization is done by subtracting mean off each frequency bin and
+    dividing by standard deviation.
+    Note that the mean and standard deviation are found for each subset
+    of training data and then applied to validation and test data
+    when estimating accuracy.
+`n_max_iter` : int  
+    Number of iterations (AKA epochs) to train.  
+`val_error_step` : int  
+    step at which to calculate validation error.  
+    Every time iter modulo val_error_step is zero, the validation error
+    will be calculated.
+`checkpoint_step` : int  
+    step at which to save checkpoint.  
+    Every time iter modulo checkpoint_step is zero, a checkpoint will be
+    saved.
+`save_only_single_checkpoint_file` : bool
+    if 'Yes' or 'True', overwrite checkpoint file at each checkpoint step 
+    instead of saving many checkpoint files. To avoid taking up space with
+    large checkpoint files.  
+`patience` : int or None  
+    if int, will stop if loss does not decrease for this number of steps  
+`replicates` : int  
+    Number of replicates for each train_dur_size.  
+    E.g., if 5 then for each of train set size of duration [10,20,30] seconds, 
+    generate 5 random subsets of each duration and train a model with those 
+    subsets.  
+
 
 ## OUTPUT section
 
