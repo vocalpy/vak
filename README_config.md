@@ -44,8 +44,11 @@ log_transform=True
     Threshold. Spectrogram elements with value below threshold are set to
     zero.  
 `transform_type` : str  
+    One of the following:  
     {'log_spect', 'log_spect_plus_one', None}  
-
+    'log_spect' is log of spectrogram  
+    'log_spect_plus_one' is log(spectrogram + 1)  
+    None is no transform.
 ## DATA section
 
 ```
