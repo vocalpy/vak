@@ -24,7 +24,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     return y
 
 
-def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=6.25, log_transform=True):
+def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=None, transform_type=None):
     """creates a spectrogram
 
     Parameters
@@ -50,11 +50,19 @@ def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=6.25, log_tr
     # below only take [:3] from return of specgram because we don't need the image
     spec, freqbins, timebins = specgram(data, fft_size, samp_freq, noverlap=noverlap)[:3]
 
-    if log_transform:
-        spec /= spec.max()  # volume normalize to max 1
-        spec = np.log10(spec)  # take log
-        spec[spec < -thresh] = -thresh  # set anything less than the threshold as the threshold
+    if transform_type:
+        if transform_type == 'log_spect':
+            spec /= spec.max()  # volume normalize to max 1
+            spec = np.log10(spec)  # take log
+            if thresh:
+                # I know this is weird, maintaining 'legacy' behavior
+                spec[spec < -thresh] = -thresh
+        elif transform_type == 'log_spect_plus_one':
+            spec = np.log10(spec + 1)
+            if thresh:
+                spec[spec < thresh] = thresh
     else:
-        spec[spec < thresh] = thresh  # set anything less than the threshold as the threshold
+        if thresh:
+            spec[spec < thresh] = thresh  # set anything less than the threshold as the threshold
 
     return spec, freqbins, timebins
