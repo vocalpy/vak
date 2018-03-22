@@ -67,8 +67,7 @@ if __name__ == "__main__":
     if config.has_option('SPECTROGRAM', 'thresh'):
         spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
     if config.has_option('SPECTROGRAM', 'transform_type'):
-        spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
-                                                      'transform_type')
+        spect_params['log_transform'] = config['SPECTROGRAM']['transform_type']
 
     if train_data_dict['spect_params'] != spect_params:
         raise ValueError('Spectrogram parameters in config file '
