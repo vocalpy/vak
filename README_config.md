@@ -40,15 +40,21 @@ log_transform=True
     AKA "hop size", distance to move forward to grab next segment for FFT  
 `freq_cutoffs` : int  
     Bandpass frequencies, becomes a two-element list of ints  
-`thresh` : float or None  
+`thresh` : float  
     Threshold. Spectrogram elements with value below threshold are set to
-    zero.  
+    the threshold value so this becomes the "floor" value.  
+    Optional, if not specified then no thresholding is applied.  
 `transform_type` : str  
     One of the following:  
-    {'log_spect', 'log_spect_plus_one', None}  
+    {'log_spect', 'log_spect_plus_one'}  
     'log_spect' is log of spectrogram  
     'log_spect_plus_one' is log(spectrogram + 1)  
-    None is no transform.
+    Optional, if not specified then no transform is applied.  
+
+*Note that if `transform_type` is `log_spect` and a `thresh` value is specified,
+then the threshold used is the **negative** value of `thresh`.* (This is to 
+maintain the behavior of the spectrogram function as originally written.)
+
 ## DATA section
 
 ```

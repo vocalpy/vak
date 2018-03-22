@@ -78,9 +78,18 @@ if __name__ == "__main__":
                                     for element in
                                     config['SPECTROGRAM']['freq_cutoffs']
                                         .split(',')]
-    spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-    spect_params['log_transform'] = config.getboolean('SPECTROGRAM',
-                                                      'log_transform')
+    if config.has_option('SPECTROGRAM', 'thresh'):
+        spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+    if config.has_option('SPECTROGRAM', 'transform_type'):
+        spect_params['transform_type'] = config.getboolean('SPECTROGRAM',
+                                                      'transform_type')
+        valid_transform_types = {'log_spect', 'log_spect_plus_one'}
+        if spect_params['transform_type'] not in valid_transform_types:
+            raise ValueError('Value for `transform_type`, {}, in [SPECTROGRAM] '
+                             'section of .ini file is not recognized. Must be one '
+                             'of the following: {}'
+                             .format(spect_params['transform_type'],
+                                     valid_transform_types))
 
     data_dir = config['DATA']['data_dir']
     logger.info('will make training data from: {}'.format(data_dir))
