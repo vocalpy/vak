@@ -67,7 +67,7 @@ if __name__ == "__main__":
     if config.has_option('SPECTROGRAM', 'thresh'):
         spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
     if config.has_option('SPECTROGRAM', 'transform_type'):
-        spect_params['log_transform'] = config['SPECTROGRAM']['transform_type']
+        spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
 
     if train_data_dict['spect_params'] != spect_params:
         raise ValueError('Spectrogram parameters in config file '
@@ -105,9 +105,11 @@ if __name__ == "__main__":
         files_used_fileobj.write('\n'.join(files_used))
 
     total_train_set_duration = float(config['DATA']['total_train_set_duration'])
-    if X_train.shape[-1] * timebin_dur != total_train_set_duration:
+    dur_diff = np.abs((X_train.shape[-1] * timebin_dur) - total_train_set_duration)
+    if dur_diff > 1.0:
         raise ValueError('Duration of X_train in seconds from train_data_dict '
-                         'does not match duration specified in config file.\n'
+                         'is more than one second different from '
+                         'duration specified in config file.\n'
                          'train_data_dict: {}\n'
                          'config file: {}'
                          .format(train_data_dict_path, config_file))
