@@ -35,8 +35,7 @@ if __name__ == "__main__":
     if config.has_option('SPECTROGRAM', 'thresh'):
         spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
     if config.has_option('SPECTROGRAM', 'transform_type'):
-        spect_params['transform_type'] = config.getboolean('SPECTROGRAM',
-                                                      'transform_type')
+        spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
         valid_transform_types = {'log_spect', 'log_spect_plus_one'}
         if spect_params['transform_type'] not in valid_transform_types:
             raise ValueError('Value for `transform_type`, {}, in [SPECTROGRAM] '
