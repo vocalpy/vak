@@ -358,7 +358,12 @@ if __name__ == "__main__":
             # Add an Op that chooses the top k predictions.
             eval_op = tf.nn.top_k(logits)
 
-            logs_path = os.path.join(results_dirname,'logs')
+            logs_subdir = ('log_training_set_with_duration_of_'
+                           + str(train_set_dur) + '_sec_replicate_'
+                           + str(replicate))
+            logs_path = os.path.join(results_dirname,
+                                     'logs',
+                                     logs_subdir)
             if not os.path.isdir(logs_path):
                 os.makedirs(logs_path)
 
