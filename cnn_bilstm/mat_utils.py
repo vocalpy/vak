@@ -5,7 +5,9 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
-def make_data_from_matlab_spects(data_dir, mat_filenames=None,
+
+def make_data_from_matlab_spects(data_dir,
+                                 mat_filenames=None,
                                  data_dict_filename='data_dict'):
     """makes data_dict just like utils.make_data, but
     loads spectrograms and labeled timebin vectors generated in matlab
@@ -129,7 +131,8 @@ def make_data_from_matlab_spects(data_dir, mat_filenames=None,
     joblib.dump(data_dict, data_dict_filename)
 
 
-def convert_train_keys_to_txt(train_keys_path, txt_filename = 'training_filenames'):
+def convert_train_keys_to_txt(train_keys_path,
+                              txt_filename = 'training_filenames'):
     """get train_keys cell array out of .mat file, convert to list of str, save as .txt
 
     Parameters
