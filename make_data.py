@@ -5,6 +5,10 @@ from datetime import datetime
 import logging
 from configparser import ConfigParser
 
+import numpy as np
+from scipy.io import loadmat
+import joblib
+
 from cnn_bilstm.utils import make_spects_from_list_of_files, make_data_dicts, range_str
 
 
@@ -22,39 +26,6 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
-    # require user to specify parameters for spectrogram
-    # instead of having defaults (as was here previously)
-    # helps ensure we don't mix up different params
-    spect_params = {}
-    spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
-    spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
-    spect_params['freq_cutoffs'] = [float(element)
-                                    for element in
-                                    config['SPECTROGRAM']['freq_cutoffs']
-                                        .split(',')]
-    if config.has_option('SPECTROGRAM', 'thresh'):
-        spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-    if config.has_option('SPECTROGRAM', 'transform_type'):
-        spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
-        valid_transform_types = {'log_spect', 'log_spect_plus_one'}
-        if spect_params['transform_type'] not in valid_transform_types:
-            raise ValueError('Value for `transform_type`, {}, in [SPECTROGRAM] '
-                             'section of .ini file is not recognized. Must be one '
-                             'of the following: {}'
-                             .format(spect_params['transform_type'],
-                                     valid_transform_types))
-
-    data_dir = config['DATA']['data_dir']
-    logger.info('will make training data from: {}'.format(data_dir))
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    if config.has_option('DATA','output_dir'):
-        output_dir = os.path.join(config['DATA']['output_dir'],
-                                  'spectrograms_' + timenow)
-    else:
-        output_dir = os.path.join(data_dir,
-                                  'spectrograms_' + timenow)
-    os.mkdir(output_dir)
-
     labelset = config['DATA']['labelset']
     labels_mapping = {}
     # make mapping from syllable labels to consecutive integers
@@ -71,7 +42,6 @@ if __name__ == "__main__":
     labels_mapping = dict(zip(labelset,
                               range(1, len(labelset) + 1)))
     labels_mapping['silent_gap_label'] = 0
-
     if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
         raise ValueError('Labels mapping does not map to a consecutive'
                          'series of integers from 0 to n (where 0 is the '
@@ -82,56 +52,126 @@ if __name__ == "__main__":
         'DATA',
         'skip_files_with_labels_not_in_labelset')
 
-    if not os.path.isdir(data_dir):
-        raise NotADirectoryError('{} not recognized '
-                                 'as a directory'.format(data_dir))
+    if config.has_option('DATA','mat_spect_files_path'):
+        # make spect_files file from .mat spect files and annotation file
+        mat_spect_files_path = config['DATA']['mat_spect_files_path']
+        mat_spect_files = glob(os.path.join(mat_spect_files_path,'*.mat'))
+        mat_spects_annotation_file = config['DATA']['mat_spects_annotation']
+        annotation = loadmat(mat_spects_annotation_file, squeeze_me=True)
+        annotation = dict(zip(annotation['keys'],
+                              annotation['elements']))
+        spect_files = []
+        for spect_filename in mat_spect_files:
+            el = annotation[spect_filename]
+            # below does not actually create list
+            # instead gets ndarray out of a zero-length ndarray of dtype=object
+            labels = el['segType'].tolist()
+            matspect = loadmat(spect_filename, squeeze_me=True)
+            if not 'timebin_dur' in locals():
+                timebin_dur = np.around(np.mean(np.diff(matspect['t'])),
+                                        decimals=3)
+            else:
+                curr_timebin_dur = np.around(np.mean(np.diff(matspect['t'])),
+                                             decimals=3)
+                assert curr_timebin_dur == timebin_dur, \
+                    "curr_timebin_dur didn't match timebin_dur"
+            spect_dur = matspect['s'].shape[-1] * timebin_dur
+            spect_files.append((spect_filename, spect_dur, labels))
 
-    cbins = glob(os.path.join(data_dir, '*.cbin'))
-    if cbins == []:
-        # if we don't find .cbins in data_dir, look in sub-directories
-        cbins = []
-        subdirs = glob(os.path.join(data_dir,'*/'))
-        for subdir in subdirs:
-            cbins.extend(glob(os.path.join(data_dir,
-                                           subdir,
-                                           '*.cbin')))
-    if cbins == []:
-        # try looking for .wav files
-        wavs = glob(os.path.join(data_dir, '*.wav'))
+        spect_files_path = os.path.join(mat_spect_files_path, 'spect_files')
+        joblib.dump(spect_files, spect_files_path)
 
-        if cbins == [] and wavs == []:
-            raise FileNotFoundError('No .cbin or .wav files found in {} or'
-                                    'immediate sub-directories'
-                                    .format(data_dir))
-        # look for canary annotation
-        annotation_file = glob(os.path.join(data_dir, '*annotation*.mat'))
-        if len(annotation_file) == 1:
-            annotation_file = annotation_file[0]
-        else:  # try Koumura song annotation
-            annotation_file = glob(os.path.join(data_dir, '../Annotation.xml'))
+    else:
+        mat_spect_files_path = None
+
+    if mat_spect_files_path is None:
+        if not config.has_section('SPECTROGRAM'):
+            raise ValueError('No annotation_path specified in config_file that '
+                             'would point to annotated spectrograms, but no '
+                             'parameters provided to generate spectrograms '
+                             'either.')
+        # require user to specify parameters for spectrogram
+        # instead of having defaults (as was here previously)
+        # helps ensure we don't mix up different params
+        spect_params = {}
+        spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
+        spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
+        spect_params['freq_cutoffs'] = [float(element)
+                                        for element in
+                                        config['SPECTROGRAM']['freq_cutoffs']
+                                            .split(',')]
+        if config.has_option('SPECTROGRAM', 'thresh'):
+            spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+        if config.has_option('SPECTROGRAM', 'transform_type'):
+            spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
+            valid_transform_types = {'log_spect', 'log_spect_plus_one'}
+            if spect_params['transform_type'] not in valid_transform_types:
+                raise ValueError('Value for `transform_type`, {}, in [SPECTROGRAM] '
+                                 'section of .ini file is not recognized. Must be one '
+                                 'of the following: {}'
+                                 .format(spect_params['transform_type'],
+                                         valid_transform_types))
+
+        data_dir = config['DATA']['data_dir']
+        logger.info('will make training data from: {}'.format(data_dir))
+        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+        if config.has_option('DATA','output_dir'):
+            output_dir = os.path.join(config['DATA']['output_dir'],
+                                      'spectrograms_' + timenow)
+        else:
+            output_dir = os.path.join(data_dir,
+                                      'spectrograms_' + timenow)
+        os.mkdir(output_dir)
+
+        if not os.path.isdir(data_dir):
+            raise NotADirectoryError('{} not recognized '
+                                     'as a directory'.format(data_dir))
+
+        cbins = glob(os.path.join(data_dir, '*.cbin'))
+        if cbins == []:
+            # if we don't find .cbins in data_dir, look in sub-directories
+            cbins = []
+            subdirs = glob(os.path.join(data_dir,'*/'))
+            for subdir in subdirs:
+                cbins.extend(glob(os.path.join(data_dir,
+                                               subdir,
+                                               '*.cbin')))
+        if cbins == []:
+            # try looking for .wav files
+            wavs = glob(os.path.join(data_dir, '*.wav'))
+
+            if cbins == [] and wavs == []:
+                raise FileNotFoundError('No .cbin or .wav files found in {} or'
+                                        'immediate sub-directories'
+                                        .format(data_dir))
+            # look for canary annotation
+            annotation_file = glob(os.path.join(data_dir, '*annotation*.mat'))
             if len(annotation_file) == 1:
                 annotation_file = annotation_file[0]
-            else:
-                raise ValueError('Found more than one annotation.mat file: {}. '
-                                 'Please include only one such file in the directory.'
-                                 .format(annotation_file))
+            else:  # try Koumura song annotation
+                annotation_file = glob(os.path.join(data_dir, '../Annotation.xml'))
+                if len(annotation_file) == 1:
+                    annotation_file = annotation_file[0]
+                else:
+                    raise ValueError('Found more than one annotation.mat file: {}. '
+                                     'Please include only one such file in the directory.'
+                                     .format(annotation_file))
 
-    if cbins:
-        spect_files_path = \
-            make_spects_from_list_of_files(cbins,
-                                           spect_params,
-                                           output_dir,
-                                           labels_mapping,
-                                           skip_files_with_labels_not_in_labelset)
-    elif wavs:
-        spect_files_path = \
-            make_spects_from_list_of_files(wavs,
-                                           spect_params,
-                                           output_dir,
-                                           labels_mapping,
-                                           skip_files_with_labels_not_in_labelset,
-                                           annotation_file)
-
+        if cbins:
+            spect_files_path = \
+                make_spects_from_list_of_files(cbins,
+                                               spect_params,
+                                               output_dir,
+                                               labels_mapping,
+                                               skip_files_with_labels_not_in_labelset)
+        elif wavs:
+            spect_files_path = \
+                make_spects_from_list_of_files(wavs,
+                                               spect_params,
+                                               output_dir,
+                                               labels_mapping,
+                                               skip_files_with_labels_not_in_labelset,
+                                               annotation_file)
 
     make_data_dicts(output_dir,
                     float(config['DATA']['total_train_set_duration']),

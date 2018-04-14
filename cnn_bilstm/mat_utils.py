@@ -132,7 +132,7 @@ def make_data_from_matlab_spects(data_dir,
 
 
 def convert_train_keys_to_txt(train_keys_path,
-                              txt_filename = 'training_filenames'):
+                              txt_filename = 'spect_files'):
     """get train_keys cell array out of .mat file, convert to list of str, save as .txt
 
     Parameters
