@@ -162,7 +162,8 @@ def make_spects_from_list_of_files(filelist,
                                    output_dir,
                                    labels_mapping,
                                    skip_files_with_labels_not_in_labelset=True,
-                                   annotation_file=None):
+                                   annotation_file=None,
+                                   n_decimals_trunc=3):
     """makes spectrograms from a list of .cbin audio files
 
     Parameters
@@ -187,6 +188,9 @@ def make_spects_from_list_of_files(filelist,
         is a list of .wav filenames and 'elements' are the associated annotations
         for each filename.
         Default is None.
+    n_decimals_trunc : int
+        number of decimal places to keep when truncating timebin_dur
+        default is 3
 
     Returns
     -------
@@ -212,6 +216,8 @@ def make_spects_from_list_of_files(filelist,
             same length as time_bins, but value of each element is a label
             corresponding to that time bin
     """
+    decade = 10** n_decimals_trunc  # used below for truncating floating point
+
     if all(['.cbin' in filename for filename in filelist]):
         filetype = 'cbin'
     elif all(['.wav' in filename for filename in filelist]):
@@ -255,7 +261,6 @@ def make_spects_from_list_of_files(filelist,
     # need to keep track of name of files used since we may skip some.
     # (cbins_used is actually a list of tuples as defined in docstring)
     spect_files = []
-
 
     for filename in filelist:
         if filetype == 'cbin':
@@ -333,8 +338,15 @@ def make_spects_from_list_of_files(filelist,
             timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
         else:
             curr_timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
-            assert curr_timebin_dur == timebin_dur, \
-                "curr_timebin_dur didn't match timebin_dur"
+            # below truncates any decimal place past decade
+            curr_file_timebin_dur = np.trunc(curr_file_timebin_dur
+                                             * decade) / decade
+            if not np.allclose(curr_timebin_dur, timebin_dur):
+                raise ValueError("duration of timebin in file {}, {}, did not "
+                                 "match duration of timebin from other .mat "
+                                 "files, {}.".format(curr_timebin_dur,
+                                                     filename,
+                                                     timebin_dur))
         spect_dur = time_bins.shape[-1] * timebin_dur
 
         spect_dict = {'spect': spect,
