@@ -5,12 +5,8 @@ from datetime import datetime
 import logging
 from configparser import ConfigParser
 
-import numpy as np
-from scipy.io import loadmat
-import joblib
-
 from cnn_bilstm.utils import make_spects_from_list_of_files, make_data_dicts, range_str
-
+from cnn_bilstm.mat_utils import convert_mat_to_spect
 
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
@@ -52,38 +48,33 @@ if __name__ == "__main__":
         'DATA',
         'skip_files_with_labels_not_in_labelset')
 
+    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+    if config.has_option('DATA', 'output_dir'):
+        output_dir = os.path.join(config['DATA']['output_dir'],
+                                  'spectrograms_' + timenow)
+    else:
+        output_dir = None
+
+    ### if using spectrograms from .mat files ###
     if config.has_option('DATA','mat_spect_files_path'):
         # make spect_files file from .mat spect files and annotation file
         mat_spect_files_path = config['DATA']['mat_spect_files_path']
+        print('will use spectrograms from .mat files in {}'
+              .format(mat_spect_files_path))
         mat_spect_files = glob(os.path.join(mat_spect_files_path,'*.mat'))
-        mat_spects_annotation_file = config['DATA']['mat_spects_annotation']
-        annotation = loadmat(mat_spects_annotation_file, squeeze_me=True)
-        annotation = dict(zip(annotation['keys'],
-                              annotation['elements']))
-        spect_files = []
-        for spect_filename in mat_spect_files:
-            el = annotation[spect_filename]
-            # below does not actually create list
-            # instead gets ndarray out of a zero-length ndarray of dtype=object
-            labels = el['segType'].tolist()
-            matspect = loadmat(spect_filename, squeeze_me=True)
-            if not 'timebin_dur' in locals():
-                timebin_dur = np.around(np.mean(np.diff(matspect['t'])),
-                                        decimals=3)
-            else:
-                curr_timebin_dur = np.around(np.mean(np.diff(matspect['t'])),
-                                             decimals=3)
-                assert curr_timebin_dur == timebin_dur, \
-                    "curr_timebin_dur didn't match timebin_dur"
-            spect_dur = matspect['s'].shape[-1] * timebin_dur
-            spect_files.append((spect_filename, spect_dur, labels))
-
-        spect_files_path = os.path.join(mat_spect_files_path, 'spect_files')
-        joblib.dump(spect_files, spect_files_path)
-
+        mat_spects_annotation_file = config['DATA']['mat_spect_files_annotation_file']
+        if output_dir is None:
+            output_dir = os.path.join(mat_spect_files_path,
+                                  'spectrograms_' + timenow)
+        os.mkdir(output_dir)
+        spect_files_path = convert_mat_to_spect(mat_spect_files,
+                                                mat_spects_annotation_file,
+                                                output_dir,
+                                                labels_mapping=None)
     else:
         mat_spect_files_path = None
 
+    ### if **not** using spectrograms from .mat files ###
     if mat_spect_files_path is None:
         if not config.has_section('SPECTROGRAM'):
             raise ValueError('No annotation_path specified in config_file that '
@@ -113,19 +104,15 @@ if __name__ == "__main__":
                                          valid_transform_types))
 
         data_dir = config['DATA']['data_dir']
-        logger.info('will make training data from: {}'.format(data_dir))
-        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        if config.has_option('DATA','output_dir'):
-            output_dir = os.path.join(config['DATA']['output_dir'],
-                                      'spectrograms_' + timenow)
-        else:
-            output_dir = os.path.join(data_dir,
-                                      'spectrograms_' + timenow)
-        os.mkdir(output_dir)
-
         if not os.path.isdir(data_dir):
             raise NotADirectoryError('{} not recognized '
                                      'as a directory'.format(data_dir))
+        logger.info('will make training data from: {}'.format(data_dir))
+        if output_dir is None:
+            output_dir = os.path.join(data_dir,
+                                  'spectrograms_' + timenow)
+        os.mkdir(output_dir)
+
 
         cbins = glob(os.path.join(data_dir, '*.cbin'))
         if cbins == []:
