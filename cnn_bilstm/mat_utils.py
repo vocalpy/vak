@@ -6,28 +6,48 @@ import joblib
 import numpy as np
 
 
-def make_data_from_matlab_spects(data_dir,
-                                 mat_filenames=None,
-                                 data_dict_filename='data_dict'):
-    """makes data_dict just like utils.make_data, but
-    loads spectrograms and labeled timebin vectors generated in matlab
+def convert_mat_to_spect(mat_spect_files,
+                         mat_spects_annotation_file,
+                         output_dir,
+                         labels_mapping=None,
+                         n_decimals_trunc=3):
+    """converts .mat files with spectrograms to .spect files
+    that are used by make_data.py script and the make_data_dicts
+    function that it calls.
 
     Parameters
     ----------
-    data_dir : str
+    mat_spect_files : list
+        of str, full path to .mat files
         path to directory containing .mat files
-    mat_filenames : str
-        optional, filename of a .txt file
-        that contains a list of .mat files to load.
-        Default is None. If None, load all .mat files in the directory
-        that contain the keys specified below.
-        The list can be generated from a cell array of filenames using
-        the function 'cnn_bilstm.mat_utils.convert_train_keys_to_txt'
-    data_dict_filename : str
-        name of file that contains data_dict object, saved by joblib.
-        Default is `data_dict`
+    mat_spects_annotation_file : str
+        full path to annotation file containing 'keys' and 'elements'
+        where 'keys' are filenames of audio files and 'elements'
+        contains additional annotation not found in .mat files
+    output_dir : str
+        full path to directory where .spect files will be saved
+    labels_mapping : dict
+        maps str labels to consecutive integer values {0,1,2,...N} where N
+        is the number of classes / label types.
+        Default is None -- currently not implemented.
+    n_decimals_trunc : int
+        number of decimal places to keep when truncating timebin_dur
+        default is 3
 
-    Each .mat file should contains the following keys:
+    Returns
+    -------
+    spect_files_path : str
+        Full path to file called 'spect_files'
+        which contains a list of three-element tuples:
+            spect_filename : str, filename of `.spect` file
+            spect_dur : float, duration of the spectrogram from cbin
+            labels : str, labels from .cbin.not.mat associated with .cbin
+                     (string labels for syllables in spectrogram)
+        Used when building data sets of a specific duration.
+
+    The fucntion saves a .spect file for each .mat file containing a
+    spectrogram. Each .mat file with a spectrogram should contains the following
+    keys:
         s : ndarray
             the spectrogram
         f : ndarray
@@ -39,96 +59,98 @@ def make_data_from_matlab_spects(data_dir,
     containing the spectrograms.
 
     If a .mat file does not contain these keys, the function skips that file.
+
     """
+    decade = 10**n_decimals_trunc  # used below for truncating floating point
 
-    if not os.path.isdir(data_dir):
-        raise ValueError('{} is not recognized as a directory'.format(data_dir))
-    else:
-        os.chdir(data_dir)
+    annotations = loadmat(mat_spects_annotation_file, squeeze_me=True)
+    annotations = dict(zip(annotations['keys'],
+                          annotations['elements']))
+    spect_files = []
+    num_spect_files = len(mat_spect_files)
+    for filenum, matspect_filename in enumerate(mat_spect_files):
+        print('loading annotation info from {}, file {} of {}'
+              .format(matspect_filename, filenum, num_spect_files))
+        wav_filename = os.path.basename(matspect_filename).replace('.mat',
+                                                                '.wav')
+        annotation = annotations[wav_filename]
+        # below does not actually create list
+        # instead gets ndarray out of a zero-length ndarray of dtype=object
+        labels = annotation['segType'].tolist()
 
-    if mat_filenames is None:
-        spect_files = glob('*.mat')
-    else:
-        with open(mat_filenames,'r') as fileobj:
-            spect_files = fileobj.read().splitlines()
-
-    if os.path.isfile(data_dict_filename):
-        raise FileExistsError("A file named {} already exists in {}.\n"
-                              "Please pass a string for data_dict_filename "
-                              "to this function that specifies some other name."
-                              .format(data_dict_filename, data_dir))
-
-    spects = []
-    spect_files_used = []
-    all_time_bins = []
-    labeled_timebins = []
-
-    for counter, spect_file in enumerate(spect_files):
-        print('loading {}'.format(spect_file))
-        mat_dict = loadmat(spect_file, squeeze_me=True)
-
-        if spect_file == 'train_keys.mat':
-            continue
-
-        if 's' not in mat_dict:
+        matspect = loadmat(matspect_filename, squeeze_me=True)
+        if 's' not in matspect:
             print('Did not find a spectrogram in {}. '
-                  'Skipping this file.'.format(spect_file))
+                  'Skipping this file.'.format(matspect_filename))
             continue
 
         if 'freq_bins' not in locals() and 'time_bins' not in locals():
-            freq_bins = mat_dict['f']
-            time_bins = mat_dict['t']
+            freq_bins = matspect['f']
+            time_bins = matspect['t']
             timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
+            # below truncates any decimal place past decade
+            timebin_dur = np.trunc(timebin_dur * decade) / decade
         else:
-            assert np.array_equal(mat_dict['f'], freq_bins)
-            curr_file_timebin_dur = np.around(np.mean(np.diff(mat_dict['t'])),
+            if not np.array_equal(matspect['f'], freq_bins):
+                raise ValueError('freq_bins in {} does not freq_bins from '
+                                 'other .mat files'.format(matspect_filename))
+            curr_file_timebin_dur = np.around(np.mean(np.diff(matspect['t'])),
                                               decimals=3)
-            assert curr_file_timebin_dur == timebin_dur
+            # below truncates any decimal place past decade
+            curr_file_timebin_dur = np.trunc(curr_file_timebin_dur
+                                             * decade) / decade
+            if not np.allclose(curr_file_timebin_dur, timebin_dur):
+                raise ValueError('duration of timebin in file {} did not '
+                                 'match duration of timebin from other .mat '
+                                 'files.'.format(matspect_filename))
 
-        spect = mat_dict['s']
-        labels = mat_dict['labels']
         # number of freq. bins should equal number of rows
-        assert mat_dict['f'].shape[-1] == spect.shape[0]
+        if matspect['f'].shape[-1] != matspect['s'].shape[0]:
+            raise ValueError('length of freq_bins in {} does not match '
+                             'number of rows in spectrogram'
+                             .format(matspect_filename))
         # number of time bins should equal number of columns
-        assert mat_dict['t'].shape[-1] == spect.shape[1]
-        spects.append(spect)
-        all_time_bins.append(time_bins)
-
-        assert labels.shape[-1] == mat_dict['t'].shape[-1]
-        if labels.ndim != 2:
-            if labels.ndim == 1:
+        if matspect['t'].shape[-1] != matspect['s'].shape[1]:
+            raise ValueError('length of time_bins in {} does not match '
+                             'number of columns in spectrogram'
+                             .format(matspect_filename))
+        labeled_timebins = matspect['labels']
+        if labeled_timebins.shape[-1] != matspect['t'].shape[-1]:
+            raise ValueError("length of 'labels' (labeled timebins vector)"
+                             " in {} does not match number of time bins"
+                             .format(matspect_filename))
+        if labeled_timebins.ndim != 2:
+            if labeled_timebins.ndim == 1:
                 # make same shape as output of utils.make_labeled_timebins
                 # so learn_curve.py doesn't crash when concatenating
                 # with zero-pad vector
-                labels = labels[:, np.newaxis]
+                labeled_timebins = labeled_timebins[:, np.newaxis]
             else:
-                raise ValueError('labels from {} has invalid'
-                                 'number of dimensions: {}'
-                                 .format(spect_file, labels.ndim))
-        labeled_timebins.append(labels)
+                raise ValueError('labeled timebins vector from {} has '
+                                 'invalid number of dimensions: {}'
+                                 .format(matspect_filename, labels.ndim))
 
-        spect_files_used.append(spect_file)
+        spect_dict = {'spect': matspect['s'],
+                      'freq_bins': matspect['f'],
+                      'time_bins': matspect['t'],
+                      'labels': labels,
+                      'labeled_timebins': labeled_timebins,
+                      'timebin_dur': timebin_dur,
+                      'spect_params': 'matlab',
+                      'labels_mapping': 'matlab'}
 
-    greatest_integer_label = np.max(
-        np.unique(
-            np.concatenate(labeled_timebins)
-        ))
-    labels_mapping = dict(zip(np.arange(greatest_integer_label + 1),
-                              np.arange(greatest_integer_label + 1)))
+        spect_dict_filename = os.path.join(
+            os.path.normpath(output_dir),
+            os.path.basename(matspect_filename) + '.spect')
+        joblib.dump(spect_dict, spect_dict_filename)
 
-    data_dict = {'spects': spects,
-                 'filenames': spect_files_used,
-                 'freq_bins': freq_bins,
-                 'time_bins': all_time_bins,
-                 'labeled_timebins': labeled_timebins,
-                 'timebin_dur': timebin_dur,
-                 'spect_params': None,
-                 'labels_mapping': labels_mapping
-                 }
+        spect_dur = matspect['s'].shape[-1] * timebin_dur
+        spect_files.append((matspect_filename, spect_dur, labels))
 
-    print('saving data dictionary in {} as {}'
-          .format(data_dir, data_dict_filename))
-    joblib.dump(data_dict, data_dict_filename)
+    spect_files_path = os.path.join(output_dir, 'spect_files')
+    joblib.dump(spect_files, spect_files_path)
+
+    return spect_files_path
 
 
 def convert_train_keys_to_txt(train_keys_path,
