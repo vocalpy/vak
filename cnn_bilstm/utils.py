@@ -410,7 +410,7 @@ def make_data_dicts(output_dir,
         time_bins : list
             of ndarrays, each a vector of times where each value is a bin center.
             One for each spectrogram
-        labels : list
+        labelset : list
             of strings, labels corresponding to each spectrogram
         labeled_timebins : list
             of ndarrays, each same length as time_bins but value is a label for that bin.
