@@ -70,7 +70,7 @@ if __name__ == "__main__":
         spect_files_path = convert_mat_to_spect(mat_spect_files,
                                                 mat_spects_annotation_file,
                                                 output_dir,
-                                                labels_mapping=None)
+                                                labels_mapping=labels_mapping)
     else:
         mat_spect_files_path = None
 
