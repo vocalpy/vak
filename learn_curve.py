@@ -6,6 +6,7 @@ import logging
 import pickle
 from datetime import datetime
 from configparser import ConfigParser, NoOptionError
+import warnings
 
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
@@ -53,28 +54,32 @@ if __name__ == "__main__":
             train_data_dict_path)))
     train_data_dict = joblib.load(train_data_dict_path)
     labels_mapping = train_data_dict['labels_mapping']
+    if train_data_dict['spect_params'] == 'matlab':
+        warnings.warn('Not checking parameters used to compute spectrogram in '
+                      'training data,\n because spectrograms were created in '
+                      'Matlab')
+    else:
+        # require user to specify parameters for spectrogram
+        # instead of having defaults (as was here previously)
+        # helps ensure we don't mix up different params
+        spect_params = {}
+        spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
+        spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
+        spect_params['freq_cutoffs'] = [float(element)
+                                        for element in
+                                        config['SPECTROGRAM']['freq_cutoffs']
+                                            .split(',')]
+        if config.has_option('SPECTROGRAM', 'thresh'):
+            spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+        if config.has_option('SPECTROGRAM', 'transform_type'):
+            spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
 
-    # require user to specify parameters for spectrogram
-    # instead of having defaults (as was here previously)
-    # helps ensure we don't mix up different params
-    spect_params = {}
-    spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
-    spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
-    spect_params['freq_cutoffs'] = [float(element)
-                                    for element in
-                                    config['SPECTROGRAM']['freq_cutoffs']
-                                        .split(',')]
-    if config.has_option('SPECTROGRAM', 'thresh'):
-        spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-    if config.has_option('SPECTROGRAM', 'transform_type'):
-        spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
-
-    if train_data_dict['spect_params'] != spect_params:
-        raise ValueError('Spectrogram parameters in config file '
-                         'do not match parameters specified in training data_dict.\n'
-                         'Config file is: {}\n'
-                         'Data dict is: {}.'.format(config_file,
-                                                    train_data_dict_path))
+        if train_data_dict['spect_params'] != spect_params:
+            raise ValueError('Spectrogram parameters in config file '
+                             'do not match parameters specified in training data_dict.\n'
+                             'Config file is: {}\n'
+                             'Data dict is: {}.'.format(config_file,
+                                                        train_data_dict_path))
 
     # save copy of labels_mapping in results directory
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
@@ -146,13 +151,17 @@ if __name__ == "__main__":
     (X_val,
      Y_val) = (val_data_dict['X_val'],
                val_data_dict['Y_val'])
-
-    if val_data_dict['spect_params'] != spect_params:
-        raise ValueError('Spectrogram parameters in config file '
-                         'do not match parameters specified in validation data_dict.\n'
-                         'Config file is: {}\n'
-                         'Data dict is: {}.'.format(config_file,
-                                                    val_data_dict_path))
+    if val_data_dict['spect_params'] == 'matlab':
+        warnings.warn('Not checking parameters used to compute spectrogram in '
+                      'validation data,\n because spectrograms were created in '
+                      'Matlab')
+    else:
+        if val_data_dict['spect_params'] != spect_params:
+            raise ValueError('Spectrogram parameters in config file '
+                             'do not match parameters specified in validation data_dict.\n'
+                             'Config file is: {}\n'
+                             'Data dict is: {}.'.format(config_file,
+                                                        val_data_dict_path))
     #####################################################
     # note that we 'transpose' the spectrogram          #
     # so that rows are time and columns are frequencies #
