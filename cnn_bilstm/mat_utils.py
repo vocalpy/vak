@@ -10,6 +10,7 @@ def convert_mat_to_spect(mat_spect_files,
                          mat_spects_annotation_file,
                          output_dir,
                          labels_mapping=None,
+                         skip_files_with_labels_not_in_labelset=True,
                          n_decimals_trunc=3):
     """converts .mat files with spectrograms to .spect files
     that are used by make_data.py script and the make_data_dicts
@@ -30,6 +31,9 @@ def convert_mat_to_spect(mat_spect_files,
         maps str labels to consecutive integer values {0,1,2,...N} where N
         is the number of classes / label types.
         Default is None -- currently not implemented.
+    skip_files_with_labels_not_in_labelset : bool
+        if True, skip .mat files where the 'labels' contains str labels
+        not found in labels_mapping
     n_decimals_trunc : int
         number of decimal places to keep when truncating timebin_dur
         default is 3
@@ -74,9 +78,34 @@ def convert_mat_to_spect(mat_spect_files,
         wav_filename = os.path.basename(matspect_filename).replace('.mat',
                                                                 '.wav')
         annotation = annotations[wav_filename]
-        # below does not actually create list
+        # below, the first tolist() does not actually create list
         # instead gets ndarray out of a zero-length ndarray of dtype=object
-        labels = annotation['segType'].tolist()
+        # second then converts ndarray into list of ints
+        labels = annotation['segType'].tolist().tolist()
+
+        if skip_files_with_labels_not_in_labelset:
+            labels_set = set(labels)
+            if all([type(label)==int for label in labels_set]):
+                labels_set = set([str(label) for label in labels_set])
+            # below, set(labels_mapping) is a set of that dict's keys
+            if not labels_set.issubset(set(labels_mapping)):
+                extra_labels = labels_set - set(labels_mapping)
+                # because there's some label in labels
+                # that's not in labels_mapping
+                print('Found labels, {}, in {}, that are not in labels_mapping.'
+                      'Skipping file.'.format(extra_labels,
+                                             matspect_filename))
+                continue
+
+        if all([type(label)==int for label in labels]):
+            # to make consistent with .cbin and .wav files,
+            # makes error checking in make_dicts function properly
+            labels = [str(label) for label in labels]
+        else:
+            # currently function expects int labels
+            raise TypeError('type of labels in {} not recognized, '
+                            'must be all of type int'
+                            .format(matspect_filename))
 
         matspect = loadmat(matspect_filename, squeeze_me=True)
         if 's' not in matspect:
@@ -137,15 +166,15 @@ def convert_mat_to_spect(mat_spect_files,
                       'labeled_timebins': labeled_timebins,
                       'timebin_dur': timebin_dur,
                       'spect_params': 'matlab',
-                      'labels_mapping': 'matlab'}
+                      'labels_mapping': labels_mapping}
 
-        spect_dict_filename = os.path.join(
+        spect_filename = os.path.join(
             os.path.normpath(output_dir),
             os.path.basename(matspect_filename) + '.spect')
-        joblib.dump(spect_dict, spect_dict_filename)
+        joblib.dump(spect_dict, spect_filename)
 
         spect_dur = matspect['s'].shape[-1] * timebin_dur
-        spect_files.append((matspect_filename, spect_dur, labels))
+        spect_files.append((spect_filename, spect_dur, labels))
 
     spect_files_path = os.path.join(output_dir, 'spect_files')
     joblib.dump(spect_files, spect_files_path)
