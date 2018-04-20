@@ -5,6 +5,8 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
+from .utils import vec_translate
+
 
 def convert_mat_to_spect(mat_spect_files,
                          mat_spects_annotation_file,
@@ -72,6 +74,26 @@ def convert_mat_to_spect(mat_spect_files,
                           annotations['elements']))
     spect_files = []
     num_spect_files = len(mat_spect_files)
+
+    # need to map values in 'labels' variable of .mat file
+    # (which is a label for every time bin)
+    # **from** int to **consecutive** ints
+    # so, need to convert str keys in labels_mapping to int keys.
+    # This is used in for loop below, with "vec_translate".
+    int_labels_mapping = {}
+    for key, val in labels_mapping.items():
+        try:
+            int_labels_mapping[int(key)] = val
+        except ValueError:
+            if key == 'silent_gap_label':
+                int_labels_mapping[labels_mapping['silent_gap_label']] = \
+                    labels_mapping['silent_gap_label']
+            else:
+                raise ValueError('could not convert key {} '
+                                 'to int value for use with labeled '
+                                 'time bin vectors in .mat files'
+                                 .format(key))
+
     for filenum, matspect_filename in enumerate(mat_spect_files):
         print('loading annotation info from {}, file {} of {}'
               .format(matspect_filename, filenum, num_spect_files))
@@ -158,6 +180,9 @@ def convert_mat_to_spect(mat_spect_files,
                 raise ValueError('labeled timebins vector from {} has '
                                  'invalid number of dimensions: {}'
                                  .format(matspect_filename, labels.ndim))
+
+        labeled_timebins = vec_translate(labeled_timebins,
+                                         int_labels_mapping)
 
         spect_dict = {'spect': matspect['s'],
                       'freq_bins': matspect['f'],
