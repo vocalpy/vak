@@ -12,6 +12,10 @@ from . import evfuncs, spect_utils
 from .koumura_utils import load_song_annot
 
 
+def vec_translate(a, my_dict):
+    return np.vectorize(my_dict.__getitem__)(a)
+
+
 # adapted from:
 # https://github.com/NickleDave/hybrid-vocal-classifier/blob/master/hvc/neuralnet/utils.py
 class SpectScaler:
@@ -748,6 +752,7 @@ def get_inds_for_dur(spect_ID_vector,
             int_labels_without_int_flag = [val for val in labels_mapping.values()
                                            if type(val) is int]
             if set(classes) != set(int_labels_without_int_flag):
+                import pdb;pdb.set_trace()
                 raise ValueError('classes in labeled_timebins_vector '
                                  'do not match classes in labels_mapping.')
             freq_rank = np.argsort(counts).tolist()
