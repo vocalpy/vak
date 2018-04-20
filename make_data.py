@@ -37,7 +37,11 @@ if __name__ == "__main__":
     # and n is the number of syllable labels
     labels_mapping = dict(zip(labelset,
                               range(1, len(labelset) + 1)))
-    labels_mapping['silent_gap_label'] = 0
+    if not config.has_option('DATA','silent_gap_label'):
+        labels_mapping['silent_gap_label'] = 0
+    else:
+        labels_mapping['silent_gap_label'] = int(
+            config['DATA']['silent_gap_label'])
     if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
         raise ValueError('Labels mapping does not map to a consecutive'
                          'series of integers from 0 to n (where 0 is the '
@@ -67,6 +71,7 @@ if __name__ == "__main__":
             output_dir = os.path.join(mat_spect_files_path,
                                   'spectrograms_' + timenow)
         os.mkdir(output_dir)
+
         spect_files_path = convert_mat_to_spect(mat_spect_files,
                                                 mat_spects_annotation_file,
                                                 output_dir,
