@@ -5,7 +5,7 @@ options in the `config.ini` file that the scripts use.
 For a template config file that you can modify, see 
 [./template_config.ini](./template_cnfig.ini)
 
-## NETWORK section
+## [NETWORK] section
 Hyperparameters for network and related options such as batch size
 
 ```
@@ -23,8 +23,12 @@ learning_rate = 0.001
 `learning_rate` : float  
     For optimizer
 
-## SPECTROGRAM section
-Parameters used when making spectrograms from audio files
+## [SPECTROGRAM] section
+Parameters used when making spectrograms from audio files.
+** Note this section is *not* required if you are using .mat
+files that contain already generated spectrograms. Instead you
+should specify the location of those .mat files in the [DATA]
+section below.
 ```
 [SPECTROGRAM]
 fft_size=512
@@ -55,7 +59,7 @@ log_transform=True
 then the threshold used is the **negative** value of `thresh`.* (This is to 
 maintain the behavior of the spectrogram function as originally written.)
 
-## DATA section
+## [DATA] section
 
 ```
 [DATA]
@@ -79,7 +83,32 @@ skip_files_with_labels_not_in_labelset = Yes
     strings.)  
 `data_dir` : str  
     absolute path to directory with audio files from which data sets will
-    be made.  
+    be made.
+    Not required if `mat_spect_files_path` & `mat_spects_annotation_file`
+    are defined.
+`all_labels_are_int` : bool
+    if 'Yes' or 'True', script assumes all labels are of type int.
+    Will convert labelset from str to int
+    so that error-checking functions properly when it determines
+    whether all labels are present in training, validation,  and
+    test data sets.
+`mat_spect_files_path` : str
+    absolute path to directory with `.mat` files containing spectrograms.
+    Not required if `data_dir` is defined.
+    Those .mat files must contain the following variables:
+        s : spectrogram
+        t : time bins vector
+        f : frequency bins vector
+        labels : vector of same length as time bins, where each element
+                 is a label for that time bin, 
+                 i.e. what class of syllable does this time bin belong to?
+                 Class could also be silent gap between syllables 
+`mat_spects_annotation_file` : str
+    absolute path to `annotation.mat` file that contains `keys` and `elements`
+    Not required if `data_dir` is defined.
+    `keys` are audio file names, and `elements` contains the `segType`,
+    (as well other variables).
+    `segType` has the label applied to each segment.
 `total_train_set_duration` : int  
     Total duration of training set in seconds.  
     Subsets of fixed sizes will be drawn from this larger set.  
@@ -96,7 +125,7 @@ skip_files_with_labels_not_in_labelset = Yes
     Used to skip files with labels that occur very rarely such as noise
     or "mistakes" made by bird.  
 
-## TRAIN section
+## [TRAIN] section
 
 ```
 [TRAIN]
