@@ -261,7 +261,6 @@ def make_spects_from_list_of_files(filelist,
         elif annotation_file.endswith('.xml'):
             annotation_dict = load_song_annot(filelist, annotation_file)
 
-
     # need to keep track of name of files used since we may skip some.
     # (cbins_used is actually a list of tuples as defined in docstring)
     spect_files = []
@@ -343,8 +342,8 @@ def make_spects_from_list_of_files(filelist,
         else:
             curr_timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
             # below truncates any decimal place past decade
-            curr_file_timebin_dur = np.trunc(curr_file_timebin_dur
-                                             * decade) / decade
+            curr_timebin_dur = np.trunc(curr_timebin_dur
+                                        * decade) / decade
             if not np.allclose(curr_timebin_dur, timebin_dur):
                 raise ValueError("duration of timebin in file {}, {}, did not "
                                  "match duration of timebin from other .mat "
