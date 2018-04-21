@@ -32,6 +32,12 @@ if __name__ == "__main__":
     else:  # assume labelset is characters
         labelset = list(labelset)
 
+    if config.has_option('DATA','all_labels_are_int'):
+        all_labels_are_int = config.getboolean('DATA','all_labels_are_int')
+        if all_labels_are_int:
+            labelset = [int(label) for label in labelset]
+
+
     # map to series of consecutive integers from 0 to n inclusive
     # where 0 is the label for silent periods between syllables
     # and n is the number of syllable labels
