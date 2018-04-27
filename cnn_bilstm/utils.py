@@ -751,7 +751,6 @@ def get_inds_for_dur(spect_ID_vector,
             int_labels_without_int_flag = [val for val in labels_mapping.values()
                                            if type(val) is int]
             if set(classes) != set(int_labels_without_int_flag):
-                import pdb;pdb.set_trace()
                 raise ValueError('classes in labeled_timebins_vector '
                                  'do not match classes in labels_mapping.')
             freq_rank = np.argsort(counts).tolist()
