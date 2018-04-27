@@ -107,8 +107,6 @@ def convert_mat_to_spect(mat_spect_files,
 
         if skip_files_with_labels_not_in_labelset:
             labels_set = set(labels)
-            if all([type(label)==int for label in labels_set]):
-                labels_set = set([str(label) for label in labels_set])
             # below, set(labels_mapping) is a set of that dict's keys
             if not labels_set.issubset(set(labels_mapping)):
                 extra_labels = labels_set - set(labels_mapping)
