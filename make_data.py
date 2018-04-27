@@ -32,17 +32,23 @@ if __name__ == "__main__":
     else:  # assume labelset is characters
         labelset = list(labelset)
 
+    # to make type-checking consistent across .mat / .cbin / Koumura .wav files
+    # set all_labels_are_int flag
+    # currently only used with .mat files
     if config.has_option('DATA','all_labels_are_int'):
         all_labels_are_int = config.getboolean('DATA','all_labels_are_int')
-        if all_labels_are_int:
-            labelset = [int(label) for label in labelset]
+    else:
+        all_labels_are_int = False
 
-
-    # map to series of consecutive integers from 0 to n inclusive
+    # map labels to series of consecutive integers from 0 to n inclusive
     # where 0 is the label for silent periods between syllables
     # and n is the number of syllable labels
-    labels_mapping = dict(zip(labelset,
-                              range(1, len(labelset) + 1)))
+    if all_labels_are_int:
+        labels_mapping = dict(zip([int(label) for label in labelset],
+                                  range(1, len(labelset) + 1)))
+    else:
+        labels_mapping = dict(zip(labelset,
+                                  range(1, len(labelset) + 1)))
     if not config.has_option('DATA','silent_gap_label'):
         labels_mapping['silent_gap_label'] = 0
     else:
