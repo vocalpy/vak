@@ -35,7 +35,7 @@ fft_size=512
 step_size=64
 freq_cutoffs = 500, 10000
 thresh = 6.25
-log_transform=True
+transform_type=log_spect
 ```
 
 `fft_size` : int  
