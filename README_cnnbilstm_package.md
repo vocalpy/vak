@@ -1,11 +1,13 @@
 # cnn_bilstm package
-For testing the cnn-bilstm neural network for segmentation of birdsong into syllables.
-This repository contains scripts to reproduce results, as well as the cnn-bilstm package.
-The package contains the network and various utility functions used by the scripts.
+For testing the cnn-bilstm neural network for segmentation of birdsong into 
+syllables. This repository contains scripts to reproduce results, as well as 
+the cnn-bilstm package. The package contains the network and various utility 
+functions used by the scripts.
 
 ## install
 
-It's probably easiest to use Anaconda. First set up a conda environment and clone the repo
+It's probably easiest to use Anaconda. 
+First set up a conda environment and clone the repo
 `$ conda create -n cnn-bilstm numpy scipy joblib tensorflow-gpu ipython jupyter`
 `$ git clone https://github.com/NickleDave/tf_syllable_segmentation_annotation davids_fork_of_tf_sylseg`
 `$ source activate cnn-bilstm`
@@ -13,14 +15,15 @@ It's probably easiest to use Anaconda. First set up a conda environment and clon
 ## usage
 
 There are 3 main scripts that are run consecutively.
-The scripts accept a config.ini file; you will use the same config.ini file with each script
-but you will make changes to it after running each script.
+The scripts accept a config.ini file; you will use the same config.ini file with
+ each script but you will make changes to it after running each script.
 
 ### 1. Make data sets
 
-You will make data sets for training, validation, and testing with the `make_data.py` script.  
-Before you run the script you need to create a `config.ini` file. You can adapt the 
-`template_config.ini` file that's in this repository.
+You will make data sets for training, validation,
+ and testing with the `make_data.py` script.  
+Before you run the script you need to create a `config.ini` file. 
+You can adapt the `template_config.ini` file that's in this repository.
 In the `config` file, set values for the following options in the '[DATA]` section:  
 ```ini
 [DATA]
@@ -85,17 +88,9 @@ After this script finishes, you must change
 
 `(cnn-bilstm) $ CUDA_VISIBLE_DEVICES=0 python ./cnn-bilstm/summary.py config_03218_bird0.ini`
 
-## Using your own spectrograms
+## Using spectrograms generated with Matlab
 
-use the mat_utils functions on the .mat form of the data, to make a data_dict that the main.py function can use.
-One function, convert_train_keys_to_txt, makes a .txt file that contains the .mat filenames in train_keys.mat.
-The other function, make_data_from_matlab_spects, uses that training_filenames.txt file to create a Python dictionary
- containing the spectrograms and labeled timebin vectors, and some associated metadata. 
- This dictionary has the same format as the dictionary the main.py function uses when cnn_bilstm.utils generates 
- the data directly from the .cbin files.
-/Users/yarden/davids_fork_of_tf_sylseg $ activate learn_curve
-(learn_curve) /Users/yarden/davids_fork_of_tf_sylseg $ ipython
-[0] import cnn_bilstm
-[1] cd directory_with_mat_and_train_keys
-[2] cnn_bilstm.mat_utils.convert_train_keys_to_txt('.', 'training_filenames)
-[3] cnn_bilstm.mat_tuils.make_data_from_matlab_spects('.', 'training_filenames', 'train_data_dict')
+You will follow the same three steps above, but your config file should have the
+ same format as `template_config_matlab_spectrograms.ini`.
+See `README_config.md` for an explanation of additional options in that template
+config file.
