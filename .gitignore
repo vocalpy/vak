@@ -1,2 +1,8 @@
-
+./.ipynb_checkpoints
+.idea
+*checkpoint.ipynb
 README.md
+results*/
+*__pycache__*
+.DS_Store
+*egg-info/
