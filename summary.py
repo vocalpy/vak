@@ -131,6 +131,11 @@ assert train_timebin_dur == test_timebin_dur
 # have to transpose X_test so rows are timebins and columns are frequencies
 X_test_copy = X_test_copy.T
 
+# save test set so it's clear from results directory alone
+# which test set was used
+joblib.dump(X_test_copy, os.path.join(results_dirname, 'X_test'))
+joblib.dump(Y_test_copy, os.path.join(results_dirname, 'Y_test'))
+
 # used for Levenshtein distance + syllable error rate
 if all(type(labels_el) is str for labels_el in test_labels):
     # when taken from .not.mat files associated with .cbin audio files
