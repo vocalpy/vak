@@ -71,8 +71,17 @@ class CNNBiLSTM:
         else:
             if n_syllables < 1:
                 raise ValueError('n_syllables must be a positive integer')
-            else:
-                n_syllables = (n_syllables, 1)
+
+        self.n_syllables = n_syllables
+        self.batch_size = batch_size
+        self.input_vec_size = input_vec_size
+        self.conv1_filters = conv1_filters
+        self.conv2_filters = conv2_filters
+        self.pool1_size = pool1_size
+        self.pool1_strides = pool1_strides
+        self.pool2_size = pool2_size
+        self.pool2_strides = pool2_strides
+        self.learning_rate = learning_rate
 
         self.graph = tf.Graph()
         with self.graph.as_default():
@@ -86,29 +95,17 @@ class CNNBiLSTM:
             # holds the sequence length
             self.lng = tf.placeholder(dtype=tf.int32,
                                       name="nSteps")
-        import pdb;pdb.set_trace()
-        self.n_syllables = n_syllables
-        self.batch_size = batch_size
-        self.input_vec_size = input_vec_size
-        self.conv1_filters = conv1_filters
-        self.conv2_filters = conv2_filters
-        self.pool1_size = pool1_size
-        self.pool1_strides = pool1_strides
-        self.pool2_size = pool2_size
-        self.pool2_strides = pool2_strides
-        self.learning_rate = learning_rate
 
-        self.inference
-        self.optimize
-        self.error
+            self.inference
+            self.optimize
+            self.error
 
-        # Merge all summaries into a single op
-        merged_summary_op = tf.summary.merge_all()
+            # Merge all summaries into a single op
+            merged_summary_op = tf.summary.merge_all()
 
-        init = tf.global_variables_initializer()
+            init = tf.global_variables_initializer()
 
-        self.saver
-
+            self.save
 
     @define_scope
     def inference(self):
@@ -197,16 +194,17 @@ class CNNBiLSTM:
 
     @define_scope
     def error(self):
-        eval_op = tf.nn.top_k(self.inference)
+        values, indices = tf.nn.top_k(self.inference)
         mistakes = tf.not_equal(tf.argmax(self.y, 1),
-                                tf.argmax(eval_op, 1))
+                                tf.argmax(indices, 1))
         return tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
     @define_scope
     def save(self):
         return tf.train.Saver(max_to_keep=10)
 
-    @define_scope
+
     def load(self, sess, meta_file, data_file):
-        loader = tf.train.import_meta_graph(meta_file)
-        loader.restore(sess, data_file[:-20])
+        with self.graph.as_default():
+            loader = tf.train.import_meta_graph(meta_file)
+            loader.restore(sess, data_file[:-20])
