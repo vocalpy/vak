@@ -109,6 +109,8 @@ class CNNBiLSTM:
 
     @define_scope
     def inference(self):
+        """inference method, that returns probability of each class
+        for each time bin in spectrogram"""
         conv1 = tf.layers.conv2d(
             inputs=tf.reshape(self.X,[self.batch_size, -1,
                                       self.input_vec_size, 1]),
@@ -179,6 +181,8 @@ class CNNBiLSTM:
 
     @define_scope
     def optimize(self):
+        """optimize method, that runs optimizer on one cost value, given
+        a spectrogram and ground truth labels for each time bin"""
         xentropy_layer = xentropy(logits=self.inference,
                                   labels=tf.concat(
                                       tf.unstack(self.y,
@@ -194,25 +198,49 @@ class CNNBiLSTM:
 
     @define_scope
     def predict(self):
+        """predict method, that returns argmax(inference) for each time bin,
+        i.e. the most likely class"""
         values, indices = tf.nn.top_k(self.inference)
         return indices
 
     @define_scope
     def error(self):
+        """error method, that returns mean error given as input a spectrogram
+        and the true and predicted labels"""
         mistakes = tf.not_equal(tf.argmax(self.y, 1),
                                 tf.argmax(self.predict, 1))
         return tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
     @define_scope
     def save(self):
+        """save method, that uses tf.train.Saver.
+        call with session and checkpoint path as arguments"""
         return tf.train.Saver(max_to_keep=10)
 
 
     def load(self, sess, meta_file, data_file):
+        """load method
+
+        Parameters
+        ----------
+        sess : tf.Session instance
+            session in which this is running
+        meta_file : str
+            absolute path to meta file saved by CNNBiLSTM.save
+        data_file : str
+            absolute path to data file saved by CNNBiLSTM.save
+        """
         with self.graph.as_default():
             loader = tf.train.import_meta_graph(meta_file)
             loader.restore(sess, data_file[:-20])
 
     def add_summary_writer(self, logs_path):
+        """add summary writer, method that adds as an operation on the graph
+        an instance of tf.summary.Filewriter
+
+        Parameters
+        ----------
+        logs_path : str
+            path to which log file is saved"""
         with self.graph.as_default():
             self.summary_writer = tf.summary.FileWriter(logs_path)
