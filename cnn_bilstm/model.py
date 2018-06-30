@@ -101,9 +101,9 @@ class CNNBiLSTM:
             self.error
 
             # Merge all summaries into a single op
-            merged_summary_op = tf.summary.merge_all()
+            self.merged_summary_op = tf.summary.merge_all()
 
-            init = tf.global_variables_initializer()
+            self.init = tf.global_variables_initializer()
 
             self.save
 
@@ -185,18 +185,22 @@ class CNNBiLSTM:
                                                  axis=0,
                                                  num=self.batch_size),0),
                                   name='xentropy')
-        cost = tf.reduce_mean(xentropy_layer, name='cost')
-        tf.summary.scalar("cost", cost)
+        self.cost = tf.reduce_mean(xentropy_layer, name='cost')
+        tf.summary.scalar("cost", self.cost)
         optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         global_step = tf.Variable(0, name='global_step', trainable=False)
-        train_op = optimizer.minimize(cost, global_step=global_step)
+        train_op = optimizer.minimize(self.cost, global_step=global_step)
         return train_op
 
     @define_scope
-    def error(self):
+    def predict(self):
         values, indices = tf.nn.top_k(self.inference)
+        return indices
+
+    @define_scope
+    def error(self):
         mistakes = tf.not_equal(tf.argmax(self.y, 1),
-                                tf.argmax(indices, 1))
+                                tf.argmax(self.predict, 1))
         return tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
     @define_scope
@@ -208,3 +212,7 @@ class CNNBiLSTM:
         with self.graph.as_default():
             loader = tf.train.import_meta_graph(meta_file)
             loader.restore(sess, data_file[:-20])
+
+    def add_summary_writer(self, logs_path):
+        with self.graph.as_default():
+            self.summary_writer = tf.summary.FileWriter(logs_path)
