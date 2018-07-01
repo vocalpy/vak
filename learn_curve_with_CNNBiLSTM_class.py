@@ -458,7 +458,7 @@ if __name__ == "__main__":
                                 checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                                 print("Validation error improved.\n"
                                       "Saving checkpoint to {}".format(checkpoint_path))
-                                model.save(sess, checkpoint_path)
+                                model.saver.save(sess, checkpoint_path)
                             else:
                                 err_patience_counter += 1
                                 if err_patience_counter > patience:
@@ -476,14 +476,14 @@ if __name__ == "__main__":
                             checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                             if save_only_single_checkpoint_file is False:
                                 checkpoint_path += '_{}'.format(step)
-                            model.save(sess, checkpoint_path)
+                            model.saver.save(sess, checkpoint_path)
                             with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
 
                     if step > n_max_iter:  # ok don't actually loop forever
                         "Reached max. number of iterations, saving checkpoint."
                         checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                        model.save(sess, checkpoint_path)
+                        model.saver.save(sess, checkpoint_path)
                         with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
                             pickle.dump(costs, costs_file)
                         with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
