@@ -99,13 +99,14 @@ class CNNBiLSTM:
             self.inference
             self.optimize
             self.error
+            self.saver
 
             # Merge all summaries into a single op
             self.merged_summary_op = tf.summary.merge_all()
 
             self.init = tf.global_variables_initializer()
 
-            self.save
+
 
     @define_scope
     def inference(self):
@@ -212,7 +213,7 @@ class CNNBiLSTM:
         return tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
     @define_scope
-    def save(self):
+    def saver(self):
         """save method, that uses tf.train.Saver.
         call with session and checkpoint path as arguments"""
         return tf.train.Saver(max_to_keep=10)
