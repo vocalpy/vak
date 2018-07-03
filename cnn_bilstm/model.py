@@ -3,6 +3,7 @@
 # https://gist.github.com/danijar/8663d3bbfd586bffecf6a0094cd116f2
 from math import ceil
 import functools
+from collections import namedtuple
 
 import tensorflow as tf
 
@@ -53,8 +54,24 @@ class CNNBiLSTM:
     """hybrid convolutional neural network-bidirectional LSTM
     for segmentation of spectrograms"""
 
+    def _load(self, sess, meta_file, data_file):
+        """load method
+
+        Parameters
+        ----------
+        sess : tf.Session instance
+            session in which this is running
+        meta_file : str
+            absolute path to meta file saved by CNNBiLSTM.save
+        data_file : str
+            absolute path to data file saved by CNNBiLSTM.save
+        """
+        with sess.as_default():
+            new_saver = tf.train.import_meta_graph(meta_file)
+            new_saver.restore(sess, data_file[:-20])
+
     def __init__(self,
-                 n_syllables,
+                 n_syllables=None,
                  batch_size=11,
                  input_vec_size=513,
                  conv1_filters=32,
@@ -64,49 +81,72 @@ class CNNBiLSTM:
                  pool2_size=(1, 8),
                  pool2_strides=(1, 8),
                  learning_rate=0.001,
+                 sess=None,
+                 meta_file=None,
+                 data_file=None,
                  ):
 
-        if type(n_syllables) != int:
-            raise TypeError('n_syllables must be an integer')
-        else:
-            if n_syllables < 1:
-                raise ValueError('n_syllables must be a positive integer')
-
-        self.n_syllables = n_syllables
-        self.batch_size = batch_size
-        self.input_vec_size = input_vec_size
-        self.conv1_filters = conv1_filters
-        self.conv2_filters = conv2_filters
-        self.pool1_size = pool1_size
-        self.pool1_strides = pool1_strides
-        self.pool2_size = pool2_size
-        self.pool2_strides = pool2_strides
-        self.learning_rate = learning_rate
-
         self.graph = tf.Graph()
-        with self.graph.as_default():
-            # shape of X is batch_size, time_steps, frequency_bins
-            self.X = tf.placeholder(dtype=tf.float32,
-                                    shape=[None, None, input_vec_size],
-                                    name='X')
-            self.y = tf.placeholder(dtype=tf.int32,
-                                    shape=[None, None],
-                                    name='y')
-            # holds the sequence length
-            self.lng = tf.placeholder(dtype=tf.int32,
-                                      name="nSteps")
 
-            self.inference
-            self.optimize
-            self.error
-            self.saver
+        load_params = {'sess': sess,
+                       'meta_file': meta_file,
+                       'data_file': data_file}
+        if any(load_params.values()) and not all(load_params.values()):
+            # if user passed parameters to load model but not all were
+            # specified, throw an error
+            specified = [k for k, v in load_params.items()
+                             if v is not None]
+            not_specified = [k for k, v in load_params.items()
+                             if v is None]
+            raise ValueError("The arguments {} were specified but the "
+                             "arguments {} were not. All are required to "
+                             "load a previously saved model."
+                             .format(specified, not_specified))
 
-            # Merge all summaries into a single op
-            self.merged_summary_op = tf.summary.merge_all()
+        elif all(load_params.values()):
+            # but if all were specified, load the model
+            self._load(sess, meta_file, data_file)
 
-            self.init = tf.global_variables_initializer()
+        elif not any(load_params.values()):
+            # and if none were specified, assume instantiating a new model
+            if type(n_syllables) != int:
+                raise TypeError('n_syllables must be an integer')
+            else:
+                if n_syllables < 1:
+                    raise ValueError('n_syllables must be a positive integer')
 
+            self.n_syllables = n_syllables
+            self.batch_size = batch_size
+            self.input_vec_size = input_vec_size
+            self.conv1_filters = conv1_filters
+            self.conv2_filters = conv2_filters
+            self.pool1_size = pool1_size
+            self.pool1_strides = pool1_strides
+            self.pool2_size = pool2_size
+            self.pool2_strides = pool2_strides
+            self.learning_rate = learning_rate
 
+            with self.graph.as_default():
+                # shape of X is batch_size, time_steps, frequency_bins
+                self.X = tf.placeholder(dtype=tf.float32,
+                                        shape=[None, None, input_vec_size],
+                                        name='X')
+                self.y = tf.placeholder(dtype=tf.int32,
+                                        shape=[None, None],
+                                        name='y')
+                # holds the sequence length
+                self.lng = tf.placeholder(dtype=tf.int32,
+                                          name="nSteps")
+
+                self.inference
+                self.optimize
+                self.error
+                self.saver
+
+                # Merge all summaries into a single op
+                self.merged_summary_op = tf.summary.merge_all()
+
+                self.init = tf.global_variables_initializer()
 
     @define_scope
     def inference(self):
@@ -217,23 +257,6 @@ class CNNBiLSTM:
         """save method, that uses tf.train.Saver.
         call with session and checkpoint path as arguments"""
         return tf.train.Saver(max_to_keep=10)
-
-
-    def load(self, sess, meta_file, data_file):
-        """load method
-
-        Parameters
-        ----------
-        sess : tf.Session instance
-            session in which this is running
-        meta_file : str
-            absolute path to meta file saved by CNNBiLSTM.save
-        data_file : str
-            absolute path to data file saved by CNNBiLSTM.save
-        """
-        with self.graph.as_default():
-            loader = tf.train.import_meta_graph(meta_file)
-            loader.restore(sess, data_file[:-20])
 
     def add_summary_writer(self, logs_path):
         """add summary writer, method that adds as an operation on the graph
