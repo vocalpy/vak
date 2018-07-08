@@ -2,7 +2,7 @@ import sys
 import os
 import pickle
 from glob import glob
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError
 from datetime import datetime
 
 import tensorflow as tf
@@ -40,23 +40,29 @@ num_replicates = int(config['TRAIN']['replicates'])
 REPLICATES = range(num_replicates)
 normalize_spectrograms = config.getboolean('TRAIN', 'normalize_spectrograms')
 
-spect_params = {}
-for spect_param_name in ['freq_cutoffs', 'thresh']:
-    try:
-        if spect_param_name == 'freq_cutoffs':
-            freq_cutoffs = [float(element)
-                            for element in
-                            config['SPECTROGRAM']['freq_cutoffs'].split(',')]
-            spect_params['freq_cutoffs'] = freq_cutoffs
-        elif spect_param_name == 'thresh':
-            spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
+if config.has_option('DATA', 'mat_spect_files_path'):
+    # make spect_files file from .mat spect files and annotation file
+    mat_spect_files_path = config['DATA']['mat_spect_files_path']
+    print('will use spectrograms from .mat files in {}'
+          .format(mat_spect_files_path))
+else:
+    spect_params = {}
+    for spect_param_name in ['freq_cutoffs', 'thresh']:
+        try:
+            if spect_param_name == 'freq_cutoffs':
+                freq_cutoffs = [float(element)
+                                for element in
+                                config['SPECTROGRAM']['freq_cutoffs'].split(',')]
+                spect_params['freq_cutoffs'] = freq_cutoffs
+            elif spect_param_name == 'thresh':
+                spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
 
-    except NoOptionError:
-        logger.info('Parameter for computing spectrogram, {}, not specified. '
-                    'Will use default.'.format(spect_param_name))
-        continue
-if spect_params == {}:
-    spect_params = None
+        except NoOptionError:
+            logger.info('Parameter for computing spectrogram, {}, not specified. '
+                        'Will use default.'.format(spect_param_name))
+            continue
+    if spect_params == {}:
+        spect_params = None
 
 labelset = list(config['DATA']['labelset'])
 skip_files_with_labels_not_in_labelset = config.getboolean(
