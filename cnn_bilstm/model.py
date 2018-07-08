@@ -52,7 +52,21 @@ def out_width(in_width, filter_width, stride):
 
 class CNNBiLSTM:
     """hybrid convolutional neural network-bidirectional LSTM
-    for segmentation of spectrograms"""
+    for segmentation of spectrograms
+
+    Methods
+    -------
+    __init__ : to make a new model or load a previously trained model
+    inference : forward pass through graph, returns predicted probabilities
+        for each class for each timebin in a spectrogram
+    optimize : given spectrogram and ground truth labels for timebins, computes
+        loss and runs optimizer on that loss
+    predict : runs tensorflow.nn.top_k on inference to return most likely
+        predicted class for each time bin
+    error : given spectrogram and ground truth labels, computes error
+    saver : instance of tensorflow.saver with the `save` method
+    add_summary_writer : adds tensorflow summary writer to model
+    """
 
     def _load(self, sess, meta_file, data_file):
         """load method
@@ -66,9 +80,12 @@ class CNNBiLSTM:
         data_file : str
             absolute path to data file saved by CNNBiLSTM.save
         """
-        with sess.as_default():
+        with sess.as_default(graph=self.graph):
             new_saver = tf.train.import_meta_graph(meta_file)
             new_saver.restore(sess, data_file[:-20])
+            self.X = self.graph.get_operation_by_name('X')
+            self.y = self.graph.get_operation_by_name('y')
+            self.lng = self.graph.get_operation_by_name('nSteps')
 
     def __init__(self,
                  n_syllables=None,
@@ -85,6 +102,43 @@ class CNNBiLSTM:
                  meta_file=None,
                  data_file=None,
                  ):
+        """__init__ method for CNNBiLSTM
+        To instantiate a new CNN-BiLSTM model, call with all of the
+        model hyperparameters listed below, i.e. without the parameters
+        for loading, `sess`, `meta_file`, and `data_file`.
+        To load a previously trained CNN-BiLSTM model, call with
+        only the `sess`, `meta_file`, and `data_file` parameters.
+
+        Parameters
+        ----------
+        n_syllables : int
+
+        batch_size : int
+
+        input_vec_size : int
+
+        conv1_filters : int
+
+        conv2_filters : int
+
+        pool1_size : two element tuple of ints
+            Default is (1, 8)
+
+        pool1_strides : two element tuple of ints
+            Default is (1, 8)
+        pool2_size : two element tuple of ints
+            =(1, 8),
+        pool2_strides : two element tuple of ints
+            =(1, 8),
+        learning_rate : float
+            Default is 0.001
+        sess : tensorflow Session object
+            Default is None
+        meta_file : str
+            Default is None
+        data_file : str
+            Default is None
+        """
 
         self.graph = tf.Graph()
 
