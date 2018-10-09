@@ -145,7 +145,9 @@ class CNNBiLSTM:
             self.inference
             self.optimize
             self.error
+            self.predict
             self.saver
+
 
             # Merge all summaries into a single op
             self.merged_summary_op = tf.summary.merge_all()
@@ -182,9 +184,6 @@ class CNNBiLSTM:
         with self.graph.as_default():
             new_saver = tf.train.import_meta_graph(meta_file)
             new_saver.restore(sess, data_file[:-20])
-            self.X = self.graph.get_operation_by_name('X')
-            self.y = self.graph.get_operation_by_name('y')
-            self.lng = self.graph.get_operation_by_name('nSteps')
 
     @define_scope
     def inference(self):
