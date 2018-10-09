@@ -83,6 +83,9 @@ train_spect_params,
 train_labels) = (train_data_dict['timebin_dur'],
                  train_data_dict['spect_params'],
                  train_data_dict['labels'])
+labels_mapping = train_data_dict['labels_mapping']
+n_syllables = len(labels_mapping)
+
 # only get this just to have in summary file if needed
 if all(type(labels_el) is str for labels_el in train_labels):
     # when taken from .not.mat files associated with .cbin audio files
@@ -263,21 +266,22 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
         meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
         data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
 
-        with tf.Session() as sess:
+        input_vec_size = X_train_subset.shape[-1]  # number of columns
+        model = CNNBiLSTM(n_syllables=n_syllables,
+                          input_vec_size=input_vec_size,
+                          batch_size=batch_size)
+        with tf.Session(graph=model.graph) as sess:
             tf.logging.set_verbosity(tf.logging.ERROR)
-            model = CNNBiLSTM(sess=sess,
-                              meta_file=meta_file,
-                              data_file=data_file)
 
-            import pdb;pdb.set_trace()
+            model.restore(sess=sess,
+                          meta_file=meta_file,
+                          data_file=data_file)
 
             # Retrieve the Ops we 'remembered'.
             logits = tf.get_collection("logits")[0]
             X = tf.get_collection("specs")[0]
             Y = tf.get_collection("labels")[0]
             lng = tf.get_collection("lng")[0]
-
-
 
             # Add an Op that chooses the top k predictions.
             eval_op = tf.nn.top_k(logits)

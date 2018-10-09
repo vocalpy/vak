@@ -68,25 +68,6 @@ class CNNBiLSTM:
     add_summary_writer : adds tensorflow summary writer to model
     """
 
-    def _load(self, sess, meta_file, data_file):
-        """load method
-
-        Parameters
-        ----------
-        sess : tf.Session instance
-            session in which this is running
-        meta_file : str
-            absolute path to meta file saved by CNNBiLSTM.save
-        data_file : str
-            absolute path to data file saved by CNNBiLSTM.save
-        """
-        with sess.as_default(graph=self.graph):
-            new_saver = tf.train.import_meta_graph(meta_file)
-            new_saver.restore(sess, data_file[:-20])
-            self.X = self.graph.get_operation_by_name('X')
-            self.y = self.graph.get_operation_by_name('y')
-            self.lng = self.graph.get_operation_by_name('nSteps')
-
     def __init__(self,
                  n_syllables=None,
                  batch_size=11,
@@ -98,9 +79,6 @@ class CNNBiLSTM:
                  pool2_size=(1, 8),
                  pool2_strides=(1, 8),
                  learning_rate=0.001,
-                 sess=None,
-                 meta_file=None,
-                 data_file=None,
                  ):
         """__init__ method for CNNBiLSTM
         To instantiate a new CNN-BiLSTM model, call with all of the
@@ -132,16 +110,60 @@ class CNNBiLSTM:
             =(1, 8),
         learning_rate : float
             Default is 0.001
-        sess : tensorflow Session object
-            Default is None
-        meta_file : str
-            Default is None
-        data_file : str
-            Default is None
         """
 
-        self.graph = tf.Graph()
+        if type(n_syllables) != int:
+            raise TypeError('n_syllables must be an integer')
+        else:
+            if n_syllables < 1:
+                raise ValueError('n_syllables must be a positive integer')
 
+        self.n_syllables = n_syllables
+        self.batch_size = batch_size
+        self.input_vec_size = input_vec_size
+        self.conv1_filters = conv1_filters
+        self.conv2_filters = conv2_filters
+        self.pool1_size = pool1_size
+        self.pool1_strides = pool1_strides
+        self.pool2_size = pool2_size
+        self.pool2_strides = pool2_strides
+        self.learning_rate = learning_rate
+
+        self.graph = tf.Graph()
+        with self.graph.as_default():
+            # shape of X is batch_size, time_steps, frequency_bins
+            self.X = tf.placeholder(dtype=tf.float32,
+                                    shape=[None, None, input_vec_size],
+                                    name='X')
+            self.y = tf.placeholder(dtype=tf.int32,
+                                    shape=[None, None],
+                                    name='y')
+            # holds the sequence length
+            self.lng = tf.placeholder(dtype=tf.int32,
+                                      name="nSteps")
+
+            self.inference
+            self.optimize
+            self.error
+            self.saver
+
+            # Merge all summaries into a single op
+            self.merged_summary_op = tf.summary.merge_all()
+
+            self.init = tf.global_variables_initializer()
+
+    def restore(self, sess, meta_file, data_file):
+        """restore previous session
+
+        Parameters
+        ----------
+        sess : tf.Session instance
+            session in which this is running
+        meta_file : str
+            absolute path to meta file saved by CNNBiLSTM.save
+        data_file : str
+            absolute path to data file saved by CNNBiLSTM.save
+        """
         load_params = {'sess': sess,
                        'meta_file': meta_file,
                        'data_file': data_file}
@@ -157,50 +179,12 @@ class CNNBiLSTM:
                              "load a previously saved model."
                              .format(specified, not_specified))
 
-        elif all(load_params.values()):
-            # but if all were specified, load the model
-            self._load(sess, meta_file, data_file)
-
-        elif not any(load_params.values()):
-            # and if none were specified, assume instantiating a new model
-            if type(n_syllables) != int:
-                raise TypeError('n_syllables must be an integer')
-            else:
-                if n_syllables < 1:
-                    raise ValueError('n_syllables must be a positive integer')
-
-            self.n_syllables = n_syllables
-            self.batch_size = batch_size
-            self.input_vec_size = input_vec_size
-            self.conv1_filters = conv1_filters
-            self.conv2_filters = conv2_filters
-            self.pool1_size = pool1_size
-            self.pool1_strides = pool1_strides
-            self.pool2_size = pool2_size
-            self.pool2_strides = pool2_strides
-            self.learning_rate = learning_rate
-
-            with self.graph.as_default():
-                # shape of X is batch_size, time_steps, frequency_bins
-                self.X = tf.placeholder(dtype=tf.float32,
-                                        shape=[None, None, input_vec_size],
-                                        name='X')
-                self.y = tf.placeholder(dtype=tf.int32,
-                                        shape=[None, None],
-                                        name='y')
-                # holds the sequence length
-                self.lng = tf.placeholder(dtype=tf.int32,
-                                          name="nSteps")
-
-                self.inference
-                self.optimize
-                self.error
-                self.saver
-
-                # Merge all summaries into a single op
-                self.merged_summary_op = tf.summary.merge_all()
-
-                self.init = tf.global_variables_initializer()
+        with self.graph.as_default():
+            new_saver = tf.train.import_meta_graph(meta_file)
+            new_saver.restore(sess, data_file[:-20])
+            self.X = self.graph.get_operation_by_name('X')
+            self.y = self.graph.get_operation_by_name('y')
+            self.lng = self.graph.get_operation_by_name('nSteps')
 
     @define_scope
     def inference(self):
