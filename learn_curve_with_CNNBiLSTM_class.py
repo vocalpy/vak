@@ -358,18 +358,9 @@ if __name__ == "__main__":
 
             logger.debug('creating graph')
 
-            # (full_graph, train_op, cost,
-            #  init, saver, logits, X, Y, lng,
-            #  merged_summary_op) = get_full_graph(input_vec_size,
-            #                                      n_syllables,
-            #                                      learning_rate,
-            #                                      batch_size)
             model = CNNBiLSTM(n_syllables=n_syllables,
                               batch_size=batch_size,
                               input_vec_size=input_vec_size)
-
-            # Add an Op that chooses the top k predictions.
-            # eval_op = tf.nn.top_k(logits)
 
             logs_subdir = ('log_training_set_with_duration_of_'
                            + str(train_set_dur) + '_sec_replicate_'
@@ -390,13 +381,6 @@ if __name__ == "__main__":
 
                 # Run the Op to initialize the variables.
                 sess.run(model.init)
-
-                # op to write logs to Tensorboard
-                # summary_writer = tf.summary.FileWriter(logs_path,
-                #                                        graph=tf.get_default_graph())
-
-                if '--debug' in sys.argv:
-                    sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 
                 # Start the training loop.
 
