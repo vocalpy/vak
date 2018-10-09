@@ -277,29 +277,21 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
                           meta_file=meta_file,
                           data_file=data_file)
 
-            # Retrieve the Ops we 'remembered'.
-            logits = tf.get_collection("logits")[0]
-            X = tf.get_collection("specs")[0]
-            Y = tf.get_collection("labels")[0]
-            lng = tf.get_collection("lng")[0]
-
-            # Add an Op that chooses the top k predictions.
-            eval_op = tf.nn.top_k(logits)
 
             if 'Y_pred_train' in locals():
                 del Y_pred_train
 
             print('calculating training set error')
             for b in range(num_batches_train):  # "b" is "batch number"
-                d = {X: X_train_subset[:, b * time_steps: (b + 1) * time_steps, :],
-                     lng: [time_steps] * batch_size}
+                d = {model.X: X_train_subset[:, b * time_steps: (b + 1) * time_steps, :],
+                     model.lng: [time_steps] * batch_size}
 
                 if 'Y_pred_train' in locals():
-                    preds = sess.run(eval_op, feed_dict=d)[1]
+                    preds = sess.run(model.predict, feed_dict=d)
                     preds = preds.reshape(batch_size, -1)
                     Y_pred_train = np.concatenate((Y_pred_train, preds), axis=1)
                 else:
-                    Y_pred_train = sess.run(eval_op, feed_dict=d)[1]
+                    Y_pred_train = sess.run(model.predict, feed_dict=d)
                     Y_pred_train = Y_pred_train.reshape(batch_size, -1)
 
             Y_train_subset = Y_train[train_inds]  # get back "unreshaped" Y_train_subset
@@ -340,15 +332,15 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
 
             print('calculating test set error')
             for b in range(num_batches_test):  # "b" is "batch number"
-                d = {X: X_test[:, b * time_steps: (b + 1) * time_steps, :],
-                     lng: [time_steps] * batch_size}
+                d = {model.X: X_test[:, b * time_steps: (b + 1) * time_steps, :],
+                     model.lng: [time_steps] * batch_size}
 
                 if 'Y_pred_test' in locals():
-                    preds = sess.run(eval_op, feed_dict=d)[1]
+                    preds = sess.run(model.predict, feed_dict=d)
                     preds = preds.reshape(batch_size, -1)
                     Y_pred_test = np.concatenate((Y_pred_test, preds), axis=1)
                 else:
-                    Y_pred_test = sess.run(eval_op, feed_dict=d)[1]
+                    Y_pred_test = sess.run(model.predict, feed_dict=d)
                     Y_pred_test = Y_pred_test.reshape(batch_size, -1)
 
             # again get rid of zero padding predictions
