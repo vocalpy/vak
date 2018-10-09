@@ -231,35 +231,36 @@ def make_spects_from_list_of_files(filelist,
                          'a list of .cbin files or of .wav files. '
                          'All files must be of the same type.')
 
-    if filetype == 'wav' and annotation_file is None:
-        raise ValueError('annotation_file is required when using .wav files')
-    else:
-        if annotation_file.endswith('.mat'):
-            # the complicated nested structure of the annotation.mat files
-            # (a cell array of Matlab structs)
-            # makes it hard for loadmat to load them into numpy arrays.
-            # Some of the weird looking things below, like accessing fields and
-            # then converting them to lists, are work-arounds to deal with
-            # the result of loading the complicated structure.
-            # Setting squeeze_me=True gets rid of some but not all of the weirdness.
-            annotations = loadmat(annotation_file, squeeze_me=True)
-            # 'keys' here refers to filenames, which are 'keys' for the 'elements'
-            keys_key = [key for key in annotations.keys() if 'keys' in key]
-            elements_key = [key for key in annotations.keys() if 'elements' in key]
-            if len(keys_key) > 1:
-                raise ValueError('Found more than one `keys` in annotations.mat file')
-            if len(elements_key) > 1:
-                raise ValueError('Found more than one `elements` in annotations.mat file')
-            if len(keys_key) < 1:
-                raise ValueError('Did not find `keys` in annotations.mat file')
-            if len(elements_key) < 1:
-                raise ValueError('Did not find `elements` in annotations.mat file')
-            keys_key = keys_key[0]
-            elements_key = elements_key[0]
-            annot_keys = annotations[keys_key].tolist()
-            annot_elements = annotations[elements_key]
-        elif annotation_file.endswith('.xml'):
-            annotation_dict = load_song_annot(filelist, annotation_file)
+    if filetype == 'wav':
+        if annotation_file is None:
+            raise ValueError('annotation_file is required when using .wav files')
+        else:
+            if annotation_file.endswith('.mat'):
+                # the complicated nested structure of the annotation.mat files
+                # (a cell array of Matlab structs)
+                # makes it hard for loadmat to load them into numpy arrays.
+                # Some of the weird looking things below, like accessing fields and
+                # then converting them to lists, are work-arounds to deal with
+                # the result of loading the complicated structure.
+                # Setting squeeze_me=True gets rid of some but not all of the weirdness.
+                annotations = loadmat(annotation_file, squeeze_me=True)
+                # 'keys' here refers to filenames, which are 'keys' for the 'elements'
+                keys_key = [key for key in annotations.keys() if 'keys' in key]
+                elements_key = [key for key in annotations.keys() if 'elements' in key]
+                if len(keys_key) > 1:
+                    raise ValueError('Found more than one `keys` in annotations.mat file')
+                if len(elements_key) > 1:
+                    raise ValueError('Found more than one `elements` in annotations.mat file')
+                if len(keys_key) < 1:
+                    raise ValueError('Did not find `keys` in annotations.mat file')
+                if len(elements_key) < 1:
+                    raise ValueError('Did not find `elements` in annotations.mat file')
+                keys_key = keys_key[0]
+                elements_key = elements_key[0]
+                annot_keys = annotations[keys_key].tolist()
+                annot_elements = annotations[elements_key]
+            elif annotation_file.endswith('.xml'):
+                annotation_dict = load_song_annot(filelist, annotation_file)
 
     # need to keep track of name of files used since we may skip some.
     # (cbins_used is actually a list of tuples as defined in docstring)
