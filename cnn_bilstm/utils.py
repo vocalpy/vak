@@ -401,7 +401,9 @@ def make_data_dicts(output_dir,
 
     Returns
     -------
-    None
+    saved_data_dict_paths : dict
+        with keys {'train', 'test', 'val'} and values being the path
+        to which the data_dict was saved
 
     Saves three 'data_dict' files (train, validation, and test)
     in output_dir, with following structure:
@@ -438,7 +440,7 @@ def make_data_dicts(output_dir,
             duration of a timebin in seconds from spectrograms
         spect_params : dict
             parameters for computing spectrogram as specified in config.ini file.
-            Will be checked against .ini file when running other scripts such as learn_curve.py
+            Will be checked against .ini file when running other train_utils such as learn_curve.py
         labels_mapping : dict
             maps str labels for syllables to consecutive integers.
             As explained in docstring for make_spects_from_list_of_files.
@@ -597,6 +599,8 @@ def make_data_dicts(output_dir,
         else:
             break
 
+    saved_data_dict_paths = {}
+
     for dict_name, spect_list, target_dur in zip(['train','val','test'],
                                                  [train_spects,val_spects,test_spects],
                                                  [total_train_set_duration,
@@ -665,6 +669,9 @@ def make_data_dicts(output_dir,
         print('saving data dictionary in {}'.format(output_dir))
         data_dict_path = os.path.join(output_dir, dict_name + '_data_dict')
         joblib.dump(data_dict, data_dict_path)
+        saved_data_dict_paths[dict_name] = data_dict_path
+
+    return saved_data_dict_paths
 
 
 def get_inds_for_dur(spect_ID_vector,
