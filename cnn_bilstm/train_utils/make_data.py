@@ -8,8 +8,7 @@ from configparser import ConfigParser
 from cnn_bilstm.utils import make_spects_from_list_of_files, make_data_dicts, range_str
 from cnn_bilstm.mat_utils import convert_mat_to_spect
 
-if __name__ == "__main__":
-    config_file = os.path.normpath(sys.argv[1])
+def make_data(config_file):
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
@@ -177,9 +176,22 @@ if __name__ == "__main__":
                                                skip_files_with_labels_not_in_labelset,
                                                annotation_file)
 
-    make_data_dicts(output_dir,
+        saved_data_dict_paths = make_data_dicts(output_dir,
                     float(config['DATA']['total_train_set_duration']),
                     float(config['DATA']['validation_set_duration']),
                     float(config['DATA']['test_set_duration']),
                     labelset,
                     spect_files_path)
+
+    # lastly rewrite config file,
+    # so that paths where results were saved are automatically in config
+    for key, saved_data_dict_path in saved_data_dict_paths.items():
+        config.set(section='TRAIN',
+                   option=key + '_data_path',
+                   value=saved_data_dict_path)
+    with open(config_file, 'w') as config_file_rewrite:
+        config.write(config_file_rewrite)
+
+if __name__ == "__main__":
+    config_file = os.path.normpath(sys.argv[1])
+    make_data(config_file)
