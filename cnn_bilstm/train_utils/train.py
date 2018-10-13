@@ -18,7 +18,8 @@ import cnn_bilstm.utils
 
 
 def train(config_file):
-    """train models used by train_utils.learningcurve to generate learning curve"""
+    """train models used by train_utils.learningcurve
+    to generate learning curve"""
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
@@ -29,11 +30,10 @@ def train(config_file):
     config.read(config_file)
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    if config.has_section('OUTPUT'):
-        if config.has_option('OUTPUT', 'results_dir'):
-            output_dir = config['OUTPUT']['results_dir']
-            results_dirname = os.path.join(output_dir,
-                                           'results_' + timenow)
+    if config.has_option('OUTPUT', 'root_results_dir'):
+        root_results_dir = config['OUTPUT']['root_results_dir']
+        results_dirname = os.path.join(root_results_dir,
+                                       'results_' + timenow)
     else:
         results_dirname = os.path.join('.', 'results_' + timenow)
     os.makedirs(results_dirname)
