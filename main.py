@@ -12,20 +12,30 @@ parser.add_argument('-g', '--glob', type=str,
 parser.add_argument('-t', '--txt', type=str,
                     help='name of .txt file containing list of '
                          'config files to run')
+parser.add_argument('-c', '--config', type=str,
+                    help='name of a single config.ini file')
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    if not args.glob and not args.txt:
-        parser.error('Either --glob or --txt required.')
+    if not args.glob and not args.txt and not args.config:
+        parser.error("One of following flags is required: "
+                     "--glob, --txt, or --config. Run 'python main.py --help' "
+                     "for an explanation of each.")
 
     if args.glob and args.txt:
         parser.error('Cannot use --glob and --txt together.')
+    elif args.glob and args.config:
+        parser.error('Cannot use --glob and --config together.')
+    elif args.txt and args.config:
+        parser.error('Cannot use --txt and --config together.')
 
     if args.glob:
         config_files = glob(args.glob_string)
     elif args.txt:
         with open(args.txt, 'r') as config_list_file:
             config_files = config_list_file.readlines()
+    elif args.config:
+        config_files = [args.config]  # single-item list
 
     config_files_cleaned = []
     for config_file in config_files:
