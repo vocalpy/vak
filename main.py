@@ -30,7 +30,7 @@ if __name__ == '__main__':
         parser.error('Cannot use --txt and --config together.')
 
     if args.glob:
-        config_files = glob(args.glob_string)
+        config_files = glob(args.glob)
     elif args.txt:
         with open(args.txt, 'r') as config_list_file:
             config_files = config_list_file.readlines()
