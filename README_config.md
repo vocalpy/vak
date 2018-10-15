@@ -41,7 +41,7 @@ transform_type=log_spect
 `fft_size` : int  
     number of samples to use in FFT  
 `step_size` : int  
-    AKA "hop size", distance to move forward to grab next segment for FFT  
+    A.K.A. "hop size", distance to move forward to grab next segment for FFT  
 `freq_cutoffs` : int  
     Bandpass frequencies, becomes a two-element list of ints  
 `thresh` : float  
@@ -144,11 +144,17 @@ replicates = 5
 ```
 
 `train_data_path` : str  
-    absolute path to `train_data_dict` created by `make_data.py`  
+    absolute path to `train_data_dict` created by `make_data()` when you run
+    `main.py`. The `make_data()` function changes the value of this option
+    for you.  
 `val_data_path` : str  
-    absolute path to `val_data_dict` created by `make_data.py`  
+    absolute path to `val_data_dict` created by `make_data()` when you run
+    `main.py`. The `make_data()` function changes the value of this option
+    for you.  
 `test_data_path` : str  
-    absolute path to `test_data_dict` created by `make_data.py`  
+    absolute path to `test_data_dict` created by `make_data()` when you run
+    `main.py`. The `make_data()` function changes the value of this option
+    for you.  
 `use_train_subsets_from_previous_run` : bool  
     if `Yes` or `True` then re-use the randomly drawn subsets from a 
     previous run.  
@@ -189,16 +195,16 @@ replicates = 5
 
 ```
 [OUTPUT]
-results_dir = /home/user/data/subdir/
-# the option below needs to be added after learn_curve.py runs
-# because it is the name of the directory generated *in* output_dir
-# by main.py that contains all the training records, data, etc.
+root_results_dir = /home/user/data/subdir/
 results_dir_made_by_main_script = /home/user/data/subdir/results_
 ```
 
-`results_dir` : str  
-    absolute path to directory where you want results from `learn_curve.py`
-     to be saved.  
+`root_results_dir` : str  
+    absolute path to directory where you want results from running
+    `main.py` to be saved. Each time you run `main.py`, it will
+    create a new subdirectory in `root_results_dir`, which will
+    have the name:
 `results_dir_made_by_main_script` : str  
-    absolute path to subdirectory made by `results_dir` when you ran 
-    `learn_curve.py`. You need to specify this before you run `summary.py`.
+    absolute path to subdirectory made by `train()` when you ran 
+    `main.py`. The `train()` function automatically changes this
+    value for you.

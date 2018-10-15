@@ -13,11 +13,13 @@ from tensorflow.python import debug as tf_debug
 import numpy as np
 import joblib
 
-from cnn_bilstm.graphs import get_full_graph
+from cnn_bilstm.model import CNNBiLSTM
 import cnn_bilstm.utils
 
-if __name__ == "__main__":
-    config_file = os.path.normpath(sys.argv[1])
+
+def train(config_file):
+    """train models used by train_utils.learningcurve
+    to generate learning curve"""
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
@@ -28,11 +30,10 @@ if __name__ == "__main__":
     config.read(config_file)
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    if config.has_section('OUTPUT'):
-        if config.has_option('OUTPUT', 'results_dir'):
-            output_dir = config['OUTPUT']['results_dir']
-            results_dirname = os.path.join(output_dir,
-                                           'results_' + timenow)
+    if config.has_option('OUTPUT', 'root_results_dir'):
+        root_results_dir = config['OUTPUT']['root_results_dir']
+        results_dirname = os.path.join(root_results_dir,
+                                       'results_' + timenow)
     else:
         results_dirname = os.path.join('.', 'results_' + timenow)
     os.makedirs(results_dirname)
@@ -357,15 +358,9 @@ if __name__ == "__main__":
 
             logger.debug('creating graph')
 
-            (full_graph, train_op, cost,
-             init, saver, logits, X, Y, lng,
-             merged_summary_op) = get_full_graph(input_vec_size,
-                                                 n_syllables,
-                                                 learning_rate,
-                                                 batch_size)
-
-            # Add an Op that chooses the top k predictions.
-            eval_op = tf.nn.top_k(logits)
+            model = CNNBiLSTM(n_syllables=n_syllables,
+                              batch_size=batch_size,
+                              input_vec_size=input_vec_size)
 
             logs_subdir = ('log_training_set_with_duration_of_'
                            + str(train_set_dur) + '_sec_replicate_'
@@ -376,21 +371,16 @@ if __name__ == "__main__":
             if not os.path.isdir(logs_path):
                 os.makedirs(logs_path)
 
-            with tf.Session(graph=full_graph,
+            model.add_summary_writer(logs_path=logs_path)
+
+            with tf.Session(graph=model.graph,
                             config=tf.ConfigProto(
                                 log_device_placement=True
                                 # intra_op_parallelism_threads=512
                             )) as sess:
 
                 # Run the Op to initialize the variables.
-                sess.run(init)
-
-                # op to write logs to Tensorboard
-                summary_writer = tf.summary.FileWriter(logs_path,
-                                                       graph=tf.get_default_graph())
-
-                if '--debug' in sys.argv:
-                    sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+                sess.run(model.init)
 
                 # Start the training loop.
 
@@ -405,14 +395,18 @@ if __name__ == "__main__":
                     iter_counter = iter_counter + 1
                     if iter_counter == len(iter_order):
                         iter_counter = 0
-                    d = {X: X_train_subset[:, iternum:iternum + time_steps, :],
-                         Y: Y_train_subset[:, iternum:iternum + time_steps],
-                         lng: [time_steps] * batch_size}
-                    _cost, _, summary = sess.run((cost, train_op, merged_summary_op),
+                    d = {model.X: X_train_subset[:, iternum:iternum + time_steps, :],
+                         model.y: Y_train_subset[:, iternum:iternum + time_steps],
+                         model.lng: [time_steps] * batch_size}
+                    _cost, _, summary = sess.run((model.cost,
+                                                  model.optimize,
+                                                  model.merged_summary_op),
                                         feed_dict=d)
                     costs.append(_cost)
-                    summary_writer.add_summary(summary, step)
-                    print("step {}, iteration {}, cost: {}".format(step, iternum, _cost))
+                    model.summary_writer.add_summary(summary, step)
+                    print("step {}, iteration {}, cost: {}".format(step,
+                                                                   iternum,
+                                                                   _cost))
                     step = step + 1
 
                     if 'val_error_step' in locals():
@@ -421,16 +415,18 @@ if __name__ == "__main__":
                                 del Y_pred_val
 
                             for b in range(num_batches_val):  # "b" is "batch number"
-                                d = {X: X_val_batch[:, b * time_steps: (b + 1) * time_steps, :],
-                                     Y: Y_val_batch[:, b * time_steps: (b + 1) * time_steps],
-                                     lng: [time_steps] * batch_size}
+                                X_b = X_val_batch[:, b * time_steps: (b + 1) * time_steps, :]
+                                Y_b = Y_val_batch[:, b * time_steps: (b + 1) * time_steps]
+                                d = {model.X: X_b,
+                                     model.y: Y_b,
+                                     model.lng: [time_steps] * batch_size}
 
                                 if 'Y_pred_val' in locals():
-                                    preds = sess.run(eval_op, feed_dict=d)[1]
+                                    preds = sess.run(model.predict, feed_dict=d)
                                     preds = preds.reshape(batch_size, -1)
                                     Y_pred_val = np.concatenate((Y_pred_val, preds), axis=1)
                                 else:
-                                    Y_pred_val = sess.run(eval_op, feed_dict=d)[1]
+                                    Y_pred_val = sess.run(model.predict, feed_dict=d)
                                     Y_pred_val = Y_pred_val.reshape(batch_size, -1)
 
                             # get rid of zero padding predictions
@@ -446,7 +442,7 @@ if __name__ == "__main__":
                                 checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                                 print("Validation error improved.\n"
                                       "Saving checkpoint to {}".format(checkpoint_path))
-                                saver.save(sess, checkpoint_path)
+                                model.saver.save(sess, checkpoint_path)
                             else:
                                 err_patience_counter += 1
                                 if err_patience_counter > patience:
@@ -464,16 +460,29 @@ if __name__ == "__main__":
                             checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                             if save_only_single_checkpoint_file is False:
                                 checkpoint_path += '_{}'.format(step)
-                            saver.save(sess, checkpoint_path)
+                            model.saver.save(sess, checkpoint_path)
                             with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
 
                     if step > n_max_iter:  # ok don't actually loop forever
                         "Reached max. number of iterations, saving checkpoint."
                         checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                        saver.save(sess, checkpoint_path)
+                        model.saver.save(sess, checkpoint_path)
                         with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
                             pickle.dump(costs, costs_file)
                         with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                             pickle.dump(val_errs, val_errs_file)
                         break
+
+    # lastly rewrite config file,
+    # so that paths where results were saved are automatically in config
+    config.set(section='OUTPUT',
+               option='results_dir_made_by_main_script',
+               value=results_dirname)
+    with open(config_file, 'w') as config_file_rewrite:
+        config.write(config_file_rewrite)
+
+
+if __name__ == "__main__":
+    config_file = os.path.normpath(sys.argv[1])
+    learn_curve(config_file)

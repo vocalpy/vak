@@ -6,3 +6,4 @@ results*/
 *__pycache__*
 .DS_Store
 *egg-info/
+/configs/old/

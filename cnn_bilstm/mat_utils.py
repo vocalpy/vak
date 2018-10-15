@@ -100,10 +100,23 @@ def convert_mat_to_spect(mat_spect_files,
         wav_filename = os.path.basename(matspect_filename).replace('.mat',
                                                                 '.wav')
         annotation = annotations[wav_filename]
-        # below, the first tolist() does not actually create list
-        # instead gets ndarray out of a zero-length ndarray of dtype=object
-        # second then converts ndarray into list of ints
-        labels = annotation['segType'].tolist().tolist()
+        # below, the first .tolist() does not actually create list,
+        # instead gets ndarray out of a zero-length ndarray of dtype=object.
+        # This is just weirdness that results from loading complicated data
+        # structure in .mat file.
+        labels = annotation['segType'].tolist()
+        if type(labels) == int:
+            # this happens when there's only one syllable in the file
+            # with only one corresponding label
+            labels = [labels]  # so make it a one-element list
+        elif type(labels) == np.ndarray:
+            # second .tolist() then converts ndarray into list of ints
+            labels = labels.tolist()
+        else:
+            raise ValueError("Unable to load labels from {}, because "
+                             "the segType parsed as type {} which is "
+                             "not recognized.".format(wav_filename,
+                                                      type(labels)))
 
         if skip_files_with_labels_not_in_labelset:
             labels_set = set(labels)
