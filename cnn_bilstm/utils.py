@@ -231,35 +231,36 @@ def make_spects_from_list_of_files(filelist,
                          'a list of .cbin files or of .wav files. '
                          'All files must be of the same type.')
 
-    if filetype == 'wav' and annotation_file is None:
-        raise ValueError('annotation_file is required when using .wav files')
-    else:
-        if annotation_file.endswith('.mat'):
-            # the complicated nested structure of the annotation.mat files
-            # (a cell array of Matlab structs)
-            # makes it hard for loadmat to load them into numpy arrays.
-            # Some of the weird looking things below, like accessing fields and
-            # then converting them to lists, are work-arounds to deal with
-            # the result of loading the complicated structure.
-            # Setting squeeze_me=True gets rid of some but not all of the weirdness.
-            annotations = loadmat(annotation_file, squeeze_me=True)
-            # 'keys' here refers to filenames, which are 'keys' for the 'elements'
-            keys_key = [key for key in annotations.keys() if 'keys' in key]
-            elements_key = [key for key in annotations.keys() if 'elements' in key]
-            if len(keys_key) > 1:
-                raise ValueError('Found more than one `keys` in annotations.mat file')
-            if len(elements_key) > 1:
-                raise ValueError('Found more than one `elements` in annotations.mat file')
-            if len(keys_key) < 1:
-                raise ValueError('Did not find `keys` in annotations.mat file')
-            if len(elements_key) < 1:
-                raise ValueError('Did not find `elements` in annotations.mat file')
-            keys_key = keys_key[0]
-            elements_key = elements_key[0]
-            annot_keys = annotations[keys_key].tolist()
-            annot_elements = annotations[elements_key]
-        elif annotation_file.endswith('.xml'):
-            annotation_dict = load_song_annot(filelist, annotation_file)
+    if filetype == 'wav':
+        if annotation_file is None:
+            raise ValueError('annotation_file is required when using .wav files')
+        else:
+            if annotation_file.endswith('.mat'):
+                # the complicated nested structure of the annotation.mat files
+                # (a cell array of Matlab structs)
+                # makes it hard for loadmat to load them into numpy arrays.
+                # Some of the weird looking things below, like accessing fields and
+                # then converting them to lists, are work-arounds to deal with
+                # the result of loading the complicated structure.
+                # Setting squeeze_me=True gets rid of some but not all of the weirdness.
+                annotations = loadmat(annotation_file, squeeze_me=True)
+                # 'keys' here refers to filenames, which are 'keys' for the 'elements'
+                keys_key = [key for key in annotations.keys() if 'keys' in key]
+                elements_key = [key for key in annotations.keys() if 'elements' in key]
+                if len(keys_key) > 1:
+                    raise ValueError('Found more than one `keys` in annotations.mat file')
+                if len(elements_key) > 1:
+                    raise ValueError('Found more than one `elements` in annotations.mat file')
+                if len(keys_key) < 1:
+                    raise ValueError('Did not find `keys` in annotations.mat file')
+                if len(elements_key) < 1:
+                    raise ValueError('Did not find `elements` in annotations.mat file')
+                keys_key = keys_key[0]
+                elements_key = elements_key[0]
+                annot_keys = annotations[keys_key].tolist()
+                annot_elements = annotations[elements_key]
+            elif annotation_file.endswith('.xml'):
+                annotation_dict = load_song_annot(filelist, annotation_file)
 
     # need to keep track of name of files used since we may skip some.
     # (cbins_used is actually a list of tuples as defined in docstring)
@@ -400,7 +401,9 @@ def make_data_dicts(output_dir,
 
     Returns
     -------
-    None
+    saved_data_dict_paths : dict
+        with keys {'train', 'test', 'val'} and values being the path
+        to which the data_dict was saved
 
     Saves three 'data_dict' files (train, validation, and test)
     in output_dir, with following structure:
@@ -437,7 +440,7 @@ def make_data_dicts(output_dir,
             duration of a timebin in seconds from spectrograms
         spect_params : dict
             parameters for computing spectrogram as specified in config.ini file.
-            Will be checked against .ini file when running other scripts such as learn_curve.py
+            Will be checked against .ini file when running other train_utils such as learn_curve.py
         labels_mapping : dict
             maps str labels for syllables to consecutive integers.
             As explained in docstring for make_spects_from_list_of_files.
@@ -596,6 +599,8 @@ def make_data_dicts(output_dir,
         else:
             break
 
+    saved_data_dict_paths = {}
+
     for dict_name, spect_list, target_dur in zip(['train','val','test'],
                                                  [train_spects,val_spects,test_spects],
                                                  [total_train_set_duration,
@@ -664,6 +669,9 @@ def make_data_dicts(output_dir,
         print('saving data dictionary in {}'.format(output_dir))
         data_dict_path = os.path.join(output_dir, dict_name + '_data_dict')
         joblib.dump(data_dict, data_dict_path)
+        saved_data_dict_paths[dict_name] = data_dict_path
+
+    return saved_data_dict_paths
 
 
 def get_inds_for_dur(spect_ID_vector,
