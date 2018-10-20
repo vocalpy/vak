@@ -176,12 +176,12 @@ def make_data(config_file):
                                                skip_files_with_labels_not_in_labelset,
                                                annotation_file)
 
-        saved_data_dict_paths = make_data_dicts(output_dir,
-                    float(config['DATA']['total_train_set_duration']),
-                    float(config['DATA']['validation_set_duration']),
-                    float(config['DATA']['test_set_duration']),
-                    labelset,
-                    spect_files_path)
+    saved_data_dict_paths = make_data_dicts(output_dir,
+                float(config['DATA']['total_train_set_duration']),
+                float(config['DATA']['validation_set_duration']),
+                float(config['DATA']['test_set_duration']),
+                labelset,
+                spect_files_path)
 
     # lastly rewrite config file,
     # so that paths where results were saved are automatically in config
