@@ -105,11 +105,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
           if 'Y_pred_test' in locals():
             #preds = sess.run(eval_op, feed_dict=d)[1]
             preds = sess.run(model.predict, feed_dict=d)
-            #print(np.shape(preds))
             preds = preds.reshape( -1) #batch_size,
-            #print(batch_size)
-            #print(np.shape(preds))
-            #print(np.shape(Y_pred_test))
             Y_pred_test = np.concatenate((Y_pred_test, preds), axis=0)
             print(np.shape(Y_pred_test))
           else:
