@@ -1,28 +1,55 @@
 # tf_syllable_segmentation_annotation
-![alt text](https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation/blob/master/img/sample_phrase_annotation.png)
+![sample annotation](./img/sample_phrase_annotation.png)
 (The phrase segmentation of a canary song)
-## Jupyter notebook for tensorflow based syllable segmentation and annotation
-This code utilizes the 'tensorflow' library to create, train, and use a deep neural-network algorithm for parsing and tagging birdsong spectrograms. For further details see section `Model structure`.
-To install Jupyter notebook follow http://jupyter.readthedocs.io/en/latest/install.html
-## Installing tensorflow
-Please go to https://www.tensorflow.org/install/.
-It is recommended to create an environment (e.g. using Anaconda as in https://www.tensorflow.org/install/install_mac). The code was developed with tensorflow version 1.1.0 and may be incompatible with other versions. 
-## Data and folder structures
-To use this code, the data has to be arranged in a certain format and in a specific folder structure.
-### Spectrograms and labels
-Currently, all data files must be in Matlab format. Each training file should contain 2 variables:
-* s - A Nf x Nt real matrix of the spectrogram. Nt is the number of time steps. Nf is the number of frequency bins (the current code assumes 513 but this can be changed by updating the variable __input_vec_size__). 
-The values in this matrix should range from 0 to 0.8 with 0 indicating low energy in the time-spectral bin.
-* labels - A 1 x Nt real vector that contains the manually annotated label for each time bin. Use 0 to annotate silence or non-syllable noise. For any time bins during a syllable, use an integer. It is recommended to use the sequence [1,2, ... # of syllables] as labels and not large and sparse numbers.  
-Testing or unlabeled files need to contain only the variable `s`.
-### Folders and lists
-The code contains variables for holding the names of four folders:
-* data_directory - This folder contains all the training files. The folder must also contain a file called 'file_list.mat' that contains a Matlab's cell array called 'keys' that holds all the training file names.
-* training_records_dir - This folder will hold the saved network states along the training procedure. After training, it is possible to use the last checkpoint, or any other mid-training point, to segment and annotate new data.
-* test_data_directory - Contains only Matlab files with spectrograms to annotate. There is no need to create a list of files because the code will attempt to annotate any matlab file in this directory. Matlab files that do not contain a spectrogram 's' in the correct format will result in an error.
-* results_dir - This folder will contain the annotations of the test data.
-The code also requires specifying the name of the results file (the variable 'results_file') which will be saved in the results folder.
-## Parameters
+A library that segments and labels birdsong and other vocalizations
+
+## Installation
+To install, run the following command at the command line:
+`pip install cnn_bilstm`
+
+Best practice is to use a separate environment. If you install from `pip` you can 
+use `virtualenv` or `pipenv`. In many cases it may be easier to install  
+[Anaconda](https://www.anaconda.com/download), and use their `conda` command-line tool 
+to create environments and install the scientific libraries that this package 
+depends on. Here's how you'd set up a `conda` environment:  
+`/home/you/code/ $ conda create -n cnn-bilstm python=3.5 numpy scipy joblib tensorflow-gpu ipython jupyter`    
+`/home/you/code/ $ source activate cnn-bilstm`  
+(You don't have to `source` on Windows: `> activate cnn-bilstm`)  
+
+You can use `pip` inside a `conda` environment:
+`(cnn-bilstm)/home/you/code/ $ pip install cnn_bilstm`
+
+You can also work with a local copy of the code.
+It's possible to install the local copy with `pip` so that you can still edit 
+the code, and then have its behavior as an installed library reflect those edits. 
+  * Clone the repo from Github using the version control tool `git`:  
+`(cnn-bilstm)/home/you/code/ $ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
+(you can install `git` from Github or using `conda`.)  
+  * Finally install the package with `pip` using the `-e` flag (for `editable`).
+`$ (cnn-bilstm)/home/you/code/ $ cd tf_syllable_segmentation_annotation`
+`$ (cnn-bilstm) pip install -e .`  
+
+## Usage
+### Training cnn-bilstm models to segment and label birdsong
+To train models, use the `main.py` script.
+You run it with `config.ini` files, using one of three command-line flags:
+You can run `main.py` with a single `config.ini` file by using the  `--config` 
+flag and passing the name of the config.ini file as an argument:  
+`(cnn-bilstm-conda-env)$ python main.py --config ./configs/config_bird0.ini`  
+
+For more details on how training works, see [experiments.md](./experiments.md), 
+and for more details on the config.ini files, see [README_config.md](./README_config.md).
+
+### Data and folder structures
+To train models, you must supply training data in the form of audio files or 
+spectrograms, and annotations for each spectrogram.
+#### Spectrograms and labels
+The package can generate spectrograms from `.wav` files or `.cbin` files.
+It can also accept spectrograms in the form of Matlab `.mat` files.
+The locations of these files are specified in the `config.ini` file as explained in 
+[experiments.md](./experiments.md) and [README_config.md](./README_config.md).
+
+### Important model parameters
 * The following parameters must be correctly defined:
   * input_vec_size - Must match the number of frequency bins in the spectrograms (current value is 513).
   * n_syllables - Must be the correct number of tags, including zero for non-syllable.
@@ -32,20 +59,40 @@ The code also requires specifying the name of the results file (the variable 're
   * batch_size - The number of snippets in each training batch (currently 11)
   * learning_rate - The training step rate coefficient (currently 0.001)
 Other parameters that specify the network itself can be changed in the code but require knowledge of tensorflow.
+
 ## Preparing training files
+
 It is possible to train on any manually annotated data but there are some useful guidelines:
 * __Use as many examples as possible__ - The results will just be better. Specifically, this code will not label correctly syllables it did not encounter while training and will most probably generalize to the nearest sample or ignore the syllable.
 * __Use noise examples__ - This will make the code very good in ignoring noise.
 * __Examples of syllables on noise are important__ - It is a good practice to start with clean recordings. The code will not perform miracles and is most likely to fail if the audio is too corrupt or masked by noise. Still, training with examples of syllables on the background of cage noises will be beneficial.
-## Results of running the code
-The code contains a section for evaluating performance in the training set and a section for labeling new data.
-Labels of new data, in the folder set by the variable `test_data_directory`, are saved in a matlab format file whos name is defined by the variable `results_file`.
-This file will contain two cell arrays:
-* keys - Contains all file names.
-* estimates - Contains all estimated labels.
+
+### Results of running the code
+
 
 __It is recommended to apply post processing when extracting the actual syllable tag and onset and offset timesfrom the estimates.__
-## Model structure
+
+## Predicting new labels
+
+To reload a saved model, you use a checkpoint file saved by the
+Tensorflow checkpoint saver. Here's an example of how to do this, taken 
+from the `cnn_bilstm.train_utils.learn_curve` function:
+```Python
+meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
+data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
+
+model = CNNBiLSTM(n_syllables=n_syllables,
+                  input_vec_size=input_vec_size,
+                  batch_size=batch_size)
+
+with tf.Session(graph=model.graph) as sess:
+    model.restore(sess=sess,
+                  meta_file=meta_file,
+                  data_file=data_file)
+```
+
+
+## Model architecture
 The architecture of this deep neural network is based on these papers:
 * S. Böck and M. Schedl, "Polyphonic piano note transcription with recurrent neural networks," 2012 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), Kyoto, 2012, pp. 121-124.
 doi: 10.1109/ICASSP.2012.6287832 (http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6287832&isnumber=6287775)
@@ -54,5 +101,5 @@ doi: 10.1109/ICASSP.2012.6287832 (http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=
 The deep net. structure, used in this code, contains 3 elements:
 * 2 convolutional and max pooling layers - A convolutional layer convolves the spectrogram with a set of tunable features and the max pooling is used to limit the number of parameters. These layers allow extracting local spectral and temporal features of syllables and noise.
 * A long-short-term-memory recurrent layer (LSTM) - This layer allows the model to incorporate the temporal dependencies in the signal, such as canary trills and the duration of various syllables. The code contains an option to adding more LSTM layers but, since it isn't needed, those are not used.
-* A projection layer -  For each time bin, this layer projects the previous layer's output on the set of possible syllables. 
+* A projection layer - For each time bin, this layer projects the previous layer's output on the set of possible syllables. 
 

@@ -1,18 +1,7 @@
-# cnn_bilstm package
-For testing the cnn-bilstm neural network for segmentation of birdsong into 
-syllables. This repository contains scripts to reproduce results, as well as 
-the cnn-bilstm package. The package contains the network and various utility 
-functions used by the scripts.
-
-## install
-
-It's probably easiest to use [Anaconda](https://www.anaconda.com/download). 
-After installing Anaconda, use the command-line to set up a conda environment 
-and clone the repo with git:  
-`$ conda create -n cnn-bilstm numpy scipy joblib tensorflow-gpu ipython jupyter`  
-`$ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
-`$ source activate cnn-bilstm`  
-(or on Windows: `> activate cnn-bilstm`)
+# Experiments in this paper
+Please see the (README.md)[./README.md] for instructions on how to install 
+this package. This document describes how to reproduce the experiments in 
+the paper.
 
 ## usage
 
@@ -49,10 +38,6 @@ To do so, you'd execute the following at the command line:
 `(cnn-bilstm-conda-env)$ python main.py --txt ./configs/config_list_bf_song_repository_all.txt `  
 (Again you need to download the repository and change the paths in the 
 config files to reflect where you have it saved on your system.)
-
-Lastly you can run `main.py` with a single `config.ini` file by using the 
-`--config` flag and passing the name of the config.ini file as an argument:  
-`(cnn-bilstm-conda-env)$ python main.py --config ./configs/config_bird0.ini`
 
 Bengalese finch song used as data for these experiments 
 is from the following repositories:
