@@ -50,7 +50,7 @@ The locations of these files are specified in the `config.ini` file as explained
 [experiments.md](./experiments.md) and [README_config.md](./README_config.md).
 
 ### Important model parameters
-* The following parameters must be correctly defined:
+* The following parameters must be correctly defined in the configuration `.ini` file(./README_config.md).
   * input_vec_size - Must match the number of frequency bins in the spectrograms (current value is 513).
   * n_syllables - Must be the correct number of tags, including zero for non-syllable.
   * time_steps - The number of bins in a training snippet (current value is 87). The code concatenates all training data and trains the deep network using batches, containing snippets of length 'time_steps' from different points in the data. It is recommended to set 'time_steps' such that the snippets are of about 1 second.
