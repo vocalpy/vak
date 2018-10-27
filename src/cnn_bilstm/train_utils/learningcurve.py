@@ -1,17 +1,17 @@
-import sys
 import os
 import pickle
-from glob import glob
+import sys
 from configparser import ConfigParser, NoOptionError
 from datetime import datetime
+from glob import glob
 
-import tensorflow as tf
-import numpy as np
 import joblib
+import numpy as np
+import tensorflow as tf
 
-import cnn_bilstm.utils
-import cnn_bilstm.metrics
-from cnn_bilstm.model import CNNBiLSTM
+import cnn_bilstm
+from cnn_bilstm import CNNBiLSTM
+
 
 def learn_curve(config_file):
     """generate learning curve from models train by train_utils.train"""

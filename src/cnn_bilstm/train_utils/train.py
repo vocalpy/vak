@@ -1,20 +1,19 @@
-import sys
-import os
-import shutil
 import copy
 import logging
+import os
 import pickle
-from datetime import datetime
-from configparser import ConfigParser, NoOptionError
+import shutil
+import sys
 import warnings
+from configparser import ConfigParser, NoOptionError
+from datetime import datetime
 
-import tensorflow as tf
-from tensorflow.python import debug as tf_debug
-import numpy as np
 import joblib
+import numpy as np
+import tensorflow as tf
 
-from cnn_bilstm.model import CNNBiLSTM
-import cnn_bilstm.utils
+import cnn_bilstm
+from cnn_bilstm import CNNBiLSTM
 
 
 def train(config_file):
