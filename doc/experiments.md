@@ -73,7 +73,7 @@ skip_files_with_labels_not_in_labelset = Yes
 ```
 
 For more about what each of these options mean, see 
-[README_config.md](./README_config.md).
+[README_config.md](README_config.md).
 
 
 ### 2. `cnn_bilstm.train_utils.train` : train models

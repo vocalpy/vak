@@ -1,12 +1,12 @@
-import os
-from glob import glob
-import random
 import copy
 import itertools
+import os
+import random
+from glob import glob
 
+import joblib
 import numpy as np
 from scipy.io import wavfile, loadmat
-import joblib
 
 from . import evfuncs, spect_utils
 from .koumura_utils import load_song_annot

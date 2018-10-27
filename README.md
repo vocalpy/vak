@@ -1,5 +1,5 @@
 # tf_syllable_segmentation_annotation
-![sample annotation](./img/sample_phrase_annotation.png)
+![sample annotation](doc/sample_phrase_annotation.png)
 (The phrase segmentation of a canary song)
 A library that segments and labels birdsong and other vocalizations
 
@@ -25,20 +25,20 @@ the code, and then have its behavior as an installed library reflect those edits
   * Clone the repo from Github using the version control tool `git`:  
 `(cnn-bilstm)/home/you/code/ $ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
 (you can install `git` from Github or using `conda`.)  
-  * Finally install the package with `pip` using the `-e` flag (for `editable`).
-`$ (cnn-bilstm)/home/you/code/ $ cd tf_syllable_segmentation_annotation`
+  * Finally install the package with `pip` using the `-e` flag (for `editable`).  
+`$ (cnn-bilstm)/home/you/code/ $ cd tf_syllable_segmentation_annotation`  
 `$ (cnn-bilstm) pip install -e .`  
 
 ## Usage
 ### Training cnn-bilstm models to segment and label birdsong
 To train models, use the `main.py` script.
-You run it with `config.ini` files, using one of three command-line flags:
+You run it with `config.ini` files, using one of three command-line flags:  
 You can run `main.py` with a single `config.ini` file by using the  `--config` 
 flag and passing the name of the config.ini file as an argument:  
 `(cnn-bilstm-conda-env)$ python main.py --config ./configs/config_bird0.ini`  
 
-For more details on how training works, see [experiments.md](./experiments.md), 
-and for more details on the config.ini files, see [README_config.md](./README_config.md).
+For more details on how training works, see [experiments.md](doc/experiments.md), 
+and for more details on the config.ini files, see [README_config.md](doc/README_config.md).
 
 ### Data and folder structures
 To train models, you must supply training data in the form of audio files or 
@@ -47,10 +47,10 @@ spectrograms, and annotations for each spectrogram.
 The package can generate spectrograms from `.wav` files or `.cbin` files.
 It can also accept spectrograms in the form of Matlab `.mat` files.
 The locations of these files are specified in the `config.ini` file as explained in 
-[experiments.md](./experiments.md) and [README_config.md](./README_config.md).
+[experiments.md](doc/experiments.md) and [README_config.md](doc/README_config.md).
 
 ### Important model parameters
-* The following parameters must be correctly defined in the configuration `.ini` [file](./README_config.md).
+* The following parameters must be correctly defined in the configuration `.ini` [file](doc/README_config.md).
   * input_vec_size - Must match the number of frequency bins in the spectrograms (current value is 513).
   * n_syllables - Must be the correct number of tags, including zero for non-syllable.
   * time_steps - The number of bins in a training snippet (current value is 87). The code concatenates all training data and trains the deep network using batches, containing snippets of length 'time_steps' from different points in the data. It is recommended to set 'time_steps' such that the snippets are of about 1 second.

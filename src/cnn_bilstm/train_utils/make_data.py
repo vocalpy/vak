@@ -1,12 +1,15 @@
+import logging
 import os
 import sys
-from glob import glob
-from datetime import datetime
-import logging
 from configparser import ConfigParser
+from datetime import datetime
+from glob import glob
 
-from cnn_bilstm.utils import make_spects_from_list_of_files, make_data_dicts, range_str
+from cnn_bilstm.utils import make_spects_from_list_of_files, make_data_dicts, \
+    range_str
+
 from cnn_bilstm.mat_utils import convert_mat_to_spect
+
 
 def make_data(config_file):
     if not config_file.endswith('.ini'):

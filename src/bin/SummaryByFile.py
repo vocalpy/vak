@@ -1,16 +1,13 @@
-import sys
 import os
 import pickle
-from glob import glob
+import sys
 from configparser import ConfigParser
-from datetime import datetime
+from glob import glob
+
+import joblib
+import numpy as np
 import scipy.io as cpio
 import tensorflow as tf
-import numpy as np
-import joblib
-
-import cnn_bilstm.utils
-import cnn_bilstm.metrics
 
 config_file = sys.argv[1]
 if not config_file.endswith('.ini'):
@@ -88,10 +85,10 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
 				Xd = data['spect'].T
 				Yd = data['labeled_timebins']
 				(Xd_batch,Yd_batch,num_batches_val) = cnn_bilstm.utils.reshape_data_for_batching(Xd,
-                                                                           Yd,
-                                                                           batch_size,
-                                                                           time_steps,
-                                                                           input_vec_size)
+                                                                                                     Yd,
+                                                                                                     batch_size,
+                                                                                                     time_steps,
+                                                                                                     input_vec_size)
 				if 'Y_pred_test' in locals():
 					del Y_pred_test
 				for b in range(num_batches_val):  # "b" is "batch number"
