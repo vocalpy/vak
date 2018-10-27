@@ -1,6 +1,14 @@
+"""
+Invokes cnn-bilstm.main when the module is run as a script.
+Example: python -m cnn-bilstm --help
+The same function is run by the script `cnn-bilstm` which is installed on the
+path by pip, so `$ cnn-bilstm --help` would have the same effect (i.e., no need
+to type the python -m)
+"""
+
 import argparse
-from glob import glob
 import os
+from glob import glob
 
 import cnn_bilstm
 
@@ -16,10 +24,11 @@ parser.add_argument('-c', '--config', type=str,
                     help='name of a single config.ini file')
 args = parser.parse_args()
 
-if __name__ == '__main__':
+
+def main():
     if not args.glob and not args.txt and not args.config:
         parser.error("One of following flags is required: "
-                     "--glob, --txt, or --config. Run 'python main.py --help' "
+                     "--glob, --txt, or --config. Run 'cnn-bilstm --help' "
                      "for an explanation of each.")
 
     if args.glob and args.txt:
@@ -62,3 +71,6 @@ if __name__ == '__main__':
         cnn_bilstm.make_data(config_file)
         cnn_bilstm.train(config_file)
         cnn_bilstm.learn_curve(config_file)
+
+if __name__ == "__main__":
+    main()

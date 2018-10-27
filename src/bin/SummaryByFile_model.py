@@ -1,17 +1,16 @@
-import sys
 import os
 import pickle
+import sys
+from configparser import ConfigParser
 from glob import glob
-from configparser import ConfigParser, NoOptionError
-from datetime import datetime
+
+import joblib
+import numpy as np
 import scipy.io as cpio
 import tensorflow as tf
-import numpy as np
-import joblib
 
-import cnn_bilstm.utils
-import cnn_bilstm.metrics
-from cnn_bilstm.model import CNNBiLSTM
+import cnn_bilstm
+from cnn_bilstm import CNNBiLSTM
 
 config_file = sys.argv[1]
 if not config_file.endswith('.ini'):
@@ -91,10 +90,10 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
         Xd = data['spect'].T
         Yd = data['labeled_timebins']
         (Xd_batch,Yd_batch,num_batches_val) = cnn_bilstm.utils.reshape_data_for_batching(Xd,
-             Yd,
-             batch_size,
-             time_steps,
-             input_vec_size)
+                                                                                         Yd,
+                                                                                         batch_size,
+                                                                                         time_steps,
+                                                                                         input_vec_size)
         if 'Y_pred_train' in locals():
           del Y_pred_train
 
