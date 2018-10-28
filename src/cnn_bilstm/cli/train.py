@@ -475,6 +475,12 @@ def train(config_file):
 
     # lastly rewrite config file,
     # so that paths where results were saved are automatically in config
+    config.set(section='NETWORK',
+               option='input_vec_size',
+               value=str(input_vec_size))
+    config.set(section='NETWORK',
+               option='n_syllables',
+               value=str(n_syllables))
     config.set(section='OUTPUT',
                option='results_dir_made_by_main_script',
                value=results_dirname)
