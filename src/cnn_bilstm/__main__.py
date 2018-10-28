@@ -22,21 +22,18 @@ parser.add_argument('-t', '--txt', type=str,
                          'config files to run')
 parser.add_argument('-c', '--config', type=str,
                     help='name of a single config.ini file')
+parser.add_argument('-p', '--predict', type=str,
+                    help='predict segments + labels for song, using a trained '
+                         'model specified in a single config.ini file')
 args = parser.parse_args()
 
 
 def main():
-    if not args.glob and not args.txt and not args.config:
-        parser.error("One of following flags is required: "
-                     "--glob, --txt, or --config. Run 'cnn-bilstm --help' "
-                     "for an explanation of each.")
-
-    if args.glob and args.txt:
-        parser.error('Cannot use --glob and --txt together.')
-    elif args.glob and args.config:
-        parser.error('Cannot use --glob and --config together.')
-    elif args.txt and args.config:
-        parser.error('Cannot use --txt and --config together.')
+    if sum([bool(arg)
+            for arg in [args.glob, args.txt, args.config, args.predict]]) != 1:
+        parser.error("Please specify exactly one of the following flags: "
+                     "--glob, --txt, --config, or --predict.\n"
+                     "Run 'cnn-bilstm --help' for an explanation of each.")
 
     if args.glob:
         config_files = glob(args.glob)
@@ -46,31 +43,36 @@ def main():
     elif args.config:
         config_files = [args.config]  # single-item list
 
-    config_files_cleaned = []
-    for config_file in config_files:
-        config_file = config_file.rstrip()
-        config_file = config_file.lstrip()
-        if os.path.isfile(config_file):
-            config_files_cleaned.append(config_file)
-        else:
-            if args.txt:
-                txt_dir = os.path.dirname(args.txt)
-                txt_dir_config = os.path.join(txt_dir,
-                                              config_file)
-                if os.path.isfile(txt_dir_config):
-                    config_files_cleaned.append(txt_dir_config)
-                else:
-                    raise FileNotFoundError("Can't find config file: {}"
-                                            .format(txt_dir_config))
-            else:  # if --glob was used instead of --txt
-                raise FileNotFoundError("Can't find config file: {}"
-                                        .format(config_file))
-    config_files = config_files_cleaned
 
-    for config_file in config_files:
-        cnn_bilstm.make_data(config_file)
-        cnn_bilstm.train(config_file)
-        cnn_bilstm.learn_curve(config_file)
+    if args.glob or args.txt or args.config:
+        config_files_cleaned = []
+        for config_file in config_files:
+            config_file = config_file.rstrip()
+            config_file = config_file.lstrip()
+            if os.path.isfile(config_file):
+                config_files_cleaned.append(config_file)
+            else:
+                if args.txt:
+                    txt_dir = os.path.dirname(args.txt)
+                    txt_dir_config = os.path.join(txt_dir,
+                                                  config_file)
+                    if os.path.isfile(txt_dir_config):
+                        config_files_cleaned.append(txt_dir_config)
+                    else:
+                        raise FileNotFoundError("Can't find config file: {}"
+                                                .format(txt_dir_config))
+                else:  # if --glob was used instead of --txt
+                    raise FileNotFoundError("Can't find config file: {}"
+                                            .format(config_file))
+        config_files = config_files_cleaned
+
+        for config_file in config_files:
+            cnn_bilstm.make_data(config_file)
+            cnn_bilstm.train(config_file)
+            cnn_bilstm.learn_curve(config_file)
+    elif args.predict:
+            cnn_bilstm.cli.predict(args.predict)
+
 
 if __name__ == "__main__":
     main()
