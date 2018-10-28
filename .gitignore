@@ -1,4 +1,4 @@
-./.ipynb_checkpoints
+.ipynb_checkpoints/
 .idea
 *checkpoint.ipynb
 README.md
@@ -7,3 +7,4 @@ results*/
 .DS_Store
 *egg-info/
 /configs/old/
+*egg-info
