@@ -17,7 +17,7 @@ from cnn_bilstm import CNNBiLSTM
 
 
 def train(config_file):
-    """train models used by train_utils.learningcurve
+    """train models used by cli.learningcurve
     to generate learning curve"""
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
