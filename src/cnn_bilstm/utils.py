@@ -440,7 +440,7 @@ def make_data_dicts(output_dir,
             duration of a timebin in seconds from spectrograms
         spect_params : dict
             parameters for computing spectrogram as specified in config.ini file.
-            Will be checked against .ini file when running other train_utils such as learn_curve.py
+            Will be checked against .ini file when running other cli such as learn_curve.py
         labels_mapping : dict
             maps str labels for syllables to consecutive integers.
             As explained in docstring for make_spects_from_list_of_files.
