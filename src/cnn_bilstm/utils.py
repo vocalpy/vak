@@ -168,12 +168,12 @@ def make_spects_from_list_of_files(filelist,
                                    skip_files_with_labels_not_in_labelset=True,
                                    annotation_file=None,
                                    n_decimals_trunc=3):
-    """makes spectrograms from a list of .cbin audio files
+    """makes spectrograms from a list of audio files
 
     Parameters
     ----------
     filelist : list
-        of str, full paths to .cbin or .wav files
+        of str, full paths to .wav or .cbin files
         from which to make spectrograms
     spect_params : dict
         parameters for computing spectrogram, from .ini file
@@ -207,7 +207,7 @@ def make_spects_from_list_of_files(filelist,
                      (string labels for syllables in spectrogram)
         Used when building data sets of a specific duration.
 
-    For each .cbin filename in the list, a '.spect' file is saved.
+    For each .wav or .cbin filename in the list, a '.spect' file is saved.
     Each '.spect' file contains a "pickled" Python dictionary
     with the following key, value pairs:
         spect : ndarray
