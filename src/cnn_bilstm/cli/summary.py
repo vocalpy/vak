@@ -13,8 +13,8 @@ import cnn_bilstm
 from cnn_bilstm import CNNBiLSTM
 
 
-def learn_curve(config_file):
-    """generate learning curve from models train by cli.train"""
+def summary(config_file):
+    """generate summary learning curve from models train by cli.learncurve"""
     if not config_file.endswith('.ini'):
         raise ValueError(
             '{} is not a valid config file, must have .ini extension'
@@ -457,4 +457,4 @@ def learn_curve(config_file):
 
 if __name__ == '__main__':
     config_file = sys.argv[1]
-    learn_curve(config_file)
+    summary(config_file)
