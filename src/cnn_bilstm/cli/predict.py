@@ -1,12 +1,10 @@
 import os
-import pickle
 import sys
 from configparser import ConfigParser
 from glob import glob
 
 import joblib
 import numpy as np
-import scipy.io as cpio
 import tensorflow as tf
 
 from cnn_bilstm.utils import reshape_data_for_batching
@@ -25,8 +23,11 @@ def predict(config_file):
 
 
     dir_to_predict = config['PREDICT']['dir_to_predict']
-    spect_file_list = glob(dir_to_predict + '*.spect')
-
+    spect_file_list = glob(os.path.join(dir_to_predict,
+                                        '*.spect'))
+    if spect_file_list == []:
+        raise ValueError('did not find any .spect files in {}'
+                         .format(dir_to_predict))
 
     batch_size = int(config['NETWORK']['batch_size'])
     time_steps = int(config['NETWORK']['time_steps'])
@@ -50,13 +51,13 @@ def predict(config_file):
         else:
             meta_file = meta_file[0]
 
-        data_file = glob(os.path.join(training_records_dir,
-                                      'checkpoint*data*'))[0]
+        data_file = glob(os.path.join(checkpoint_dir,
+                                      'checkpoint*data*'))
         if len(data_file) > 1:
             raise ValueError('found more than one .data file in {}'
                              .format(checkpoint_dir))
         else:
-            data_file = meta_file[0]
+            data_file = data_file[0]
 
         model.restore(sess=sess,
         meta_file=meta_file,
@@ -79,7 +80,7 @@ def predict(config_file):
                                                       time_steps,
                                                       input_vec_size)
 
-            if 'Y_pred' in locals:
+            if 'Y_pred' in locals():
                 del Y_pred
             # work through current spectrogram batch by batch
             for b in range(num_batches):  # "b" is "batch number"
@@ -100,7 +101,7 @@ def predict(config_file):
             Y_pred = Y_pred[0:len(Yd)]
             preds_dict[spect_file] = Y_pred
 
-    fname = os.path.join(results_dirname,'predictions')
+    fname = os.path.join(dir_to_predict, 'predictions')
     joblib.dump(preds_dict, fname)
 
 
