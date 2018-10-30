@@ -9,8 +9,9 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-import cnn_bilstm
-from cnn_bilstm import CNNBiLSTM
+
+from .. import metrics, utils
+from ..model import CNNBiLSTM
 
 
 def summary(config_file):
@@ -253,7 +254,7 @@ def summary(config_file):
             # now that we normalized, we can reshape
             (X_train_subset,
              Y_train_subset,
-             num_batches_train) = cnn_bilstm.utils.reshape_data_for_batching(
+             num_batches_train) = utils.reshape_data_for_batching(
                 X_train_subset,
                 Y_train_subset,
                 batch_size,
@@ -262,7 +263,7 @@ def summary(config_file):
 
             (X_test,
              Y_test,
-             num_batches_test) = cnn_bilstm.utils.reshape_data_for_batching(
+             num_batches_test) = utils.reshape_data_for_batching(
                 X_test,
                 Y_test,
                 batch_size,
@@ -326,10 +327,10 @@ def summary(config_file):
                 print('train error was {}'.format(train_err))
                 Y_pred_train_this_dur.append(Y_pred_train)
 
-                Y_train_subset_labels = cnn_bilstm.utils.convert_timebins_to_labels(
+                Y_train_subset_labels = utils.convert_timebins_to_labels(
                     Y_train_subset,
                     labels_mapping)
-                Y_pred_train_labels = cnn_bilstm.utils.convert_timebins_to_labels(
+                Y_pred_train_labels = utils.convert_timebins_to_labels(
                     Y_pred_train,
                     labels_mapping)
                 Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
@@ -345,12 +346,12 @@ def summary(config_file):
                     Y_pred_train_labels = ''.join(
                         [chr(el) for el in Y_pred_train_labels])
 
-                train_lev = cnn_bilstm.metrics.levenshtein(Y_pred_train_labels,
+                train_lev = metrics.levenshtein(Y_pred_train_labels,
                                                            Y_train_subset_labels)
                 train_lev_arr[dur_ind, rep_ind] = train_lev
                 print('Levenshtein distance for train set was {}'.format(
                     train_lev))
-                train_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(
+                train_syl_err_rate = metrics.syllable_error_rate(
                     Y_train_subset_labels,
                     Y_pred_train_labels)
                 train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
@@ -385,7 +386,7 @@ def summary(config_file):
                 print('test error was {}'.format(test_err))
                 Y_pred_test_this_dur.append(Y_pred_test)
 
-                Y_pred_test_labels = cnn_bilstm.utils.convert_timebins_to_labels(
+                Y_pred_test_labels = utils.convert_timebins_to_labels(
                     Y_pred_test,
                     labels_mapping)
                 Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
@@ -400,12 +401,12 @@ def summary(config_file):
                     # already converted actual Y_test_labels from int to str above,
                     # stored in variable `Y_test_labels_for_lev`
 
-                test_lev = cnn_bilstm.metrics.levenshtein(Y_pred_test_labels,
+                test_lev = metrics.levenshtein(Y_pred_test_labels,
                                                           Y_test_labels_for_lev)
                 test_lev_arr[dur_ind, rep_ind] = test_lev
                 print(
                     'Levenshtein distance for test set was {}'.format(test_lev))
-                test_syl_err_rate = cnn_bilstm.metrics.syllable_error_rate(
+                test_syl_err_rate = metrics.syllable_error_rate(
                     Y_test_labels_for_lev,
                     Y_pred_test_labels)
                 print('Syllable error rate for test set was {}'.format(
