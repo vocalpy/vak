@@ -14,23 +14,27 @@ import cnn_bilstm
 
 parser = argparse.ArgumentParser(description='main script that generates '
                                              'learning curves')
+parser.add_argument('-c', '--config', type=str,
+                    help='name of a single config.ini file')
 parser.add_argument('-g', '--glob', type=str,
                     help='string to use with glob function '
                          'to search for config files')
-parser.add_argument('-t', '--txt', type=str,
-                    help='name of .txt file containing list of '
-                         'config files to run')
-parser.add_argument('-c', '--config', type=str,
-                    help='name of a single config.ini file')
 parser.add_argument('-p', '--predict', type=str,
                     help='predict segments + labels for song, using a trained '
                          'model specified in a single config.ini file')
+parser.add_argument('-s', '--summary', type=str,
+                    help='runs function that summarizes results from generating'
+                         'a learning curve, using a single config.ini file')
+parser.add_argument('-t', '--txt', type=str,
+                    help='name of .txt file containing list of '
+                         'config files to run')
 args = parser.parse_args()
 
 
 def main():
     if sum([bool(arg)
-            for arg in [args.glob, args.txt, args.config, args.predict]]) != 1:
+            for arg in [args.config, args.glob, args.predict, args.summary,
+                        args.txt,]]) != 1:
         parser.error("Please specify exactly one of the following flags: "
                      "--glob, --txt, --config, or --predict.\n"
                      "Run 'cnn-bilstm --help' for an explanation of each.")
@@ -71,7 +75,9 @@ def main():
             cnn_bilstm.train(config_file)
             cnn_bilstm.learn_curve(config_file)
     elif args.predict:
-            cnn_bilstm.cli.predict(args.predict)
+        cnn_bilstm.cli.predict(args.predict)
+    elif args.summary:
+        cnn_bilstm.cli.summary(args.summary)
 
 
 if __name__ == "__main__":
