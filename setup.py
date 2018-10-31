@@ -17,9 +17,9 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'cnn-bilstm'
+NAME = 'tweetynet'
 DESCRIPTION = 'neural network that segments and labels birdsong'
-URL = 'https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation/'
+URL = 'https://github.com/yardencsGitHub/tweetynet'
 EMAIL = 'yardenc@bu.edu'
 AUTHOR = 'Yarden Cohen, David Nicholson'
 REQUIRES_PYTHON = '>=3.5.0'
@@ -110,9 +110,9 @@ setup(
     url=URL,
     packages=find_packages(where="src", exclude=('tests',)),
     package_dir={"": "src"},
-    scripts=['src/bin/cnn-bilstm.py'],
+    scripts=['src/bin/tweetynet-cli.py'],
     entry_points={
-        'console_scripts': ['cnn-bilstm=cnn_bilstm.__main__:main'],
+        'console_scripts': ['tweetynet-cli=tweetynet.__main__:main'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,

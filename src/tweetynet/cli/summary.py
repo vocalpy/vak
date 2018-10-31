@@ -11,7 +11,7 @@ import tensorflow as tf
 
 
 from .. import metrics, utils
-from ..model import CNNBiLSTM
+from ..model import TweetyNet
 
 
 def summary(config_file):
@@ -288,7 +288,7 @@ def summary(config_file):
             glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
 
             input_vec_size = X_train_subset.shape[-1]  # number of columns
-            model = CNNBiLSTM(n_syllables=n_syllables,
+            model = TweetyNet(n_syllables=n_syllables,
                               input_vec_size=input_vec_size,
                               batch_size=batch_size)
             with tf.Session(graph=model.graph) as sess:

@@ -84,7 +84,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
 				data = joblib.load(spect_list[fnum])
 				Xd = data['spect'].T
 				Yd = data['labeled_timebins']
-				(Xd_batch,Yd_batch,num_batches_val) = cnn_bilstm.utils.reshape_data_for_batching(Xd,
+				(Xd_batch,Yd_batch,num_batches_val) = tweetynet.utils.reshape_data_for_batching(Xd,
                                                                                                      Yd,
                                                                                                      batch_size,
                                                                                                      time_steps,

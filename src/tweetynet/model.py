@@ -50,7 +50,7 @@ def out_width(in_width, filter_width, stride):
     return ceil(float(in_width - filter_width + 1) / float(stride))
 
 
-class CNNBiLSTM:
+class TweetyNet:
     """hybrid convolutional neural network-bidirectional LSTM
     for segmentation of spectrograms
 
@@ -80,7 +80,7 @@ class CNNBiLSTM:
                  pool2_strides=(1, 8),
                  learning_rate=0.001,
                  ):
-        """__init__ method for CNNBiLSTM
+        """__init__ method for TweetyNet
         To instantiate a new CNN-BiLSTM model, call with all of the
         model hyperparameters listed below, i.e. without the parameters
         for loading, `sess`, `meta_file`, and `data_file`.
@@ -162,9 +162,9 @@ class CNNBiLSTM:
         sess : tf.Session instance
             session in which this is running
         meta_file : str
-            absolute path to meta file saved by CNNBiLSTM.save
+            absolute path to meta file saved by TweetyNet.save
         data_file : str
-            absolute path to data file saved by CNNBiLSTM.save
+            absolute path to data file saved by TweetyNet.save
         """
         load_params = {'sess': sess,
                        'meta_file': meta_file,
