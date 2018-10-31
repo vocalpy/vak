@@ -10,7 +10,7 @@ import argparse
 import os
 from glob import glob
 
-import cnn_bilstm
+import tweetynet
 
 parser = argparse.ArgumentParser(description='main script',
                                  formatter_class=argparse.RawTextHelpFormatter,)
@@ -77,13 +77,13 @@ def main():
         config_files = config_files_cleaned
 
         for config_file in config_files:
-            cnn_bilstm.make_data(config_file)
-            cnn_bilstm.train(config_file)
-            cnn_bilstm.learn_curve(config_file)
+            tweetynet.make_data(config_file)
+            tweetynet.train(config_file)
+            tweetynet.learn_curve(config_file)
     elif args.predict:
-        cnn_bilstm.cli.predict(args.predict)
+        tweetynet.cli.predict(args.predict)
     elif args.summary:
-        cnn_bilstm.cli.summary(args.summary)
+        tweetynet.cli.summary(args.summary)
 
 
 if __name__ == "__main__":

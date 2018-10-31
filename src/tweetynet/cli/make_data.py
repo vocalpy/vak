@@ -5,10 +5,10 @@ from configparser import ConfigParser
 from datetime import datetime
 from glob import glob
 
-from cnn_bilstm.utils import make_spects_from_list_of_files, make_data_dicts, \
+from tweetynet.utils import make_spects_from_list_of_files, make_data_dicts, \
     range_str
 
-from cnn_bilstm.mat_utils import convert_mat_to_spect
+from tweetynet.mat_utils import convert_mat_to_spect
 
 
 def make_data(config_file):

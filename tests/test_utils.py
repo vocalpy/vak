@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from src.cnn_bilstm import reshape_data_for_batching
+from src.tweetynet import reshape_data_for_batching
 
 
 class TestUtils(unittest.TestCase):

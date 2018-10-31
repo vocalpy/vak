@@ -9,8 +9,8 @@ import numpy as np
 import scipy.io as cpio
 import tensorflow as tf
 
-import cnn_bilstm
-from cnn_bilstm import CNNBiLSTM
+import tweetynet
+from tweetynet import TweetyNet
 
 config_file = sys.argv[1]
 if not config_file.endswith('.ini'):
@@ -76,7 +76,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
     meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
     data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
     #input_vec_size = X_train_subset.shape[-1]  # number of columns
-    model = CNNBiLSTM(n_syllables=n_syllables,
+    model = TweetyNet(n_syllables=n_syllables,
         input_vec_size=input_vec_size,
         batch_size=batch_size)
     with tf.Session(graph=model.graph) as sess:
@@ -89,7 +89,7 @@ for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
         data = joblib.load(spect_list[fnum])
         Xd = data['spect'].T
         Yd = data['labeled_timebins']
-        (Xd_batch,Yd_batch,num_batches_val) = cnn_bilstm.utils.reshape_data_for_batching(Xd,
+        (Xd_batch,Yd_batch,num_batches_val) = tweetynet.utils.reshape_data_for_batching(Xd,
                                                                                          Yd,
                                                                                          batch_size,
                                                                                          time_steps,

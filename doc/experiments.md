@@ -53,7 +53,7 @@ appropriate (e.g. with paths to where training data is saved).
 Below is a more detailed explanation of each function that `main.py` runs.
 
 
-### 1. `cnn_bilstm.train_utils.make_data` : makes data sets
+### 1. `tweetynet.train_utils.make_data` : makes data sets
 
 Makes data sets for training, validation, and testing.  
 Before you run the script you need to create a `config.ini` file. 
@@ -62,7 +62,7 @@ In the `config` file, set values for the following options in the '[DATA]` secti
 ```ini
 [DATA]
 labelset = iabcdefghjk  # set of labels, str, int, or a range, e.g., '1-20, 22'
-# see docstring of cnn_bilstm.utils.range_str in for explanation of valid ranges
+tweetynet
 data_dir = /home/user/data/subdir/  # directory with audio files
 # durations of training, validation, and test sets in seconds
 total_train_set_duration = 400
@@ -76,7 +76,7 @@ For more about what each of these options mean, see
 [README_config.md](README_config.md).
 
 
-### 2. `cnn_bilstm.train_utils.train` : train models
+### 2. `tweetynet.train_utils.train` : train models
 
 After making the data sets, you generate trained models for learning curves.
 A learning curve is a plot where the x-axis is size of the training set 
@@ -147,12 +147,12 @@ following files. Files that contain a single vector should be loaded with the
 
 To reload a saved model, you use a checkpoint file saved by the
 Tensorflow checkpoint saver. Here's an example of how to do this, taken 
-from the `cnn_bilstm.train_utils.learn_curve` function:
+from the `tweetynet.train_utils.learn_curve` function:
 ```Python
 meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
 data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
 
-model = CNNBiLSTM(n_syllables=n_syllables,
+model = TweetyNet(n_syllables=n_syllables,
                   input_vec_size=input_vec_size,
                   batch_size=batch_size)
 
@@ -162,7 +162,7 @@ with tf.Session(graph=model.graph) as sess:
                   data_file=data_file)
 ```
 
-### 3. `cnn_bilstm.train_utils.learn_curve` : generate learning curve from results
+### 3. `tweetynet.train_utils.learn_curve` : generate learning curve from results
 
 The `learn_curve()` function is run after the `train()` function.  
 Note that `train()` will add the `results_dir_made_by_main_script` option 
