@@ -674,6 +674,143 @@ def make_data_dicts(output_dir,
     return saved_data_dict_paths
 
 
+def make_data_dict_from_spect_files(labelset, spect_files='./spect_files',
+                                    output_dir='.', dict_name='test'):
+    """load data from a list of spect files and save into a dictionary.
+    For running a summary of prediction error on a list of files you choose.
+
+    Parameters
+    ----------
+    labelset : list
+        of str, labels used
+    spect_files : str
+        full path to file containing 'spect_files' list of tuples
+        saved by function make_spects_from_list_of_files.
+        Default is None, in which case this function looks for
+        a file named 'spect_files' in output_dir.
+    output_dir : str
+        path to output_dir containing .spect files. Default is '.' (current
+        working directory).
+    dict_name : str
+        prefix to filename '_data_dict' in which the dictionary is saved.
+        Default is 'test'.
+
+    Returns
+    -------
+    data_dict_path
+
+    Function saves 'data_dict' file in output_dir, with following structure:
+        spects : list
+            of ndarray, spectrograms from audio files
+        filenames : list
+            same length as spects, filename of each audio file that was converted to spectrogram
+        freq_bins : ndarray
+            vector of frequencies where each value is a bin center. Same for all spectrograms
+        time_bins : list
+            of ndarrays, each a vector of times where each value is a bin center.
+            One for each spectrogram
+        labelset : list
+            of strings, labels corresponding to each spectrogram
+        labeled_timebins : list
+            of ndarrays, each same length as time_bins but value is a label for that bin.
+            In other words, the labels vector is mapped onto the time_bins vector for the
+            spectrogram.
+        X : ndarray
+            X_train, X_val, or X_test, depending on which data_dict you are looking at.
+            Some number of spectrograms concatenated, enough so that the total duration
+            of the spectrogram in time bins is equal to or greater than the target duration.
+            If greater than target, then X is truncated so it is equal to the target.
+        Y : ndarray
+            Concatenated labeled_timebins vectors corresponding to the spectrograms in X.
+        spect_ID_vector : ndarray
+            Vector where each element is an ID for a song. Used to randomly grab subsets
+            of data of a target duration while still having the subset be composed of
+            individual songs as much as possible. So this vector will look like:
+            [0, 0, 0, ..., 1, 1, 1, ... , n, n, n] where n is equal to or (a little) less
+            than the length of spects. spect_ID_vector.shape[-1] is the same as X.shape[-1]
+            and Y.shape[0].
+        timebin_dur : float
+            duration of a timebin in seconds from spectrograms
+        spect_params : dict
+            parameters for computing spectrogram as specified in config.ini file.
+            Will be checked against .ini file when running other cli such as learn_curve.py
+        labels_mapping : dict
+            maps str labels for syllables to consecutive integers.
+            As explained in docstring for make_spects_from_list_of_files.
+    """
+    spect_list = joblib.load(spect_files)
+    spect_files = [tup[0] for tup in spect_list]
+
+    labels = itertools.chain.from_iterable(
+        [tup[2] for tup in spect_list])
+    labels = set(labels)
+
+    if labels != set(labelset):
+        raise ValueError(
+            'labels from all spect_files are not consistent with '
+            'labels in labelset.')
+
+    spects = []
+    filenames = []
+    all_time_bins = []
+    labels = []
+    labeled_timebins = []
+    spect_ID_vector = []
+
+    for spect_ind, tup in enumerate(spect_list):
+        spect_dict = joblib.load(tup[0])
+        spects.append(spect_dict['spect'])
+        filenames.append(tup[0])
+        all_time_bins.append(spect_dict['time_bins'])
+        labels.append(spect_dict['labels'])
+        labeled_timebins.append(spect_dict['labeled_timebins'])
+        spect_ID_vector.extend([spect_ind] * spect_dict['time_bins'].shape[-1])
+
+        if 'freq_bins' in locals():
+            assert np.array_equal(spect_dict['freq_bins'], freq_bins)
+        else:
+            freq_bins = spect_dict['freq_bins']
+
+        if 'labels_mapping' in locals():
+            assert spect_dict['labels_mapping'] == labels_mapping
+        else:
+            labels_mapping = spect_dict['labels_mapping']
+
+        if 'timebin_dur' in locals():
+            assert spect_dict['timebin_dur'] == timebin_dur
+        else:
+            timebin_dur = spect_dict['timebin_dur']
+
+        if 'spect_params' in locals():
+            assert spect_dict['spect_params'] == spect_params
+        else:
+            spect_params = spect_dict['spect_params']
+
+    X = np.concatenate(spects, axis=1)
+    Y = np.concatenate(labeled_timebins)
+    spect_ID_vector = np.asarray(spect_ID_vector, dtype='int')
+    assert X.shape[-1] == Y.shape[0]  # Y has shape (timebins, 1)
+
+    data_dict = {'spects': spects,
+                 'filenames': filenames,
+                 'freq_bins': freq_bins,
+                 'time_bins': all_time_bins,
+                 'labels': labels,
+                 'labeled_timebins': labeled_timebins,
+                 'spect_ID_vector': spect_ID_vector,
+                 'X_' + dict_name: X,
+                 'Y_' + dict_name: Y,
+                 'timebin_dur': timebin_dur,
+                 'spect_params': spect_params,
+                 'labels_mapping': labels_mapping}
+
+    data_dict_path = os.path.join(output_dir, dict_name + '_data_dict')
+    print('saving data dictionary {} in {}'
+          .format(data_dict_path, os.path.abspath(output_dir)))
+    joblib.dump(data_dict, data_dict_path)
+    return data_dict_path
+
+
 def get_inds_for_dur(spect_ID_vector,
                      labeled_timebins_vector,
                      labels_mapping,
