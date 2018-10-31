@@ -168,7 +168,7 @@ def summary(config_file):
         Y_test_labels = [lbl for lbl_list in test_labels for lbl in lbl_list]
         if all([type(lbl) is int for lbl in Y_train_labels]):
             Y_test_labels_for_lev = ''.join(
-                [chr(lbl) for lbl in Y_train_labels])
+                [chr(lbl) for lbl in Y_test_labels])
         elif all([type(lbl) is str for lbl in Y_train_labels]):
             Y_test_labels_for_lev = ''.join(Y_test_labels)
         else:
