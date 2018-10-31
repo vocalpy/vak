@@ -12,22 +12,28 @@ from glob import glob
 
 import cnn_bilstm
 
-parser = argparse.ArgumentParser(description='main script that generates '
-                                             'learning curves')
+parser = argparse.ArgumentParser(description='main script',
+                                 formatter_class=argparse.RawTextHelpFormatter,)
 parser.add_argument('-c', '--config', type=str,
-                    help='name of a single config.ini file')
+                    help='run learning curve experiment with a single config'
+                    '.ini file, by passing the name of that file.\n'
+                            '$ cnn-bilstm --config ./config_bird1.ini')
 parser.add_argument('-g', '--glob', type=str,
                     help='string to use with glob function '
-                         'to search for config files')
+                         'to search for config files fitting some pattern.\n'
+                         '$ cnn-bilstm --glob ./config_finches*.ini')
 parser.add_argument('-p', '--predict', type=str,
-                    help='predict segments + labels for song, using a trained '
-                         'model specified in a single config.ini file')
+                    help='predict segments and labels for song, using a trained '
+                         'model specified in a single config.ini file\n'
+                         '$ cnn-bilstm --predict ./predict_bird1.ini')
 parser.add_argument('-s', '--summary', type=str,
                     help='runs function that summarizes results from generating'
-                         'a learning curve, using a single config.ini file')
+                         'a learning curve, using a single config.ini file\n'
+                         '$ cnn-bilstm --summary ./config_bird1.ini')
 parser.add_argument('-t', '--txt', type=str,
                     help='name of .txt file containing list of '
-                         'config files to run')
+                         'config files to run\n'
+                         '$ cnn-bilstm --text ./list_of_config_filenames.txt')
 args = parser.parse_args()
 
 
