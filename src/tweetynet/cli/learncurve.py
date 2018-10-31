@@ -12,8 +12,8 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-import cnn_bilstm
-from cnn_bilstm import CNNBiLSTM
+import tweetynet
+from tweetynet import TweetyNet
 
 
 def learncurve(config_file):
@@ -256,7 +256,7 @@ def learncurve(config_file):
                 with open(train_inds_path, 'rb') as f:
                     train_inds = pickle.load(f)
             else:
-                train_inds = cnn_bilstm.utils.get_inds_for_dur(X_train_spect_ID_vector,
+                train_inds = tweetynet.utils.get_inds_for_dur(X_train_spect_ID_vector,
                                                                Y_train,
                                                                labels_mapping,
                                                                train_set_dur,
@@ -268,7 +268,7 @@ def learncurve(config_file):
             Y_train_subset = Y_train[train_inds]
 
             if normalize_spectrograms:
-                spect_scaler = cnn_bilstm.utils.SpectScaler()
+                spect_scaler = tweetynet.utils.SpectScaler()
                 X_train_subset = spect_scaler.fit_transform(X_train_subset)
                 logger.info('normalizing validation set to match training set')
                 X_val = spect_scaler.transform(X_val_copy)
@@ -323,7 +323,7 @@ def learncurve(config_file):
 
             (X_val_batch,
              Y_val_batch,
-             num_batches_val) = cnn_bilstm.utils.reshape_data_for_batching(X_val,
+             num_batches_val) = tweetynet.utils.reshape_data_for_batching(X_val,
                                                                            Y_val,
                                                                            batch_size,
                                                                            time_steps,
@@ -356,7 +356,7 @@ def learncurve(config_file):
 
             logger.debug('creating graph')
 
-            model = CNNBiLSTM(n_syllables=n_syllables,
+            model = TweetyNet(n_syllables=n_syllables,
                               batch_size=batch_size,
                               input_vec_size=input_vec_size)
 

@@ -7,5 +7,5 @@ from . import metrics
 from . import spect_utils
 from . import utils
 from . import koumura_utils
-from .model import CNNBiLSTM
+from .model import TweetyNet
 from . import cli

@@ -7,8 +7,8 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-from cnn_bilstm.utils import reshape_data_for_batching
-from cnn_bilstm import CNNBiLSTM
+from tweetynet.utils import reshape_data_for_batching
+from tweetynet import TweetyNet
 
 
 def predict(config_file):
@@ -35,7 +35,7 @@ def predict(config_file):
     input_vec_size = int(config['NETWORK']['input_vec_size'])
 
 
-    model = CNNBiLSTM(n_syllables=n_syllables,
+    model = TweetyNet(n_syllables=n_syllables,
         input_vec_size=input_vec_size,
         batch_size=batch_size)
 

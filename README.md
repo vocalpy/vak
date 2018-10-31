@@ -1,41 +1,42 @@
-# tf_syllable_segmentation_annotation
+# TweetyNet
 ![sample annotation](doc/sample_phrase_annotation.png)
 (The phrase segmentation of a canary song)
-A library that segments and labels birdsong and other vocalizations
+A hybrid convolutional-recurrent neural network that segments and labels birdsong
+ and other vocalizations.
 
 ## Installation
 To install, run the following command at the command line:
-`pip install cnn_bilstm`
+`pip install tweetynet`
 
 Best practice is to use a virtual environment. If you install from `pip` you can 
 use `virtualenv` or `pipenv`. In many cases it may be easier to install 
 [Anaconda](https://www.anaconda.com/download), and use their `conda` command-line tool 
 to create environments and install the scientific libraries that this package 
 depends on. Here's how you'd set up a `conda` environment:  
-`/home/you/code/ $ conda create -n cnn-bilstm python=3.5 numpy scipy joblib tensorflow-gpu ipython jupyter`    
-`/home/you/code/ $ source activate cnn-bilstm`  
-(You don't have to `source` on Windows: `> activate cnn-bilstm`)  
+`/home/you/code/ $ conda create -n tweetyenv python=3.5 numpy scipy joblib tensorflow-gpu ipython jupyter`    
+`/home/you/code/ $ source activate tweetyenv`  
+(You don't have to `source` on Windows: `> activate tweetyenv`)  
 
 You can use `pip` inside a `conda` environment:
-`(cnn-bilstm)/home/you/code/ $ pip install cnn_bilstm`
+`(tweetyenv)/home/you/code/ $ pip install tweetynet`
 
 You can also work with a local copy of the code.
 It's possible to install the local copy with `pip` so that you can still edit 
 the code, and then have its behavior as an installed library reflect those edits. 
   * Clone the repo from Github using the version control tool `git`:  
-`(cnn-bilstm)/home/you/code/ $ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
+`(tweetyenv)/home/you/code/ $ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
 (you can install `git` from Github or using `conda`.)  
   * Finally install the package with `pip` using the `-e` flag (for `editable`).  
-`$ (cnn-bilstm)/home/you/code/ $ cd tf_syllable_segmentation_annotation`  
-`$ (cnn-bilstm) pip install -e .`  
+`$ (tweetyenv)/home/you/code/ $ cd tf_syllable_segmentation_annotation`  
+`$ (tweetyenv) pip install -e .`  
 
 ## Usage
-### Training cnn-bilstm models to segment and label birdsong
+### Training `tweetynet` models to segment and label birdsong
 To train models, use the `main.py` script.
 You run it with `config.ini` files, using one of three command-line flags:  
 You can run `main.py` with a single `config.ini` file by using the  `--config` 
 flag and passing the name of the config.ini file as an argument:  
-`(cnn-bilstm-conda-env)$ python main.py --config ./configs/config_bird0.ini`  
+`(tweetyenv-conda-env)$ python main.py --config ./configs/config_bird0.ini`  
 
 For more details on how training works, see [experiments.md](doc/experiments.md), 
 and for more details on the config.ini files, see [README_config.md](doc/README_config.md).
@@ -76,12 +77,12 @@ __It is recommended to apply post processing when extracting the actual syllable
 
 To reload a saved model, you use a checkpoint file saved by the
 Tensorflow checkpoint saver. Here's an example of how to do this, taken 
-from the `cnn_bilstm.train_utils.learn_curve` function:
+from the `tweetynet.train_utils.learn_curve` function:
 ```Python
 meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
 data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
 
-model = CNNBiLSTM(n_syllables=n_syllables,
+model = TweetyNet(n_syllables=n_syllables,
                   input_vec_size=input_vec_size,
                   batch_size=batch_size)
 
