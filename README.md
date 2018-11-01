@@ -1,11 +1,13 @@
 # TweetyNet
+<p align="center"><img src="./doc/tweetynet.gif" alt="tweetynet image" width=400></p>
+
+## A hybrid convolutional-recurrent neural network that segments and labels birdsong and other vocalizations.
+
 ![sample annotation](doc/sample_phrase_annotation.png)
-(The phrase segmentation of a canary song)
-A hybrid convolutional-recurrent neural network that segments and labels birdsong
- and other vocalizations.
+Canary song segmented into phrases
 
 ## Installation
-To install, run the following command at the command line:
+To install, run the following command at the command line:  
 `pip install tweetynet`
 
 Best practice is to use a virtual environment. If you install from `pip` you can 
@@ -70,7 +72,6 @@ It is possible to train on any manually annotated data but there are some useful
 
 ### Results of running the code
 
-
 __It is recommended to apply post processing when extracting the actual syllable tag and onset and offset timesfrom the estimates.__
 
 ## Predicting new labels
@@ -91,7 +92,6 @@ with tf.Session(graph=model.graph) as sess:
                   meta_file=meta_file,
                   data_file=data_file)
 ```
-
 
 ## Model architecture
 The architecture of this deep neural network is based on these papers:
