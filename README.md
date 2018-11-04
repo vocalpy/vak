@@ -10,16 +10,25 @@ Canary song segmented into phrases
 To install, run the following command at the command line:  
 `pip install tweetynet`
 
-Best practice is to use a virtual environment. If you install from `pip` you can 
-use `virtualenv` or `pipenv`. In many cases it may be easier to install 
-[Anaconda](https://www.anaconda.com/download), and use their `conda` command-line tool 
+Before you install, you'll want to set up a virtual environment
+(for an explanation of why, see
+https://www.geeksforgeeks.org/python-virtual-environment/).
+Creating a virtual environment is not as hard as it might sound;
+here's a primer on Python tools: https://realpython.com/python-virtual-environments-a-primer/  
+For many scientific packages that depend on libraries written in  
+languages besides Python, you may find it easier to use 
+a platform dedicated to managing those dependencies, such as
+[Anaconda](https://www.anaconda.com/download) (which is free).
+You can use the `conda` command-line tool that they develop  
 to create environments and install the scientific libraries that this package 
-depends on. Here's how you'd set up a `conda` environment:  
+depends on. In addition, using `conda` to install the dependencies may give you some performance gains 
+(see https://www.anaconda.com/blog/developer-blog/tensorflow-in-anaconda/).  
+Here's how you'd set up a `conda` environment:  
 `/home/you/code/ $ conda create -n tweetyenv python=3.5 numpy scipy joblib tensorflow-gpu ipython jupyter`    
 `/home/you/code/ $ source activate tweetyenv`  
 (You don't have to `source` on Windows: `> activate tweetyenv`)  
 
-You can use `pip` inside a `conda` environment:
+You can then use `pip` inside a `conda` environment:  
 `(tweetyenv)/home/you/code/ $ pip install tweetynet`
 
 You can also work with a local copy of the code.
@@ -28,17 +37,38 @@ the code, and then have its behavior as an installed library reflect those edits
   * Clone the repo from Github using the version control tool `git`:  
 `(tweetyenv)/home/you/code/ $ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
 (you can install `git` from Github or using `conda`.)  
-  * Finally install the package with `pip` using the `-e` flag (for `editable`).  
+  * Install the package with `pip` using the `-e` flag (for `editable`).  
 `$ (tweetyenv)/home/you/code/ $ cd tf_syllable_segmentation_annotation`  
 `$ (tweetyenv) pip install -e .`  
 
 ## Usage
 ### Training `tweetynet` models to segment and label birdsong
-To train models, use the `main.py` script.
-You run it with `config.ini` files, using one of three command-line flags:  
-You can run `main.py` with a single `config.ini` file by using the  `--config` 
-flag and passing the name of the config.ini file as an argument:  
-`(tweetyenv-conda-env)$ python main.py --config ./configs/config_bird0.ini`  
+To train models, use the command line interface, `tweetynet-cli`.
+You run it with `config.ini` files, using one of a handful of command-line flags.
+Here's the help text that prints when you run `$ tweetynet-cli --help`:  
+```
+main script
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        run learning curve experiment with a single config.ini file, by passing the name of that file.
+                        $ cnn-bilstm --config ./config_bird1.ini
+  -g GLOB, --glob GLOB  string to use with glob function to search for config files fitting some pattern.
+                        $ cnn-bilstm --glob ./config_finches*.ini
+  -p PREDICT, --predict PREDICT
+                        predict segments and labels for song, using a trained model specified in a single config.ini file
+                        $ cnn-bilstm --predict ./predict_bird1.ini
+  -s SUMMARY, --summary SUMMARY
+                        runs function that summarizes results from generatinga learning curve, using a single config.ini file
+                        $ cnn-bilstm --summary ./config_bird1.ini
+  -t TXT, --txt TXT     name of .txt file containing list of config files to run
+                        $ cnn-bilstm --text ./list_of_config_filenames.txt
+```
+
+As an example, you can run `tweetynet-cli` with a single `config.ini` file 
+by using the  `--config` flag and passing the name of the config.ini file as an argument:  
+`(tweetyenv)$ tweetynet-cli --config ./configs/config_bird0.ini`  
 
 For more details on how training works, see [experiments.md](doc/experiments.md), 
 and for more details on the config.ini files, see [README_config.md](doc/README_config.md).
@@ -76,7 +106,14 @@ __It is recommended to apply post processing when extracting the actual syllable
 
 ## Predicting new labels
 
-To reload a saved model, you use a checkpoint file saved by the
+You can predict new labels by adding a [PREDICT] section to the `config.ini` file, and 
+then running the command-line interface with the `--predict` flag, like so:  
+`(tweetyenv)$ tweetynet-cli --predict ./configs/config_bird0.ini`
+An example of what a `config.ini` file with a [PREDICT] section is 
+in the doc folder [here](./doc/template_predict.ini).
+
+For users with some scripting / Tensorflow experience, you can
+reload a saved model using a checkpoint file saved by the
 Tensorflow checkpoint saver. Here's an example of how to do this, taken 
 from the `tweetynet.train_utils.learn_curve` function:
 ```Python
