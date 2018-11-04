@@ -8,3 +8,5 @@ results*/
 *egg-info/
 /configs/old/
 *egg-info
+dist/
+build/
