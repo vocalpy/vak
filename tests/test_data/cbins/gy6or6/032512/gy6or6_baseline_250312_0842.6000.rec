@@ -1,0 +1,17 @@
+File created: Sun, Mar 25, 2012, 08:43:09
+
+     begin rec = 0 ms
+     trig time  = 2000 ms
+     rec end = 12423 ms
+
+ADFREQ =   32000
+Chans = 2
+Samples = 397550
+Catch = 0
+Output Sound File =C:\Users\dnicho4\Desktop\EVTAF_AMP_LATER_VERSION\playbacks\Female_Call.wav
+T Before = 2.0000000000E+0
+T After = 2.0000000000E+0
+Thresholds = 
+2.000000E+0
+Feedback information: 
+
