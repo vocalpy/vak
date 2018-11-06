@@ -25,7 +25,6 @@ def make_data(config_file):
     logger.setLevel('INFO')
 
     labelset = config['DATA']['labelset']
-    labels_mapping = {}
     # make mapping from syllable labels to consecutive integers
     # start at 1, because 0 is assumed to be label for silent gaps
     if '-' in labelset or ',' in labelset:
