@@ -1,8 +1,8 @@
 """
-Invokes cnn-bilstm.main when the module is run as a script.
-Example: python -m cnn-bilstm --help
-The same function is run by the script `cnn-bilstm` which is installed on the
-path by pip, so `$ cnn-bilstm --help` would have the same effect (i.e., no need
+Invokes __main__ when the module is run as a script.
+Example: python -m tweetynet --help
+The same function is run by the script `tweetynet-cli` which is installed on the
+path by pip, so `$ tweetynet-cli --help` would have the same effect (i.e., no need
 to type the python -m)
 """
 
