@@ -6,7 +6,7 @@ from glob import glob
 
 from ..utils import make_spects_from_list_of_files, make_data_dicts
 
-from ..mat_utils import convert_mat_to_spect
+from songdeck.utils.mat import convert_mat_to_spect
 
 
 def make_data(labelset,
