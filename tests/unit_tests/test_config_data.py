@@ -70,8 +70,47 @@ class TestParseDataConfig(unittest.TestCase):
         config_file = 'test'
         data_config_tup = songdeck.config.data.parse_data_config(config_obj,
                                                                  config_file)
-        self.assertTrue(hasattr(data_config_tup,'all_labels_are_int'))
+        self.assertTrue(hasattr(data_config_tup, 'all_labels_are_int'))
         self.assertTrue(data_config_tup.all_labels_are_int is False)
+
+    def test_silent_gap_label_default(self):
+        # test that silent_gap_label is added
+        # and set to 0 if we don't specify it
+        config_obj = self.get_config
+        config_file = 'test'
+        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+                                                                 config_file)
+        self.assertTrue(hasattr(data_config_tup, 'silent_gap_label'))
+        self.assertTrue(data_config_tup.silent_gap_label == 0)
+
+    def test_output_dir_default(self):
+        # test that output_dir is added
+        # and set to None if we don't specify it
+        config_obj = self.get_config
+        config_file = 'test'
+        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+                                                                 config_file)
+        self.assertTrue(hasattr(data_config_tup, 'output_dir'))
+        self.assertTrue(data_config_tup.output_dir is None)
+
+    def test_mat_spect_files_path_default(self):
+        # test that mat_spect_files_path is added
+        # and set to None if we don't specify it
+        config_obj = self.get_config
+        config_file = 'test'
+        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+                                                                 config_file)
+        self.assertTrue(hasattr(data_config_tup, 'mat_spect_files_path'))
+        self.assertTrue(data_config_tup.mat_spect_files_path is None)
+
+    def test_nonexistent_data_dir_raises_error(self):
+        # test that mate_spect_files_path is added
+        # and set to None if we don't specify it
+        config_obj = self.get_config
+        config_obj['DATA']['data_dir'] = 'theres/no/way/this/is/a/dir'
+        config_file = 'test'
+        with self.assertRaises(NotADirectoryError):
+            songdeck.config.data.parse_data_config(config_obj, config_file)
 
 
 if __name__ == '__main__':
