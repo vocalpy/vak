@@ -1,8 +1,8 @@
 """
 Invokes __main__ when the module is run as a script.
-Example: python -m tweetynet --help
-The same function is run by the script `tweetynet-cli` which is installed on the
-path by pip, so `$ tweetynet-cli --help` would have the same effect (i.e., no need
+Example: python -m songdeck --help
+The same function is run by the script `songdeck-cli` which is installed on the
+path by pip, so `$ songdeck-cli --help` would have the same effect (i.e., no need
 to type the python -m)
 """
 
@@ -10,7 +10,7 @@ import argparse
 import os
 from glob import glob
 
-import tweetynet
+import songdeck
 
 parser = argparse.ArgumentParser(description='main script',
                                  formatter_class=argparse.RawTextHelpFormatter,)

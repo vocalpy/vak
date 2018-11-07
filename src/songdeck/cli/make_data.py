@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 from glob import glob
 
-from ..utils import make_spects_from_list_of_files, make_data_dicts
+from songdeck.utils.data import make_spects_from_list_of_files, make_data_dicts
 
 from songdeck.utils.mat import convert_mat_to_spect
 
