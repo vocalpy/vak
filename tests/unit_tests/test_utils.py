@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from src.tweetynet import reshape_data_for_batching
+from songdeck import reshape_data_for_batching
 
 
 class TestUtils(unittest.TestCase):
