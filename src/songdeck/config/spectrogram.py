@@ -32,12 +32,13 @@ def parse_spect_config(config):
     step_size = int(config['SPECTROGRAM']['step_size'])
     freq_cutoffs = [float(element)
                     for element in
-                    config['SPECTROGRAM']['freq_cutoffs']
-                        .split(',')]
+                    config['SPECTROGRAM']['freq_cutoffs'].split(',')]
+
     if config.has_option('SPECTROGRAM', 'thresh'):
         thresh = float(config['SPECTROGRAM']['thresh'])
     else:
         thresh = None
+
     if config.has_option('SPECTROGRAM', 'transform_type'):
         transform_type = config['SPECTROGRAM']['transform_type']
         valid_transform_types = {'log_spect', 'log_spect_plus_one'}
