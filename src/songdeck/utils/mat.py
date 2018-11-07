@@ -5,7 +5,7 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
-from .utils import vec_translate
+from songdeck.utils import vec_translate
 
 
 def convert_mat_to_spect(mat_spect_files,
