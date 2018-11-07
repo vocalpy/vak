@@ -8,8 +8,8 @@ import joblib
 import numpy as np
 from scipy.io import wavfile, loadmat
 
+from . import spect as spect_utils  # so as not to confuse with variable name `spect`
 from songdeck import evfuncs
-from songdeck.utils import spect
 from songdeck.koumura_utils import load_song_annot
 
 
@@ -311,10 +311,10 @@ def make_spects_from_list_of_files(filelist,
         print('making .spect file for {}'.format(filename))
 
         if 'freq_cutoffs' in spect_params:
-            dat = spect.butter_bandpass_filter(dat,
-                                               spect_params['freq_cutoffs'][0],
-                                               spect_params['freq_cutoffs'][1],
-                                               fs)
+            dat = spect_utils.butter_bandpass_filter(dat,
+                                                     spect_params['freq_cutoffs'][0],
+                                                     spect_params['freq_cutoffs'][1],
+                                                     fs)
         specgram_params = {'fft_size': spect_params['fft_size'],
                            'step_size': spect_params['step_size']}
         if 'thresh' in spect_params:
@@ -322,8 +322,8 @@ def make_spects_from_list_of_files(filelist,
         if 'transform_type' in spect_params:
             specgram_params['transform_type'] = spect_params['transform_type']
 
-        spect, freq_bins, time_bins = spect.spectrogram(dat, fs,
-                                                        **specgram_params)
+        spect, freq_bins, time_bins = spect_utils.spectrogram(dat, fs,
+                                                              **specgram_params)
 
         if 'freq_cutoffs' in spect_params:
             f_inds = np.nonzero((freq_bins >= spect_params['freq_cutoffs'][0]) &
