@@ -27,7 +27,6 @@ def parse_spect_config(config):
             thresh
             transform_type
     """
-    spect_params = {}
     fft_size = int(config['SPECTROGRAM']['fft_size'])
     step_size = int(config['SPECTROGRAM']['step_size'])
     freq_cutoffs = [float(element)
@@ -42,7 +41,7 @@ def parse_spect_config(config):
     if config.has_option('SPECTROGRAM', 'transform_type'):
         transform_type = config['SPECTROGRAM']['transform_type']
         valid_transform_types = {'log_spect', 'log_spect_plus_one'}
-        if spect_params['transform_type'] not in valid_transform_types:
+        if config['SPECTROGRAM']['transform_type'] not in valid_transform_types:
             raise ValueError('Value for `transform_type`, {}, in [SPECTROGRAM] '
                              'section of .ini file is not recognized. Must be one '
                              'of the following: {}'
