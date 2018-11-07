@@ -11,7 +11,6 @@ import tensorflow as tf
 
 
 from .. import metrics, utils
-from ..model import TweetyNet
 
 
 def summary(config_file):
