@@ -1,4 +1,0 @@
-config_2018-10-09_bl26lb16_GPU1.ini
-config_2018-10-09_gy6or6_GPU1.ini
-config_2018-10-09_gr41rd51_GPU0.ini
-config_2018-10-09_or60yw70_GPU0.ini
