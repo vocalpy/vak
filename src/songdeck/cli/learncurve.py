@@ -12,9 +12,6 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-import tweetynet
-from tweetynet import TweetyNet
-
 
 def learncurve(config_file):
     """train models used by cli.summary to generate learning curve"""
