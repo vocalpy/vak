@@ -17,11 +17,11 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'tweetynet'
-DESCRIPTION = 'neural network that segments and labels birdsong'
-URL = 'https://github.com/yardencsGitHub/tweetynet'
-EMAIL = 'yardenc@bu.edu'
-AUTHOR = 'Yarden Cohen, David Nicholson'
+NAME = 'songdeck'
+DESCRIPTION = 'tools for benchmarking neural networks that annotate birdsong'
+URL = 'https://github.com/NickleDave/songdeck'
+EMAIL = 'dnicho4@emory.edu'
+AUTHOR = 'David Nicholson, Yarden Cohen'
 REQUIRES_PYTHON = '>=3.5.0'
 VERSION = '0.1.1a1'
 LICENSE='BSD'
@@ -110,9 +110,9 @@ setup(
     url=URL,
     packages=find_packages(where="src", exclude=('tests',)),
     package_dir={"": "src"},
-    scripts=['src/bin/tweetynet-cli.py'],
+    scripts=['src/bin/songdeck-cli.py'],
     entry_points={
-        'console_scripts': ['tweetynet-cli=tweetynet.__main__:main'],
+        'console_scripts': ['songdeck-cli=songdeck.__main__:main'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
