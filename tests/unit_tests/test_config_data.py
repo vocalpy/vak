@@ -1,3 +1,4 @@
+"""tests for songdeck.config.data module"""
 import os
 import unittest
 from configparser import ConfigParser
@@ -28,6 +29,12 @@ class TestParseDataConfig(unittest.TestCase):
 
     def setUp(self):
         self.get_config = _base_config()
+
+    def test_config_tuple_has_all_attrs(self):
+        config_obj = self.get_config
+        data_config_tup = songdeck.config.data.parse_data_config(config_obj)
+        for field in songdeck.config.data.DataConfig._fields:
+            self.assertTrue(hasattr(data_config_tup, field))
 
     def test_str_labelset(self):
         config_obj = self.get_config
@@ -70,7 +77,6 @@ class TestParseDataConfig(unittest.TestCase):
         config_file = 'test'
         data_config_tup = songdeck.config.data.parse_data_config(config_obj,
                                                                  config_file)
-        self.assertTrue(hasattr(data_config_tup, 'all_labels_are_int'))
         self.assertTrue(data_config_tup.all_labels_are_int is False)
 
     def test_silent_gap_label_default(self):
@@ -80,7 +86,6 @@ class TestParseDataConfig(unittest.TestCase):
         config_file = 'test'
         data_config_tup = songdeck.config.data.parse_data_config(config_obj,
                                                                  config_file)
-        self.assertTrue(hasattr(data_config_tup, 'silent_gap_label'))
         self.assertTrue(data_config_tup.silent_gap_label == 0)
 
     def test_output_dir_default(self):
@@ -90,7 +95,6 @@ class TestParseDataConfig(unittest.TestCase):
         config_file = 'test'
         data_config_tup = songdeck.config.data.parse_data_config(config_obj,
                                                                  config_file)
-        self.assertTrue(hasattr(data_config_tup, 'output_dir'))
         self.assertTrue(data_config_tup.output_dir is None)
 
     def test_mat_spect_files_path_default(self):
@@ -100,7 +104,6 @@ class TestParseDataConfig(unittest.TestCase):
         config_file = 'test'
         data_config_tup = songdeck.config.data.parse_data_config(config_obj,
                                                                  config_file)
-        self.assertTrue(hasattr(data_config_tup, 'mat_spect_files_path'))
         self.assertTrue(data_config_tup.mat_spect_files_path is None)
 
     def test_nonexistent_data_dir_raises_error(self):
