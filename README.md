@@ -1,14 +1,9 @@
-# TweetyNet
-<p align="center"><img src="./doc/tweetynet.gif" alt="tweetynet image" width=400></p>
-
-## A hybrid convolutional-recurrent neural network that segments and labels birdsong and other vocalizations.
-
-![sample annotation](doc/sample_phrase_annotation.png)
-Canary song segmented into phrases
+# songdeck
+## tools for benchmarking neural networks that annotate birdsong
 
 ## Installation
 To install, run the following command at the command line:  
-`pip install tweetynet`
+`pip install songdeck`
 
 Before you install, you'll want to set up a virtual environment
 (for an explanation of why, see
@@ -24,28 +19,28 @@ to create environments and install the scientific libraries that this package
 depends on. In addition, using `conda` to install the dependencies may give you some performance gains 
 (see https://www.anaconda.com/blog/developer-blog/tensorflow-in-anaconda/).  
 Here's how you'd set up a `conda` environment:  
-`/home/you/code/ $ conda create -n tweetyenv python=3.5 numpy scipy joblib tensorflow-gpu ipython jupyter`    
-`/home/you/code/ $ source activate tweetyenv`  
-(You don't have to `source` on Windows: `> activate tweetyenv`)  
+`/home/you/code/ $ conda create -n songdeck-env python=3.5 numpy scipy joblib tensorflow-gpu ipython jupyter`    
+`/home/you/code/ $ source activate songdeck-env`  
+(You don't have to `source` on Windows: `> activate songdeck-env`)  
 
 You can then use `pip` inside a `conda` environment:  
-`(tweetyenv)/home/you/code/ $ pip install tweetynet`
+`(songdeck-env)/home/you/code/ $ pip install songdeck`
 
 You can also work with a local copy of the code.
 It's possible to install the local copy with `pip` so that you can still edit 
 the code, and then have its behavior as an installed library reflect those edits. 
   * Clone the repo from Github using the version control tool `git`:  
-`(tweetyenv)/home/you/code/ $ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
+`(songdeck-env)/home/you/code/ $ git clone https://github.com/yardencsGitHub/tf_syllable_segmentation_annotation`  
 (you can install `git` from Github or using `conda`.)  
   * Install the package with `pip` using the `-e` flag (for `editable`).  
-`$ (tweetyenv)/home/you/code/ $ cd tf_syllable_segmentation_annotation`  
-`$ (tweetyenv) pip install -e .`  
+`$ (songdeck-env)/home/you/code/ $ cd tf_syllable_segmentation_annotation`  
+`$ (songdeck-env) pip install -e .`  
 
 ## Usage
-### Training `tweetynet` models to segment and label birdsong
-To train models, use the command line interface, `tweetynet-cli`.
+### Training models to segment and label birdsong
+To train models, use the command line interface, `songdeck-cli`.
 You run it with `config.ini` files, using one of a handful of command-line flags.
-Here's the help text that prints when you run `$ tweetynet-cli --help`:  
+Here's the help text that prints when you run `$ songdeck-cli --help`:  
 ```
 main script
 
@@ -53,22 +48,22 @@ optional arguments:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
                         run learning curve experiment with a single config.ini file, by passing the name of that file.
-                        $ cnn-bilstm --config ./config_bird1.ini
+                        $ songdeck-cli --config ./config_bird1.ini
   -g GLOB, --glob GLOB  string to use with glob function to search for config files fitting some pattern.
-                        $ cnn-bilstm --glob ./config_finches*.ini
+                        $ songdeck-cli --glob ./config_finches*.ini
   -p PREDICT, --predict PREDICT
                         predict segments and labels for song, using a trained model specified in a single config.ini file
-                        $ cnn-bilstm --predict ./predict_bird1.ini
+                        $ songdeck-cli --predict ./predict_bird1.ini
   -s SUMMARY, --summary SUMMARY
                         runs function that summarizes results from generatinga learning curve, using a single config.ini file
-                        $ cnn-bilstm --summary ./config_bird1.ini
+                        $ songdeck-cli --summary ./config_bird1.ini
   -t TXT, --txt TXT     name of .txt file containing list of config files to run
-                        $ cnn-bilstm --text ./list_of_config_filenames.txt
+                        $ songdeck-cli --text ./list_of_config_filenames.txt
 ```
 
-As an example, you can run `tweetynet-cli` with a single `config.ini` file 
+As an example, you can run `songdeck-cli` with a single `config.ini` file 
 by using the  `--config` flag and passing the name of the config.ini file as an argument:  
-`(tweetyenv)$ tweetynet-cli --config ./configs/config_bird0.ini`  
+`(songdeck-env)$ songdeck-cli --config ./configs/config_bird0.ini`  
 
 For more details on how training works, see [experiments.md](doc/experiments.md), 
 and for more details on the config.ini files, see [README_config.md](doc/README_config.md).
@@ -108,36 +103,8 @@ __It is recommended to apply post processing when extracting the actual syllable
 
 You can predict new labels by adding a [PREDICT] section to the `config.ini` file, and 
 then running the command-line interface with the `--predict` flag, like so:  
-`(tweetyenv)$ tweetynet-cli --predict ./configs/config_bird0.ini`
+`(songdeck-env)$ songdeck-cli --predict ./configs/config_bird0.ini`
 An example of what a `config.ini` file with a [PREDICT] section is 
 in the doc folder [here](./doc/template_predict.ini).
 
-For users with some scripting / Tensorflow experience, you can
-reload a saved model using a checkpoint file saved by the
-Tensorflow checkpoint saver. Here's an example of how to do this, taken 
-from the `tweetynet.train_utils.learn_curve` function:
-```Python
-meta_file = glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
-data_file = glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
-
-model = TweetyNet(n_syllables=n_syllables,
-                  input_vec_size=input_vec_size,
-                  batch_size=batch_size)
-
-with tf.Session(graph=model.graph) as sess:
-    model.restore(sess=sess,
-                  meta_file=meta_file,
-                  data_file=data_file)
-```
-
-## Model architecture
-The architecture of this deep neural network is based on these papers:
-* S. Böck and M. Schedl, "Polyphonic piano note transcription with recurrent neural networks," 2012 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), Kyoto, 2012, pp. 121-124.
-doi: 10.1109/ICASSP.2012.6287832 (http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6287832&isnumber=6287775)
-* Parascandolo, Huttunen, and Virtanen, “Recurrent Neural Networks for Polyphonic Sound Event Detection in Real Life Recordings.” (https://arxiv.org/abs/1604.00861)
-
-The deep net. structure, used in this code, contains 3 elements:
-* 2 convolutional and max pooling layers - A convolutional layer convolves the spectrogram with a set of tunable features and the max pooling is used to limit the number of parameters. These layers allow extracting local spectral and temporal features of syllables and noise.
-* A long-short-term-memory recurrent layer (LSTM) - This layer allows the model to incorporate the temporal dependencies in the signal, such as canary trills and the duration of various syllables. The code contains an option to adding more LSTM layers but, since it isn't needed, those are not used.
-* A projection layer - For each time bin, this layer projects the previous layer's output on the set of possible syllables. 
 
