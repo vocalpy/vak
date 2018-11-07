@@ -7,8 +7,7 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-from tweetynet.utils import reshape_data_for_batching
-from tweetynet import TweetyNet
+from songdeck.utils.data import reshape_data_for_batching
 
 
 def predict(config_file):

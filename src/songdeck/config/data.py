@@ -2,7 +2,7 @@
 import os
 from collections import namedtuple
 
-from ..utils import range_str
+from songdeck.utils.data import range_str
 
 DataConfig = namedtuple('DataConfig', ['labelset',
                                        'all_labels_are_int',
