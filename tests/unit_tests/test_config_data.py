@@ -32,7 +32,8 @@ class TestParseDataConfig(unittest.TestCase):
 
     def test_config_tuple_has_all_attrs(self):
         config_obj = self.get_config
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj)
+        config_file = 'test'
+        data_config_tup = songdeck.config.data.parse_data_config(config_obj, config_file)
         for field in songdeck.config.data.DataConfig._fields:
             self.assertTrue(hasattr(data_config_tup, field))
 
