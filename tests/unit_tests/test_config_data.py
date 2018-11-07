@@ -48,7 +48,7 @@ class TestParseDataConfig(unittest.TestCase):
         data_config_tup = songdeck.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertEqual(data_config_tup.labelset,
-                         songdeck.utils.range_str(a_rangestr)
+                         songdeck.utils.utils.range_str(a_rangestr)
                          )
 
     def test_int_labelset(self):
