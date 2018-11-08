@@ -1,8 +1,11 @@
+import os
 from configparser import ConfigParser
 from collections import namedtuple
 
 from .data import parse_data_config
 from .spectrogram import parse_spect_config
+from .train import parse_train_config
+from .output import parse_output_config
 
 ConfigTuple = namedtuple('ConfigTuple', ['data',
                                          'spect_params',
@@ -38,6 +41,18 @@ def parse(config_file):
         spect_params = parse_spect_config(config_obj)
     else:
         spect_params = None
+
+    if config_obj.has_section('TRAIN'):
+        train = parse_train_config(config_obj, config_file)
+    else:
+        train = None
+
+    if config_obj.has_section('OUTPUT'):
+        output = parse_output_config(config_obj)
+    else:
+        output = None
+
+
 
     return ConfigTuple(data,
                        spect_params)
