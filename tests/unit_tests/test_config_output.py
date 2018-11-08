@@ -44,7 +44,7 @@ class TestParseOutputConfig(unittest.TestCase):
     def test_nonexistent_root_results_dir_raises(self):
         config_obj = self.get_config
         config_obj['OUTPUT']['root_results_dir'] = 'obviously/non/existent/dir'
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(NotADirectoryError):
             songdeck.config.output.parse_output_config(config_obj)
 
     def test_no_results_dir_defaults_to_None(self):
