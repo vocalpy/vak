@@ -41,23 +41,17 @@ class TestParseSpectConfig(unittest.TestCase):
         with self.assertRaises(KeyError):
             songdeck.config.output.parse_output_config(config_obj)
 
-    def test_missing_results_dir_made_raises(self):
-        config_obj = self.get_config
-        config_obj.remove_option('OUTPUT', 'results_dir_made_by_main_script')
-        with self.assertRaises(KeyError):
-            songdeck.config.output.parse_output_config(config_obj)
-
     def test_nonexistent_root_results_dir_raises(self):
         config_obj = self.get_config
         config_obj['OUTPUT']['root_results_dir'] = 'obviously/non/existent/dir'
         with self.assertRaises(FileNotFoundError):
             songdeck.config.output.parse_output_config(config_obj)
 
-    def test_nonexistent_results_dir_made_raises(self):
+    def test_no_results_dir_defaults_to_None(self):
         config_obj = self.get_config
-        config_obj['OUTPUT']['results_dir_made_by_main_script'] = 'obviously/non/existent/dir'
-        with self.assertRaises(FileNotFoundError):
-            songdeck.config.output.parse_output_config(config_obj)
+        config_obj.remove_option('OUTPUT', 'results_dir_made_by_main_script')
+        output_config_tup = songdeck.config.output.parse_output_config(config_obj)
+        self.assertTrue(output_config_tup.results_dirname is None)
 
 
 if __name__ == '__main__':
