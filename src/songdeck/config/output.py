@@ -40,15 +40,13 @@ def parse_output_config(config):
         raise KeyError('must specify root_results_dir in [OUTPUT] section '
                        'of config.ini file')
 
-    try:
+    if config.has_option('OUTPUT', 'results_dir_made_by_main_script'):
+        # don't check whether it exists because it may not yet,
+        # depending on which function we are calling.
+        # So it's up to calling function to check for existence of directory
         results_dirname = config['OUTPUT']['results_dir_made_by_main_script']
-        if not os.path.isdir(results_dirname):
-            raise FileNotFoundError('directory {}, specified as '
-                                    'results_dir_made_by_main_script, is not found.'
-                                    .format(results_dirname))
-    except NoOptionError:
-        raise KeyError('must specify results_dir_made_by_main_script '
-                            'in [OUTPUT] section of config.ini file')
+    else:
+        results_dirname = None
 
     return OutputConfig(root_results_dir,
                         results_dirname)
