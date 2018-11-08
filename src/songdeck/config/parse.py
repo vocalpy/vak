@@ -5,7 +5,11 @@ from .data import parse_data_config
 from .spectrogram import parse_spect_config
 
 ConfigTuple = namedtuple('ConfigTuple', ['data',
-                                         'spect_params'])
+                                         'spect_params',
+                                         'train',
+                                         'output',
+                                         'models',
+                                         'predict'])
 
 
 def parse(config_file):
@@ -18,7 +22,10 @@ def parse(config_file):
     config_obj = ConfigParser()
     config_obj.read(config_file)
 
-    data = parse_data_config(config_obj, config_file)
+    if config_obj.has_section('DATA'):
+        data = parse_data_config(config_obj, config_file)
+    else:
+        data = None
 
     ### if **not** using spectrograms from .mat files ###
     if data.mat_spect_files_path is None:
@@ -31,3 +38,6 @@ def parse(config_file):
         spect_params = parse_spect_config(config_obj)
     else:
         spect_params = None
+
+    return ConfigTuple(data,
+                       spect_params)
