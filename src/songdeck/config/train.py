@@ -6,6 +6,7 @@ TrainConfig = namedtuple('TrainConfig', ['train_data_dict_path',
                                          'train_set_durs',
                                          'num_replicates',
                                          'val_data_dict_path',
+                                         'test_data_dict_path',
                                          'val_error_step',
                                          'checkpoint_step',
                                          'save_only_single_checkpoint_file',
@@ -61,6 +62,11 @@ def parse_train_config(config, config_file):
         val_data_dict_path = config['TRAIN']['val_data_path']
     else:
         val_data_dict_path = None
+
+    if config.has_option('TRAIN', 'test_data_path'):
+        test_data_dict_path = config['TRAIN']['test_data_path']
+    else:
+        test_data_dict_path = None
 
     if config.has_option('TRAIN', 'val_error_step'):
         val_error_step = int(config['TRAIN']['val_error_step'])
@@ -133,6 +139,7 @@ def parse_train_config(config, config_file):
                        train_set_durs=train_set_durs,
                        num_replicates=num_replicates,
                        val_data_dict_path=val_data_dict_path,
+                       test_data_dict_path=test_data_dict_path,
                        val_error_step=val_error_step,
                        checkpoint_step=checkpoint_step,
                        save_only_single_checkpoint_file=save_only_single_checkpoint_file,
