@@ -5,7 +5,6 @@ import pickle
 import shutil
 import sys
 import warnings
-from configparser import ConfigParser, NoOptionError
 from datetime import datetime
 
 import joblib
@@ -13,20 +12,48 @@ import numpy as np
 import tensorflow as tf
 
 
-def learncurve(config_file):
-    """train models used by cli.summary to generate learning curve"""
-    if not config_file.endswith('.ini'):
-        raise ValueError('{} is not a valid config file, '
-                         'must have .ini extension'.format(config_file))
-    if not os.path.isfile(config_file):
-        raise FileNotFoundError('config file {} is not found'
-                                .format(config_file))
-    config = ConfigParser()
-    config.read(config_file)
+def learncurve(train_data_dict_path,
+               val_data_dict_path,
+               spect_params,
+               total_train_set_duration,
+               train_set_durs,
+               num_replicates,
+               config_file,
+               val_error_step=None,
+               checkpoint_step=None,
+               patience=None,
+               save_only_single_checkpoint_file=True,
+               normalize_spectrograms=False,
+               use_train_subsets_from_previous_run=False,
+               previous_run_path=None,
+               root_results_dir=None,
+               ):
+    """train models used by cli.summary to generate learning curve
 
+    Parameters
+    ----------
+    train_data_dict_path
+    val_data_dict_path
+    spect_params
+    total_train_set_duration
+    train_set_durs
+    num_replicates
+    config_file
+    val_error_step
+    checkpoint_step
+    patience
+    save_only_single_checkpoint_file
+    normalize_spectrograms
+    use_train_subsets_from_previous_run
+    previous_run_path
+    root_results_dir
+
+    Returns
+    -------
+
+    """
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    if config.has_option('OUTPUT', 'root_results_dir'):
-        root_results_dir = config['OUTPUT']['root_results_dir']
+    if root_results_dir:
         results_dirname = os.path.join(root_results_dir,
                                        'results_' + timenow)
     else:
@@ -44,7 +71,6 @@ def learncurve(config_file):
     logger.info('Logging results to {}'.format(results_dirname))
     logger.info('Using config file: {}'.format(config_file))
 
-    train_data_dict_path = config['TRAIN']['train_data_path']
     logger.info('Loading training data from {}'.format(
         os.path.dirname(
             train_data_dict_path)))
@@ -55,21 +81,6 @@ def learncurve(config_file):
                       'training data,\n because spectrograms were created in '
                       'Matlab')
     else:
-        # require user to specify parameters for spectrogram
-        # instead of having defaults (as was here previously)
-        # helps ensure we don't mix up different params
-        spect_params = {}
-        spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
-        spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
-        spect_params['freq_cutoffs'] = [float(element)
-                                        for element in
-                                        config['SPECTROGRAM']['freq_cutoffs']
-                                            .split(',')]
-        if config.has_option('SPECTROGRAM', 'thresh'):
-            spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-        if config.has_option('SPECTROGRAM', 'transform_type'):
-            spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
-
         if train_data_dict['spect_params'] != spect_params:
             raise ValueError('Spectrogram parameters in config file '
                              'do not match parameters specified in training data_dict.\n'
@@ -105,7 +116,6 @@ def learncurve(config_file):
     with open(files_used_filename, 'w') as files_used_fileobj:
         files_used_fileobj.write('\n'.join(files_used))
 
-    total_train_set_duration = float(config['DATA']['total_train_set_duration'])
     dur_diff = np.abs((X_train.shape[-1] * timebin_dur) - total_train_set_duration)
     if dur_diff > 1.0:
         raise ValueError('Duration of X_train in seconds from train_data_dict '
@@ -117,10 +127,7 @@ def learncurve(config_file):
     logger.info('Total duration of training set (in s): {}'
                 .format(total_train_set_duration))
 
-    TRAIN_SET_DURS = [int(element)
-                      for element in
-                      config['TRAIN']['train_set_durs'].split(',')]
-    max_train_set_dur = np.max(TRAIN_SET_DURS)
+    max_train_set_dur = np.max(train_set_durs)
 
     if max_train_set_dur > total_train_set_duration:
         raise ValueError('Largest duration for a training set of {} '
@@ -128,7 +135,7 @@ def learncurve(config_file):
                          .format(max_train_set_dur, total_train_set_duration))
 
     logger.info('Will train network with training sets of '
-                'following durations (in s): {}'.format(TRAIN_SET_DURS))
+                'following durations (in s): {}'.format(train_set_durs))
 
     # transpose X_train, so rows are timebins and columns are frequency bins
     # because cnn-bilstm network expects this orientation for input
@@ -137,12 +144,10 @@ def learncurve(config_file):
     joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
     joblib.dump(Y_train, os.path.join(results_dirname, 'Y_train'))
 
-    num_replicates = int(config['TRAIN']['replicates'])
     REPLICATES = range(num_replicates)
     logger.info('will replicate training {} times for each duration of training set'
                 .format(num_replicates))
 
-    val_data_dict_path = config['TRAIN']['val_data_path']
     val_data_dict = joblib.load(val_data_dict_path)
     (X_val,
      Y_val) = (val_data_dict['X_val'],
@@ -166,14 +171,11 @@ def learncurve(config_file):
     joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
     joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
 
-    val_error_step = int(config['TRAIN']['val_error_step'])
     logger.info('will measure error on validation set '
                 'every {} steps of training'.format(val_error_step))
-    checkpoint_step = int(config['TRAIN']['checkpoint_step'])
     logger.info('will save a checkpoint file '
                 'every {} steps of training'.format(checkpoint_step))
-    save_only_single_checkpoint_file = config.getboolean('TRAIN',
-                                                         'save_only_single_checkpoint_file')
+
     if save_only_single_checkpoint_file:
         logger.info('save_only_single_checkpoint_file = True\n'
                     'will save only one checkpoint file'
@@ -183,16 +185,6 @@ def learncurve(config_file):
                     'will save a separate checkpoint file '
                     'every {} steps of training'.format(checkpoint_step))
 
-    patience = config['TRAIN']['patience']
-    try:
-        patience = int(patience)
-    except ValueError:
-        if patience == 'None':
-            patience = None
-        else:
-            raise TypeError('patience must be an int or None, but'
-                            'is {} and parsed as type {}'
-                            .format(patience, type(patience)))
     logger.info('\'patience\' is set to: {}'.format(patience))
 
     # set params used for sending data to graph in batches
@@ -202,29 +194,15 @@ def learncurve(config_file):
                 'where each spectrogram in batch contains {} time steps'
                 .format(batch_size, time_steps))
 
-    n_max_iter = int(config['TRAIN']['n_max_iter'])
     logger.info('maximum number of training steps will be {}'
                 .format(n_max_iter))
 
-    normalize_spectrograms = config.getboolean('TRAIN', 'normalize_spectrograms')
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
         # need a copy of X_val when we normalize it below
         X_val_copy = copy.deepcopy(X_val)
 
-    use_train_subsets_from_previous_run = config.getboolean(
-        'TRAIN', 'use_train_subsets_from_previous_run')
-    if use_train_subsets_from_previous_run:
-        try:
-            previous_run_path = config['TRAIN']['previous_run_path']
-        except NoOptionError:
-            raise ('In config.file {}, '
-                   'use_train_subsets_from_previous_run = Yes, but'
-                   'no previous_run_path option was found.\n'
-                   'Please add previous_run_path to config file.'
-                   .format(config_file))
-
-    for train_set_dur in TRAIN_SET_DURS:
+    for train_set_dur in train_set_durs:
         for replicate in REPLICATES:
             costs = []
             val_errs = []
@@ -404,7 +382,7 @@ def learncurve(config_file):
                                                                    _cost))
                     step = step + 1
 
-                    if 'val_error_step' in locals():
+                    if val_error_step:
                         if step % val_error_step == 0:
                             if 'Y_pred_val' in locals():
                                 del Y_pred_val
