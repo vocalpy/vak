@@ -18,7 +18,7 @@ def _base_config(tmp_root_dir,
     return base_config
 
 
-class TestParseSpectConfig(unittest.TestCase):
+class TestParseOutputConfig(unittest.TestCase):
 
     def setUp(self):
         self.tmp_root_dir = tempfile.mkdtemp()
