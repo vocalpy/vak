@@ -4,16 +4,17 @@ from collections import namedtuple
 
 from songdeck.utils.data import range_str
 
-DataConfig = namedtuple('DataConfig', ['labelset',
-                                       'all_labels_are_int',
-                                       'silent_gap_label',
-                                       'skip_files_with_labels_not_in_labelset',
-                                       'output_dir',
-                                       'mat_spect_files_path',
-                                       'data_dir',
-                                       'train_set_dur',
-                                       'val_dur',
-                                       'test_dur'])
+fields = ['labelset',
+          'all_labels_are_int',
+          'silent_gap_label',
+          'skip_files_with_labels_not_in_labelset',
+          'output_dir',
+          'mat_spect_files_path',
+          'data_dir',
+          'train_set_dur',
+          'val_dur',
+          'test_dur']
+DataConfig = namedtuple('DataConfig', fields)
 
 
 def parse_data_config(config, config_file):
@@ -59,9 +60,12 @@ def parse_data_config(config, config_file):
     else:
         silent_gap_label = 0
 
-    skip_files_with_labels_not_in_labelset = config.getboolean(
-        'DATA',
-        'skip_files_with_labels_not_in_labelset')
+    if config.has_option('DATA', 'skip_files_with_labels_not_in_labelset'):
+        skip_files_with_labels_not_in_labelset = config.getboolean(
+            'DATA',
+            'skip_files_with_labels_not_in_labelset')
+    else:
+        skip_files_with_labels_not_in_labelset = True
 
     if config.has_option('DATA', 'output_dir'):
         output_dir = os.path.join(config['DATA']['output_dir'],
@@ -69,7 +73,7 @@ def parse_data_config(config, config_file):
     else:
         output_dir = None
 
-    ### if using spectrograms from .mat files ###
+    # if using spectrograms from .mat files
     if config.has_option('DATA', 'mat_spect_files_path'):
         # make spect_files file from .mat spect files and annotation file
         mat_spect_files_path = config['DATA']['mat_spect_files_path']
@@ -82,9 +86,20 @@ def parse_data_config(config, config_file):
                                  'but not recognized as a directory'
                                  .format(data_dir, config_file))
 
-    train_set_dur = float(config['DATA']['total_train_set_duration'])
-    val_dur = float(config['DATA']['validation_set_duration'])
-    test_dur = float(config['DATA']['test_set_duration'])
+    if config.has_option('DATA', 'total_train_set_duration'):
+        train_set_dur = float(config['DATA']['total_train_set_duration'])
+    else:
+        train_set_dur = None
+
+    if config.has_option('DATA', 'validation_set_duration'):
+        val_dur = float(config['DATA']['validation_set_duration'])
+    else:
+        val_dur = None
+
+    if config.has_option('DATA', 'test_set_duration'):
+        test_dur = float(config['DATA']['test_set_duration'])
+    else:
+        test_dur = None
 
     return DataConfig(labelset,
                       all_labels_are_int,
