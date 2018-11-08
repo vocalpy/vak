@@ -5,8 +5,8 @@ from datetime import datetime
 from glob import glob
 
 from songdeck.utils.data import make_spects_from_list_of_files, make_data_dicts
-
 from songdeck.utils.mat import convert_mat_to_spect
+import songdeck.config
 
 
 def make_data(labelset,
@@ -128,4 +128,5 @@ def make_data(labelset,
 
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
-    make_data(config_file)
+    config = songdeck.config.parse(config_file)
+    make_data(config)
