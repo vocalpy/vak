@@ -13,6 +13,7 @@ def _base_config():
     base_config = ConfigParser()
     test_data_dir = os.path.join(HERE,
                                  '..',
+                                 '..',
                                  'test_data')
     base_config['DATA'] = {
         'labelset': 'iabcdefghjk',
