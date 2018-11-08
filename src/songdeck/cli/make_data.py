@@ -128,5 +128,5 @@ def make_data(labelset,
 
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
-    config = songdeck.config.parse(config_file)
+    config = songdeck.config.parse_config(config_file)
     make_data(config)
