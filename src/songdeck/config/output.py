@@ -33,9 +33,9 @@ def parse_output_config(config):
     try:
         root_results_dir = config['OUTPUT']['root_results_dir']
         if not os.path.isdir(root_results_dir):
-            raise FileNotFoundError('directory {}, specified as '
-                                    'root_results_dir, was not found.'
-                                    .format(root_results_dir))
+            raise NotADirectoryError('directory {}, specified as '
+                                     'root_results_dir, was not found.'
+                                     .format(root_results_dir))
     except NoOptionError:
         raise KeyError('must specify root_results_dir in [OUTPUT] section '
                        'of config.ini file')
