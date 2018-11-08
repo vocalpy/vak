@@ -10,29 +10,60 @@ import tensorflow as tf
 from songdeck.utils.data import reshape_data_for_batching
 
 
-def predict(config_file):
-    """predict segmentation and labels with one trained CNN-BiLSTM model"""
-    if not config_file.endswith('.ini'):
-        raise ValueError('{} is not a valid config file, must have .ini extension'
-                         .format(config_file))
-    config = ConfigParser()
-    config.read(config_file)
-    print('Using definitions in: ' + config_file)
-    results_dirname = config['OUTPUT']['results_dir_made_by_main_script']
+def predict(results_dirname,
+            dir_to_predict,
+            checkpoint_dir,
+            ):
+    """make predictions with one trained model
 
+    Parameters
+    ----------
+    results_dirname
+    dir_to_predict
+    checkpoint_dir
 
-    dir_to_predict = config['PREDICT']['dir_to_predict']
+    Returns
+    -------
+
+    """
+    if not os.path.isdir(dir_to_predict):
+        raise FileNotFoundError('directory {}, specified as '
+                                'dir_to_predict, is not found.'
+                                .format(dir_to_predict))
+    if not os.path.isdir(checkpoint_dir):
+        raise FileNotFoundError('directory {}, specified as '
+                                'checkpoint_dir, is not found.'
+                                .format(checkpoint_dir))
+    meta_file = glob(os.path.join(checkpoint_dir,
+                                  'checkpoint*meta*'))
+    if len(meta_file) > 1:
+        raise ValueError('found more than one .meta file in {}'
+                         .format(checkpoint_dir))
+    elif len(meta_file) < 1:
+        raise ValueError('did not find .meta file in {}'
+                         .format(checkpoint_dir))
+    else:
+        meta_file = meta_file[0]
+
+    data_file = glob(os.path.join(checkpoint_dir,
+                                  'checkpoint*data*'))
+    if len(data_file) > 1:
+        raise ValueError('found more than one .data file in {}'
+                         .format(checkpoint_dir))
+    elif len(data_file) < 1:
+        raise ValueError('did not find .data file in {}'
+                         .format(checkpoint_dir))
+    else:
+        data_file = data_file[0]
+
+    # TODO should be able to just call dataset here, right?
+    # instead of forcing user to specify spect_file_list
+    # should give them option to do either
     spect_file_list = glob(os.path.join(dir_to_predict,
                                         '*.spect'))
     if spect_file_list == []:
         raise ValueError('did not find any .spect files in {}'
                          .format(dir_to_predict))
-
-    batch_size = int(config['NETWORK']['batch_size'])
-    time_steps = int(config['NETWORK']['time_steps'])
-    n_syllables = int(config['NETWORK']['n_syllables'])
-    input_vec_size = int(config['NETWORK']['input_vec_size'])
-
 
     model = TweetyNet(n_syllables=n_syllables,
         input_vec_size=input_vec_size,
@@ -40,23 +71,6 @@ def predict(config_file):
 
     with tf.Session(graph=model.graph) as sess:
         tf.logging.set_verbosity(tf.logging.ERROR)
-
-        checkpoint_dir = config['PREDICT']['checkpoint_dir']
-        meta_file = glob(os.path.join(checkpoint_dir,
-                                      'checkpoint*meta*'))
-        if len(meta_file) > 1:
-            raise ValueError('found more than one .meta file in {}'
-                             .format(checkpoint_dir))
-        else:
-            meta_file = meta_file[0]
-
-        data_file = glob(os.path.join(checkpoint_dir,
-                                      'checkpoint*data*'))
-        if len(data_file) > 1:
-            raise ValueError('found more than one .data file in {}'
-                             .format(checkpoint_dir))
-        else:
-            data_file = data_file[0]
 
         model.restore(sess=sess,
         meta_file=meta_file,
