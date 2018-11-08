@@ -15,7 +15,7 @@ ConfigTuple = namedtuple('ConfigTuple', ['data',
                                          'predict'])
 
 
-def parse(config_file):
+def parse_config(config_file):
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
@@ -52,7 +52,16 @@ def parse(config_file):
     else:
         output = None
 
+    if config_obj.has_section('PREDICT'):
+        predict = parse_predict_config(config_obj)
+    else:
+        predict = None
 
+    models = None
 
     return ConfigTuple(data,
-                       spect_params)
+                       spect_params,
+                       train,
+                       output,
+                       models,
+                       predict)
