@@ -1,7 +1,6 @@
 import os
 import pickle
 import sys
-from configparser import ConfigParser, NoOptionError
 from datetime import datetime
 from glob import glob
 
@@ -9,72 +8,47 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-
 from .. import metrics, utils
 
 
-def summary(config_file):
-    """generate summary learning curve from models train by cli.learncurve"""
-    if not config_file.endswith('.ini'):
-        raise ValueError(
-            '{} is not a valid config file, must have .ini extension'
-            .format(config_file))
-    config = ConfigParser()
-    config.read(config_file)
+def summary(results_dirname,
+            models,
+            train_set_durs,
+            num_replicates,
+            labelset,
+            test_data_dict_path,
+            skip_files_with_labels_not_in_labelset=True,
+            normalize_spectrograms=False,
+            mat_spect_files_path=None,
+            spect_params=None):
+    """generate summary learning curve from models train by cli.learncurve
 
-    results_dirname = config['OUTPUT']['results_dir_made_by_main_script']
-    if not os.path.isdir(results_dirname):
-        raise FileNotFoundError('{} directory is not found.'
-                                .format(results_dirname))
+    Parameters
+    ----------
+    results_dirname
+    models
+    train_set_durs
+    num_replicates
+    labelset
+    test_data_dict_path
+    skip_files_with_labels_not_in_labelset
+    normalize_spectrograms
+    mat_spect_files_path
+    spect_params
 
+    Returns
+    -------
+
+    """
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     summary_dirname = os.path.join(results_dirname,
                                    'summary_' + timenow)
     os.makedirs(summary_dirname)
 
-    batch_size = int(config['NETWORK']['batch_size'])
-    time_steps = int(config['NETWORK']['time_steps'])
-
-    TRAIN_SET_DURS = [int(element)
-                      for element in
-                      config['TRAIN']['train_set_durs'].split(',')]
-
-    num_replicates = int(config['TRAIN']['replicates'])
-    REPLICATES = range(num_replicates)
-    normalize_spectrograms = config.getboolean('TRAIN',
-                                               'normalize_spectrograms')
-
-    if config.has_option('DATA', 'mat_spect_files_path'):
-        # make spect_files file from .mat spect files and annotation file
-        mat_spect_files_path = config['DATA']['mat_spect_files_path']
+    if mat_spect_files_path:
         print('will use spectrograms from .mat files in {}'
               .format(mat_spect_files_path))
-    else:
-        spect_params = {}
-        for spect_param_name in ['freq_cutoffs', 'thresh']:
-            try:
-                if spect_param_name == 'freq_cutoffs':
-                    freq_cutoffs = [float(element)
-                                    for element in
-                                    config['SPECTROGRAM']['freq_cutoffs'].split(
-                                        ',')]
-                    spect_params['freq_cutoffs'] = freq_cutoffs
-                elif spect_param_name == 'thresh':
-                    spect_params['thresh'] = float(
-                        config['SPECTROGRAM']['thresh'])
 
-            except NoOptionError:
-                logger.info(
-                    'Parameter for computing spectrogram, {}, not specified. '
-                    'Will use default.'.format(spect_param_name))
-                continue
-        if spect_params == {}:
-            spect_params = None
-
-    labelset = list(config['DATA']['labelset'])
-    skip_files_with_labels_not_in_labelset = config.getboolean(
-        'DATA',
-        'skip_files_with_labels_not_in_labelset')
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'rb') as labels_map_file_obj:
         labels_mapping = pickle.load(labels_map_file_obj)
@@ -123,8 +97,6 @@ def summary(config_file):
             'X_train')).shape[-1]
 
     print('loading testing data')
-
-    test_data_dict_path = config['TRAIN']['test_data_path']
     test_data_dict = joblib.load(test_data_dict_path)
 
     # notice data is called `X_test_copy` and `Y_test_copy`
