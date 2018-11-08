@@ -2,7 +2,7 @@
 import tempfile
 import shutil
 import unittest
-from configparser import ConfigParser, NoOptionError
+from configparser import ConfigParser
 
 import songdeck.config.output
 import songdeck.utils
