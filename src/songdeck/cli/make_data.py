@@ -125,6 +125,7 @@ def make_data(labelset,
     with open(config_file, 'w') as config_file_rewrite:
         config.write(config_file_rewrite)
 
+
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
     make_data(config_file)
