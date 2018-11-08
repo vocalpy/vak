@@ -10,7 +10,7 @@ import songdeck.config
 import songdeck.utils
 
 HERE = os.path.dirname(__file__)
-TEST_CONFIGS_PATH = os.path.join(HERE, '..', 'test_data', 'configs')
+TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')
 
 
 class TestParseSpectConfig(unittest.TestCase):
