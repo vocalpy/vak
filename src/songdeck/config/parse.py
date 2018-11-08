@@ -6,6 +6,7 @@ from .data import parse_data_config
 from .spectrogram import parse_spect_config
 from .train import parse_train_config
 from .output import parse_output_config
+from .predict import parse_predict_config
 
 ConfigTuple = namedtuple('ConfigTuple', ['data',
                                          'spect_params',
