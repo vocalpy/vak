@@ -40,6 +40,10 @@ def summary(results_dirname,
     -------
 
     """
+    if not os.path.isdir(results_dirname):
+        raise FileNotFoundError('directory {}, specified as '
+                                'results_dir_made_by_main_script, is not found.'
+                                .format(results_dirname))
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     summary_dirname = os.path.join(results_dirname,
                                    'summary_' + timenow)
