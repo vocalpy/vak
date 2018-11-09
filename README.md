@@ -1,6 +1,6 @@
 # songdeck
 ## tools for benchmarking neural networks that annotate birdsong
-
+[![Build Status](https://travis-ci.org/NickleDave/songdeck.svg?branch=master)](https://travis-ci.org/NickleDave/songdeck)
 ## Installation
 To install, run the following command at the command line:  
 `pip install songdeck`
