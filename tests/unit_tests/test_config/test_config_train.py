@@ -44,6 +44,13 @@ class TestParseTrainConfig(unittest.TestCase):
         with self.assertRaises(KeyError):
             songdeck.config.train.parse_train_config(config_obj, config_file)
 
+    def test_network_not_installed_raises(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        config_obj['TRAIN']['networks'] = 'NotInstalledNet, OtherNotInstalledNet'
+        with self.assertRaises(TypeError):
+            songdeck.config.train.parse_train_config(config_obj, config_file)
+
     def test_no_train_path_raises(self):
         config_obj = self.get_config
         config_file = 'test'

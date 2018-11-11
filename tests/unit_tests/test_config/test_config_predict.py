@@ -16,6 +16,7 @@ def _base_config(tmp_checkpoint_dir,
                  tmp_dir_to_predict):
     base_config = ConfigParser()
     base_config['PREDICT'] = {
+        'networks': 'SongdeckTestNet',
         'checkpoint_dir': str(tmp_checkpoint_dir),
         'dir_to_predict': str(tmp_dir_to_predict),
     }
@@ -39,6 +40,18 @@ class TestParsePredictConfig(unittest.TestCase):
         predict_config_tup = songdeck.config.predict.parse_predict_config(config_obj)
         for field in songdeck.config.predict.PredictConfig._fields:
             self.assertTrue(hasattr(predict_config_tup, field))
+
+    def test_no_networks_raises(self):
+        config_obj = self.get_config
+        config_obj.remove_option('PREDICT', 'networks')
+        with self.assertRaises(KeyError):
+            songdeck.config.predict.parse_predict_config(config_obj)
+
+    def test_network_not_installed_raises(self):
+        config_obj = self.get_config
+        config_obj['PREDICT']['networks'] = 'NotInstalledNet, OtherNotInstalledNet'
+        with self.assertRaises(TypeError):
+            songdeck.config.predict.parse_predict_config(config_obj)
 
     def test_missing_checkpoint_dir_raises(self):
         config_obj = self.get_config
