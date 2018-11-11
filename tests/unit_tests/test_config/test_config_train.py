@@ -37,12 +37,47 @@ class TestParseTrainConfig(unittest.TestCase):
         for field in songdeck.config.train.TrainConfig._fields:
             self.assertTrue(hasattr(train_config_tup, field))
 
-    def test_save_only_single_checkpoint_default(self):
+    def test_no_networks_raises(self):
         config_obj = self.get_config
         config_file = 'test'
-        config_obj.remove_option('TRAIN', 'save_only_single_checkpoint_file')
+        config_obj.remove_option('TRAIN', 'networks')
+        with self.assertRaises(KeyError):
+            songdeck.config.train.parse_train_config(config_obj, config_file)
+
+    def test_no_train_path_raises(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        config_obj.remove_option('TRAIN', 'train_data_path')
+        with self.assertRaises(KeyError):
+            songdeck.config.train.parse_train_config(config_obj, config_file)
+
+    def test_train_set_durs_default(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        config_obj.remove_option('TRAIN', 'train_set_durs')
         train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
-        self.assertTrue(train_config_tup.save_only_single_checkpoint_file is True)
+        self.assertTrue(train_config_tup.train_set_durs is None)
+
+    def test_replicates_default(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        config_obj.remove_option('TRAIN', 'replicates')
+        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        self.assertTrue(train_config_tup.num_replicates is None)
+
+    def test_val_data_dict_path_default(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        config_obj.remove_option('TRAIN', 'val_data_path')
+        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        self.assertTrue(train_config_tup.val_data_dict_path is None)
+
+    def test_test_data_dict_path_default(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        config_obj.remove_option('TRAIN', 'test_data_path')
+        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        self.assertTrue(train_config_tup.test_data_dict_path is None)
 
     def test_val_error_step_default(self):
         config_obj = self.get_config
@@ -50,6 +85,13 @@ class TestParseTrainConfig(unittest.TestCase):
         config_obj.remove_option('TRAIN', 'val_error_step')
         train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.val_error_step is None)
+
+    def test_save_only_single_checkpoint_default(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        config_obj.remove_option('TRAIN', 'save_only_single_checkpoint_file')
+        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        self.assertTrue(train_config_tup.save_only_single_checkpoint_file is True)
 
     def test_checkpoint_step_default(self):
         config_obj = self.get_config
