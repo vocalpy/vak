@@ -9,6 +9,7 @@ import songdeck.utils
 def _base_config():
     base_config = ConfigParser()
     base_config['TRAIN'] = {
+        'networks': 'SongdeckTestNet',
         'train_data_path': '/home/user/data/subdir/subsubdir1/spects/train_data_dict',
         'val_data_path ': '/home/user/data/subdir/subsubdir1/spects/val_data_dict',
         'test_data_path': '/home/user/data/subdir/subsubdir1/spects/test_data_dict',
