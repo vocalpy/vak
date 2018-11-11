@@ -3,7 +3,10 @@ import os
 from collections import namedtuple
 from configparser import NoOptionError
 
-PredictConfig = namedtuple('OutputConfig', ['checkpoint_dir',
+from ..network import _load
+
+PredictConfig = namedtuple('OutputConfig', ['networks',
+                                            'checkpoint_dir',
                                             'dir_to_predict',
                                             ])
 
@@ -20,11 +23,35 @@ def parse_predict_config(config):
     -------
     predict_config : namedtuple
         with fields:
+            networks : str
+                Name of network which was trained and which should be used to make
+                predictions. This must match the original network that was trained
+                for the checkpoint file used and is required so songdeck knows which
+                type of network to load before loading the parameters saved in the
+                checkpoint file.
             checkpoint_dir : str
                 directory with checkpoint files saved by Tensorflow, to reload model
             dir_to_predict : str
                 directory with audio files for which predictions should be made
     """
+    # load entry points within function, not at module level,
+    # to avoid circular dependencies
+    # (user would be unable to import networks in other packages
+    # that subclass songdeck.network.AbstractSongdeckNetwork
+    # since the module in the other package would need to `import songdeck`)
+    NETWORKS = _load()
+    NETWORK_NAMES = [network_name.lower() for network_name in NETWORKS.keys()]
+    try:
+        networks = [network_name for network_name in
+                    config['PREDICT']['networks'].split(',')]
+        for network in networks:
+            if network.lower() not in NETWORK_NAMES:
+                raise TypeError('Neural network {} not found when importing installed networks.'
+                                .format(network))
+    except NoOptionError:
+        raise KeyError("'networks' option not found in [TRAIN] section of config.ini file. "
+                       "Please add this option as a comma-separated list of neural network names, e.g.:\n"
+                       "networks = TweetyNet, GRUnet, convnet")
     try:
         checkpoint_dir = config['PREDICT']['checkpoint_dir']
         if not os.path.isdir(checkpoint_dir):
@@ -45,5 +72,6 @@ def parse_predict_config(config):
         raise KeyError('must specify dir_to_predict in [PREDICT] section '
                        'of config.ini file')
 
-    return PredictConfig(checkpoint_dir,
+    return PredictConfig(networks,
+                         checkpoint_dir,
                          dir_to_predict)
