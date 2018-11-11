@@ -7,6 +7,8 @@ from .spectrogram import parse_spect_config
 from .train import parse_train_config
 from .output import parse_output_config
 from .predict import parse_predict_config
+from ..network import _load
+
 
 ConfigTuple = namedtuple('ConfigTuple', ['data',
                                          'spect_params',
@@ -17,6 +19,24 @@ ConfigTuple = namedtuple('ConfigTuple', ['data',
 
 
 def parse_config(config_file):
+    """parse a config.ini file
+
+    Parameters
+    ----------
+    config_file
+
+    Returns
+    -------
+    config_tuple : ConfigTuple
+        instance of a ConfigTuple whose fields correspond to
+        sections in the config.ini file.
+    """
+    # load entry points within function, not at module level,
+    # to avoid circular dependencies
+    # (user would be unable to import networks in other packages
+    # that subclass songdeck.network.AbstractSongdeckNetwork
+    # since the module in the other package would need to `import songdeck`)
+    NETWORKS = _load()
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
