@@ -1,21 +1,25 @@
 """parses [TRAIN] section of config"""
 from collections import namedtuple
+from configparser import NoOptionError
+from ..network import _load
 
 
-TrainConfig = namedtuple('TrainConfig', ['train_data_dict_path',
-                                         'train_set_durs',
-                                         'num_replicates',
-                                         'val_data_dict_path',
-                                         'test_data_dict_path',
-                                         'val_error_step',
-                                         'checkpoint_step',
-                                         'save_only_single_checkpoint_file',
-                                         'n_max_iter',
-                                         'patience',
-                                         'normalize_spectrograms',
-                                         'use_train_subsets_from_previous_run',
-                                         'previous_run_path',
-                                         ])
+TrainConfig = namedtuple('TrainConfig', [
+    'networks',
+    'train_data_dict_path',
+    'train_set_durs',
+    'num_replicates',
+    'val_data_dict_path',
+    'test_data_dict_path',
+    'val_error_step',
+    'checkpoint_step',
+    'save_only_single_checkpoint_file',
+    'n_max_iter',
+    'patience',
+    'normalize_spectrograms',
+    'use_train_subsets_from_previous_run',
+    'previous_run_path',
+])
 
 
 def parse_train_config(config, config_file):
@@ -30,6 +34,7 @@ def parse_train_config(config, config_file):
     -------
     train_config : namedtuple
         with fields:
+            networks :
             train_data_dict_path :
             train_set_durs :
             num_replicates :
@@ -42,6 +47,24 @@ def parse_train_config(config, config_file):
             use_train_subsets_from_previous_run :
             previous_run_path :
     """
+    # load entry points within function, not at module level,
+    # to avoid circular dependencies
+    # (user would be unable to import networks in other packages
+    # that subclass songdeck.network.AbstractSongdeckNetwork
+    # since the module in the other package would need to `import songdeck`)
+    NETWORKS = _load()
+    NETWORK_NAMES = [network_name.lower() for network_name in NETWORKS.keys()]
+    try:
+        networks = [network_name for network_name in
+                    config['TRAIN']['networks'].split(',')]
+        for network in networks:
+            if network.lower() not in NETWORK_NAMES:
+                raise TypeError('Neural network {} not found when importing installed networks.')
+    except NoOptionError:
+        raise KeyError("'networks' option not found in [TRAIN] section of config.ini file. "
+                       "Please add this option as a comma-separated list of neural network names, e.g.:\n"
+                       "networks = TweetyNet, GRUnet, convnet")
+
     train_data_dict_path = config['TRAIN']['train_data_path']
 
     if config.has_option('TRAIN', 'train_set_durs'):
