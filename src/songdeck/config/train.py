@@ -66,7 +66,11 @@ def parse_train_config(config, config_file):
                        "Please add this option as a comma-separated list of neural network names, e.g.:\n"
                        "networks = TweetyNet, GRUnet, convnet")
 
-    train_data_dict_path = config['TRAIN']['train_data_path']
+    try:
+        train_data_dict_path = config['TRAIN']['train_data_path']
+    except NoOptionError:
+        raise KeyError("'train_data_path' option not found in [TRAIN] section of config.ini file. "
+                       "Please add this option.")
 
     if config.has_option('TRAIN', 'train_set_durs'):
         train_set_durs = [int(element)
