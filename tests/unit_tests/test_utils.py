@@ -51,5 +51,6 @@ class TestUtils(unittest.TestCase):
 
         self.assertTrue(np.array_equal(Y_pred_concat, Y_in))
 
+
 if __name__ == '__main__':
     unittest.main()
