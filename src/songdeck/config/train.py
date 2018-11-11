@@ -59,7 +59,8 @@ def parse_train_config(config, config_file):
                     config['TRAIN']['networks'].split(',')]
         for network in networks:
             if network.lower() not in NETWORK_NAMES:
-                raise TypeError('Neural network {} not found when importing installed networks.')
+                raise TypeError('Neural network {} not found when importing installed networks.'
+                                .format(network))
     except NoOptionError:
         raise KeyError("'networks' option not found in [TRAIN] section of config.ini file. "
                        "Please add this option as a comma-separated list of neural network names, e.g.:\n"
@@ -158,7 +159,8 @@ def parse_train_config(config, config_file):
 
             previous_run_path = None
 
-    return TrainConfig(train_data_dict_path=train_data_dict_path,
+    return TrainConfig(networks=networks,
+                       train_data_dict_path=train_data_dict_path,
                        train_set_durs=train_set_durs,
                        num_replicates=num_replicates,
                        val_data_dict_path=val_data_dict_path,
