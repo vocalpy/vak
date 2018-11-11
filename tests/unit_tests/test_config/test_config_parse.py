@@ -13,7 +13,7 @@ HERE = os.path.dirname(__file__)
 TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')
 
 
-class TestParseSpectConfig(unittest.TestCase):
+class TestParseConfig(unittest.TestCase):
 
     def setUp(self):
         self.tmp_root_dir = tempfile.mkdtemp()
