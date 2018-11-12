@@ -1,3 +1,4 @@
+from . import config
 from . import __main__
 from . import curvefit
 from . import evfuncs
