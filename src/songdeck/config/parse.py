@@ -1,5 +1,5 @@
 import os
-from configparser import ConfigParser
+from configparser import ConfigParser, NoSectionError
 from collections import namedtuple
 
 from .data import parse_data_config
@@ -14,7 +14,7 @@ ConfigTuple = namedtuple('ConfigTuple', ['data',
                                          'spect_params',
                                          'train',
                                          'output',
-                                         'models',
+                                         'networks',
                                          'predict'])
 
 
@@ -66,27 +66,61 @@ def parse_config(config_file):
     else:
         spect_params = None
 
-    NETWORKS = _load()
     if config_obj.has_section('TRAIN'):
         train = parse_train_config(config_obj, config_file)
+        networks = train.networks
     else:
         train = None
+
+    if config_obj.has_section('PREDICT'):
+        predict = parse_predict_config(config_obj)
+        networks = predict.networks
+    else:
+        predict = None
+
+    NETWORKS = _load()
+    sections = config_obj.sections()
+    # make tuple that will have network names as fields
+    # and a config tuple for each network as the value assigned to the corresponding field
+    NetworkTuple = namedtuple('NetworkTuple', [network for network in networks])
+    networks_dict = {}
+    for network in networks:
+        if network.lower() not in [section.lower() for section in sections]:
+            raise NoSectionError('No section found specifying parameters for network {}'
+                                 .format(network))
+        network_option_names = set(config_obj[network].keys())
+        config_field_names = set(NETWORKS[network].Config._fields)
+        if network_option_names > config_field_names:
+            unknown_options = network_option_names - config_field_names
+            raise ValueError('The following option(s) in section for network {} are '
+                             'not found in the Config for that network: {}.\n'
+                             'Valid options are: {}'
+                             .format(unknown_options, network, config_field_names))
+        elif config_field_names > network_option_names:
+            missing_options = config_field_names - network_option_names
+            raise ValueError("The following option(s) in section for network {} are "
+                             "required by that network's Config but were not declared: {}."
+                             .format(network, missing_options))
+        options = {}
+        for option, value in config_obj[network].items():
+            option_type = NETWORKS[network].Config._field_types[option]
+            try:
+                options[option] = option_type(value)
+            except ValueError:
+                raise ValueError('Could not cast value {} for option {} in {} section '
+                                 ' to specified type {}.'
+                                 .format(value, option, network, option_type))
+        networks_dict[network] = NETWORKS[network].Config(**options)
+    networks = NetworkTuple(**networks_dict)
 
     if config_obj.has_section('OUTPUT'):
         output = parse_output_config(config_obj)
     else:
         output = None
 
-    if config_obj.has_section('PREDICT'):
-        predict = parse_predict_config(config_obj)
-    else:
-        predict = None
-
-    models = None
-
     return ConfigTuple(data,
                        spect_params,
                        train,
                        output,
-                       models,
+                       networks,
                        predict)
