@@ -26,6 +26,7 @@ https://packaging.python.org/guides/creating-and-discovering-plugins/#using-pack
 https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins
 https://amir.rachum.com/blog/2017/07/28/python-entry-points/
 """
+import typing
 import pkg_resources
 
 
@@ -39,6 +40,12 @@ def _load():
 
 
 class AbstractSongdeckNetwork:
+
+    Config = typing.NamedTuple('Config',
+                               [('conv_layers', int),
+                                ('kernels', int),
+                                ('learning_rate', float)])
+
     def __init__(self):
         pass
 
