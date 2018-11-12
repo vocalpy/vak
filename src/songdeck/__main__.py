@@ -57,7 +57,6 @@ def main():
     elif args.config:
         config_files = [args.config]  # single-item list
 
-
     if args.glob or args.txt or args.config:
         config_files_cleaned = []
         for config_file in config_files:
@@ -81,13 +80,14 @@ def main():
         config_files = config_files_cleaned
 
         for config_file in config_files:
-            tweetynet.make_data(config_file)
-            tweetynet.train(config_file)
-            tweetynet.learn_curve(config_file)
+            config = songdeck.config.parse.parse_config(config_file)
+            songdeck.cli.make_data(config_file.train.all_data_are_ints)
+            songdeck.cli.train(config_file)
+            songdeck.cli.learn_curve(config_file)
     elif args.predict:
-        tweetynet.cli.predict(args.predict)
+        songdeck.cli.predict(args.predict)
     elif args.summary:
-        tweetynet.cli.summary(args.summary)
+        songdeck.cli.summary(args.summary)
 
 
 if __name__ == "__main__":
