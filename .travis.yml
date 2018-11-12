@@ -24,7 +24,7 @@ install:
   - conda config --append channels conda-forge
   - conda create -n testenv --yes $DEPS pip pytest setuptools python=$TRAVIS_PYTHON_VERSION
   - source activate testenv
-  - python setup.py install
+  - pip install .[tests]
 
 script:
   - python -m unittest
