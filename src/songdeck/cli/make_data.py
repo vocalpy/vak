@@ -12,7 +12,7 @@ import songdeck.config
 def make_data(labelset,
               all_labels_are_int,
               data_dir,
-              train_set_dur,
+              total_train_set_dur,
               val_dur,
               test_dur,
               silent_gap_label=0,
@@ -21,6 +21,26 @@ def make_data(labelset,
               mat_spect_files_path=None,
               spect_params=None,
               ):
+    """make datasets for learning curves
+
+    Parameters
+    ----------
+    labelset
+    all_labels_are_int
+    data_dir
+    total_train_set_dur
+    val_dur
+    test_dur
+    silent_gap_label
+    skip_files_with_labels_not_in_labelset
+    output_dir
+    mat_spect_files_path
+    spect_params
+
+    Returns
+    -------
+
+    """
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
@@ -110,7 +130,7 @@ def make_data(labelset,
                                                annotation_file)
 
     saved_data_dict_paths = make_data_dicts(output_dir,
-                                            train_set_dur,
+                                            total_train_set_dur,
                                             val_dur,
                                             test_dur,
                                             labelset,
