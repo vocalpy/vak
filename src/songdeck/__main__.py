@@ -81,9 +81,19 @@ def main():
 
         for config_file in config_files:
             config = songdeck.config.parse.parse_config(config_file)
-            songdeck.cli.make_data(config_file.train.all_data_are_ints)
-            songdeck.cli.train(config_file)
-            songdeck.cli.learn_curve(config_file)
+            songdeck.cli.make_data(labelset=config.data.labelset,
+                                   all_labels_are_int=config.data.all_labels_are_int,
+                                   data_dir=config.data.data_dir,
+                                   total_train_set_dur=config.data.total_train_set_dur,
+                                   val_dur=config.data.val_dur,
+                                   test_dur=config.data.test_dur,
+                                   silent_gap_label=config.data.silent_gap_label,
+                                   skip_files_with_labels_not_in_labelset=config.data.skip_files_with_labels_not_in_labelset,
+                                   output_dir=config.data.output_dir,
+                                   mat_spect_files_path=config.data.mat_spect_files_path,
+                                   spect_params=config.spect_params)
+            songdeck.cli.train(config)
+            songdeck.cli.learn_curve(config)
     elif args.predict:
         songdeck.cli.predict(args.predict)
     elif args.summary:
