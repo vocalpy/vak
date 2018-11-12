@@ -90,17 +90,12 @@ def parse_config(config_file):
                                  .format(network))
         network_option_names = set(config_obj[network].keys())
         config_field_names = set(NETWORKS[network].Config._fields)
-        if network_option_names > config_field_names:
+        if not network_option_names.issubset(config_field_names):
             unknown_options = network_option_names - config_field_names
             raise ValueError('The following option(s) in section for network {} are '
                              'not found in the Config for that network: {}.\n'
                              'Valid options are: {}'
                              .format(unknown_options, network, config_field_names))
-        elif config_field_names > network_option_names:
-            missing_options = config_field_names - network_option_names
-            raise ValueError("The following option(s) in section for network {} are "
-                             "required by that network's Config but were not declared: {}."
-                             .format(network, missing_options))
         options = {}
         for option, value in config_obj[network].items():
             option_type = NETWORKS[network].Config._field_types[option]
