@@ -24,15 +24,21 @@ EMAIL = 'dnicho4@emory.edu'
 AUTHOR = 'David Nicholson, Yarden Cohen'
 REQUIRES_PYTHON = '>=3.5.0'
 VERSION = '0.1.1a1'
-LICENSE='BSD'
+LICENSE = 'BSD'
 
 REQUIRED = [
     'tensorflow', 'numpy<=1.14.5, >=1.13.3', 'scipy', 'matplotlib', 'joblib',
 ]
 
-# What packages are optional?
+test_deps = [
+    'songdeck_test_net',
+]
+
+# this is here so that the .travis.yml script can install
+# dependencies just for the tests by running
+# pip install .[tests]
 EXTRAS = {
-    # 'fancy feature': ['django'],
+    'tests': test_deps,
 }
 
 # The rest you shouldn't have to touch too much :)
