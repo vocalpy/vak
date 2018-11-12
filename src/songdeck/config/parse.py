@@ -36,7 +36,6 @@ def parse_config(config_file):
     # (user would be unable to import networks in other packages
     # that subclass songdeck.network.AbstractSongdeckNetwork
     # since the module in the other package would need to `import songdeck`)
-    NETWORKS = _load()
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
@@ -45,6 +44,10 @@ def parse_config(config_file):
                                 .format(config_file))
     config_obj = ConfigParser()
     config_obj.read(config_file)
+
+    if config_obj.has_section('TRAIN') and config_obj.has_section('PREDICT'):
+        raise ValueError('Please do not declare both TRAIN and PREDICT sections '
+                         ' in one config.ini file: unclear which to use')
 
     if config_obj.has_section('DATA'):
         data = parse_data_config(config_obj, config_file)
@@ -63,6 +66,7 @@ def parse_config(config_file):
     else:
         spect_params = None
 
+    NETWORKS = _load()
     if config_obj.has_section('TRAIN'):
         train = parse_train_config(config_obj, config_file)
     else:
