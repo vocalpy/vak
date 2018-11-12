@@ -11,7 +11,7 @@ fields = ['labelset',
           'output_dir',
           'mat_spect_files_path',
           'data_dir',
-          'train_set_dur',
+          'total_train_set_dur',
           'val_dur',
           'test_dur']
 DataConfig = namedtuple('DataConfig', fields)
@@ -37,6 +37,10 @@ def parse_data_config(config, config_file):
             skip_files_with_labels_not_in_labelset
             output_dir
             mat_spect_files_path
+            data_dir
+            total_train_set_dur
+            val_dur
+            test_dur
     """
     labelset = config['DATA']['labelset']
     # make mapping from syllable labels to consecutive integers
@@ -87,9 +91,9 @@ def parse_data_config(config, config_file):
                                  .format(data_dir, config_file))
 
     if config.has_option('DATA', 'total_train_set_duration'):
-        train_set_dur = float(config['DATA']['total_train_set_duration'])
+        total_train_set_dur = float(config['DATA']['total_train_set_duration'])
     else:
-        train_set_dur = None
+        total_train_set_dur = None
 
     if config.has_option('DATA', 'validation_set_duration'):
         val_dur = float(config['DATA']['validation_set_duration'])
@@ -108,6 +112,6 @@ def parse_data_config(config, config_file):
                       output_dir,
                       mat_spect_files_path,
                       data_dir,
-                      train_set_dur,
+                      total_train_set_dur,
                       val_dur,
                       test_dur)
