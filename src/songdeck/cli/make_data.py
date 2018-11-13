@@ -41,8 +41,12 @@ def make_data(labelset,
         total duration of validation set, in seconds.
     test_dur : int
         total duration of test set, in seconds.
-    silent_gap_label : str
-        label for time bins of silent gaps between syllables. Default is '0'.
+    silent_gap_label : int
+        label for time bins of silent gaps between syllables.
+        Type is int because labels are converted to a set of
+        n consecutive integers {0,1,2...n} where n is the number
+        of syllable classes + the silent gap class.
+        Default is 0 (in which case labels are {1,2,3,...,n}).
     skip_files_with_labels_not_in_labelset : bool
         if True, skip a file if the labels variable contains labels not
         found in 'labelset'. Default is True.
