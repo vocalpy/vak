@@ -29,9 +29,19 @@ def parse_spect_config(config):
     """
     fft_size = int(config['SPECTROGRAM']['fft_size'])
     step_size = int(config['SPECTROGRAM']['step_size'])
-    freq_cutoffs = [float(element)
-                    for element in
-                    config['SPECTROGRAM']['freq_cutoffs'].split(',')]
+
+    if config.has_option('SPECTROGRAM', 'freq_cutoffs'):
+        freq_cutoffs = [float(element)
+                        for element in
+                        config['SPECTROGRAM']['freq_cutoffs'].split(',')]
+        if len(freq_cutoffs) != 2:
+            raise ValueError('freq_cutoffs should be a list of two elements, but instead'
+                             'got: {}'.format(freq_cutoffs))
+        if freq_cutoffs[0] > freq_cutoffs[1]:
+            raise ValueError('lower freq_cutoff should be less than higher freq_cutoff,'
+                             'instead of: {}'.format(freq_cutoffs))
+    else:
+        freq_cutoffs = None
 
     if config.has_option('SPECTROGRAM', 'thresh'):
         thresh = float(config['SPECTROGRAM']['thresh'])
