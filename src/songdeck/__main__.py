@@ -81,19 +81,42 @@ def main():
 
         for config_file in config_files:
             config = songdeck.config.parse.parse_config(config_file)
+            import pdb;pdb.set_trace()
             songdeck.cli.make_data(labelset=config.data.labelset,
                                    all_labels_are_int=config.data.all_labels_are_int,
                                    data_dir=config.data.data_dir,
                                    total_train_set_dur=config.data.total_train_set_dur,
                                    val_dur=config.data.val_dur,
                                    test_dur=config.data.test_dur,
+                                   config_file=config_file,
                                    silent_gap_label=config.data.silent_gap_label,
                                    skip_files_with_labels_not_in_labelset=config.data.skip_files_with_labels_not_in_labelset,
                                    output_dir=config.data.output_dir,
                                    mat_spect_files_path=config.data.mat_spect_files_path,
+                                   mat_spects_annotation_file=config.data.mat_spects_annotation_file,
                                    spect_params=config.spect_params)
-            songdeck.cli.train(config)
-            songdeck.cli.learn_curve(config)
+
+            # get config again because make_data changed train_data_dict_path and val_data_dict_path
+            config = songdeck.config.parse.parse_config(config_file)
+            songdeck.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
+                                    val_data_dict_path=config.train.val_data_dict_path,
+                                    spect_params=config.spect_params,
+                                    total_train_set_duration=config.data.total_train_set_dur,
+                                    train_set_durs=config.train.train_set_durs,
+                                    num_replicates=config.train.num_replicates,
+                                    n_max_iter=config.train.n_max_iter,
+                                    config_file=config_file,
+                                    networks=config.networks,
+                                    val_error_step=config.train.val_error_step,
+                                    checkpoint_step=config.train.checkpoint_step,
+                                    patience=config.train.patience,
+                                    save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
+                                    normalize_spectrograms=config.train.normalize_spectrograms,
+                                    use_train_subsets_from_previous_run=config.train.use_train_subsets_from_previous_run,
+                                    previous_run_path=config.train.previous_run_path,
+                                    root_results_dir=config.output.root_results_dir)
+
+            songdeck.cli.summary(config)
     elif args.predict:
         songdeck.cli.predict(args.predict)
     elif args.summary:
