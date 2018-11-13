@@ -10,6 +10,7 @@ fields = ['labelset',
           'skip_files_with_labels_not_in_labelset',
           'output_dir',
           'mat_spect_files_path',
+          'mat_spects_annotation_file',
           'data_dir',
           'total_train_set_dur',
           'val_dur',
@@ -37,6 +38,7 @@ def parse_data_config(config, config_file):
             skip_files_with_labels_not_in_labelset
             output_dir
             mat_spect_files_path
+            mat_spects_annotation_file
             data_dir
             total_train_set_dur
             val_dur
@@ -81,8 +83,10 @@ def parse_data_config(config, config_file):
     if config.has_option('DATA', 'mat_spect_files_path'):
         # make spect_files file from .mat spect files and annotation file
         mat_spect_files_path = config['DATA']['mat_spect_files_path']
+        mat_spects_annotation_file = config['DATA']['mat_spect_files_annotation_file']
     else:
         mat_spect_files_path = None
+        mat_spects_annotation_file = None
 
     data_dir = config['DATA']['data_dir']
     if not os.path.isdir(data_dir):
@@ -111,6 +115,7 @@ def parse_data_config(config, config_file):
                       skip_files_with_labels_not_in_labelset,
                       output_dir,
                       mat_spect_files_path,
+                      mat_spects_annotation_file,
                       data_dir,
                       total_train_set_dur,
                       val_dur,
