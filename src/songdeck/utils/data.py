@@ -315,12 +315,16 @@ def make_spects_from_list_of_files(filelist,
                                                      spect_params['freq_cutoffs'][0],
                                                      spect_params['freq_cutoffs'][1],
                                                      fs)
-        specgram_params = {'fft_size': spect_params['fft_size'],
-                           'step_size': spect_params['step_size']}
+
+        # have to make a new dictionary with args to spectrogram
+        # instead of e.g. using spect_params._asdict()
+        # because we don't want spect_params.freq_cutoffs as an arg to spect_utils.spectrogram
+        specgram_params = {'fft_size': spect_params.fft_size,
+                           'step_size': spect_params.step_size}
         if 'thresh' in spect_params:
-            specgram_params['thresh'] = spect_params['thresh']
+            specgram_params['thresh'] = spect_params.thresh
         if 'transform_type' in spect_params:
-            specgram_params['transform_type'] = spect_params['transform_type']
+            specgram_params['transform_type'] = spect_params.transform_type
 
         spect, freq_bins, time_bins = spect_utils.spectrogram(dat, fs,
                                                               **specgram_params)
