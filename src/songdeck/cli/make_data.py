@@ -3,6 +3,7 @@ import os
 import sys
 from datetime import datetime
 from glob import glob
+from configparser import ConfigParser
 
 from songdeck.utils.data import make_spects_from_list_of_files, make_data_dicts
 from songdeck.utils.mat import convert_mat_to_spect
@@ -15,6 +16,7 @@ def make_data(labelset,
               total_train_set_dur,
               val_dur,
               test_dur,
+              config_file,
               silent_gap_label=0,
               skip_files_with_labels_not_in_labelset=True,
               output_dir=None,
@@ -164,6 +166,8 @@ def make_data(labelset,
 
     # lastly rewrite config file,
     # so that paths where results were saved are automatically in config
+    config = ConfigParser()
+    config.read(config_file)
     for key, saved_data_dict_path in saved_data_dict_paths.items():
         config.set(section='TRAIN',
                    option=key + '_data_path',
