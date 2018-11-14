@@ -3,7 +3,7 @@ import os
 import songdeck
 
 HERE = os.path.dirname(__file__)
-config_file = os.path.join(HERE, 'Makefile_config.ini')
+config_file = os.path.join(HERE, 'tmp_Makefile_config.ini')
 config = songdeck.config.parse.parse_config(config_file)
 songdeck.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
                         val_data_dict_path=config.train.val_data_dict_path,

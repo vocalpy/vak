@@ -3,7 +3,7 @@ import os
 import songdeck
 
 HERE = os.path.dirname(__file__)
-config_file = os.path.join(HERE, 'Makefile_config.ini')
+config_file = os.path.join(HERE, 'tmp_Makefile_config.ini')
 config = songdeck.config.parse.parse_config(config_file)
 songdeck.cli.make_data(labelset=config.data.labelset,
                        all_labels_are_int=config.data.all_labels_are_int,
