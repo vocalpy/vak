@@ -370,7 +370,7 @@ def learncurve(train_data_dict_path,
                                                 feed_dict=d)
                             costs.append(_cost)
                             net.summary_writer.add_summary(summary, epoch)
-                            print("epoch {}, batch {} of {}, cost: {}".format(epoch,
+                            print("epoch {}, batch {} of {}, cost: {}".format(epoch + 1,
                                                                               batch_num + 1,
                                                                               num_batches,
                                                                               _cost))
