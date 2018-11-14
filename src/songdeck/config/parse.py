@@ -31,11 +31,6 @@ def parse_config(config_file):
         instance of a ConfigTuple whose fields correspond to
         sections in the config.ini file.
     """
-    # load entry points within function, not at module level,
-    # to avoid circular dependencies
-    # (user would be unable to import networks in other packages
-    # that subclass songdeck.network.AbstractSongdeckNetwork
-    # since the module in the other package would need to `import songdeck`)
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
@@ -78,6 +73,16 @@ def parse_config(config_file):
     else:
         predict = None
 
+    # get this option out of DATA section separately
+    # because we need it below for NETWORKS
+    if config_obj.has_option('DATA','freq_bins'):
+        freq_bins = int(config_obj['DATA']['freq_bins'])
+
+    # load entry points within function, not at module level,
+    # to avoid circular dependencies
+    # (user would be unable to import networks in other packages
+    # that subclass songdeck.network.AbstractSongdeckNetwork
+    # since the module in the other package would need to `import songdeck`)
     NETWORKS = _load()
     sections = config_obj.sections()
     # make tuple that will have network names as fields
@@ -90,13 +95,26 @@ def parse_config(config_file):
                                  .format(network))
         network_option_names = set(config_obj[network].keys())
         config_field_names = set(NETWORKS[network].Config._fields)
+        # if some options in this network's section are not found in the Config tuple
+        # that is a class attribute for that network, raise an error because we don't
+        # know what to do with that option
         if not network_option_names.issubset(config_field_names):
             unknown_options = network_option_names - config_field_names
             raise ValueError('The following option(s) in section for network {} are '
                              'not found in the Config for that network: {}.\n'
                              'Valid options are: {}'
                              .format(network, unknown_options, config_field_names))
-        options = {}
+
+        if 'freq_bins' in locals():
+            # start options dict with freq_bins that we got out of data above
+            # (this argument is required for all networks)
+            options = {'freq_bins': freq_bins}
+        else:
+            # except if freq_bins doesn't exist yet
+            options = {}
+
+        # and then do type conversion using the networks Config typed namedtuple
+        # for the rest of the options
         for option, value in config_obj[network].items():
             option_type = NETWORKS[network].Config._field_types[option]
             try:
