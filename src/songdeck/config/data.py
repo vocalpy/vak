@@ -1,7 +1,6 @@
 """parses [DATA] section of config"""
 import os
 from collections import namedtuple
-from datetime import datetime
 
 from songdeck.utils.data import range_str
 
