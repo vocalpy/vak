@@ -389,11 +389,11 @@ def learncurve(train_data_dict_path,
 
                                     if 'Y_pred_val' in locals():
                                         preds = sess.run(net.predict, feed_dict=d)
-                                        preds = preds.reshape(batch_size, -1)
+                                        preds = preds.reshape(net_config.batch_size, -1)
                                         Y_pred_val = np.concatenate((Y_pred_val, preds), axis=1)
                                     else:
                                         Y_pred_val = sess.run(net.predict, feed_dict=d)
-                                        Y_pred_val = Y_pred_val.reshape(batch_size, -1)
+                                        Y_pred_val = Y_pred_val.reshape(net_config.batch_size, -1)
 
                                 # get rid of zero padding predictions
                                 Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
