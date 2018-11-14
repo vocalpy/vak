@@ -5,4 +5,5 @@ How-tos
    :maxdepth: 2
    :caption: Contents:
 
-   How-tos
+   train
+   predict
