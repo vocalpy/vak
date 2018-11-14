@@ -68,7 +68,7 @@ def learncurve(train_data_dict_path,
     shutil.copy(config_file, results_dirname)
 
     logfile_name = os.path.join(results_dirname,
-                                'logfile_from_running_main_' + timenow + '.log')
+                                'logfile_from_running_learncurve_' + timenow + '.log')
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
     logger.addHandler(logging.FileHandler(logfile_name))
