@@ -4,6 +4,9 @@ import tempfile
 import shutil
 from glob import glob
 import unittest
+from configparser import ConfigParser
+
+import joblib
 
 import songdeck.cli.make_data
 from songdeck.config.spectrogram import SpectConfig
@@ -47,6 +50,35 @@ class TestMakeData(unittest.TestCase):
                                spect_params=spect_params)
         data_dicts = glob(os.path.join(self.tmp_output_dir, 'spectrograms*', '*dict*'))
         assert len(data_dicts) == 3
+
+    def test_make_data_adds_freq_bins(self):
+        # make sure that make_data adds freq bins option to DATA section
+        data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+        spect_params = SpectConfig(fft_size=512,step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                   transform_type='log_spect')
+        songdeck.cli.make_data(labelset=list('iabcdefghjk'),
+                               all_labels_are_int=False,
+                               data_dir=data_dir,
+                               total_train_set_dur=20,
+                               val_dur=10,
+                               test_dur=20,
+                               config_file=self.tmp_config_path,
+                               silent_gap_label=0,
+                               skip_files_with_labels_not_in_labelset=True,
+                               output_dir=self.tmp_output_dir,
+                               mat_spect_files_path=None,
+                               mat_spects_annotation_file=None,
+                               spect_params=spect_params)
+        train_data_dict_path = glob(os.path.join(self.tmp_output_dir,
+                                                 'spectrograms*', 'train*dict*'))
+        self.assertTrue(len(train_data_dict_path) == 1)
+        train_data_dict_path = train_data_dict_path[0]
+        train_data_dict = joblib.load(train_data_dict_path)
+        freq_bins = train_data_dict['X_train'].shape[0]
+        config = ConfigParser()
+        config.read(self.tmp_config_path)
+        self.assertTrue(config.has_option('DATA', 'freq_bins'))
+        self.assertTrue(int(config['DATA']['freq_bins']) == freq_bins)
 
 
 if __name__ == '__main__':
