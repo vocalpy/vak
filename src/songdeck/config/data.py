@@ -75,9 +75,12 @@ def parse_data_config(config, config_file):
         skip_files_with_labels_not_in_labelset = True
 
     if config.has_option('DATA', 'output_dir'):
-        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        output_dir = os.path.join(config['DATA']['output_dir'],
-                                  'spectrograms_' + timenow)
+        output_dir = config['DATA']['output_dir']
+        #
+        if not os.path.isdir(output_dir):
+            raise NotADirectoryError('Output directory in which to save datasets not found:\n{}'
+                                     .format(output_dir))
+        output_dir = os.path.abspath(config['DATA']['output_dir'])
     else:
         output_dir = None
 
