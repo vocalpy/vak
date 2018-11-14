@@ -1,8 +1,8 @@
 .PHONY: all clean
 
 clean :
-	rm -rf ./tests/test_data/results
-	rm -rf ./tests/test_data/spect_files
+	rm -rf ./tests/test_data/results/*
+	rm -rf ./tests/test_data/spects/*
 
 
 all : results
