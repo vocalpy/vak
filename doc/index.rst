@@ -10,7 +10,10 @@ Welcome to songdeck's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   tutorial/tutorial
+   howto/howto
+   reference/reference
+   explanations/explanations
 
 Indices and tables
 ==================
