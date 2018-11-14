@@ -2,7 +2,6 @@
 .idea
 *checkpoint.ipynb
 README.md
-results*/
 *__pycache__*
 .DS_Store
 *egg-info/
@@ -10,3 +9,5 @@ results*/
 *egg-info
 dist/
 build/
+tests/test_data/results/
+tests/test_data/spects/
