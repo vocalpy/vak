@@ -95,7 +95,7 @@ def parse_config(config_file):
             raise ValueError('The following option(s) in section for network {} are '
                              'not found in the Config for that network: {}.\n'
                              'Valid options are: {}'
-                             .format(unknown_options, network, config_field_names))
+                             .format(network, unknown_options, config_field_names))
         options = {}
         for option, value in config_obj[network].items():
             option_type = NETWORKS[network].Config._field_types[option]
