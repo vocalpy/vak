@@ -23,7 +23,8 @@ def parse_config(config_file):
 
     Parameters
     ----------
-    config_file
+    config_file : str
+        path to config.ini file
 
     Returns
     -------
@@ -110,7 +111,8 @@ def parse_config(config_file):
             # (this argument is required for all networks)
             options = {'freq_bins': freq_bins}
         else:
-            # except if freq_bins doesn't exist yet
+            # except if freq_bins doesn't exist yet, e.g. because we haven't run make_data
+
             options = {}
 
         # and then do type conversion using the networks Config typed namedtuple
