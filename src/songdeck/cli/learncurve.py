@@ -6,6 +6,7 @@ import shutil
 import sys
 import warnings
 from datetime import datetime
+from configparser import ConfigParser
 
 import joblib
 import numpy as np
@@ -343,6 +344,7 @@ def learncurve(train_data_dict_path,
                                         num_batches,
                                         new_last_ind,
                                         num_windows - new_last_ind))
+
                     for epoch in range(num_epochs):
                         # every epoch we are going to shuffle the order in which we look at every window
                         shuffle_order = np.random.permutation(num_windows)
@@ -368,21 +370,22 @@ def learncurve(train_data_dict_path,
                                                 feed_dict=d)
                             costs.append(_cost)
                             net.summary_writer.add_summary(summary, epoch)
-                            print("epoch {}, batch {}, cost: {}".format(epoch,
-                                                                        batch_num+1,
-                                                                        _cost))
+                            print("epoch {}, batch {} of {}, cost: {}".format(epoch,
+                                                                              batch_num + 1,
+                                                                              num_batches,
+                                                                              _cost))
 
                         if val_error_step:
-                            if step % val_error_step == 0:
+                            if epoch % val_error_step == 0:
                                 if 'Y_pred_val' in locals():
                                     del Y_pred_val
 
                                 for b in range(num_batches_val):  # "b" is "batch number"
-                                    X_b = X_val_batch[:, b * time_steps: (b + 1) * time_steps, :]
-                                    Y_b = Y_val_batch[:, b * time_steps: (b + 1) * time_steps]
+                                    X_b = X_val_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :]
+                                    Y_b = Y_val_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins]
                                     d = {net.X: X_b,
                                          net.y: Y_b,
-                                         net.lng: [time_steps] * batch_size}
+                                         net.lng: [net_config.time_bins] * net_config.batch_size}
 
                                     if 'Y_pred_val' in locals():
                                         preds = sess.run(net.predict, feed_dict=d)
@@ -395,7 +398,7 @@ def learncurve(train_data_dict_path,
                                 # get rid of zero padding predictions
                                 Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
                                 val_errs.append(np.sum(Y_pred_val - Y_val != 0) / Y_val.shape[0])
-                                print("step {}, validation error: {}".format(step, val_errs[-1]))
+                                print("epoch {}, validation error: {}".format(epoch, val_errs[-1]))
 
                             if patience:
                                 if val_errs[-1] < curr_min_err:
@@ -409,7 +412,7 @@ def learncurve(train_data_dict_path,
                                 else:
                                     err_patience_counter += 1
                                     if err_patience_counter > patience:
-                                        print("stopping because validation error has not improved in {} steps"
+                                        print("stopping because validation error has not improved in {} epochs"
                                               .format(patience))
                                         with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
                                             pickle.dump(costs, costs_file)
@@ -418,7 +421,7 @@ def learncurve(train_data_dict_path,
                                         break
 
                         if checkpoint_step:
-                            if step % checkpoint_step == 0:
+                            if epoch % checkpoint_step == 0:
                                 "Saving checkpoint."
                                 checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                                 if save_only_single_checkpoint_file is False:
@@ -427,22 +430,21 @@ def learncurve(train_data_dict_path,
                                 with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                     pickle.dump(val_errs, val_errs_file)
 
-                        if step > n_max_iter:  # ok don't actually loop forever
-                            "Reached max. number of iterations, saving checkpoint."
+                        if epoch == (num_epochs-1):  # if this is the last epoch
+                            "Reached max. number of epochs, saving checkpoint."
                             checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
                             net.saver.save(sess, checkpoint_path)
                             with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
                                 pickle.dump(costs, costs_file)
                             with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
-                            break
+
 
     # lastly rewrite config file,
     # so that paths where results were saved are automatically in config
-    config.set(section='NETWORK',
-               option='input_vec_size',
-               value=str(input_vec_size))
-    config.set(section='NETWORK',
+    config = ConfigParser()
+    config.read(config_file)
+    config.set(section='DATA',
                option='n_syllables',
                value=str(n_syllables))
     config.set(section='OUTPUT',
