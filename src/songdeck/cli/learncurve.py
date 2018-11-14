@@ -65,7 +65,6 @@ def learncurve(train_data_dict_path,
     else:
         results_dirname = os.path.join('.', 'results_' + timenow)
     os.makedirs(results_dirname)
-    # copy config file into results dir now that we've made the dir
     shutil.copy(config_file, results_dirname)
 
     logfile_name = os.path.join(results_dirname,
