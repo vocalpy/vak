@@ -81,7 +81,6 @@ def main():
 
         for config_file in config_files:
             config = songdeck.config.parse.parse_config(config_file)
-            import pdb;pdb.set_trace()
             songdeck.cli.make_data(labelset=config.data.labelset,
                                    all_labels_are_int=config.data.all_labels_are_int,
                                    data_dir=config.data.data_dir,
@@ -104,7 +103,7 @@ def main():
                                     total_train_set_duration=config.data.total_train_set_dur,
                                     train_set_durs=config.train.train_set_durs,
                                     num_replicates=config.train.num_replicates,
-                                    n_max_iter=config.train.n_max_iter,
+                                    num_epochs=config.train.num_epochs,
                                     config_file=config_file,
                                     networks=config.networks,
                                     val_error_step=config.train.val_error_step,
