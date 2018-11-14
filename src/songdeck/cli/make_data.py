@@ -5,6 +5,8 @@ from datetime import datetime
 from glob import glob
 from configparser import ConfigParser
 
+import joblib
+
 from songdeck.utils.data import make_spects_from_list_of_files, make_data_dicts
 from songdeck.utils.mat import convert_mat_to_spect
 import songdeck.config
@@ -169,13 +171,22 @@ def make_data(labelset,
                                             spect_files_path)
 
     # lastly rewrite config file,
-    # so that paths where results were saved are automatically in config
+    # so that paths where results were saved are automatically in config.
+    # also need to add number of frequency bins in spectrogram, so
+    # networks can access that programmatically instead of user needing to
+    # declare it.
     config = ConfigParser()
     config.read(config_file)
     for key, saved_data_dict_path in saved_data_dict_paths.items():
         config.set(section='TRAIN',
                    option=key + '_data_path',
                    value=saved_data_dict_path)
+    train_data = joblib.load(saved_data_dict_paths['train'])
+    freq_bins = train_data['X_train'].shape[0]
+    config.set(section='DATA',
+               option='freq_bins',
+               value=str(freq_bins))
+
     with open(config_file, 'w') as config_file_rewrite:
         config.write(config_file_rewrite)
 
