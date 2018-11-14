@@ -11,6 +11,8 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
+import songdeck.network
+
 
 def learncurve(train_data_dict_path,
                val_data_dict_path,
@@ -18,6 +20,8 @@ def learncurve(train_data_dict_path,
                total_train_set_duration,
                train_set_durs,
                num_replicates,
+               networks,
+               num_epochs,
                config_file,
                val_error_step=None,
                checkpoint_step=None,
@@ -38,6 +42,8 @@ def learncurve(train_data_dict_path,
     total_train_set_duration
     train_set_durs
     num_replicates
+    networks
+    num_epochs
     config_file
     val_error_step
     checkpoint_step
@@ -92,6 +98,19 @@ def learncurve(train_data_dict_path,
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'wb') as labels_map_file_obj:
         pickle.dump(labels_mapping, labels_map_file_obj)
+
+    # n_syllables, i.e., number of label classes to predict
+    # Note that mapping includes label for silent gap b/t syllables
+    # Error checking code to ensure that it is in fact a consecutive
+    # series of integers from 0 to n, so we don't predict classes that
+    # don't exist
+    if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
+        raise ValueError('Labels mapping does not map to a consecutive'
+                         'series of integers from 0 to n (where 0 is the '
+                         'silent gap label and n is the number of syllable'
+                         'labels).')
+    n_syllables = len(labels_mapping)
+    logger.debug('n_syllables: '.format(n_syllables))
 
     # copy training data to results dir so we have it stored with results
     logger.info('copying {} to {}'.format(train_data_dict_path,
@@ -187,15 +206,8 @@ def learncurve(train_data_dict_path,
 
     logger.info('\'patience\' is set to: {}'.format(patience))
 
-    # set params used for sending data to graph in batches
-    batch_size = int(config['NETWORK']['batch_size'])
-    time_steps = int(config['NETWORK']['time_steps'])
-    logger.info('will train network with batches of size {}, '
-                'where each spectrogram in batch contains {} time steps'
-                .format(batch_size, time_steps))
-
-    logger.info('maximum number of training steps will be {}'
-                .format(n_max_iter))
+    logger.info('number of training epochs will be {}'
+                .format(num_epochs))
 
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
@@ -231,11 +243,11 @@ def learncurve(train_data_dict_path,
                 with open(train_inds_path, 'rb') as f:
                     train_inds = pickle.load(f)
             else:
-                train_inds = tweetynet.utils.get_inds_for_dur(X_train_spect_ID_vector,
-                                                               Y_train,
-                                                               labels_mapping,
-                                                               train_set_dur,
-                                                               timebin_dur)
+                train_inds = songdeck.utils.data.get_inds_for_dur(X_train_spect_ID_vector,
+                                                                  Y_train,
+                                                                  labels_mapping,
+                                                                  train_set_dur,
+                                                                  timebin_dur)
             with open(os.path.join(training_records_path, 'train_inds'),
                       'wb') as train_inds_file:
                 pickle.dump(train_inds, train_inds_file)
@@ -243,7 +255,7 @@ def learncurve(train_data_dict_path,
             Y_train_subset = Y_train[train_inds]
 
             if normalize_spectrograms:
-                spect_scaler = tweetynet.utils.SpectScaler()
+                spect_scaler = songdeck.utils.data.SpectScaler()
                 X_train_subset = spect_scaler.fit_transform(X_train_subset)
                 logger.info('normalizing validation set to match training set')
                 X_val = spect_scaler.transform(X_val_copy)
@@ -260,49 +272,16 @@ def learncurve(train_data_dict_path,
                                 'Y_train_subset': Y_train_subset}
             joblib.dump(scaled_data_dict, scaled_data_filename)
 
-            # reshape data for network
-            batch_spec_rows = len(train_inds) // batch_size
-
-            # this is the original way reshaping was done
-            # note that reshaping this way can truncate data set
-            X_train_subset = \
-                X_train_subset[0:batch_spec_rows * batch_size].reshape((batch_size,
-                                                                        batch_spec_rows,
-                                                                        -1))
-            Y_train_subset = \
-                Y_train_subset[0:batch_spec_rows * batch_size].reshape((batch_size,
-                                                                        -1))
-            reshape_size = Y_train_subset.ravel().shape[-1]
-            diff = train_inds.shape[-1] - reshape_size
-            logger.info('Number of time bins after '
-                        'reshaping training data: {}.'.format(reshape_size))
-            logger.info('Number of time bins less '
-                        'than specified {}: {}'.format(train_inds.shape[-1],
-                                                       diff))
-            logger.info('Difference in seconds: {}'.format(diff * timebin_dur))
-
-            # note that X_train_subset has shape of (batch, time_bins, frequency_bins)
-            # so we permute starting indices from the number of time_bins
-            # i.e. X_train_subset.shape[1]
-            iter_order = np.random.permutation(X_train_subset.shape[1] - time_steps)
-            if len(iter_order) > n_max_iter:
-                iter_order = iter_order[0:n_max_iter]
-            with open(
-                    os.path.join(training_records_path,
-                                 "iter_order"),
-                    'wb') as iter_order_file:
-                pickle.dump(iter_order, iter_order_file)
-
-            input_vec_size = X_train_subset.shape[-1]  # number of columns
-            logger.debug('input vec size: '.format(input_vec_size))
+            freq_bins = X_train_subset.shape[-1]  # number of columns
+            logger.debug('freq_bins in spectrogram: '.format(freq_bins))
 
             (X_val_batch,
              Y_val_batch,
-             num_batches_val) = tweetynet.utils.reshape_data_for_batching(X_val,
-                                                                           Y_val,
-                                                                           batch_size,
-                                                                           time_steps,
-                                                                           input_vec_size)
+             num_batches_val) = songdeck.utils.data.reshape_data_for_batching(X_val,
+                                                                              Y_val,
+                                                                              batch_size,
+                                                                              time_steps,
+                                                                              input_vec_size)
 
             # save scaled reshaped data
             scaled_reshaped_data_filename = os.path.join(training_records_path,
@@ -314,26 +293,7 @@ def learncurve(train_data_dict_path,
                                          'Y_val_batch': Y_val_batch}
             joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
 
-            # n_syllables, i.e., number of label classes to predict
-            # Note that mapping includes label for silent gap b/t syllables
-            # Error checking code to ensure that it is in fact a consecutive
-            # series of integers from 0 to n, so we don't predict classes that
-            # don't exist
-            if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
-                raise ValueError('Labels mapping does not map to a consecutive'
-                                 'series of integers from 0 to n (where 0 is the '
-                                 'silent gap label and n is the number of syllable'
-                                 'labels).')
-            n_syllables = len(labels_mapping)
-            logger.debug('n_syllables: '.format(n_syllables))
-            learning_rate = float(config['NETWORK']['learning_rate'])
-            logger.debug('learning rate: '.format(learning_rate))
-
             logger.debug('creating graph')
-
-            model = TweetyNet(n_syllables=n_syllables,
-                              batch_size=batch_size,
-                              input_vec_size=input_vec_size)
 
             logs_subdir = ('log_training_set_with_duration_of_'
                            + str(train_set_dur) + '_sec_replicate_'
@@ -346,106 +306,117 @@ def learncurve(train_data_dict_path,
 
             model.add_summary_writer(logs_path=logs_path)
 
-            with tf.Session(graph=model.graph,
-                            config=tf.ConfigProto(
-                                log_device_placement=True
-                                # intra_op_parallelism_threads=512
-                            )) as sess:
+            for network in networks:
+                net_config = network.config._asdict()
+                net_config['n_syllables'] = n_syllables
+                net = NETWORKS[network](**net_config)
 
-                # Run the Op to initialize the variables.
-                sess.run(model.init)
+                with tf.Session(graph=net.graph,
+                                config=tf.ConfigProto(
+                                    log_device_placement=True
+                                )) as sess:
+                    sess.run(net.init)
 
-                # Start the training loop.
+                    # figure out number of batches we can get out of subset of training data
+                    # if we slide a window along the spectrogram with a stride of 1
+                    # and use each window as one sample in a batch
+                    num_batches = X_train_subset.shape[-1] // net_config.batch_size  # note floor division
+                    #
+                    new_last_ind = net_config.batch_size * num_batches
 
-                step = 1
-                iter_counter = 0
+                    for epoch in range(num_epochs):
+                        # every epoch we are going to shuffle the order in which we look at every window
+                        shuffle_order = np.random.permutation(X_train_subset.shape[1] - time_bins)
+                        shuffle_order = shuffle_order[:new_last_ind].reshape(num_batches, net_config.batch_size)
+                        for batch_num, batch_inds in enumerate(shuffle_order):
+                            X_batch = []
+                            Y_batch = []
+                            for start_ind in batch_inds:
+                                X_batch.append(
+                                    X_train_subset[:, start_ind:start_ind+net_config.time_bins, :]
+                                )
+                                Y_batch.append(
+                                    Y_train_subset[:, start_ind:start_ind+net_config.time_bins]
+                                )
+                            X_batch = np.concatenate(x_batch)
+                            Y_batch = np.concatenate(y_batch)
+                            d = {net.X: X_batch,
+                                 net.y: Y_batch,
+                                 net.lng: [net_config.time_bins] * net_config.batch_size}
+                            _cost, _, summary = sess.run((net.cost,
+                                                          net.optimize,
+                                                          net.merged_summary_op),
+                                                feed_dict=d)
+                            costs.append(_cost)
+                            net.summary_writer.add_summary(summary, step)
+                            print("epoch {}, batch {}, cost: {}".format(epoch,
+                                                                        batch_num+1,
+                                                                        cost))
 
-                # loop through training data forever
-                # or until validation accuracy stops improving
-                # whichever comes first
-                while True:
-                    iternum = iter_order[iter_counter]
-                    iter_counter = iter_counter + 1
-                    if iter_counter == len(iter_order):
-                        iter_counter = 0
-                    d = {model.X: X_train_subset[:, iternum:iternum + time_steps, :],
-                         model.y: Y_train_subset[:, iternum:iternum + time_steps],
-                         model.lng: [time_steps] * batch_size}
-                    _cost, _, summary = sess.run((model.cost,
-                                                  model.optimize,
-                                                  model.merged_summary_op),
-                                        feed_dict=d)
-                    costs.append(_cost)
-                    model.summary_writer.add_summary(summary, step)
-                    print("step {}, iteration {}, cost: {}".format(step,
-                                                                   iternum,
-                                                                   _cost))
-                    step = step + 1
-
-                    if val_error_step:
-                        if step % val_error_step == 0:
-                            if 'Y_pred_val' in locals():
-                                del Y_pred_val
-
-                            for b in range(num_batches_val):  # "b" is "batch number"
-                                X_b = X_val_batch[:, b * time_steps: (b + 1) * time_steps, :]
-                                Y_b = Y_val_batch[:, b * time_steps: (b + 1) * time_steps]
-                                d = {model.X: X_b,
-                                     model.y: Y_b,
-                                     model.lng: [time_steps] * batch_size}
-
+                        if val_error_step:
+                            if step % val_error_step == 0:
                                 if 'Y_pred_val' in locals():
-                                    preds = sess.run(model.predict, feed_dict=d)
-                                    preds = preds.reshape(batch_size, -1)
-                                    Y_pred_val = np.concatenate((Y_pred_val, preds), axis=1)
+                                    del Y_pred_val
+
+                                for b in range(num_batches_val):  # "b" is "batch number"
+                                    X_b = X_val_batch[:, b * time_steps: (b + 1) * time_steps, :]
+                                    Y_b = Y_val_batch[:, b * time_steps: (b + 1) * time_steps]
+                                    d = {net.X: X_b,
+                                         net.y: Y_b,
+                                         net.lng: [time_steps] * batch_size}
+
+                                    if 'Y_pred_val' in locals():
+                                        preds = sess.run(net.predict, feed_dict=d)
+                                        preds = preds.reshape(batch_size, -1)
+                                        Y_pred_val = np.concatenate((Y_pred_val, preds), axis=1)
+                                    else:
+                                        Y_pred_val = sess.run(net.predict, feed_dict=d)
+                                        Y_pred_val = Y_pred_val.reshape(batch_size, -1)
+
+                                # get rid of zero padding predictions
+                                Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
+                                val_errs.append(np.sum(Y_pred_val - Y_val != 0) / Y_val.shape[0])
+                                print("step {}, validation error: {}".format(step, val_errs[-1]))
+
+                            if patience:
+                                if val_errs[-1] < curr_min_err:
+                                    # error went down, set as new min and reset counter
+                                    curr_min_err = val_errs[-1]
+                                    err_patience_counter = 0
+                                    checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
+                                    print("Validation error improved.\n"
+                                          "Saving checkpoint to {}".format(checkpoint_path))
+                                    net.saver.save(sess, checkpoint_path)
                                 else:
-                                    Y_pred_val = sess.run(model.predict, feed_dict=d)
-                                    Y_pred_val = Y_pred_val.reshape(batch_size, -1)
+                                    err_patience_counter += 1
+                                    if err_patience_counter > patience:
+                                        print("stopping because validation error has not improved in {} steps"
+                                              .format(patience))
+                                        with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
+                                            pickle.dump(costs, costs_file)
+                                        with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
+                                            pickle.dump(val_errs, val_errs_file)
+                                        break
 
-                            # get rid of zero padding predictions
-                            Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
-                            val_errs.append(np.sum(Y_pred_val - Y_val != 0) / Y_val.shape[0])
-                            print("step {}, validation error: {}".format(step, val_errs[-1]))
-
-                        if patience:
-                            if val_errs[-1] < curr_min_err:
-                                # error went down, set as new min and reset counter
-                                curr_min_err = val_errs[-1]
-                                err_patience_counter = 0
+                        if checkpoint_step:
+                            if step % checkpoint_step == 0:
+                                "Saving checkpoint."
                                 checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                                print("Validation error improved.\n"
-                                      "Saving checkpoint to {}".format(checkpoint_path))
-                                model.saver.save(sess, checkpoint_path)
-                            else:
-                                err_patience_counter += 1
-                                if err_patience_counter > patience:
-                                    print("stopping because validation error has not improved in {} steps"
-                                          .format(patience))
-                                    with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
-                                        pickle.dump(costs, costs_file)
-                                    with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
-                                        pickle.dump(val_errs, val_errs_file)
-                                    break
+                                if save_only_single_checkpoint_file is False:
+                                    checkpoint_path += '_{}'.format(step)
+                                net.saver.save(sess, checkpoint_path)
+                                with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
+                                    pickle.dump(val_errs, val_errs_file)
 
-                    if checkpoint_step:
-                        if step % checkpoint_step == 0:
-                            "Saving checkpoint."
+                        if step > n_max_iter:  # ok don't actually loop forever
+                            "Reached max. number of iterations, saving checkpoint."
                             checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                            if save_only_single_checkpoint_file is False:
-                                checkpoint_path += '_{}'.format(step)
-                            model.saver.save(sess, checkpoint_path)
+                            net.saver.save(sess, checkpoint_path)
+                            with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
+                                pickle.dump(costs, costs_file)
                             with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
-
-                    if step > n_max_iter:  # ok don't actually loop forever
-                        "Reached max. number of iterations, saving checkpoint."
-                        checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                        model.saver.save(sess, checkpoint_path)
-                        with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
-                            pickle.dump(costs, costs_file)
-                        with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
-                            pickle.dump(val_errs, val_errs_file)
-                        break
+                            break
 
     # lastly rewrite config file,
     # so that paths where results were saved are automatically in config
