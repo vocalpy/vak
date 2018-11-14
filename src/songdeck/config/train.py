@@ -14,7 +14,7 @@ TrainConfig = namedtuple('TrainConfig', [
     'val_error_step',
     'checkpoint_step',
     'save_only_single_checkpoint_file',
-    'n_max_iter',
+    'num_epochs',
     'patience',
     'normalize_spectrograms',
     'use_train_subsets_from_previous_run',
@@ -42,7 +42,7 @@ def parse_train_config(config, config_file):
             val_error_step :
             checkpoint_step :
             save_only_single_checkpoint_file :
-            n_max_iter :
+            num_epochs :
             patience :
             use_train_subsets_from_previous_run :
             previous_run_path :
@@ -112,10 +112,10 @@ def parse_train_config(config, config_file):
     else:
         save_only_single_checkpoint_file = True
 
-    if config.has_option('TRAIN', 'n_max_iter'):
-        n_max_iter = int(config['TRAIN']['n_max_iter'])
+    if config.has_option('TRAIN', 'num_epochs'):
+        num_epochs = int(config['TRAIN']['num_epochs'])
     else:
-        n_max_iter = 18000
+        num_epochs = 18000
 
     if config.has_option('TRAIN', 'patience'):
         patience = config['TRAIN']['patience']
@@ -172,7 +172,7 @@ def parse_train_config(config, config_file):
                        val_error_step=val_error_step,
                        checkpoint_step=checkpoint_step,
                        save_only_single_checkpoint_file=save_only_single_checkpoint_file,
-                       n_max_iter=n_max_iter,
+                       num_epochs=num_epochs,
                        patience=patience,
                        normalize_spectrograms=normalize_spectrograms,
                        use_train_subsets_from_previous_run=use_train_subsets_from_previous_run,
