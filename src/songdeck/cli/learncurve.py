@@ -292,23 +292,21 @@ def learncurve(train_data_dict_path,
                                          'Y_val_batch': Y_val_batch}
             joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
 
-            logger.debug('creating graph')
-
-            logs_subdir = ('log_training_set_with_duration_of_'
-                           + str(train_set_dur) + '_sec_replicate_'
-                           + str(replicate))
-            logs_path = os.path.join(results_dirname,
-                                     'logs',
-                                     logs_subdir)
-            if not os.path.isdir(logs_path):
-                os.makedirs(logs_path)
-
-            model.add_summary_writer(logs_path=logs_path)
-
             for network in networks:
                 net_config = network.config._asdict()
                 net_config['n_syllables'] = n_syllables
                 net = NETWORKS[network](**net_config)
+
+                logs_subdir = ('log_training_set_with_duration_of_'
+                               + str(train_set_dur) + '_sec_replicate_'
+                               + str(replicate))
+                logs_path = os.path.join(results_dirname,
+                                         'logs',
+                                         logs_subdir)
+                if not os.path.isdir(logs_path):
+                    os.makedirs(logs_path)
+
+                net.add_summary_writer(logs_path=logs_path)
 
                 with tf.Session(graph=net.graph,
                                 config=tf.ConfigProto(
@@ -325,7 +323,7 @@ def learncurve(train_data_dict_path,
 
                     for epoch in range(num_epochs):
                         # every epoch we are going to shuffle the order in which we look at every window
-                        shuffle_order = np.random.permutation(X_train_subset.shape[1] - time_bins)
+                        shuffle_order = np.random.permutation(X_train_subset.shape[1] - net_config.time_bins)
                         shuffle_order = shuffle_order[:new_last_ind].reshape(num_batches, net_config.batch_size)
                         for batch_num, batch_inds in enumerate(shuffle_order):
                             X_batch = []
