@@ -11,3 +11,4 @@ dist/
 build/
 tests/test_data/results/
 tests/test_data/spects/
+src/bin/tmp_Makefile_config.ini
