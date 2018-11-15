@@ -117,6 +117,15 @@ class TestParseDataConfig(unittest.TestCase):
         with self.assertRaises(NotADirectoryError):
             songdeck.config.data.parse_data_config(config_obj, config_file)
 
+    def test_freq_bins_default(self):
+        # test that freq_bins is added
+        # and set to None if we don't specify it
+        config_obj = self.get_config
+        config_file = 'test'
+        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+                                                                 config_file)
+        self.assertTrue(data_config_tup.freq_bins is None)
+
 
 if __name__ == '__main__':
     unittest.main()
