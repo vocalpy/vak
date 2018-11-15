@@ -135,6 +135,12 @@ class TestParseTrainConfig(unittest.TestCase):
         with self.assertRaises(KeyError):
             songdeck.config.train.parse_train_config(config_obj, config_file)
 
+    def test_save_transformed_data_default(self):
+        config_obj = self.get_config
+        config_file = 'test'
+        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        self.assertTrue(train_config_tup.save_transformed_data is False)
+
 
 if __name__ == '__main__':
     unittest.main()
