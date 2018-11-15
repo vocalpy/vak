@@ -19,6 +19,7 @@ TrainConfig = namedtuple('TrainConfig', [
     'normalize_spectrograms',
     'use_train_subsets_from_previous_run',
     'previous_run_path',
+    'save_transformed_data'
 ])
 
 
@@ -163,6 +164,12 @@ def parse_train_config(config, config_file):
 
             previous_run_path = None
 
+    if config.has_option('TRAIN', 'save_transformed_data'):
+        save_transformed_data = config.getboolean(
+            'TRAIN', 'save_transformed_data')
+    else:
+        save_transformed_data = False
+
     return TrainConfig(networks=networks,
                        train_data_dict_path=train_data_dict_path,
                        train_set_durs=train_set_durs,
@@ -176,4 +183,5 @@ def parse_train_config(config, config_file):
                        patience=patience,
                        normalize_spectrograms=normalize_spectrograms,
                        use_train_subsets_from_previous_run=use_train_subsets_from_previous_run,
-                       previous_run_path=previous_run_path)
+                       previous_run_path=previous_run_path,
+                       save_transformed_data=save_transformed_data)
