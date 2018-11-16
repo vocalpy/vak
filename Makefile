@@ -8,10 +8,10 @@ clean :
 all : results
 
 results : data
-	python ./src/bin/remake_results.py
+	python ./tests/setup_scripts/remake_results.py
 
 data : config
-	python ./src/bin/remake_spects.py
+	python ./tests/setup_scripts/remake_spects.py
 
 config :
-	cp ./src/bin/Makefile_config.ini ./src/bin/tmp_Makefile_config.ini
+	cp ./tests/setup_scripts/Makefile_config.ini ./tests/setup_scripts/tmp_Makefile_config.ini
