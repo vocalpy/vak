@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 from .. import metrics, utils
-
+import songdeck.network
 
 def summary(results_dirname,
             train_data_dict_path,
@@ -63,6 +63,7 @@ def summary(results_dirname,
                       train_data_dict['labels'])
     labels_mapping = train_data_dict['labels_mapping']
     n_syllables = len(labels_mapping)
+    X_train = X_train.T
 
     # only get this just to have in summary file if needed
     if all(type(labels_el) is str for labels_el in train_labels):
