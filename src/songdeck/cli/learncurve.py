@@ -272,10 +272,6 @@ def learncurve(train_data_dict_path,
             training_records_path = os.path.join(results_dirname,
                                                  training_records_dir)
 
-            checkpoint_filename = ('checkpoint_train_set_dur_'
-                                   + str(train_set_dur) +
-                                   '_sec_replicate_'
-                                   + str(replicate))
             if not os.path.isdir(training_records_path):
                 os.makedirs(training_records_path)
 
@@ -329,6 +325,10 @@ def learncurve(train_data_dict_path,
                 net = NETWORKS[net_name](**net_config_dict)
 
                 results_dirname_this_net = os.path.join(results_dirname, net_name)
+
+                checkpoint_filename = ('checkpoint_{}_train_set_dur_{}_sec_replicate_{}'
+                                       .format(net_name, str(train_set_dur), str(replicate)))
+
                 if not os.path.isdir(results_dirname_this_net):
                     os.makedirs(results_dirname_this_net)
                 logs_subdir = ('log_training_set_with_duration_of_'
@@ -446,7 +446,8 @@ def learncurve(train_data_dict_path,
                                     # error went down, set as new min and reset counter
                                     curr_min_err = val_errs[-1]
                                     err_patience_counter = 0
-                                    checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
+                                    checkpoint_path = os.path.join(results_dirname_this_net,
+                                                                   checkpoint_filename)
                                     print("Validation error improved.\n"
                                           "Saving checkpoint to {}".format(checkpoint_path))
                                     net.saver.save(sess, checkpoint_path)
@@ -464,7 +465,8 @@ def learncurve(train_data_dict_path,
                         if checkpoint_step:
                             if epoch % checkpoint_step == 0:
                                 "Saving checkpoint."
-                                checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
+                                checkpoint_path = os.path.join(results_dirname_this_net,
+                                                               checkpoint_filename)
                                 if save_only_single_checkpoint_file is False:
                                     checkpoint_path += '_{}'.format(step)
                                 net.saver.save(sess, checkpoint_path)
@@ -473,11 +475,13 @@ def learncurve(train_data_dict_path,
 
                         if epoch == (num_epochs-1):  # if this is the last epoch
                             "Reached max. number of epochs, saving checkpoint."
-                            checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
+                            checkpoint_path = os.path.join(results_dirname_this_net, checkpoint_filename)
                             net.saver.save(sess, checkpoint_path)
-                            with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
+                            with open(os.path.join(results_dirname_this_net, "costs"),
+                                      'wb') as costs_file:
                                 pickle.dump(costs, costs_file)
-                            with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
+                            with open(os.path.join(results_dirname_this_net, "val_errs"),
+                                      'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
 
 
