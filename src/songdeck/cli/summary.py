@@ -12,33 +12,29 @@ from .. import metrics, utils
 
 
 def summary(results_dirname,
-            models,
+            networks,
             train_set_durs,
             num_replicates,
             labelset,
             test_data_dict_path,
-            skip_files_with_labels_not_in_labelset=True,
-            normalize_spectrograms=False,
-            mat_spect_files_path=None,
-            spect_params=None):
+            normalize_spectrograms=False):
     """generate summary learning curve from models train by cli.learncurve
 
     Parameters
     ----------
     results_dirname
-    models
+    networks
     train_set_durs
     num_replicates
     labelset
     test_data_dict_path
-    skip_files_with_labels_not_in_labelset
     normalize_spectrograms
-    mat_spect_files_path
-    spect_params
 
     Returns
     -------
+    None
 
+    Computes error on test set and saves in a ./summary directory within results directory
     """
     if not os.path.isdir(results_dirname):
         raise FileNotFoundError('directory {}, specified as '
@@ -48,10 +44,6 @@ def summary(results_dirname,
     summary_dirname = os.path.join(results_dirname,
                                    'summary_' + timenow)
     os.makedirs(summary_dirname)
-
-    if mat_spect_files_path:
-        print('will use spectrograms from .mat files in {}'
-              .format(mat_spect_files_path))
 
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'rb') as labels_map_file_obj:
@@ -118,8 +110,12 @@ def summary(results_dirname,
                      test_data_dict['spect_params'],
                      test_data_dict['labels'])
 
-    assert train_spect_params == test_spect_params
-    assert train_timebin_dur == test_timebin_dur
+    if train_spect_params != test_spect_params:
+        raise ValueError('Spectrogram parameters for training data do not match those '
+                         'for test data, will give incorrect error rate.')
+    if train_timebin_dur != test_timebin_dur:
+        raise ValueError('Durations of time bins in spectrograms for training data '
+                         'does not match that of test data, will give incorrect error rate.')
 
     # have to transpose X_test so rows are timebins and columns are frequencies
     X_test_copy = X_test_copy.T
@@ -430,6 +426,7 @@ def summary(results_dirname,
     pred_err_dict_filename = os.path.join(summary_dirname,
                                           'y_preds_and_err_for_train_and_test')
     joblib.dump(pred_and_err_dict, pred_err_dict_filename)
+
 
 if __name__ == '__main__':
     config_file = sys.argv[1]
