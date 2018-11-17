@@ -200,9 +200,9 @@ def learncurve(train_data_dict_path,
     # transpose X_train, so rows are timebins and columns are frequency bins
     # because cnn-bilstm network expects this orientation for input
     X_train = X_train.T
-    # save training set to get training accuracy in summary.py
-    joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
-    joblib.dump(Y_train, os.path.join(results_dirname, 'Y_train'))
+    if save_transformed_data:
+        joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
+        joblib.dump(Y_train, os.path.join(results_dirname, 'Y_train'))
 
     REPLICATES = range(num_replicates)
     logger.info('will replicate training {} times for each duration of training set'
@@ -228,8 +228,9 @@ def learncurve(train_data_dict_path,
     # so that rows are time and columns are frequencies #
     #####################################################
     X_val = X_val.T
-    joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
-    joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
+    if save_transformed_data:
+        joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
+        joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
 
     logger.info('will measure error on validation set '
                 'every {} steps of training'.format(val_error_step))
