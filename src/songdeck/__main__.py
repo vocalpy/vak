@@ -117,7 +117,8 @@ def main():
 
             # get config again because learncurve changed results_dir_made_by_main_script
             config = songdeck.config.parse.parse_config(config_file)
-            songdeck.cli.summary(results_dirname=config.output.results_dir_made_by_main_script,
+            songdeck.cli.summary(results_dirname=config.output.results_dirname,
+                                 train_data_dict_path=config.train.train_data_dict_path,
                                  networks=config.networks,
                                  train_set_durs=config.train.train_set_durs,
                                  num_replicates=config.train.num_replicates,
