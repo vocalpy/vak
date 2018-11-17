@@ -439,7 +439,7 @@ def learncurve(train_data_dict_path,
                                 # get rid of zero padding predictions
                                 Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
                                 val_errs.append(np.sum(Y_pred_val - Y_val != 0) / Y_val.shape[0])
-                                print("epoch {}, validation error: {}".format(epoch, val_errs[-1]))
+                                print("epoch {}, validation error: {}".format(epoch + 1, val_errs[-1]))
 
                             if patience:
                                 if val_errs[-1] < curr_min_err:
