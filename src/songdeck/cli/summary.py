@@ -52,10 +52,12 @@ def summary(results_dirname,
         labels_mapping = pickle.load(labels_map_file_obj)
 
     train_data_dict = joblib.load(train_data_dict_path)
-    (Y_train,
+    (X_train,
+     Y_train,
      train_timebin_dur,
      train_spect_params,
-     train_labels) = (train_data_dict['Y_train'],
+     train_labels) = (train_data_dict['X_train'],
+                      train_data_dict['Y_train'],
                       train_data_dict['timebin_dur'],
                       train_data_dict['spect_params'],
                       train_data_dict['labels'])
@@ -84,13 +86,6 @@ def summary(results_dirname,
                             .format(type(train_data_dict_path)))
     else:
         raise TypeError('Not able to determine type of labels in train data')
-
-    # we load actual X_train for each replicate
-    # from each training_records_dir below
-    input_vec_size = joblib.load(
-        os.path.join(
-            results_dirname,
-            'X_train')).shape[-1]
 
     print('loading testing data')
     test_data_dict = joblib.load(test_data_dict_path)
@@ -193,22 +188,18 @@ def summary(results_dirname,
 
             # get training set
             Y_train_subset = Y_train[train_inds]
-            X_train_subset = joblib.load(os.path.join(
-                training_records_dir,
-                'scaled_spects_duration_{}_replicate_{}'.format(
-                    train_set_dur, replicate)
-            ))['X_train_subset_scaled']
+            X_train_subset = X_train[train_inds, :]
             assert Y_train_subset.shape[0] == X_train_subset.shape[0], \
                 "mismatch between X and Y train subset shapes"
-
-            # Normalize before reshaping to avoid even more convoluted array reshaping.
-            # Train spectrograms were already normalized
-            # just need to normalize test spects
             if normalize_spectrograms:
                 scaler_name = ('spect_scaler_duration_{}_replicate_{}'
                                .format(train_set_dur, replicate))
                 spect_scaler = joblib.load(
-                    os.path.join(results_dirname, scaler_name))
+                    os.path.join(training_records_path, scaler_name))
+                X_train_subset = spect_scaler.transform(X_train_subset)
+
+            # Normalize before reshaping to avoid even more convoluted array reshaping.
+            if normalize_spectrograms:
                 X_test = spect_scaler.transform(X_test_copy)
             else:
                 # get back "un-reshaped" X_test
@@ -225,38 +216,8 @@ def summary(results_dirname,
             scaled_test_data_dict = {'X_test_scaled': X_test}
             joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
 
-            # now that we normalized, we can reshape
-            (X_train_subset,
-             Y_train_subset,
-             num_batches_train) = utils.data.reshape_data_for_batching(
-                X_train_subset,
-                Y_train_subset,
-                batch_size,
-                time_steps,
-                input_vec_size)
-
-            (X_test,
-             Y_test,
-             num_batches_test) = utils.data.reshape_data_for_batching(
-                X_test,
-                Y_test,
-                batch_size,
-                time_steps,
-                input_vec_size)
-
-            scaled_reshaped_data_filename = os.path.join(summary_dirname,
-                                                         'scaled_reshaped_spects_duration_{}_replicate_{}'
-                                                         .format(train_set_dur,
-                                                                 replicate))
-            scaled_reshaped_data_dict = {
-                'X_train_subset_scaled_reshaped': X_train_subset,
-                'Y_train_subset_reshaped': Y_train_subset,
-                'X_test_scaled_reshaped': X_test,
-                'Y_test_reshaped': Y_test}
-            joblib.dump(scaled_reshaped_data_dict,
-                        scaled_reshaped_data_filename)
-
             for net_name, net_config in zip(networks._fields, networks):
+                # reload network #
                 net_config_dict = net_config._asdict()
                 net_config_dict['n_syllables'] = n_syllables
                 net = NETWORKS[net_name](**net_config_dict)
@@ -280,6 +241,37 @@ def summary(results_dirname,
                 else:
                     data_file = data_file[0]
 
+                # reshape data for batching using net_config #
+                (X_train_subset,
+                 Y_train_subset,
+                 num_batches_train) = utils.data.reshape_data_for_batching(
+                    X_train_subset,
+                    Y_train_subset,
+                    net_config.batch_size,
+                    net_config.time_bins,
+                    net_config.freq_bins)
+
+                (X_test,
+                 Y_test,
+                 num_batches_test) = utils.data.reshape_data_for_batching(
+                    X_test,
+                    Y_test,
+                    net_config.batch_size,
+                    net_config.time_bins,
+                    net_config.freq_bins)
+
+                scaled_reshaped_data_filename = os.path.join(summary_dirname,
+                                                             'scaled_reshaped_spects_duration_{}_replicate_{}'
+                                                             .format(train_set_dur,
+                                                                     replicate))
+                scaled_reshaped_data_dict = {
+                    'X_train_subset_scaled_reshaped': X_train_subset,
+                    'Y_train_subset_reshaped': Y_train_subset,
+                    'X_test_scaled_reshaped': X_test,
+                    'Y_test_reshaped': Y_test}
+                joblib.dump(scaled_reshaped_data_dict,
+                            scaled_reshaped_data_filename)
+
                 with tf.Session(graph=net.graph) as sess:
                     tf.logging.set_verbosity(tf.logging.ERROR)
 
@@ -293,20 +285,19 @@ def summary(results_dirname,
                     print('calculating training set error')
                     for b in range(num_batches_train):  # "b" is "batch number"
                         d = {net.X: X_train_subset[:,
-                                    b * time_steps: (b + 1) * time_steps, :],
-                             net.lng: [time_steps] * batch_size}
+                                    b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
+                             net.lng: [net_config.time_bins] * net_config.batch_size}
 
                         if 'Y_pred_train' in locals():
                             preds = sess.run(net.predict, feed_dict=d)
-                            preds = preds.reshape(batch_size, -1)
+                            preds = preds.reshape(net_config.batch_size, -1)
                             Y_pred_train = np.concatenate((Y_pred_train, preds),
                                                           axis=1)
                         else:
                             Y_pred_train = sess.run(net.predict, feed_dict=d)
-                            Y_pred_train = Y_pred_train.reshape(batch_size, -1)
+                            Y_pred_train = Y_pred_train.reshape(net_config.batch_size, -1)
 
-                    Y_train_subset = Y_train[
-                        train_inds]  # get back "unreshaped" Y_train_subset
+                    Y_train_subset = Y_train[train_inds]  # get back "unreshaped" Y_train_subset
                     # get rid of predictions to zero padding that don't matter
                     Y_pred_train = Y_pred_train.ravel()[:Y_train_subset.shape[0],
                                    np.newaxis]
@@ -316,12 +307,10 @@ def summary(results_dirname,
                     print('train error was {}'.format(train_err))
                     Y_pred_train_this_dur.append(Y_pred_train)
 
-                    Y_train_subset_labels = utils.convert_timebins_to_labels(
-                        Y_train_subset,
-                        labels_mapping)
-                    Y_pred_train_labels = utils.convert_timebins_to_labels(
-                        Y_pred_train,
-                        labels_mapping)
+                    Y_train_subset_labels = utils.data.convert_timebins_to_labels(Y_train_subset,
+                                                                                  labels_mapping)
+                    Y_pred_train_labels = utils.data.convert_timebins_to_labels(Y_pred_train,
+                                                                                labels_mapping)
                     Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
 
                     if all([type(el) is int for el in Y_train_subset_labels]):
@@ -336,7 +325,7 @@ def summary(results_dirname,
                             [chr(el) for el in Y_pred_train_labels])
 
                     train_lev = metrics.levenshtein(Y_pred_train_labels,
-                                                               Y_train_subset_labels)
+                                                    Y_train_subset_labels)
                     train_lev_arr[dur_ind, rep_ind] = train_lev
                     print('Levenshtein distance for train set was {}'.format(
                         train_lev))
@@ -353,8 +342,8 @@ def summary(results_dirname,
                     print('calculating test set error')
                     for b in range(num_batches_test):  # "b" is "batch number"
                         d = {
-                            net.X: X_test[:, b * time_steps: (b + 1) * time_steps, :],
-                            net.lng: [time_steps] * batch_size}
+                            net.X: X_test[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
+                            net.lng: [net_config.time_bins] * net_config.batch_size}
 
                         if 'Y_pred_test' in locals():
                             preds = sess.run(net.predict, feed_dict=d)
@@ -363,7 +352,7 @@ def summary(results_dirname,
                                                          axis=1)
                         else:
                             Y_pred_test = sess.run(net.predict, feed_dict=d)
-                            Y_pred_test = Y_pred_test.reshape(batch_size, -1)
+                            Y_pred_test = Y_pred_test.reshape(net_config.batch_size, -1)
 
                     # again get rid of zero padding predictions
                     Y_pred_test = Y_pred_test.ravel()[:Y_test_copy.shape[0],
@@ -374,9 +363,8 @@ def summary(results_dirname,
                     print('test error was {}'.format(test_err))
                     Y_pred_test_this_dur.append(Y_pred_test)
 
-                    Y_pred_test_labels = utils.convert_timebins_to_labels(
-                        Y_pred_test,
-                        labels_mapping)
+                    Y_pred_test_labels = utils.data.convert_timebins_to_labels(Y_pred_test,
+                                                                               labels_mapping)
                     Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
                     if all([type(el) is int for el in Y_pred_test_labels]):
                         # if labels are ints instead of str
@@ -390,7 +378,7 @@ def summary(results_dirname,
                         # stored in variable `Y_test_labels_for_lev`
 
                     test_lev = metrics.levenshtein(Y_pred_test_labels,
-                                                              Y_test_labels_for_lev)
+                                                   Y_test_labels_for_lev)
                     test_lev_arr[dur_ind, rep_ind] = test_lev
                     print(
                         'Levenshtein distance for test set was {}'.format(test_lev))
