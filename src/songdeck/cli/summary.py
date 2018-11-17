@@ -235,7 +235,7 @@ def summary(results_dirname,
                                      .format(meta_file))
                 else:
                     meta_file = meta_file[0]
-                data_file = glob(checkpoint_path + '*data*')[0]
+                data_file = glob(checkpoint_path + '*data*')
                 if len(data_file) != 1:
                     raise ValueError('Incorrect number of data files for saved checkpoint: {}'
                                      .format(data_file))
