@@ -12,6 +12,7 @@ from .. import metrics, utils
 
 
 def summary(results_dirname,
+            train_data_dict_path,
             networks,
             train_set_durs,
             num_replicates,
@@ -23,6 +24,7 @@ def summary(results_dirname,
     Parameters
     ----------
     results_dirname
+    train_data_dict_path
     networks
     train_set_durs
     num_replicates
@@ -49,14 +51,12 @@ def summary(results_dirname,
     with open(labels_mapping_file, 'rb') as labels_map_file_obj:
         labels_mapping = pickle.load(labels_map_file_obj)
 
-    Y_train = joblib.load(os.path.join(
-        results_dirname, 'Y_train'))
-
-    train_data_dict_path = config['TRAIN']['train_data_path']
     train_data_dict = joblib.load(train_data_dict_path)
-    (train_timebin_dur,
+    (Y_train,
+     train_timebin_dur,
      train_spect_params,
-     train_labels) = (train_data_dict['timebin_dur'],
+     train_labels) = (train_data_dict['Y_train'],
+                      train_data_dict['timebin_dur'],
                       train_data_dict['spect_params'],
                       train_data_dict['labels'])
     labels_mapping = train_data_dict['labels_mapping']
