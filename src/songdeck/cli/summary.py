@@ -348,7 +348,7 @@ def summary(results_dirname,
 
                         if 'Y_pred_test' in locals():
                             preds = sess.run(net.predict, feed_dict=d)
-                            preds = preds.reshape(batch_size, -1)
+                            preds = preds.reshape(net_config.batch_size, -1)
                             Y_pred_test = np.concatenate((Y_pred_test, preds),
                                                          axis=1)
                         else:
