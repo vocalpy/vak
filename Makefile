@@ -3,7 +3,7 @@
 clean :
 	rm -rf ./tests/test_data/results/*
 	rm -rf ./tests/test_data/spects/*
-	rm ./src/bin/tmp_Makefile_config.ini
+	rm ./tests/setup_scripts/tmp_Makefile_config.ini
 
 all : results
 
