@@ -148,26 +148,27 @@ def summary(results_dirname,
     else:
         raise TypeError('Not able to determine type of labels in test data')
 
+    replicates = range(num_replicates)
     # initialize arrays to hold summary results
     Y_pred_test_all = []  # will be a nested list
     Y_pred_train_all = []  # will be a nested list
     Y_pred_test_labels_all = []
     Y_pred_train_labels_all = []
-    train_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
-    test_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
-    train_lev_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
-    test_lev_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
-    train_syl_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
-    test_syl_err_arr = np.empty((len(TRAIN_SET_DURS), len(REPLICATES)))
+    train_err_arr = np.empty((len(train_set_durs), len(replicates)))
+    test_err_arr = np.empty((len(train_set_durs), len(replicates)))
+    train_lev_arr = np.empty((len(train_set_durs), len(replicates)))
+    test_lev_arr = np.empty((len(train_set_durs), len(replicates)))
+    train_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
+    test_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
 
-    for dur_ind, train_set_dur in enumerate(TRAIN_SET_DURS):
+    for dur_ind, train_set_dur in enumerate(train_set_durs):
 
         Y_pred_test_this_dur = []
         Y_pred_train_this_dur = []
         Y_pred_test_labels_this_dur = []
         Y_pred_train_labels_this_dur = []
 
-        for rep_ind, replicate in enumerate(REPLICATES):
+        for rep_ind, replicate in enumerate(replicates):
             print("getting train and test error for "
                   "training set with duration of {} seconds, "
                   "replicate {}".format(train_set_dur, replicate))
@@ -421,7 +422,8 @@ def summary(results_dirname,
                          'train_syl_err_rate': train_syl_err_arr,
                          'test_lev': test_lev_arr,
                          'test_syl_err_rate': test_syl_err_arr,
-                         'train_set_durs': TRAIN_SET_DURS}
+                         'train_set_durs': train_set_durs,
+                         'num_replicates': num_replicates}
 
     pred_err_dict_filename = os.path.join(summary_dirname,
                                           'y_preds_and_err_for_train_and_test')
