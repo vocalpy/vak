@@ -226,7 +226,7 @@ def summary(results_dirname,
             # now that we normalized, we can reshape
             (X_train_subset,
              Y_train_subset,
-             num_batches_train) = utils.reshape_data_for_batching(
+             num_batches_train) = utils.data.reshape_data_for_batching(
                 X_train_subset,
                 Y_train_subset,
                 batch_size,
@@ -235,7 +235,7 @@ def summary(results_dirname,
 
             (X_test,
              Y_test,
-             num_batches_test) = utils.reshape_data_for_batching(
+             num_batches_test) = utils.data.reshape_data_for_batching(
                 X_test,
                 Y_test,
                 batch_size,
