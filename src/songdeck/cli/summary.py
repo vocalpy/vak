@@ -19,7 +19,7 @@ def summary(results_dirname,
             labelset,
             test_data_dict_path,
             normalize_spectrograms=False):
-    """generate summary learning curve from models train by cli.learncurve
+    """generate summary learning curve from networks trained by cli.learncurve
 
     Parameters
     ----------
@@ -174,19 +174,20 @@ def summary(results_dirname,
             print("getting train and test error for "
                   "training set with duration of {} seconds, "
                   "replicate {}".format(train_set_dur, replicate))
-            training_records_dir = os.path.join(results_dirname,
-                                                (
-                                                'records_for_training_set_with_duration_of_'
-                                                + str(
-                                                    train_set_dur) + '_sec_replicate_'
-                                                + str(replicate))
-                                                )
-            checkpoint_filename = ('checkpoint_train_set_dur_'
-                                   + str(train_set_dur) +
-                                   '_sec_replicate_'
-                                   + str(replicate))
 
-            train_inds_file = glob(os.path.join(training_records_dir, 'train_inds'))[0]
+            training_records_dir = ('records_for_training_set_with_duration_of_'
+                                    + str(train_set_dur) + '_sec_replicate_'
+                                    + str(replicate))
+            training_records_path = os.path.join(results_dirname,
+                                                 training_records_dir)
+
+            train_inds_file = glob(os.path.join(training_records_path, 'train_inds'))
+            if len(train_inds_file) != 1:
+                raise ValueError("incorrect number of train_inds files in {}, "
+                                 "should only be one but found: {}"
+                                 .format(training_records_path, train_inds_file))
+            else:
+                train_inds_file = train_inds_file[0]
             with open(os.path.join(train_inds_file), 'rb') as train_inds_file:
                 train_inds = pickle.load(train_inds_file)
 
@@ -260,134 +261,145 @@ def summary(results_dirname,
                 net_config_dict['n_syllables'] = n_syllables
                 net = NETWORKS[net_name](**net_config_dict)
 
+                results_dirname_this_net = os.path.join(results_dirname, net_name)
 
-            meta_file = \
-            glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
-            data_file = \
-            glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
+                checkpoint_filename = ('checkpoint_{}_train_set_dur_{}_sec_replicate_{}'
+                                       .format(net_name, str(train_set_dur), str(replicate)))
+                checkpoint_path = os.path.join(results_dirname_this_net,
+                                               checkpoint_filename)
+                meta_file = glob(checkpoint_path + '*meta')
+                if len(meta_file) != 1:
+                    raise ValueError('Incorrect number of meta files for saved checkpoint: {}'
+                                     .format(meta_file))
+                else:
+                    meta_file = meta_file[0]
+                data_file = glob(checkpoint_path + '*data*')[0]
+                if len(data_file) != 1:
+                    raise ValueError('Incorrect number of data files for saved checkpoint: {}'
+                                     .format(data_file))
+                else:
+                    data_file = data_file[0]
 
+                with tf.Session(graph=net.graph) as sess:
+                    tf.logging.set_verbosity(tf.logging.ERROR)
 
-            with tf.Session(graph=model.graph) as sess:
-                tf.logging.set_verbosity(tf.logging.ERROR)
-
-                model.restore(sess=sess,
-                              meta_file=meta_file,
-                              data_file=data_file)
-
-                if 'Y_pred_train' in locals():
-                    del Y_pred_train
-
-                print('calculating training set error')
-                for b in range(num_batches_train):  # "b" is "batch number"
-                    d = {model.X: X_train_subset[:,
-                                  b * time_steps: (b + 1) * time_steps, :],
-                         model.lng: [time_steps] * batch_size}
+                    net.restore(sess=sess,
+                                meta_file=meta_file,
+                                data_file=data_file)
 
                     if 'Y_pred_train' in locals():
-                        preds = sess.run(model.predict, feed_dict=d)
-                        preds = preds.reshape(batch_size, -1)
-                        Y_pred_train = np.concatenate((Y_pred_train, preds),
-                                                      axis=1)
-                    else:
-                        Y_pred_train = sess.run(model.predict, feed_dict=d)
-                        Y_pred_train = Y_pred_train.reshape(batch_size, -1)
+                        del Y_pred_train
 
-                Y_train_subset = Y_train[
-                    train_inds]  # get back "unreshaped" Y_train_subset
-                # get rid of predictions to zero padding that don't matter
-                Y_pred_train = Y_pred_train.ravel()[:Y_train_subset.shape[0],
-                               np.newaxis]
-                train_err = np.sum(Y_pred_train - Y_train_subset != 0) / \
-                            Y_train_subset.shape[0]
-                train_err_arr[dur_ind, rep_ind] = train_err
-                print('train error was {}'.format(train_err))
-                Y_pred_train_this_dur.append(Y_pred_train)
+                    print('calculating training set error')
+                    for b in range(num_batches_train):  # "b" is "batch number"
+                        d = {net.X: X_train_subset[:,
+                                    b * time_steps: (b + 1) * time_steps, :],
+                             net.lng: [time_steps] * batch_size}
 
-                Y_train_subset_labels = utils.convert_timebins_to_labels(
-                    Y_train_subset,
-                    labels_mapping)
-                Y_pred_train_labels = utils.convert_timebins_to_labels(
-                    Y_pred_train,
-                    labels_mapping)
-                Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
+                        if 'Y_pred_train' in locals():
+                            preds = sess.run(net.predict, feed_dict=d)
+                            preds = preds.reshape(batch_size, -1)
+                            Y_pred_train = np.concatenate((Y_pred_train, preds),
+                                                          axis=1)
+                        else:
+                            Y_pred_train = sess.run(net.predict, feed_dict=d)
+                            Y_pred_train = Y_pred_train.reshape(batch_size, -1)
 
-                if all([type(el) is int for el in Y_train_subset_labels]):
-                    # if labels are ints instead of str
-                    # convert to str just to calculate Levenshtein distance
-                    # and syllable error rate.
-                    # Let them be weird characters (e.g. '\t') because that doesn't matter
-                    # for calculating Levenshtein distance / syl err rate
-                    Y_train_subset_labels = ''.join(
-                        [chr(el) for el in Y_train_subset_labels])
-                    Y_pred_train_labels = ''.join(
-                        [chr(el) for el in Y_pred_train_labels])
+                    Y_train_subset = Y_train[
+                        train_inds]  # get back "unreshaped" Y_train_subset
+                    # get rid of predictions to zero padding that don't matter
+                    Y_pred_train = Y_pred_train.ravel()[:Y_train_subset.shape[0],
+                                   np.newaxis]
+                    train_err = np.sum(Y_pred_train - Y_train_subset != 0) / \
+                                Y_train_subset.shape[0]
+                    train_err_arr[dur_ind, rep_ind] = train_err
+                    print('train error was {}'.format(train_err))
+                    Y_pred_train_this_dur.append(Y_pred_train)
 
-                train_lev = metrics.levenshtein(Y_pred_train_labels,
-                                                           Y_train_subset_labels)
-                train_lev_arr[dur_ind, rep_ind] = train_lev
-                print('Levenshtein distance for train set was {}'.format(
-                    train_lev))
-                train_syl_err_rate = metrics.syllable_error_rate(
-                    Y_train_subset_labels,
-                    Y_pred_train_labels)
-                train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
-                print('Syllable error rate for train set was {}'.format(
-                    train_syl_err_rate))
+                    Y_train_subset_labels = utils.convert_timebins_to_labels(
+                        Y_train_subset,
+                        labels_mapping)
+                    Y_pred_train_labels = utils.convert_timebins_to_labels(
+                        Y_pred_train,
+                        labels_mapping)
+                    Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
 
-                if 'Y_pred_test' in locals():
-                    del Y_pred_test
+                    if all([type(el) is int for el in Y_train_subset_labels]):
+                        # if labels are ints instead of str
+                        # convert to str just to calculate Levenshtein distance
+                        # and syllable error rate.
+                        # Let them be weird characters (e.g. '\t') because that doesn't matter
+                        # for calculating Levenshtein distance / syl err rate
+                        Y_train_subset_labels = ''.join(
+                            [chr(el) for el in Y_train_subset_labels])
+                        Y_pred_train_labels = ''.join(
+                            [chr(el) for el in Y_pred_train_labels])
 
-                print('calculating test set error')
-                for b in range(num_batches_test):  # "b" is "batch number"
-                    d = {
-                        model.X: X_test[:, b * time_steps: (b + 1) * time_steps,
-                                 :],
-                        model.lng: [time_steps] * batch_size}
+                    train_lev = metrics.levenshtein(Y_pred_train_labels,
+                                                               Y_train_subset_labels)
+                    train_lev_arr[dur_ind, rep_ind] = train_lev
+                    print('Levenshtein distance for train set was {}'.format(
+                        train_lev))
+                    train_syl_err_rate = metrics.syllable_error_rate(
+                        Y_train_subset_labels,
+                        Y_pred_train_labels)
+                    train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
+                    print('Syllable error rate for train set was {}'.format(
+                        train_syl_err_rate))
 
                     if 'Y_pred_test' in locals():
-                        preds = sess.run(model.predict, feed_dict=d)
-                        preds = preds.reshape(batch_size, -1)
-                        Y_pred_test = np.concatenate((Y_pred_test, preds),
-                                                     axis=1)
-                    else:
-                        Y_pred_test = sess.run(model.predict, feed_dict=d)
-                        Y_pred_test = Y_pred_test.reshape(batch_size, -1)
+                        del Y_pred_test
 
-                # again get rid of zero padding predictions
-                Y_pred_test = Y_pred_test.ravel()[:Y_test_copy.shape[0],
-                              np.newaxis]
-                test_err = np.sum(Y_pred_test - Y_test_copy != 0) / \
-                           Y_test_copy.shape[0]
-                test_err_arr[dur_ind, rep_ind] = test_err
-                print('test error was {}'.format(test_err))
-                Y_pred_test_this_dur.append(Y_pred_test)
+                    print('calculating test set error')
+                    for b in range(num_batches_test):  # "b" is "batch number"
+                        d = {
+                            net.X: X_test[:, b * time_steps: (b + 1) * time_steps, :],
+                            net.lng: [time_steps] * batch_size}
 
-                Y_pred_test_labels = utils.convert_timebins_to_labels(
-                    Y_pred_test,
-                    labels_mapping)
-                Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
-                if all([type(el) is int for el in Y_pred_test_labels]):
-                    # if labels are ints instead of str
-                    # convert to str just to calculate Levenshtein distance
-                    # and syllable error rate.
-                    # Let them be weird characters (e.g. '\t') because that doesn't matter
-                    # for calculating Levenshtein distance / syl err rate
-                    Y_pred_test_labels = ''.join(
-                        [chr(el) for el in Y_pred_test_labels])
-                    # already converted actual Y_test_labels from int to str above,
-                    # stored in variable `Y_test_labels_for_lev`
+                        if 'Y_pred_test' in locals():
+                            preds = sess.run(net.predict, feed_dict=d)
+                            preds = preds.reshape(batch_size, -1)
+                            Y_pred_test = np.concatenate((Y_pred_test, preds),
+                                                         axis=1)
+                        else:
+                            Y_pred_test = sess.run(net.predict, feed_dict=d)
+                            Y_pred_test = Y_pred_test.reshape(batch_size, -1)
 
-                test_lev = metrics.levenshtein(Y_pred_test_labels,
-                                                          Y_test_labels_for_lev)
-                test_lev_arr[dur_ind, rep_ind] = test_lev
-                print(
-                    'Levenshtein distance for test set was {}'.format(test_lev))
-                test_syl_err_rate = metrics.syllable_error_rate(
-                    Y_test_labels_for_lev,
-                    Y_pred_test_labels)
-                print('Syllable error rate for test set was {}'.format(
-                    test_syl_err_rate))
-                test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
+                    # again get rid of zero padding predictions
+                    Y_pred_test = Y_pred_test.ravel()[:Y_test_copy.shape[0],
+                                  np.newaxis]
+                    test_err = np.sum(Y_pred_test - Y_test_copy != 0) / \
+                               Y_test_copy.shape[0]
+                    test_err_arr[dur_ind, rep_ind] = test_err
+                    print('test error was {}'.format(test_err))
+                    Y_pred_test_this_dur.append(Y_pred_test)
+
+                    Y_pred_test_labels = utils.convert_timebins_to_labels(
+                        Y_pred_test,
+                        labels_mapping)
+                    Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
+                    if all([type(el) is int for el in Y_pred_test_labels]):
+                        # if labels are ints instead of str
+                        # convert to str just to calculate Levenshtein distance
+                        # and syllable error rate.
+                        # Let them be weird characters (e.g. '\t') because that doesn't matter
+                        # for calculating Levenshtein distance / syl err rate
+                        Y_pred_test_labels = ''.join(
+                            [chr(el) for el in Y_pred_test_labels])
+                        # already converted actual Y_test_labels from int to str above,
+                        # stored in variable `Y_test_labels_for_lev`
+
+                    test_lev = metrics.levenshtein(Y_pred_test_labels,
+                                                              Y_test_labels_for_lev)
+                    test_lev_arr[dur_ind, rep_ind] = test_lev
+                    print(
+                        'Levenshtein distance for test set was {}'.format(test_lev))
+                    test_syl_err_rate = metrics.syllable_error_rate(
+                        Y_test_labels_for_lev,
+                        Y_pred_test_labels)
+                    print('Syllable error rate for test set was {}'.format(
+                        test_syl_err_rate))
+                    test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
 
         Y_pred_train_all.append(Y_pred_train_this_dur)
         Y_pred_test_all.append(Y_pred_test_this_dur)
