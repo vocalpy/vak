@@ -49,17 +49,15 @@ class TestMakeData(unittest.TestCase):
 
     def test_learncurve_func(self):
         # make sure learncurve runs without crashing.
-        spect_params = SpectConfig(fft_size=512,step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
         config = songdeck.config.parse.parse_config(self.tmp_config_path)
         songdeck.cli.learncurve(train_data_dict_path=self.train_data_dict_path,
                                 val_data_dict_path=self.val_data_dict_path,
-                                spect_params=spect_params,
+                                spect_params=config.spect_params,
                                 total_train_set_duration=config.data.total_train_set_dur,
                                 train_set_durs=config.train.train_set_durs,
                                 num_replicates=config.train.num_replicates,
                                 num_epochs=config.train.num_epochs,
-                                config_file=config_file,
+                                config_file=self.tmp_config_path,
                                 networks=config.networks,
                                 val_error_step=config.train.val_error_step,
                                 checkpoint_step=config.train.checkpoint_step,
