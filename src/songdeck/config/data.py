@@ -116,7 +116,7 @@ def parse_data_config(config, config_file):
         test_dur = None
 
     if config.has_option('DATA', 'freq_bins'):
-        freq_bins = float(config['DATA']['freq_bins'])
+        freq_bins = int(config['DATA']['freq_bins'])
     else:
         freq_bins = None
 
