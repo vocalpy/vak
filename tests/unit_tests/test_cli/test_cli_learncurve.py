@@ -22,7 +22,7 @@ SETUP_SCRIPTS_DIR = os.path.join(HERE,
                                  'setup_scripts')
 
 
-class TestMakeData(unittest.TestCase):
+class TestLearncurve(unittest.TestCase):
     def setUp(self):
         self.tmp_output_dir = tempfile.mkdtemp()
         # Makefile copies Makefile_config to a tmp version (that gets changed by make_data
