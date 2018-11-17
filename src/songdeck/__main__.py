@@ -115,7 +115,15 @@ def main():
                                     previous_run_path=config.train.previous_run_path,
                                     root_results_dir=config.output.root_results_dir)
 
-            songdeck.cli.summary(config)
+            # get config again because learncurve changed results_dir_made_by_main_script
+            config = songdeck.config.parse.parse_config(config_file)
+            songdeck.cli.summary(results_dirname=config.output.results_dir_made_by_main_script,
+                                 networks=config.networks,
+                                 train_set_durs=config.train.train_set_durs,
+                                 num_replicates=config.train.num_replicates,
+                                 labelset=config.data.labelset,
+                                 test_data_dict_path=config.train.test_data_dict_path,
+                                 normalize_spectrograms=config.train.normalize_spectrograms)
     elif args.predict:
         songdeck.cli.predict(args.predict)
     elif args.summary:
