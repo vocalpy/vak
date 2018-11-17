@@ -331,9 +331,8 @@ def learncurve(train_data_dict_path,
 
                 if not os.path.isdir(results_dirname_this_net):
                     os.makedirs(results_dirname_this_net)
-                logs_subdir = ('log_training_set_with_duration_of_'
-                               + str(train_set_dur) + '_sec_replicate_'
-                               + str(replicate))
+                logs_subdir = ('log_{}_train_set_with_duration_of_{}_sec_replicate_{}'
+                               .format(net_name, str(train_set_dur), str(replicate)))
                 logs_path = os.path.join(results_dirname_this_net,
                                          'logs',
                                          logs_subdir)
