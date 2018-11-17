@@ -161,6 +161,8 @@ def summary(results_dirname,
     train_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
     test_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
 
+    NETWORKS = songdeck.network._load()
+
     for dur_ind, train_set_dur in enumerate(train_set_durs):
 
         Y_pred_test_this_dur = []
@@ -184,8 +186,7 @@ def summary(results_dirname,
                                    '_sec_replicate_'
                                    + str(replicate))
 
-            train_inds_file = \
-            glob(os.path.join(training_records_dir, 'train_inds'))[0]
+            train_inds_file = glob(os.path.join(training_records_dir, 'train_inds'))[0]
             with open(os.path.join(train_inds_file), 'rb') as train_inds_file:
                 train_inds = pickle.load(train_inds_file)
 
@@ -254,15 +255,18 @@ def summary(results_dirname,
             joblib.dump(scaled_reshaped_data_dict,
                         scaled_reshaped_data_filename)
 
+            for net_name, net_config in zip(networks._fields, networks):
+                net_config_dict = net_config._asdict()
+                net_config_dict['n_syllables'] = n_syllables
+                net = NETWORKS[net_name](**net_config_dict)
+
+
             meta_file = \
             glob(os.path.join(training_records_dir, 'checkpoint*meta*'))[0]
             data_file = \
             glob(os.path.join(training_records_dir, 'checkpoint*data*'))[0]
 
-            input_vec_size = X_train_subset.shape[-1]  # number of columns
-            model = TweetyNet(n_syllables=n_syllables,
-                              input_vec_size=input_vec_size,
-                              batch_size=batch_size)
+
             with tf.Session(graph=model.graph) as sess:
                 tf.logging.set_verbosity(tf.logging.ERROR)
 
