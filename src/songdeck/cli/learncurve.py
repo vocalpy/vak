@@ -306,7 +306,7 @@ def learncurve(train_data_dict_path,
                 scaler_name = ('spect_scaler_duration_{}_replicate_{}'
                                .format(train_set_dur, replicate))
                 joblib.dump(spect_scaler,
-                            os.path.join(results_dirname, scaler_name))
+                            os.path.join(training_records_path, scaler_name))
 
             scaled_data_filename = os.path.join(training_records_path,
                                                 'scaled_spects_duration_{}_replicate_{}'
