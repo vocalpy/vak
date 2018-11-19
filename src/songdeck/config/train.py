@@ -141,14 +141,17 @@ def parse_train_config(config, config_file):
     if config.has_option('TRAIN', 'use_train_subsets_from_previous_run'):
         use_train_subsets_from_previous_run = config.getboolean(
             'TRAIN', 'use_train_subsets_from_previous_run')
-        try:
-            previous_run_path = config['TRAIN']['previous_run_path']
-        except KeyError:
-            raise KeyError('In config.file {}, '
-                           'use_train_subsets_from_previous_run = Yes, but'
-                           'no previous_run_path option was found.\n'
-                           'Please add previous_run_path to config file.'
-                           .format(config_file))
+        if use_train_subsets_from_previous_run:
+            try:
+                previous_run_path = config['TRAIN']['previous_run_path']
+            except KeyError:
+                raise KeyError('In config.file {}, '
+                               'use_train_subsets_from_previous_run = Yes, but '
+                               'no previous_run_path option was found.'
+                               'Please add previous_run_path to config file.'
+                               .format(config_file))
+        else:
+            previous_run_path = None
     else:
         use_train_subsets_from_previous_run = False
         if config.has_option('TRAIN', 'previous_run_path'):
@@ -161,7 +164,6 @@ def parse_train_config(config, config_file):
                                      config['TRAIN']['previous_run_path'])
                              )
         else:
-
             previous_run_path = None
 
     if config.has_option('TRAIN', 'save_transformed_data'):
