@@ -1,9 +1,9 @@
-"""tests for songdeck.config.train module"""
+"""tests for vak.config.train module"""
 import unittest
 from configparser import ConfigParser, NoOptionError
 
-import songdeck.config.train
-import songdeck.utils
+import vak.config.train
+import vak.utils
 
 
 def _base_config():
@@ -33,8 +33,8 @@ class TestParseTrainConfig(unittest.TestCase):
     def test_config_tuple_has_all_attrs(self):
         config_obj = self.get_config
         config_file = 'test'
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
-        for field in songdeck.config.train.TrainConfig._fields:
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
+        for field in vak.config.train.TrainConfig._fields:
             self.assertTrue(hasattr(train_config_tup, field))
 
     def test_no_networks_raises(self):
@@ -42,89 +42,89 @@ class TestParseTrainConfig(unittest.TestCase):
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'networks')
         with self.assertRaises(KeyError):
-            songdeck.config.train.parse_train_config(config_obj, config_file)
+            vak.config.train.parse_train_config(config_obj, config_file)
 
     def test_network_not_installed_raises(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj['TRAIN']['networks'] = 'NotInstalledNet, OtherNotInstalledNet'
         with self.assertRaises(TypeError):
-            songdeck.config.train.parse_train_config(config_obj, config_file)
+            vak.config.train.parse_train_config(config_obj, config_file)
 
     def test_no_train_path_raises(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'train_data_path')
         with self.assertRaises(KeyError):
-            songdeck.config.train.parse_train_config(config_obj, config_file)
+            vak.config.train.parse_train_config(config_obj, config_file)
 
     def test_train_set_durs_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'train_set_durs')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.train_set_durs is None)
 
     def test_replicates_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'replicates')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.num_replicates is None)
 
     def test_val_data_dict_path_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'val_data_path')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.val_data_dict_path is None)
 
     def test_test_data_dict_path_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'test_data_path')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.test_data_dict_path is None)
 
     def test_val_error_step_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'val_error_step')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.val_error_step is None)
 
     def test_save_only_single_checkpoint_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'save_only_single_checkpoint_file')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.save_only_single_checkpoint_file is True)
 
     def test_checkpoint_step_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'checkpoint_step')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.checkpoint_step is None)
 
     def test_patience_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'patience')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.patience is None)
 
     def test_normalize_spectrograms_default(self):
         config_obj = self.get_config
         config_file = 'test'
         config_obj.remove_option('TRAIN', 'normalize_spectrograms')
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.normalize_spectrograms is False)
 
     def test_use_previous_run_default(self):
         config_obj = self.get_config
         config_file = 'test'
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.use_train_subsets_from_previous_run is False)
         self.assertTrue(train_config_tup.previous_run_path is None)
 
@@ -133,12 +133,12 @@ class TestParseTrainConfig(unittest.TestCase):
         config_obj['TRAIN']['use_train_subsets_from_previous_run'] = 'Yes'
         config_file = 'test'
         with self.assertRaises(KeyError):
-            songdeck.config.train.parse_train_config(config_obj, config_file)
+            vak.config.train.parse_train_config(config_obj, config_file)
 
     def test_save_transformed_data_default(self):
         config_obj = self.get_config
         config_file = 'test'
-        train_config_tup = songdeck.config.train.parse_train_config(config_obj, config_file)
+        train_config_tup = vak.config.train.parse_train_config(config_obj, config_file)
         self.assertTrue(train_config_tup.save_transformed_data is False)
 
 

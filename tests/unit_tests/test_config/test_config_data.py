@@ -1,10 +1,10 @@
-"""tests for songdeck.config.data module"""
+"""tests for vak.config.data module"""
 import os
 import unittest
 from configparser import ConfigParser
 
-import songdeck.config.data
-import songdeck.utils
+import vak.config.data
+import vak.utils
 
 HERE = os.path.dirname(__file__)
 
@@ -34,15 +34,15 @@ class TestParseDataConfig(unittest.TestCase):
     def test_config_tuple_has_all_attrs(self):
         config_obj = self.get_config
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj, config_file)
-        for field in songdeck.config.data.DataConfig._fields:
+        data_config_tup = vak.config.data.parse_data_config(config_obj, config_file)
+        for field in vak.config.data.DataConfig._fields:
             self.assertTrue(hasattr(data_config_tup, field))
 
     def test_str_labelset(self):
         config_obj = self.get_config
 
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertEqual(data_config_tup.labelset,
                          list(config_obj['DATA']['labelset'])
@@ -54,10 +54,10 @@ class TestParseDataConfig(unittest.TestCase):
         config_obj['DATA']['labelset'] = a_rangestr
 
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertEqual(data_config_tup.labelset,
-                         songdeck.utils.data.range_str(a_rangestr)
+                         vak.utils.data.range_str(a_rangestr)
                          )
 
     def test_int_labelset(self):
@@ -66,7 +66,7 @@ class TestParseDataConfig(unittest.TestCase):
         config_obj['DATA']['labelset'] = int_labels
 
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertEqual(data_config_tup.labelset,
                          list(int_labels)
@@ -77,7 +77,7 @@ class TestParseDataConfig(unittest.TestCase):
         # and set to False if we don't specify it
         config_obj = self.get_config
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertTrue(data_config_tup.all_labels_are_int is False)
 
@@ -86,7 +86,7 @@ class TestParseDataConfig(unittest.TestCase):
         # and set to 0 if we don't specify it
         config_obj = self.get_config
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertTrue(data_config_tup.silent_gap_label == 0)
 
@@ -95,7 +95,7 @@ class TestParseDataConfig(unittest.TestCase):
         # and set to None if we don't specify it
         config_obj = self.get_config
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertTrue(data_config_tup.output_dir is None)
 
@@ -104,7 +104,7 @@ class TestParseDataConfig(unittest.TestCase):
         # and set to None if we don't specify it
         config_obj = self.get_config
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertTrue(data_config_tup.mat_spect_files_path is None)
 
@@ -115,14 +115,14 @@ class TestParseDataConfig(unittest.TestCase):
         config_obj['DATA']['data_dir'] = 'theres/no/way/this/is/a/dir'
         config_file = 'test'
         with self.assertRaises(NotADirectoryError):
-            songdeck.config.data.parse_data_config(config_obj, config_file)
+            vak.config.data.parse_data_config(config_obj, config_file)
 
     def test_freq_bins_default(self):
         # test that freq_bins is added
         # and set to None if we don't specify it
         config_obj = self.get_config
         config_file = 'test'
-        data_config_tup = songdeck.config.data.parse_data_config(config_obj,
+        data_config_tup = vak.config.data.parse_data_config(config_obj,
                                                                  config_file)
         self.assertTrue(data_config_tup.freq_bins is None)
 
