@@ -77,8 +77,8 @@ def parse_config(config_file):
     # load entry points within function, not at module level,
     # to avoid circular dependencies
     # (user would be unable to import networks in other packages
-    # that subclass songdeck.network.AbstractSongdeckNetwork
-    # since the module in the other package would need to `import songdeck`)
+    # that subclass vak.network.AbstractSongdeckNetwork
+    # since the module in the other package would need to `import vak`)
     NETWORKS = _load()
     sections = config_obj.sections()
     # make tuple that will have network names as fields
