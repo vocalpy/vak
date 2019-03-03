@@ -31,7 +31,7 @@ REQUIRED = [
 ]
 
 test_deps = [
-    'songdeck_test_net', 'tweetynet',
+    'vak_test_net', 'tweetynet',
 ]
 
 # this is here so that the .travis.yml script can install
