@@ -22,7 +22,7 @@ DESCRIPTION = 'tools for benchmarking neural networks that annotate birdsong'
 URL = 'https://github.com/NickleDave/vak'
 EMAIL = 'dnicho4@emory.edu'
 AUTHOR = 'David Nicholson, Yarden Cohen'
-REQUIRES_PYTHON = '>=3.5.0'
+REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.1.1a1'
 LICENSE = 'BSD'
 
