@@ -33,11 +33,21 @@ class TestLearncurve(unittest.TestCase):
         self.tmp_config_dir = tempfile.mkdtemp()
         self.tmp_config_path = os.path.join(self.tmp_config_dir, 'tmp_config.ini')
         shutil.copy(tmp_makefile_config, self.tmp_config_path)
+
+        # rewrite config so it points to data for testing + temporary output dirs
+        config = ConfigParser()
+        config.read(self.tmp_config_path)
         test_data_spects_path = glob(os.path.join(TEST_DATA_DIR,
                                                   'spects',
                                                   'spectrograms_*'))[0]
-        self.train_data_dict_path = os.path.join(test_data_spects_path, 'train_data_dict')
-        self.val_data_dict_path = os.path.join(test_data_spects_path, 'val_data_dict')
+        config['TRAIN']['train_data_path'] = os.path.join(test_data_spects_path, 'train_data_dict')
+        config['TRAIN']['val_data_path'] = os.path.join(test_data_spects_path, 'val_data_dict')
+        config['TRAIN']['test_data_path'] = os.path.join(test_data_spects_path, 'test_data_dict')
+        config['DATA']['output_dir'] = self.tmp_output_dir
+        config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+        config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
+        with open(self.tmp_config_path, 'w') as fp:
+            config.write(fp)
 
     def tearDown(self):
         shutil.rmtree(self.tmp_output_dir)
@@ -46,23 +56,23 @@ class TestLearncurve(unittest.TestCase):
     def test_learncurve_func(self):
         # make sure learncurve runs without crashing.
         config = vak.config.parse.parse_config(self.tmp_config_path)
-        vak.cli.learncurve(train_data_dict_path=self.train_data_dict_path,
-                                val_data_dict_path=self.val_data_dict_path,
-                                spect_params=config.spect_params,
-                                total_train_set_duration=config.data.total_train_set_dur,
-                                train_set_durs=config.train.train_set_durs,
-                                num_replicates=config.train.num_replicates,
-                                num_epochs=config.train.num_epochs,
-                                config_file=self.tmp_config_path,
-                                networks=config.networks,
-                                val_error_step=config.train.val_error_step,
-                                checkpoint_step=config.train.checkpoint_step,
-                                patience=config.train.patience,
-                                save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
-                                normalize_spectrograms=config.train.normalize_spectrograms,
-                                use_train_subsets_from_previous_run=config.train.use_train_subsets_from_previous_run,
-                                previous_run_path=config.train.previous_run_path,
-                                root_results_dir=config.output.root_results_dir)
+        vak.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
+                           val_data_dict_path=config.train.val_data_dict_path,
+                           spect_params=config.spect_params,
+                           total_train_set_duration=config.data.total_train_set_dur,
+                           train_set_durs=config.train.train_set_durs,
+                           num_replicates=config.train.num_replicates,
+                           num_epochs=config.train.num_epochs,
+                           config_file=self.tmp_config_path,
+                           networks=config.networks,
+                           val_error_step=config.train.val_error_step,
+                           checkpoint_step=config.train.checkpoint_step,
+                           patience=config.train.patience,
+                           save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
+                           normalize_spectrograms=config.train.normalize_spectrograms,
+                           use_train_subsets_from_previous_run=config.train.use_train_subsets_from_previous_run,
+                           previous_run_path=config.train.previous_run_path,
+                           root_results_dir=config.output.root_results_dir)
 
 
 if __name__ == '__main__':
