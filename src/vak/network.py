@@ -1,12 +1,12 @@
 """module that contains helper function to load networks, and
-the AbstractSongdeckNetwork class.
+the AbstractVakNetwork class.
 Networks in separate packages should subclass this class, and
-then make themselves available to songdeck by including
-'songdeck.network' in the entry_points value of their setup.py
+then make themselves available to vak by including
+'vak.network' in the entry_points value of their setup.py
 file.
 
 The reason for subclassing is simply to set a
-standard interface for networks to use. songdeck will check
+standard interface for networks to use. vak will check
 that any network implements all the methods listed here,
 since it requires those methods to carry out commands
 in its command-line interface.
@@ -17,7 +17,7 @@ setup.py file:
 
 setup(
     ...
-    entry_points={'songdeck.network': 'GRUnet = grunet.model:GRUnet'},
+    entry_points={'vak.network': 'GRUnet = grunet.model:GRUnet'},
     ...
 )
 
@@ -39,7 +39,7 @@ def _load():
     return networks
 
 
-class AbstractSongdeckNetwork:
+class AbstractVakNetwork:
 
     Config = typing.NamedTuple('Config',
                                [('conv_layers', int),
