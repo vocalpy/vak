@@ -1,4 +1,4 @@
-"""tests for songdeck.config.parse module"""
+"""tests for vak.config.parse module"""
 import os
 from glob import glob
 import tempfile
@@ -6,9 +6,9 @@ import shutil
 import unittest
 from configparser import ConfigParser
 
-import songdeck.config
-import songdeck.utils
-import songdeck.network
+import vak.config
+import vak.utils
+import vak.network
 
 HERE = os.path.dirname(__file__)
 TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')
@@ -59,8 +59,8 @@ class TestParseConfig(unittest.TestCase):
         test_learncurve_config = os.path.join(TEST_CONFIGS_PATH,
                                               'test_learncurve_config.ini')
         tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_learncurve_config)
-        config_tup = songdeck.config.parse_config(tmp_config_file)
-        for field in songdeck.config.parse.ConfigTuple._fields:
+        config_tup = vak.config.parse_config(tmp_config_file)
+        for field in vak.config.parse.ConfigTuple._fields:
             self.assertTrue(hasattr(config_tup, field))
 
     def test_defined_sections_not_None(self):
@@ -70,7 +70,7 @@ class TestParseConfig(unittest.TestCase):
             tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_config)
             config_obj = ConfigParser()
             config_obj.read(tmp_config_file)
-            config_tup = songdeck.config.parse_config(tmp_config_file)
+            config_tup = vak.config.parse_config(tmp_config_file)
             for section in config_obj.sections():
                 if section in self.section_to_field_map:
                     # check sections that any config.ini file can have, non-network specific
@@ -83,12 +83,12 @@ class TestParseConfig(unittest.TestCase):
     def test_network_sections_match_config(self):
         test_configs = glob(os.path.join(TEST_CONFIGS_PATH,
                                          'test_*_config.ini'))
-        NETWORKS = songdeck.network._load()
+        NETWORKS = vak.network._load()
         for test_config in test_configs:
             tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_config)
             config_obj = ConfigParser()
             config_obj.read(tmp_config_file)
-            config_tup = songdeck.config.parse_config(tmp_config_file)
+            config_tup = vak.config.parse_config(tmp_config_file)
             net_sections_found = 0
             for section in config_obj.sections():
                 if section in config_tup.networks._fields:
@@ -108,7 +108,7 @@ class TestParseConfig(unittest.TestCase):
         with open(tmp_config_file, 'w') as rewrite:
             config.write(rewrite)
         with self.assertRaises(ValueError):
-            songdeck.config.parse_config(tmp_config_file)
+            vak.config.parse_config(tmp_config_file)
 
     def test_both_train_and_predict_raises(self):
         test_learncurve_config = os.path.join(TEST_CONFIGS_PATH,
@@ -123,7 +123,7 @@ class TestParseConfig(unittest.TestCase):
         with open(tmp_config_file, 'w') as rewrite:
             config.write(rewrite)
         with self.assertRaises(ValueError):
-            songdeck.config.parse_config(tmp_config_file)
+            vak.config.parse_config(tmp_config_file)
 
 
 if __name__ == '__main__':

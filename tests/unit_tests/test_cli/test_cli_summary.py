@@ -1,4 +1,4 @@
-"""tests for songdeck.cli.learncurve module"""
+"""tests for vak.cli.learncurve module"""
 import os
 import tempfile
 import shutil
@@ -8,8 +8,8 @@ from configparser import ConfigParser
 
 import joblib
 
-import songdeck.cli.make_data
-from songdeck.config.spectrogram import SpectConfig
+import vak.cli.make_data
+from vak.config.spectrogram import SpectConfig
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
@@ -44,8 +44,8 @@ class TestSummary(unittest.TestCase):
 
     def test_learncurve_func(self):
         # make sure cli.summary runs without crashing.
-        config = songdeck.config.parse.parse_config(self.tmp_config_path)
-        songdeck.cli.summary(results_dirname=config.output.results_dirname,
+        config = vak.config.parse.parse_config(self.tmp_config_path)
+        vak.cli.summary(results_dirname=config.output.results_dirname,
                              train_data_dict_path=config.train.train_data_dict_path,
                              networks=config.networks,
                              train_set_durs=config.train.train_set_durs,

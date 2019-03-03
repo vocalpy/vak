@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from songdeck.utils.data import reshape_data_for_batching
+from vak.utils.data import reshape_data_for_batching
 
 
 class TestUtils(unittest.TestCase):
