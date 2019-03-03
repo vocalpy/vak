@@ -4,7 +4,7 @@ language: python
 
 matrix:
   include:
-    - python: "3.5"
+    - python: "3.6"
       env: DEPS="numpy scipy matplotlib tensorflow joblib"
 
 before_install:
