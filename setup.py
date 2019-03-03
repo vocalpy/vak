@@ -18,7 +18,7 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'vak'
-DESCRIPTION = 'tools for benchmarking neural networks that annotate birdsong'
+DESCRIPTION = 'library to work with neural networks that segment and annotate vocalizations'
 URL = 'https://github.com/NickleDave/vak'
 EMAIL = 'dnicho4@emory.edu'
 AUTHOR = 'David Nicholson, Yarden Cohen'
