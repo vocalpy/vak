@@ -37,7 +37,7 @@ def parse_predict_config(config):
     # load entry points within function, not at module level,
     # to avoid circular dependencies
     # (user would be unable to import networks in other packages
-    # that subclass songdeck.network.AbstractSongdeckNetwork
+    # that subclass songdeck.network.AbstractVakNetwork
     # since the module in the other package would need to `import songdeck`)
     NETWORKS = _load()
     NETWORK_NAMES = [network_name.lower() for network_name in NETWORKS.keys()]
