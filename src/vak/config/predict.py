@@ -26,7 +26,7 @@ def parse_predict_config(config):
             networks : str
                 Name of network which was trained and which should be used to make
                 predictions. This must match the original network that was trained
-                for the checkpoint file used and is required so songdeck knows which
+                for the checkpoint file used and is required so vak knows which
                 type of network to load before loading the parameters saved in the
                 checkpoint file.
             checkpoint_dir : str
