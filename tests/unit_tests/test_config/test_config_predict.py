@@ -16,7 +16,7 @@ def _base_config(tmp_checkpoint_dir,
                  tmp_dir_to_predict):
     base_config = ConfigParser()
     base_config['PREDICT'] = {
-        'networks': 'SongdeckTestNet',
+        'networks': 'VakTestNet',
         'checkpoint_dir': str(tmp_checkpoint_dir),
         'dir_to_predict': str(tmp_dir_to_predict),
     }
