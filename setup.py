@@ -116,9 +116,9 @@ setup(
     url=URL,
     packages=find_packages(where="src", exclude=('tests',)),
     package_dir={"": "src"},
-    scripts=['src/bin/songdeck-cli.py'],
+    # scripts=['src/bin/vak-cli.py'],
     entry_points={
-        'console_scripts': ['songdeck-cli=songdeck.__main__:main'],
+        'console_scripts': ['vak=vak.__main__:main'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
