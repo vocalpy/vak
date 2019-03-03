@@ -17,9 +17,9 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'songdeck'
+NAME = 'vak'
 DESCRIPTION = 'tools for benchmarking neural networks that annotate birdsong'
-URL = 'https://github.com/NickleDave/songdeck'
+URL = 'https://github.com/NickleDave/vak'
 EMAIL = 'dnicho4@emory.edu'
 AUTHOR = 'David Nicholson, Yarden Cohen'
 REQUIRES_PYTHON = '>=3.5.0'
