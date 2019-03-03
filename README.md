@@ -1,6 +1,6 @@
 # vak
 ## a library for benchmarking neural networks that segment and annotate
-[![Build Status](https://travis-ci.org/NickleDave/vak.svg?branch=master)](https://travis-ci.org/NickleDave/vak)
+[![Build Status](https://travis-ci.com/NickleDave/vak.svg?branch=master)](https://travis-ci.com/NickleDave/vak)
 ## Installation
 To install, run the following command at the command line:  
 `pip install vak`
