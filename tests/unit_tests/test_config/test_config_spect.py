@@ -1,9 +1,9 @@
-"""tests for songdeck.config.spectrogram module"""
+"""tests for vak.config.spectrogram module"""
 import unittest
 from configparser import ConfigParser
 
-import songdeck.config.spectrogram
-import songdeck.utils
+import vak.config.spectrogram
+import vak.utils
 
 
 def _base_config():
@@ -25,8 +25,8 @@ class TestParseSpectConfig(unittest.TestCase):
 
     def test_config_tuple_has_all_attrs(self):
         config_obj = self.get_config
-        spect_config_tup = songdeck.config.spectrogram.parse_spect_config(config_obj)
-        for field in songdeck.config.spectrogram.SpectConfig._fields:
+        spect_config_tup = vak.config.spectrogram.parse_spect_config(config_obj)
+        for field in vak.config.spectrogram.SpectConfig._fields:
             self.assertTrue(hasattr(spect_config_tup, field))
 
     def test_thresh_default(self):
@@ -38,7 +38,7 @@ class TestParseSpectConfig(unittest.TestCase):
             'step_size': '64',
             'freq_cutoffs': '500, 10000',
         }
-        spect_config_tup = songdeck.config.spectrogram.parse_spect_config(config_obj)
+        spect_config_tup = vak.config.spectrogram.parse_spect_config(config_obj)
         self.assertTrue(spect_config_tup.thresh is None)
 
 

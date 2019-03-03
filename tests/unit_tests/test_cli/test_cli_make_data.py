@@ -1,4 +1,4 @@
-"""tests for songdeck.cli.make_data module"""
+"""tests for vak.cli.make_data module"""
 import os
 import tempfile
 import shutil
@@ -8,8 +8,8 @@ from configparser import ConfigParser
 
 import joblib
 
-import songdeck.cli.make_data
-from songdeck.config.spectrogram import SpectConfig
+import vak.cli.make_data
+from vak.config.spectrogram import SpectConfig
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
@@ -35,7 +35,7 @@ class TestMakeData(unittest.TestCase):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         spect_params = SpectConfig(fft_size=512,step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
-        songdeck.cli.make_data(labelset=list('iabcdefghjk'),
+        vak.cli.make_data(labelset=list('iabcdefghjk'),
                                all_labels_are_int=False,
                                data_dir=data_dir,
                                total_train_set_dur=20,
@@ -56,7 +56,7 @@ class TestMakeData(unittest.TestCase):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         spect_params = SpectConfig(fft_size=512,step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
-        songdeck.cli.make_data(labelset=list('iabcdefghjk'),
+        vak.cli.make_data(labelset=list('iabcdefghjk'),
                                all_labels_are_int=False,
                                data_dir=data_dir,
                                total_train_set_dur=20,

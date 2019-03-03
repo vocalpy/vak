@@ -1,11 +1,11 @@
-"""tests for songdeck.config.output module"""
+"""tests for vak.config.output module"""
 import tempfile
 import shutil
 import unittest
 from configparser import ConfigParser
 
-import songdeck.config.output
-import songdeck.utils
+import vak.config.output
+import vak.utils
 
 
 def _base_config(tmp_root_dir,
@@ -31,26 +31,26 @@ class TestParseOutputConfig(unittest.TestCase):
 
     def test_config_tuple_has_all_attrs(self):
         config_obj = self.get_config
-        output_config_tup = songdeck.config.output.parse_output_config(config_obj)
-        for field in songdeck.config.output.OutputConfig._fields:
+        output_config_tup = vak.config.output.parse_output_config(config_obj)
+        for field in vak.config.output.OutputConfig._fields:
             self.assertTrue(hasattr(output_config_tup, field))
 
     def test_missing_root_results_dir_raises(self):
         config_obj = self.get_config
         config_obj.remove_option('OUTPUT', 'root_results_dir')
         with self.assertRaises(KeyError):
-            songdeck.config.output.parse_output_config(config_obj)
+            vak.config.output.parse_output_config(config_obj)
 
     def test_nonexistent_root_results_dir_raises(self):
         config_obj = self.get_config
         config_obj['OUTPUT']['root_results_dir'] = 'obviously/non/existent/dir'
         with self.assertRaises(NotADirectoryError):
-            songdeck.config.output.parse_output_config(config_obj)
+            vak.config.output.parse_output_config(config_obj)
 
     def test_no_results_dir_defaults_to_None(self):
         config_obj = self.get_config
         config_obj.remove_option('OUTPUT', 'results_dir_made_by_main_script')
-        output_config_tup = songdeck.config.output.parse_output_config(config_obj)
+        output_config_tup = vak.config.output.parse_output_config(config_obj)
         self.assertTrue(output_config_tup.results_dirname is None)
 
 
