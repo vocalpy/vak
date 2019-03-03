@@ -17,27 +17,27 @@ parser = argparse.ArgumentParser(description='main script',
 parser.add_argument('-c', '--config', type=str,
                     help='run learning curve experiment with a single config'
                          '.ini file, by passing the name of that file.\n'
-                         '$ songdeck-cli --config ./config_bird1.ini')
+                         '$ vak-cli --config ./config_bird1.ini')
 parser.add_argument('-d', '--dataset', type=str,
                     help='Create a dataset from a list of files '
                          'in a .txt file, by passing in the name of the .txt file.\n'
-                         '$ songdeck-cli --dataset ./audio_files_list.txt')
+                         '$ vak-cli --dataset ./audio_files_list.txt')
 parser.add_argument('-g', '--glob', type=str,
                     help='string to use with glob function '
                          'to search for config files fitting some pattern.\n'
-                         '$ songdeck-cli --glob ./config_finches*.ini')
+                         '$ vak-cli --glob ./config_finches*.ini')
 parser.add_argument('-p', '--predict', type=str,
                     help='predict segments and labels for song, using a trained '
                          'model specified in a single config.ini file\n'
-                         '$ songdeck-cli --predict ./predict_bird1.ini')
+                         '$ vak-cli --predict ./predict_bird1.ini')
 parser.add_argument('-s', '--summary', type=str,
                     help='runs function that summarizes results from generating'
                          'a learning curve, using a single config.ini file\n'
-                         '$ songdeck-cli --summary ./config_bird1.ini')
+                         '$ vak-cli --summary ./config_bird1.ini')
 parser.add_argument('-t', '--txt', type=str,
                     help='name of .txt file containing list of '
                          'config files to run\n'
-                         '$ songdeck-cli --text ./list_of_config_filenames.txt')
+                         '$ vak-cli --text ./list_of_config_filenames.txt')
 args = parser.parse_args()
 
 
@@ -47,7 +47,7 @@ def main():
                         args.txt,]]) != 1:
         parser.error("Please specify exactly one of the following flags: "
                      "--glob, --txt, --config, or --predict.\n"
-                     "Run 'songdeck-cli --help' for an explanation of each.")
+                     "Run 'vak-cli --help' for an explanation of each.")
 
     if args.glob:
         config_files = glob(args.glob)
