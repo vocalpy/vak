@@ -1,8 +1,8 @@
 """
 Invokes __main__ when the module is run as a script.
-Example: python -m songdeck --help
-The same function is run by the script `songdeck-cli` which is installed on the
-path by pip, so `$ songdeck-cli --help` would have the same effect (i.e., no need
+Example: python -m vak --help
+The same function is run by the script `vak-cli` which is installed on the
+path by pip, so `$ vak-cli --help` would have the same effect (i.e., no need
 to type the python -m)
 """
 
@@ -10,7 +10,7 @@ import argparse
 import os
 from glob import glob
 
-import songdeck
+import vak
 
 parser = argparse.ArgumentParser(description='main script',
                                  formatter_class=argparse.RawTextHelpFormatter,)
@@ -80,8 +80,8 @@ def main():
         config_files = config_files_cleaned
 
         for config_file in config_files:
-            config = songdeck.config.parse.parse_config(config_file)
-            songdeck.cli.make_data(labelset=config.data.labelset,
+            config = vak.config.parse.parse_config(config_file)
+            vak.cli.make_data(labelset=config.data.labelset,
                                    all_labels_are_int=config.data.all_labels_are_int,
                                    data_dir=config.data.data_dir,
                                    total_train_set_dur=config.data.total_train_set_dur,
@@ -96,8 +96,8 @@ def main():
                                    spect_params=config.spect_params)
 
             # get config again because make_data changed train_data_dict_path and val_data_dict_path
-            config = songdeck.config.parse.parse_config(config_file)
-            songdeck.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
+            config = vak.config.parse.parse_config(config_file)
+            vak.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
                                     val_data_dict_path=config.train.val_data_dict_path,
                                     spect_params=config.spect_params,
                                     total_train_set_duration=config.data.total_train_set_dur,
@@ -116,8 +116,8 @@ def main():
                                     root_results_dir=config.output.root_results_dir)
 
             # get config again because learncurve changed results_dir_made_by_main_script
-            config = songdeck.config.parse.parse_config(config_file)
-            songdeck.cli.summary(results_dirname=config.output.results_dirname,
+            config = vak.config.parse.parse_config(config_file)
+            vak.cli.summary(results_dirname=config.output.results_dirname,
                                  train_data_dict_path=config.train.train_data_dict_path,
                                  networks=config.networks,
                                  train_set_durs=config.train.train_set_durs,
@@ -126,9 +126,9 @@ def main():
                                  test_data_dict_path=config.train.test_data_dict_path,
                                  normalize_spectrograms=config.train.normalize_spectrograms)
     elif args.predict:
-        songdeck.cli.predict(args.predict)
+        vak.cli.predict(args.predict)
     elif args.summary:
-        songdeck.cli.summary(args.summary)
+        vak.cli.summary(args.summary)
 
 
 if __name__ == "__main__":

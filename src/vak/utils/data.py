@@ -9,8 +9,8 @@ import numpy as np
 from scipy.io import wavfile, loadmat
 
 from . import spect as spect_utils  # so as not to confuse with variable name `spect`
-from songdeck import evfuncs
-from songdeck.koumura_utils import load_song_annot
+from vak import evfuncs
+from vak.koumura_utils import load_song_annot
 
 
 def vec_translate(a, my_dict):

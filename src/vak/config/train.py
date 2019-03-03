@@ -51,8 +51,8 @@ def parse_train_config(config, config_file):
     # load entry points within function, not at module level,
     # to avoid circular dependencies
     # (user would be unable to import networks in other packages
-    # that subclass songdeck.network.AbstractVakNetwork
-    # since the module in the other package would need to `import songdeck`)
+    # that subclass vak.network.AbstractVakNetwork
+    # since the module in the other package would need to `import vak`)
     NETWORKS = _load()
     NETWORK_NAMES = [network_name.lower() for network_name in NETWORKS.keys()]
     try:
