@@ -31,7 +31,7 @@ REQUIRED = [
 ]
 
 test_deps = [
-    'vak_test_net', 'tweetynet',
+    'vak_test_net', 'tweetynet>=0.1.1a3',
 ]
 
 # this is here so that the .travis.yml script can install
