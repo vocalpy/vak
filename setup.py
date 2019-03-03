@@ -27,7 +27,7 @@ VERSION = '0.1.1a1'
 LICENSE = 'BSD'
 
 REQUIRED = [
-    'tensorflow', 'numpy', 'scipy', 'matplotlib', 'joblib',
+    'tensorflow', 'numpy', 'scipy', 'matplotlib', 'joblib', 'crowsetta',
 ]
 
 test_deps = [
