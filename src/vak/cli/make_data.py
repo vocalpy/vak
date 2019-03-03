@@ -7,9 +7,9 @@ from configparser import ConfigParser
 
 import joblib
 
-from songdeck.utils.data import make_spects_from_list_of_files, make_data_dicts
-from songdeck.utils.mat import convert_mat_to_spect
-import songdeck.config
+from vak.utils.data import make_spects_from_list_of_files, make_data_dicts
+from vak.utils.mat import convert_mat_to_spect
+import vak.config
 
 
 def make_data(labelset,
@@ -193,7 +193,7 @@ def make_data(labelset,
 
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
-    config = songdeck.config.parse_config(config_file)
+    config = vak.config.parse_config(config_file)
     make_data(labelset=config.data.labelset,
               all_labels_are_int=config.data.all_labels_are_int,
               data_dir=config.data.data_dir,

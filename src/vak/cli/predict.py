@@ -7,7 +7,7 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-from songdeck.utils.data import reshape_data_for_batching
+from vak.utils.data import reshape_data_for_batching
 
 
 def predict(results_dirname,

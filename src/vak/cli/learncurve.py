@@ -12,7 +12,7 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-import songdeck.network
+import vak.network
 
 
 def learncurve(train_data_dict_path,
@@ -256,7 +256,7 @@ def learncurve(train_data_dict_path,
         # need a copy of X_val when we normalize it below
         X_val_copy = copy.deepcopy(X_val)
 
-    NETWORKS = songdeck.network._load()
+    NETWORKS = vak.network._load()
 
     for train_set_dur in train_set_durs:
         for replicate in REPLICATES:
@@ -283,7 +283,7 @@ def learncurve(train_data_dict_path,
                 with open(train_inds_path, 'rb') as f:
                     train_inds = pickle.load(f)
             else:
-                train_inds = songdeck.utils.data.get_inds_for_dur(X_train_spect_ID_vector,
+                train_inds = vak.utils.data.get_inds_for_dur(X_train_spect_ID_vector,
                                                                   Y_train,
                                                                   labels_mapping,
                                                                   train_set_dur,
@@ -300,7 +300,7 @@ def learncurve(train_data_dict_path,
                 Y_train_subset = np.squeeze(Y_train_subset)
 
             if normalize_spectrograms:
-                spect_scaler = songdeck.utils.data.SpectScaler()
+                spect_scaler = vak.utils.data.SpectScaler()
                 X_train_subset = spect_scaler.fit_transform(X_train_subset)
                 logger.info('normalizing validation set to match training set')
                 X_val = spect_scaler.transform(X_val_copy)
@@ -344,7 +344,7 @@ def learncurve(train_data_dict_path,
 
                 (X_val_batch,
                  Y_val_batch,
-                 num_batches_val) = songdeck.utils.data.reshape_data_for_batching(X_val,
+                 num_batches_val) = vak.utils.data.reshape_data_for_batching(X_val,
                                                                                   Y_val,
                                                                                   net_config.batch_size,
                                                                                   net_config.time_bins,
@@ -501,8 +501,8 @@ def learncurve(train_data_dict_path,
 
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
-    config = songdeck.config.parse.parse_config(config_file)
-    songdeck.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
+    config = vak.config.parse.parse_config(config_file)
+    vak.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
                             val_data_dict_path=config.train.val_data_dict_path,
                             spect_params=config.spect_params,
                             total_train_set_duration=config.data.total_train_set_dur,
