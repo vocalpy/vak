@@ -30,6 +30,10 @@ REQUIRED = [
     'tensorflow', 'numpy', 'scipy', 'matplotlib', 'joblib', 'crowsetta',
 ]
 
+dev_deps = [
+    'twine',
+]
+
 test_deps = [
     'vak_test_net', 'tweetynet>=0.1.1a3',
 ]
@@ -39,6 +43,7 @@ test_deps = [
 # pip install .[tests]
 EXTRAS = {
     'tests': test_deps,
+    'dev': dev_deps,
 }
 
 # The rest you shouldn't have to touch too much :)
