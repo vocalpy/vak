@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'songdeck'
+project = 'vak'
 copyright = '2018, David Nicholson, Yarden Cohen'
 author = 'David Nicholson, Yarden Cohen'
 
@@ -136,7 +136,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'songdeck.tex', 'songdeck Documentation',
+    (master_doc, 'vak.tex', 'vak Documentation',
      'David Nicholson, Yarden Cohen', 'manual'),
 ]
 
@@ -146,7 +146,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'songdeck', 'songdeck Documentation',
+    (master_doc, 'vak', 'vak Documentation',
      [author], 1)
 ]
 
@@ -157,8 +157,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'songdeck', 'songdeck Documentation',
-     author, 'songdeck', 'One line description of project.',
+    (master_doc, 'vak', 'vak Documentation',
+     author, 'vak', 'One line description of project.',
      'Miscellaneous'),
 ]
 
