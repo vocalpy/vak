@@ -25,6 +25,20 @@ class TestMakeData(unittest.TestCase):
         self.tmp_config_path = os.path.join(TEST_DATA_DIR, 'configs', 'tmp_config.ini')
         shutil.copy(a_config, self.tmp_config_path)
 
+        # rewrite config so it points to data for testing + temporary output dirs
+        config = ConfigParser()
+        config.read(self.tmp_config_path)
+        test_data_spects_path = glob(os.path.join(TEST_DATA_DIR,
+                                                  'spects',
+                                                  'spectrograms_*'))[0]
+        config['TRAIN']['train_data_path'] = os.path.join(test_data_spects_path, 'train_data_dict')
+        config['TRAIN']['val_data_path'] = os.path.join(test_data_spects_path, 'val_data_dict')
+        config['TRAIN']['test_data_path'] = os.path.join(test_data_spects_path, 'test_data_dict')
+        config['DATA']['output_dir'] = self.tmp_output_dir
+        config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+        with open(self.tmp_config_path, 'w') as fp:
+            config.write(fp)
+
     def tearDown(self):
         shutil.rmtree(self.tmp_output_dir)
         os.remove(self.tmp_config_path)
@@ -36,18 +50,18 @@ class TestMakeData(unittest.TestCase):
         spect_params = SpectConfig(fft_size=512,step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
         vak.cli.make_data(labelset=list('iabcdefghjk'),
-                               all_labels_are_int=False,
-                               data_dir=data_dir,
-                               total_train_set_dur=20,
-                               val_dur=10,
-                               test_dur=20,
-                               config_file=self.tmp_config_path,
-                               silent_gap_label=0,
-                               skip_files_with_labels_not_in_labelset=True,
-                               output_dir=self.tmp_output_dir,
-                               mat_spect_files_path=None,
-                               mat_spects_annotation_file=None,
-                               spect_params=spect_params)
+                          all_labels_are_int=False,
+                          data_dir=data_dir,
+                          total_train_set_dur=20,
+                          val_dur=10,
+                          test_dur=20,
+                          config_file=self.tmp_config_path,
+                          silent_gap_label=0,
+                          skip_files_with_labels_not_in_labelset=True,
+                          output_dir=self.tmp_output_dir,
+                          mat_spect_files_path=None,
+                          mat_spects_annotation_file=None,
+                          spect_params=spect_params)
         data_dicts = glob(os.path.join(self.tmp_output_dir, 'spectrograms*', '*dict*'))
         assert len(data_dicts) == 3
 
