@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 from .. import metrics, utils
-import songdeck.network
+import vak.network
 
 def summary(results_dirname,
             train_data_dict_path,
@@ -157,7 +157,7 @@ def summary(results_dirname,
     train_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
     test_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
 
-    NETWORKS = songdeck.network._load()
+    NETWORKS = vak.network._load()
 
     for dur_ind, train_set_dur in enumerate(train_set_durs):
 

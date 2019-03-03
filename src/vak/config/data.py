@@ -2,7 +2,7 @@
 import os
 from collections import namedtuple
 
-from songdeck.utils.data import range_str
+from vak.utils.data import range_str
 
 fields = ['labelset',
           'all_labels_are_int',
