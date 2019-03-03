@@ -22,13 +22,13 @@ def parse_output_config(config):
         with fields:
             root_results_dir : str
                 directory in which results *will* be created.
-                The songdeck.cli.learcurve function will create
+                The vak.cli.learcurve function will create
                 a subdirectory in this directory each time it runs.
             results_dirname : str
-                name of subdirectory created by songdeck.cli.learncurve.
+                name of subdirectory created by vak.cli.learncurve.
                 This option is added programatically by that function
                 when it runs but can be changed (e.g. to run
-                songdeck.cli.summary on previous outputs of learncurve.)
+                vak.cli.summary on previous outputs of learncurve.)
     """
     try:
         root_results_dir = config['OUTPUT']['root_results_dir']
