@@ -1,11 +1,11 @@
 import os
 
-import songdeck
+import vak
 
 HERE = os.path.dirname(__file__)
 config_file = os.path.join(HERE, 'tmp_Makefile_config.ini')
-config = songdeck.config.parse.parse_config(config_file)
-songdeck.cli.make_data(labelset=config.data.labelset,
+config = vak.config.parse.parse_config(config_file)
+vak.cli.make_data(labelset=config.data.labelset,
                        all_labels_are_int=config.data.all_labels_are_int,
                        data_dir=config.data.data_dir,
                        total_train_set_dur=config.data.total_train_set_dur,
