@@ -104,7 +104,7 @@ class TestParseConfig(unittest.TestCase):
         tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_learncurve_config)
         config = ConfigParser()
         config.read(tmp_config_file)
-        config['SongdeckTestNet']['bungalow'] = '12'
+        config['VakTestNet']['bungalow'] = '12'
         with open(tmp_config_file, 'w') as rewrite:
             config.write(rewrite)
         with self.assertRaises(ValueError):
@@ -117,7 +117,7 @@ class TestParseConfig(unittest.TestCase):
         config = ConfigParser()
         config.read(tmp_config_file)
         config.add_section('PREDICT')
-        config['PREDICT']['networks'] = 'SongdeckTestNet'
+        config['PREDICT']['networks'] = 'VakTestNet'
         config['PREDICT']['checkpoint_dir'] = self.tmp_checkpoint_dir
         config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
         with open(tmp_config_file, 'w') as rewrite:
