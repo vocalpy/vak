@@ -16,8 +16,91 @@ import tweetynet
 from tweetynet import TweetyNet
 
 
-def train(config_file):
-    """train a single models using training set specified in config.ini file"""
+def train(train_data_dict_path,
+          val_data_dict_path,
+          spect_params,
+          total_train_set_duration,
+          train_set_durs,
+          num_replicates,
+          networks,
+          num_epochs,
+          config_file,
+          val_error_step=None,
+          checkpoint_step=None,
+          patience=None,
+          save_only_single_checkpoint_file=True,
+          normalize_spectrograms=False,
+          use_train_subsets_from_previous_run=False,
+          previous_run_path=None,
+          root_results_dir=None,
+          save_transformed_data=False,
+          ):
+    """train a single model using training set specified in config.ini file
+
+    Parameters
+    ----------
+    train_data_dict_path : str
+        path to training data
+    val_data_dict_path : str
+        path to validation data
+    spect_params : dict
+        parameters for creating spectrograms.
+        Used to ensure that what's in config file matches what's in
+        the data.
+    total_train_set_duration : int
+        total duration of training set, in seconds
+    train_set_durs : list
+        of int, durations in seconds of subsets taken from training data
+        to create a learning curve, e.g. [5, 10, 15, 20]
+    num_replicates : int
+        number of times to replicate training for each training set duration
+        to better estimate mean accuracy for a training set of that size.
+        Each replicate uses a different randomly drawn subset of the training
+        data (but of the same duration).
+    networks : namedtuple
+        where each field is the Config tuple for a neural network and the name
+        of that field is the name of the class that represents the network.
+    num_epochs : int
+        number of training epochs. One epoch = one iteration through the entire
+        training set.
+    config_file : str
+        path to config.ini file. Used to rewrite file with options determined by
+        this function and needed for other functions (e.g. cli.summary)
+    val_error_step : int
+        step/epoch at which to estimate accuracy using validation set.
+        Default is None, in which case no validation is done.
+    checkpoint_step : int
+        step/epoch at which to save to checkpoint file.
+        Default is None, in which case checkpoint is only saved at the last epoch.
+    patience : int
+        number of epochs to wait without the error dropping before stopping the
+        training. Default is None, in which case training continues for num_epochs
+    save_only_single_checkpoint_file : bool
+        if True, save only one checkpoint file instead of separate files every time
+        we save. Default is True.
+    normalize_spectrograms : bool
+        if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
+        Normalization is done by subtracting off the mean for each frequency bin
+        of the training set and then dividing by the std for that frequency bin.
+        This same normalization is then applied to validation + test data.
+    use_train_subsets_from_previous_run : bool
+        if True, use training subsets saved in a previous run
+    previous_run_path : str
+        path to results directory from a previous run
+    root_results_dir : str
+        path in which to create results directory for this run of cli.learncurve
+    save_transformed_data : bool
+        if True, save transformed data (i.e. scaled, reshaped). The data can then
+        be used on a subsequent run of learncurve (e.g. if you want to compare results
+        from different hyperparameters across the exact same training set).
+        Also useful if you need to check what the data looks like when fed to networks.
+
+    Returns
+    -------
+    None
+
+    Saves results in root_results_dir and adds some options to config_file.):
+    """
     if not config_file.endswith('.ini'):
         raise ValueError('{} is not a valid config file, '
                          'must have .ini extension'.format(config_file))
