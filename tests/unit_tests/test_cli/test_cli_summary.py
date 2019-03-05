@@ -53,7 +53,7 @@ class TestSummary(unittest.TestCase):
         results_dir = glob(os.path.join(TEST_DATA_DIR,
                                         'results',
                                         'results_*'))[0]
-        config['OUTPUT']['results_dir_made_by_main_script '] = results_dir
+        config['OUTPUT']['results_dir_made_by_main_script'] = results_dir
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)
 
