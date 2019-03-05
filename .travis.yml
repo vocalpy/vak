@@ -25,7 +25,7 @@ install:
   - conda create -n testenv --yes $DEPS pip pytest setuptools python=$TRAVIS_PYTHON_VERSION
   - source activate testenv
   - pip install .[tests]
-  - make all  # runs tests/scripts to create data used for unit tests
+  - make download  # get test data from figshare that takes too long to re-generate on travis-ci
 
 script:
   - python -m unittest
