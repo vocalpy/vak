@@ -50,6 +50,10 @@ class TestSummary(unittest.TestCase):
         config['DATA']['output_dir'] = self.tmp_output_dir
         config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
+        results_dir = glob(os.path.join(TEST_DATA_DIR,
+                                        'results',
+                                        'results_*'))[0]
+        config['OUTPUT']['results_dir_made_by_main_script '] = results_dir
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)
 
