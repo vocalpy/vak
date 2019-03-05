@@ -101,18 +101,8 @@ def train(train_data_dict_path,
 
     Saves results in root_results_dir and adds some options to config_file.):
     """
-    if not config_file.endswith('.ini'):
-        raise ValueError('{} is not a valid config file, '
-                         'must have .ini extension'.format(config_file))
-    if not os.path.isfile(config_file):
-        raise FileNotFoundError('config file {} is not found'
-                                .format(config_file))
-    config = ConfigParser()
-    config.read(config_file)
-
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    if config.has_option('OUTPUT', 'root_results_dir'):
-        root_results_dir = config['OUTPUT']['root_results_dir']
+    if root_results_dir:
         results_dirname = os.path.join(root_results_dir,
                                        'results_' + timenow)
     else:
@@ -122,7 +112,7 @@ def train(train_data_dict_path,
     shutil.copy(config_file, results_dirname)
 
     logfile_name = os.path.join(results_dirname,
-                                'logfile_from_running_main_' + timenow + '.log')
+                                'logfile_from_train_' + timenow + '.log')
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
     logger.addHandler(logging.FileHandler(logfile_name))
@@ -130,7 +120,6 @@ def train(train_data_dict_path,
     logger.info('Logging results to {}'.format(results_dirname))
     logger.info('Using config file: {}'.format(config_file))
 
-    train_data_dict_path = config['TRAIN']['train_data_path']
     logger.info('Loading training data from {}'.format(
         os.path.dirname(
             train_data_dict_path)))
@@ -141,21 +130,6 @@ def train(train_data_dict_path,
                       'training data,\n because spectrograms were created in '
                       'Matlab')
     else:
-        # require user to specify parameters for spectrogram
-        # instead of having defaults (as was here previously)
-        # helps ensure we don't mix up different params
-        spect_params = {}
-        spect_params['fft_size'] = int(config['SPECTROGRAM']['fft_size'])
-        spect_params['step_size'] = int(config['SPECTROGRAM']['step_size'])
-        spect_params['freq_cutoffs'] = [float(element)
-                                        for element in
-                                        config['SPECTROGRAM']['freq_cutoffs']
-                                            .split(',')]
-        if config.has_option('SPECTROGRAM', 'thresh'):
-            spect_params['thresh'] = float(config['SPECTROGRAM']['thresh'])
-        if config.has_option('SPECTROGRAM', 'transform_type'):
-            spect_params['transform_type'] = config['SPECTROGRAM']['transform_type']
-
         if train_data_dict['spect_params'] != spect_params:
             raise ValueError('Spectrogram parameters in config file '
                              'do not match parameters specified in training data_dict.\n'
@@ -191,7 +165,6 @@ def train(train_data_dict_path,
     with open(files_used_filename, 'w') as files_used_fileobj:
         files_used_fileobj.write('\n'.join(files_used))
 
-    total_train_set_duration = float(config['DATA']['total_train_set_duration'])
     dur_diff = np.abs((X_train.shape[-1] * timebin_dur) - total_train_set_duration)
     if dur_diff > 1.0:
         raise ValueError('Duration of X_train in seconds from train_data_dict '
@@ -210,7 +183,6 @@ def train(train_data_dict_path,
     # because cnn-bilstm network expects this orientation for input
     X_train = X_train.T
 
-    val_data_dict_path = config['TRAIN']['val_data_path']
     val_data_dict = joblib.load(val_data_dict_path)
     (X_val,
      Y_val) = (val_data_dict['X_val'],
@@ -251,26 +223,12 @@ def train(train_data_dict_path,
                     'will save a separate checkpoint file '
                     'every {} steps of training'.format(checkpoint_step))
 
-    patience = config['TRAIN']['patience']
-    try:
-        patience = int(patience)
-    except ValueError:
-        if patience == 'None':
-            patience = None
-        else:
-            raise TypeError('patience must be an int or None, but'
-                            'is {} and parsed as type {}'
-                            .format(patience, type(patience)))
     logger.info('\'patience\' is set to: {}'.format(patience))
 
-    # set params used for sending data to graph in batches
-    batch_size = int(config['NETWORK']['batch_size'])
-    time_steps = int(config['NETWORK']['time_steps'])
     logger.info('will train network with batches of size {}, '
                 'where each spectrogram in batch contains {} time steps'
                 .format(batch_size, time_steps))
 
-    n_max_iter = int(config['TRAIN']['n_max_iter'])
     logger.info('maximum number of training steps will be {}'
                 .format(n_max_iter))
 
