@@ -347,8 +347,7 @@ def learncurve(train_data_dict_path,
                  num_batches_val) = vak.utils.data.reshape_data_for_batching(X_val,
                                                                              Y_val,
                                                                              net_config.batch_size,
-                                                                             net_config.time_bins,
-                                                                             net_config.freq_bins)
+                                                                             net_config.time_bins)
 
                 # save scaled reshaped data
                 scaled_reshaped_data_filename = os.path.join(training_records_path,
