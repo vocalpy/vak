@@ -10,8 +10,7 @@ from vak.utils.data import reshape_data_for_batching
 class TestUtils(unittest.TestCase):
 
     def test_reshape_data_for_batching(self):
-        """test that method for batching data does not change Y_pred in some way
-        """
+        """test that method for batching data does not change Y_pred in some way"""
         input_vec_size = 513  # number of frequency bins in spectrogram
         rows = 5000
         X_in = np.empty((rows, input_vec_size))  # doesn't matter what's in X
@@ -23,8 +22,10 @@ class TestUtils(unittest.TestCase):
         # where each batch has one dimension of size `time_steps`
         (X_out,
          Y_out,
-         num_batches) = reshape_data_for_batching(X_in, Y_in, batch_size,
-                                                  time_steps, input_vec_size)
+         num_batches) = reshape_data_for_batching(X_in,
+                                                  Y_in,
+                                                  batch_size,
+                                                  time_steps)
 
         self.assertEqual(Y_out.shape[0], batch_size)
 
