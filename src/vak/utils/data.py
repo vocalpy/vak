@@ -980,13 +980,37 @@ def get_inds_for_dur(spect_ID_vector,
             return inds_to_use
 
 
-def reshape_data_for_batching(X, Y, batch_size, time_steps, input_vec_size):
-    """reshape to feed to network in batches"""
-    # need to loop through train data in chunks, can't fit on GPU all at once
-    # First zero pad
+def reshape_data_for_batching(X, Y, batch_size, time_steps):
+    """Reshape data to feed to network in batches.
+    Data is returned with shape (batch_size, num_batches * time_steps, -1)
+    so that a batch can be grabbed at random starting at any index on axis 1
+    (that is less than "length of axis 1 minus time steps").
+    Pads data with zeros if it cannot be evenly divided into batches of size batch_size.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        2-d matrix, concatenated spectrograms.
+        Spectrograms are oriented so rows are time bins and columns are frequency bins.
+    Y : numpy.ndarray
+        vector of labels with shape (X.shape[0], 1)
+    batch_size : int
+        Number of samples in a batch
+    time_steps : int
+        Number of time steps in each sample, i.e., number of rows
+
+    Returns
+    -------
+    X : numpy.ndarray
+        Spectrograms reshaped to have shape (batch_size, num_batches * time_steps, -1).
+    Y : numpy.ndarray
+        Labels reshaped, will have shape (batch_size, -1)
+    num_batches : int
+        num_batches = X.shape[0] // batch_size // time_steps (plus 1, if zero-padding was required).
+    """
     num_batches = X.shape[0] // batch_size // time_steps
     rows_to_append = ((num_batches + 1) * time_steps * batch_size) - X.shape[0]
-    X = np.concatenate((X, np.zeros((rows_to_append, input_vec_size))),
+    X = np.concatenate((X, np.zeros((rows_to_append, X.shape[1]))),
                        axis=0)
     Y = np.concatenate((Y, np.zeros((rows_to_append, 1), dtype=int)), axis=0)
     num_batches = num_batches + 1
