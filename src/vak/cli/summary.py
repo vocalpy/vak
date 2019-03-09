@@ -249,8 +249,7 @@ def summary(results_dirname,
                     X_train_subset,
                     Y_train_subset,
                     net_config.batch_size,
-                    net_config.time_bins,
-                    net_config.freq_bins)
+                    net_config.time_bins)
 
                 (X_test,
                  Y_test,
@@ -258,8 +257,7 @@ def summary(results_dirname,
                     X_test,
                     Y_test,
                     net_config.batch_size,
-                    net_config.time_bins,
-                    net_config.freq_bins)
+                    net_config.time_bins)
 
                 scaled_reshaped_data_filename = os.path.join(summary_dirname,
                                                              'scaled_reshaped_spects_duration_{}_replicate_{}'
