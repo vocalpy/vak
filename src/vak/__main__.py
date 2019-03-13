@@ -9,6 +9,7 @@ from glob import glob
 
 from .cli import cli
 
+
 def get_parser():
     """returns ArgumentParser instance used by main()"""
     CHOICES = [
