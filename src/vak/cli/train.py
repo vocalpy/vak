@@ -5,7 +5,6 @@ import pickle
 import shutil
 import sys
 import warnings
-from configparser import ConfigParser, NoOptionError
 from datetime import datetime
 
 import joblib
