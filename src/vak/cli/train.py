@@ -11,16 +11,12 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-import tweetynet
-from tweetynet import TweetyNet
+from .. import utils
 
 
 def train(train_data_dict_path,
           val_data_dict_path,
           spect_params,
-          total_train_set_duration,
-          train_set_durs,
-          num_replicates,
           networks,
           num_epochs,
           config_file,
@@ -29,8 +25,6 @@ def train(train_data_dict_path,
           patience=None,
           save_only_single_checkpoint_file=True,
           normalize_spectrograms=False,
-          use_train_subsets_from_previous_run=False,
-          previous_run_path=None,
           root_results_dir=None,
           save_transformed_data=False,
           ):
@@ -46,16 +40,6 @@ def train(train_data_dict_path,
         parameters for creating spectrograms.
         Used to ensure that what's in config file matches what's in
         the data.
-    total_train_set_duration : int
-        total duration of training set, in seconds
-    train_set_durs : list
-        of int, durations in seconds of subsets taken from training data
-        to create a learning curve, e.g. [5, 10, 15, 20]
-    num_replicates : int
-        number of times to replicate training for each training set duration
-        to better estimate mean accuracy for a training set of that size.
-        Each replicate uses a different randomly drawn subset of the training
-        data (but of the same duration).
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
@@ -82,23 +66,20 @@ def train(train_data_dict_path,
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    use_train_subsets_from_previous_run : bool
-        if True, use training subsets saved in a previous run
-    previous_run_path : str
-        path to results directory from a previous run
     root_results_dir : str
         path in which to create results directory for this run of cli.learncurve
     save_transformed_data : bool
         if True, save transformed data (i.e. scaled, reshaped). The data can then
-        be used on a subsequent run of learncurve (e.g. if you want to compare results
+        be used on a subsequent run (e.g. if you want to compare results
         from different hyperparameters across the exact same training set).
         Also useful if you need to check what the data looks like when fed to networks.
+        Default is False.
 
     Returns
     -------
     None
 
-    Saves results in root_results_dir and adds some options to config_file.):
+    Saves results in root_results_dir and adds some options to config_file.
     """
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     if root_results_dir:
@@ -141,6 +122,19 @@ def train(train_data_dict_path,
     with open(labels_mapping_file, 'wb') as labels_map_file_obj:
         pickle.dump(labels_mapping, labels_map_file_obj)
 
+    # n_syllables, i.e., number of label classes to predict
+    # Note that mapping includes label for silent gap b/t syllables
+    # Error checking code to ensure that it is in fact a consecutive
+    # series of integers from 0 to n, so we don't predict classes that
+    # don't exist
+    if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
+        raise ValueError('Labels mapping does not map to a consecutive'
+                         'series of integers from 0 to n (where 0 is the '
+                         'silent gap label and n is the number of syllable'
+                         'labels).')
+    n_syllables = len(labels_mapping)
+    logger.debug('n_syllables: '.format(n_syllables))
+
     # copy training data to results dir so we have it stored with results
     logger.info('copying {} to {}'.format(train_data_dict_path,
                                           results_dirname))
@@ -164,19 +158,9 @@ def train(train_data_dict_path,
     with open(files_used_filename, 'w') as files_used_fileobj:
         files_used_fileobj.write('\n'.join(files_used))
 
-    dur_diff = np.abs((X_train.shape[-1] * timebin_dur) - total_train_set_duration)
-    if dur_diff > 1.0:
-        raise ValueError('Duration of X_train in seconds from train_data_dict '
-                         'is more than one second different from '
-                         'duration specified in config file.\n'
-                         'train_data_dict: {}\n'
-                         'config file: {}'
-                         .format(train_data_dict_path, config_file))
+    total_train_set_duration = X_train.shape[-1] * timebin_dur
     logger.info('Total duration of training set (in s): {}'
                 .format(total_train_set_duration))
-
-    logger.info('Will train network with training sets of '
-                'following durations (in s): {}'.format(TRAIN_SET_DURS))
 
     # transpose X_train, so rows are timebins and columns are frequency bins
     # because cnn-bilstm network expects this orientation for input
@@ -231,7 +215,6 @@ def train(train_data_dict_path,
     logger.info('maximum number of training steps will be {}'
                 .format(n_max_iter))
 
-    normalize_spectrograms = config.getboolean('TRAIN', 'normalize_spectrograms')
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
         # need a copy of X_val when we normalize it below
@@ -253,7 +236,7 @@ def train(train_data_dict_path,
     checkpoint_filename = 'checkpoint_'
 
     if normalize_spectrograms:
-        spect_scaler = tweetynet.utils.SpectScaler()
+        spect_scaler = utils.data.SpectScaler()
         X_train = spect_scaler.fit_transform(X_train)
         logger.info('normalizing validation set to match training set')
         X_val = spect_scaler.transform(X_val_copy)
@@ -262,16 +245,17 @@ def train(train_data_dict_path,
         joblib.dump(spect_scaler,
                     os.path.join(results_dirname, scaler_name))
 
-    scaled_data_filename = os.path.join(training_records_path,
-                                        'scaled_spects_duration_{}_replicate_{}'
-                                        .format(train_set_dur, replicate))
-    scaled_data_dict = {'X_train_subset_scaled': X_train,
-                        'X_val_scaled': X_val,
-                        'Y_train_subset': Y_train}
-    joblib.dump(scaled_data_dict, scaled_data_filename)
+    if save_transformed_data:
+        scaled_data_filename = os.path.join(training_records_path,
+                                            'scaled_spects_duration_{}_replicate_{}'
+                                            .format(train_set_dur, replicate))
+        scaled_data_dict = {'X_train_subset_scaled': X_train,
+                            'X_val_scaled': X_val,
+                            'Y_train_subset': Y_train}
+        joblib.dump(scaled_data_dict, scaled_data_filename)
 
     # reshape data for network
-    batch_spec_rows = len(train_inds) // batch_size
+    batch_spec_rows = len(train_inds) // net_config.batch_size
 
     # this is the original way reshaping was done
     # note that reshaping this way can truncate data set
@@ -307,24 +291,11 @@ def train(train_data_dict_path,
 
     (X_val_batch,
      Y_val_batch,
-     num_batches_val) = tweetynet.utils.reshape_data_for_batching(X_val,
-                                                                  Y_val,
-                                                                  batch_size,
-                                                                  time_steps,
-                                                                  input_vec_size)
+     num_batches_val) = utils.data.reshape_data_for_batching(X_val,
+                                                             Y_val,
+                                                             batch_size,
+                                                             time_steps)
 
-    # n_syllables, i.e., number of label classes to predict
-    # Note that mapping includes label for silent gap b/t syllables
-    # Error checking code to ensure that it is in fact a consecutive
-    # series of integers from 0 to n, so we don't predict classes that
-    # don't exist
-    if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
-        raise ValueError('Labels mapping does not map to a consecutive'
-                         'series of integers from 0 to n (where 0 is the '
-                         'silent gap label and n is the number of syllable'
-                         'labels).')
-    n_syllables = len(labels_mapping)
-    logger.debug('n_syllables: '.format(n_syllables))
     learning_rate = float(config['NETWORK']['learning_rate'])
     logger.debug('learning rate: '.format(learning_rate))
 
