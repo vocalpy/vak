@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - description in setup.py (matches README + Github)
+- move command-line interface logic out of __main__.py, into cli/cli.py
+
+
 ### Fixed
 
 ## [0.1.0a1]
