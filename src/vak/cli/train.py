@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 
 from .. import utils
+import vak.network
 
 
 def train(train_data_dict_path,
@@ -186,17 +187,15 @@ def train(train_data_dict_path,
     # so that rows are time and columns are frequencies #
     #####################################################
     X_val = X_val.T
-    joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
-    joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
+    if save_transformed_data:
+        joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
+        joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
 
-    val_error_step = int(config['TRAIN']['val_error_step'])
     logger.info('will measure error on validation set '
                 'every {} steps of training'.format(val_error_step))
-    checkpoint_step = int(config['TRAIN']['checkpoint_step'])
     logger.info('will save a checkpoint file '
                 'every {} steps of training'.format(checkpoint_step))
-    save_only_single_checkpoint_file = config.getboolean('TRAIN',
-                                                         'save_only_single_checkpoint_file')
+
     if save_only_single_checkpoint_file:
         logger.info('save_only_single_checkpoint_file = True\n'
                     'will save only one checkpoint file'
@@ -208,23 +207,22 @@ def train(train_data_dict_path,
 
     logger.info('\'patience\' is set to: {}'.format(patience))
 
-    logger.info('will train network with batches of size {}, '
-                'where each spectrogram in batch contains {} time steps'
-                .format(batch_size, time_steps))
+    logger.info('number of training epochs will be {}'
+                .format(num_epochs))
 
-    logger.info('maximum number of training steps will be {}'
-                .format(n_max_iter))
+    # logger.info('will train network with batches of size {}, '
+    #             'where each spectrogram in batch contains {} time steps'
+    #             .format(batch_size, time_steps))
+    #
+    # logger.info('maximum number of training steps will be {}'
+    #             .format(n_max_iter))
+
+    NETWORKS = vak.network._load()
 
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
         # need a copy of X_val when we normalize it below
         X_val_copy = copy.deepcopy(X_val)
-
-    ### start of actual training ###
-    costs = []
-    val_errs = []
-    curr_min_err = 1  # i.e. 100%
-    err_patience_counter = 0
 
     logger.info("training model.")
     training_records_dir = 'records_for_training'
@@ -249,62 +247,189 @@ def train(train_data_dict_path,
         scaled_data_filename = os.path.join(training_records_path,
                                             'scaled_spects_duration_{}_replicate_{}'
                                             .format(train_set_dur, replicate))
-        scaled_data_dict = {'X_train_subset_scaled': X_train,
+        scaled_data_dict = {'X_train_scaled': X_train,
                             'X_val_scaled': X_val,
                             'Y_train_subset': Y_train}
         joblib.dump(scaled_data_dict, scaled_data_filename)
 
-    # reshape data for network
-    batch_spec_rows = len(train_inds) // net_config.batch_size
+    freq_bins = X_train.shape[-1]  # number of columns
+    logger.debug('freq_bins in spectrogram: '.format(freq_bins))
 
-    # this is the original way reshaping was done
-    # note that reshaping this way can truncate data set
-    X_train = \
-        X_train[0:batch_spec_rows * batch_size].reshape((batch_size,
-                                                         batch_spec_rows,
-                                                         -1))
-    Y_train = \
-        Y_train[0:batch_spec_rows * batch_size].reshape((batch_size, -1))
-    reshape_size = Y_train.ravel().shape[-1]
-    diff = Y_train.shape[-1] - reshape_size
-    logger.info('Number of time bins after '
-                'reshaping training data: {}.'.format(reshape_size))
-    logger.info('Number of time bins less '
-                'than specified {}: {}'.format(Y_train.shape[-1],
-                                               diff))
-    logger.info('Difference in seconds: {}'.format(diff * timebin_dur))
+    for net_name, net_config in zip(networks._fields, networks):
+        net_config_dict = net_config._asdict()
+        net_config_dict['n_syllables'] = n_syllables
+        net = NETWORKS[net_name](**net_config_dict)
 
-    # note that X_train_subset has shape of (batch, time_bins, frequency_bins)
-    # so we permute starting indices from the number of time_bins
-    # i.e. X_train_subset.shape[1]
-    iter_order = np.random.permutation(X_train.shape[1] - time_steps)
-    if len(iter_order) > n_max_iter:
-        iter_order = iter_order[0:n_max_iter]
-    with open(
-            os.path.join(training_records_path,
-                         "iter_order"),
-            'wb') as iter_order_file:
-        pickle.dump(iter_order, iter_order_file)
+        results_dirname_this_net = os.path.join(results_dirname, net_name)
 
-    input_vec_size = X_train_subset.shape[-1]  # number of columns
-    logger.debug('input vec size: '.format(input_vec_size))
+        checkpoint_filename = ('checkpoint_{}_train_set_dur_{}_sec_replicate_{}'
+                               .format(net_name, str(train_set_dur), str(replicate)))
 
-    (X_val_batch,
-     Y_val_batch,
-     num_batches_val) = utils.data.reshape_data_for_batching(X_val,
-                                                             Y_val,
-                                                             batch_size,
-                                                             time_steps)
+        if not os.path.isdir(results_dirname_this_net):
+            os.makedirs(results_dirname_this_net)
+        logs_subdir = ('log_{}_train_set_with_duration_of_{}_sec_replicate_{}'
+                       .format(net_name, str(train_set_dur), str(replicate)))
+        logs_path = os.path.join(results_dirname_this_net,
+                                 'logs',
+                                 logs_subdir)
+        if not os.path.isdir(logs_path):
+            os.makedirs(logs_path)
 
-    learning_rate = float(config['NETWORK']['learning_rate'])
-    logger.debug('learning rate: '.format(learning_rate))
+        net.add_summary_writer(logs_path=logs_path)
 
-    # rewrite config file
-    # to include parameters determined programatically
-    config.set(section='NETWORK',
-               option='input_vec_size',
-               value=str(input_vec_size))
-    config.set(section='NETWORK',
+        (X_val_batch,
+         Y_val_batch,
+         num_batches_val) = utils.data.reshape_data_for_batching(X_val,
+                                                                 Y_val,
+                                                                 net_config.batch_size,
+                                                                 net_config.time_bins)
+
+        # save scaled reshaped data
+        if save_transformed_data:
+            scaled_reshaped_data_filename = os.path.join(training_records_path,
+                                                         'scaled_reshaped_spects_duration_{}_replicate_{}'
+                                                         .format(train_set_dur, replicate))
+            scaled_reshaped_data_dict = {'X_train_scaled_reshaped': X_train,
+                                         'Y_train_reshaped': Y_train,
+                                         'X_val_scaled_batch': X_val_batch,
+                                         'Y_val_batch': Y_val_batch}
+            joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
+
+        ### start of actual training ###
+        costs = []
+        val_errs = []
+        curr_min_err = 1  # i.e. 100%
+        err_patience_counter = 0
+
+        with tf.Session(graph=net.graph,
+                        config=tf.ConfigProto(
+                            log_device_placement=True
+                        )) as sess:
+            sess.run(net.init)
+
+            # figure out number of batches we can get out of subset of training data
+            # if we slide a window along the spectrogram with a stride of 1
+            # and use each window as one sample in a batch
+            num_timebins_training_set = X_train_subset.shape[0]
+            num_windows = num_timebins_training_set - net_config.time_bins
+            logger.info('training set with {} time bins will yield {} windows '
+                        'of width {} time bins'
+                        .format(num_timebins_training_set,
+                                num_windows,
+                                net_config.time_bins))
+            num_batches = num_windows // net_config.batch_size  # note floor division
+            # meaning we'll throw away some windows
+            new_last_ind = net_config.batch_size * num_batches
+            logger.info('divided into batches of size {} yields {} batches '
+                        'for a total of {} windows (throwing away {}).'
+                        .format(net_config.batch_size,
+                                num_batches,
+                                new_last_ind,
+                                num_windows - new_last_ind))
+
+            for epoch in range(num_epochs):
+                # every epoch we are going to shuffle the order in which we look at every window
+                shuffle_order = np.random.permutation(num_windows)
+                shuffle_order = shuffle_order[:new_last_ind].reshape(num_batches, net_config.batch_size)
+                for batch_num, batch_inds in enumerate(shuffle_order):
+                    X_batch = []
+                    Y_batch = []
+                    for start_ind in batch_inds:
+                        X_batch.append(
+                            X_train[start_ind:start_ind + net_config.time_bins, :]
+                        )
+                        Y_batch.append(
+                            Y_train[start_ind:start_ind + net_config.time_bins]
+                        )
+                    X_batch = np.stack(X_batch)
+                    Y_batch = np.stack(Y_batch)
+                    d = {net.X: X_batch,
+                         net.y: Y_batch,
+                         net.lng: [net_config.time_bins] * net_config.batch_size}
+                    _cost, _, summary = sess.run((net.cost,
+                                                  net.optimize,
+                                                  net.merged_summary_op),
+                                                 feed_dict=d)
+                    costs.append(_cost)
+                    net.summary_writer.add_summary(summary, epoch)
+                    print("epoch {}, batch {} of {}, cost: {}".format(epoch + 1,
+                                                                      batch_num + 1,
+                                                                      num_batches,
+                                                                      _cost))
+
+                if val_error_step:
+                    if epoch % val_error_step == 0:
+                        if 'Y_pred_val' in locals():
+                            del Y_pred_val
+
+                        for b in range(num_batches_val):  # "b" is "batch number"
+                            X_b = X_val_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :]
+                            Y_b = Y_val_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins]
+                            d = {net.X: X_b,
+                                 net.y: Y_b,
+                                 net.lng: [net_config.time_bins] * net_config.batch_size}
+
+                            if 'Y_pred_val' in locals():
+                                preds = sess.run(net.predict, feed_dict=d)
+                                preds = preds.reshape(net_config.batch_size, -1)
+                                Y_pred_val = np.concatenate((Y_pred_val, preds), axis=1)
+                            else:
+                                Y_pred_val = sess.run(net.predict, feed_dict=d)
+                                Y_pred_val = Y_pred_val.reshape(net_config.batch_size, -1)
+
+                        # get rid of zero padding predictions
+                        Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
+                        val_errs.append(np.sum(Y_pred_val - Y_val != 0) / Y_val.shape[0])
+                        print("epoch {}, validation error: {}".format(epoch + 1, val_errs[-1]))
+
+                    if patience:
+                        if val_errs[-1] < curr_min_err:
+                            # error went down, set as new min and reset counter
+                            curr_min_err = val_errs[-1]
+                            err_patience_counter = 0
+                            checkpoint_path = os.path.join(results_dirname_this_net,
+                                                           checkpoint_filename)
+                            print("Validation error improved.\n"
+                                  "Saving checkpoint to {}".format(checkpoint_path))
+                            net.saver.save(sess, checkpoint_path)
+                        else:
+                            err_patience_counter += 1
+                            if err_patience_counter > patience:
+                                print("stopping because validation error has not improved in {} epochs"
+                                      .format(patience))
+                                with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
+                                    pickle.dump(costs, costs_file)
+                                with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
+                                    pickle.dump(val_errs, val_errs_file)
+                                break
+
+                if checkpoint_step:
+                    if epoch % checkpoint_step == 0:
+                        "Saving checkpoint."
+                        checkpoint_path = os.path.join(results_dirname_this_net,
+                                                       checkpoint_filename)
+                        if save_only_single_checkpoint_file is False:
+                            checkpoint_path += '_{}'.format(step)
+                        net.saver.save(sess, checkpoint_path)
+                        with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
+                            pickle.dump(val_errs, val_errs_file)
+
+                if epoch == (num_epochs - 1):  # if this is the last epoch
+                    "Reached max. number of epochs, saving checkpoint."
+                    checkpoint_path = os.path.join(results_dirname_this_net, checkpoint_filename)
+                    net.saver.save(sess, checkpoint_path)
+                    with open(os.path.join(results_dirname_this_net, "costs"),
+                              'wb') as costs_file:
+                        pickle.dump(costs, costs_file)
+                    with open(os.path.join(results_dirname_this_net, "val_errs"),
+                              'wb') as val_errs_file:
+                        pickle.dump(val_errs, val_errs_file)
+
+    # lastly rewrite config file,
+    # so that paths where results were saved are automatically in config
+    config = ConfigParser()
+    config.read(config_file)
+    config.set(section='DATA',
                option='n_syllables',
                value=str(n_syllables))
     config.set(section='OUTPUT',
@@ -313,123 +438,6 @@ def train(train_data_dict_path,
     with open(config_file, 'w') as config_file_rewrite:
         config.write(config_file_rewrite)
 
-    logger.debug('creating graph')
-
-    model = TweetyNet(n_syllables=n_syllables,
-                      batch_size=batch_size,
-                      input_vec_size=input_vec_size)
-
-    logs_subdir = ('log_training_set_with_duration_of_'
-                   + str(train_set_dur) + '_sec_replicate_'
-                   + str(replicate))
-    logs_path = os.path.join(results_dirname,
-                             'logs',
-                             logs_subdir)
-    if not os.path.isdir(logs_path):
-        os.makedirs(logs_path)
-
-    model.add_summary_writer(logs_path=logs_path)
-
-    with tf.Session(graph=model.graph,
-                    config=tf.ConfigProto(
-                        log_device_placement=True
-                        # intra_op_parallelism_threads=512
-                    )) as sess:
-
-        # Run the Op to initialize the variables.
-        sess.run(model.init)
-
-        # Start the training loop.
-
-        step = 1
-        iter_counter = 0
-
-        # loop through training data forever
-        # or until validation accuracy stops improving
-        # whichever comes first
-        while True:
-            iternum = iter_order[iter_counter]
-            iter_counter = iter_counter + 1
-            if iter_counter == len(iter_order):
-                iter_counter = 0
-            d = {model.X: X_train[:, iternum:iternum + time_steps, :],
-                 model.y: Y_train[:, iternum:iternum + time_steps],
-                 model.lng: [time_steps] * batch_size}
-            _cost, _, summary = sess.run((model.cost,
-                                          model.optimize,
-                                          model.merged_summary_op),
-                                         feed_dict=d)
-            costs.append(_cost)
-            model.summary_writer.add_summary(summary, step)
-            print("step {}, iteration {}, cost: {}".format(step,
-                                                           iternum,
-                                                           _cost))
-            step = step + 1
-
-            if 'val_error_step' in locals():
-                if step % val_error_step == 0:
-                    if 'Y_pred_val' in locals():
-                        del Y_pred_val
-
-                    for b in range(num_batches_val):  # "b" is "batch number"
-                        X_b = X_val_batch[:, b * time_steps: (b + 1) * time_steps, :]
-                        Y_b = Y_val_batch[:, b * time_steps: (b + 1) * time_steps]
-                        d = {model.X: X_b,
-                             model.y: Y_b,
-                             model.lng: [time_steps] * batch_size}
-
-                        if 'Y_pred_val' in locals():
-                            preds = sess.run(model.predict, feed_dict=d)
-                            preds = preds.reshape(batch_size, -1)
-                            Y_pred_val = np.concatenate((Y_pred_val, preds), axis=1)
-                        else:
-                            Y_pred_val = sess.run(model.predict, feed_dict=d)
-                            Y_pred_val = Y_pred_val.reshape(batch_size, -1)
-
-                    # get rid of zero padding predictions
-                    Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
-                    val_errs.append(np.sum(Y_pred_val - Y_val != 0) / Y_val.shape[0])
-                    print("step {}, validation error: {}".format(step, val_errs[-1]))
-
-                if patience:
-                    if val_errs[-1] < curr_min_err:
-                        # error went down, set as new min and reset counter
-                        curr_min_err = val_errs[-1]
-                        err_patience_counter = 0
-                        checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                        print("Validation error improved.\n"
-                              "Saving checkpoint to {}".format(checkpoint_path))
-                        model.saver.save(sess, checkpoint_path)
-                    else:
-                        err_patience_counter += 1
-                        if err_patience_counter > patience:
-                            print("stopping because validation error has not improved in {} steps"
-                                  .format(patience))
-                            with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
-                                pickle.dump(costs, costs_file)
-                            with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
-                                pickle.dump(val_errs, val_errs_file)
-                            break
-
-            if checkpoint_step:
-                if step % checkpoint_step == 0:
-                    "Saving checkpoint."
-                    checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                    if save_only_single_checkpoint_file is False:
-                        checkpoint_path += '_{}'.format(step)
-                    model.saver.save(sess, checkpoint_path)
-                    with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
-                        pickle.dump(val_errs, val_errs_file)
-
-            if step > n_max_iter:  # ok don't actually loop forever
-                "Reached max. number of iterations, saving checkpoint."
-                checkpoint_path = os.path.join(training_records_path, checkpoint_filename)
-                model.saver.save(sess, checkpoint_path)
-                with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
-                    pickle.dump(costs, costs_file)
-                with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
-                    pickle.dump(val_errs, val_errs_file)
-                break
 
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
