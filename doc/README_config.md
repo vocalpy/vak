@@ -8,7 +8,7 @@ For a template config file that you can modify, see
 ## [NETWORK] section
 Hyperparameters for network and related options such as batch size
 
-```
+```ini
 [NETWORK]
 batch_size = 11
 time_steps = 88
@@ -29,7 +29,8 @@ Parameters used when making spectrograms from audio files.
 files that contain already generated spectrograms. Instead you
 should specify the location of those .mat files in the [DATA]
 section below.
-```
+
+```ini
 [SPECTROGRAM]
 fft_size=512
 step_size=64
@@ -61,7 +62,7 @@ maintain the behavior of the spectrogram function as originally written.)
 
 ## [DATA] section
 
-```
+```ini
 [DATA]
 labelset = iabcdefghjk
 data_dir = /home/user/data/subdir/
@@ -127,7 +128,7 @@ skip_files_with_labels_not_in_labelset = Yes
 
 ## [TRAIN] section
 
-```
+```ini
 [TRAIN]
 train_data_path = /home/user/data/subdir/subsubdir1/spects/train_data_dict
 val_data_path = /home/user/data/subdir/subsubdir1/spects/val_data_dict
