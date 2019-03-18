@@ -77,11 +77,12 @@ def parse_data_config(config, config_file):
 
     if config.has_option('DATA', 'output_dir'):
         output_dir = config['DATA']['output_dir']
-        #
+        output_dir = os.path.expanduser(output_dir)
+        output_dir = os.path.abspath(output_dir)
         if not os.path.isdir(output_dir):
-            raise NotADirectoryError('Output directory in which to save datasets not found:\n{}'
-                                     .format(output_dir))
-        output_dir = os.path.abspath(config['DATA']['output_dir'])
+            raise NotADirectoryError('{} specified as output_dir in {}, '
+                                     'but not recognized as a directory'
+                                     .format(output_dir, config_file))
     else:
         output_dir = None
 
