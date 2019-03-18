@@ -11,6 +11,7 @@ from configparser import ConfigParser
 import joblib
 import numpy as np
 import tensorflow as tf
+from tqdm import tqdm
 
 import vak.network
 
@@ -389,7 +390,8 @@ def learncurve(train_data_dict_path,
                         # every epoch we are going to shuffle the order in which we look at every window
                         shuffle_order = np.random.permutation(num_windows)
                         shuffle_order = shuffle_order[:new_last_ind].reshape(num_batches, net_config.batch_size)
-                        for batch_num, batch_inds in enumerate(shuffle_order):
+                        pbar = tqdm(shuffle_order)
+                        for batch_num, batch_inds in enumerate(pbar):
                             X_batch = []
                             Y_batch = []
                             for start_ind in batch_inds:
@@ -410,10 +412,9 @@ def learncurve(train_data_dict_path,
                                                 feed_dict=d)
                             costs.append(_cost)
                             net.summary_writer.add_summary(summary, epoch)
-                            print("epoch {}, batch {} of {}, cost: {}".format(epoch + 1,
-                                                                              batch_num + 1,
-                                                                              num_batches,
-                                                                              _cost))
+                            pbar.set_description(
+                                f"epoch {epoch + 1}, batch {batch_num + 1} of {num_batches}, cost: {_cost:8.4f}"
+                            )
 
                         if val_error_step:
                             if epoch % val_error_step == 0:
