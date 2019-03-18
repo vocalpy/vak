@@ -27,7 +27,7 @@ VERSION = '0.1.0a1'
 LICENSE = 'BSD'
 
 REQUIRED = [
-    'tensorflow', 'numpy', 'scipy', 'matplotlib', 'joblib', 'crowsetta',
+    'tensorflow', 'numpy', 'scipy', 'matplotlib', 'joblib', 'tqdm', 'crowsetta',
 ]
 
 dev_deps = [
@@ -35,7 +35,7 @@ dev_deps = [
 ]
 
 test_deps = [
-    'vak_test_net', 'tweetynet>=0.1.1a3',
+    'vak_test_net', 'tweetynet>=0.1.1a4',
 ]
 
 # this is here so that the .travis.yml script can install
