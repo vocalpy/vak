@@ -96,6 +96,7 @@ def parse_data_config(config, config_file):
         mat_spects_annotation_file = None
 
     data_dir = config['DATA']['data_dir']
+    data_dir = os.path.expanduser(data_dir)
     if not os.path.isdir(data_dir):
         raise NotADirectoryError('{} specified as data_dir in {}, '
                                  'but not recognized as a directory'
