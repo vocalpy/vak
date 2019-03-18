@@ -7,6 +7,7 @@ from glob import glob
 import joblib
 import numpy as np
 from scipy.io import wavfile, loadmat
+from tqdm import tqdm
 
 from . import spect as spect_utils  # so as not to confuse with variable name `spect`
 from vak import evfuncs
@@ -267,13 +268,16 @@ def make_spects_from_list_of_files(filelist,
     # (cbins_used is actually a list of tuples as defined in docstring)
     spect_files = []
 
-    for filename in filelist:
+    pbar = tqdm(filelist)
+    for filename in pbar:
+        basename = os.path.basename(filename)
         if filetype == 'cbin':
             try:
                 notmat_dict = evfuncs.load_notmat(filename)
             except FileNotFoundError:
-                print('Did not find .not.mat file for {}, skipping file.'
-                      .format(filename))
+                pbra.set_description(
+                    f'Did not find .not.mat file for {basename}, skipping file.'
+                )
                 continue
             this_labels_str = notmat_dict['labels']
             onsets = notmat_dict['onsets'] / 1000
@@ -304,11 +308,12 @@ def make_spects_from_list_of_files(filelist,
             if not labels_set.issubset(set(labels_mapping)):
                 # because there's some label in labels
                 # that's not in labels_mapping
-                print('found labels in {} not in labels_mapping, '
-                      'skipping file'.format(filename))
+                pbar.set_description(
+                    f'found labels in {basename} not in labels_mapping, skipping file'
+                )
                 continue
 
-        print('making .spect file for {}'.format(filename))
+        pbar.set_description(f'making .spect file for {basename}')
 
         if 'freq_cutoffs' in spect_params:
             dat = spect_utils.butter_bandpass_filter(dat,
