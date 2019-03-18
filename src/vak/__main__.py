@@ -2,7 +2,6 @@
 Invokes __main__ when the module is run as a script.
 Example: python -m vak --help
 """
-
 import argparse
 import os
 from glob import glob
@@ -54,7 +53,6 @@ def main():
     """
     parser = get_parser()
     args = parser.parse_args()
-
     # logic for handling glob + txt flags, affects how conifg
 
     if args.glob:
@@ -62,10 +60,10 @@ def main():
     elif args.txt:
         with open(args.txt, 'r') as config_list_file:
             config_files = config_list_file.readlines()
-    elif args.config:
-        config_files = [args.config]  # single-item list
+    elif args.configfile:
+        config_files = [args.configfile]  # single-item list
 
-    if args.glob or args.txt or args.config:
+    if args.glob or args.txt:
         config_files_cleaned = []
         for config_file in config_files:
             config_file = config_file.rstrip()
