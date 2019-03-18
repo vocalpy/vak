@@ -23,10 +23,10 @@ def get_parser():
 
     parser = argparse.ArgumentParser(description='vak command-line interface',
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('command', type=str,
+    parser.add_argument('command', type=str, metavar='command',
                         choices=CHOICES,
                         help="Command to run, valid options are:\n"
-                             f"{CHOICES}"
+                             f"{CHOICES}\n"
                              "$ vak train ./configs/config_2018-12-17.ini")
     parser.add_argument('configfile', type=str,
                         help='name of config.ini file to use \n'
