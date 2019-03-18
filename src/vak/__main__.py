@@ -16,7 +16,7 @@ def get_parser():
         'prep',
         'train',
         'predict',
-        'finetune'
+        'finetune',
         'learncurve',
         'summary',
     ]
