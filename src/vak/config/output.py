@@ -32,6 +32,7 @@ def parse_output_config(config):
     """
     try:
         root_results_dir = config['OUTPUT']['root_results_dir']
+        root_results_dir = os.path.expanduser(root_results_dir)
         if not os.path.isdir(root_results_dir):
             raise NotADirectoryError('directory {}, specified as '
                                      'root_results_dir, was not found.'
@@ -45,6 +46,7 @@ def parse_output_config(config):
         # depending on which function we are calling.
         # So it's up to calling function to check for existence of directory
         results_dirname = config['OUTPUT']['results_dir_made_by_main_script']
+        results_dirname = os.path.expanduser(results_dirname)
     else:
         results_dirname = None
 
