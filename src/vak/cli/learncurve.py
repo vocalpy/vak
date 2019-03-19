@@ -13,7 +13,9 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-import vak.network
+from .. import network
+from .. import utils
+from .. import config
 
 
 def learncurve(train_data_dict_path,
@@ -257,7 +259,7 @@ def learncurve(train_data_dict_path,
         # need a copy of X_val when we normalize it below
         X_val_copy = copy.deepcopy(X_val)
 
-    NETWORKS = vak.network._load()
+    NETWORKS = network._load()
 
     for train_set_dur in train_set_durs:
         for replicate in REPLICATES:
@@ -284,11 +286,11 @@ def learncurve(train_data_dict_path,
                 with open(train_inds_path, 'rb') as f:
                     train_inds = pickle.load(f)
             else:
-                train_inds = vak.utils.data.get_inds_for_dur(X_train_spect_ID_vector,
-                                                                  Y_train,
-                                                                  labels_mapping,
-                                                                  train_set_dur,
-                                                                  timebin_dur)
+                train_inds = utils.data.get_inds_for_dur(X_train_spect_ID_vector,
+                                                         Y_train,
+                                                         labels_mapping,
+                                                         train_set_dur,
+                                                         timebin_dur)
             with open(os.path.join(training_records_path, 'train_inds'),
                       'wb') as train_inds_file:
                 pickle.dump(train_inds, train_inds_file)
@@ -301,7 +303,7 @@ def learncurve(train_data_dict_path,
                 Y_train_subset = np.squeeze(Y_train_subset)
 
             if normalize_spectrograms:
-                spect_scaler = vak.utils.data.SpectScaler()
+                spect_scaler = utils.data.SpectScaler()
                 X_train_subset = spect_scaler.fit_transform(X_train_subset)
                 logger.info('normalizing validation set to match training set')
                 X_val = spect_scaler.transform(X_val_copy)
@@ -345,10 +347,10 @@ def learncurve(train_data_dict_path,
 
                 (X_val_batch,
                  Y_val_batch,
-                 num_batches_val) = vak.utils.data.reshape_data_for_batching(X_val,
-                                                                             Y_val,
-                                                                             net_config.batch_size,
-                                                                             net_config.time_bins)
+                 num_batches_val) = utils.data.reshape_data_for_batching(X_val,
+                                                                         Y_val,
+                                                                         net_config.batch_size,
+                                                                         net_config.time_bins)
 
                 # save scaled reshaped data
                 scaled_reshaped_data_filename = os.path.join(training_records_path,
