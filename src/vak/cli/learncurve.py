@@ -263,11 +263,6 @@ def learncurve(train_data_dict_path,
 
     for train_set_dur in train_set_durs:
         for replicate in REPLICATES:
-            costs = []
-            val_errs = []
-            curr_min_err = 1  # i.e. 100%
-            err_patience_counter = 0
-
             logger.info("training with training set duration of {} seconds,"
                         "replicate #{}".format(train_set_dur, replicate))
             training_records_dir = ('records_for_training_set_with_duration_of_'
@@ -361,6 +356,11 @@ def learncurve(train_data_dict_path,
                                              'X_val_scaled_batch': X_val_batch,
                                              'Y_val_batch': Y_val_batch}
                 joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
+
+                costs = []
+                val_errs = []
+                curr_min_err = 1  # i.e. 100%
+                err_patience_counter = 0
 
                 with tf.Session(graph=net.graph,
                                 config=tf.ConfigProto(
