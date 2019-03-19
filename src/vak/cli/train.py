@@ -10,9 +10,11 @@ from datetime import datetime
 import joblib
 import numpy as np
 import tensorflow as tf
+from tqdm import tqdm
 
+from .. import network
 from .. import utils
-import vak.network
+from .. import config
 
 
 def train(train_data_dict_path,
@@ -210,21 +212,15 @@ def train(train_data_dict_path,
     logger.info('number of training epochs will be {}'
                 .format(num_epochs))
 
-    # logger.info('will train network with batches of size {}, '
-    #             'where each spectrogram in batch contains {} time steps'
-    #             .format(batch_size, time_steps))
-    #
-    # logger.info('maximum number of training steps will be {}'
-    #             .format(n_max_iter))
-
-    NETWORKS = vak.network._load()
-
     if normalize_spectrograms:
-        logger.info('will normalize spectrograms for each training set')
-        # need a copy of X_val when we normalize it below
-        X_val_copy = copy.deepcopy(X_val)
+        logger.info('will normalize spectrograms')
+        spect_scaler = utils.data.SpectScaler()
+        X_train = spect_scaler.fit_transform(X_train)
+        logger.info('normalizing validation set to match training set')
+        X_val = spect_scaler.transform(X_val)
+        joblib.dump(spect_scaler,
+                    os.path.join(results_dirname, 'spect_scaler'))
 
-    logger.info("training model.")
     training_records_dir = 'records_for_training'
     training_records_path = os.path.join(results_dirname,
                                          training_records_dir)
@@ -233,20 +229,9 @@ def train(train_data_dict_path,
         os.makedirs(training_records_path)
     checkpoint_filename = 'checkpoint_'
 
-    if normalize_spectrograms:
-        spect_scaler = utils.data.SpectScaler()
-        X_train = spect_scaler.fit_transform(X_train)
-        logger.info('normalizing validation set to match training set')
-        X_val = spect_scaler.transform(X_val_copy)
-        scaler_name = ('spect_scaler_duration_{}_replicate_{}'
-                       .format(train_set_dur, replicate))
-        joblib.dump(spect_scaler,
-                    os.path.join(results_dirname, scaler_name))
-
     if save_transformed_data:
         scaled_data_filename = os.path.join(training_records_path,
-                                            'scaled_spects_duration_{}_replicate_{}'
-                                            .format(train_set_dur, replicate))
+                                            'scaled_spects')
         scaled_data_dict = {'X_train_scaled': X_train,
                             'X_val_scaled': X_val,
                             'Y_train_subset': Y_train}
@@ -255,6 +240,8 @@ def train(train_data_dict_path,
     freq_bins = X_train.shape[-1]  # number of columns
     logger.debug('freq_bins in spectrogram: '.format(freq_bins))
 
+    NETWORKS = network._load()
+
     for net_name, net_config in zip(networks._fields, networks):
         net_config_dict = net_config._asdict()
         net_config_dict['n_syllables'] = n_syllables
@@ -262,13 +249,11 @@ def train(train_data_dict_path,
 
         results_dirname_this_net = os.path.join(results_dirname, net_name)
 
-        checkpoint_filename = ('checkpoint_{}_train_set_dur_{}_sec_replicate_{}'
-                               .format(net_name, str(train_set_dur), str(replicate)))
+        checkpoint_filename = f'checkpoint_{net_name}'
 
         if not os.path.isdir(results_dirname_this_net):
             os.makedirs(results_dirname_this_net)
-        logs_subdir = ('log_{}_train_set_with_duration_of_{}_sec_replicate_{}'
-                       .format(net_name, str(train_set_dur), str(replicate)))
+        logs_subdir = f'log_{net_name}'
         logs_path = os.path.join(results_dirname_this_net,
                                  'logs',
                                  logs_subdir)
@@ -284,18 +269,15 @@ def train(train_data_dict_path,
                                                                  net_config.batch_size,
                                                                  net_config.time_bins)
 
-        # save scaled reshaped data
         if save_transformed_data:
             scaled_reshaped_data_filename = os.path.join(training_records_path,
-                                                         'scaled_reshaped_spects_duration_{}_replicate_{}'
-                                                         .format(train_set_dur, replicate))
+                                                         'scaled_reshaped_spects')
             scaled_reshaped_data_dict = {'X_train_scaled_reshaped': X_train,
                                          'Y_train_reshaped': Y_train,
                                          'X_val_scaled_batch': X_val_batch,
                                          'Y_val_batch': Y_val_batch}
             joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
 
-        ### start of actual training ###
         costs = []
         val_errs = []
         curr_min_err = 1  # i.e. 100%
@@ -331,7 +313,8 @@ def train(train_data_dict_path,
                 # every epoch we are going to shuffle the order in which we look at every window
                 shuffle_order = np.random.permutation(num_windows)
                 shuffle_order = shuffle_order[:new_last_ind].reshape(num_batches, net_config.batch_size)
-                for batch_num, batch_inds in enumerate(shuffle_order):
+                pbar = tqdm(shuffle_order)
+                for batch_num, batch_inds in enumerate(pbar):
                     X_batch = []
                     Y_batch = []
                     for start_ind in batch_inds:
@@ -352,10 +335,9 @@ def train(train_data_dict_path,
                                                  feed_dict=d)
                     costs.append(_cost)
                     net.summary_writer.add_summary(summary, epoch)
-                    print("epoch {}, batch {} of {}, cost: {}".format(epoch + 1,
-                                                                      batch_num + 1,
-                                                                      num_batches,
-                                                                      _cost))
+                    pbar.set_description(
+                        f"epoch {epoch + 1}, batch {batch_num + 1} of {num_batches}, cost: {_cost:8.4f}"
+                    )
 
                 if val_error_step:
                     if epoch % val_error_step == 0:
@@ -441,4 +423,5 @@ def train(train_data_dict_path,
 
 if __name__ == "__main__":
     config_file = os.path.normpath(sys.argv[1])
+    config = config.parse.parse_config(config_file)
     train(config_file)
