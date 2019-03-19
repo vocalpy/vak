@@ -82,7 +82,7 @@ def cli(command, config_files):
 
                 # get config again
                 # because learncurve changed results_dir_made_by_main_script
-                config = vak.config.parse.parse_config(config_file)
+                config = parse.parse_config(config_file)
                 summary(results_dirname=config.output.results_dirname,
                         train_data_dict_path=config.train.train_data_dict_path,
                         networks=config.networks,
