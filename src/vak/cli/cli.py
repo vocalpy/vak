@@ -77,7 +77,8 @@ def cli(command, config_files):
                            normalize_spectrograms=config.train.normalize_spectrograms,
                            use_train_subsets_from_previous_run=config.train.use_train_subsets_from_previous_run,
                            previous_run_path=config.train.previous_run_path,
-                           root_results_dir=config.output.root_results_dir)
+                           root_results_dir=config.output.root_results_dir,
+                           save_transformed_data=config.data.save_transformed_data)
 
                 # get config again
                 # because learncurve changed results_dir_made_by_main_script
