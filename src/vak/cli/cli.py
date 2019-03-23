@@ -23,7 +23,19 @@ def cli(command, config_files):
             raise NotImplementedError
 
         elif command == 'train':
-            train(args.predict)
+            train(train_data_dict_path=config.train.train_data_dict_path,
+                  val_data_dict_path=config.train.val_data_dict_path,
+                  spect_params=config.spect_params,
+                  networks=config.networks,
+                  num_epochs=config.train.num_epochs,
+                  config_file=config_file,
+                  val_error_step=config.train.val_error_step,
+                  checkpoint_step=config.train.checkpoint_step,
+                  patience=config.train.patience,
+                  save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
+                  normalize_spectrograms=config.train.normalize_spectrograms,
+                  root_results_dir=config.output.root_results_dir,
+                  save_transformed_data=False)
 
         elif command == 'finetune':
             raise NotImplementedError
@@ -65,11 +77,12 @@ def cli(command, config_files):
                            normalize_spectrograms=config.train.normalize_spectrograms,
                            use_train_subsets_from_previous_run=config.train.use_train_subsets_from_previous_run,
                            previous_run_path=config.train.previous_run_path,
-                           root_results_dir=config.output.root_results_dir)
+                           root_results_dir=config.output.root_results_dir,
+                           save_transformed_data=config.data.save_transformed_data)
 
                 # get config again
                 # because learncurve changed results_dir_made_by_main_script
-                config = vak.config.parse.parse_config(config_file)
+                config = parse.parse_config(config_file)
                 summary(results_dirname=config.output.results_dirname,
                         train_data_dict_path=config.train.train_data_dict_path,
                         networks=config.networks,
