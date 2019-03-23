@@ -1,4 +1,4 @@
-"""tests for vak.config.predict module"""
+"""tests for vak.cli.predict module"""
 import os
 import tempfile
 import shutil
@@ -6,8 +6,8 @@ import unittest
 from configparser import ConfigParser
 from glob import glob
 
-import vak.config.predict
 import vak.utils
+import vak.cli.predict
 
 HERE = os.path.dirname(__file__)
 TEST_CONFIGS_PATH = os.path.join(HERE, '..', 'test_data', 'configs')
@@ -24,7 +24,7 @@ def copydir(src, dst):
         shutil.copy2(s, d)
 
 
-class TestParsePredictConfig(unittest.TestCase):
+class TestPredict(unittest.TestCase):
     def setUp(self):
         self.tmp_output_dir = tempfile.mkdtemp()
         a_config = os.path.join(TEST_DATA_DIR, 'configs', 'test_predict_config.ini')
@@ -49,6 +49,7 @@ class TestParsePredictConfig(unittest.TestCase):
         # rewrite config so it points to data for testing + temporary output dirs
         config = ConfigParser()
         config.read(self.tmp_config_path)
+        config['DATA']['data_dir'] = TEST_DATA_DIR
         config['PREDICT']['checkpoint_path'] = checkpoint_path
         config['PREDICT']['labels_mapping_path'] = labels_mapping_path
         config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
@@ -60,54 +61,15 @@ class TestParsePredictConfig(unittest.TestCase):
         shutil.rmtree(self.tmp_dir_to_predict)
         os.remove(self.tmp_config_path)
 
-    def test_config_tuple_has_all_attrs(self):
-        config_obj = ConfigParser()
-        config_obj.read(self.tmp_config_path)
-        predict_config_tup = vak.config.predict.parse_predict_config(config_obj)
-        for field in vak.config.predict.PredictConfig._fields:
-            self.assertTrue(hasattr(predict_config_tup, field))
-
-    def test_no_networks_raises(self):
-        config_obj = ConfigParser()
-        config_obj.read(self.tmp_config_path)
-        config_obj.remove_option('PREDICT', 'networks')
-        with self.assertRaises(KeyError):
-            vak.config.predict.parse_predict_config(config_obj)
-
-    def test_network_not_installed_raises(self):
-        config_obj = ConfigParser()
-        config_obj.read(self.tmp_config_path)
-        config_obj['PREDICT']['networks'] = 'NotInstalledNet, OtherNotInstalledNet'
-        with self.assertRaises(TypeError):
-            vak.config.predict.parse_predict_config(config_obj)
-
-    def test_missing_checkpoint_path_raises(self):
-        config_obj = ConfigParser()
-        config_obj.read(self.tmp_config_path)
-        config_obj.remove_option('PREDICT', 'checkpoint_path')
-        with self.assertRaises(KeyError):
-            vak.config.predict.parse_predict_config(config_obj)
-
-    def test_missing_dir_to_predict_raises(self):
-        config_obj = ConfigParser()
-        config_obj.read(self.tmp_config_path)
-        config_obj.remove_option('PREDICT', 'dir_to_predict')
-        with self.assertRaises(KeyError):
-            vak.config.predict.parse_predict_config(config_obj)
-
-    def test_nonexistent_checkpoint_dir_raises(self):
-        config_obj = ConfigParser()
-        config_obj.read(self.tmp_config_path)
-        config_obj['PREDICT']['checkpoint_path'] = 'obviously/non/existent/dir'
-        with self.assertRaises(NotADirectoryError):
-            vak.config.predict.parse_predict_config(config_obj)
-
-    def test_nonexistent_dir_to_predict_raises(self):
-        config_obj = ConfigParser()
-        config_obj.read(self.tmp_config_path)
-        config_obj['PREDICT']['dir_to_predict'] = 'obviously/non/existent/dir'
-        with self.assertRaises(NotADirectoryError):
-            vak.config.predict.parse_predict_config(config_obj)
+    def test_predict_func(self):
+        # make sure predict runs without crashing.
+        config = vak.config.parse.parse_config(self.tmp_config_path)
+        vak.cli.predict(checkpoint_path=config.predict.checkpoint_path,
+                        networks=config.networks,
+                        labels_mapping_path=config.predict.labels_mapping_path,
+                        spect_params=config.spect_params,
+                        dir_to_predict=config.predict.dir_to_predict,
+                        spect_scaler_path=config.predict.spect_scaler_path)
 
 
 if __name__ == '__main__':

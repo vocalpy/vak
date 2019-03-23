@@ -41,7 +41,12 @@ def cli(command, config_files):
             raise NotImplementedError
 
         elif command == 'predict':
-            predict(args.predict)
+            predict(checkpoint_path=config.predict.checkpoint_path,
+                    networks=config.networks,
+                    labels_mapping_path=config.predict.labels_mapping_path,
+                    spect_params=config.spect_params,
+                    dir_to_predict=config.predict.dir_to_predict,
+                    spect_scaler_path=config.predict.spect_scaler_path)
 
         elif command == 'learncurve':
                 make_data(labelset=config.data.labelset,
