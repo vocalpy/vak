@@ -6,3 +6,4 @@ from .learncurve import learncurve
 from .summary import summary
 from .predict import predict
 from .cli import cli
+from .train import train
