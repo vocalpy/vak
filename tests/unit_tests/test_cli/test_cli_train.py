@@ -50,7 +50,7 @@ class TestTrain(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
         shutil.rmtree(self.tmp_config_dir)
 
-    def test_learncurve_func(self):
+    def test_train_func(self):
         # make sure train runs without crashing.
         config = vak.config.parse.parse_config(self.tmp_config_path)
         vak.cli.train(train_data_dict_path=config.train.train_data_dict_path,
