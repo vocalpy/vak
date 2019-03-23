@@ -289,10 +289,7 @@ def train(train_data_dict_path,
         curr_min_err = 1  # i.e. 100%
         err_patience_counter = 0
 
-        with tf.Session(graph=net.graph,
-                        config=tf.ConfigProto(
-                            log_device_placement=True
-                        )) as sess:
+        with tf.Session(graph=net.graph) as sess:
             sess.run(net.init)
 
             # figure out number of batches we can get out of subset of training data
