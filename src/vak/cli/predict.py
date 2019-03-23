@@ -1,52 +1,151 @@
 import os
 import sys
-from configparser import ConfigParser
 from glob import glob
+from datetime import datetime
+import pickle
 
 import joblib
 import numpy as np
 import tensorflow as tf
+from tqdm import tqdm
 
-from vak.utils.data import reshape_data_for_batching
+from ..utils.data import reshape_data_for_batching, make_spects_from_list_of_files
+from ..utils.mat import convert_mat_to_spect
+from .. import network
 
 
-def predict(results_dirname,
-            dir_to_predict,
-            checkpoint_dir,
+def predict(checkpoint_path,
+            networks,
+            labels_mapping_path,
+            spect_params,
+            dir_to_predict=None,
+            mat_spect_files_path=None,
+            spect_scaler_path=None
             ):
     """make predictions with one trained model
 
     Parameters
     ----------
-    results_dirname
-    dir_to_predict
-    checkpoint_dir
+    checkpoint_path : str
+        path to directory with saved model
+    networks : namedtuple
+        where each field is the Config tuple for a neural network and the name
+        of that field is the name of the class that represents the network.
+    labels_mapping_path : str
+        path to file that contains labels mapping, to convert output from consecutive
+        digits back to labels used for audio segments (e.g. birdsong syllables)
+    spect_params : dict
+        Dictionary of parameters for creating spectrograms.
+    dir_to_predict : str
+        path to directory where input files are located
+    mat_spect_files_path
+        path to directory with .mat files containing spectrograms that should be used
+        as data for which predictions are made
+    spect_scaler_path : str
+        path to a saved SpectScaler object used to normalize spectrograms.
+        If spectrograms were normalized and this is not provided, will give
+        incorrect results.
+        Default is None.
 
     Returns
     -------
-
+    None
     """
-    if not os.path.isdir(dir_to_predict):
+    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+
+    if dir_to_predict is None and mat_spect_files_path is None:
+        raise ValueError('must specify either dir_to_predict or mat_spect_files_path but both are None')
+
+    if dir_to_predict and mat_spect_files_path:
+        raise ValueError('got values for both dir_to_predict and mat_spect_files_path, not clear which to use')
+
+    with open(labels_mapping_path, 'rb') as labels_map_file_obj:
+        labels_mapping = pickle.load(labels_map_file_obj)
+    n_syllables = len(labels_mapping)
+
+    if mat_spect_files_path:
+        print('will use spectrograms from .mat files in {}'
+              .format(mat_spect_files_path))
+        mat_spect_files = glob(os.path.join(mat_spect_files_path, '*.mat'))
+        spects_dir = os.path.join(mat_spect_files_path,
+                                  'spectrograms_' + timenow)
+        os.mkdir(spects_dir)
+        spect_files_path = convert_mat_to_spect(mat_spect_files,
+                                                mat_spects_annotation_file,
+                                                spects_dir,
+                                                labels_mapping=labels_mapping)
+        dir_to_predict = spect_files_path
+
+    else:
+        if not os.path.isdir(dir_to_predict):
+            raise FileNotFoundError('directory {}, specified as '
+                                    'dir_to_predict, is not found.'
+                                    .format(dir_to_predict))
+
+        spects_dir = os.path.join(dir_to_predict,
+                              'spectrograms_' + timenow)
+        os.mkdir(spects_dir)
+
+        cbins = glob(os.path.join(dir_to_predict, '*.cbin'))
+        if cbins == []:
+            # if we don't find .cbins in data_dir, look in sub-directories
+            cbins = []
+            subdirs = glob(os.path.join(dir_to_predict, '*/'))
+            for subdir in subdirs:
+                cbins.extend(glob(os.path.join(dir_to_predict,
+                                               subdir,
+                                               '*.cbin')))
+        if cbins == []:
+            # try looking for .wav files
+            wavs = glob(os.path.join(dir_to_predict, '*.wav'))
+
+            if cbins == [] and wavs == []:
+                raise FileNotFoundError('No .cbin or .wav files found in {} or'
+                                        'immediate sub-directories'
+                                        .format(dir_to_predict))
+
+        if cbins:
+            spect_files_path = \
+                make_spects_from_list_of_files(cbins,
+                                               spect_params,
+                                               spects_dir,
+                                               labels_mapping,
+                                               skip_files_with_labels_not_in_labelset=False,
+                                               is_for_predict=True)
+        elif wavs:
+            spect_files_path = \
+                make_spects_from_list_of_files(wavs,
+                                               spect_params,
+                                               spects_dir,
+                                               labels_mapping,
+                                               skip_files_with_labels_not_in_labelset=False,
+                                               is_for_predict=True)
+
+    # TODO should be able to just call dataset here, right?
+    # instead of forcing user to specify spect_file_list
+    # should give them option to do either
+    spect_file_list = glob(os.path.join(spects_dir,
+                                        '*.spect'))
+    if spect_file_list == []:
+        raise ValueError('did not find any .spect files in {}'
+                         .format(dir_to_predict))
+
+    if not os.path.isdir(checkpoint_path):
         raise FileNotFoundError('directory {}, specified as '
-                                'dir_to_predict, is not found.'
-                                .format(dir_to_predict))
-    if not os.path.isdir(checkpoint_dir):
-        raise FileNotFoundError('directory {}, specified as '
-                                'checkpoint_dir, is not found.'
-                                .format(checkpoint_dir))
-    meta_file = glob(os.path.join(checkpoint_dir,
-                                  'checkpoint*meta*'))
+                                'checkpoint_path, is not found.'
+                                .format(checkpoint_path))
+    checkpoint_file = tf.train.latest_checkpoint(checkpoint_path)
+    meta_file = glob(checkpoint_file + '*meta*')
     if len(meta_file) > 1:
         raise ValueError('found more than one .meta file in {}'
-                         .format(checkpoint_dir))
+                         .format(checkpoint_path))
     elif len(meta_file) < 1:
         raise ValueError('did not find .meta file in {}'
-                         .format(checkpoint_dir))
+                         .format(checkpoint_path))
     else:
         meta_file = meta_file[0]
 
-    data_file = glob(os.path.join(checkpoint_dir,
-                                  'checkpoint*data*'))
+    data_file = glob(checkpoint_file + '*data*')
     if len(data_file) > 1:
         raise ValueError('found more than one .data file in {}'
                          .format(checkpoint_dir))
@@ -56,66 +155,66 @@ def predict(results_dirname,
     else:
         data_file = data_file[0]
 
-    # TODO should be able to just call dataset here, right?
-    # instead of forcing user to specify spect_file_list
-    # should give them option to do either
-    spect_file_list = glob(os.path.join(dir_to_predict,
-                                        '*.spect'))
-    if spect_file_list == []:
-        raise ValueError('did not find any .spect files in {}'
-                         .format(dir_to_predict))
+    NETWORKS = network._load()
 
-    model = TweetyNet(n_syllables=n_syllables,
-        input_vec_size=input_vec_size,
-        batch_size=batch_size)
+    for net_name, net_config in zip(networks._fields, networks):
+        net_config_dict = net_config._asdict()
+        net_config_dict['n_syllables'] = n_syllables
+        net = NETWORKS[net_name](**net_config_dict)
 
-    with tf.Session(graph=model.graph) as sess:
-        tf.logging.set_verbosity(tf.logging.ERROR)
+        if spect_scaler_path:
+            spect_scaler = joblib.load(spect_scaler_path)
 
-        model.restore(sess=sess,
-        meta_file=meta_file,
-        data_file=data_file)
+        with tf.Session(graph=net.graph) as sess:
+            tf.logging.set_verbosity(tf.logging.ERROR)
 
-        num_spect_files = len(spect_file_list)
-        preds_dict = {}
-        for file_num, spect_file in enumerate(spect_file_list):
-            print('Predicting labels for {}, file {} of {}'
-                  .format(spect_file, file_num, num_spect_files))
+            net.restore(sess=sess,
+                        meta_file=meta_file,
+                        data_file=data_file)
 
-            data = joblib.load(spect_file)
-            Xd = data['spect'].T
-            Yd = data['labeled_timebins']
-            (Xd_batch,
-             Yd_batch,
-             num_batches) = reshape_data_for_batching(Xd,
-                                                      Yd,
-                                                      batch_size,
-                                                      time_steps,
-                                                      input_vec_size)
+            num_spect_files = len(spect_file_list)
+            preds_dict = {}
+            pbar = tqdm(spect_file_list)
+            for file_num, spect_file in enumerate(pbar):
+                pbar.set_description(
+                    f'Predicting labels for {os.path.basename(spect_file)}, file {file_num} of {num_spect_files}'
+                )
 
-            if 'Y_pred' in locals():
-                del Y_pred
-            # work through current spectrogram batch by batch
-            for b in range(num_batches):  # "b" is "batch number"
-                d = {model.X:Xd_batch[:, b * time_steps: (b + 1) * time_steps, :],
-                     model.lng: [time_steps] * batch_size}
+                data = joblib.load(spect_file)
+                Xd = data['spect'].T
+                if spect_scaler_path:
+                    Xd = spect_scaler.transform(Xd)
+                Yd = data['labeled_timebins']
+                (Xd_batch,
+                 Yd_batch,
+                 num_batches) = reshape_data_for_batching(Xd,
+                                                          Yd,
+                                                          net_config.batch_size,
+                                                          net_config.time_bins)
+
                 if 'Y_pred' in locals():
-                    # if Y_pred exists, we concatenate with new predictions
-                    # for next batch
-                    preds = sess.run(model.predict, feed_dict=d)
-                    preds = preds.reshape( -1)  # batch_size
-                    Y_pred = np.concatenate((Y_pred, preds), axis=0)
-                else:  # if Y_pred doesn't exist yet
-                    Y_pred = sess.run(model.predict, feed_dict=d)
-                    Y_pred = Y_pred.reshape(-1)
+                    del Y_pred
+                # work through current spectrogram batch by batch
+                for b in range(num_batches):  # "b" is "batch number"
+                    d = {net.X: Xd_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
+                         net.lng: [net_config.time_bins] * net_config.batch_size}
+                    if 'Y_pred' in locals():
+                        # if Y_pred exists, we concatenate with new predictions
+                        # for next batch
+                        preds = sess.run(net.predict, feed_dict=d)
+                        preds = preds.reshape(-1)  # batch_size
+                        Y_pred = np.concatenate((Y_pred, preds), axis=0)
+                    else:  # if Y_pred doesn't exist yet
+                        Y_pred = sess.run(net.predict, feed_dict=d)
+                        Y_pred = Y_pred.reshape(-1)
 
-            # remove zero padding added by reshape_data_for_batching function
-            Y_pred = Y_pred.ravel()
-            Y_pred = Y_pred[0:len(Yd)]
-            preds_dict[spect_file] = Y_pred
+                # remove zero padding added by reshape_data_for_batching function
+                Y_pred = Y_pred.ravel()
+                Y_pred = Y_pred[0:len(Yd)]
+                preds_dict[spect_file] = Y_pred
 
-    fname = os.path.join(dir_to_predict, 'predictions')
-    joblib.dump(preds_dict, fname)
+        fname = os.path.join(dir_to_predict, 'predictions')
+        joblib.dump(preds_dict, fname)
 
 
 if __name__ == '__main__':

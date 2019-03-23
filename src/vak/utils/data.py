@@ -169,7 +169,8 @@ def make_spects_from_list_of_files(filelist,
                                    labels_mapping,
                                    skip_files_with_labels_not_in_labelset=True,
                                    annotation_file=None,
-                                   n_decimals_trunc=3):
+                                   n_decimals_trunc=3,
+                                   is_for_predict=False):
     """makes spectrograms from a list of audio files
 
     Parameters
@@ -197,6 +198,10 @@ def make_spects_from_list_of_files(filelist,
     n_decimals_trunc : int
         number of decimal places to keep when truncating timebin_dur
         default is 3
+    is_for_predict : bool
+        if True, we are making spectrograms for prediction of labels. This tells function not
+        to worry about annotation and to just insert dummy vector of labeled timebins
+        into .spect files. Default is False.
 
     Returns
     -------
@@ -234,9 +239,9 @@ def make_spects_from_list_of_files(filelist,
                          'All files must be of the same type.')
 
     if filetype == 'wav':
-        if annotation_file is None:
+        if annotation_file is None and is_for_predict is False:
             raise ValueError('annotation_file is required when using .wav files')
-        else:
+        elif annotation_file and is_for_predict is True:
             if annotation_file.endswith('.mat'):
                 # the complicated nested structure of the annotation.mat files
                 # (a cell array of Matlab structs)
@@ -263,6 +268,11 @@ def make_spects_from_list_of_files(filelist,
                 annot_elements = annotations[elements_key]
             elif annotation_file.endswith('.xml'):
                 annotation_dict = load_song_annot(filelist, annotation_file)
+        elif annotation_file is None and is_for_predict is True:
+            pass
+        else:
+            ValueError('make_spects_from_list_of_files received annotation file '
+                       'but is_for_predict is True')
 
     # need to keep track of name of files used since we may skip some.
     # (cbins_used is actually a list of tuples as defined in docstring)
@@ -272,46 +282,49 @@ def make_spects_from_list_of_files(filelist,
     for filename in pbar:
         basename = os.path.basename(filename)
         if filetype == 'cbin':
-            try:
-                notmat_dict = evfuncs.load_notmat(filename)
-            except FileNotFoundError:
-                pbra.set_description(
-                    f'Did not find .not.mat file for {basename}, skipping file.'
-                )
-                continue
-            this_labels_str = notmat_dict['labels']
-            onsets = notmat_dict['onsets'] / 1000
-            offsets = notmat_dict['offsets'] / 1000
+            if not is_for_predict:
+                try:
+                    notmat_dict = evfuncs.load_notmat(filename)
+                except FileNotFoundError:
+                    pbar.set_description(
+                        f'Did not find .not.mat file for {basename}, skipping file.'
+                    )
+                    continue
+                this_labels_str = notmat_dict['labels']
+                onsets = notmat_dict['onsets'] / 1000
+                offsets = notmat_dict['offsets'] / 1000
             dat, fs = evfuncs.load_cbin(filename)
 
         elif filetype == 'wav':
             fs, dat = wavfile.read(filename)
-            if annotation_file.endswith('.mat'):
-                ind = annot_keys.index(os.path.basename(filename))
-                annotation = annot_elements[ind]
-                # The .tolist() methods calls below are to get the
-                # array out of the weird lengthless object array
-                # that scipy.io.loadmat produces when trying to load
-                # the annotation files.
-                this_labels_str = annotation['segType'].tolist()
-                onsets = annotation['segFileStartTimes'].tolist()
-                offsets = annotation['segFileEndTimes'].tolist()
-            elif annotation_file.endswith('.xml'):
-                filename_key = os.path.basename(filename)
-                this_labels_str = annotation_dict[filename_key]['labels']
-                onsets = annotation_dict[filename_key]['onsets'] / fs
-                offsets = annotation_dict[filename_key]['offsets'] / fs
+            if not is_for_predict:
+                if annotation_file.endswith('.mat'):
+                    ind = annot_keys.index(os.path.basename(filename))
+                    annotation = annot_elements[ind]
+                    # The .tolist() methods calls below are to get the
+                    # array out of the weird lengthless object array
+                    # that scipy.io.loadmat produces when trying to load
+                    # the annotation files.
+                    this_labels_str = annotation['segType'].tolist()
+                    onsets = annotation['segFileStartTimes'].tolist()
+                    offsets = annotation['segFileEndTimes'].tolist()
+                elif annotation_file.endswith('.xml'):
+                    filename_key = os.path.basename(filename)
+                    this_labels_str = annotation_dict[filename_key]['labels']
+                    onsets = annotation_dict[filename_key]['onsets'] / fs
+                    offsets = annotation_dict[filename_key]['offsets'] / fs
 
-        if skip_files_with_labels_not_in_labelset:
-            labels_set = set(this_labels_str)
-            # below, set(labels_mapping) is a set of that dict's keys
-            if not labels_set.issubset(set(labels_mapping)):
-                # because there's some label in labels
-                # that's not in labels_mapping
-                pbar.set_description(
-                    f'found labels in {basename} not in labels_mapping, skipping file'
-                )
-                continue
+        if not is_for_predict:
+            if skip_files_with_labels_not_in_labelset:
+                labels_set = set(this_labels_str)
+                # below, set(labels_mapping) is a set of that dict's keys
+                if not labels_set.issubset(set(labels_mapping)):
+                    # because there's some label in labels
+                    # that's not in labels_mapping
+                    pbar.set_description(
+                        f'found labels in {basename} not in labels_mapping, skipping file'
+                    )
+                    continue
 
         pbar.set_description(f'making .spect file for {basename}')
 
@@ -340,13 +353,19 @@ def make_spects_from_list_of_files(filelist,
             spect = spect[f_inds, :]
             freq_bins = freq_bins[f_inds]
 
-        this_labels = [labels_mapping[label]
-                  for label in this_labels_str]
-        this_labeled_timebins = make_labeled_timebins_vector(this_labels,
-                                                             onsets,
-                                                             offsets,
-                                                             time_bins,
-                                                             labels_mapping['silent_gap_label'])
+        if not is_for_predict:
+            this_labels = [labels_mapping[label]
+                           for label in this_labels_str]
+            this_labeled_timebins = make_labeled_timebins_vector(this_labels,
+                                                                 onsets,
+                                                                 offsets,
+                                                                 time_bins,
+                                                                 labels_mapping['silent_gap_label'])
+        elif is_for_predict:
+            this_labels = []
+            this_labels_str = ''
+            # below 1 because rows = freq bins, cols = time_bins before we take transpose (as we do in main loop)
+            this_labeled_timebins = np.zeros((spect.shape[1], 1))
 
         if not 'timebin_dur' in locals():
             timebin_dur = np.around(np.mean(np.diff(time_bins)), decimals=3)
