@@ -298,7 +298,7 @@ def train(train_data_dict_path,
             # figure out number of batches we can get out of subset of training data
             # if we slide a window along the spectrogram with a stride of 1
             # and use each window as one sample in a batch
-            num_timebins_training_set = X_train_subset.shape[0]
+            num_timebins_training_set = X_train.shape[0]
             num_windows = num_timebins_training_set - net_config.time_bins
             logger.info('training set with {} time bins will yield {} windows '
                         'of width {} time bins'
