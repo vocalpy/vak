@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
+[![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 # vak
 ## a library to work with neural networks that segment and annotate vocalizations
 [![Build Status](https://travis-ci.com/NickleDave/vak.svg?branch=master)](https://travis-ci.com/NickleDave/vak)
@@ -103,4 +106,10 @@ then running the command-line interface with the `--predict` flag, like so:
 An example of what a `config.ini` file with a [PREDICT] section is 
 in the doc folder [here](./doc/template_predict.ini).
 
+## Citation
+If you use vak for a publication, please cite its DOI:
+[![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 
+## License
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)  
+[BSD-3](./LICENSE)
