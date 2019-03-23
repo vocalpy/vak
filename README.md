@@ -48,32 +48,43 @@ the code, and then have its behavior as an installed library reflect those edits
 
 ## Usage
 ### Training models to segment and label birdsong
-To train models, use the command line interface, `vak-cli`.
-You run it with `config.ini` files, using one of a handful of command-line flags.
+Currently the easiest way to work with `vak` is through the command line.
+You run it with `config.ini` files, using one of a handful of commands.
 Here's the help text that prints when you run `$ vak-cli --help`:  
 ```
-main script
+usage: vak [-h] [-d DATASET] [-g GLOB] [-t TXT] command configfile
+
+vak command-line interface
+
+positional arguments:
+  command               Command to run, valid options are:
+                        ['prep', 'train', 'predict', 'finetune', 'learncurve', 'summary']
+                        $ vak train ./configs/config_2018-12-17.ini
+  configfile            name of config.ini file to use 
+                        $ vak train ./configs/config_2018-12-17.ini
 
 optional arguments:
   -h, --help            show this help message and exit
-  -c CONFIG, --config CONFIG
-                        run learning curve experiment with a single config.ini file, by passing the name of that file.
-                        $ vak-cli --config ./config_bird1.ini
+  -d DATASET, --dataset DATASET
+                        Create a dataset from a list of files in a .txt file, by passing in the name of the .txt file.
+                        $ vak --dataset ./audio_files_list.txt
   -g GLOB, --glob GLOB  string to use with glob function to search for config files fitting some pattern.
-                        $ vak-cli --glob ./config_finches*.ini
-  -p PREDICT, --predict PREDICT
-                        predict segments and labels for song, using a trained model specified in a single config.ini file
-                        $ vak-cli --predict ./predict_bird1.ini
-  -s SUMMARY, --summary SUMMARY
-                        runs function that summarizes results from generatinga learning curve, using a single config.ini file
-                        $ vak-cli --summary ./config_bird1.ini
+                        $ vak --glob ./config_finches*.ini
   -t TXT, --txt TXT     name of .txt file containing list of config files to run
-                        $ vak-cli --text ./list_of_config_filenames.txt
+                        $ vak --text ./list_of_config_filenames.txt
 ```
 
-As an example, you can run `vak-cli` with a single `config.ini` file 
-by using the  `--config` flag and passing the name of the config.ini file as an argument:  
-`(vak-env)$ vak-cli --config ./configs/config_bird0.ini`  
+As an example, you can run `vak` with a single `config.ini` file 
+by using the  `train` command and passing the name of the config.ini file as an argument:  
+```
+(vak-env)$ vak prep ./configs/config_bird0.ini
+(vak-env)$ vak train ./configs/config_bird0.ini
+```  
+
+You can then use `vak` to apply the trained model to other data with the `predict` command.
+```
+(vak-env)$ vak predict ./configs/config_bird0.ini
+```  
 
 For more details on how training works, see [experiments.md](doc/experiments.md), 
 and for more details on the config.ini files, see [README_config.md](doc/README_config.md).
