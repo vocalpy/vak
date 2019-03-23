@@ -153,6 +153,12 @@ def train(train_data_dict_path,
                     train_data_dict['timebin_dur'],
                     train_data_dict['filenames'])
 
+    if Y_train.ndim > 1:
+        # not clear to me right why labeled_timebins get saved as (n, 1)
+        # instead of as (n) vector--i.e. if another functions depends on that shape
+        # Below is hackish way around figuring that out.
+        Y_train = np.squeeze(Y_train)
+
     logger.info('Size of each timebin in spectrogram, in seconds: {}'
                 .format(timebin_dur))
     # dump filenames to a text file
