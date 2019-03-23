@@ -10,21 +10,35 @@ import tensorflow as tf
 from vak.utils.data import reshape_data_for_batching
 
 
-def predict(results_dirname,
+def predict(checkpoint_path,
+            networks,
+            labels_mapping_path,
             dir_to_predict,
-            checkpoint_dir,
+            spect_scaler_path=None
             ):
     """make predictions with one trained model
 
     Parameters
     ----------
-    results_dirname
-    dir_to_predict
-    checkpoint_dir
+    checkpoint_path : str
+        path to directory with saved model
+    networks : namedtuple
+        where each field is the Config tuple for a neural network and the name
+        of that field is the name of the class that represents the network.
+    labels_mapping_path : str
+        path to file that contains labels mapping, to convert output from consecutive
+        digits back to labels used for audio segments (e.g. birdsong syllables)
+    dir_to_predict : str
+        path to directory where input files are located
+    spect_scaler_path : str
+        path to a saved SpectScaler object used to normalize spectrograms.
+        If spectrograms were normalized and this is not provided, will give
+        incorrect results.
+        Default is None.
 
     Returns
     -------
-
+    None
     """
     if not os.path.isdir(dir_to_predict):
         raise FileNotFoundError('directory {}, specified as '
