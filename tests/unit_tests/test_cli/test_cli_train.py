@@ -56,17 +56,16 @@ class TestTrain(unittest.TestCase):
         vak.cli.train(train_data_dict_path=config.train.train_data_dict_path,
                       val_data_dict_path=config.train.val_data_dict_path,
                       spect_params=config.spect_params,
-                      total_train_set_duration=config.data.total_train_set_dur,
-                      train_set_durs=config.train.train_set_durs,
+                      networks=config.networks,
                       num_epochs=config.train.num_epochs,
                       config_file=self.tmp_config_path,
-                      networks=config.networks,
                       val_error_step=config.train.val_error_step,
                       checkpoint_step=config.train.checkpoint_step,
                       patience=config.train.patience,
                       save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
                       normalize_spectrograms=config.train.normalize_spectrograms,
-                      root_results_dir=config.output.root_results_dir)
+                      root_results_dir=config.output.root_results_dir,
+                      save_transformed_data=False)
 
 
 if __name__ == '__main__':
