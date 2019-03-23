@@ -11,6 +11,7 @@ import tensorflow as tf
 from .. import metrics, utils
 import vak.network
 
+
 def summary(results_dirname,
             train_data_dict_path,
             networks,
@@ -223,22 +224,27 @@ def summary(results_dirname,
                 net_config_dict['n_syllables'] = n_syllables
                 net = NETWORKS[net_name](**net_config_dict)
 
-                results_dirname_this_net = os.path.join(results_dirname, net_name)
+                results_dirname_this_net = os.path.join(training_records_path, net_name)
 
-                checkpoint_filename = ('checkpoint_{}_train_set_dur_{}_sec_replicate_{}'
-                                       .format(net_name, str(train_set_dur), str(replicate)))
-                checkpoint_path = os.path.join(results_dirname_this_net,
-                                               checkpoint_filename)
-                meta_file = glob(checkpoint_path + '*meta')
+                checkpoint_path = os.path.join(results_dirname_this_net, 'checkpoints')
+                # we use latest checkpoint when doing summary for learncurve, assume that's "best trained"
+                checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path)
+
+                meta_file = glob(checkpoint_file + '*meta')
                 if len(meta_file) != 1:
-                    raise ValueError('Incorrect number of meta files for saved checkpoint: {}'
-                                     .format(meta_file))
+                    raise ValueError('Incorrect number of meta files for last saved checkpoint.\n'
+                                     'For checkpoint {}, found these files:\n'
+                                     '{}'
+                                     .format(checkpoint_file, meta_file))
                 else:
                     meta_file = meta_file[0]
-                data_file = glob(checkpoint_path + '*data*')
+
+                data_file = glob(checkpoint_file + '*data*')
                 if len(data_file) != 1:
-                    raise ValueError('Incorrect number of data files for saved checkpoint: {}'
-                                     .format(data_file))
+                    raise ValueError('Incorrect number of data files for last saved checkpoint.\n'
+                                     'For checkpoint {}, found these files:\n'
+                                     '{}'
+                                     .format(checkpoint_file, data_file))
                 else:
                     data_file = data_file[0]
 
