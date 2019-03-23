@@ -47,7 +47,7 @@ class TestMakeData(unittest.TestCase):
         # all this does is make sure the functions runs without crashing.
         # need to write tests for functions that make_data calls as well
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512,step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
         vak.cli.make_data(labelset=list('iabcdefghjk'),
                           all_labels_are_int=False,
@@ -68,7 +68,7 @@ class TestMakeData(unittest.TestCase):
     def test_make_data_adds_freq_bins(self):
         # make sure that make_data adds freq bins option to DATA section
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512,step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
         vak.cli.make_data(labelset=list('iabcdefghjk'),
                                all_labels_are_int=False,
