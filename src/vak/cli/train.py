@@ -227,16 +227,8 @@ def train(train_data_dict_path,
         joblib.dump(spect_scaler,
                     os.path.join(results_dirname, 'spect_scaler'))
 
-    training_records_dir = 'records_for_training'
-    training_records_path = os.path.join(results_dirname,
-                                         training_records_dir)
-
-    if not os.path.isdir(training_records_path):
-        os.makedirs(training_records_path)
-    checkpoint_filename = 'checkpoint_'
-
     if save_transformed_data:
-        scaled_data_filename = os.path.join(training_records_path,
+        scaled_data_filename = os.path.join(results_dirname,
                                             'scaled_spects')
         scaled_data_dict = {'X_train_scaled': X_train,
                             'X_val_scaled': X_val,
@@ -256,6 +248,8 @@ def train(train_data_dict_path,
         results_dirname_this_net = os.path.join(results_dirname, net_name)
 
         checkpoint_filename = f'checkpoint_{net_name}'
+        checkpoint_path = os.path.join(results_dirname_this_net,
+                                       checkpoint_filename)
 
         if not os.path.isdir(results_dirname_this_net):
             os.makedirs(results_dirname_this_net)
@@ -276,7 +270,7 @@ def train(train_data_dict_path,
                                                                  net_config.time_bins)
 
         if save_transformed_data:
-            scaled_reshaped_data_filename = os.path.join(training_records_path,
+            scaled_reshaped_data_filename = os.path.join(results_dirname_this_net,
                                                          'scaled_reshaped_spects')
             scaled_reshaped_data_dict = {'X_train_scaled_reshaped': X_train,
                                          'Y_train_reshaped': Y_train,
@@ -372,8 +366,6 @@ def train(train_data_dict_path,
                             # error went down, set as new min and reset counter
                             curr_min_err = val_errs[-1]
                             err_patience_counter = 0
-                            checkpoint_path = os.path.join(results_dirname_this_net,
-                                                           checkpoint_filename)
                             print("Validation error improved.\n"
                                   "Saving checkpoint to {}".format(checkpoint_path))
                             net.saver.save(sess, checkpoint_path)
@@ -382,26 +374,25 @@ def train(train_data_dict_path,
                             if err_patience_counter > patience:
                                 print("stopping because validation error has not improved in {} epochs"
                                       .format(patience))
-                                with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
+                                with open(os.path.join(results_dirname_this_net, "costs"), 'wb') as costs_file:
                                     pickle.dump(costs, costs_file)
-                                with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
+                                with open(os.path.join(results_dirname_this_net, "val_errs"), 'wb') as val_errs_file:
                                     pickle.dump(val_errs, val_errs_file)
                                 break
 
                 if checkpoint_step:
                     if epoch % checkpoint_step == 0:
                         "Saving checkpoint."
-                        checkpoint_path = os.path.join(results_dirname_this_net,
-                                                       checkpoint_filename)
                         if save_only_single_checkpoint_file is False:
-                            checkpoint_path += '_{}'.format(step)
-                        net.saver.save(sess, checkpoint_path)
-                        with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
+                            checkpoint_path_tmp = checkpoint_path + '_{}'.format(epoch)
+                        else:
+                            checkpoint_path_tmp = checkpoint_path
+                        net.saver.save(sess, checkpoint_path_tmp)
+                        with open(os.path.join(results_dirname_this_net, "val_errs"), 'wb') as val_errs_file:
                             pickle.dump(val_errs, val_errs_file)
 
                 if epoch == (num_epochs - 1):  # if this is the last epoch
                     "Reached max. number of epochs, saving checkpoint."
-                    checkpoint_path = os.path.join(results_dirname_this_net, checkpoint_filename)
                     net.saver.save(sess, checkpoint_path)
                     with open(os.path.join(results_dirname_this_net, "costs"),
                               'wb') as costs_file:
