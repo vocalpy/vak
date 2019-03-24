@@ -1,7 +1,6 @@
 """command-line interface functions for training,
 creating learning curves, etc."""
-
-from .prep import make_data
+from .prep import prep
 from .learncurve import learncurve
 from .summary import summary
 from .predict import predict
