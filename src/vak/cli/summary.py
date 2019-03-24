@@ -21,23 +21,39 @@ def summary(results_dirname,
             test_data_dict_path,
             normalize_spectrograms=False):
     """generate summary learning curve from networks trained by cli.learncurve
+    Computes error on test set for each network trained by learncurve,
+    and saves in a ./summary directory within results_dir
 
     Parameters
     ----------
-    results_dirname
-    train_data_dict_path
-    networks
-    train_set_durs
-    num_replicates
-    labelset
-    test_data_dict_path
-    normalize_spectrograms
+    results_dirname : str
+        path to directory containing results created by a run of learncurve
+    train_data_dict_path : str
+        path to training data
+    networks : namedtuple
+        where each field is the Config tuple for a neural network and the name
+        of that field is the name of the class that represents the network.
+    train_set_durs : list
+        of int, durations in seconds of subsets taken from training data
+        to create a learning curve, e.g. [5, 10, 15, 20]
+    num_replicates : int
+        number of times to replicate training for each training set duration
+        to better estimate mean accuracy for a training set of that size.
+        Each replicate uses a different randomly drawn subset of the training
+        data (but of the same duration).
+    labelset : list
+        of str or int, set of labels for syllables
+    test_data_dict_path : str
+        path to test data
+    normalize_spectrograms : bool
+        if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
+        Normalization is done by subtracting off the mean for each frequency bin
+        of the training set and then dividing by the std for that frequency bin.
+        This same normalization is then applied to validation + test data.
 
     Returns
     -------
     None
-
-    Computes error on test set and saves in a ./summary directory within results directory
     """
     if not os.path.isdir(results_dirname):
         raise FileNotFoundError('directory {}, specified as '
