@@ -6,10 +6,8 @@ from glob import glob
 import unittest
 from configparser import ConfigParser
 
-import joblib
+import vak.cli.learncurve
 
-import vak.cli.make_data
-from vak.config.spectrogram import SpectConfig
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
