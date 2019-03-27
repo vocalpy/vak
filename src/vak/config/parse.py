@@ -74,13 +74,7 @@ def parse_config(config_file):
         data = None
 
     ### if **not** using spectrograms from .mat files ###
-    if data.mat_spect_files_path is None:
-        # then user needs to specify spectrogram parameters
-        if not config_obj.has_section('SPECTROGRAM'):
-            raise ValueError('No annotation_path specified in config_file that '
-                             'would point to annotated spectrograms, but no '
-                             'parameters provided to generate spectrograms '
-                             'either.')
+    if config_obj.has_section('SPECTROGRAM'):
         spect_params = parse_spect_config(config_obj)
     else:
         spect_params = None
