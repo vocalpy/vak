@@ -31,7 +31,7 @@ class DataConfig:
     total_train_set_dur
     val_dur
     test_dur
-    freq_bins
+
     """
     labelset = attr.ib(validator=instance_of(list))
     all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
@@ -48,10 +48,17 @@ class DataConfig:
     mat_spect_files_path = attr.ib()
     mat_spects_annotation_file = attr.ib()
     data_dir = attr.ib()
+    @data_dir.validator.optional
+    def check_data_dir(self, attribute, value):
+        if not os.path.isdir(value):
+            raise NotADirectoryError(
+                f'{value} specified as data_dir, but not recognized as a directory'
+            )
+
     total_train_set_dur = attr.ib()
     val_dur = attr.ib()
-    test_dur = attr.ib()
-    freq_bins = attr.ib()
+    test_dur = attr.ib(validator=instance_of(float))
+    save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
 def parse_data_config(config, config_file):
@@ -98,42 +105,27 @@ def parse_data_config(config, config_file):
     if config.has_option('DATA', 'output_dir'):
         output_dir = config['DATA']['output_dir']
         output_dir = os.path.expanduser(output_dir)
-        output_dir = os.path.abspath(output_dir)
+        config_dict['output_dir'] = os.path.abspath(output_dir)
 
     # if using spectrograms from .mat files
     if config.has_option('DATA', 'mat_spect_files_path'):
         # make spect_files file from .mat spect files and annotation file
-        mat_spect_files_path = config['DATA']['mat_spect_files_path']
-        mat_spects_annotation_file = config['DATA']['mat_spect_files_annotation_file']
-    else:
-        mat_spect_files_path = None
-        mat_spects_annotation_file = None
+        config_dict['mat_spect_files_path'] = config['DATA']['mat_spect_files_path']
+        config_dict['mat_spects_annotation_file'] = config['DATA']['mat_spect_files_annotation_file']
 
     data_dir = config['DATA']['data_dir']
-    data_dir = os.path.expanduser(data_dir)
-    if not os.path.isdir(data_dir):
-        raise NotADirectoryError('{} specified as data_dir in {}, '
-                                 'but not recognized as a directory'
-                                 .format(data_dir, config_file))
+    config_dict['data_dir'] = os.path.expanduser(data_dir)
 
     if config.has_option('DATA', 'total_train_set_duration'):
-        total_train_set_dur = float(config['DATA']['total_train_set_duration'])
-    else:
-        total_train_set_dur = None
+        config_dict['total_train_set_dur'] = float(config['DATA']['total_train_set_duration'])
 
     if config.has_option('DATA', 'validation_set_duration'):
-        val_dur = float(config['DATA']['validation_set_duration'])
-    else:
-        val_dur = None
+        config_dict['val_dur'] = float(config['DATA']['validation_set_duration'])
 
     if config.has_option('DATA', 'test_set_duration'):
-        test_dur = float(config['DATA']['test_set_duration'])
-    else:
-        test_dur = None
+        config_dict['test_dur'] = float(config['DATA']['test_set_duration'])
 
     if config.has_option('DATA', 'save_transformed_data'):
-        save_transformed_data = config.getboolean('DATA', 'save_transformed_data')
-    else:
-        save_transformed_data = False
+        config_dict['save_transformed_data'] = config.getboolean('DATA', 'save_transformed_data')
 
     return DataConfig(**config_dict)
