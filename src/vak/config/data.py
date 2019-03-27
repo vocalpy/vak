@@ -23,15 +23,32 @@ class DataConfig:
         n consecutive integers {0,1,2...n} where n is the number
         of syllable classes + the silent gap class.
         Default is 0 (in which case labels are {1,2,3,...,n}).
-    skip_files_with_labels_not_in_labelset
-    output_dir
-    mat_spect_files_path
-    mat_spects_annotation_file
-    data_dir
-    total_train_set_dur
-    val_dur
-    test_dur
-
+    skip_files_with_labels_not_in_labelset : bool
+        if True, skip a file if the labels variable contains labels not
+        found in 'labelset'. Default is True.
+    output_dir : str
+        Path to location where data sets should be saved. Default is None,
+        in which case data sets are saved in the current working directory.
+    mat_spect_files_path : str
+        Path to a directory of .mat files that contain spectrograms.
+        Default is None (and this implies user is supplying audio files
+         instead of supplying spectrograms in .mat files).
+    mat_spects_annotation_file : str
+        Path to annotation file associated with .mat files.
+        Default is None.
+    data_dir : str
+        path to directory with audio files from which to make dataset
+    total_train_set_dur : int
+        total duration of training set, in seconds.
+        Training subsets of shorter duration will be drawn from this set.
+    val_dur : int
+        total duration of validation set, in seconds.
+    save_transformed_data : bool
+        if True, save transformed data (i.e. scaled, reshaped). The data can then
+        be used on a subsequent run (e.g. if you want to compare results
+        from different hyperparameters across the exact same training set).
+        Also useful if you need to check what the data looks like when fed to networks.
+        Default is False.
     """
     labelset = attr.ib(validator=instance_of(list))
     all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
