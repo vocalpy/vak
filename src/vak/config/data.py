@@ -15,7 +15,8 @@ fields = ['labelset',
           'total_train_set_dur',
           'val_dur',
           'test_dur',
-          'freq_bins']
+          'freq_bins',
+          'save_transformed_data']
 DataConfig = namedtuple('DataConfig', fields)
 
 
@@ -45,6 +46,7 @@ def parse_data_config(config, config_file):
             val_dur
             test_dur
             freq_bins
+            save_transformed_data
     """
     labelset = config['DATA']['labelset']
     # make mapping from syllable labels to consecutive integers
@@ -122,6 +124,11 @@ def parse_data_config(config, config_file):
     else:
         freq_bins = None
 
+    if config.has_option('DATA', 'save_transformed_data'):
+        save_transformed_data = config.getboolean(config['DATA']['save_transformed_data'])
+    else:
+        save_transformed_data = False
+
     return DataConfig(labelset,
                       all_labels_are_int,
                       silent_gap_label,
@@ -133,4 +140,5 @@ def parse_data_config(config, config_file):
                       total_train_set_dur,
                       val_dur,
                       test_dur,
-                      freq_bins)
+                      freq_bins,
+                      save_transformed_data)
