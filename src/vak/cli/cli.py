@@ -20,6 +20,13 @@ def cli(command, config_files):
         config = parse.parse_config(config_file)
 
         if command == 'prep':
+            if config.spect_params is None and config.data.mat_spect_files_path is None:
+                # then user needs to specify spectrogram parameters
+                raise ValueError('No annotation_path specified in config_file that '
+                                 'would point to annotated spectrograms, but no '
+                                 'parameters provided to generate spectrograms '
+                                 'either.')
+
             make_data(labelset=config.data.labelset,
                       all_labels_are_int=config.data.all_labels_are_int,
                       data_dir=config.data.data_dir,
