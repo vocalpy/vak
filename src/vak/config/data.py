@@ -136,15 +136,4 @@ def parse_data_config(config, config_file):
     else:
         save_transformed_data = False
 
-    return DataConfig(labelset,
-                      all_labels_are_int,
-                      silent_gap_label,
-                      skip_files_with_labels_not_in_labelset,
-                      output_dir,
-                      mat_spect_files_path,
-                      mat_spects_annotation_file,
-                      data_dir,
-                      total_train_set_dur,
-                      val_dur,
-                      test_dur,
-                      save_transformed_data)
+    return DataConfig(**config_dict)
