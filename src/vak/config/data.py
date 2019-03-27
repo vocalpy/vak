@@ -39,12 +39,12 @@ class DataConfig:
         Default is None.
     data_dir : str
         path to directory with audio files from which to make dataset
-    total_train_set_dur : int
+    total_train_set_dur : float
         total duration of training set, in seconds.
         Training subsets of shorter duration will be drawn from this set.
-    val_dur : int
+    val_dur : float
         total duration of validation set, in seconds.
-    test_dur : int
+    test_dur : float
         total duration of test set, in seconds.
     save_transformed_data : bool
         if True, save transformed data (i.e. scaled, reshaped). The data can then
@@ -54,9 +54,9 @@ class DataConfig:
         Default is False.
     """
     labelset = attr.ib(validator=instance_of(list))
-    total_train_set_dur = attr.ib(validator=instance_of(int))
-    val_dur = attr.ib(validator=instance_of(int))
-    test_dur = attr.ib(validator=instance_of(int))
+    total_train_set_dur = attr.ib(validator=instance_of(float))
+    val_dur = attr.ib(validator=instance_of(float))
+    test_dur = attr.ib(validator=instance_of(float))
 
     all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
     silent_gap_label = attr.ib(validator=instance_of(int), default=0)
