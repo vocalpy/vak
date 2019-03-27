@@ -15,7 +15,6 @@ fields = ['labelset',
           'total_train_set_dur',
           'val_dur',
           'test_dur',
-          'freq_bins',
           'save_transformed_data']
 DataConfig = namedtuple('DataConfig', fields)
 
@@ -45,7 +44,6 @@ def parse_data_config(config, config_file):
             total_train_set_dur
             val_dur
             test_dur
-            freq_bins
             save_transformed_data
     """
     labelset = config['DATA']['labelset']
@@ -119,11 +117,6 @@ def parse_data_config(config, config_file):
     else:
         test_dur = None
 
-    if config.has_option('DATA', 'freq_bins'):
-        freq_bins = int(config['DATA']['freq_bins'])
-    else:
-        freq_bins = None
-
     if config.has_option('DATA', 'save_transformed_data'):
         save_transformed_data = config.getboolean('DATA', 'save_transformed_data')
     else:
@@ -140,5 +133,4 @@ def parse_data_config(config, config_file):
                       total_train_set_dur,
                       val_dur,
                       test_dur,
-                      freq_bins,
                       save_transformed_data)
