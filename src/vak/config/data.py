@@ -5,6 +5,7 @@ import attr
 from attr.validators import instance_of, optional
 
 from ..utils.data import range_str
+from .validators import is_a_directory, is_a_file
 
 
 @attr.s
@@ -43,6 +44,8 @@ class DataConfig:
         Training subsets of shorter duration will be drawn from this set.
     val_dur : int
         total duration of validation set, in seconds.
+    test_dur : int
+        total duration of test set, in seconds.
     save_transformed_data : bool
         if True, save transformed data (i.e. scaled, reshaped). The data can then
         be used on a subsequent run (e.g. if you want to compare results
@@ -54,27 +57,13 @@ class DataConfig:
     all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
     silent_gap_label = attr.ib(validator=instance_of(bool), default=0)
     skip_files_with_labels_not_in_labelset = attr.ib(validator=instance_of(bool), default=True)
-    output_dir = attr.ib(default=None)
-    @output_dir.validator.optional
-    def check_output_dir(self, attribute, value):
-        if not os.path.isdir(value):
-            raise NotADirectoryError(
-                f'{value} specified as output_dir but not recognized as a directory'
-            )
-
-    mat_spect_files_path = attr.ib()
-    mat_spects_annotation_file = attr.ib()
-    data_dir = attr.ib()
-    @data_dir.validator.optional
-    def check_data_dir(self, attribute, value):
-        if not os.path.isdir(value):
-            raise NotADirectoryError(
-                f'{value} specified as data_dir, but not recognized as a directory'
-            )
-
-    total_train_set_dur = attr.ib()
-    val_dur = attr.ib()
-    test_dur = attr.ib(validator=instance_of(float))
+    output_dir = attr.ib(validator=optional(is_a_directory), default=None)
+    mat_spect_files_path = attr.ib(validator=optional(is_a_directory))
+    mat_spects_annotation_file = attr.ib(validator=optional(is_a_file))
+    data_dir = attr.ib(validator=optional(is_a_directory), default=None)
+    total_train_set_dur = attr.ib(validator=instance_of(int))
+    val_dur = attr.ib(validator=instance_of(int))
+    test_dur = attr.ib(validator=instance_of(int))
     save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
