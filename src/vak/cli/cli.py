@@ -2,7 +2,7 @@ from .train import train
 from .predict import predict
 from .learncurve import learncurve
 from .summary import summary
-from .make_data import make_data
+from .prep import make_data
 from ..config import parse
 
 
