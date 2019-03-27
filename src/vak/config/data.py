@@ -125,7 +125,7 @@ def parse_data_config(config, config_file):
         freq_bins = None
 
     if config.has_option('DATA', 'save_transformed_data'):
-        save_transformed_data = config.getboolean(config['DATA']['save_transformed_data'])
+        save_transformed_data = config.getboolean('DATA', 'save_transformed_data')
     else:
         save_transformed_data = False
 
