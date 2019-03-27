@@ -54,16 +54,17 @@ class DataConfig:
         Default is False.
     """
     labelset = attr.ib(validator=instance_of(list))
-    all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
-    silent_gap_label = attr.ib(validator=instance_of(bool), default=0)
-    skip_files_with_labels_not_in_labelset = attr.ib(validator=instance_of(bool), default=True)
-    output_dir = attr.ib(validator=optional(is_a_directory), default=None)
-    mat_spect_files_path = attr.ib(validator=optional(is_a_directory))
-    mat_spects_annotation_file = attr.ib(validator=optional(is_a_file))
-    data_dir = attr.ib(validator=optional(is_a_directory), default=None)
     total_train_set_dur = attr.ib(validator=instance_of(int))
     val_dur = attr.ib(validator=instance_of(int))
     test_dur = attr.ib(validator=instance_of(int))
+
+    all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
+    silent_gap_label = attr.ib(validator=instance_of(int), default=0)
+    skip_files_with_labels_not_in_labelset = attr.ib(validator=instance_of(bool), default=True)
+    output_dir = attr.ib(validator=optional(is_a_directory), default=None)
+    mat_spect_files_path = attr.ib(validator=optional(is_a_directory), default=None)
+    mat_spects_annotation_file = attr.ib(validator=optional(is_a_file), default=None)
+    data_dir = attr.ib(validator=optional(is_a_directory), default=None)
     save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
