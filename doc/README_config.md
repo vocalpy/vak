@@ -72,6 +72,7 @@ train_set_durs = 5, 15, 30, 45, 60, 75, 90, 105
 validation_set_duration = 100
 test_set_duration = 400
 skip_files_with_labels_not_in_labelset = Yes
+save_transformed_data = False
 ```
 
 `labelset` : str or a "range string"  
@@ -125,6 +126,12 @@ skip_files_with_labels_not_in_labelset = Yes
     if 'Yes' or 'True', skip any file that contains labels not in labelset.  
     Used to skip files with labels that occur very rarely such as noise
     or "mistakes" made by bird.  
+`save_transformed_data` : bool
+    if 'No' or 'False', do not save copies of transformed (scaled, reshaped) data.
+    You may want to save data, for example, if you want to re-run a learning curve 
+    using the same data but different hyperparameters, or if you need to look at  
+    the scaled reshaped data when troubleshooting issues with training.
+    Default is False.
 
 ## [TRAIN] section
 
