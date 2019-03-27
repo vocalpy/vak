@@ -2,20 +2,43 @@ import os
 from configparser import ConfigParser, NoSectionError
 from collections import namedtuple
 
-from .data import parse_data_config
-from .spectrogram import parse_spect_config
-from .train import parse_train_config
-from .output import parse_output_config
-from .predict import parse_predict_config
+import attr
+from attr.validators import instance_of, optional
+
+from .data import parse_data_config, DataConfig
+from .spectrogram import parse_spect_config, SpectConfig
+from .train import parse_train_config, TrainConfig
+from .output import parse_output_config, OutputConfig
+from .predict import parse_predict_config, PredictConfig
 from ..network import _load
 
 
-ConfigTuple = namedtuple('ConfigTuple', ['data',
-                                         'spect_params',
-                                         'train',
-                                         'output',
-                                         'networks',
-                                         'predict'])
+@attr.s
+class Config:
+    """class to represent config.ini file
+
+    Attributes
+    ----------
+    data : vak.config.data.DataConfig
+        represents [DATA] section of config.ini file
+    spect_params : SpectConfig
+        represents [SPECTROGRAM] section of config.ini file
+    train : TrainConfig
+        represents [TRAIN] section of config.ini file
+    output : OutputConfig
+        represents [OUTPUT] section of config.ini file
+    networks : dict
+        represents neural network configuration sections of config.ini file.
+        These will vary depending on which network user specifies.
+    predict : PredictConfig
+        represenets [PREDICT] section of config.ini file.
+    """
+    data = attr.ib(validator=optional(instance_of(DataConfig)))
+    spect_params = attr.ib(validator=optional(instance_of(SpectConfig)))
+    train = attr.ib(validator=optional(instance_of(TrainConfig)))
+    output = attr.ib(validator=optional(instance_of(OutputConfig)))
+    networks = attr.ib()
+    predict =  = attr.ib(validator=optional(instance_of(PredictConfig)))
 
 
 def parse_config(config_file):
