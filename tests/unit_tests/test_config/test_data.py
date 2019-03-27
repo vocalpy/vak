@@ -31,13 +31,11 @@ class TestParseDataConfig(unittest.TestCase):
     def setUp(self):
         self.get_config = _base_config()
 
-    def test_config_tuple_has_all_attrs(self):
+    def test_parse_data_config_returns_DataConfig_instance(self):
         config_obj = self.get_config
         config_file = 'test'
         data_config_instance = vak.config.data.parse_data_config(config_obj, config_file)
-        data_config_attrs = [attr.name for attr in vak.config.data.DataConfig.__attrs_attrs__]
-        for data_config_attr in data_config_attrs:
-            self.assertTrue(hasattr(data_config_instance, data_config_attr))
+        self.assertTrue(type(data_config_instance) == vak.config.data.DataConfig)
 
     def test_str_labelset(self):
         config_obj = self.get_config
