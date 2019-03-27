@@ -25,20 +25,20 @@ class Config:
         represents [SPECTROGRAM] section of config.ini file
     train : TrainConfig
         represents [TRAIN] section of config.ini file
+    predict : PredictConfig
+        represenets [PREDICT] section of config.ini file.
     output : OutputConfig
         represents [OUTPUT] section of config.ini file
     networks : dict
         represents neural network configuration sections of config.ini file.
         These will vary depending on which network user specifies.
-    predict : PredictConfig
-        represenets [PREDICT] section of config.ini file.
     """
     data = attr.ib(validator=optional(instance_of(DataConfig)))
     spect_params = attr.ib(validator=optional(instance_of(SpectConfig)))
     train = attr.ib(validator=optional(instance_of(TrainConfig)))
+    predict = attr.ib(validator=optional(instance_of(PredictConfig)))
     output = attr.ib(validator=optional(instance_of(OutputConfig)))
     networks = attr.ib()
-    predict =  = attr.ib(validator=optional(instance_of(PredictConfig)))
 
 
 def parse_config(config_file):
