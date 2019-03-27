@@ -143,9 +143,9 @@ def parse_config(config_file):
     else:
         output = None
 
-    return ConfigTuple(data,
-                       spect_params,
-                       train,
-                       output,
-                       networks,
-                       predict)
+    return Config(data,
+                  spect_params,
+                  train,
+                  output,
+                  networks,
+                  predict)
