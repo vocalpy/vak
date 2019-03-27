@@ -101,15 +101,8 @@ def parse_config(config_file):
                              'Valid options are: {}'
                              .format(network, unknown_options, config_field_names))
 
-        if data.freq_bins:
-            # start options dict with freq_bins that we got out of data above
-            # (this argument is required for all networks)
-            options = {'freq_bins': data.freq_bins}
-        else:
-            # except if freq_bins doesn't exist yet, e.g. because we haven't run make_data
-            options = {}
-
-        # and then do type conversion using the networks Config typed namedtuple
+        options = {}
+        # do type conversion using the networks' Config typed namedtuple
         # for the rest of the options
         for option, value in config_obj[network].items():
             option_type = NETWORKS[network].Config._field_types[option]
