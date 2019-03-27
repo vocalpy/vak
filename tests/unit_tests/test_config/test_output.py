@@ -29,11 +29,10 @@ class TestParseOutputConfig(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp_root_dir)
 
-    def test_config_tuple_has_all_attrs(self):
+    def test_parse_output_config_returns_OutputConfig_instance(self):
         config_obj = self.get_config
-        output_config_tup = vak.config.output.parse_output_config(config_obj)
-        for field in vak.config.output.OutputConfig._fields:
-            self.assertTrue(hasattr(output_config_tup, field))
+        output_config_obj = vak.config.output.parse_output_config(config_obj)
+        self.assertTrue(type(output_config_obj) == vak.config.output.OutputConfig)
 
     def test_missing_root_results_dir_raises(self):
         config_obj = self.get_config
