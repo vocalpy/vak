@@ -60,12 +60,11 @@ class TestParsePredictConfig(unittest.TestCase):
         shutil.rmtree(self.tmp_dir_to_predict)
         os.remove(self.tmp_config_path)
 
-    def test_config_tuple_has_all_attrs(self):
+    def test_parse_predict_config_returns_PredictConfig_instance(self):
         config_obj = ConfigParser()
         config_obj.read(self.tmp_config_path)
-        predict_config_tup = vak.config.predict.parse_predict_config(config_obj)
-        for field in vak.config.predict.PredictConfig._fields:
-            self.assertTrue(hasattr(predict_config_tup, field))
+        predict_config_obj = vak.config.predict.parse_predict_config(config_obj)
+        self.assertTrue(type(predict_config_obj) == vak.config.predict.PredictConfig)
 
     def test_no_networks_raises(self):
         config_obj = ConfigParser()
