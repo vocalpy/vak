@@ -10,11 +10,8 @@ import vak.config.predict
 import vak.utils
 
 HERE = os.path.dirname(__file__)
-TEST_CONFIGS_PATH = os.path.join(HERE, '..', 'test_data', 'configs')
-TEST_DATA_DIR = os.path.join(HERE,
-                             '..',
-                             '..',
-                             'test_data')
+TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
+TEST_CONFIGS_DIR = os.path.join(TEST_DATA_DIR, 'configs')
 
 
 def copydir(src, dst):
@@ -27,8 +24,8 @@ def copydir(src, dst):
 class TestParsePredictConfig(unittest.TestCase):
     def setUp(self):
         self.tmp_output_dir = tempfile.mkdtemp()
-        a_config = os.path.join(TEST_DATA_DIR, 'configs', 'test_predict_config.ini')
-        self.tmp_config_path = os.path.join(TEST_DATA_DIR, 'configs', 'tmp_config.ini')
+        a_config = os.path.join(TEST_CONFIGS_DIR, 'test_predict_config.ini')
+        self.tmp_config_path = os.path.join(TEST_CONFIGS_DIR, 'tmp_config.ini')
         shutil.copy(a_config, self.tmp_config_path)
 
         # copy some data to predict to a temporary dir
