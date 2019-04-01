@@ -14,13 +14,6 @@ TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
 TEST_CONFIGS_DIR = os.path.join(TEST_DATA_DIR, 'configs')
 
 
-def copydir(src, dst):
-    for item in os.listdir(src):
-        s = os.path.join(src, item)
-        d = os.path.join(dst, item)
-        shutil.copy2(s, d)
-
-
 class TestParsePredictConfig(unittest.TestCase):
     def setUp(self):
         self.tmp_output_dir = tempfile.mkdtemp()
@@ -32,8 +25,6 @@ class TestParsePredictConfig(unittest.TestCase):
         self.tmp_dir_to_predict = tempfile.mkdtemp()
         self.tmp_dir_to_predict = os.path.join(self.tmp_dir_to_predict, '032312')
         os.makedirs(self.tmp_dir_to_predict)
-        src = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        copydir(src=src, dst=self.tmp_dir_to_predict)
 
         a_results_dir = glob(os.path.join(TEST_DATA_DIR, 'results', 'results_*'))[0]
         labels_mapping_path = glob(os.path.join(a_results_dir, 'labels_mapping'))[0]
