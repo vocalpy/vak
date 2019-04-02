@@ -120,8 +120,9 @@ def parse_data_config(config, config_file):
         config_dict['mat_spect_files_path'] = config['DATA']['mat_spect_files_path']
         config_dict['mat_spects_annotation_file'] = config['DATA']['mat_spect_files_annotation_file']
 
-    data_dir = config['DATA']['data_dir']
-    config_dict['data_dir'] = os.path.expanduser(data_dir)
+    if config.has_option('DATA', 'data_dir'):
+        data_dir = config['DATA']['data_dir']
+        config_dict['data_dir'] = os.path.expanduser(data_dir)
 
     if config.has_option('DATA', 'total_train_set_duration'):
         config_dict['total_train_set_dur'] = float(config['DATA']['total_train_set_duration'])
