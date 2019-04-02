@@ -1,6 +1,7 @@
 """validators used by attrs-based classes"""
 import os
 
+
 def is_a_directory(instance, attribute, value):
     """check if given path is a directory"""
     if not os.path.isdir(value):
@@ -8,6 +9,7 @@ def is_a_directory(instance, attribute, value):
             f'Value specified for {attribute.name} of {type(instance)} not recognized as a directory:\n'
             f'{value}'
         )
+
 
 def is_a_file(instance, attribute, value):
     """check if given path is a directory"""
