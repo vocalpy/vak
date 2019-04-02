@@ -4,7 +4,7 @@ from configparser import NoOptionError
 import attr
 from attr.validators import instance_of, optional
 
-from .validators import is_a_directory
+from .validators import is_a_directory, is_a_file
 from ..network import _load
 
 
@@ -64,14 +64,14 @@ class TrainConfig:
         Also useful if you need to check what the data looks like when fed to networks.
     """
     # required for both train and learncurve
-    networks = attr.ib()
-    train_data_dict_path = attr.ib(validator=[instance_of(str), is_a_directory])
+    networks = attr.ib(validator=instance_of(list))
+    train_data_dict_path = attr.ib(validator=[instance_of(str), is_a_file])
     num_epochs = attr.ib(validator=instance_of(int))
 
     # used for both train and learncurve, but optional
     normalize_spectrograms = attr.ib(validator=optional(instance_of(bool)), default=False)
-    val_data_dict_path = attr.ib(validator=optional([instance_of(str), is_a_directory]), default=None)
-    test_data_dict_path = attr.ib(validator=optional([instance_of(str), is_a_directory]), default=None)
+    val_data_dict_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
+    test_data_dict_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
     val_error_step = attr.ib(validator=optional(instance_of(int)), default=None)
     checkpoint_step = attr.ib(validator=optional(instance_of(int)), default=None)
     patience = attr.ib(validator=optional(instance_of(int)), default=None)
