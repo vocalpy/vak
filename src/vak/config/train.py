@@ -84,7 +84,7 @@ class TrainConfig:
     save_only_single_checkpoint_file = attr.ib(validator=instance_of(bool), default=True)
     use_train_subsets_from_previous_run = attr.ib(validator=instance_of(bool), default=False)
     previous_run_path = attr.ib(validator=optional([instance_of(str), is_a_directory]), default=None)
-    save_transformed_data = attr.ib(validator=bool, default=False)
+    save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
 def parse_train_config(config, config_file):
