@@ -20,7 +20,6 @@ TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')
 
 
 class TestParseConfig(unittest.TestCase):
-
     def setUp(self):
         # for output section of config
         self.tmp_root_dir = tempfile.mkdtemp()
@@ -130,21 +129,6 @@ class TestParseConfig(unittest.TestCase):
         config = ConfigParser()
         config.read(tmp_config_file)
         config['VakTestNet']['bungalow'] = '12'
-        with open(tmp_config_file, 'w') as rewrite:
-            config.write(rewrite)
-        with self.assertRaises(ValueError):
-            vak.config.parse_config(tmp_config_file)
-
-    def test_both_train_and_predict_raises(self):
-        test_learncurve_config = os.path.join(TEST_CONFIGS_PATH,
-                                              'test_learncurve_config.ini')
-        tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_learncurve_config)
-        config = ConfigParser()
-        config.read(tmp_config_file)
-        config.add_section('PREDICT')
-        config['PREDICT']['networks'] = 'VakTestNet'
-        config['PREDICT']['checkpoint_dir'] = self.tmp_checkpoint_dir
-        config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
         with open(tmp_config_file, 'w') as rewrite:
             config.write(rewrite)
         with self.assertRaises(ValueError):
