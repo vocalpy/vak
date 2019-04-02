@@ -33,8 +33,8 @@ class TestParseTrainConfig(unittest.TestCase):
         os.remove(self.tmp_test_data_path)
 
     def test_parse_train_config_returns_TrainConfig_instance(self):
-        predict_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(type(predict_config_obj) == vak.config.train.TrainConfig)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(type(train_config_obj) == vak.config.train.TrainConfig)
 
     def test_no_networks_raises(self):
         self.config_obj.remove_option('TRAIN', 'networks')
@@ -53,53 +53,53 @@ class TestParseTrainConfig(unittest.TestCase):
 
     def test_train_set_durs_default(self):
         self.config_obj.remove_option('TRAIN', 'train_set_durs')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.train_set_durs is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.train_set_durs is None)
 
     def test_replicates_default(self):
         self.config_obj.remove_option('TRAIN', 'replicates')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.num_replicates is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.num_replicates is None)
 
     def test_val_data_dict_path_default(self):
         self.config_obj.remove_option('TRAIN', 'val_data_path')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.val_data_dict_path is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.val_data_dict_path is None)
 
     def test_test_data_dict_path_default(self):
         self.config_obj.remove_option('TRAIN', 'test_data_path')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.test_data_dict_path is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.test_data_dict_path is None)
 
     def test_val_error_step_default(self):
         self.config_obj.remove_option('TRAIN', 'val_error_step')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.val_error_step is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.val_error_step is None)
 
     def test_save_only_single_checkpoint_default(self):
         self.config_obj.remove_option('TRAIN', 'save_only_single_checkpoint_file')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.save_only_single_checkpoint_file is True)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_only_single_checkpoint_file is True)
 
     def test_checkpoint_step_default(self):
         self.config_obj.remove_option('TRAIN', 'checkpoint_step')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.checkpoint_step is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.checkpoint_step is None)
 
     def test_patience_default(self):
         self.config_obj.remove_option('TRAIN', 'patience')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.patience is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.patience is None)
 
     def test_normalize_spectrograms_default(self):
         self.config_obj.remove_option('TRAIN', 'normalize_spectrograms')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.normalize_spectrograms is False)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.normalize_spectrograms is False)
 
     def test_use_previous_run_default(self):
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.use_train_subsets_from_previous_run is False)
-        self.assertTrue(train_config_tup.previous_run_path is None)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.use_train_subsets_from_previous_run is False)
+        self.assertTrue(train_config_obj.previous_run_path is None)
 
     def test_use_previous_run_without_path_error(self):
         self.config_obj['TRAIN']['use_train_subsets_from_previous_run'] = 'True'
@@ -107,8 +107,8 @@ class TestParseTrainConfig(unittest.TestCase):
             vak.config.train.parse_train_config(self.config_obj, self.config_file)
 
     def test_save_transformed_data_default(self):
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_tup.save_transformed_data is False)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is False)
 
 
 if __name__ == '__main__':
