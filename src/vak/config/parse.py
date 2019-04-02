@@ -75,10 +75,6 @@ def parse_config(config_file):
         print(f"Unexpected error when opening the following config_file: {config_file}")
         raise
 
-    if config_obj.has_section('TRAIN') and config_obj.has_section('PREDICT'):
-        raise ValueError('Please do not declare both TRAIN and PREDICT sections '
-                         ' in one config.ini file: unclear which to use')
-
     if config_obj.has_section('DATA'):
         data = parse_data_config(config_obj, config_file)
     else:
