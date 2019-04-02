@@ -1,5 +1,7 @@
 import os
-from configparser import ConfigParser, NoSectionError
+from configparser import ConfigParser
+from configparser import NoSectionError, MissingSectionHeaderError, ParsingError,\
+    DuplicateOptionError, DuplicateSectionError
 from collections import namedtuple
 
 import attr
@@ -55,14 +57,23 @@ def parse_config(config_file):
         instance of a ConfigTuple whose fields correspond to
         sections in the config.ini file.
     """
-    if not config_file.endswith('.ini'):
-        raise ValueError('{} is not a valid config file, '
-                         'must have .ini extension'.format(config_file))
+    # check config_file exists,
+    # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
     if not os.path.isfile(config_file):
         raise FileNotFoundError('config file {} is not found'
                                 .format(config_file))
-    config_obj = ConfigParser()
-    config_obj.read(config_file)
+
+    try:
+        config_obj = ConfigParser()
+        config_obj.read(config_file)
+    except (MissingSectionHeaderError, ParsingError, DuplicateOptionError, DuplicateSectionError):
+        # try to add some context for users that do not spend their lives thinking about ConfigParser objects
+        print(f"Error when opening the following config_file: {config_file}")
+        raise
+    except:
+        # say something different if we can't add very good context
+        print(f"Unexpected error when opening the following config_file: {config_file}")
+        raise
 
     if config_obj.has_section('TRAIN') and config_obj.has_section('PREDICT'):
         raise ValueError('Please do not declare both TRAIN and PREDICT sections '
