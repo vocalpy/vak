@@ -3,7 +3,6 @@ import unittest
 import os
 import tempfile
 from configparser import ConfigParser
-import shutil
 
 import vak.config.train
 import vak.utils
