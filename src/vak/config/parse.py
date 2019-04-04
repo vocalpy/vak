@@ -44,7 +44,6 @@ class Config:
     output = attr.ib(validator=optional(instance_of(OutputConfig)), default=None)
 
 
-
 def parse_config(config_file):
     """parse a config.ini file
 
@@ -55,9 +54,9 @@ def parse_config(config_file):
 
     Returns
     -------
-    config_tuple : ConfigTuple
-        instance of a ConfigTuple whose fields correspond to
-        sections in the config.ini file.
+    config : vak.config.parse.Config
+        instance of Config class, whose attributes correspond to
+        sections in a config.ini file.
     """
     # check config_file exists,
     # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
