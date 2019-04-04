@@ -21,11 +21,19 @@ TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')
 
 class TestParseConfig(unittest.TestCase):
     def setUp(self):
+        # for data section of config
+        self.tmp_data_dir = tempfile.mkdtemp()
+        self.tmp_data_output_dir = tempfile.mkdtemp()
+
+        # for train section of config
+        _, self.tmp_train_data_path = tempfile.mkstemp()
+        _, self.tmp_val_data_path = tempfile.mkstemp()
+        _, self.tmp_test_data_path = tempfile.mkstemp()
+
         # for output section of config
         self.tmp_root_dir = tempfile.mkdtemp()
+        # have to define this before we refer to it below when "mocking out" objects for predict
         self.tmp_results_dir = tempfile.mkdtemp(dir=self.tmp_root_dir)
-        self.tmp_data_dir = tempfile.mkdtemp()
-        self.tmp_config_dir = tempfile.mkdtemp()
 
         # for predict section of config
         self.tmp_checkpoint_dir = tempfile.mkdtemp()
@@ -42,6 +50,9 @@ class TestParseConfig(unittest.TestCase):
         joblib.dump(value=a_spect_scaler, filename=tmp_spect_scaler_path)
         self.tmp_spect_scaler_path = tmp_spect_scaler_path
 
+        # for holding saved temporary config.ini file
+        self.tmp_config_dir = tempfile.mkdtemp()
+
         self.section_to_field_map = {
             'DATA': 'data',
             'SPECTROGRAM': 'spect_params',
@@ -53,6 +64,11 @@ class TestParseConfig(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp_root_dir)
         shutil.rmtree(self.tmp_data_dir)
+        shutil.rmtree(self.tmp_data_output_dir)
+
+        os.remove(self.tmp_train_data_path)
+        os.remove(self.tmp_val_data_path)
+        os.remove(self.tmp_test_data_path)
 
     def _add_dirs_to_config_and_save_as_tmp(self, config_file):
         """helper functions called by unit tests to add directories
@@ -64,6 +80,11 @@ class TestParseConfig(unittest.TestCase):
             config['OUTPUT']['results_dir_made_by_main_script'] = self.tmp_results_dir
         if config.has_section('DATA'):
             config['DATA']['data_dir'] = self.tmp_data_dir
+            config['DATA']['output_dir'] = self.tmp_data_output_dir
+        if config.has_section('TRAIN'):
+            config['TRAIN']['train_data_path'] = self.tmp_train_data_path
+            config['TRAIN']['val_data_path'] = self.tmp_val_data_path
+            config['TRAIN']['test_data_path'] = self.tmp_test_data_path
         if config.has_section('PREDICT'):
             config['PREDICT']['checkpoint_path'] = self.tmp_checkpoint_dir
             config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
@@ -76,16 +97,12 @@ class TestParseConfig(unittest.TestCase):
             config.write(config_file_out)
         return os.path.abspath(file_obj.name)
 
-    def test_config_tuple_has_all_fields(self):
-        # shouldn't matter which config we use, because all fields
-        # should be present no matter what (some may default to None
-        # if corresponding section not defined in config.ini file)
+    def test_parse_config_returns_instance_of_config(self):
         test_learncurve_config = os.path.join(TEST_CONFIGS_PATH,
                                               'test_learncurve_config.ini')
         tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_learncurve_config)
-        config_tup = vak.config.parse_config(tmp_config_file)
-        for field in vak.config.parse.ConfigTuple._fields:
-            self.assertTrue(hasattr(config_tup, field))
+        config_obj = vak.config.parse_config(tmp_config_file)
+        self.assertTrue(type(config_obj) == vak.config.parse.Config)
 
     def test_defined_sections_not_None(self):
         test_configs = glob(os.path.join(TEST_CONFIGS_PATH,
