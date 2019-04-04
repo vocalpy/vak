@@ -76,28 +76,21 @@ def parse_config(config_file):
         print(f"Unexpected error when opening the following config_file: {config_file}")
         raise
 
+    config_dict = {}
     if config_obj.has_section('DATA'):
-        data = parse_data_config(config_obj, config_file)
-    else:
-        data = None
+        config_dict['data'] = parse_data_config(config_obj, config_file)
 
     ### if **not** using spectrograms from .mat files ###
     if config_obj.has_section('SPECTROGRAM'):
-        spect_params = parse_spect_config(config_obj)
-    else:
-        spect_params = None
+        config_dict['spect_params'] = parse_spect_config(config_obj)
 
     if config_obj.has_section('TRAIN'):
-        train = parse_train_config(config_obj, config_file)
-        networks = train.networks
-    else:
-        train = None
+        config_dict['train'] = parse_train_config(config_obj, config_file)
+        networks = config_dict['train'].networks
 
     if config_obj.has_section('PREDICT'):
-        predict = parse_predict_config(config_obj)
-        networks = predict.networks
-    else:
-        predict = None
+        config_dict['predict'] = parse_predict_config(config_obj)
+        networks = config_dict['predict'].networks
 
     # load entry points within function, not at module level,
     # to avoid circular dependencies
@@ -138,16 +131,9 @@ def parse_config(config_file):
                                  ' to specified type {}.'
                                  .format(value, option, network, option_type))
         networks_dict[network] = NETWORKS[network].Config(**options)
-    networks = NetworkTuple(**networks_dict)
+    config_dict['networks'] = NetworkTuple(**networks_dict)
 
     if config_obj.has_section('OUTPUT'):
-        output = parse_output_config(config_obj)
-    else:
-        output = None
+        config_dict['output'] = parse_output_config(config_obj)
 
-    return Config(data,
-                  spect_params,
-                  train,
-                  output,
-                  networks,
-                  predict)
+    return Config(**config_dict)
