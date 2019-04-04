@@ -35,12 +35,14 @@ class Config:
         represents neural network configuration sections of config.ini file.
         These will vary depending on which network user specifies.
     """
-    data = attr.ib(validator=optional(instance_of(DataConfig)))
-    spect_params = attr.ib(validator=optional(instance_of(SpectConfig)))
-    train = attr.ib(validator=optional(instance_of(TrainConfig)))
-    predict = attr.ib(validator=optional(instance_of(PredictConfig)))
-    output = attr.ib(validator=optional(instance_of(OutputConfig)))
     networks = attr.ib()
+
+    data = attr.ib(validator=optional(instance_of(DataConfig)), default=None)
+    spect_params = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
+    train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
+    predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
+    output = attr.ib(validator=optional(instance_of(OutputConfig)), default=None)
+
 
 
 def parse_config(config_file):
