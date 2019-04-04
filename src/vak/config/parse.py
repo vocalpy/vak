@@ -23,13 +23,13 @@ class Config:
     ----------
     data : vak.config.data.DataConfig
         represents [DATA] section of config.ini file
-    spect_params : SpectConfig
+    spect_params : vak.config.spectrogram.SpectConfig
         represents [SPECTROGRAM] section of config.ini file
-    train : TrainConfig
+    train : vak.config.train.TrainConfig
         represents [TRAIN] section of config.ini file
-    predict : PredictConfig
+    predict : vak.config.predict.PredictConfig
         represenets [PREDICT] section of config.ini file.
-    output : OutputConfig
+    output : vak.config.output.OutputConfig
         represents [OUTPUT] section of config.ini file
     networks : dict
         represents neural network configuration sections of config.ini file.
