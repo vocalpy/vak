@@ -28,7 +28,7 @@ class Config:
     train : vak.config.train.TrainConfig
         represents [TRAIN] section of config.ini file
     predict : vak.config.predict.PredictConfig
-        represenets [PREDICT] section of config.ini file.
+        represents [PREDICT] section of config.ini file.
     output : vak.config.output.OutputConfig
         represents [OUTPUT] section of config.ini file
     networks : dict
