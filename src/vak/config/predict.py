@@ -5,7 +5,7 @@ import attr
 from attr.validators import instance_of, optional
 
 from .validators import is_a_directory, is_a_file
-from ..network import _load
+from .. import network
 
 
 @attr.s
@@ -63,18 +63,18 @@ def parse_predict_config(config):
     # (user would be unable to import networks in other packages
     # that subclass vak.network.AbstractVakNetwork
     # since the module in the other package would need to `import vak`)
-    NETWORKS = _load()
-    NETWORK_NAMES = [network_name.lower() for network_name in NETWORKS.keys()]
+    NETWORKS = network._load()
+    NETWORK_NAMES = NETWORKS.keys()
     try:
         networks = [network_name for network_name in
                     config['PREDICT']['networks'].split(',')]
-        for network in networks:
-            if network.lower() not in NETWORK_NAMES:
+        for network_name in networks:
+            if network_name not in NETWORK_NAMES:
                 raise TypeError('Neural network {} not found when importing installed networks.'
                                 .format(network))
         config_dict['networks'] = networks
     except NoOptionError:
-        raise KeyError("'networks' option not found in [TRAIN] section of config.ini file. "
+        raise KeyError("'networks' option not found in [PREDICT] section of config.ini file. "
                        "Please add this option as a comma-separated list of neural network names, e.g.:\n"
                        "networks = TweetyNet, GRUnet, convnet")
 
