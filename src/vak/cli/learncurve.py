@@ -321,6 +321,8 @@ def learncurve(train_data_dict_path,
             for net_name, net_config in networks.items():
                 net_config_dict = net_config._asdict()
                 net_config_dict['n_syllables'] = n_syllables
+                if 'freq_bins' in net_config_dict:
+                    net_config_dict['freq_bins'] = freq_bins
                 net = NETWORKS[net_name](**net_config_dict)
 
                 results_dirname_this_net = os.path.join(training_records_path, net_name)
