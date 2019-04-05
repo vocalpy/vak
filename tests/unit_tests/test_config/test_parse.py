@@ -53,7 +53,7 @@ class TestParseConfig(unittest.TestCase):
         # for holding saved temporary config.ini file
         self.tmp_config_dir = tempfile.mkdtemp()
 
-        self.section_to_field_map = {
+        self.section_to_attr_map = {
             'DATA': 'data',
             'SPECTROGRAM': 'spect_params',
             'TRAIN': 'train',
@@ -109,35 +109,35 @@ class TestParseConfig(unittest.TestCase):
                                          'test_*_config.ini'))
         for test_config in test_configs:
             tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_config)
-            config_obj = ConfigParser()
-            config_obj.read(tmp_config_file)
-            config_tup = vak.config.parse_config(tmp_config_file)
-            for section in config_obj.sections():
-                if section in self.section_to_field_map:
+            config = ConfigParser()
+            config.read(tmp_config_file)
+            config_obj = vak.config.parse_config(tmp_config_file)
+            for section in config.sections():
+                if section in self.section_to_attr_map:
                     # check sections that any config.ini file can have, non-network specific
-                    field = self.section_to_field_map[section]
-                    self.assertTrue(getattr(config_tup, field) is not None)
-                elif section in config_tup.networks:
+                    attr_name = self.section_to_attr_map[section]
+                    self.assertTrue(getattr(config_obj, attr_name) is not None)
+                elif section.lower() in config_obj.networks:
                     # check network specific sections
-                    self.assertTrue(getattr(config_tup.networks, field) is not None)
+                    self.assertTrue(getattr(config_obj.networks, section) is not None)
 
     def test_network_sections_match_config(self):
         test_configs = glob(os.path.join(TEST_CONFIGS_PATH,
                                          'test_*_config.ini'))
         NETWORKS = vak.network._load()
+        available_net_names = [net_name for net_name in NETWORKS.keys()]
         for test_config in test_configs:
             tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_config)
-            config_obj = ConfigParser()
-            config_obj.read(tmp_config_file)
-            config_tup = vak.config.parse_config(tmp_config_file)
-            net_sections_found = 0
-            for section in config_obj.sections():
-                if section in config_tup.networks._fields:
-                    net_sections_found += 1
+            config = ConfigParser()
+            config.read(tmp_config_file)
+            config_obj = vak.config.parse_config(tmp_config_file)
+            for section in config.sections():
+                if section in available_net_names:
+                    net_name_to_check = section
+                    self.assertTrue(net_name_to_check in config_obj.networks)
                     # check network specific sections
-                    net_config_tup = getattr(config_tup.networks, section)
-                    self.assertTrue(net_config_tup._fields == NETWORKS[section].Config._fields)
-            self.assertTrue(len(config_tup.networks) == net_sections_found)
+                    net_config = config_obj.networks[net_name_to_check]
+                    self.assertTrue(field in net_config for field in NETWORKS[section].Config._fields)
 
     def test_invalid_network_option_raises(self):
         test_learncurve_config = os.path.join(TEST_CONFIGS_PATH,
