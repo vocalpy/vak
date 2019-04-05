@@ -30,9 +30,9 @@ def summary(results_dirname,
         path to directory containing results created by a run of learncurve
     train_data_dict_path : str
         path to training data
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    networks : dict
+        where each key is the name of a neural network and the corresponding
+        value is the configuration for that network (in a namedtuple or a dict)
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
         to create a learning curve, e.g. [5, 10, 15, 20]
@@ -234,7 +234,7 @@ def summary(results_dirname,
             scaled_test_data_dict = {'X_test_scaled': X_test}
             joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
 
-            for net_name, net_config in zip(networks._fields, networks):
+            for net_name, net_config in networks.items():
                 # reload network #
                 net_config_dict = net_config._asdict()
                 net_config_dict['n_syllables'] = n_syllables
