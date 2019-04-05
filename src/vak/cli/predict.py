@@ -28,9 +28,9 @@ def predict(checkpoint_path,
     ----------
     checkpoint_path : str
         path to directory with saved model
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    networks : dict
+        where each key is the name of a neural network and the corresponding
+        value is the configuration for that network (in a namedtuple or a dict)
     labels_mapping_path : str
         path to file that contains labels mapping, to convert output from consecutive
         digits back to labels used for audio segments (e.g. birdsong syllables)
@@ -157,7 +157,7 @@ def predict(checkpoint_path,
 
     NETWORKS = network._load()
 
-    for net_name, net_config in zip(networks._fields, networks):
+    for net_name, net_config in networks.items():
         net_config_dict = net_config._asdict()
         net_config_dict['n_syllables'] = n_syllables
         net = NETWORKS[net_name](**net_config_dict)
