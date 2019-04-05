@@ -201,7 +201,7 @@ def learncurve(train_data_dict_path,
                 'following durations (in s): {}'.format(train_set_durs))
 
     # transpose X_train, so rows are timebins and columns are frequency bins
-    # because cnn-bilstm network expects this orientation for input
+    # because networks expect this orientation for input
     X_train = X_train.T
     if save_transformed_data:
         joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
