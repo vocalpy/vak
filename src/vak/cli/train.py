@@ -43,9 +43,9 @@ def train(train_data_dict_path,
         parameters for creating spectrograms.
         Used to ensure that what's in config file matches what's in
         the data.
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    networks : dict
+        where each key is the name of a neural network and the corresponding
+        value is the configuration for that network (in a namedtuple or a dict)
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -240,7 +240,7 @@ def train(train_data_dict_path,
 
     NETWORKS = network._load()
 
-    for net_name, net_config in zip(networks._fields, networks):
+    for net_name, net_config in networks.items():
         net_config_dict = net_config._asdict()
         net_config_dict['n_syllables'] = n_syllables
         net = NETWORKS[net_name](**net_config_dict)
