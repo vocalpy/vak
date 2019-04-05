@@ -160,6 +160,8 @@ def predict(checkpoint_path,
     for net_name, net_config in networks.items():
         net_config_dict = net_config._asdict()
         net_config_dict['n_syllables'] = n_syllables
+        if 'freq_bins' in net_config:
+            net_config['freq_bins'] = freq_bins
         net = NETWORKS[net_name](**net_config_dict)
 
         if spect_scaler_path:
