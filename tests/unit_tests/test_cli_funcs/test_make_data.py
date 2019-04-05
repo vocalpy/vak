@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 import joblib
 
-import vak.cli.make_data
+import vak.cli.prep
 from vak.config.spectrogram import SpectConfig
 
 HERE = os.path.dirname(__file__)
@@ -43,25 +43,25 @@ class TestMakeData(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
         os.remove(self.tmp_config_path)
 
-    def test_make_data_func(self):
+    def test_prep_func(self):
         # all this does is make sure the functions runs without crashing.
-        # need to write tests for functions that make_data calls as well
+        # need to write tests for functions that prep calls as well
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
-        vak.cli.make_data(labelset=list('iabcdefghjk'),
-                          all_labels_are_int=False,
-                          data_dir=data_dir,
-                          total_train_set_dur=20,
-                          val_dur=10,
-                          test_dur=20,
-                          config_file=self.tmp_config_path,
-                          silent_gap_label=0,
-                          skip_files_with_labels_not_in_labelset=True,
-                          output_dir=self.tmp_output_dir,
-                          mat_spect_files_path=None,
-                          mat_spects_annotation_file=None,
-                          spect_params=spect_params)
+        vak.cli.prep.make_data(labelset=list('iabcdefghjk'),
+                               all_labels_are_int=False,
+                               data_dir=data_dir,
+                               total_train_set_dur=20,
+                               val_dur=10,
+                               test_dur=20,
+                               config_file=self.tmp_config_path,
+                               silent_gap_label=0,
+                               skip_files_with_labels_not_in_labelset=True,
+                               output_dir=self.tmp_output_dir,
+                               mat_spect_files_path=None,
+                               mat_spects_annotation_file=None,
+                               spect_params=spect_params)
         data_dicts = glob(os.path.join(self.tmp_output_dir, 'spectrograms*', '*dict*'))
         assert len(data_dicts) == 3
 
@@ -70,7 +70,7 @@ class TestMakeData(unittest.TestCase):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
-        vak.cli.make_data(labelset=list('iabcdefghjk'),
+        vak.cli.prep.make_data(labelset=list('iabcdefghjk'),
                                all_labels_are_int=False,
                                data_dir=data_dir,
                                total_train_set_dur=20,
