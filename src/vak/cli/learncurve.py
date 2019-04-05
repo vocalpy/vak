@@ -59,9 +59,9 @@ def learncurve(train_data_dict_path,
         to better estimate mean accuracy for a training set of that size.
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    networks : dict
+        where each key is the name of a neural network and the corresponding
+        value is the configuration for that network (in a namedtuple or a dict)
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -318,7 +318,7 @@ def learncurve(train_data_dict_path,
             freq_bins = X_train_subset.shape[-1]  # number of columns
             logger.debug('freq_bins in spectrogram: '.format(freq_bins))
 
-            for net_name, net_config in zip(networks._fields, networks):
+            for net_name, net_config in networks.items():
                 net_config_dict = net_config._asdict()
                 net_config_dict['n_syllables'] = n_syllables
                 net = NETWORKS[net_name](**net_config_dict)
