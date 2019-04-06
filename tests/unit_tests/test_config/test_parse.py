@@ -145,7 +145,7 @@ class TestParseConfig(unittest.TestCase):
         tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_learncurve_config)
         config = ConfigParser()
         config.read(tmp_config_file)
-        config['VakTestNet']['bungalow'] = '12'
+        config['TweetyNet']['bungalow'] = '12'
         with open(tmp_config_file, 'w') as rewrite:
             config.write(rewrite)
         with self.assertRaises(ValueError):
