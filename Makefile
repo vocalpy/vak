@@ -32,14 +32,9 @@ $(TMP_CONFIG_FILE) : $(CONFIG_FILE)
 
 config : $(TMP_CONFIG_FILE)
 
-$(SPECT_FILES) : config $(CBINS) $(SPECTS_SCRIPT)
+results : config $(RESULTS_SCRIPT) $(SPECTS_SCRIPT)
 	python $(SPECTS_SCRIPT)
-
-data : $(SPECT_FILES)
-
-results : data $(RESULTS_SCRIPT)
 	python $(RESULTS_SCRIPT)
 
 all : results
-
 
