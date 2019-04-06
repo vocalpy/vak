@@ -23,9 +23,9 @@ class TestUtils(unittest.TestCase):
         (X_out,
          Y_out,
          num_batches) = reshape_data_for_batching(X_in,
-                                                  Y_in,
                                                   batch_size,
-                                                  time_steps)
+                                                  time_steps,
+                                                  Y_in)
 
         self.assertEqual(Y_out.shape[0], batch_size)
 
