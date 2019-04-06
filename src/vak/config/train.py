@@ -139,7 +139,7 @@ def parse_train_config(config, config_file):
         config_dict['val_data_dict_path'] = config['TRAIN']['val_data_path']
 
     if config.has_option('TRAIN', 'test_data_path'):
-        test_data_dict_path = config['TRAIN']['test_data_path']
+        config_dict['test_data_dict_path'] = config['TRAIN']['test_data_path']
 
     if config.has_option('TRAIN', 'val_error_step'):
         config_dict['val_error_step'] = int(config['TRAIN']['val_error_step'])
