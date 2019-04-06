@@ -1004,7 +1004,7 @@ def get_inds_for_dur(spect_ID_vector,
             return inds_to_use
 
 
-def reshape_data_for_batching(X, Y, batch_size, time_steps):
+def reshape_data_for_batching(X, batch_size, time_steps, Y=None):
     """Reshape data to feed to network in batches.
     Data is returned with shape (batch_size, num_batches * time_steps, -1)
     so that a batch can be grabbed at random starting at any index on axis 1
@@ -1016,31 +1016,42 @@ def reshape_data_for_batching(X, Y, batch_size, time_steps):
     X : numpy.ndarray
         2-d matrix, concatenated spectrograms.
         Spectrograms are oriented so rows are time bins and columns are frequency bins.
-    Y : numpy.ndarray
-        vector of labels with shape (X.shape[0], 1)
     batch_size : int
         Number of samples in a batch
     time_steps : int
         Number of time steps in each sample, i.e., number of rows
+    Y : numpy.ndarray
+        vector of labels with shape (X.shape[0], 1). Default is None, for the case when
+        you only have spectrograms in X and need to reshape them
+        so you can predict labels Y.
 
     Returns
     -------
     X : numpy.ndarray
         Spectrograms reshaped to have shape (batch_size, num_batches * time_steps, -1).
     Y : numpy.ndarray
-        Labels reshaped, will have shape (batch_size, -1)
+        Labels reshaped, will have shape (batch_size, -1). Only returned if Y is provided as an argument.
     num_batches : int
         num_batches = X.shape[0] // batch_size // time_steps (plus 1, if zero-padding was required).
     """
     num_batches = X.shape[0] // batch_size // time_steps
     rows_to_append = ((num_batches + 1) * time_steps * batch_size) - X.shape[0]
-    X = np.concatenate((X, np.zeros((rows_to_append, X.shape[1]))),
-                       axis=0)
-    Y = np.concatenate((Y, np.zeros((rows_to_append, 1), dtype=int)), axis=0)
-    num_batches = num_batches + 1
+
+    if rows_to_append > 0:
+        X = np.concatenate((X, np.zeros((rows_to_append, X.shape[1]))),
+                           axis=0)
+        if Y is not None:
+            Y = np.concatenate((Y, np.zeros((rows_to_append, 1), dtype=int)), axis=0)
+        num_batches = num_batches + 1
+
     X = X.reshape((batch_size, num_batches * time_steps, -1))
-    Y = Y.reshape((batch_size, -1))
-    return X, Y, num_batches
+    if Y is not None:
+        Y = Y.reshape((batch_size, -1))
+
+    if Y is not None:
+        return X, Y, num_batches
+    else:
+        return X, num_batches
 
 
 def convert_timebins_to_labels(labeled_timebins,
