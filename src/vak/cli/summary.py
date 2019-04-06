@@ -132,6 +132,10 @@ def summary(results_dirname,
 
     # have to transpose X_test so rows are timebins and columns are frequencies
     X_test_copy = X_test_copy.T
+    if X_train.shape[-1] != X_test_copy.shape[-1]:
+        raise ValueError(f'Number of frequency bins in training set spectrograms, {X_train.shape[-1]}, '
+                         f'does not equal number in test set spectrograms, {X_test_copy.shape[-1]}.')
+    freq_bins = X_test_copy.shape[-1]  # number of columns
 
     # save test set so it's clear from results directory alone
     # which test set was used
