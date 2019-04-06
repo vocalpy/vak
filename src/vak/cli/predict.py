@@ -226,8 +226,3 @@ def predict(checkpoint_path,
 
         fname = os.path.join(dir_to_predict, 'predictions')
         joblib.dump(preds_dict, fname)
-
-
-if __name__ == '__main__':
-    config_file = sys.argv[1]
-    predict(config_file)
