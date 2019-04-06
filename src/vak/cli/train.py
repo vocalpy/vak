@@ -267,9 +267,9 @@ def train(train_data_dict_path,
         (X_val_batch,
          Y_val_batch,
          num_batches_val) = utils.data.reshape_data_for_batching(X_val,
-                                                                 Y_val,
                                                                  net_config.batch_size,
-                                                                 net_config.time_bins)
+                                                                 net_config.time_bins,
+                                                                 Y_val)
 
         if save_transformed_data:
             scaled_reshaped_data_filename = os.path.join(results_dirname_this_net,
