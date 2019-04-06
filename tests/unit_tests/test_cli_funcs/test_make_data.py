@@ -4,18 +4,12 @@ import tempfile
 import shutil
 from glob import glob
 import unittest
-from configparser import ConfigParser
-
-import joblib
 
 import vak.cli.prep
 from vak.config.spectrogram import SpectConfig
 
 HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE,
-                             '..',
-                             '..',
-                             'test_data')
+TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
 
 
 class TestMakeData(unittest.TestCase):
@@ -24,20 +18,6 @@ class TestMakeData(unittest.TestCase):
         a_config = os.path.join(TEST_DATA_DIR, 'configs', 'test_learncurve_config.ini')
         self.tmp_config_path = os.path.join(TEST_DATA_DIR, 'configs', 'tmp_config.ini')
         shutil.copy(a_config, self.tmp_config_path)
-
-        # rewrite config so it points to data for testing + temporary output dirs
-        config = ConfigParser()
-        config.read(self.tmp_config_path)
-        test_data_spects_path = glob(os.path.join(TEST_DATA_DIR,
-                                                  'spects',
-                                                  'spectrograms_*'))[0]
-        config['TRAIN']['train_data_path'] = os.path.join(test_data_spects_path, 'train_data_dict')
-        config['TRAIN']['val_data_path'] = os.path.join(test_data_spects_path, 'val_data_dict')
-        config['TRAIN']['test_data_path'] = os.path.join(test_data_spects_path, 'test_data_dict')
-        config['DATA']['output_dir'] = self.tmp_output_dir
-        config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        with open(self.tmp_config_path, 'w') as fp:
-            config.write(fp)
 
     def tearDown(self):
         shutil.rmtree(self.tmp_output_dir)
