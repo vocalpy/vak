@@ -31,7 +31,7 @@ class TestCli(unittest.TestCase):
         shutil.copy(predict_config, self.tmp_predict_config_path)
         shutil.copy(learncurve_config, self.tmp_learncurve_config_path)
 
-        # make temporary otuput dir
+        # make temporary output dir
         self.tmp_output_dir = tempfile.mkdtemp()
 
         # copy some data to predict to a temporary dir
@@ -85,9 +85,25 @@ class TestCli(unittest.TestCase):
         shutil.rmtree(self.tmp_dir_to_predict)
 
     def test_prep_command(self):
+        # remove data path options, this function should work without them
+        # present in .ini file, and should add them when it runs
+        config = ConfigParser()
+        config.read(self.tmp_learncurve_config_path)
+        config.remove_option('TRAIN', 'train_data_path')
+        config.remove_option('TRAIN', 'val_data_path')
+        config.remove_option('TRAIN', 'test_data_path')
+        with open(self.tmp_learncurve_config_path, 'w') as fp:
+            config.write(fp)
+
         command = 'prep'
         config_files = [self.tmp_learncurve_config_path]
         vak.cli.cli(command=command, config_files=config_files)
+
+        # assert that data path options got added
+        config = ConfigParser()
+        config.read(self.tmp_learncurve_config_path)
+        for option in ('train_data_path', 'val_data_path', 'test_data_path'):
+            self.assertTrue(config.has_option('TRAIN', option))
 
     def test_train_command(self):
         command = 'train'
