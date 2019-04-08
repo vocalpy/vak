@@ -1,5 +1,4 @@
 import os
-import sys
 from glob import glob
 from datetime import datetime
 import pickle
@@ -28,9 +27,9 @@ def predict(checkpoint_path,
     ----------
     checkpoint_path : str
         path to directory with saved model
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    networks : dict
+        where each key is the name of a neural network and the corresponding
+        value is the configuration for that network (in a namedtuple or a dict)
     labels_mapping_path : str
         path to file that contains labels mapping, to convert output from consecutive
         digits back to labels used for audio segments (e.g. birdsong syllables)
@@ -130,6 +129,18 @@ def predict(checkpoint_path,
         raise ValueError('did not find any .spect files in {}'
                          .format(dir_to_predict))
 
+    X_data = []
+    for spect_file in spect_file_list:
+        spect_dict = joblib.load(spect_file)
+        X_data.append(spect_dict['spect'].T)
+    freq_bins_all_spects = [Xd.shape[-1] for Xd in X_data]
+    uniq_freq_bins = set(freq_bins_all_spects)
+    if len(uniq_freq_bins) != 1:
+        raise ValueError('Found spectrograms with different numbers of frequency bins in dir_to_predict.\n'
+                         f'Different values for numbers of frequency bins found were: {uniq_freq_bins}')
+    else:
+        freq_bins = list(uniq_freq_bins)[0]
+
     if not os.path.isdir(checkpoint_path):
         raise FileNotFoundError('directory {}, specified as '
                                 'checkpoint_path, is not found.'
@@ -155,11 +166,15 @@ def predict(checkpoint_path,
     else:
         data_file = data_file[0]
 
+    num_spect_files = len(spect_file_list)
+
     NETWORKS = network._load()
 
-    for net_name, net_config in zip(networks._fields, networks):
+    for net_name, net_config in networks.items():
         net_config_dict = net_config._asdict()
         net_config_dict['n_syllables'] = n_syllables
+        if 'freq_bins' in net_config_dict:
+            net_config_dict['freq_bins'] = freq_bins
         net = NETWORKS[net_name](**net_config_dict)
 
         if spect_scaler_path:
@@ -172,7 +187,6 @@ def predict(checkpoint_path,
                         meta_file=meta_file,
                         data_file=data_file)
 
-            num_spect_files = len(spect_file_list)
             preds_dict = {}
             pbar = tqdm(spect_file_list)
             for file_num, spect_file in enumerate(pbar):
@@ -180,17 +194,13 @@ def predict(checkpoint_path,
                     f'Predicting labels for {os.path.basename(spect_file)}, file {file_num} of {num_spect_files}'
                 )
 
-                data = joblib.load(spect_file)
-                Xd = data['spect'].T
+                Xd = X_data[file_num]
                 if spect_scaler_path:
                     Xd = spect_scaler.transform(Xd)
-                Yd = data['labeled_timebins']
                 (Xd_batch,
-                 Yd_batch,
                  num_batches) = reshape_data_for_batching(Xd,
-                                                          Yd,
-                                                          net_config.batch_size,
-                                                          net_config.time_bins)
+                                                          batch_size=net_config.batch_size,
+                                                          time_steps=net_config.time_bins)
 
                 if 'Y_pred' in locals():
                     del Y_pred
@@ -210,13 +220,8 @@ def predict(checkpoint_path,
 
                 # remove zero padding added by reshape_data_for_batching function
                 Y_pred = Y_pred.ravel()
-                Y_pred = Y_pred[0:len(Yd)]
+                Y_pred = Y_pred[0:Xd.shape[0]]
                 preds_dict[spect_file] = Y_pred
 
         fname = os.path.join(dir_to_predict, 'predictions')
         joblib.dump(preds_dict, fname)
-
-
-if __name__ == '__main__':
-    config_file = sys.argv[1]
-    predict(config_file)

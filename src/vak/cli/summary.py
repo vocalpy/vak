@@ -30,9 +30,9 @@ def summary(results_dirname,
         path to directory containing results created by a run of learncurve
     train_data_dict_path : str
         path to training data
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    networks : dict
+        where each key is the name of a neural network and the corresponding
+        value is the configuration for that network (in a namedtuple or a dict)
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
         to create a learning curve, e.g. [5, 10, 15, 20]
@@ -132,6 +132,10 @@ def summary(results_dirname,
 
     # have to transpose X_test so rows are timebins and columns are frequencies
     X_test_copy = X_test_copy.T
+    if X_train.shape[-1] != X_test_copy.shape[-1]:
+        raise ValueError(f'Number of frequency bins in training set spectrograms, {X_train.shape[-1]}, '
+                         f'does not equal number in test set spectrograms, {X_test_copy.shape[-1]}.')
+    freq_bins = X_test_copy.shape[-1]  # number of columns
 
     # save test set so it's clear from results directory alone
     # which test set was used
@@ -234,10 +238,12 @@ def summary(results_dirname,
             scaled_test_data_dict = {'X_test_scaled': X_test}
             joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
 
-            for net_name, net_config in zip(networks._fields, networks):
+            for net_name, net_config in networks.items():
                 # reload network #
                 net_config_dict = net_config._asdict()
                 net_config_dict['n_syllables'] = n_syllables
+                if 'freq_bins' in net_config_dict:
+                    net_config_dict['freq_bins'] = freq_bins
                 net = NETWORKS[net_name](**net_config_dict)
 
                 results_dirname_this_net = os.path.join(training_records_path, net_name)
@@ -269,17 +275,17 @@ def summary(results_dirname,
                  Y_train_subset,
                  num_batches_train) = utils.data.reshape_data_for_batching(
                     X_train_subset,
-                    Y_train_subset,
                     net_config.batch_size,
-                    net_config.time_bins)
+                    net_config.time_bins,
+                    Y_train_subset)
 
                 (X_test,
                  Y_test,
                  num_batches_test) = utils.data.reshape_data_for_batching(
                     X_test,
-                    Y_test,
                     net_config.batch_size,
-                    net_config.time_bins)
+                    net_config.time_bins,
+                    Y_test)
 
                 scaled_reshaped_data_filename = os.path.join(summary_dirname,
                                                              'scaled_reshaped_spects_duration_{}_replicate_{}'

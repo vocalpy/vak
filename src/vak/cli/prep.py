@@ -36,12 +36,12 @@ def make_data(labelset,
         if True, labels are of type int, not str
     data_dir : str
         path to directory with audio files from which to make dataset
-    total_train_set_dur : int
+    total_train_set_dur : float
         total duration of training set, in seconds.
         Training subsets of shorter duration will be drawn from this set.
-    val_dur : int
+    val_dur : float
         total duration of validation set, in seconds.
-    test_dur : int
+    test_dur : float
         total duration of test set, in seconds.
     silent_gap_label : int
         label for time bins of silent gaps between syllables.
