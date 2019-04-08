@@ -59,9 +59,9 @@ def learncurve(train_data_dict_path,
         to better estimate mean accuracy for a training set of that size.
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    networks : dict
+        where each key is the name of a neural network and the corresponding
+        value is the configuration for that network (in a namedtuple or a dict)
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -201,7 +201,7 @@ def learncurve(train_data_dict_path,
                 'following durations (in s): {}'.format(train_set_durs))
 
     # transpose X_train, so rows are timebins and columns are frequency bins
-    # because cnn-bilstm network expects this orientation for input
+    # because networks expect this orientation for input
     X_train = X_train.T
     if save_transformed_data:
         joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
@@ -318,9 +318,11 @@ def learncurve(train_data_dict_path,
             freq_bins = X_train_subset.shape[-1]  # number of columns
             logger.debug('freq_bins in spectrogram: '.format(freq_bins))
 
-            for net_name, net_config in zip(networks._fields, networks):
+            for net_name, net_config in networks.items():
                 net_config_dict = net_config._asdict()
                 net_config_dict['n_syllables'] = n_syllables
+                if 'freq_bins' in net_config_dict:
+                    net_config_dict['freq_bins'] = freq_bins
                 net = NETWORKS[net_name](**net_config_dict)
 
                 results_dirname_this_net = os.path.join(training_records_path, net_name)
@@ -347,9 +349,9 @@ def learncurve(train_data_dict_path,
                 (X_val_batch,
                  Y_val_batch,
                  num_batches_val) = utils.data.reshape_data_for_batching(X_val,
-                                                                         Y_val,
                                                                          net_config.batch_size,
-                                                                         net_config.time_bins)
+                                                                         net_config.time_bins,
+                                                                         Y_val)
 
                 # save scaled reshaped data
                 scaled_reshaped_data_filename = os.path.join(training_records_path,

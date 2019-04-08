@@ -27,7 +27,7 @@ VERSION = '0.1.0a4'
 LICENSE = 'BSD'
 
 REQUIRED = [
-    'tensorflow', 'numpy', 'scipy', 'matplotlib', 'joblib', 'tqdm', 'crowsetta',
+    'tensorflow', 'numpy', 'scipy', 'matplotlib', 'joblib', 'tqdm', 'attrs', 'crowsetta',
 ]
 
 dev_deps = [
