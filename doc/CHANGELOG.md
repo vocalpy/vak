@@ -5,11 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0a5]
+### Added
+- Use `attrs`-based classes to represent sections of config.ini files 
+ 
 ### Changed
-- remove code about 'freq_bins' in a couple of places, since the number of frequency bins 
+- rewrite `vak.cli` so it can deal with state of config.ini files
+  + e.g. doesn't throw an error if `train_data_path` not declared as an option in [TRAIN] when running `vak prep` 
+(since training data won't exist yet, doesn't make sense to throw an error).
+
+### Removed
+- remove code about `freq_bins` in a couple of places, since the number of frequency bins 
   in spectrograms is now just determined programmatically 
-  + vak.config.data no longer has freq_bins field in DataConfig namedtuple
-  + 'make_data' no longer adds 'freq_bins' option to [DATA] section after making data sets
+  + `vak.config.data` no longer has `freq_bins` field in DataConfig namedtuple
+  + `make_data` no longer adds `freq_bins` option to [DATA] section after making data sets
 
 ## [0.1.0a4]
 ### Fixed
