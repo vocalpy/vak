@@ -900,7 +900,6 @@ def get_inds_for_dur(spect_ID_vector,
                          '(after np.squeeze), but was equal to {}'
                          .format(labeled_timebins_vector.ndim))
 
-
     iter = 1
     while 1:  # keep iterating until we randomly draw subset that meets our criteria
         if 'inds_to_use' in locals():
