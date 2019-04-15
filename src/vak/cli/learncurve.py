@@ -261,34 +261,49 @@ def learncurve(train_data_dict_path,
 
     NETWORKS = network._load()
 
+    # ---------------- grab all indices for subsets of training data *before* doing any training ----------------
+    # we want to fail here, rather than later in the middle of training networks
+    logger.info("getting all randomly-drawn subsets of training data before starting training")
+    with tqdm(total=len(train_set_durs) * len(REPLICATES)) as pbar:
+        train_inds_dict = {}
+        for train_set_dur in train_set_durs:
+            train_inds_dict[train_set_dur] = {}
+            for replicate in REPLICATES:
+                pbar.set_description(
+                    f"Getting training subset with duration {train_set_dur}, replicate {replicate}"
+                )
+                training_records_dir = ('records_for_training_set_with_duration_of_'
+                                        + str(train_set_dur) + '_sec_replicate_'
+                                        + str(replicate))
+                training_records_path = os.path.join(results_dirname,
+                                                     training_records_dir)
+
+                if not os.path.isdir(training_records_path):
+                    os.makedirs(training_records_path)
+
+                if use_train_subsets_from_previous_run:
+                    train_inds_path = os.path.join(previous_run_path,
+                                                   training_records_dir,
+                                                   'train_inds')
+                    with open(train_inds_path, 'rb') as f:
+                        train_inds = pickle.load(f)
+                else:
+                    train_inds = utils.data.get_inds_for_dur(X_train_spect_ID_vector,
+                                                             Y_train,
+                                                             labels_mapping,
+                                                             train_set_dur,
+                                                             timebin_dur)
+                with open(os.path.join(training_records_path, 'train_inds'),
+                          'wb') as train_inds_file:
+                    pickle.dump(train_inds, train_inds_file)
+                train_inds_dict[train_set_dur][replicate] = train_inds
+                pbar.update(1)
+
     for train_set_dur in train_set_durs:
         for replicate in REPLICATES:
             logger.info("training with training set duration of {} seconds,"
                         "replicate #{}".format(train_set_dur, replicate))
-            training_records_dir = ('records_for_training_set_with_duration_of_'
-                                    + str(train_set_dur) + '_sec_replicate_'
-                                    + str(replicate))
-            training_records_path = os.path.join(results_dirname,
-                                                 training_records_dir)
-
-            if not os.path.isdir(training_records_path):
-                os.makedirs(training_records_path)
-
-            if use_train_subsets_from_previous_run:
-                train_inds_path = os.path.join(previous_run_path,
-                                               training_records_dir,
-                                               'train_inds')
-                with open(train_inds_path, 'rb') as f:
-                    train_inds = pickle.load(f)
-            else:
-                train_inds = utils.data.get_inds_for_dur(X_train_spect_ID_vector,
-                                                         Y_train,
-                                                         labels_mapping,
-                                                         train_set_dur,
-                                                         timebin_dur)
-            with open(os.path.join(training_records_path, 'train_inds'),
-                      'wb') as train_inds_file:
-                pickle.dump(train_inds, train_inds_file)
+            train_inds = train_inds_dict[train_set_dur][replicate]
             X_train_subset = X_train[train_inds, :]
             Y_train_subset = Y_train[train_inds]
             if Y_train_subset.ndim > 1:
