@@ -893,7 +893,6 @@ def get_inds_for_dur(spect_ID_vector,
         (assumes X_train is one long spectrogram, consisting of all
         training spectrograms concatenated, and each row being one timebin)
     """
-
     labeled_timebins_vector = np.squeeze(labeled_timebins_vector)
 
     if labeled_timebins_vector.ndim > 1:
