@@ -847,49 +847,49 @@ def get_inds_for_dur(spect_ID_vector,
                      timebin_dur_in_s=0.001,
                      max_iter=1000,
                      method='incfreq'):
-    """for getting a training set with random songs but constant duration
-    draws songs at random and adds to list
-    until total duration of all songs => target_duration
-    then truncates at target duration
+    """Randomly draw a subset of data with a specific duration.
+    Draws spectrograms at random and adds to list until total duration of
+    all spectrograms => target_duration, and then truncates at target duration.
+    Returns vector of indices to select randomly-drawn subset from total dataset.
 
     Parameters
     ----------
     spect_ID_vector : ndarray
-            Vector where each element is an ID for a song. Used to randomly grab subsets
-            of data of a target duration while still having the subset be composed of
-            individual songs as much as possible. So this vector will look like:
-            [0, 0, 0, ..., 1, 1, 1, ... , n, n, n] where n is equal to or (a little) less
-            than the length of spects. spect_ID_vector.shape[-1] is the same as X.shape[-1]
-            and Y.shape[0].
-    labeled_timebins_vector : ndarray
-            Vector of same length as spect_ID_vector but each value is a class.
+        vector where each element is an ID for a song. Used to randomly grab subsets
+        of data of a target duration while still having the subset be composed of
+        individual spectrograms as much as possible. So this vector will look like:
+        [0, 0, 0, ..., 1, 1, 1, ... , n, n, n] where each n is the ID for one
+        spectrogram, i.e. one audio file.
+        spect_ID_vector.shape[-1] is the same as spectrograms.shape[-1] and labels.shape[0].
+    labeled_timebins_vector : numpy.ndarray
+        vector of same length as spect_ID_vector but each element is a label for the timebin,
+        i.e. one of the possible classes.
     labels_mapping : dict
-        maps str labels to consecutive integers.
-        Used to check that the randomly drawn data set contains all classes.
+        maps string labels to consecutive integers. Used to check that the randomly drawn
+        data set contains all classes.
     target_duration : float
-        target duration of training set in s
+        target duration of training set in seconds.
     timebin_dur_in_s : float
-        duration of each timebin, i.e. each column in spectrogram,
-        in seconds.
-        default is 0.001 s (1 ms)
+        duration of each timebin, i.e. each column in spectrogram, in seconds.
+        Default is 0.001 s (1 ms)
     max_iter : int
         number of iterations to try drawing random subset of song that contains
         all classes in labels mapping.
-        Defaults is 1000.
+        Default is 1000.
     method : str
         {'rand', 'incfreq'}
-        method by which to obtain subset from training set
-        'rand' grabs songs totally at random
+        method by which to obtain subset from training set.
         'incfreq' grabs songs at random but starts from the subset
         that includes the least frequently occurring class. Continues
-        to grab randomly in order of ascending frequency until all
+        to grab randomly in order of increasing frequency until all
         classes are present, and then goes back to 'rand' method.
+        'rand' grabs songs totally at random.
         Default is 'incfreq'.
 
     Returns
     -------
-    inds_to_use : bool
-        numpy boolean vector, True where row in X_train gets used
+    inds_to_use : numpy.ndarray
+        numpy array of indices, to index into rows of X_train that belong to chosen subset
         (assumes X_train is one long spectrogram, consisting of all
         training spectrograms concatenated, and each row being one timebin)
     """
