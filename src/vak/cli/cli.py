@@ -140,4 +140,5 @@ def cli(command, config_files):
                     num_replicates=train_config.num_replicates,
                     labelset=data_config.labelset,
                     test_data_dict_path=train_config.test_data_dict_path,
-                    normalize_spectrograms=train_config.normalize_spectrograms)
+                    normalize_spectrograms=train_config.normalize_spectrograms,
+                    save_transformed_data=data_config.save_transformed_data)
