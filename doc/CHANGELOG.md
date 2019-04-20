@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0a7]
+### Added
+- `vak.cli.summary` has `save_transformed_data` parameter and `vak.cli` passed value from
+  `config.data.save_transformed_data` as the argument when calling `vak.cli.summary`
+
+### Changed
+- `vak.cli.summary` only saves transformed train/test data if `save_transformed_data` is `True`
+- move a test from tests/unit_tests/test_utils.py into tests/unit_tests/test_utils/test_data.py
+
+### Removed
+- `vak.cli.summary` no longer saves copy of test data in results directory
+
 ## [0.1.0a6]
 ### Added
 - add test for utils.data.get_inds_for_dur

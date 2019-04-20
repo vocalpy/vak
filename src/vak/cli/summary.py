@@ -1,4 +1,5 @@
 import os
+import logging
 import pickle
 import sys
 from datetime import datetime
@@ -19,7 +20,8 @@ def summary(results_dirname,
             num_replicates,
             labelset,
             test_data_dict_path,
-            normalize_spectrograms=False):
+            normalize_spectrograms=False,
+            save_transformed_data=False):
     """generate summary learning curve from networks trained by cli.learncurve
     Computes error on test set for each network trained by learncurve,
     and saves in a ./summary directory within results_dir
@@ -50,6 +52,9 @@ def summary(results_dirname,
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
+    save_transformed_data : bool
+        if True, save transformed data (i.e. scaled, reshaped).
+        Useful if you need to check what the data looks like when fed to networks.
 
     Returns
     -------
@@ -64,10 +69,19 @@ def summary(results_dirname,
                                    'summary_' + timenow)
     os.makedirs(summary_dirname)
 
+    logfile_name = os.path.join(summary_dirname,
+                                'logfile_from_running_summary_' + timenow + '.log')
+    logger = logging.getLogger(__name__)
+    logger.setLevel('INFO')
+    logger.addHandler(logging.FileHandler(logfile_name))
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.info(f"Logging run of summary to '{summary_dirname}'")
+
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'rb') as labels_map_file_obj:
         labels_mapping = pickle.load(labels_map_file_obj)
 
+    logger.info(f'Loading training data from: {train_data_dict_path}')
     train_data_dict = joblib.load(train_data_dict_path)
     (X_train,
      Y_train,
@@ -105,7 +119,7 @@ def summary(results_dirname,
     else:
         raise TypeError('Not able to determine type of labels in train data')
 
-    print('loading testing data')
+    logger.info(f'Loading test data from: {test_data_dict_path}')
     test_data_dict = joblib.load(test_data_dict_path)
 
     # notice data is called `X_test_copy` and `Y_test_copy`
@@ -136,11 +150,6 @@ def summary(results_dirname,
         raise ValueError(f'Number of frequency bins in training set spectrograms, {X_train.shape[-1]}, '
                          f'does not equal number in test set spectrograms, {X_test_copy.shape[-1]}.')
     freq_bins = X_test_copy.shape[-1]  # number of columns
-
-    # save test set so it's clear from results directory alone
-    # which test set was used
-    joblib.dump(X_test_copy, os.path.join(results_dirname, 'X_test'))
-    joblib.dump(Y_test_copy, os.path.join(results_dirname, 'Y_test'))
 
     # used for Levenshtein distance + syllable error rate
     if all(type(labels_el) is str for labels_el in test_labels):
@@ -188,9 +197,10 @@ def summary(results_dirname,
         Y_pred_train_labels_this_dur = []
 
         for rep_ind, replicate in enumerate(replicates):
-            print("getting train and test error for "
-                  "training set with duration of {} seconds, "
-                  "replicate {}".format(train_set_dur, replicate))
+            logger.info(
+                "getting train and test error for training set with duration of "
+                f"{train_set_dur} seconds, replicate {replicate}"
+            )
 
             training_records_dir = ('records_for_training_set_with_duration_of_'
                                     + str(train_set_dur) + '_sec_replicate_'
@@ -230,13 +240,13 @@ def summary(results_dirname,
             # need to get Y_test from copy because it gets reshaped every time through loop
             Y_test = np.copy(Y_test_copy)
 
-            # save scaled spectrograms. Note we already saved training data scaled
-            scaled_test_data_filename = os.path.join(summary_dirname,
-                                                     'scaled_test_spects_duration_{}_replicate_{}'
-                                                     .format(train_set_dur,
-                                                             replicate))
-            scaled_test_data_dict = {'X_test_scaled': X_test}
-            joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
+            if save_transformed_data:
+                scaled_test_data_filename = os.path.join(summary_dirname,
+                                                         'scaled_test_spects_duration_{}_replicate_{}'
+                                                         .format(train_set_dur,
+                                                                 replicate))
+                scaled_test_data_dict = {'X_test_scaled': X_test}
+                joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
 
             for net_name, net_config in networks.items():
                 # reload network #
@@ -287,17 +297,18 @@ def summary(results_dirname,
                     net_config.time_bins,
                     Y_test)
 
-                scaled_reshaped_data_filename = os.path.join(summary_dirname,
-                                                             'scaled_reshaped_spects_duration_{}_replicate_{}'
-                                                             .format(train_set_dur,
-                                                                     replicate))
-                scaled_reshaped_data_dict = {
-                    'X_train_subset_scaled_reshaped': X_train_subset,
-                    'Y_train_subset_reshaped': Y_train_subset,
-                    'X_test_scaled_reshaped': X_test,
-                    'Y_test_reshaped': Y_test}
-                joblib.dump(scaled_reshaped_data_dict,
-                            scaled_reshaped_data_filename)
+                if save_transformed_data:
+                    scaled_reshaped_data_filename = os.path.join(summary_dirname,
+                                                                 'scaled_reshaped_spects_duration_{}_replicate_{}'
+                                                                 .format(train_set_dur,
+                                                                         replicate))
+                    scaled_reshaped_data_dict = {
+                        'X_train_subset_scaled_reshaped': X_train_subset,
+                        'Y_train_subset_reshaped': Y_train_subset,
+                        'X_test_scaled_reshaped': X_test,
+                        'Y_test_reshaped': Y_test}
+                    joblib.dump(scaled_reshaped_data_dict,
+                                scaled_reshaped_data_filename)
 
                 with tf.Session(graph=net.graph) as sess:
                     tf.logging.set_verbosity(tf.logging.ERROR)
@@ -309,7 +320,7 @@ def summary(results_dirname,
                     if 'Y_pred_train' in locals():
                         del Y_pred_train
 
-                    print('calculating training set error')
+                    logger.info('calculating training set error')
                     for b in range(num_batches_train):  # "b" is "batch number"
                         d = {net.X: X_train_subset[:,
                                     b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
@@ -366,7 +377,7 @@ def summary(results_dirname,
                     if 'Y_pred_test' in locals():
                         del Y_pred_test
 
-                    print('calculating test set error')
+                    logger.info('calculating test set error')
                     for b in range(num_batches_test):  # "b" is "batch number"
                         d = {
                             net.X: X_test[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
@@ -407,12 +418,12 @@ def summary(results_dirname,
                     test_lev = metrics.levenshtein(Y_pred_test_labels,
                                                    Y_test_labels_for_lev)
                     test_lev_arr[dur_ind, rep_ind] = test_lev
-                    print(
+                    logger.info(
                         'Levenshtein distance for test set was {}'.format(test_lev))
                     test_syl_err_rate = metrics.syllable_error_rate(
                         Y_test_labels_for_lev,
                         Y_pred_test_labels)
-                    print('Syllable error rate for test set was {}'.format(
+                    logger.info('Syllable error rate for test set was {}'.format(
                         test_syl_err_rate))
                     test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
 
