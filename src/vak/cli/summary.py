@@ -148,11 +148,6 @@ def summary(results_dirname,
                          f'does not equal number in test set spectrograms, {X_test_copy.shape[-1]}.')
     freq_bins = X_test_copy.shape[-1]  # number of columns
 
-    # save test set so it's clear from results directory alone
-    # which test set was used
-    joblib.dump(X_test_copy, os.path.join(results_dirname, 'X_test'))
-    joblib.dump(Y_test_copy, os.path.join(results_dirname, 'Y_test'))
-
     # used for Levenshtein distance + syllable error rate
     if all(type(labels_el) is str for labels_el in test_labels):
         # when taken from .not.mat files associated with .cbin audio files
