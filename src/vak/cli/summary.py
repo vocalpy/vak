@@ -76,7 +76,6 @@ def summary(results_dirname,
     logger.addHandler(logging.FileHandler(logfile_name))
     logger.addHandler(logging.StreamHandler(sys.stdout))
     logger.info(f"Logging run of summary to '{summary_dirname}'")
-    logger.info(f'Using config file: {config_file}')
 
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'rb') as labels_map_file_obj:
