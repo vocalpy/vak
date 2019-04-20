@@ -1,4 +1,5 @@
 import os
+import logging
 import pickle
 import sys
 from datetime import datetime
@@ -64,10 +65,20 @@ def summary(results_dirname,
                                    'summary_' + timenow)
     os.makedirs(summary_dirname)
 
+    logfile_name = os.path.join(summary_dirname,
+                                'logfile_from_running_summary_' + timenow + '.log')
+    logger = logging.getLogger(__name__)
+    logger.setLevel('INFO')
+    logger.addHandler(logging.FileHandler(logfile_name))
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.info(f"Logging run of summary to '{summary_dirname}'")
+    logger.info(f'Using config file: {config_file}')
+
     labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
     with open(labels_mapping_file, 'rb') as labels_map_file_obj:
         labels_mapping = pickle.load(labels_map_file_obj)
 
+    logger.info(f'Loading training data from: {train_data_dict_path}')
     train_data_dict = joblib.load(train_data_dict_path)
     (X_train,
      Y_train,
@@ -105,7 +116,7 @@ def summary(results_dirname,
     else:
         raise TypeError('Not able to determine type of labels in train data')
 
-    print('loading testing data')
+    logger.info(f'Loading test data from: {test_data_dict_path}')
     test_data_dict = joblib.load(test_data_dict_path)
 
     # notice data is called `X_test_copy` and `Y_test_copy`
@@ -188,9 +199,10 @@ def summary(results_dirname,
         Y_pred_train_labels_this_dur = []
 
         for rep_ind, replicate in enumerate(replicates):
-            print("getting train and test error for "
-                  "training set with duration of {} seconds, "
-                  "replicate {}".format(train_set_dur, replicate))
+            logger.info(
+                "getting train and test error for training set with duration of "
+                f"{train_set_dur} seconds, replicate {replicate}"
+            )
 
             training_records_dir = ('records_for_training_set_with_duration_of_'
                                     + str(train_set_dur) + '_sec_replicate_'
@@ -309,7 +321,7 @@ def summary(results_dirname,
                     if 'Y_pred_train' in locals():
                         del Y_pred_train
 
-                    print('calculating training set error')
+                    logger.info('calculating training set error')
                     for b in range(num_batches_train):  # "b" is "batch number"
                         d = {net.X: X_train_subset[:,
                                     b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
@@ -366,7 +378,7 @@ def summary(results_dirname,
                     if 'Y_pred_test' in locals():
                         del Y_pred_test
 
-                    print('calculating test set error')
+                    logger.info('calculating test set error')
                     for b in range(num_batches_test):  # "b" is "batch number"
                         d = {
                             net.X: X_test[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
@@ -407,12 +419,12 @@ def summary(results_dirname,
                     test_lev = metrics.levenshtein(Y_pred_test_labels,
                                                    Y_test_labels_for_lev)
                     test_lev_arr[dur_ind, rep_ind] = test_lev
-                    print(
+                    logger.info(
                         'Levenshtein distance for test set was {}'.format(test_lev))
                     test_syl_err_rate = metrics.syllable_error_rate(
                         Y_test_labels_for_lev,
                         Y_pred_test_labels)
-                    print('Syllable error rate for test set was {}'.format(
+                    logger.info('Syllable error rate for test set was {}'.format(
                         test_syl_err_rate))
                     test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
 
