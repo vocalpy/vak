@@ -20,7 +20,8 @@ def summary(results_dirname,
             num_replicates,
             labelset,
             test_data_dict_path,
-            normalize_spectrograms=False):
+            normalize_spectrograms=False,
+            save_transformed_data=False):
     """generate summary learning curve from networks trained by cli.learncurve
     Computes error on test set for each network trained by learncurve,
     and saves in a ./summary directory within results_dir
@@ -51,6 +52,9 @@ def summary(results_dirname,
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
+    save_transformed_data : bool
+        if True, save transformed data (i.e. scaled, reshaped).
+        Useful if you need to check what the data looks like when fed to networks.
 
     Returns
     -------
@@ -237,13 +241,13 @@ def summary(results_dirname,
             # need to get Y_test from copy because it gets reshaped every time through loop
             Y_test = np.copy(Y_test_copy)
 
-            # save scaled spectrograms. Note we already saved training data scaled
-            scaled_test_data_filename = os.path.join(summary_dirname,
-                                                     'scaled_test_spects_duration_{}_replicate_{}'
-                                                     .format(train_set_dur,
-                                                             replicate))
-            scaled_test_data_dict = {'X_test_scaled': X_test}
-            joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
+            if save_transformed_data:
+                scaled_test_data_filename = os.path.join(summary_dirname,
+                                                         'scaled_test_spects_duration_{}_replicate_{}'
+                                                         .format(train_set_dur,
+                                                                 replicate))
+                scaled_test_data_dict = {'X_test_scaled': X_test}
+                joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
 
             for net_name, net_config in networks.items():
                 # reload network #
@@ -294,17 +298,18 @@ def summary(results_dirname,
                     net_config.time_bins,
                     Y_test)
 
-                scaled_reshaped_data_filename = os.path.join(summary_dirname,
-                                                             'scaled_reshaped_spects_duration_{}_replicate_{}'
-                                                             .format(train_set_dur,
-                                                                     replicate))
-                scaled_reshaped_data_dict = {
-                    'X_train_subset_scaled_reshaped': X_train_subset,
-                    'Y_train_subset_reshaped': Y_train_subset,
-                    'X_test_scaled_reshaped': X_test,
-                    'Y_test_reshaped': Y_test}
-                joblib.dump(scaled_reshaped_data_dict,
-                            scaled_reshaped_data_filename)
+                if save_transformed_data:
+                    scaled_reshaped_data_filename = os.path.join(summary_dirname,
+                                                                 'scaled_reshaped_spects_duration_{}_replicate_{}'
+                                                                 .format(train_set_dur,
+                                                                         replicate))
+                    scaled_reshaped_data_dict = {
+                        'X_train_subset_scaled_reshaped': X_train_subset,
+                        'Y_train_subset_reshaped': Y_train_subset,
+                        'X_test_scaled_reshaped': X_test,
+                        'Y_test_reshaped': Y_test}
+                    joblib.dump(scaled_reshaped_data_dict,
+                                scaled_reshaped_data_filename)
 
                 with tf.Session(graph=net.graph) as sess:
                     tf.logging.set_verbosity(tf.logging.ERROR)
