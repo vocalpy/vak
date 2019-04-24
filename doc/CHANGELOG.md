@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0a8]
+### Fixed
+- Fix how main loop in `learncurve` re-loads indices for grabbing subsets of training data after 
+  generating them, and do so in a way that still allows for re-using subsets from previous runs
+
 ## [0.1.0a7]
 ### Added
 - `vak.cli.summary` has `save_transformed_data` parameter and `vak.cli` passed value from
