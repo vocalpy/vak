@@ -98,6 +98,14 @@ def cli(command, config_files):
                     spect_scaler_path=predict_config.spect_scaler_path)
 
         elif command == 'learncurve':
+            if config_obj.has_option('OUTPUT', 'results_dir_made_by_main_script'):
+                raise ValueError(
+                    f"config file {config_file} already has option 'results_dir_made_by_main_script' "
+                    "in [OUTPUT] section. \nRunning learncurve will overwrite that option."
+                    "Please either remove the option from this file or make a copy of the config.ini "
+                    "file with a new name and remove it from that file.\n"
+                    f"Currently the option is set to: {config_obj['OUTPUT']['results_dir_made_by_main_script']}"
+                )
             train_config = parse_train_config(config_obj, config_file)
             nets_config = _get_nets_config(config_obj, train_config.networks)
             spect_params = parse_spect_config(config_obj)
