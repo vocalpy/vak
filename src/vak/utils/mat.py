@@ -15,7 +15,7 @@ def convert_mat_to_spect(mat_spect_files,
                          skip_files_with_labels_not_in_labelset=True,
                          n_decimals_trunc=3):
     """converts .mat files with spectrograms to .spect files
-    that are used by make_data.py script and the make_data_dicts
+    that are used by prep.py script and the make_data_dicts
     function that it calls.
 
     Parameters
