@@ -6,7 +6,7 @@ from .train import train
 from .predict import predict
 from .learncurve import learncurve
 from .summary import summary
-from .prep import make_data
+from .prep import prep
 from ..config import parse_spect_config, parse_data_config, parse_train_config, \
     parse_predict_config, parse_output_config
 from ..config.parse import _get_nets_config
@@ -50,19 +50,19 @@ def cli(command, config_files):
                                  'parameters provided to generate spectrograms '
                                  'either.')
 
-            make_data(labelset=data_config.labelset,
-                      all_labels_are_int=data_config.all_labels_are_int,
-                      data_dir=data_config.data_dir,
-                      total_train_set_dur=data_config.total_train_set_dur,
-                      val_dur=data_config.val_dur,
-                      test_dur=data_config.test_dur,
-                      config_file=config_file,
-                      silent_gap_label=data_config.silent_gap_label,
-                      skip_files_with_labels_not_in_labelset=data_config.skip_files_with_labels_not_in_labelset,
-                      output_dir=data_config.output_dir,
-                      mat_spect_files_path=data_config.mat_spect_files_path,
-                      mat_spects_annotation_file=data_config.mat_spects_annotation_file,
-                      spect_params=spect_params)
+            prep(labelset=data_config.labelset,
+                 all_labels_are_int=data_config.all_labels_are_int,
+                 data_dir=data_config.data_dir,
+                 total_train_set_dur=data_config.total_train_set_dur,
+                 val_dur=data_config.val_dur,
+                 test_dur=data_config.test_dur,
+                 config_file=config_file,
+                 silent_gap_label=data_config.silent_gap_label,
+                 skip_files_with_labels_not_in_labelset=data_config.skip_files_with_labels_not_in_labelset,
+                 output_dir=data_config.output_dir,
+                 mat_spect_files_path=data_config.mat_spect_files_path,
+                 mat_spects_annotation_file=data_config.mat_spects_annotation_file,
+                 spect_params=spect_params)
 
         elif command == 'train':
             train_config = parse_train_config(config_obj, config_file)
