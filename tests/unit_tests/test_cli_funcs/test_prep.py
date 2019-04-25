@@ -5,6 +5,9 @@ import shutil
 from glob import glob
 import unittest
 
+import joblib
+
+
 import vak.cli.prep
 from vak.config.spectrogram import SpectConfig
 
@@ -29,19 +32,19 @@ class TestMakeData(unittest.TestCase):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
                                    transform_type='log_spect')
-        vak.cli.prep.make_data(labelset=list('iabcdefghjk'),
-                               all_labels_are_int=False,
-                               data_dir=data_dir,
-                               total_train_set_dur=20,
-                               val_dur=10,
-                               test_dur=20,
-                               config_file=self.tmp_config_path,
-                               silent_gap_label=0,
-                               skip_files_with_labels_not_in_labelset=True,
-                               output_dir=self.tmp_output_dir,
-                               mat_spect_files_path=None,
-                               mat_spects_annotation_file=None,
-                               spect_params=spect_params)
+        vak.cli.prep(labelset=list('iabcdefghjk'),
+                     all_labels_are_int=False,
+                     data_dir=data_dir,
+                     total_train_set_dur=20,
+                     val_dur=10,
+                     test_dur=20,
+                     config_file=self.tmp_config_path,
+                     silent_gap_label=0,
+                     skip_files_with_labels_not_in_labelset=True,
+                     output_dir=self.tmp_output_dir,
+                     mat_spect_files_path=None,
+                     mat_spects_annotation_file=None,
+                     spect_params=spect_params)
         data_dicts = glob(os.path.join(self.tmp_output_dir, 'spectrograms*', '*dict*'))
         assert len(data_dicts) == 3
 
