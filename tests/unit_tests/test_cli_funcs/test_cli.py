@@ -116,9 +116,22 @@ class TestCli(unittest.TestCase):
         vak.cli.cli(command=command, config_files=config_files)
 
     def test_learncurve_command(self):
+        # remove option that should not be defined yet so it doesn't cause crash
+        config = ConfigParser()
+        config.read(self.tmp_learncurve_config_path)
+        config.remove_option('OUTPUT', 'results_dir_made_by_main_script')
+        with open(self.tmp_learncurve_config_path, 'w') as fp:
+            config.write(fp)
+
         command = 'learncurve'
         config_files = [self.tmp_learncurve_config_path]
         vak.cli.cli(command=command, config_files=config_files)
+
+    def test_learncurve_with_results_dir_raises(self):
+        command = 'learncurve'
+        config_files = [self.tmp_learncurve_config_path]
+        with self.assertRaises(ValueError):
+            vak.cli.cli(command=command, config_files=config_files)
 
     def test_summary_command(self):
         command = 'summary'
