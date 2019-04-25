@@ -4,10 +4,11 @@ import tempfile
 import shutil
 from glob import glob
 import unittest
+from datetime import datetime
 from configparser import ConfigParser
 
 import vak.cli.learncurve
-
+import vak.config
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
@@ -51,26 +52,88 @@ class TestLearncurve(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
         shutil.rmtree(self.tmp_config_dir)
 
+    def _check_learncurve_output(self, output_config, train_config, nets_config, data_config,
+                                 time_before, time_after):
+        root_results_after = os.listdir(output_config.root_results_dir)
+        self.assertTrue(len(root_results_after) == 1)
+
+        results_dir = root_results_after[0]
+        self.assertTrue('results_' in results_dir)
+
+        time_str_results_dir = results_dir.replace('results_', '')  # to get just datestr
+        time_results_dir = datetime.strptime(time_str_results_dir, '%y%m%d_%H%M%S')
+        self.assertTrue(time_before <= time_results_dir <= time_after)
+
+        results_path = os.path.join(output_config.root_results_dir, results_dir)
+        results_dir_list = os.listdir(results_path)
+        records_dirs = [item for item in results_dir_list if 'records' in item]
+        self.assertTrue(
+            len(records_dirs) == len(train_config.train_set_durs) * train_config.num_replicates
+        )
+
+        for record_dir in records_dirs:
+            records_path = os.path.join(results_path, record_dir)
+            records_dir_list = os.listdir(records_path)
+
+            self.assertTrue('train_inds' in records_dir_list)
+
+            for net_name in nets_config.keys():
+                self.assertTrue(
+                    # make everything lowercase
+                    net_name.lower() in [item.lower() for item in records_dir_list]
+                )
+
+            if train_config.val_data_dict_path:
+                self.assertTrue('val_errs' in records_dir_list)
+
+            if data_config.save_transformed_data:
+                self.assertTrue('val_errs' in records_dir_list)
+                self.assertTrue('val_errs' in records_dir_list)
+
+        return True
+
     def test_learncurve_func(self):
-        # make sure learncurve runs without crashing.
-        config = vak.config.parse.parse_config(self.tmp_config_path)
-        vak.cli.learncurve(train_data_dict_path=config.train.train_data_dict_path,
-                           val_data_dict_path=config.train.val_data_dict_path,
-                           spect_params=config.spect_params,
-                           total_train_set_duration=config.data.total_train_set_dur,
-                           train_set_durs=config.train.train_set_durs,
-                           num_replicates=config.train.num_replicates,
-                           num_epochs=config.train.num_epochs,
-                           config_file=self.tmp_config_path,
-                           networks=config.networks,
-                           val_error_step=config.train.val_error_step,
-                           checkpoint_step=config.train.checkpoint_step,
-                           patience=config.train.patience,
-                           save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
-                           normalize_spectrograms=config.train.normalize_spectrograms,
-                           use_train_subsets_from_previous_run=config.train.use_train_subsets_from_previous_run,
-                           previous_run_path=config.train.previous_run_path,
-                           root_results_dir=config.output.root_results_dir)
+        # this kind of repeats what happens in self.setUp, but
+        # this is the way cli does it using what user passed in
+        # so we repeat that logic here
+        config_file = self.tmp_config_path
+        config_obj = ConfigParser()
+        config_obj.read(config_file)
+        train_config = vak.config.parse_train_config(config_obj, config_file)
+        nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
+        spect_params = vak.config.parse_spect_config(config_obj)
+        data_config = vak.config.parse_data_config(config_obj, config_file)
+        output_config = vak.config.parse_output_config(config_obj)
+
+        # want time to make sure results dir generated has correct time;
+        # have to drop microseconds from datetime object because we don't include that in
+        # the string format that's in the directory name, and if we keep it here then
+        # the time recovered from the directory name can be "less than" the time
+        # from before starting--i.e. some datetime with microseconds is less than the
+        # exact same date time but with some number of microseconds
+        time_before = datetime.now().replace(microsecond=0)
+        vak.cli.learncurve(train_data_dict_path=train_config.train_data_dict_path,
+                           val_data_dict_path=train_config.val_data_dict_path,
+                           spect_params=spect_params,
+                           total_train_set_duration=data_config.total_train_set_dur,
+                           train_set_durs=train_config.train_set_durs,
+                           num_replicates=train_config.num_replicates,
+                           num_epochs=train_config.num_epochs,
+                           config_file=config_file,
+                           networks=nets_config,
+                           val_error_step=train_config.val_error_step,
+                           checkpoint_step=train_config.checkpoint_step,
+                           patience=train_config.patience,
+                           save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
+                           normalize_spectrograms=train_config.normalize_spectrograms,
+                           use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
+                           previous_run_path=train_config.previous_run_path,
+                           root_results_dir=output_config.root_results_dir,
+                           save_transformed_data=data_config.save_transformed_data)
+        time_after = datetime.now().replace(microsecond=0)
+        self.assertTrue(self._check_learncurve_output(
+            output_config, train_config, nets_config, data_config, time_before, time_after
+        ))
 
 
 if __name__ == '__main__':
