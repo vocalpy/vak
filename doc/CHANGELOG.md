@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - change name of `vak.cli.make_data` to `vak.cli.prep`
 
+### Removed
+- remove unused options from command-line interface: `--glob`, `--txt`, `--dataset`
+
 ## [0.1.0a8]
 ### Fixed
 - Fix how main loop in `learncurve` re-loads indices for grabbing subsets of training data after 
