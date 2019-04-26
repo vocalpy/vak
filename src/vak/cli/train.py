@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
+import vak.utils.spect
 from .. import network
 from .. import utils
 from .. import config
@@ -220,7 +221,7 @@ def train(train_data_dict_path,
 
     if normalize_spectrograms:
         logger.info('will normalize spectrograms')
-        spect_scaler = utils.data.SpectScaler()
+        spect_scaler = vak.utils.spect.SpectScaler()
         X_train = spect_scaler.fit_transform(X_train)
         logger.info('normalizing validation set to match training set')
         X_val = spect_scaler.transform(X_val)

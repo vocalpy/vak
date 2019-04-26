@@ -14,6 +14,7 @@ import vak.config
 import vak.utils
 import vak.network
 import vak.utils.data
+import vak.utils.spect
 
 HERE = os.path.dirname(__file__)
 TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')
@@ -44,7 +45,7 @@ class TestParseConfig(unittest.TestCase):
         with open(labels_mapping_file, 'wb') as labels_map_file_obj:
             pickle.dump(labels_mapping, labels_map_file_obj)
         self.tmp_labels_mapping_path = labels_mapping_file
-        a_spect_scaler = vak.utils.data.SpectScaler()
+        a_spect_scaler = vak.utils.spect.SpectScaler()
         a_spect_scaler.fit(np.random.normal(size=(1000, 513)))
         tmp_spect_scaler_path = os.path.join(self.tmp_results_dir, 'spect_scaler')
         joblib.dump(value=a_spect_scaler, filename=tmp_spect_scaler_path)
