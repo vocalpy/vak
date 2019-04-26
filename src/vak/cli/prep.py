@@ -5,8 +5,6 @@ from datetime import datetime
 from glob import glob
 from configparser import ConfigParser
 
-import joblib
-
 from ..utils.data import make_spects_from_list_of_files, make_data_dicts
 from ..utils.mat import convert_mat_to_spect
 from .. import config
