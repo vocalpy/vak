@@ -78,9 +78,10 @@ class SpectScaler:
     then dividing by the standard deviation of each
     frequency bin from the 'fit' set.
     """
-
     def __init__(self):
-        pass
+        self.columnMeans = None
+        self.columnStds = None
+        self.nonZeroStd = None
 
     def fit(self, spect):
         """fit a SpectScaler.
@@ -95,7 +96,6 @@ class SpectScaler:
         spect : 2-d numpy array
             with dimensions (time bins, frequency bins)
         """
-
         if spect.ndim != 2:
             raise ValueError('input spectrogram should be a 2-d array')
 
@@ -109,7 +109,6 @@ class SpectScaler:
         """transforms input spectrogram by subtracting off fit mean
         and then dividing by standard deviation
         """
-
         transformed = spect - self.columnMeans
         # to keep any zero stds from causing NaNs
         transformed[:, self.nonZeroStd] = (
@@ -127,7 +126,6 @@ class SpectScaler:
             with dimensions (time bins, frequency bins)
 
         """
-
         if any([not hasattr(self, attr) for attr in ['columnMeans',
                                                      'columnStds']]):
             raise AttributeError('SpectScaler properties are set to None,'
