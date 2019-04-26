@@ -95,9 +95,7 @@ class TestCli(unittest.TestCase):
         with open(self.tmp_learncurve_config_path, 'w') as fp:
             config.write(fp)
 
-        command = 'prep'
-        config_files = [self.tmp_learncurve_config_path]
-        vak.cli.cli(command=command, config_files=config_files)
+        vak.cli.cli(command='prep', config_file=self.tmp_learncurve_config_path)
 
         # assert that data path options got added
         config = ConfigParser()
@@ -106,14 +104,10 @@ class TestCli(unittest.TestCase):
             self.assertTrue(config.has_option('TRAIN', option))
 
     def test_train_command(self):
-        command = 'train'
-        config_files = [self.tmp_learncurve_config_path]
-        vak.cli.cli(command=command, config_files=config_files)
+        vak.cli.cli(command='train', config_file=self.tmp_learncurve_config_path)
 
     def test_predict_command(self):
-        command = 'predict'
-        config_files = [self.tmp_predict_config_path]
-        vak.cli.cli(command=command, config_files=config_files)
+        vak.cli.cli(command='predict', config_file=self.tmp_predict_config_path)
 
     def test_learncurve_command(self):
         # remove option that should not be defined yet so it doesn't cause crash
@@ -123,20 +117,14 @@ class TestCli(unittest.TestCase):
         with open(self.tmp_learncurve_config_path, 'w') as fp:
             config.write(fp)
 
-        command = 'learncurve'
-        config_files = [self.tmp_learncurve_config_path]
-        vak.cli.cli(command=command, config_files=config_files)
+        vak.cli.cli(command='learncurve', config_file=self.tmp_learncurve_config_path)
 
     def test_learncurve_with_results_dir_raises(self):
-        command = 'learncurve'
-        config_files = [self.tmp_learncurve_config_path]
         with self.assertRaises(ValueError):
-            vak.cli.cli(command=command, config_files=config_files)
+            vak.cli.cli(command='learncurve', config_file=self.tmp_learncurve_config_path)
 
     def test_summary_command(self):
-        command = 'summary'
-        config_files = [self.tmp_learncurve_config_path]
-        vak.cli.cli(command=command, config_files=config_files)
+        vak.cli.cli(command='summary', config_file=self.tmp_learncurve_config_path)
 
 
 if __name__ == '__main__':

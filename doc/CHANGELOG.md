@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0a9]
+### Added
+- add helper function to TestLearncurve that multiple unit tests can use to assert all outputs 
+  were generated. Now being used to make sure bug fixed in 0.1.0a8 stays fixed.
+- error checking in cli that raises ValueError when cli command is `learncurve` and the option
+  'results_dir_made_by_main_script' is already defined in [OUTPUT] section, since running
+  'learncurve' would overwrite it. 
+
+### Changed
+- change name of `vak.cli.make_data` to `vak.cli.prep`
+
 ## [0.1.0a8]
 ### Fixed
 - Fix how main loop in `learncurve` re-loads indices for grabbing subsets of training data after 
