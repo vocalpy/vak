@@ -219,7 +219,7 @@ def convert_mat_to_spect(mat_spect_files,
 
 
 def convert_train_keys_to_txt(train_keys_path,
-                              txt_filename = 'spect_files'):
+                              txt_filename='spect_files'):
     """get train_keys cell array out of .mat file, convert to list of str, save as .txt
 
     Parameters
