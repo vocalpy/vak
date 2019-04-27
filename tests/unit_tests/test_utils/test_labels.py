@@ -56,5 +56,27 @@ class TestLabels(unittest.TestCase):
         )
 
 
+    def test_sort(self):
+        uniq_labels = list('abc')
+        occurrences = [
+            np.arange(4),
+            np.arange(2),
+            np.arange(10),
+        ]
+
+        uniq_sorted, occur_sorted = vak.utils.labels.sort(uniq_labels, occurrences)
+        occur_sorted_expected = [
+            np.arange(2),
+            np.arange(4),
+            np.arange(10),
+        ]
+        self.assertTrue(uniq_sorted == ['b', 'a', 'c'])
+        self.assertTrue(
+            all(
+                [np.array_equal(arr1, arr2) for arr1, arr2 in zip(occur_sorted, occur_sorted_expected)]
+            )
+        )
+
+
 if __name__ == '__main__':
     unittest.main()
