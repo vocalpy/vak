@@ -15,10 +15,6 @@ from vak import evfuncs
 from vak.koumura_utils import load_song_annot
 
 
-def vec_translate(a, my_dict):
-    return np.vectorize(my_dict.__getitem__)(a)
-
-
 def make_spects_from_list_of_files(filelist,
                                    spect_params,
                                    output_dir,
