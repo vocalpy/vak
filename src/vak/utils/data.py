@@ -18,11 +18,11 @@ def vec_translate(a, my_dict):
     return np.vectorize(my_dict.__getitem__)(a)
 
 
-def make_labeled_timebins_vector(labels,
-                                 onsets,
-                                 offsets,
-                                 time_bins,
-                                 silent_gap_label=0):
+def label_timebins(labels,
+                   onsets,
+                   offsets,
+                   time_bins,
+                   silent_gap_label=0):
     """makes a vector of labels for each timebin from a spectrogram,
     given labels for syllables plus onsets and offsets of syllables
 
@@ -253,11 +253,11 @@ def make_spects_from_list_of_files(filelist,
         if not is_for_predict:
             this_labels = [labels_mapping[label]
                            for label in this_labels_str]
-            this_labeled_timebins = make_labeled_timebins_vector(this_labels,
-                                                                 onsets,
-                                                                 offsets,
-                                                                 time_bins,
-                                                                 labels_mapping['silent_gap_label'])
+            this_labeled_timebins = label_timebins(this_labels,
+                                                   onsets,
+                                                   offsets,
+                                                   time_bins,
+                                                   labels_mapping['silent_gap_label'])
         elif is_for_predict:
             this_labels = []
             this_labels_str = ''
