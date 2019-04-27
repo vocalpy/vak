@@ -40,3 +40,7 @@ def label_timebins(labels,
         label_vec[onset:offset+1] = label
         # offset_inds[ind]+1 because of Matlab one-indexing
     return label_vec
+
+
+def translate(label_arr, map_dict):
+    return np.vectorize(map_dict.__getitem__)(label_arr)
