@@ -5,7 +5,7 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
-from vak.utils.data import vec_translate
+from .labels import translate
 
 
 def convert_mat_to_spect(mat_spect_files,
@@ -79,7 +79,7 @@ def convert_mat_to_spect(mat_spect_files,
     # (which is a label for every time bin)
     # **from** int to **consecutive** ints
     # so, need to convert str keys in labels_mapping to int keys.
-    # This is used in for loop below, with "vec_translate".
+    # This is used in for loop below, with "translate".
     int_labels_mapping = {}
     for key, val in labels_mapping.items():
         try:
@@ -192,8 +192,7 @@ def convert_mat_to_spect(mat_spect_files,
                                  'invalid number of dimensions: {}'
                                  .format(matspect_filename, labels.ndim))
 
-        labeled_timebins = vec_translate(labeled_timebins,
-                                         int_labels_mapping)
+        labeled_timebins = translate(labeled_timebins, int_labels_mapping)
 
         spect_dict = {'spect': matspect['s'],
                       'freq_bins': matspect['f'],
