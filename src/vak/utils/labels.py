@@ -119,3 +119,42 @@ def where(label_arrs, find_in_arr=False):
         return where_in_labels, where_in_arr
     else:
         return where_in_labels
+
+
+def sort(uniq_labels, occurrences, ascending=True):
+    """sort a list of unique labels by the number of times they occur.
+
+    Parameters
+    ----------
+    uniq_labels : list
+        list of unique label classes
+    occurrences : list
+        of index arrays, same length as uniq_labels.
+        Each array in the list contains indexes where the corresponding label
+        in uniq_labels occurs, e.g. in a set of annotations for audio files, or
+        in an array of labels for an individual audio file.
+    ascending : bool
+        if True, sort in ascending order. if False, return in descending order.
+        Default is True.
+
+    Returns
+    -------
+    uniq_labels_sorted, occurrences_sorted : list
+    """
+    if len(set(uniq_labels)) != len(uniq_labels):
+        raise ValueError('uniq_labels should be a unique set, but found repeated elements')
+
+    occurrences = [column_or_1d(occur_arr) for occur_arr in occurrences]
+
+    counts = [arr.shape[0] for arr in occurrences]
+    sort_inds = np.argsort(counts)
+    # make lists since occurrences wil have different lengths for each array
+    uniq_labels_sorted = []
+    occurrences_sorted = []
+    for sort_ind in sort_inds:
+        uniq_labels_sorted.append(uniq_labels[sort_ind])
+        occurrences_sorted.append(occurrences[sort_ind])
+    if ascending:
+        return uniq_labels_sorted, occurrences_sorted
+    else:
+        return uniq_labels_sorted.reverse(), occurrences_sorted.reverse()
