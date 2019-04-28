@@ -4,7 +4,8 @@ from glob import glob
 from tqdm import tqdm
 from crowsetta import Transcriber
 
-from ..utils.data import make_spects_from_list_of_files
+from ..utils.spect import from_list
+
 
 def from_audio(audio_dir,
                audio_format,
@@ -52,6 +53,6 @@ def from_audio(audio_dir,
         basename = os.path.basename(filename)
 
 
-    vakdat_path = make_spects_from_list_of_files(filelist=audio_files)
+    vakdat_path = from_list(filelist=audio_files)
 
     return vakdat_path
