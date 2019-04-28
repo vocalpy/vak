@@ -5,7 +5,8 @@ from datetime import datetime
 from glob import glob
 from configparser import ConfigParser
 
-from ..utils.data import make_spects_from_list_of_files, make_data_dicts
+from ..utils.data import make_data_dicts
+from ..utils.spect import from_list
 from ..utils.mat import convert_mat_to_spect
 from .. import config
 
@@ -146,19 +147,19 @@ def prep(labelset,
 
         if cbins:
             spect_files_path = \
-                make_spects_from_list_of_files(cbins,
-                                               spect_params,
-                                               output_dir,
-                                               labels_mapping,
-                                               skip_files_with_labels_not_in_labelset)
+                from_list(cbins,
+                          spect_params,
+                          output_dir,
+                          labels_mapping,
+                          skip_files_with_labels_not_in_labelset)
         elif wavs:
             spect_files_path = \
-                make_spects_from_list_of_files(wavs,
-                                               spect_params,
-                                               output_dir,
-                                               labels_mapping,
-                                               skip_files_with_labels_not_in_labelset,
-                                               annotation_file)
+                from_list(wavs,
+                          spect_params,
+                          output_dir,
+                          labels_mapping,
+                          skip_files_with_labels_not_in_labelset,
+                          annotation_file)
 
     saved_data_dict_paths = make_data_dicts(output_dir,
                                             total_train_set_dur,
