@@ -8,7 +8,8 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from ..utils.data import reshape_data_for_batching, make_spects_from_list_of_files
+from ..utils.data import reshape_data_for_batching
+from ..utils.spect import from_list
 from ..utils.mat import convert_mat_to_spect
 from .. import network
 
@@ -105,20 +106,20 @@ def predict(checkpoint_path,
 
         if cbins:
             spect_files_path = \
-                make_spects_from_list_of_files(cbins,
-                                               spect_params,
-                                               spects_dir,
-                                               labels_mapping,
-                                               skip_files_with_labels_not_in_labelset=False,
-                                               is_for_predict=True)
+                from_list(cbins,
+                          spect_params,
+                          spects_dir,
+                          labels_mapping,
+                          skip_files_with_labels_not_in_labelset=False,
+                          is_for_predict=True)
         elif wavs:
             spect_files_path = \
-                make_spects_from_list_of_files(wavs,
-                                               spect_params,
-                                               spects_dir,
-                                               labels_mapping,
-                                               skip_files_with_labels_not_in_labelset=False,
-                                               is_for_predict=True)
+                from_list(wavs,
+                          spect_params,
+                          spects_dir,
+                          labels_mapping,
+                          skip_files_with_labels_not_in_labelset=False,
+                          is_for_predict=True)
 
     # TODO should be able to just call dataset here, right?
     # instead of forcing user to specify spect_file_list
