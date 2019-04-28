@@ -32,48 +32,72 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     return y
 
 
-def spectrogram(data, samp_freq, fft_size=512, step_size=64, thresh=None, transform_type=None):
+def spectrogram(dat, samp_freq, fft_size=512, step_size=64, thresh=None, transform_type=None,
+                freq_cutoffs=None):
     """creates a spectrogram
 
     Parameters
     ----------
-    data : ndarray
+    dat : numpy.ndarray
         audio signal
-    log_transform: bool
-        if True, take the log of the spectrogram
+    samp_freq : int
+        sampling frequency in Hz
+    fft_size : int
+        size of window for Fast Fourier transform, number of time bins.
+    step_size : int
+        step size for Fast Fourier transform
+    transform_type : str
+        one of {'log_spect', 'log_spect_plus_one'}.
+        'log_spect' transforms the spectrogram to log(spectrogram), and
+        'log_spect_plus_one' does the same thing but adds one to each element.
+        Default is None. If None, no transform is applied.
     thresh: int
         threshold minimum power for log spectrogram
+    freq_cutoffs : tuple
+        of two elements, lower and higher frequencies.
 
     Return
     ------
-    spec : ndarray
-
-    freqbins : ndarray
-
-    timebins : ndarray
+    spect : numpy.ndarray
+        spectrogram
+    freqbins : numpy.ndarray
+        vector of centers of frequency bins from spectrogram
+    timebins : numpy.ndarray
+        vector of centers of time bins from spectrogram
     """
-
     noverlap = fft_size - step_size
 
+    if freq_cutoffs:
+        dat = butter_bandpass_filter(dat,
+                                     freq_cutoffs[0],
+                                     freq_cutoffs[1],
+                                     samp_freq)
+
     # below only take [:3] from return of specgram because we don't need the image
-    spec, freqbins, timebins = specgram(data, fft_size, samp_freq, noverlap=noverlap)[:3]
+    spect, freqbins, timebins = specgram(dat, fft_size, samp_freq, noverlap=noverlap)[:3]
 
     if transform_type:
         if transform_type == 'log_spect':
-            spec /= spec.max()  # volume normalize to max 1
-            spec = np.log10(spec)  # take log
+            spect /= spect.max()  # volume normalize to max 1
+            spect = np.log10(spect)  # take log
             if thresh:
                 # I know this is weird, maintaining 'legacy' behavior
-                spec[spec < -thresh] = -thresh
+                spect[spect < -thresh] = -thresh
         elif transform_type == 'log_spect_plus_one':
-            spec = np.log10(spec + 1)
+            spect = np.log10(spect + 1)
             if thresh:
-                spec[spec < thresh] = thresh
+                spect[spect < thresh] = thresh
     else:
         if thresh:
-            spec[spec < thresh] = thresh  # set anything less than the threshold as the threshold
+            spect[spect < thresh] = thresh  # set anything less than the threshold as the threshold
 
-    return spec, freqbins, timebins
+    if freq_cutoffs:
+        f_inds = np.nonzero((freqbins >= freq_cutoffs[0]) &
+                            (freqbins < freq_cutoffs[1]))[0]  # returns tuple
+        spect = spect[f_inds, :]
+        freqbins = freqbins[f_inds]
+
+    return spect, freqbins, timebins
 
 
 # adapted from:
@@ -342,30 +366,7 @@ def from_list(filelist,
 
         pbar.set_description(f'making .spect file for {basename}')
 
-        if 'freq_cutoffs' in spect_params:
-            dat = spect_utils.butter_bandpass_filter(dat,
-                                                     spect_params['freq_cutoffs'][0],
-                                                     spect_params['freq_cutoffs'][1],
-                                                     fs)
-
-        # have to make a new dictionary with args to spectrogram
-        # instead of e.g. using spect_params._asdict()
-        # because we don't want spect_params.freq_cutoffs as an arg to spect_utils.spectrogram
-        specgram_params = {'fft_size': spect_params.fft_size,
-                           'step_size': spect_params.step_size}
-        if 'thresh' in spect_params:
-            specgram_params['thresh'] = spect_params.thresh
-        if 'transform_type' in spect_params:
-            specgram_params['transform_type'] = spect_params.transform_type
-
-        spect, freq_bins, time_bins = spect_utils.spectrogram(dat, fs,
-                                                              **specgram_params)
-
-        if 'freq_cutoffs' in spect_params:
-            f_inds = np.nonzero((freq_bins >= spect_params['freq_cutoffs'][0]) &
-                                (freq_bins < spect_params['freq_cutoffs'][1]))[0]  # returns tuple
-            spect = spect[f_inds, :]
-            freq_bins = freq_bins[f_inds]
+        spect, freq_bins, time_bins = spectrogram(dat, fs, **spect_params)
 
         if not is_for_predict:
             this_labels = [labels_mapping[label]
