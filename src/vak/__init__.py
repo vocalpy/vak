@@ -8,4 +8,4 @@ from . import utils
 from . import koumura_utils
 from . import cli
 from . import network
-from . import dat
+from . import dataset
