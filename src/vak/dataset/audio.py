@@ -13,18 +13,21 @@ AUDIO_FORMAT_FUNC_MAP = {
     'wav': wavfile.read
 }
 
-def from_audio(audio_dir,
-               audio_format,
-               annot_files,
-               annot_format,
-               spect_params,
-               labels_mapping,
-               output_dir=None,
-               skip_files_with_labels_not_in_labelset=True,
-               annotation_file=None,
-               n_decimals_trunc=3,
-               is_for_predict=False
-               ):
+VALID_AUDIO_FORMATS = list(AUDIO_FORMAT_FUNC_MAP.keys())
+
+
+def from_dir(audio_dir,
+             audio_format,
+             annot_files,
+             annot_format,
+             spect_params,
+             labels_mapping,
+             output_dir=None,
+             skip_files_with_labels_not_in_labelset=True,
+             annotation_file=None,
+             n_decimals_trunc=3,
+             is_for_predict=False
+             ):
     """create .vak.dat files from already-made spectrograms that are in files containing arrays
     (e.g. a .mat file created by Matlab or a .npy file created by numpy)
 
@@ -43,6 +46,7 @@ def from_audio(audio_dir,
     -------
     vakdat_path
     """
+
     audio_files = glob(
         os.path.join(audio_dir, '*' + audio_format)
     )
