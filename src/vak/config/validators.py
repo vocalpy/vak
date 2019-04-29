@@ -41,3 +41,13 @@ def is_annot_format(instance, attribute, value):
             f'{value} is not a valid format for annotation files.\n'
             f'Valid formats are: {VALID_ANNOT_FORMATS}'
         )
+
+
+VALID_SPECT_FORMATS = {'mat', 'npy'}
+def is_spect_format(instance, attribute, value):
+    """check if valid format for spectrograms"""
+    if value not in VALID_SPECT_FORMATS:
+        raise ValueError(
+            f'{value} is not a valid format for spectrogram files.\n'
+            f'Valid formats are: {VALID_SPECT_FORMATS}'
+        )
