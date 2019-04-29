@@ -5,7 +5,13 @@ from tqdm import tqdm
 from crowsetta import Transcriber
 
 from ..utils.spect import from_list
+from ..evfuncs import load_cbin
+from scipy.io import wavfile
 
+AUDIO_FORMAT_FUNC_MAP = {
+    'cbin': load_cbin,
+    'wav': wavfile.read
+}
 
 def from_audio(audio_dir,
                audio_format,
