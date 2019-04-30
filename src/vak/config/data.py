@@ -107,6 +107,15 @@ def parse_data_config(config, config_file):
     else:  # assume labelset is characters
         config_dict['labelset'] = list(labelset)
 
+    if config.has_option('DATA', 'total_train_set_duration'):
+        config_dict['total_train_set_dur'] = float(config['DATA']['total_train_set_duration'])
+
+    if config.has_option('DATA', 'validation_set_duration'):
+        config_dict['val_dur'] = float(config['DATA']['validation_set_duration'])
+
+    if config.has_option('DATA', 'test_set_duration'):
+        config_dict['test_dur'] = float(config['DATA']['test_set_duration'])
+
     # to make type-checking consistent across .mat / .cbin / Koumura .wav files
     # set all_labels_are_int flag
     # currently only used with .mat files
