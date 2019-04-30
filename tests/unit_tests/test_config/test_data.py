@@ -73,14 +73,6 @@ class TestParseDataConfig(unittest.TestCase):
         data_config_obj = vak.config.data.parse_data_config(self.config_obj, self.config_file)
         self.assertTrue(data_config_obj.output_dir is None)
 
-    def test_mat_spect_files_path_default(self):
-        # test that mat_spect_files_path is added
-        # and set to None if we don't specify it
-        if self.config_obj.has_option('DATA', 'mat_spect_files_path'):
-            self.config_obj.remove_option('DATA', 'mat_spect_files_path')
-        data_config_obj = vak.config.data.parse_data_config(self.config_obj, self.config_file)
-        self.assertTrue(data_config_obj.mat_spect_files_path is None)
-
     def test_data_dir_default(self):
         # test that data_dir set to None if we don't specify it
         self.config_obj.remove_option('DATA', 'data_dir')
