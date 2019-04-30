@@ -87,6 +87,15 @@ def parse_data_config(config, config_file):
     data_config : vak.config.data.DataConfig
         instance of class that represents [DATA] section of config.ini file
     """
+    if config.has_option('DATA', 'spect_format') and config.has_option('DATA', 'audio_format'):
+        raise ValueError("[DATA] section of config.ini file cannot specify both audio_format and "
+                         "spect_format, unclear whether to create spectrograms from audio files or "
+                         "use already-generated spectrograms")
+
+    if not(config.has_option('DATA', 'spect_format')) and not(config.has_option('DATA', 'audio_format')):
+        raise ValueError("[DATA] section of config.ini file must specify either audio_format or "
+                         "spect_format")
+
     config_dict = {}
 
     labelset = config['DATA']['labelset']
