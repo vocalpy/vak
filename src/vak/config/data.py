@@ -136,24 +136,21 @@ def parse_data_config(config, config_file):
         output_dir = os.path.expanduser(output_dir)
         config_dict['output_dir'] = os.path.abspath(output_dir)
 
-    # if using spectrograms from .mat files
-    if config.has_option('DATA', 'mat_spect_files_path'):
-        # make spect_files file from .mat spect files and annotation file
-        config_dict['mat_spect_files_path'] = config['DATA']['mat_spect_files_path']
-        config_dict['mat_spects_annotation_file'] = config['DATA']['mat_spect_files_annotation_file']
+    if config.has_option('DATA', 'audio_format'):
+        config_dict['audio_format'] = config['DATA']['audio_format']
+
+    if config.has_option('DATA', 'spect_format'):
+        config_dict['spect_format'] = config['DATA']['spect_format']
+
+    if config.has_option('DATA', 'annot_format'):
+        config_dict['annot_format'] = config['DATA']['annot_format']
+
+    if config.has_option('DATA', 'annot_file'):
+        config_dict['annot_file'] = config['DATA']['annot_file']
 
     if config.has_option('DATA', 'data_dir'):
         data_dir = config['DATA']['data_dir']
         config_dict['data_dir'] = os.path.expanduser(data_dir)
-
-    if config.has_option('DATA', 'total_train_set_duration'):
-        config_dict['total_train_set_dur'] = float(config['DATA']['total_train_set_duration'])
-
-    if config.has_option('DATA', 'validation_set_duration'):
-        config_dict['val_dur'] = float(config['DATA']['validation_set_duration'])
-
-    if config.has_option('DATA', 'test_set_duration'):
-        config_dict['test_dur'] = float(config['DATA']['test_set_duration'])
 
     if config.has_option('DATA', 'save_transformed_data'):
         config_dict['save_transformed_data'] = config.getboolean('DATA', 'save_transformed_data')
