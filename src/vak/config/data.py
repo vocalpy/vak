@@ -58,12 +58,16 @@ class DataConfig:
     total_train_set_dur = attr.ib(validator=optional(instance_of(float)), default=None)
     val_dur = attr.ib(validator=optional(instance_of(float)), default=None)
     test_dur = attr.ib(validator=optional(instance_of(float)), default=None)
+
     all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
     silent_gap_label = attr.ib(validator=instance_of(int), default=0)
     skip_files_with_labels_not_in_labelset = attr.ib(validator=instance_of(bool), default=True)
     output_dir = attr.ib(validator=optional(is_a_directory), default=None)
-    mat_spect_files_path = attr.ib(validator=optional(is_a_directory), default=None)
-    mat_spects_annotation_file = attr.ib(validator=optional(is_a_file), default=None)
+
+    audio_format = attr.ib(validator=optional(is_audio_format), default=None)
+    spect_format = attr.ib(validator=optional(is_spect_format), default=None)
+    annot_file = attr.ib(validator=optional(is_a_file), default=None)
+    annot_format = attr.ib(validator=optional(is_annot_format), default=None)
     data_dir = attr.ib(validator=optional(is_a_directory), default=None)
     save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
