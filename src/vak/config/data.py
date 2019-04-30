@@ -5,7 +5,7 @@ import attr
 from attr.validators import instance_of, optional
 
 from ..utils.data import range_str
-from .validators import is_a_directory, is_a_file
+from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_format, is_spect_format
 
 
 @attr.s
