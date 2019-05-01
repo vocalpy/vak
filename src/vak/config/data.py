@@ -16,6 +16,13 @@ class DataConfig:
     ----------
     labelset : list
         of str or int, set of labels for syllables
+    total_train_set_dur : float
+        total duration of training set, in seconds.
+        Training subsets of shorter duration will be drawn from this set.
+    val_dur : float
+        total duration of validation set, in seconds.
+    test_dur : float
+        total duration of test set, in seconds.
     all_labels_are_int : bool
         if True, labels are of type int, not str
     silent_gap_label  : int
@@ -30,22 +37,19 @@ class DataConfig:
     output_dir : str
         Path to location where data sets should be saved. Default is None,
         in which case data sets are saved in the current working directory.
-    mat_spect_files_path : str
-        Path to a directory of .mat files that contain spectrograms.
-        Default is None (and this implies user is supplying audio files
-         instead of supplying spectrograms in .mat files).
-    mat_spects_annotation_file : str
-        Path to annotation file associated with .mat files.
-        Default is None.
+    audio_format : str
+        format of audio files. One of {'wav', 'cbin'}.
+    spect_format : str
+        format of files containg spectrograms as 2-d matrices.
+        One of {'mat', 'npy'}.
+    annot_format : str
+        format of annotations. Any format that can be used with the
+        crowsetta library is valid.
+    annot_file : str
+        Path to a single annotation file. Default is None.
+        Used when a single file contains annotations for multiple audio files.
     data_dir : str
         path to directory with audio files from which to make dataset
-    total_train_set_dur : float
-        total duration of training set, in seconds.
-        Training subsets of shorter duration will be drawn from this set.
-    val_dur : float
-        total duration of validation set, in seconds.
-    test_dur : float
-        total duration of test set, in seconds.
     save_transformed_data : bool
         if True, save transformed data (i.e. scaled, reshaped). The data can then
         be used on a subsequent run (e.g. if you want to compare results
