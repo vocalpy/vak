@@ -8,12 +8,12 @@ import numpy as np
 from vak.utils.labels import translate
 
 
-def convert_mat_to_spect(mat_spect_files,
-                         mat_spects_annotation_file,
-                         output_dir,
-                         labels_mapping=None,
-                         skip_files_with_labels_not_in_labelset=True,
-                         n_decimals_trunc=3):
+def from_mat(mat_spect_files,
+             mat_spects_annotation_file,
+             output_dir,
+             labels_mapping=None,
+             skip_files_with_labels_not_in_labelset=True,
+             n_decimals_trunc=3):
     """converts .mat files with spectrograms to .spect files
     that are used by prep.py script and the make_data_dicts
     function that it calls.

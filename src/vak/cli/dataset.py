@@ -8,7 +8,7 @@ from glob import glob
 from ..utils import make_spects_from_list_of_files, make_data_dicts, \
     range_str
 
-from ..dataset.mat import convert_mat_to_spect
+from ..dataset.mat import from_mat
 
 
 def dataset(config_file):
@@ -85,10 +85,10 @@ def dataset(config_file):
                                   'spectrograms_' + timenow)
         os.mkdir(output_dir)
 
-        spect_files_path = convert_mat_to_spect(mat_spect_files,
-                                                mat_spects_annotation_file,
-                                                output_dir,
-                                                labels_mapping=labels_mapping)
+        spect_files_path = from_mat(mat_spect_files,
+                                    mat_spects_annotation_file,
+                                    output_dir,
+                                    labels_mapping=labels_mapping)
     else:
         mat_spect_files_path = None
 
