@@ -8,7 +8,8 @@ from configparser import ConfigParser
 from ..utils.data import make_data_dicts
 from ..utils.spect import from_list
 from ..utils.mat import convert_mat_to_spect
-from .. import config
+
+from ..dataset.audio import _get_audio_files
 
 
 def prep(labelset,
@@ -18,11 +19,13 @@ def prep(labelset,
          val_dur,
          test_dur,
          config_file,
+         annot_format,
          silent_gap_label=0,
          skip_files_with_labels_not_in_labelset=True,
          output_dir=None,
-         mat_spect_files_path=None,
-         mat_spects_annotation_file=None,
+         audio_format=None,
+         spect_format=None,
+         annot_file=None,
          spect_params=None):
     """prepare datasets for training, validating, and/or testing networks
 
@@ -53,13 +56,17 @@ def prep(labelset,
     output_dir : str
         Path to location where data sets should be saved. Default is None,
         in which case data sets are saved in the current working directory.
-    mat_spect_files_path : str
-        Path to a directory of .mat files that contain spectrograms.
-        Default is None (and this implies user is supplying audio files
-         instead of supplying spectrograms in .mat files).
-    mat_spects_annotation_file : str
-        Path to annotation file associated with .mat files.
-        Default is None.
+    audio_format : str
+        format of audio files. One of {'wav', 'cbin'}.
+    spect_format : str
+        format of files containg spectrograms as 2-d matrices.
+        One of {'mat', 'npy'}.
+    annot_format : str
+        format of annotations. Any format that can be used with the
+        crowsetta library is valid.
+    annot_file : str
+        Path to a single annotation file. Default is None.
+        Used when a single file contains annotations for multiple audio files.
     spect_params : dict
         Dictionary of parameters for creating spectrograms.
         Default is None (implying that spectrograms are already made).
@@ -70,6 +77,14 @@ def prep(labelset,
 
     Saves .spect files and data_dicts in output_dir specified by user.
     """
+    if audio_format is None and spect_format is None:
+        raise ValueError("Must specify either audio_format or spect_format")
+
+    if audio_format and spect_format:
+        raise ValueError("Cannot specify both audio_format and spect_format, "
+                         "unclear whether to create spectrograms from audio files or "
+                         "use already-generated spectrograms")
+
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
@@ -91,75 +106,35 @@ def prep(labelset,
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
 
-    if mat_spect_files_path:
-        print('will use spectrograms from .mat files in {}'
-              .format(mat_spect_files_path))
-        mat_spect_files = glob(os.path.join(mat_spect_files_path, '*.mat'))
-        if output_dir is None:
-            output_dir = os.path.join(mat_spect_files_path,
+    if output_dir is None:
+        output_dir = os.path.join(data_dir,
                                   'spectrograms_' + timenow)
-        os.mkdir(output_dir)
+    else:
+        output_dir = os.path.join(output_dir,
+                                  'spectrograms_' + timenow)
+    os.mkdir(output_dir)
 
-        spect_files_path = convert_mat_to_spect(mat_spect_files,
-                                                mat_spects_annotation_file,
+    if spect_format:
+        logger.info(f'loading spectrograms from: {data_dir}')
+        if spect_format == 'mat':
+            spect_files = glob(os.path.join(data_dir, '*.mat'))
+        elif spect_format == 'npy':
+            spect_files = glob(os.path.join(data_dir, '*.npy'))
+        spect_files_path = convert_mat_to_spect(spect_files,
+                                                annot_file,
                                                 output_dir,
                                                 labels_mapping=labels_mapping)
 
-    else:
-        logger.info('will make training data from: {}'.format(data_dir))
-        if output_dir is None:
-            output_dir = os.path.join(data_dir,
-                                  'spectrograms_' + timenow)
-        else:
-            output_dir = os.path.join(output_dir,
-                                  'spectrograms_' + timenow)
-        os.mkdir(output_dir)
-
-        cbins = glob(os.path.join(data_dir, '*.cbin'))
-        if cbins == []:
-            # if we don't find .cbins in data_dir, look in sub-directories
-            cbins = []
-            subdirs = glob(os.path.join(data_dir,'*/'))
-            for subdir in subdirs:
-                cbins.extend(glob(os.path.join(data_dir,
-                                               subdir,
-                                               '*.cbin')))
-        if cbins == []:
-            # try looking for .wav files
-            wavs = glob(os.path.join(data_dir, '*.wav'))
-
-            if cbins == [] and wavs == []:
-                raise FileNotFoundError('No .cbin or .wav files found in {} or'
-                                        'immediate sub-directories'
-                                        .format(data_dir))
-            # look for canary annotation
-            annotation_file = glob(os.path.join(data_dir, '*annotation*.mat'))
-            if len(annotation_file) == 1:
-                annotation_file = annotation_file[0]
-            else:  # try Koumura song annotation
-                annotation_file = glob(os.path.join(data_dir, '../Annotation.xml'))
-                if len(annotation_file) == 1:
-                    annotation_file = annotation_file[0]
-                else:
-                    raise ValueError('Found more than one annotation.mat file: {}. '
-                                     'Please include only one such file in the directory.'
-                                     .format(annotation_file))
-
-        if cbins:
-            spect_files_path = \
-                from_list(cbins,
-                          spect_params,
-                          output_dir,
-                          labels_mapping,
-                          skip_files_with_labels_not_in_labelset)
-        elif wavs:
-            spect_files_path = \
-                from_list(wavs,
-                          spect_params,
-                          output_dir,
-                          labels_mapping,
-                          skip_files_with_labels_not_in_labelset,
-                          annotation_file)
+    elif audio_format:
+        logger.info(f'making spectrograms from audio files in: {data_dir}')
+        audio_files = _get_audio_files(audio_format, data_dir)
+        spect_files_path = \
+            from_list(audio_files,
+                      spect_params,
+                      output_dir,
+                      labels_mapping,
+                      skip_files_with_labels_not_in_labelset,
+                      annot_file)
 
     saved_data_dict_paths = make_data_dicts(output_dir,
                                             total_train_set_dur,
