@@ -16,6 +16,42 @@ AUDIO_FORMAT_FUNC_MAP = {
 VALID_AUDIO_FORMATS = list(AUDIO_FORMAT_FUNC_MAP.keys())
 
 
+def _get_audio_files(audio_format, data_dir):
+    """helper function to fetch all audio files of a given format
+    from a directory and its sub-directories
+
+    Parameters
+    ----------
+    audio_format : str
+    data_dir : str
+        path to directory
+
+    Returns
+    -------
+    audio_files : list
+        of paths to audio files
+    """
+    if audio_format not in VALID_AUDIO_FORMATS:
+        raise ValueError(f"'{audio_format}' is not a valid audio format")
+    wildcard_with_extension = f'*.{audio_format}'
+    audio_files = glob(os.path.join(data_dir, wildcard_with_extension))
+    if len(audio_files) == 0:
+        # if we don't any audio files, look in sub-directories
+        audio_files = []
+        subdirs = glob(os.path.join(data_dir, '*/'))
+        for subdir in subdirs:
+            audio_files.extend(glob(os.path.join(data_dir,
+                                                 subdir,
+                                                 wildcard_with_extension)))
+    if len(audio_files) == 0:
+        raise FileNotFoundError(
+            f'No audio files with format {audio_format} found in '
+            f'{data_dir} or immediate sub-directories'
+        )
+
+    return audio_files
+
+
 def from_dir(audio_dir,
              audio_format,
              annot_files,
@@ -46,7 +82,6 @@ def from_dir(audio_dir,
     -------
     vakdat_path
     """
-
     audio_files = glob(
         os.path.join(audio_dir, '*' + audio_format)
     )
