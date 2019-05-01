@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from ..utils.data import reshape_data_for_batching
 from ..utils.spect import from_list
-from ..utils.mat import convert_mat_to_spect
+from ..dataset.mat import convert_mat_to_spect
 from .. import network
 
 
