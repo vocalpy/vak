@@ -67,8 +67,6 @@ def from_mat(mat_spect_files,
     If a .mat file does not contain these keys, the function skips that file.
 
     """
-    decade = 10**n_decimals_trunc  # used below for truncating floating point
-
     annotations = loadmat(mat_spects_annotation_file, squeeze_me=True)
     annotations = dict(zip(annotations['keys'],
                           annotations['elements']))
@@ -94,6 +92,7 @@ def from_mat(mat_spect_files,
                                  'time bin vectors in .mat files'
                                  .format(key))
 
+    decade = 10**n_decimals_trunc  # used below for truncating floating point
     for filenum, matspect_filename in enumerate(mat_spect_files):
         print('loading annotation info from {}, file {} of {}'
               .format(matspect_filename, filenum, num_spect_files))
