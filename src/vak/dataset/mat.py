@@ -1,5 +1,4 @@
 import os
-from glob import glob
 
 from scipy.io import loadmat
 import joblib
