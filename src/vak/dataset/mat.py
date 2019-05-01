@@ -4,7 +4,8 @@ from scipy.io import loadmat
 import joblib
 import numpy as np
 
-from vak.utils.labels import translate
+from ..utils.labels import translate
+from .classes import VocalSet
 
 
 def from_mat(mat_spect_files,
