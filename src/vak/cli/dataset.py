@@ -8,7 +8,7 @@ from glob import glob
 from ..utils import make_spects_from_list_of_files, make_data_dicts, \
     range_str
 
-from ..utils.mat import convert_mat_to_spect
+from ..dataset.mat import convert_mat_to_spect
 
 
 def dataset(config_file):
