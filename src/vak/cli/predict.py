@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from ..utils.data import reshape_data_for_batching
 from ..utils.spect import from_list
-from ..dataset.mat import convert_mat_to_spect
+from ..dataset.mat import from_mat
 from .. import network
 
 
@@ -70,10 +70,10 @@ def predict(checkpoint_path,
         spects_dir = os.path.join(mat_spect_files_path,
                                   'spectrograms_' + timenow)
         os.mkdir(spects_dir)
-        spect_files_path = convert_mat_to_spect(mat_spect_files,
-                                                mat_spects_annotation_file,
-                                                spects_dir,
-                                                labels_mapping=labels_mapping)
+        spect_files_path = from_mat(mat_spect_files,
+                                    mat_spects_annotation_file,
+                                    spects_dir,
+                                    labels_mapping=labels_mapping)
         dir_to_predict = spect_files_path
 
     else:
