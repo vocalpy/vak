@@ -215,27 +215,3 @@ def convert_mat_to_spect(mat_spect_files,
     joblib.dump(spect_files, spect_files_path)
 
     return spect_files_path
-
-
-def convert_train_keys_to_txt(train_keys_path,
-                              txt_filename='spect_files'):
-    """get train_keys cell array out of .mat file, convert to list of str, save as .txt
-
-    Parameters
-    ----------
-    train_keys_path : str
-        path to folder with train_keys.mat file
-    txt_filename : str
-        filename for .txt file that contains list of .mat filenames
-        Default is `training_filenames`
-
-    Returns
-    -------
-    None. Saves .txt file in train_keys_path.
-    """
-    train_spect_files = loadmat(train_keys_path,
-                                squeeze_me=True)['train_keys'].tolist()
-    txt_filename = os.path.join(os.path.split(train_keys_path)[0],
-                                txt_filename)
-    with open(txt_filename, 'w') as fileobj:
-        fileobj.write('\n'.join(train_spect_files))
