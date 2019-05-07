@@ -1,78 +1,75 @@
-import os
-
 import numpy as np
 import attr
 from attr.validators import optional, instance_of
+from crowsetta import Sequence
 
-from ..utils import spect
 
-
-@attr.s
+@attr.s(cmp=False)
 class Spectrogram:
-    """class to represent a spectrogram"""
-    array = attr.ib(validator=instance_of(np.ndarray))
-    audio_file = attr.ib(validator=[instance_of(str), os.path.isfile])
+    """class to represent a spectrogram
+
+    Attributes
+    ----------
+    freq_bins : numpy.ndarray
+        vector of frequencies in spectrogram, where each value is a bin center.
+    time_bins : numpy.ndarray
+        vector of times in spectrogram, where each value is a bin center.
+    timebin_dur : numpy.ndarray
+        duration of a timebin in seconds from spectrogram
+    duration : numpy.ndarray
+        duration of spectrogram, i.e. len(time_bins) * timebin_dur
+    array : numpy.ndarray
+        spectrogram contained in an array
+    """
     freq_bins = attr.ib(validator=instance_of(np.ndarray))
     time_bins = attr.ib(validator=instance_of(np.ndarray))
+    timebin_dur = attr.ib(validator=instance_of(float))
+    duration = attr.ib(validator=instance_of(float))
+    array = attr.ib(validator=optional(instance_of(np.ndarray)), default=None)
 
 
-@attr.s
+@attr.s(cmp=False)
 class Vocalization:
     """class to represent an annotated vocalization
 
     Attributes
     ----------
-    spect : numpy.ndarray
-        spectrogram, in a numpy array
-    spect_file : str
-        path to file containing spectrogram as an array
-    audio_file : str
-        path to file containing audio
     annotation : list, tuple, or crowsetta.Sequence
         annotations of vocalizations for files
+    audio_file : str
+        path to file containing audio of vocalization
+    audio : numpy.ndarray
+        audio waveform loaded into a numpy array
+    spect_file : str
+        path to file containing spectrogram of vocalization as an array
+    spect : vak.dataset.Spectrogram
+        spectrogram of vocalization. Represented as an instance of the
+        Spectrogram class, see docstring of that class for its attributes.
     """
+    annotation = attr.ib()
+    @annotation.validator
+    def is_list_tup_or_seq(self, attribute, value):
+        if type(value) not in (list, tuple, Sequence):
+            raise TypeError(
+                f'annotations for Vocalization must be a list, tuple, or crowsetta.Sequence'
+            )
+    audio_file = attr.ib(validator=instance_of(str), default=None)
+    audio = attr.ib(validator=optional(instance_of(np.ndarray)), default=None)
     spect = attr.ib(validator=optional(instance_of(Spectrogram)), default=None)
     spect_file = attr.ib(validator=optional(instance_of(str)), default=None)
-    audio_file = attr.ib(validator=instance_of(str), default=None)
-    annotations = list()
 
 
-@attr.s
-class VocalSet:
-    """class to represent a dataset of annotated vocalizations"""
-    set = attr.ib()
-    @set.validator
+@attr.s(cmp=False)
+class VocalDataset:
+    """class to represent a dataset of annotated vocalizations
+
+    Attributes
+    ----------
+    voc_list : list
+        of Vocalizations.
+    """
+    voc_list = attr.ib()
+    @voc_list.validator
     def all_voc(self, attribute, value):
         if not all([type(element) == Vocalization for element in value]):
-            raise TypeError(f'all ')
-
-    @classmethod
-    def from_audio(cls, audio_format, spect_params, annot_format, dir=None, files=None):
-        """create a dataset of vocalizations from audio files and annotations.
-        In the process, create spectrograms from the audio files as well.
-
-        Parameters
-        ----------
-        audio_format
-        annot_format
-        dir
-        files
-
-        Returns
-        -------
-
-        """
-        if dir and files:
-            raise ValueError('must specify either dir or files, not both')
-
-        if dir:
-            files = list_from_dir(dir, audio_format)
-
-        spect_list = spect.from_list(files)
-
-        for spect,
-
-        return cls()
-
-    @classmethod
-        def from_audio(cls, audio_format, spect_params, annot_format, dir=None, files=None):
+            raise TypeError(f'all elements in voc_list must be of type vak.dataset.Vocalization')
