@@ -91,6 +91,11 @@ def from_arr_files(array_format,
     if array_list and array_annot_map:
         raise ValueError('received values for array_list and array_annot_map, unclear which to use')
 
+    if annot_list and array_annot_map:
+        raise ValueError(
+            'received values for annot_list and array_annot_map, unclear which annotations to use'
+        )
+
     if labelset is None and skip_files_with_labels_not_in_labelset is True:
         raise ValueError(
             "must provide labelset when 'skip_files_with_labels_not_in_labelset' is True"
