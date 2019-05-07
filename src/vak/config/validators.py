@@ -45,7 +45,7 @@ def is_annot_format(instance, attribute, value):
         )
 
 
-VALID_SPECT_FORMATS = {'mat', 'npy'}
+VALID_SPECT_FORMATS = {'mat', 'npz'}
 def is_spect_format(instance, attribute, value):
     """check if valid format for spectrograms"""
     if value not in VALID_SPECT_FORMATS:
