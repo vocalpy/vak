@@ -1,7 +1,6 @@
 import os
 from glob import glob
 import logging
-from functools import partial
 
 import numpy as np
 from scipy.io import loadmat
