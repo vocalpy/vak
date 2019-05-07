@@ -1,5 +1,6 @@
 """validators used by attrs-based classes"""
 import os
+import pkg_resources
 
 
 def is_a_directory(instance, attribute, value):
@@ -29,9 +30,10 @@ def is_audio_format(instance, attribute, value):
             f'{value} is not a valid format for audio files'
         )
 
-from crowsetta import Transcriber
-scribe = Transcriber()
-VALID_ANNOT_FORMATS = scribe._config.keys()
+
+VALID_ANNOT_FORMATS = {
+    entry_point.name for entry_point in pkg_resources.iter_entry_points('crowsetta.format')
+}
 
 
 def is_annot_format(instance, attribute, value):
