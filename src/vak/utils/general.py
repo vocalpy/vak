@@ -39,7 +39,7 @@ def _files_from_dir(dir_path, ext):
 
     if len(files) == 0:
         raise FileNotFoundError(
-            f'No files with extension {f} found in '
+            f'No files with extension {ext} found in '
             f'{dir_path} or immediate sub-directories'
         )
 
