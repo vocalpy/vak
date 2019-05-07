@@ -16,7 +16,7 @@ class TestGeneral(unittest.TestCase):
 
     def test_files_from_dir(self):
         # check works for .mat files
-        mat_files = glob(os.path.join(self.mat_spect_path, '*.mat'))
+        mat_files = glob(os.path.join(self.mat_spect_path, 'mat'))
         files = vak.utils.general._files_from_dir(self.mat_spect_path, '*.mat')
         self.assertTrue(
             sorted(mat_files) == sorted(files)
@@ -25,7 +25,7 @@ class TestGeneral(unittest.TestCase):
         # no reason logically why it shouldn't also work for other file types, but just in case ...
         # we check for an audio file type too
         cbin_files = glob(os.path.join(self.cbin_path, '*.cbin'))
-        files = vak.utils.general._files_from_dir(self.cbin_path, '*.cbin')
+        files = vak.utils.general._files_from_dir(self.cbin_path, 'cbin')
         self.assertTrue(
             sorted(cbin_files) == sorted(files)
         )
