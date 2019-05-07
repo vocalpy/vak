@@ -13,7 +13,7 @@ from ..config import validators
 
 def from_arr_files(array_format,
                    array_dir=None,
-                   array_list=None,
+                   array_files=None,
                    annot_list=None,
                    array_annot_map=None,
                    labelset=None,
@@ -43,7 +43,7 @@ def from_arr_files(array_format,
     array_dir : str
         path to directory of files containing spectrograms as arrays.
         Default is None.
-    array_list : list
+    array_files : list
         List of paths to array files. Default is None.
     annot_list : list
         Default is None.
@@ -82,14 +82,14 @@ def from_arr_files(array_format,
             f"format '{array_format}' not recognized."
         )
 
-    if array_dir and array_list:
-        raise ValueError('received values for array_dir and array_list, unclear which to use')
+    if array_dir and array_files:
+        raise ValueError('received values for array_dir and array_files, unclear which to use')
 
     if array_dir and array_annot_map:
         raise ValueError('received values for array_dir and array_annot_map, unclear which to use')
 
-    if array_list and array_annot_map:
-        raise ValueError('received values for array_list and array_annot_map, unclear which to use')
+    if array_files and array_annot_map:
+        raise ValueError('received values for array_files and array_annot_map, unclear which to use')
 
     if annot_list and array_annot_map:
         raise ValueError(
@@ -106,12 +106,12 @@ def from_arr_files(array_format,
 
     if array_dir:
         if array_format == 'mat':
-            array_list = glob(os.path.join(array_dir, '*.mat'))
+            array_files = glob(os.path.join(array_dir, '*.mat'))
         elif array_format == 'npz':
-            array_list = glob(os.path.join(array_dir, '*.npz'))
+            array_files = glob(os.path.join(array_dir, '*.npz'))
 
-    if array_list:
-        array_annot_map = dict((arr_path, annot) for arr_path, annot in zip(array_list, annot_list))
+    if array_files:
+        array_annot_map = dict((arr_path, annot) for arr_path, annot in zip(array_files, annot_list))
 
     decade = 10 ** n_decimals_trunc  # used below for truncating floating point
 
