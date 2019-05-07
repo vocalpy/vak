@@ -1,6 +1,9 @@
 """validators used by attrs-based classes"""
 import os
-import pkg_resources
+
+from scipy.io import wavfile
+import crowsetta.formats
+from ..evfuncs import load_cbin
 
 
 def is_a_directory(instance, attribute, value):
@@ -20,9 +23,12 @@ def is_a_file(instance, attribute, value):
             f'{value}'
         )
 
-from ..dataset.audio import VALID_AUDIO_FORMATS
 
-
+AUDIO_FORMAT_FUNC_MAP = {
+    'cbin': load_cbin,
+    'wav': wavfile.read
+}
+VALID_AUDIO_FORMATS = list(AUDIO_FORMAT_FUNC_MAP.keys())
 def is_audio_format(instance, attribute, value):
     """check if valid audio format"""
     if value not in VALID_AUDIO_FORMATS:
@@ -31,11 +37,7 @@ def is_audio_format(instance, attribute, value):
         )
 
 
-VALID_ANNOT_FORMATS = {
-    entry_point.name for entry_point in pkg_resources.iter_entry_points('crowsetta.format')
-}
-
-
+VALID_ANNOT_FORMATS = crowsetta.formats._INSTALLED
 def is_annot_format(instance, attribute, value):
     """check if valid annotation format"""
     if value not in VALID_ANNOT_FORMATS:
