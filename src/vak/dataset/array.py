@@ -27,6 +27,15 @@ def from_arr_files(array_format,
     """create vocalization dataset (Vocalset) from already-made spectrograms that are in
     files containing arrays, i.e., .mat files created by Matlab or .npz files created by numpy
 
+    Each "array file" must contain a spectrogram and two vectors associated with it, a
+    vector of frequency bins and time bins, where the values in those vectors are the values
+    at the bin centers.
+
+    Since both .mat files and .npz files load into a dictionary-like structure,
+    the arrays will be accessed with keys. By convention, these keys are 's', 'f', and 't'.
+    If you use different keys you can let this function know by changing
+    the appropriate arguments: spect_key, freqbins_key, timebins_key
+
     Parameters
     ----------
     array_format : str
@@ -35,10 +44,12 @@ def from_arr_files(array_format,
         path to directory of files containing spectrograms as arrays.
         Default is None.
     array_list : list
-        Default is None.
+        List of paths to array files. Default is None.
     annot_list : list
         Default is None.
     array_annot_map : dict
+        Where keys are paths to array files and value corresponding to each key is
+        the annotation for that array file.
         Default is None.
     labelset : list
         of str or int, set of unique labels for vocalizations.
@@ -62,7 +73,7 @@ def from_arr_files(array_format,
 
     Returns
     -------
-    vocalset : vak.dataset.VocalSet
+    vocalset : vak.dataset.VocalDataset
         dataset of annotated vocalizations
     """
     if array_format not in validators.VALID_SPECT_FORMATS:
