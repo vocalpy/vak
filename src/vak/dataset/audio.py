@@ -45,7 +45,6 @@ def to_arr_files(audio_format,
                  audio_annot_map=None,
                  labelset=None,
                  skip_files_with_labels_not_in_labelset=True,
-                 n_decimals_trunc=3,
                  freqbins_key='f',
                  timebins_key='t',
                  spect_key='s'):
@@ -75,9 +74,6 @@ def to_arr_files(audio_format,
     skip_files_with_labels_not_in_labelset : bool
         if True, skip .cbin files where the 'labels' array in the corresponding
         .cbin.not.mat file contains str labels not found in labels_mapping
-    n_decimals_trunc : int
-        number of decimal places to keep when truncating timebin_dur
-        default is 3
     freqbins_key : str
         key for accessing vector of frequency bins in files. Default is 'f'.
     timebins_key : str
@@ -109,10 +105,10 @@ def to_arr_files(audio_format,
             same length as time_bins, but value of each element is a label
             corresponding to that time bin
     """
-    if array_format not in validators.VALID_SPECT_FORMATS:
+    if audio_format not in validators.VALID_AUDIO_FORMATS:
         raise ValueError(
-            f"array format must be one of '{validators.VALID_SPECT_FORMATS}'; "
-            f"format '{array_format}' not recognized."
+            f"audio format must be one of '{validators.VALID_AUDIO_FORMATS}'; "
+            f"format '{audio_format}' not recognized."
         )
 
     if audio_dir and audio_files:
@@ -134,8 +130,9 @@ def to_arr_files(audio_format,
             "must provide labelset when 'skip_files_with_labels_not_in_labelset' is True"
         )
 
+    # validate audio files if supplied by user
     if audio_files is not None:
-        # make sure audio files are all the same type, and the same
+        # make sure audio files are all the same type, and the same as audio format specified
         exts = []
         for audio_file in audio_files:
             root, ext = os.path.splitext(audio_file)
@@ -153,12 +150,15 @@ def to_arr_files(audio_format,
                     f"audio format. '{audio_format}', does not match extensions in audio_files, '{ext_str}''"
                 )
 
+    # otherwise get audio files using audio dir (won't need to validate)
     if audio_dir is not None:
         audio_files = files_from_dir(audio_dir, audio_format)
 
     if audio_annot_map is None:
+        # annot_list can be None when creating spectrograms from
+        # unlabeled audio for predicting labels
         if annot_list is None:
-            # make a list of empty tuples to pair with audio files
+            # this makes a list of empty tuples to pair with audio files
             annot_list = [() for _ in range(len(audio_files))]
 
         audio_annot_map = dict(
@@ -186,7 +186,7 @@ def to_arr_files(audio_format,
                 )
                 return
 
-        dat, fs = AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
+        fs, dat = AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
 
         s, f, t = spectrogram(dat, fs, **spect_params)
 
