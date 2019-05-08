@@ -6,6 +6,7 @@ import dask.bag as db
 from dask.diagnostics import ProgressBar
 
 from ..config import validators
+from ..config.spectrogram import SpectConfig
 from ..utils.general import _files_from_dir
 from ..utils.spect import spectrogram
 
@@ -64,7 +65,7 @@ def to_arr_files(audio_format,
         Where keys are paths to array files and value corresponding to each key is
         the annotation for that array file.
         Default is None.
-    spect_params : dict
+    spect_params : dict or vak.config.spectrogram.SpectConfig
         parameters for computing spectrogram, from .ini file
     output_dir : str
         directory in which to save .spect file generated for each .cbin file,
@@ -129,6 +130,9 @@ def to_arr_files(audio_format,
         raise ValueError(
             "must provide labelset when 'skip_files_with_labels_not_in_labelset' is True"
         )
+
+    if type(spect_params) == SpectConfig:
+        spect_params = spect_params._asdict()
 
     # validate audio files if supplied by user
     if audio_files is not None:
