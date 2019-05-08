@@ -68,8 +68,7 @@ def to_arr_files(audio_format,
     spect_params : dict or vak.config.spectrogram.SpectConfig
         parameters for computing spectrogram, from .ini file
     output_dir : str
-        directory in which to save .spect file generated for each .cbin file,
-        as described below
+        directory in which to save .spect.npz file generated for each audio file.
     labelset : list
         of str or int, set of unique labels for vocalizations.
     skip_files_with_labels_not_in_labelset : bool
@@ -84,27 +83,21 @@ def to_arr_files(audio_format,
 
     Returns
     -------
-    spects_used_path : str
-        Full path to file called 'spect_files'
-        which contains a list of three-element tuples:
-            spect_filename : str, filename of `.spect` file
-            spect_dur : float, duration of the spectrogram from cbin
-            labels : str, labels from .cbin.not.mat associated with .cbin
-                     (string labels for syllables in spectrogram)
-        Used when building data sets of a specific duration.
+    array_files : list
+        of str, full paths to .spect.npz files
 
-    For each .wav or .cbin filename in the list, a '.spect' file is saved.
-    Each '.spect' file contains a "pickled" Python dictionary
-    with the following key, value pairs:
-        spect : ndarray
-            spectrogram
-        freq_bins : ndarray
+    Notes
+    -----
+    Each '.spect.npz' file contains the following arrays:
+        s : numpy.ndarray
+            spectrogram, a 2-d array
+        f : numpy.ndarray
             vector of centers of frequency bins from spectrogram
-        time_bins : ndarray
+        t : numpy.ndarray
             vector of centers of tme bins from spectrogram
-        labeled_timebins : ndarray
-            same length as time_bins, but value of each element is a label
-            corresponding to that time bin
+
+    The names of the arrays are defaults, and will change if different values are specified for
+    'spect_key', 'freqbins_key', or 'timebins_key'.
     """
     if audio_format not in validators.VALID_AUDIO_FORMATS:
         raise ValueError(
