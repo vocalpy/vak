@@ -46,7 +46,7 @@ def from_arr_files(array_format,
     array_files : list
         List of paths to array files. Default is None.
     annot_list : list
-        Default is None.
+        of annotations for array files. Default is None.
     array_annot_map : dict
         Where keys are paths to array files and value corresponding to each key is
         the annotation for that array file.
@@ -65,11 +65,11 @@ def from_arr_files(array_format,
         the spectrogram arrays.
         Default is 3, i.e. assumes milliseconds is the last significant digit.
     freqbins_key : str
-        key for accessing vector of frequency bins in files.
+        key for accessing vector of frequency bins in files. Default is 'f'.
     timebins_key : str
-        key for accessing vector of time bins in files.
+        key for accessing vector of time bins in files. Default is 't'.
     spect_key : str
-        key for accessing spectrogram in files.
+        key for accessing spectrogram in files. Default is 's'.
 
     Returns
     -------
