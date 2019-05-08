@@ -9,7 +9,6 @@ import tensorflow as tf
 from tqdm import tqdm
 
 from ..utils.data import reshape_data_for_batching
-from ..utils.spect import from_list
 from ..dataset.mat import from_mat
 from .. import network
 
