@@ -4,18 +4,10 @@ https://scipy-cookbook.readthedocs.io/items/ButterworthBandpass.html
 spectrogram adapted from code by Kyle Kastner and Tim Sainburg
 https://github.com/timsainb/python_spectrograms_and_inversion
 """
-import os
-
-import joblib
 import numpy as np
-from scipy.io import loadmat, wavfile
+
 from scipy.signal import butter, lfilter
 from matplotlib.mlab import specgram
-from tqdm import tqdm
-
-from .. import evfuncs
-from ..koumura_utils import load_song_annot
-from .labels import label_timebins
 
 
 def butter_bandpass(lowcut, highcut, fs, order=5):
