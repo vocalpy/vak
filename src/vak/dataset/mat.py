@@ -5,7 +5,7 @@ import joblib
 import numpy as np
 
 from ..utils.labels import translate
-from .classes import VocalSet
+from .classes import VocalDataset
 
 
 def from_mat(mat_spect_files,
