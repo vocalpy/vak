@@ -1,19 +1,15 @@
-import logging
 import os
-import sys
-from datetime import datetime
-from glob import glob
+import logging
 from configparser import ConfigParser
+from datetime import datetime
+
+from crowsetta import Transcriber
 
 from ..utils.data import make_data_dicts
-from ..utils.spect import from_list
-from ..utils.mat import convert_mat_to_spect
-
-from ..dataset.audio import _get_audio_files
+from .. import dataset
 
 
 def prep(labelset,
-         all_labels_are_int,
          data_dir,
          total_train_set_dur,
          val_dur,
@@ -24,7 +20,7 @@ def prep(labelset,
          skip_files_with_labels_not_in_labelset=True,
          output_dir=None,
          audio_format=None,
-         spect_format=None,
+         array_format=None,
          annot_file=None,
          spect_params=None):
     """prepare datasets for training, validating, and/or testing networks
@@ -58,9 +54,9 @@ def prep(labelset,
         in which case data sets are saved in the current working directory.
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
-    spect_format : str
-        format of files containg spectrograms as 2-d matrices.
-        One of {'mat', 'npy'}.
+    array_format : str
+        format of array files containing spectrograms as 2-d matrices.
+        One of {'mat', 'npz'}.
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid.
@@ -77,71 +73,85 @@ def prep(labelset,
 
     Saves .spect files and data_dicts in output_dir specified by user.
     """
-    if audio_format is None and spect_format is None:
-        raise ValueError("Must specify either audio_format or spect_format")
+    if audio_format is None and array_format is None:
+        raise ValueError("Must specify either audio_format or array_format")
 
-    if audio_format and spect_format:
-        raise ValueError("Cannot specify both audio_format and spect_format, "
+    if audio_format and array_format:
+        raise ValueError("Cannot specify both audio_format and array_format, "
                          "unclear whether to create spectrograms from audio files or "
-                         "use already-generated spectrograms")
+                         "use already-generated spectrograms from array files")
 
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
-    # map labels to series of consecutive integers from 0 to n inclusive
-    # where 0 is the label for silent periods between syllables
-    # and n is the number of syllable labels
-    if all_labels_are_int:
-        labels_mapping = dict(zip([int(label) for label in labelset],
-                                  range(1, len(labelset) + 1)))
+    # # map labels to series of consecutive integers from 0 to n inclusive
+    # # where 0 is the label for silent periods between syllables
+    # # and n is the number of syllable labels
+    # if all_labels_are_int:
+    #     labels_mapping = dict(zip([int(label) for label in labelset],
+    #                               range(1, len(labelset) + 1)))
+    # else:
+    #     labels_mapping = dict(zip(labelset,
+    #                               range(1, len(labelset) + 1)))
+    # labels_mapping['silent_gap_label'] = silent_gap_label
+    # if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
+    #     raise ValueError('Labels mapping does not map to a consecutive'
+    #                      'series of integers from 0 to n (where 0 is the '
+    #                      'silent gap label and n is the number of syllable'
+    #                      'labels).')
+    #
+    if output_dir is None:
+        output_dir = data_dir
+
+    if annot_file is None:
+        annot_files = dataset.annot.files_from_dir(annot_dir=data_dir,
+                                                   annot_format=annot_format)
+        scribe = Transcriber(voc_format=annot_format)
+        annot_list = scribe.to_seq(file=annot_files)
     else:
-        labels_mapping = dict(zip(labelset,
-                                  range(1, len(labelset) + 1)))
-    labels_mapping['silent_gap_label'] = silent_gap_label
-    if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
-        raise ValueError('Labels mapping does not map to a consecutive'
-                         'series of integers from 0 to n (where 0 is the '
-                         'silent gap label and n is the number of syllable'
-                         'labels).')
+        scribe = Transcriber(voc_format=annot_format)
+        annot_list = scribe.to_seq(file=annot_file)
+
+    # ------ if making dataset from audio files, need to make into array files first! ----------------------------
+    if audio_format:
+        logger.info(
+            f'making array files containing spectrograms from audio files in: {data_dir}'
+        )
+        audio_files = dataset.audio.files_from_dir(data_dir, audio_format)
+        array_files = dataset.audio.to_arr_files(audio_format=audio_format,
+                                                 spect_params=spect_params,
+                                                 output_dir=output_dir,
+                                                 audio_files=audio_files,
+                                                 annot_list=annot_list,
+                                                 labelset=labelset,
+                                                 skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset
+                                                 )
+        array_format = 'npz'
+    else:
+        array_files = None
+
+    from_arr_kwargs = {
+        'array_format': array_format,
+        'labelset': labelset,
+        'skip_files_with_labels_not_in_labelset': skip_files_with_labels_not_in_labelset,
+        'load_arr': False,
+        'annot_list': annot_list,
+    }
+
+    if array_files:
+        from_arr_kwargs['array_files'] = array_files
+        logger.info(
+            f'creating VocalDataset from array files in: {output_dir}'
+        )
+    else:
+        from_arr_kwargs['array_dir'] = data_dir
+        logger.info(
+            f'creating VocalDataset from array files in: {data_dir}'
+        )
+
+    vocal_dataset = dataset.array.from_arr_files(**from_arr_kwargs)
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-
-    if output_dir is None:
-        output_dir = os.path.join(data_dir,
-                                  'spectrograms_' + timenow)
-    else:
-        output_dir = os.path.join(output_dir,
-                                  'spectrograms_' + timenow)
-    os.mkdir(output_dir)
-
-    if spect_format:
-        logger.info(f'loading spectrograms from: {data_dir}')
-        if spect_format == 'mat':
-            spect_files = glob(os.path.join(data_dir, '*.mat'))
-        elif spect_format == 'npy':
-            spect_files = glob(os.path.join(data_dir, '*.npy'))
-        spect_files_path = convert_mat_to_spect(spect_files,
-                                                annot_file,
-                                                output_dir,
-                                                labels_mapping=labels_mapping)
-
-    elif audio_format:
-        logger.info(f'making spectrograms from audio files in: {data_dir}')
-        audio_files = _get_audio_files(audio_format, data_dir)
-        spect_files_path = \
-            from_list(audio_files,
-                      spect_params,
-                      output_dir,
-                      labels_mapping,
-                      skip_files_with_labels_not_in_labelset,
-                      annot_file)
-
-    saved_data_dict_paths = make_data_dicts(output_dir,
-                                            total_train_set_dur,
-                                            val_dur,
-                                            test_dur,
-                                            labelset,
-                                            spect_files_path)
 
     # lastly rewrite config file,
     # so that paths where results were saved are automatically in config.
@@ -154,21 +164,3 @@ def prep(labelset,
 
     with open(config_file, 'w') as config_file_rewrite:
         config.write(config_file_rewrite)
-
-
-if __name__ == "__main__":
-    config_file = os.path.normpath(sys.argv[1])
-    config = config.parse_config(config_file)
-    prep(labelset=config.data.labelset,
-         all_labels_are_int=config.data.all_labels_are_int,
-         data_dir=config.data.data_dir,
-         total_train_set_dur=config.data.total_train_set_dur,
-         val_dur=config.data.val_dur,
-         test_dur=config.data.test_dur,
-         config_file=config_file,
-         silent_gap_label=config.data.silent_gap_label,
-         skip_files_with_labels_not_in_labelset=config.data.skip_files_with_labels_not_in_labelset,
-         output_dir=config.data.output_dir,
-         mat_spect_files_path=config.data.mat_spect_files_path,
-         mat_spects_annotation_file=config.data.mat_spects_annotation_file,
-         spect_params=config.spect_params)
