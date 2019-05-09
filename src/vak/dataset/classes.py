@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import attr
 from attr.validators import optional, instance_of
@@ -73,3 +75,26 @@ class VocalDataset:
     def all_voc(self, attribute, value):
         if not all([type(element) == Vocalization for element in value]):
             raise TypeError(f'all elements in voc_list must be of type vak.dataset.Vocalization')
+
+    def to_json(self, json_fname=None):
+        voc_dataset_dict = attr.asdict(self)
+        if json_fname:
+            with open(json_fname, 'w') as fp:
+                json.dump(voc_dataset_dict, fp)
+        else:
+            return json.dumps(voc_dataset_dict)
+
+    @classmethod
+    def from_json(cls, json_fname):
+        with open(json_fname, 'r') as fp:
+            voc_dataset_dict = json.load(fp)
+        voc_list = voc_dataset_dict['voc_list']
+        voc_list = [Vocalization(**voc) for voc in voc_list]
+        voc_dataset = cls(voc_list=voc_list)
+        return voc_dataset
+
+    def save(self, json_fname):
+        self.to_json(json_fname)
+
+    def load(self, json_fname):
+        return self.from_json(json_fname)
