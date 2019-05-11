@@ -9,6 +9,7 @@ from dask.diagnostics import ProgressBar
 
 from .classes import Spectrogram, Vocalization, VocalDataset
 from ..config import validators
+from ..utils.general import timebin_dur_from_vec
 
 
 def from_arr_files(array_format,
@@ -113,8 +114,6 @@ def from_arr_files(array_format,
     if array_files:
         array_annot_map = dict((arr_path, annot) for arr_path, annot in zip(array_files, annot_list))
 
-    decade = 10 ** n_decimals_trunc  # used below for truncating floating point
-
     # this is defined here so all other arguments to 'from_arr_files' are in scope
     def _voc_from_array_annot(arr_path_annot_tup):
         """helper function that enables parallelized creation of list of Vocalizations.
@@ -149,25 +148,13 @@ def from_arr_files(array_format,
         if 'freq_bins' not in locals() and 'time_bins' not in locals():
             freq_bins = arr[freqbins_key]
             time_bins = arr[timebins_key]
-            timebin_dur = np.around(
-                np.mean(np.diff(time_bins)),
-                decimals=n_decimals_trunc
-            )
-            # below truncates any decimal place past decade
-            timebin_dur = np.trunc(timebin_dur * decade) / decade
+            timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
         else:
             if not np.array_equal(arr[freqbins_key], freq_bins):
                 raise ValueError(
                     f'freq_bins in {arr_file} does not freq_bins from other array files'
                 )
-            curr_file_timebin_dur = np.around(
-                np.mean(np.diff(arr[timebins_key])),
-                decimals=n_decimals_trunc
-            )
-
-            # below truncates any decimal place past decade
-            curr_file_timebin_dur = np.trunc(curr_file_timebin_dur
-                                             * decade) / decade
+            curr_file_timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
             if not np.allclose(curr_file_timebin_dur, timebin_dur):
                 raise ValueError(
                     f'duration of timebin in file {arr_file} did not match duration of '
