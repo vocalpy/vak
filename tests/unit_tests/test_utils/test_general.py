@@ -2,6 +2,8 @@ import os
 from glob import glob
 import unittest
 
+import numpy as np
+
 import vak.utils.general
 
 
@@ -29,6 +31,12 @@ class TestGeneral(unittest.TestCase):
         self.assertTrue(
             sorted(cbin_files) == sorted(files)
         )
+
+    def test_timebin_dur_from_vecs(self):
+        timebin_dur = 0.001
+        time_bins = np.linspace(0., 5., num=int(5 / timebin_dur))
+        computed = vak.utils.general.timebin_dur_from_vec(time_bins=time_bins, n_decimals_trunc=3)
+        self.assertTrue(timebin_dur == computed)
 
 
 if __name__ == '__main__':
