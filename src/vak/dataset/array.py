@@ -174,21 +174,23 @@ def from_arr_files(array_format,
 
         spect_dur = arr[spect_key].shape[-1] * timebin_dur
 
-        spect_dict = {
-            'freq_bins': arr[freqbins_key],
-            'time_bins': arr[timebins_key],
-            'timebin_dur': timebin_dur,
-            'duration': spect_dur,
-        }
         if load_arr:
-            spect_dict['array'] = arr[spect_key]
-        a_spect = Spectrogram(**spect_dict)
+            spect_dict = {
+                'freq_bins': arr[freqbins_key],
+                'time_bins': arr[timebins_key],
+                'timebin_dur': timebin_dur,
+                'array': arr[spect_key],
+            }
+            spect = Spectrogram(**spect_dict)
+        else:
+            spect = None
 
         voc = Vocalization(
             annotation=annot,
             spect_file=arr_path,
-            spect=a_spect,
-            audio_file=annot.file)
+            spect=spect,
+            audio_file=annot.file,
+            duration=spect_dur)
 
         return voc
 
