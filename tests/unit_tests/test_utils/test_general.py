@@ -16,8 +16,8 @@ class TestGeneral(unittest.TestCase):
 
     def test_files_from_dir(self):
         # check works for .mat files
-        mat_files = glob(os.path.join(self.mat_spect_path, 'mat'))
-        files = vak.utils.general._files_from_dir(self.mat_spect_path, '*.mat')
+        mat_files = glob(os.path.join(self.mat_spect_path, '*.mat'))
+        files = vak.utils.general._files_from_dir(self.mat_spect_path, 'mat')
         self.assertTrue(
             sorted(mat_files) == sorted(files)
         )
