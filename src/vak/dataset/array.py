@@ -19,7 +19,7 @@ def from_arr_files(array_format,
                    array_annot_map=None,
                    labelset=None,
                    skip_files_with_labels_not_in_labelset=False,
-                   load_arr=True,
+                   load_spects=True,
                    n_decimals_trunc=3,
                    freqbins_key='f',
                    timebins_key='t',
@@ -57,10 +57,10 @@ def from_arr_files(array_format,
     skip_files_with_labels_not_in_labelset : bool
         if True, skip array files where the associated annotations contain labels not in labelset.
         Default is False.
-    load_arr : bool
-        if True, load arrays. if False, return a VocalSet without arrays loaded.
-        Default is True. Set to False when you want to create a VocalSet for use
-        later, but don't want to load all the arrays into memory yet.
+    load_spects : bool
+        if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
+        Default is True. Set to False when you want to create a VocalDataset for use
+        later, but don't want to load all the spectrograms into memory yet.
     n_decimals_trunc : int
         number of decimal places to keep when truncating the timebin duration calculated from
         the spectrogram arrays.
@@ -174,7 +174,7 @@ def from_arr_files(array_format,
 
         spect_dur = arr[spect_key].shape[-1] * timebin_dur
 
-        if load_arr:
+        if load_spects:
             spect_dict = {
                 'freq_bins': arr[freqbins_key],
                 'time_bins': arr[timebins_key],
