@@ -3,11 +3,12 @@ import random
 import numpy as np
 
 
-def train_test_dur_split(durs,
-                         labels,
-                         train_dur,
-                         test_dur,
-                         val_dur=None):
+
+def train_test_dur_split_inds(durs,
+                              labels,
+                              train_dur,
+                              test_dur,
+                              val_dur=None):
     """split a dataset into training, test, and validation sets of specified durations.
     Given the durations of a set of audio files and the labels for those files,
     this function returns arrays of indices for splitting up the set into training, test,
