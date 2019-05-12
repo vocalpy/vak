@@ -12,9 +12,9 @@ def prep(labelset,
          annot_format,
          skip_files_with_labels_not_in_labelset=True,
          output_dir=None,
-         save_vocds=False,
-         vocds_fname=None,
-         return_vocds=True,
+         save_vds=False,
+         vds_fname=None,
+         return_vds=True,
          return_path=True,
          annot_file=None,
          audio_format=None,
@@ -35,14 +35,14 @@ def prep(labelset,
     output_dir : str
         path to location where data sets should be saved. Default is None,
         in which case data sets is saved in data_dir.
-    save_vocds : bool
+    save_vds : bool
         if True, save the VocalizationDataset created as a .json file.
-    vocds_fname : str
+    vds_fname : str
         filename for VocalDataset, which will be saved as a .json file.
         If filename does not end in .json, then that extension will be appended.
         Default is None. If None, then the filename will be
         'vocalization_dataset_prepared_{timestamp}.json'.
-    return_vocds : bool
+    return_vds : bool
         if True, return
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
@@ -61,9 +61,9 @@ def prep(labelset,
 
     Returns
     -------
-    vocds : vak.dataset.VocalizationDataset
+    vds : vak.dataset.VocalizationDataset
         the VocalizationDataset prepared from the directory specified
-    vocds_path : str
+    vds_path : str
         path to where VocalizationDataset was saved
 
     Notes
@@ -89,10 +89,10 @@ def prep(labelset,
         else:
             labelset = labelset_set
 
-    if vocds_fname is not None:
-        if type(vocds_fname) != str:
+    if vds_fname is not None:
+        if type(vds_fname) != str:
             raise TypeError(
-                f"vocds_fname should be a string, but type was: {type(vocds_fname)}"
+                f"vds_fname should be a string, but type was: {type(vds_fname)}"
             )
 
     if output_dir:
@@ -157,29 +157,29 @@ def prep(labelset,
             f'creating VocalDataset from array files in: {data_dir}'
         )
 
-    vocds = array.from_arr_files(**from_arr_kwargs)
+    vds = array.from_arr_files(**from_arr_kwargs)
 
-    if save_vocds:
-        if vocds_fname is None:
+    if save_vds:
+        if vds_fname is None:
             timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-            vocds_fname = f'vocalization_dataset_prepared_{timenow}.json'
+            vds_fname = f'vocalization_dataset_prepared_{timenow}.json'
 
-        if not vocds_fname.endswith('.json'):
-            vocds_fname += '.json'
+        if not vds_fname.endswith('.json'):
+            vds_fname += '.json'
 
         if output_dir:
-            vocds_path = os.path.join(output_dir, vocds_fname)
+            vds_path = os.path.join(output_dir, vds_fname)
         else:
-            vocds_path = os.path.join(os.getcwd(), vocds_fname)
+            vds_path = os.path.join(os.getcwd(), vds_fname)
 
-        vocds.save(json_fname=vocds_path)
+        vds.save(json_fname=vds_path)
     else:
-        vocds_path = None
+        vds_path = None
 
-    if return_vocds and return_path:
-        return vocds, vocds_path
+    if return_vds and return_path:
+        return vds, vds_path
     elif return_path:
-        return vocds_path
-    elif return_vocds:
-        return vocds
+        return vds_path
+    elif return_vds:
+        return vds
 
