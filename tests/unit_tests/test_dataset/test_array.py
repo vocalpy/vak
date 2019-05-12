@@ -6,7 +6,7 @@ import numpy as np
 import crowsetta
 
 import vak.dataset.array
-from vak.dataset.classes import VocalDataset, Vocalization, Spectrogram
+from vak.dataset.classes import VocalizationDataset, Vocalization, Spectrogram
 
 
 HERE = os.path.dirname(__file__)
@@ -33,7 +33,7 @@ class TestArray(unittest.TestCase):
     def _check_vocal_dataset_returned_by_from_arr_files(self, vocal_dataset, load_spects=True):
         """assertions that are shared across unit tests for vak.dataset.array.from_arr_files"""
         self.assertTrue(
-            type(vocal_dataset) == VocalDataset
+            type(vocal_dataset) == VocalizationDataset
         )
 
         self.assertTrue(
