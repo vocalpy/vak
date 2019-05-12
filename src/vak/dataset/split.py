@@ -66,6 +66,8 @@ def train_test_dur_split_inds(durs,
         test_inds = []
         if val_dur:
             val_inds = []
+        else:
+            val_inds = None
 
         train_dur = 0
         val_dur = 0
