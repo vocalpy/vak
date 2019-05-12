@@ -83,22 +83,16 @@ class Spectrogram:
 
 
 def voc_file_validator(instance, attribute, value):
-    if (
-            (attribute.name == 'audio_file' and value is None) and (instance.spect_file is None)
-        or
-            (attribute.name == 'spect_file' and value is None) and (instance.audio_file is None)
-    ):
+    if ((attribute.name == 'audio_file' and value is None) and (instance.spect_file is None) or
+            (attribute.name == 'spect_file' and value is None) and (instance.audio_file is None)):
         raise ValueError(
             'a vocalization must have either an audio_file or spect_file associated with it'
             )
 
 
 def voc_data_validator(instance, attribute, value):
-    if (
-            (attribute.name == 'audio' and value is None) and (instance.spect is None)
-        or
-            (attribute.name == 'spect' and value is None) and (instance.audio is None)
-    ):
+    if ((attribute.name == 'audio' and value is None) and (instance.spect is None) or
+                (attribute.name == 'spect' and value is None) and (instance.audio is None)):
         raise ValueError(
             'a vocalization must have either an audio_file or spect_file associated with it'
             )
@@ -138,14 +132,14 @@ class Vocalization:
                 f'annotations for Vocalization must be a crowsetta.Sequence'
             )
     # optional: need *one of* audio_file + audio or spect + spect_file
-    audio = attr.ib(validator=optional([instance_of(np.ndarray), voc_data_validator]),
+    audio = attr.ib(validator=[optional(instance_of(np.ndarray)), voc_data_validator],
                     converter=asarray_if_not,
                     default=None)
-    audio_file = attr.ib(validator=optional([instance_of(str), voc_file_validator]),
+    audio_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
                          default=None)
-    spect = attr.ib(validator=optional([instance_of(Spectrogram), voc_data_validator]),
+    spect = attr.ib(validator=[optional(instance_of(Spectrogram)), voc_data_validator],
                     default=None)
-    spect_file = attr.ib(validator=optional([instance_of(str), voc_file_validator]),
+    spect_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
                          default=None)
 
 
@@ -169,6 +163,14 @@ class VocalDataset:
         of Vocalizations.
     """
     voc_list = attr.ib()
+
+    @voc_list.validator
+    def is_list_or_tuple(self, attribute, value):
+        if type(value) not in (list, tuple):
+            raise TypeError(
+                f'{attribute.name} must be either a list or tuple'
+            )
+
     @voc_list.validator
     def all_voc(self, attribute, value):
         if not all([type(element) == Vocalization for element in value]):
