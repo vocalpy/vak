@@ -90,14 +90,6 @@ def voc_file_validator(instance, attribute, value):
             )
 
 
-def voc_data_validator(instance, attribute, value):
-    if ((attribute.name == 'audio' and value is None) and (instance.spect is None) or
-                (attribute.name == 'spect' and value is None) and (instance.audio is None)):
-        raise ValueError(
-            'a vocalization must have either an audio_file or spect_file associated with it'
-            )
-
-
 @attr.s(cmp=False)
 class Vocalization:
     """class to represent an annotated vocalization
@@ -132,12 +124,12 @@ class Vocalization:
                 f'annotations for Vocalization must be a crowsetta.Sequence'
             )
     # optional: need *one of* audio_file + audio or spect + spect_file
-    audio = attr.ib(validator=[optional(instance_of(np.ndarray)), voc_data_validator],
+    audio = attr.ib(validator=optional(instance_of(np.ndarray)),
                     converter=asarray_if_not,
                     default=None)
     audio_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
                          default=None)
-    spect = attr.ib(validator=[optional(instance_of(Spectrogram)), voc_data_validator],
+    spect = attr.ib(validator=optional(instance_of(Spectrogram)),
                     default=None)
     spect_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
                          default=None)
