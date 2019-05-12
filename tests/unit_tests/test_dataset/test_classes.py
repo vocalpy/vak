@@ -10,7 +10,7 @@ import evfuncs
 
 import vak.dataset.array
 import vak.dataset.annot
-from vak.dataset.classes import VocalDataset, Vocalization, Spectrogram
+from vak.dataset.classes import VocalizationDataset, Vocalization, Spectrogram
 
 
 HERE = os.path.dirname(__file__)
@@ -163,8 +163,8 @@ class TestClasses(unittest.TestCase):
                                spect_file=arr_file)
             voc_list.append(voc)
 
-        vocds = VocalDataset(voc_list=voc_list)
-        self.assertTrue(type(vocds) == VocalDataset)
+        vocds = VocalizationDataset(voc_list=voc_list)
+        self.assertTrue(type(vocds) == VocalizationDataset)
         self.assertTrue(hasattr(vocds, 'voc_list'))
         self.assertTrue(
             all([type(voc) == Vocalization for voc in vocds.voc_list])
@@ -195,8 +195,8 @@ class TestClasses(unittest.TestCase):
             for key in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
                 self.assertTrue(key in voc)
 
-        vocds_from_json = VocalDataset.from_json(json_str=vocds_json_str)
-        self.assertTrue(type(vocds_from_json) == VocalDataset)
+        vocds_from_json = VocalizationDataset.from_json(json_str=vocds_json_str)
+        self.assertTrue(type(vocds_from_json) == VocalizationDataset)
         self.assertTrue(hasattr(vocds, 'voc_list'))
         self.assertTrue(
             all([type(voc) == Vocalization for voc in vocds.voc_list])

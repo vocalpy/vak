@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from .classes import VocalDataset
+from .classes import VocalizationDataset
 
 
 def train_test_dur_split_inds(durs,
@@ -213,10 +213,10 @@ def train_test_dur_split(vds,
                                                                 test_dur=test_dur,
                                                                 val_dur=val_dur)
 
-    train_vds = VocalDataset(voc_list=[vds.voclist[ind] for ind in train_inds])
-    test_vds = VocalDataset(voc_list=[vds.voclist[ind] for ind in test_inds])
+    train_vds = VocalizationDataset(voc_list=[vds.voclist[ind] for ind in train_inds])
+    test_vds = VocalizationDataset(voc_list=[vds.voclist[ind] for ind in test_inds])
     if val_inds:
-        val_vds = VocalDataset(voc_list=[vds.voclist[ind] for ind in val_inds])
+        val_vds = VocalizationDataset(voc_list=[vds.voclist[ind] for ind in val_inds])
     else:
         val_vds = None
 

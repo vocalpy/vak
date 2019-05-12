@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from .classes import Spectrogram, Vocalization, VocalDataset
+from .classes import Spectrogram, Vocalization, VocalizationDataset
 from ..config import validators
 from ..utils.general import timebin_dur_from_vec
 
@@ -199,4 +199,4 @@ def from_arr_files(array_format,
     with ProgressBar():
         voc_list = list(arr_path_annot_tups.map(_voc_from_array_annot))
 
-    return VocalDataset(voc_list=voc_list)
+    return VocalizationDataset(voc_list=voc_list)
