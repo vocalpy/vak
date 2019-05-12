@@ -163,11 +163,11 @@ class TestClasses(unittest.TestCase):
                                spect_file=arr_file)
             voc_list.append(voc)
 
-        vocds = VocalizationDataset(voc_list=voc_list)
-        self.assertTrue(type(vocds) == VocalizationDataset)
-        self.assertTrue(hasattr(vocds, 'voc_list'))
+        vds = VocalizationDataset(voc_list=voc_list)
+        self.assertTrue(type(vds) == VocalizationDataset)
+        self.assertTrue(hasattr(vds, 'voc_list'))
         self.assertTrue(
-            all([type(voc) == Vocalization for voc in vocds.voc_list])
+            all([type(voc) == Vocalization for voc in vds.voc_list])
         )
 
     def _vocset_json_asserts(self, vocset_from_json):
@@ -180,26 +180,26 @@ class TestClasses(unittest.TestCase):
         return True
 
     def test_vocal_dataset_json(self):
-        vocds = vak.dataset.array.from_arr_files(array_format='mat',
-                                                 array_dir=self.array_dir_mat,
-                                                 annot_list=self.annot_list,
-                                                 load_spects=True)
-        vocds_json_str = vocds.to_json(json_fname=None)
-        vocds_json = json.loads(vocds_json_str)
+        vds = vak.dataset.array.from_arr_files(array_format='mat',
+                                               array_dir=self.array_dir_mat,
+                                               annot_list=self.annot_list,
+                                               load_spects=True)
+        vds_json_str = vds.to_json(json_fname=None)
+        vds_json = json.loads(vds_json_str)
 
-        self.assertTrue(type(vocds_json == dict))
-        self.assertTrue('voc_list' in vocds_json)
-        voc_list = vocds_json['voc_list']
+        self.assertTrue(type(vds_json == dict))
+        self.assertTrue('voc_list' in vds_json)
+        voc_list = vds_json['voc_list']
         self.assertTrue(type(voc_list) == list)
         for voc in voc_list:
             for key in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
                 self.assertTrue(key in voc)
 
-        vocds_from_json = VocalizationDataset.from_json(json_str=vocds_json_str)
-        self.assertTrue(type(vocds_from_json) == VocalizationDataset)
-        self.assertTrue(hasattr(vocds, 'voc_list'))
+        vds_from_json = VocalizationDataset.from_json(json_str=vds_json_str)
+        self.assertTrue(type(vds_from_json) == VocalizationDataset)
+        self.assertTrue(hasattr(vds, 'voc_list'))
         self.assertTrue(
-            all([type(voc) == Vocalization for voc in vocds.voc_list])
+            all([type(voc) == Vocalization for voc in vds.voc_list])
         )
 
 
