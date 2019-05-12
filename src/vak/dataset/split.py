@@ -2,6 +2,7 @@ import random
 
 import numpy as np
 
+from .classes import VocalDataset
 
 
 def train_test_dur_split_inds(durs,
@@ -180,3 +181,46 @@ def train_test_dur_split_inds(durs,
             break
 
     return train_inds, test_inds, val_inds
+
+
+def train_test_dur_split(vds,
+                         train_dur,
+                         test_dur,
+                         val_dur=None):
+    """split a VocalizationDataset
+
+    Parameters
+    ----------
+    vds : vak.dataset.VocalizationDataset
+
+    train_dur : float
+        total duration of training set, in seconds. Default is None.
+    val_dur : float
+        total duration of validation set, in seconds. Default is None.
+    test_dur : float
+        total duration of test set, in seconds. Default is None.
+
+
+    Returns
+    -------
+    train, test, val
+    """
+    durs = [voc.duration for voc in vds.voc_list]
+    labels = [voc.annotation.labels for voc in vds.voc_list]
+    train_inds, test_inds, val_inds = train_test_dur_split_inds(durs=durs,
+                                                                labels=labels,
+                                                                train_dur=train_dur,
+                                                                test_dur=test_dur,
+                                                                val_dur=val_dur)
+
+    train_vds = VocalDataset(voc_list=[vds.voclist[ind] for ind in train_inds])
+    test_vds = VocalDataset(voc_list=[vds.voclist[ind] for ind in test_inds])
+    if val_inds:
+        val_vds = VocalDataset(voc_list=[vds.voclist[ind] for ind in val_inds])
+    else:
+        val_vds = None
+
+    if val_vds:
+        return train_vds, val_vds, test_vds
+    else:
+        return train_vds, test_vds
