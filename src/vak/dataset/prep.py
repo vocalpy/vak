@@ -1,11 +1,9 @@
 import os
 import logging
-from configparser import ConfigParser
 from datetime import datetime
 
 from crowsetta import Transcriber
 
-from ..utils.data import make_data_dicts
 from . import annot, array, audio
 
 
@@ -21,10 +19,7 @@ def prep(labelset,
          annot_file=None,
          audio_format=None,
          array_format=None,
-         spect_params=None,
-         total_train_set_dur=None,
-         val_dur=None,
-         test_dur=None):
+         spect_params=None):
     """prepare a VocalizationDataset from a directory of audio or spectrogram files
     containing vocalizations, and (optionally) annotation for those files
 
