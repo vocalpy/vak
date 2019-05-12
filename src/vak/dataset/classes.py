@@ -154,7 +154,7 @@ class VocalDatasetJSONEncoder(JSONEncoder):
 
 
 @attr.s(cmp=False)
-class VocalDataset:
+class VocalizationDataset:
     """class to represent a dataset of annotated vocalizations
 
     Attributes
