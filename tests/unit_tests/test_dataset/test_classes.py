@@ -6,8 +6,10 @@ import json
 import numpy as np
 from scipy.io import loadmat
 import crowsetta
+import evfuncs
 
 import vak.dataset.array
+import vak.dataset.annot
 from vak.dataset.classes import VocalDataset, Vocalization, Spectrogram
 
 
@@ -30,6 +32,23 @@ class TestClasses(unittest.TestCase):
         self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb11', 'llb11_annot_subset.mat')
         self.scribe = crowsetta.Transcriber(voc_format='yarden')
         self.annot_list = self.scribe.to_seq(self.annot_mat)
+
+        self.spect_params = dict(fft_size=512,
+                                 step_size=64,
+                                 freq_cutoffs=(500, 10000),
+                                 thresh=6.25,
+                                 transform_type='log_spect')
+
+        # ---- cbins -------------------------------
+        self.audio_dir_cbin = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+        self.audio_files_cbin = glob(os.path.join(self.audio_dir_cbin, '*.cbin'))
+
+        self.annot_files_cbin = vak.dataset.annot.files_from_dir(annot_dir=self.audio_dir_cbin,
+                                                            annot_format='notmat')
+        scribe_cbin = crowsetta.Transcriber(voc_format='notmat')
+        self.annot_list_cbin = scribe_cbin.to_seq(file=self.annot_files_cbin)
+
+        self.labelset_cbin = list('iabcdefghjk')
 
     def test_Spectrogram_init(self):
         for arr_file in self.array_list_mat:
@@ -72,6 +91,20 @@ class TestClasses(unittest.TestCase):
                                                    timebin_dur=None,
                                                    n_decimals_trunc=3)
             dur = spect.timebin_dur * spect.array.shape[-1]
+            voc = Vocalization(annotation=annot,
+                               duration=dur,
+                               spect=spect,
+                               spect_file=arr_file)
+            for attr in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+                self.assertTrue(hasattr(voc, attr))
+            self.assertTrue(voc.duration == dur)
+            self.assertTrue(voc.spect_file == arr_file)
+            self.assertTrue(voc.audio is None)
+            self.assertTrue(voc.audio_file is None)
+
+        for cbin_file, annot in zip(self.array_list_mat, self.annot_list):
+            arr_file_dict = loadmat(arr_file, squeeze_me=True)
+            dur = spect.timebin_dur * spect.array.shape[-1]
             voc = Vocalization(annotation=self.annot_list[0],
                                duration=dur,
                                spect=spect,
@@ -83,8 +116,59 @@ class TestClasses(unittest.TestCase):
             self.assertTrue(voc.audio is None)
             self.assertTrue(voc.audio_file is None)
 
-    # def test_VocalDataset(self):
-    #     raise NotImplementedError
+        with self.assertRaises(ValueError):
+            # because we didn't specify audio or spect or audio_file or spect_file
+            # notice we lazily re-use last value of annot and dur from loop above
+            Vocalization(annotation=annot,
+                         duration=dur)
+
+        with self.assertRaises(ValueError):
+            # because we didn't specify spect file
+            Vocalization(annotation=annot,
+                         duration=dur,
+                         spect=spect)
+
+        with self.assertRaises(ValueError):
+            # because we didn't specify spect
+            Vocalization(annotation=annot,
+                         duration=dur,
+                         spect_file=arr_file)
+
+        with self.assertRaises(ValueError):
+            # because we didn't specify audio
+            Vocalization(annotation=annot,
+                         duration=dur,
+                         audio_file=self.audio_files_cbin[0])
+
+        with self.assertRaises(ValueError):
+            # because we didn't specify audio file
+            Vocalization(annotation=annot,
+                         duration=dur,
+                         audio=np.random.normal(size=(1000, 1)))
+
+    def test_VocalDataset_init(self):
+        voc_list = []
+        for arr_file, annot in zip(self.array_list_mat, self.annot_list):
+            arr_file_dict = loadmat(arr_file, squeeze_me=True)
+            spect = Spectrogram.from_arr_file_dict(arr_file_dict=arr_file_dict,
+                                                   freqbins_key='f',
+                                                   timebins_key='t',
+                                                   spect_key='s',
+                                                   timebin_dur=None,
+                                                   n_decimals_trunc=3)
+            dur = spect.timebin_dur * spect.array.shape[-1]
+            voc = Vocalization(annotation=annot,
+                               duration=dur,
+                               spect=spect,
+                               spect_file=arr_file)
+            voc_list.append(voc)
+
+        vocds = VocalDataset(voc_list=voc_list)
+        self.assertTrue(type(vocds) == VocalDataset)
+        self.assertTrue(hasattr(vocds, 'voc_list'))
+        self.assertTrue(
+            all([type(voc) == Vocalization for voc in vocds.voc_list])
+        )
 
     def _vocset_json_asserts(self, vocset_from_json):
         self.assertTrue(type(vocset_from_json == dict))
@@ -95,14 +179,28 @@ class TestClasses(unittest.TestCase):
         # if all assertTrues are True
         return True
 
-    def test_vocal_dataset_to_json(self):
-        vocset = vak.dataset.array.from_arr_files(array_format='mat',
-                                                  array_dir=self.array_dir_mat,
-                                                  annot_list=self.annot_list,
-                                                  load_spects=True)
-        vocset_json = vocset.to_json(json_fname=None)
-        vocset_from_json = json.loads(vocset_json)
-        self.assertTrue(self._vocset_json_asserts(vocset_from_json))
+    def test_vocal_dataset_json(self):
+        vocds = vak.dataset.array.from_arr_files(array_format='mat',
+                                                 array_dir=self.array_dir_mat,
+                                                 annot_list=self.annot_list,
+                                                 load_spects=True)
+        vocds_json_str = vocds.to_json(json_fname=None)
+        vocds_json = json.loads(vocds_json_str)
+
+        self.assertTrue(type(vocds_json == dict))
+        self.assertTrue('voc_list' in vocds_json)
+        voc_list = vocds_json['voc_list']
+        self.assertTrue(type(voc_list) == list)
+        for voc in voc_list:
+            for key in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+                self.assertTrue(key in voc)
+
+        vocds_from_json = VocalDataset.from_json(json_str=vocds_json_str)
+        self.assertTrue(type(vocds_from_json) == VocalDataset)
+        self.assertTrue(hasattr(vocds, 'voc_list'))
+        self.assertTrue(
+            all([type(voc) == Vocalization for voc in vocds.voc_list])
+        )
 
 
 if __name__ == '__main__':
