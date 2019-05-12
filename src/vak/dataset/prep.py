@@ -26,7 +26,7 @@ def prep(labelset,
     Parameters
     ----------
     labelset : set, list
-        of str or int, set of labels for syllables
+        of str or int, set of labels for vocalizations.
     data_dir : str
         path to directory with audio or spectrogram files from which to make dataset
     skip_files_with_labels_not_in_labelset : bool
