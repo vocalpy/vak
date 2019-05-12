@@ -6,52 +6,49 @@ from datetime import datetime
 from crowsetta import Transcriber
 
 from ..utils.data import make_data_dicts
-from .. import dataset
+from . import annot, array, audio
 
 
 def prep(labelset,
          data_dir,
-         total_train_set_dur,
-         val_dur,
-         test_dur,
-         config_file,
          annot_format,
-         silent_gap_label=0,
          skip_files_with_labels_not_in_labelset=True,
          output_dir=None,
+         save_vocds=False,
+         vocds_fname=None,
+         return_vocds=True,
+         return_path=True,
+         annot_file=None,
          audio_format=None,
          array_format=None,
-         annot_file=None,
-         spect_params=None):
-    """prepare datasets for training, validating, and/or testing networks
+         spect_params=None,
+         total_train_set_dur=None,
+         val_dur=None,
+         test_dur=None):
+    """prepare a VocalizationDataset from a directory of audio or spectrogram files
+    containing vocalizations, and (optionally) annotation for those files
 
     Parameters
     ----------
-    labelset : list
+    labelset : set, list
         of str or int, set of labels for syllables
-    all_labels_are_int : bool
-        if True, labels are of type int, not str
     data_dir : str
-        path to directory with audio files from which to make dataset
-    total_train_set_dur : float
-        total duration of training set, in seconds.
-        Training subsets of shorter duration will be drawn from this set.
-    val_dur : float
-        total duration of validation set, in seconds.
-    test_dur : float
-        total duration of test set, in seconds.
-    silent_gap_label : int
-        label for time bins of silent gaps between syllables.
-        Type is int because labels are converted to a set of
-        n consecutive integers {0,1,2...n} where n is the number
-        of syllable classes + the silent gap class.
-        Default is 0 (in which case labels are {1,2,3,...,n}).
+        path to directory with audio or spectrogram files from which to make dataset
     skip_files_with_labels_not_in_labelset : bool
         if True, skip a file if the labels variable contains labels not
         found in 'labelset'. Default is True.
     output_dir : str
-        Path to location where data sets should be saved. Default is None,
-        in which case data sets are saved in the current working directory.
+        path to location where data sets should be saved. Default is None,
+        in which case data sets is saved in data_dir.
+    save_vocds : bool
+        if True, save the VocalizationDataset created as a .json file.
+    vocds_fname : str
+        filename for VocalDataset, which will be saved as a .json file.
+        If filename does not end in .json, then that extension will be appended.
+        Default is None. If None, then the filename will be
+        'vocalization_dataset_prepared_{timestamp}.json'.
+    return_vocds : bool
+        if True, return
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
     array_format : str
@@ -69,10 +66,48 @@ def prep(labelset,
 
     Returns
     -------
-    None
+    vocds : vak.dataset.VocalizationDataset
+        the VocalizationDataset prepared from the directory specified
+    vocds_path : str
+        path to where VocalizationDataset was saved
 
-    Saves .spect files and data_dicts in output_dir specified by user.
+    Notes
+    -----
+    If dataset is created from audio files, then .spect.npz files will be
+    generated from the audio files and saved in output_dir.
     """
+    logger = logging.getLogger(__name__)
+    logger.setLevel('INFO')
+
+    if type(labelset) not in (set, list):
+        raise TypeError(
+            f"type of labelset must be set or list, but type was: {type(labelset)}"
+        )
+
+    if type(labelset) == list:
+        labelset_set = set(labelset)
+        if len(labelset) != len(labelset_set):
+            raise ValueError(
+                'labelset contains repeated elements, should be a set (i.e. all members unique.\n'
+                f'Labelset was: {labelset}'
+            )
+        else:
+            labelset = labelset_set
+
+    if vocds_fname is not None:
+        if type(vocds_fname) != str:
+            raise TypeError(
+                f"vocds_fname should be a string, but type was: {type(vocds_fname)}"
+            )
+
+    if output_dir:
+        if not os.path.isdir(output_dir):
+            raise NotADirectoryError(
+                f'output_dir not found: {output_dir}'
+            )
+    elif output_dir is None:
+        output_dir = data_dir
+
     if audio_format is None and array_format is None:
         raise ValueError("Must specify either audio_format or array_format")
 
@@ -81,31 +116,9 @@ def prep(labelset,
                          "unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms from array files")
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel('INFO')
-
-    # # map labels to series of consecutive integers from 0 to n inclusive
-    # # where 0 is the label for silent periods between syllables
-    # # and n is the number of syllable labels
-    # if all_labels_are_int:
-    #     labels_mapping = dict(zip([int(label) for label in labelset],
-    #                               range(1, len(labelset) + 1)))
-    # else:
-    #     labels_mapping = dict(zip(labelset,
-    #                               range(1, len(labelset) + 1)))
-    # labels_mapping['silent_gap_label'] = silent_gap_label
-    # if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
-    #     raise ValueError('Labels mapping does not map to a consecutive'
-    #                      'series of integers from 0 to n (where 0 is the '
-    #                      'silent gap label and n is the number of syllable'
-    #                      'labels).')
-    #
-    if output_dir is None:
-        output_dir = data_dir
-
     if annot_file is None:
-        annot_files = dataset.annot.files_from_dir(annot_dir=data_dir,
-                                                   annot_format=annot_format)
+        annot_files = annot.files_from_dir(annot_dir=data_dir,
+                                           annot_format=annot_format)
         scribe = Transcriber(voc_format=annot_format)
         annot_list = scribe.to_seq(file=annot_files)
     else:
@@ -117,15 +130,15 @@ def prep(labelset,
         logger.info(
             f'making array files containing spectrograms from audio files in: {data_dir}'
         )
-        audio_files = dataset.audio.files_from_dir(data_dir, audio_format)
-        array_files = dataset.audio.to_arr_files(audio_format=audio_format,
-                                                 spect_params=spect_params,
-                                                 output_dir=output_dir,
-                                                 audio_files=audio_files,
-                                                 annot_list=annot_list,
-                                                 labelset=labelset,
-                                                 skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset
-                                                 )
+        audio_files = audio.files_from_dir(data_dir, audio_format)
+        array_files = audio.to_arr_files(audio_format=audio_format,
+                                         spect_params=spect_params,
+                                         output_dir=output_dir,
+                                         audio_files=audio_files,
+                                         annot_list=annot_list,
+                                         labelset=labelset,
+                                         skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset
+                                         )
         array_format = 'npz'
     else:
         array_files = None
@@ -149,18 +162,29 @@ def prep(labelset,
             f'creating VocalDataset from array files in: {data_dir}'
         )
 
-    vocal_dataset = dataset.array.from_arr_files(**from_arr_kwargs)
+    vocds = array.from_arr_files(**from_arr_kwargs)
 
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+    if save_vocds:
+        if vocds_fname is None:
+            timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+            vocds_fname = f'vocalization_dataset_prepared_{timenow}.json'
 
-    # lastly rewrite config file,
-    # so that paths where results were saved are automatically in config.
-    config = ConfigParser()
-    config.read(config_file)
-    for key, saved_data_dict_path in saved_data_dict_paths.items():
-        config.set(section='TRAIN',
-                   option=key + '_data_path',
-                   value=saved_data_dict_path)
+        if not vocds_fname.endswith('.json'):
+            vocds_fname += '.json'
 
-    with open(config_file, 'w') as config_file_rewrite:
-        config.write(config_file_rewrite)
+        if output_dir:
+            vocds_path = os.path.join(output_dir, vocds_fname)
+        else:
+            vocds_path = os.path.join(os.getcwd(), vocds_fname)
+
+        vocds.save(json_fname=vocds_path)
+    else:
+        vocds_path = None
+
+    if return_vocds and return_path:
+        return vocds, vocds_path
+    elif return_path:
+        return vocds_path
+    elif return_vocds:
+        return vocds
+
