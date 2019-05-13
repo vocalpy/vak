@@ -22,11 +22,11 @@ SETUP_SCRIPTS_DIR = os.path.join(HERE,
 
 class TestArray(unittest.TestCase):
     def setUp(self):
-        self.array_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb11', 'spect')
+        self.array_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
         self.array_files = glob(os.path.join(self.array_dir, '*.mat'))
         self.array_format = 'mat'
 
-        self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb11', 'llb11_annot_subset.mat')
+        self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
         self.scribe = crowsetta.Transcriber(voc_format='yarden')
         self.annot_list = self.scribe.to_seq(self.annot_mat)
 
