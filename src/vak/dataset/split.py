@@ -1,26 +1,30 @@
 import random
-
-import numpy as np
+import itertools
+import warnings
 
 from .classes import VocalizationDataset
 
 
 def train_test_dur_split_inds(durs,
                               labels,
-                              train_dur,
-                              test_dur,
+                              labelset,
+                              train_dur=None,
+                              test_dur=None,
                               val_dur=None):
-    """split a dataset into training, test, and validation sets of specified durations.
-    Given the durations of a set of audio files and the labels for those files,
+    """return indices to split a dataset into training, test, and validation sets of specified durations.
+
+    Given the durations of a set of vocalizations, and labels from the annotations for those vocalizations,
     this function returns arrays of indices for splitting up the set into training, test,
     and validation sets.
+
+    Using those indices will produce datasets that each contain instances of all labels in the set of labels.
 
     Parameters
     ----------
     durs : iterable
         of float. Durations of audio files.
     labels : iterable
-        of arrays of str or int. Labels for segments (syllables, phonemes, etc.) in audio files.
+        of numpy arrays of str or int. Labels for segments (syllables, phonemes, etc.) in audio files.
     labelset : set, list
         set of unique labels for segments in files. Used to verify that each returned array
         of indices will produce a set that contains instances of all labels found in original
@@ -40,29 +44,54 @@ def train_test_dur_split_inds(durs,
     """
     if len(durs) != len(labels):
         raise ValueError(
-            f"length of dur does not equal length of labels"
+            f"length of durs, {len(durs)} does not equal length of labels, {len(labels)}"
         )
 
     total_dur = sum(durs)
-    total_target_dur = sum([train_dur,
-                             test_dur,
-                             val_dur])
-    if total_dur < total_target_dur:
+
+    if train_dur is None and test_dur is None:
+        raise ValueError(
+            'must specify either train_dur or test_dur'
+        )
+
+    if val_dur is None:
+        if train_dur is None:
+            train_dur = total_dur - test_dur
+        elif test_dur is None:
+            test_dur = total_dur - train_dur
+        total_target_dur = sum([train_dur,
+                                test_dur])
+    elif val_dur is not None:
+        if train_dur is None:
+            train_dur = total_dur - (test_dur + val_dur)
+        elif test_dur is None:
+            test_dur = total_dur - (train_dur + val_dur)
+        total_target_dur = sum([train_dur,
+                                test_dur,
+                                val_dur])
+
+    if total_target_dur < total_dur:
+        warnings.warn(
+            'Total target duration of training, test, and (if specified) validation sets, '
+            f'{total_target_dur} seconds, is less than total duration of dataset: {total_dur:.3f}. '
+            'Not all of dataset will be used.'
+        )
+
+    if total_target_dur > total_dur:
         raise ValueError(
             f'Total duration of dataset, {total_dur} seconds, is less than total target duration of '
             f'training, test, and (if specified) validation sets: {total_target_dur}'
         )
 
-    # main loop that gets datasets
     iter = 1
     all_labels_err = ('Did not successfully divide data into training, '
                       'validation, and test sets of sufficient duration '
                       'after 1000 iterations.'
                       ' Try increasing the total size of the data set.')
 
-    while 1:
-        dur_inds = list(range(len(durs)))
+    durs_labels_list = list(zip(durs, labels))
 
+    while 1:
         train_inds = []
         test_inds = []
         if val_dur:
@@ -70,56 +99,60 @@ def train_test_dur_split_inds(durs,
         else:
             val_inds = None
 
-        train_dur = 0
-        val_dur = 0
-        test_dur = 0
+        total_train_dur = 0
+        total_val_dur = 0
+        total_test_dur = 0
 
         choice = ['train', 'test']
         if val_dur:
             choice.append('val')
 
+        durs_labels_inds = list(range(len(durs_labels_list)))
+        random.shuffle(durs_labels_inds)
         while 1:
             # pop durations off list and append to randomly-chosen
             # list, either train, val, or test set.
             # Do this until the total duration for each data set is equal
             # to or greater than the target duration for each set.
             try:
-                ind = random.randint(0, len(spect_files_copy)-1)
-            except ValueError:
-                if len(spect_files_copy) == 0:
-                    print('Ran out of spectrograms while dividing data into training, '
-                          'validation, and test sets of specified durations. Iteration {}'
-                          .format(iter))
+                ind = durs_labels_inds.pop()
+            except IndexError:
+                if len(durs_labels_inds) == 0:
+                    print(
+                        'Ran out of elements while dividing dataset into subsets of specified durations.'
+                        f'Iteration {iter}'
+                          )
                     iter += 1
                     break  # do next iteration
                 else:
                     raise
-            a_spect = spect_files_copy.pop(ind)
+
             which_set = random.randint(0, len(choice)-1)
             which_set = choice[which_set]
             if which_set == 'train':
-                train_spects.append(a_spect)
-                train_dur += a_spect[1]  # ind 1 is duration
-                if train_dur >= train_set_duration:
+                train_inds.append(ind)
+                total_train_dur += durs_labels_list[ind][0]  # ind 0 is duration
+                if total_train_dur >= train_dur:
                     choice.pop(choice.index('train'))
             elif which_set == 'val':
-                val_spects.append(a_spect)
-                val_dur += a_spect[1]  # ind 1 is duration
-                if val_dur >= validation_set_duration:
+                val_inds.append(ind)
+                total_val_dur += durs_labels_list[ind][0]  # ind 0 is duration
+                if total_val_dur >= val_dur:
                     choice.pop(choice.index('val'))
             elif which_set == 'test':
-                test_spects.append(a_spect)
-                test_dur += a_spect[1]  # ind 1 is duration
-                if test_dur >= test_set_duration:
+                test_inds.append(ind)
+                total_test_dur += durs_labels_list[ind][0]  # ind 0 is duration
+                if total_test_dur >= test_dur:
                     choice.pop(choice.index('test'))
 
             if len(choice) < 1:
-                if np.sum(total_train_dur +
-                                  val_dur +
-                                  test_dur) < total_dataset_dur:
-                    raise ValueError('Loop to find subsets completed but '
-                                     'total duration of subsets is less than '
-                                     'total duration specified by config file.')
+                total_all_durs = total_train_dur + total_test_dur
+                if val_dur:
+                    total_all_durs += total_val_dur
+                if total_all_durs < total_target_dur:
+                    raise ValueError(
+                        f'Loop to find subsets completed but total duration of subsets, {total_all_durs} seconds, '
+                        f'is less than total duration specified: {total_target_dur} seconds.')
                 else:
                     break
 
@@ -127,28 +160,25 @@ def train_test_dur_split_inds(durs,
                 raise ValueError('Could not find subsets of sufficient duration in '
                                  'less than 1000 iterations.')
 
-        # make sure no contamination between data sets.
-        # If this is true, each set of filenames should be disjoint from others
-        train_spect_files = [tup[0] for tup in train_spects]  # tup = a tuple
-        val_spect_files = [tup[0] for tup in val_spects]
-        test_spect_files = [tup[0] for tup in test_spects]
-        assert set(train_spect_files).isdisjoint(val_spect_files)
-        assert set(train_spect_files).isdisjoint(test_spect_files)
-        assert set(val_spect_files).isdisjoint(test_spect_files)
-
         # make sure that each set contains all classes we
         # want the network to learn
+        train_tups = [durs_labels_list[ind] for ind in train_inds]  # tup = a tuple
+        test_tups = [durs_labels_list[ind] for ind in test_inds]
+        if val_dur:
+            val_tups = [durs_labels_list[ind] for ind in val_inds]
+
         train_labels = itertools.chain.from_iterable(
-            [spect[2] for spect in train_spects])
+            [tup[1] for tup in train_tups])
         train_labels = set(train_labels)  # make set to get unique values
 
-        val_labels = itertools.chain.from_iterable(
-            [spect[2] for spect in val_spects])
-        val_labels = set(val_labels)
-
         test_labels = itertools.chain.from_iterable(
-            [spect[2] for spect in test_spects])
+            [tup[1] for tup in test_tups])
         test_labels = set(test_labels)
+
+        if val_dur:
+            val_labels = itertools.chain.from_iterable(
+                [tup[1] for tup in val_tups])
+            val_labels = set(val_labels)
 
         if train_labels != set(labelset):
             iter += 1
@@ -157,15 +187,6 @@ def train_test_dur_split_inds(durs,
             else:
                 print('Train labels did not contain all labels in labelset. '
                       'Getting new training set. Iteration {}'
-                      .format(iter))
-                continue
-        elif val_labels != set(labelset):
-            iter += 1
-            if iter > 1000:
-                raise ValueError(all_labels_err)
-            else:
-                print('Validation labels did not contain all labels in labelset. '
-                      'Getting new validation set. Iteration {}'
                       .format(iter))
                 continue
         elif test_labels != set(labelset):
@@ -177,13 +198,24 @@ def train_test_dur_split_inds(durs,
                       'Getting new test set. Iteration {}'
                       .format(iter))
                 continue
+        elif val_dur is not None and val_labels != set(labelset):
+            iter += 1
+            if iter > 1000:
+                raise ValueError(all_labels_err)
+            else:
+                print('Validation labels did not contain all labels in labelset. '
+                      'Getting new validation set. Iteration {}'
+                      .format(iter))
+                continue
+
         else:
             break
 
-    return train_inds, test_inds, val_inds
+    return train_inds, val_inds, test_inds
 
 
 def train_test_dur_split(vds,
+                         labelset,
                          train_dur,
                          test_dur,
                          val_dur=None):
@@ -192,7 +224,9 @@ def train_test_dur_split(vds,
     Parameters
     ----------
     vds : vak.dataset.VocalizationDataset
-
+        a dataset of vocalizations
+    labelset : set, list
+        of str or int, set of labels for vocalizations.
     train_dur : float
         total duration of training set, in seconds. Default is None.
     val_dur : float
@@ -207,16 +241,17 @@ def train_test_dur_split(vds,
     """
     durs = [voc.duration for voc in vds.voc_list]
     labels = [voc.annotation.labels for voc in vds.voc_list]
-    train_inds, test_inds, val_inds = train_test_dur_split_inds(durs=durs,
+    train_inds, val_inds, test_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
+                                                                labelset=labelset,
                                                                 train_dur=train_dur,
                                                                 test_dur=test_dur,
                                                                 val_dur=val_dur)
 
-    train_vds = VocalizationDataset(voc_list=[vds.voclist[ind] for ind in train_inds])
-    test_vds = VocalizationDataset(voc_list=[vds.voclist[ind] for ind in test_inds])
+    train_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in train_inds])
+    test_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in test_inds])
     if val_inds:
-        val_vds = VocalizationDataset(voc_list=[vds.voclist[ind] for ind in val_inds])
+        val_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in val_inds])
     else:
         val_vds = None
 
