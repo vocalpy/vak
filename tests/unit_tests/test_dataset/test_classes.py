@@ -7,7 +7,7 @@ import numpy as np
 from scipy.io import loadmat
 import crowsetta
 
-import vak.dataset.array
+import vak.dataset.spect
 import vak.dataset.annot
 from vak.dataset.classes import VocalizationDataset, Vocalization, Spectrogram
 
@@ -194,7 +194,7 @@ class TestClasses(unittest.TestCase):
         return True
 
     def test_vocal_dataset_json(self):
-        vds = vak.dataset.array.from_arr_files(array_format='mat',
+        vds = vak.dataset.spect.from_arr_files(array_format='mat',
                                                array_dir=self.array_dir_mat,
                                                annot_list=self.annot_list,
                                                load_spects=True)
