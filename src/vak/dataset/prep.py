@@ -142,7 +142,7 @@ def prep(labelset,
         'array_format': array_format,
         'labelset': labelset,
         'skip_files_with_labels_not_in_labelset': skip_files_with_labels_not_in_labelset,
-        'load_arr': False,
+        'load_spects': False,
         'annot_list': annot_list,
     }
 
