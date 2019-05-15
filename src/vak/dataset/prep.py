@@ -133,14 +133,14 @@ def prep(labelset,
             f'making array files containing spectrograms from audio files in: {data_dir}'
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
-        spect_files = audio.to_arr_files(audio_format=audio_format,
-                                         spect_params=spect_params,
-                                         output_dir=output_dir,
-                                         audio_files=audio_files,
-                                         annot_list=annot_list,
-                                         labelset=labelset,
-                                         skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset
-                                         )
+        spect_files = audio.to_spect(audio_format=audio_format,
+                                     spect_params=spect_params,
+                                     output_dir=output_dir,
+                                     audio_files=audio_files,
+                                     annot_list=annot_list,
+                                     labelset=labelset,
+                                     skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset
+                                     )
         spect_format = 'npz'
     else:
         spect_files = None

@@ -50,7 +50,7 @@ class TestAudio(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
 
     def _check_arr_files_returned_by_to_arr_files(self, arr_files):
-        """assertions that are shared across unit tests for vak.dataset.audio.to_arr_files"""
+        """assertions that are shared across unit tests for vak.dataset.audio.to_spect"""
         self.assertTrue(
             type(arr_files) == list
         )
@@ -78,7 +78,61 @@ class TestAudio(unittest.TestCase):
         return True
 
     def test_audio_dir_annot_cbin(self):
-        array_files = vak.dataset.audio.to_arr_files(audio_format='cbin',
+        array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                 spect_params=self.spect_params,
+                                                 output_dir=self.tmp_output_dir,
+                                                 audio_dir=self.audio_dir_cbin,
+                                                 audio_files=None,
+                                                 annot_list=self.annot_list_cbin,
+                                                 audio_annot_map=None,
+                                                 labelset=self.labelset_cbin,
+                                                 skip_files_with_labels_not_in_labelset=True,
+                                                 freqbins_key='f',
+                                                 timebins_key='t',
+                                                 spect_key='s')
+        self.assertTrue(
+            self._check_arr_files_returned_by_to_arr_files(array_files)
+        )
+
+    def test_audio_files_annot_cbin(self):
+        array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                 spect_params=self.spect_params,
+                                                 output_dir=self.tmp_output_dir,
+                                                 audio_dir=None,
+                                                 audio_files=self.audio_files_cbin,
+                                                 annot_list=self.annot_list_cbin,
+                                                 audio_annot_map=None,
+                                                 labelset=self.labelset_cbin,
+                                                 skip_files_with_labels_not_in_labelset=True,
+                                                 freqbins_key='f',
+                                                 timebins_key='t',
+                                                 spect_key='s')
+        self.assertTrue(
+            self._check_arr_files_returned_by_to_arr_files(array_files)
+        )
+
+    def test_audio_annot_map_cbin(self):
+        audio_annot_map = dict(zip(self.audio_files_cbin, self.annot_list_cbin))
+        array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                 spect_params=self.spect_params,
+                                                 output_dir=self.tmp_output_dir,
+                                                 audio_dir=None,
+                                                 audio_files=None,
+                                                 annot_list=None,
+                                                 audio_annot_map=audio_annot_map,
+                                                 labelset=self.labelset_cbin,
+                                                 skip_files_with_labels_not_in_labelset=True,
+                                                 freqbins_key='f',
+                                                 timebins_key='t',
+                                                 spect_key='s')
+        self.assertTrue(
+            self._check_arr_files_returned_by_to_arr_files(array_files)
+        )
+
+    def test_bad_inputs_raise(self):
+        # invalid audio format
+        with self.assertRaises(ValueError):
+            array_files = vak.dataset.audio.to_spect(audio_format='ape',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
                                                      audio_dir=self.audio_dir_cbin,
@@ -90,15 +144,13 @@ class TestAudio(unittest.TestCase):
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
-        self.assertTrue(
-            self._check_arr_files_returned_by_to_arr_files(array_files)
-        )
 
-    def test_audio_files_annot_cbin(self):
-        array_files = vak.dataset.audio.to_arr_files(audio_format='cbin',
+        # can't specify both dir and files
+        with self.assertRaises(ValueError):
+            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
-                                                     audio_dir=None,
+                                                     audio_dir=self.audio_dir_cbin,
                                                      audio_files=self.audio_files_cbin,
                                                      annot_list=self.annot_list_cbin,
                                                      audio_annot_map=None,
@@ -107,16 +159,13 @@ class TestAudio(unittest.TestCase):
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
-        self.assertTrue(
-            self._check_arr_files_returned_by_to_arr_files(array_files)
-        )
-
-    def test_audio_annot_map_cbin(self):
+        # can't specify both dir and audio_annot_map
         audio_annot_map = dict(zip(self.audio_files_cbin, self.annot_list_cbin))
-        array_files = vak.dataset.audio.to_arr_files(audio_format='cbin',
+        with self.assertRaises(ValueError):
+            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
-                                                     audio_dir=None,
+                                                     audio_dir=self.audio_dir_cbin,
                                                      audio_files=None,
                                                      annot_list=None,
                                                      audio_annot_map=audio_annot_map,
@@ -125,85 +174,36 @@ class TestAudio(unittest.TestCase):
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
-        self.assertTrue(
-            self._check_arr_files_returned_by_to_arr_files(array_files)
-        )
-
-    def test_bad_inputs_raise(self):
-        # invalid audio format
-        with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_arr_files(audio_format='ape',
-                                                         spect_params=self.spect_params,
-                                                         output_dir=self.tmp_output_dir,
-                                                         audio_dir=self.audio_dir_cbin,
-                                                         audio_files=None,
-                                                         annot_list=self.annot_list_cbin,
-                                                         audio_annot_map=None,
-                                                         labelset=self.labelset_cbin,
-                                                         skip_files_with_labels_not_in_labelset=True,
-                                                         freqbins_key='f',
-                                                         timebins_key='t',
-                                                         spect_key='s')
-
-        # can't specify both dir and files
-        with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_arr_files(audio_format='cbin',
-                                                         spect_params=self.spect_params,
-                                                         output_dir=self.tmp_output_dir,
-                                                         audio_dir=self.audio_dir_cbin,
-                                                         audio_files=self.audio_files_cbin,
-                                                         annot_list=self.annot_list_cbin,
-                                                         audio_annot_map=None,
-                                                         labelset=self.labelset_cbin,
-                                                         skip_files_with_labels_not_in_labelset=True,
-                                                         freqbins_key='f',
-                                                         timebins_key='t',
-                                                         spect_key='s')
-        # can't specify both dir and audio_annot_map
-        audio_annot_map = dict(zip(self.audio_files_cbin, self.annot_list_cbin))
-        with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_arr_files(audio_format='cbin',
-                                                         spect_params=self.spect_params,
-                                                         output_dir=self.tmp_output_dir,
-                                                         audio_dir=self.audio_dir_cbin,
-                                                         audio_files=None,
-                                                         annot_list=None,
-                                                         audio_annot_map=audio_annot_map,
-                                                         labelset=self.labelset_cbin,
-                                                         skip_files_with_labels_not_in_labelset=True,
-                                                         freqbins_key='f',
-                                                         timebins_key='t',
-                                                         spect_key='s')
 
         # can't specify both list and audio_annot_map
         with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_arr_files(audio_format='cbin',
-                                                         spect_params=self.spect_params,
-                                                         output_dir=self.tmp_output_dir,
-                                                         audio_dir=None,
-                                                         audio_files=self.audio_files_cbin,
-                                                         annot_list=None,
-                                                         audio_annot_map=audio_annot_map,
-                                                         labelset=self.labelset_cbin,
-                                                         skip_files_with_labels_not_in_labelset=True,
-                                                         freqbins_key='f',
-                                                         timebins_key='t',
-                                                         spect_key='s')
+            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                     spect_params=self.spect_params,
+                                                     output_dir=self.tmp_output_dir,
+                                                     audio_dir=None,
+                                                     audio_files=self.audio_files_cbin,
+                                                     annot_list=None,
+                                                     audio_annot_map=audio_annot_map,
+                                                     labelset=self.labelset_cbin,
+                                                     skip_files_with_labels_not_in_labelset=True,
+                                                     freqbins_key='f',
+                                                     timebins_key='t',
+                                                     spect_key='s')
 
         # can't specify both annotations list and audio_annot_map
         with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_arr_files(audio_format='cbin',
-                                                         spect_params=self.spect_params,
-                                                         output_dir=self.tmp_output_dir,
-                                                         audio_dir=None,
-                                                         audio_files=None,
-                                                         annot_list=self.annot_list_cbin,
-                                                         audio_annot_map=audio_annot_map,
-                                                         labelset=self.labelset_cbin,
-                                                         skip_files_with_labels_not_in_labelset=True,
-                                                         freqbins_key='f',
-                                                         timebins_key='t',
-                                                         spect_key='s')
+            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                     spect_params=self.spect_params,
+                                                     output_dir=self.tmp_output_dir,
+                                                     audio_dir=None,
+                                                     audio_files=None,
+                                                     annot_list=self.annot_list_cbin,
+                                                     audio_annot_map=audio_annot_map,
+                                                     labelset=self.labelset_cbin,
+                                                     skip_files_with_labels_not_in_labelset=True,
+                                                     freqbins_key='f',
+                                                     timebins_key='t',
+                                                     spect_key='s')
 
 
 if __name__ == '__main__':

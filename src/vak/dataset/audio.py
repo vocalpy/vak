@@ -37,18 +37,18 @@ def files_from_dir(audio_dir, audio_format):
     return audio_files
 
 
-def to_arr_files(audio_format,
-                 spect_params,
-                 output_dir,
-                 audio_dir=None,
-                 audio_files=None,
-                 annot_list=None,
-                 audio_annot_map=None,
-                 labelset=None,
-                 skip_files_with_labels_not_in_labelset=True,
-                 freqbins_key='f',
-                 timebins_key='t',
-                 spect_key='s'):
+def to_spect(audio_format,
+             spect_params,
+             output_dir,
+             audio_dir=None,
+             audio_files=None,
+             annot_list=None,
+             audio_annot_map=None,
+             labelset=None,
+             skip_files_with_labels_not_in_labelset=True,
+             freqbins_key='f',
+             timebins_key='t',
+             spect_key='s'):
     """makes spectrograms from audio files and save in array files
 
     Parameters
@@ -165,7 +165,7 @@ def to_arr_files(audio_format,
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
-    # this is defined here so all other arguments to 'to_arr_files' are in scope
+    # this is defined here so all other arguments to 'to_spect' are in scope
     def _array_file_from_audio_annot_tup(audio_annot_tup):
         """helper function that enables parallelized creation of array files containing spectrograms.
         Accepts a tuple with the path to an audio file and annotations,
