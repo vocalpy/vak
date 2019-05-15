@@ -133,7 +133,7 @@ def prep(labelset,
             f'making array files containing spectrograms from audio files in: {data_dir}'
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
-        array_files = audio.to_arr_files(audio_format=audio_format,
+        spect_files = audio.to_arr_files(audio_format=audio_format,
                                          spect_params=spect_params,
                                          output_dir=output_dir,
                                          audio_files=audio_files,
@@ -143,9 +143,9 @@ def prep(labelset,
                                          )
         spect_format = 'npz'
     else:
-        array_files = None
+        spect_files = None
 
-    from_arr_kwargs = {
+    from_files_kwargs = {
         'spect_format': spect_format,
         'labelset': labelset,
         'skip_files_with_labels_not_in_labelset': skip_files_with_labels_not_in_labelset,
@@ -153,18 +153,18 @@ def prep(labelset,
         'annot_list': annot_list,
     }
 
-    if array_files:
-        from_arr_kwargs['array_files'] = array_files
+    if spect_files:
+        from_files_kwargs['spect_files'] = spect_files
         logger.info(
-            f'creating VocalDataset from array files in: {output_dir}'
+            f'creating VocalDataset from spectrogram files in: {output_dir}'
         )
     else:
-        from_arr_kwargs['array_dir'] = data_dir
+        from_files_kwargs['spect_dir'] = data_dir
         logger.info(
-            f'creating VocalDataset from array files in: {data_dir}'
+            f'creating VocalDataset from spectrogram files in: {data_dir}'
         )
 
-    vds = spect.from_files(**from_arr_kwargs)
+    vds = spect.from_files(**from_files_kwargs)
 
     if save_vds:
         if vds_fname is None:
@@ -189,4 +189,3 @@ def prep(labelset,
         return vds_path
     elif return_vds:
         return vds
-
