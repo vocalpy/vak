@@ -211,7 +211,7 @@ def train_test_dur_split_inds(durs,
         else:
             break
 
-    return train_inds, val_inds, test_inds
+    return train_inds, test_inds, val_inds
 
 
 def train_test_dur_split(vds,
@@ -237,11 +237,12 @@ def train_test_dur_split(vds,
 
     Returns
     -------
-    train, test, val
+    train_vds, test_vds, val_vds
     """
     durs = [voc.duration for voc in vds.voc_list]
     labels = [voc.annotation.labels for voc in vds.voc_list]
-    train_inds, val_inds, test_inds = train_test_dur_split_inds(durs=durs,
+
+    train_inds, test_inds, val_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
                                                                 labelset=labelset,
                                                                 train_dur=train_dur,
