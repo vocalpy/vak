@@ -129,22 +129,36 @@ class TestClasses(unittest.TestCase):
                          spect=spect)
 
         with self.assertRaises(ValueError):
-            # because we didn't specify spect
-            Vocalization(annotation=annot,
-                         duration=dur,
-                         spect_file=arr_file)
-
-        with self.assertRaises(ValueError):
-            # because we didn't specify audio
-            Vocalization(annotation=annot,
-                         duration=dur,
-                         audio_file=self.audio_files_cbin[0])
-
-        with self.assertRaises(ValueError):
             # because we didn't specify audio file
             Vocalization(annotation=annot,
                          duration=dur,
                          audio=np.random.normal(size=(1000, 1)))
+
+        # this should work, because we want to be able to have a Vocalization
+        # without loading the spectrogram into it
+        a_voc = Vocalization(annotation=annot,
+                             duration=dur,
+                             spect_file=arr_file)
+        for attr in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+            self.assertTrue(hasattr(voc, attr))
+        self.assertTrue(a_voc.duration == dur)
+        self.assertTrue(a_voc.spect is None)
+        self.assertTrue(a_voc.spect_file == arr_file)
+        self.assertTrue(a_voc.audio is None)
+        self.assertTrue(a_voc.audio_file is None)
+
+        # this should work, because we want to be able to have a Vocalization
+        # without loading the audio into it
+        a_voc = Vocalization(annotation=annot,
+                             duration=dur,
+                             audio_file=self.audio_files_cbin[0])
+        for attr in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+            self.assertTrue(hasattr(voc, attr))
+        self.assertTrue(a_voc.duration == dur)
+        self.assertTrue(a_voc.spect is None)
+        self.assertTrue(a_voc.spect_file is None)
+        self.assertTrue(a_voc.audio is None)
+        self.assertTrue(a_voc.audio_file == self.audio_files_cbin[0])
 
     def test_VocalDataset_init(self):
         voc_list = []
