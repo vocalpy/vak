@@ -19,7 +19,7 @@ def prep(labelset,
          load_spects=True,
          annot_file=None,
          audio_format=None,
-         array_format=None,
+         spect_format=None,
          spect_params=None):
     """prepare a VocalizationDataset from a directory of audio or spectrogram files
     containing vocalizations, and (optionally) annotation for those files
@@ -53,7 +53,7 @@ def prep(labelset,
         later, but don't want to load all the spectrograms into memory yet.
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
-    array_format : str
+    spect_format : str
         format of array files containing spectrograms as 2-d matrices.
         One of {'mat', 'npz'}.
     annot_format : str
@@ -110,11 +110,11 @@ def prep(labelset,
     elif output_dir is None:
         output_dir = data_dir
 
-    if audio_format is None and array_format is None:
-        raise ValueError("Must specify either audio_format or array_format")
+    if audio_format is None and spect_format is None:
+        raise ValueError("Must specify either audio_format or spect_format")
 
-    if audio_format and array_format:
-        raise ValueError("Cannot specify both audio_format and array_format, "
+    if audio_format and spect_format:
+        raise ValueError("Cannot specify both audio_format and spect_format, "
                          "unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms from array files")
 
@@ -141,12 +141,12 @@ def prep(labelset,
                                          labelset=labelset,
                                          skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset
                                          )
-        array_format = 'npz'
+        spect_format = 'npz'
     else:
         array_files = None
 
     from_arr_kwargs = {
-        'array_format': array_format,
+        'spect_format': spect_format,
         'labelset': labelset,
         'skip_files_with_labels_not_in_labelset': skip_files_with_labels_not_in_labelset,
         'load_spects': load_spects,
