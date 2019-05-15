@@ -6,7 +6,6 @@ import json
 import numpy as np
 from scipy.io import loadmat
 import crowsetta
-import evfuncs
 
 import vak.dataset.array
 import vak.dataset.annot
@@ -32,6 +31,7 @@ class TestClasses(unittest.TestCase):
         self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
         self.scribe = crowsetta.Transcriber(voc_format='yarden')
         self.annot_list = self.scribe.to_seq(self.annot_mat)
+        self.labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
 
         self.spect_params = dict(fft_size=512,
                                  step_size=64,
