@@ -36,7 +36,7 @@ class TestMakeData(unittest.TestCase):
                                          return_vds=True,
                                          return_path=True,
                                          audio_format='cbin',
-                                         array_format=None,
+                                         spect_format=None,
                                          annot_file=None,
                                          spect_params=spect_params)
 
@@ -69,7 +69,7 @@ class TestMakeData(unittest.TestCase):
                                          return_vds=True,
                                          return_path=True,
                                          audio_format=None,
-                                         array_format='mat',
+                                         spect_format='mat',
                                          annot_file=annot_file,
                                          spect_params=None)
 
