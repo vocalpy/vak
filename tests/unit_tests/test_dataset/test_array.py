@@ -29,6 +29,7 @@ class TestArray(unittest.TestCase):
         self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
         self.scribe = crowsetta.Transcriber(voc_format='yarden')
         self.annot_list = self.scribe.to_seq(self.annot_mat)
+        self.labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
 
     def _check_vocal_dataset_returned_by_from_arr_files(self, vocal_dataset, load_spects=True):
         """assertions that are shared across unit tests for vak.dataset.array.from_arr_files"""
@@ -43,7 +44,6 @@ class TestArray(unittest.TestCase):
         self.assertTrue(
             all([hasattr(voc, 'spect') for voc in vocal_dataset.voc_list])
         )
-
 
         array_file_basenames = [os.path.basename(arr_path) for arr_path in self.array_files]
         spect_files = [os.path.basename(voc.spect_file)
