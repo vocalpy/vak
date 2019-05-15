@@ -25,12 +25,13 @@ def from_files(spect_format,
                timebins_key='t',
                spect_key='s'
                ):
-    """create vocalization dataset (Vocalset) from already-made spectrograms that are in
+    """create VocalizationDataset from already-made spectrograms that are in
     files containing arrays, i.e., .mat files created by Matlab or .npz files created by numpy
 
-    Each "array file" must contain a spectrogram and two vectors associated with it, a
+    Each file should contain a spectrogram as a matrix and two vectors associated with it, a
     vector of frequency bins and time bins, where the values in those vectors are the values
-    at the bin centers.
+    at the bin centers. (As far as vak is concerned, "vector" and "matrix" are synonymous with
+    "array".)
 
     Since both .mat files and .npz files load into a dictionary-like structure,
     the arrays will be accessed with keys. By convention, these keys are 's', 'f', and 't'.
