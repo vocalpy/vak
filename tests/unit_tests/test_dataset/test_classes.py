@@ -194,10 +194,10 @@ class TestClasses(unittest.TestCase):
         return True
 
     def test_vocal_dataset_json(self):
-        vds = vak.dataset.spect.from_arr_files(array_format='mat',
-                                               array_dir=self.array_dir_mat,
-                                               annot_list=self.annot_list,
-                                               load_spects=True)
+        vds = vak.dataset.spect.from_files(array_format='mat',
+                                           array_dir=self.array_dir_mat,
+                                           annot_list=self.annot_list,
+                                           load_spects=True)
         vds_json_str = vds.to_json(json_fname=None)
         vds_json = json.loads(vds_json_str)
 
