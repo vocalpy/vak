@@ -16,7 +16,7 @@ def from_files(spect_format,
                spect_dir=None,
                spect_files=None,
                annot_list=None,
-               array_annot_map=None,
+               spect_annot_map=None,
                labelset=None,
                skip_files_with_labels_not_in_labelset=False,
                load_spects=True,
@@ -48,7 +48,7 @@ def from_files(spect_format,
         List of paths to array files. Default is None.
     annot_list : list
         of annotations for array files. Default is None.
-    array_annot_map : dict
+    spect_annot_map : dict
         Where keys are paths to array files and value corresponding to each key is
         the annotation for that array file.
         Default is None.
@@ -86,15 +86,15 @@ def from_files(spect_format,
     if spect_dir and spect_files:
         raise ValueError('received values for spect_dir and spect_files, unclear which to use')
 
-    if spect_dir and array_annot_map:
-        raise ValueError('received values for spect_dir and array_annot_map, unclear which to use')
+    if spect_dir and spect_annot_map:
+        raise ValueError('received values for spect_dir and spect_annot_map, unclear which to use')
 
-    if spect_files and array_annot_map:
-        raise ValueError('received values for spect_files and array_annot_map, unclear which to use')
+    if spect_files and spect_annot_map:
+        raise ValueError('received values for spect_files and spect_annot_map, unclear which to use')
 
-    if annot_list and array_annot_map:
+    if annot_list and spect_annot_map:
         raise ValueError(
-            'received values for annot_list and array_annot_map, unclear which annotations to use'
+            'received values for annot_list and spect_annot_map, unclear which annotations to use'
         )
 
     if labelset is None and skip_files_with_labels_not_in_labelset is True:
@@ -112,7 +112,7 @@ def from_files(spect_format,
             spect_files = glob(os.path.join(spect_dir, '*.npz'))
 
     if spect_files:
-        array_annot_map = dict((arr_path, annot) for arr_path, annot in zip(spect_files, annot_list))
+        spect_annot_map = dict((arr_path, annot) for arr_path, annot in zip(spect_files, annot_list))
 
     # this is defined here so all other arguments to 'from_arr_files' are in scope
     def _voc_from_array_annot(arr_path_annot_tup):
@@ -194,7 +194,7 @@ def from_files(spect_format,
 
         return voc
 
-    arr_path_annot_tups = db.from_sequence(array_annot_map.items())
+    arr_path_annot_tups = db.from_sequence(spect_annot_map.items())
     logger.info('creating VocalDataset')
     with ProgressBar():
         voc_list = list(arr_path_annot_tups.map(_voc_from_array_annot))
