@@ -12,7 +12,7 @@ HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
 
 
-class TestMakeData(unittest.TestCase):
+class TestPrep(unittest.TestCase):
     def setUp(self):
         self.tmp_output_dir = tempfile.mkdtemp()
 
