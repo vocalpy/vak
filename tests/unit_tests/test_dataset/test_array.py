@@ -70,7 +70,7 @@ class TestArray(unittest.TestCase):
 
     def test_array_dir_annot(self):
         vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     array_dir=self.array_dir,
+                                                     spect_dir=self.array_dir,
                                                      annot_list=self.annot_list,
                                                      load_spects=True)
         self.assertTrue(
@@ -79,7 +79,7 @@ class TestArray(unittest.TestCase):
 
         # make sure we're not loading arrays when we don't want to
         vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     array_dir=self.array_dir,
+                                                     spect_dir=self.array_dir,
                                                      annot_list=self.annot_list,
                                                      load_spects=False)
         self.assertTrue(
@@ -89,7 +89,7 @@ class TestArray(unittest.TestCase):
 
     def test_array_files_annot(self):
         vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     array_files=self.array_files,
+                                                     spect_files=self.array_files,
                                                      annot_list=self.annot_list,
                                                      load_spects=True)
         self.assertTrue(
@@ -98,7 +98,7 @@ class TestArray(unittest.TestCase):
 
         # make sure we're not loading arrays when we don't want to
         vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     array_files=self.array_files,
+                                                     spect_files=self.array_files,
                                                      annot_list=self.annot_list,
                                                      load_spects=False)
         self.assertTrue(
@@ -127,17 +127,17 @@ class TestArray(unittest.TestCase):
     def test_bad_inputs_raise(self):
         # invalid array format
         with self.assertRaises(ValueError):
-            vak.dataset.spect.from_files(array_format='npy',
-                                         array_dir=self.array_dir,
-                                         array_files=self.array_files,
+            vak.dataset.spect.from_files(spect_format='npy',
+                                         spect_dir=self.array_dir,
+                                         spect_files=self.array_files,
                                          annot_list=self.annot_list,
                                          load_spects=True)
 
         # can't specify both dir and list
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(self.array_format,
-                                         array_dir=self.array_dir,
-                                         array_files=self.array_files,
+                                         spect_dir=self.array_dir,
+                                         spect_files=self.array_files,
                                          annot_list=self.annot_list,
                                          load_spects=True)
 
@@ -145,14 +145,14 @@ class TestArray(unittest.TestCase):
         array_annot_map = dict(zip(self.array_files, self.annot_list))
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(self.array_format,
-                                         array_dir=self.array_dir,
+                                         spect_dir=self.array_dir,
                                          array_annot_map=array_annot_map,
                                          load_spects=True)
 
         # can't specify both list and array_annot_map
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(self.array_format,
-                                         array_files=self.array_files,
+                                         spect_files=self.array_files,
                                          array_annot_map=array_annot_map,
                                          load_spects=True)
 
