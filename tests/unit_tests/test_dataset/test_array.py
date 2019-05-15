@@ -5,7 +5,7 @@ from glob import glob
 import numpy as np
 import crowsetta
 
-import vak.dataset.array
+import vak.dataset.spect
 from vak.dataset.classes import VocalizationDataset, Vocalization, Spectrogram
 
 
@@ -69,7 +69,7 @@ class TestArray(unittest.TestCase):
         return True
 
     def test_array_dir_annot(self):
-        vocal_dataset = vak.dataset.array.from_arr_files(self.array_format,
+        vocal_dataset = vak.dataset.spect.from_arr_files(self.array_format,
                                                          array_dir=self.array_dir,
                                                          annot_list=self.annot_list,
                                                          load_spects=True)
@@ -78,7 +78,7 @@ class TestArray(unittest.TestCase):
         )
 
         # make sure we're not loading arrays when we don't want to
-        vocal_dataset = vak.dataset.array.from_arr_files(self.array_format,
+        vocal_dataset = vak.dataset.spect.from_arr_files(self.array_format,
                                                          array_dir=self.array_dir,
                                                          annot_list=self.annot_list,
                                                          load_spects=False)
@@ -88,7 +88,7 @@ class TestArray(unittest.TestCase):
         )
 
     def test_array_files_annot(self):
-        vocal_dataset = vak.dataset.array.from_arr_files(self.array_format,
+        vocal_dataset = vak.dataset.spect.from_arr_files(self.array_format,
                                                          array_files=self.array_files,
                                                          annot_list=self.annot_list,
                                                          load_spects=True)
@@ -97,7 +97,7 @@ class TestArray(unittest.TestCase):
         )
 
         # make sure we're not loading arrays when we don't want to
-        vocal_dataset = vak.dataset.array.from_arr_files(self.array_format,
+        vocal_dataset = vak.dataset.spect.from_arr_files(self.array_format,
                                                          array_files=self.array_files,
                                                          annot_list=self.annot_list,
                                                          load_spects=False)
@@ -108,7 +108,7 @@ class TestArray(unittest.TestCase):
 
     def test_array_annot_map(self):
         array_annot_map = dict(zip(self.array_files, self.annot_list))
-        vocal_dataset = vak.dataset.array.from_arr_files(self.array_format,
+        vocal_dataset = vak.dataset.spect.from_arr_files(self.array_format,
                                                          array_annot_map=array_annot_map,
                                                          load_spects=True)
         self.assertTrue(
@@ -116,7 +116,7 @@ class TestArray(unittest.TestCase):
         )
 
         # make sure we're not loading arrays when we don't want to
-        vocal_dataset = vak.dataset.array.from_arr_files(self.array_format,
+        vocal_dataset = vak.dataset.spect.from_arr_files(self.array_format,
                                                          array_annot_map=array_annot_map,
                                                          load_spects=False)
         self.assertTrue(
@@ -127,7 +127,7 @@ class TestArray(unittest.TestCase):
     def test_bad_inputs_raise(self):
         # invalid array format
         with self.assertRaises(ValueError):
-            vak.dataset.array.from_arr_files(array_format='npy',
+            vak.dataset.spect.from_arr_files(array_format='npy',
                                              array_dir=self.array_dir,
                                              array_files=self.array_files,
                                              annot_list=self.annot_list,
@@ -135,7 +135,7 @@ class TestArray(unittest.TestCase):
 
         # can't specify both dir and list
         with self.assertRaises(ValueError):
-            vak.dataset.array.from_arr_files(self.array_format,
+            vak.dataset.spect.from_arr_files(self.array_format,
                                              array_dir=self.array_dir,
                                              array_files=self.array_files,
                                              annot_list=self.annot_list,
@@ -144,21 +144,21 @@ class TestArray(unittest.TestCase):
         # can't specify both dir and array_annot_map
         array_annot_map = dict(zip(self.array_files, self.annot_list))
         with self.assertRaises(ValueError):
-            vak.dataset.array.from_arr_files(self.array_format,
+            vak.dataset.spect.from_arr_files(self.array_format,
                                              array_dir=self.array_dir,
                                              array_annot_map=array_annot_map,
                                              load_spects=True)
 
         # can't specify both list and array_annot_map
         with self.assertRaises(ValueError):
-            vak.dataset.array.from_arr_files(self.array_format,
+            vak.dataset.spect.from_arr_files(self.array_format,
                                              array_files=self.array_files,
                                              array_annot_map=array_annot_map,
                                              load_spects=True)
 
         # can't specify both annotations list and array_annot_map
         with self.assertRaises(ValueError):
-            vak.dataset.array.from_arr_files(self.array_format,
+            vak.dataset.spect.from_arr_files(self.array_format,
                                              array_annot_map=array_annot_map,
                                              annot_list=self.annot_list,
                                              load_spects=True)

@@ -4,7 +4,7 @@ from datetime import datetime
 
 from crowsetta import Transcriber
 
-from . import annot, array, audio
+from . import annot, spect, audio
 
 
 def prep(labelset,
@@ -164,7 +164,7 @@ def prep(labelset,
             f'creating VocalDataset from array files in: {data_dir}'
         )
 
-    vds = array.from_arr_files(**from_arr_kwargs)
+    vds = spect.from_arr_files(**from_arr_kwargs)
 
     if save_vds:
         if vds_fname is None:
