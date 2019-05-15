@@ -83,7 +83,7 @@ def to_spect(audio_format,
 
     Returns
     -------
-    array_files : list
+    spect_files : list
         of str, full paths to .spect.npz files
 
     Notes
@@ -199,6 +199,6 @@ def to_spect(audio_format,
     bag = db.from_sequence(audio_annot_map.items())
     logger.info('creating array files with spectrograms')
     with ProgressBar():
-        array_files = list(bag.map(_array_file_from_audio_annot_tup))
+        spect_files = list(bag.map(_array_file_from_audio_annot_tup))
 
-    return array_files
+    return spect_files
