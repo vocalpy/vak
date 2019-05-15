@@ -12,9 +12,9 @@ from ..config import validators
 from ..utils.general import timebin_dur_from_vec
 
 
-def from_files(array_format,
-               array_dir=None,
-               array_files=None,
+def from_files(spect_format,
+               spect_dir=None,
+               spect_files=None,
                annot_list=None,
                array_annot_map=None,
                labelset=None,
@@ -39,12 +39,12 @@ def from_files(array_format,
 
     Parameters
     ----------
-    array_format : str
+    spect_format : str
         format of array files. One of {'mat', 'npz'}
-    array_dir : str
+    spect_dir : str
         path to directory of files containing spectrograms as arrays.
         Default is None.
-    array_files : list
+    spect_files : list
         List of paths to array files. Default is None.
     annot_list : list
         of annotations for array files. Default is None.
@@ -77,20 +77,20 @@ def from_files(array_format,
     vocalset : vak.dataset.VocalDataset
         dataset of annotated vocalizations
     """
-    if array_format not in validators.VALID_SPECT_FORMATS:
+    if spect_format not in validators.VALID_SPECT_FORMATS:
         raise ValueError(
             f"array format must be one of '{validators.VALID_SPECT_FORMATS}'; "
-            f"format '{array_format}' not recognized."
+            f"format '{spect_format}' not recognized."
         )
 
-    if array_dir and array_files:
-        raise ValueError('received values for array_dir and array_files, unclear which to use')
+    if spect_dir and spect_files:
+        raise ValueError('received values for spect_dir and spect_files, unclear which to use')
 
-    if array_dir and array_annot_map:
-        raise ValueError('received values for array_dir and array_annot_map, unclear which to use')
+    if spect_dir and array_annot_map:
+        raise ValueError('received values for spect_dir and array_annot_map, unclear which to use')
 
-    if array_files and array_annot_map:
-        raise ValueError('received values for array_files and array_annot_map, unclear which to use')
+    if spect_files and array_annot_map:
+        raise ValueError('received values for spect_files and array_annot_map, unclear which to use')
 
     if annot_list and array_annot_map:
         raise ValueError(
@@ -105,14 +105,14 @@ def from_files(array_format,
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
-    if array_dir:
-        if array_format == 'mat':
-            array_files = glob(os.path.join(array_dir, '*.mat'))
-        elif array_format == 'npz':
-            array_files = glob(os.path.join(array_dir, '*.npz'))
+    if spect_dir:
+        if spect_format == 'mat':
+            spect_files = glob(os.path.join(spect_dir, '*.mat'))
+        elif spect_format == 'npz':
+            spect_files = glob(os.path.join(spect_dir, '*.npz'))
 
-    if array_files:
-        array_annot_map = dict((arr_path, annot) for arr_path, annot in zip(array_files, annot_list))
+    if spect_files:
+        array_annot_map = dict((arr_path, annot) for arr_path, annot in zip(spect_files, annot_list))
 
     # this is defined here so all other arguments to 'from_arr_files' are in scope
     def _voc_from_array_annot(arr_path_annot_tup):
@@ -121,9 +121,9 @@ def from_files(array_format,
         and returns a Vocalization object."""
         (arr_path, annot) = arr_path_annot_tup
         arr_file = os.path.basename(arr_path)
-        if array_format == 'mat':
+        if spect_format == 'mat':
             arr = loadmat(arr_path, squeeze_me=True)
-        elif array_format == 'npz':
+        elif spect_format == 'npz':
             arr = np.load(arr_path)
 
         if spect_key not in arr:
