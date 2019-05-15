@@ -12,19 +12,19 @@ from ..config import validators
 from ..utils.general import timebin_dur_from_vec
 
 
-def from_arr_files(array_format,
-                   array_dir=None,
-                   array_files=None,
-                   annot_list=None,
-                   array_annot_map=None,
-                   labelset=None,
-                   skip_files_with_labels_not_in_labelset=False,
-                   load_spects=True,
-                   n_decimals_trunc=3,
-                   freqbins_key='f',
-                   timebins_key='t',
-                   spect_key='s'
-                   ):
+def from_files(array_format,
+               array_dir=None,
+               array_files=None,
+               annot_list=None,
+               array_annot_map=None,
+               labelset=None,
+               skip_files_with_labels_not_in_labelset=False,
+               load_spects=True,
+               n_decimals_trunc=3,
+               freqbins_key='f',
+               timebins_key='t',
+               spect_key='s'
+               ):
     """create vocalization dataset (Vocalset) from already-made spectrograms that are in
     files containing arrays, i.e., .mat files created by Matlab or .npz files created by numpy
 
