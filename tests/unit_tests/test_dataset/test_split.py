@@ -8,6 +8,7 @@ import crowsetta
 import vak.dataset.array
 import vak.dataset.annot
 import vak.dataset.split
+from vak.dataset.classes import VocalizationDataset
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
@@ -35,11 +36,11 @@ class TestSplit(unittest.TestCase):
         durs = (5, 5, 5, 5, 5)
         labelset = 'abcde'
         labels = ([np.asarray(list(labelset)) for _ in range(5)])
-        train_inds, test_inds = vak.dataset.split.train_test_dur_split_inds(durs,
-                                                                            labels,
-                                                                            labelset,
-                                                                            train_dur=20,
-                                                                            test_dur=5)
+        train_inds, test_inds, _ = vak.dataset.split.train_test_dur_split_inds(durs,
+                                                                               labels,
+                                                                               labelset,
+                                                                               train_dur=20,
+                                                                               test_dur=5)
         all_inds_out = sorted(train_inds + test_inds)
         all_inds_in = list(range(len(durs)))
         self.assertTrue(all_inds_out == all_inds_in)
@@ -49,11 +50,11 @@ class TestSplit(unittest.TestCase):
         labelset = 'abcde'
         labels = ['abc', 'ab', 'c', 'cde', 'de', 'abc', 'ab', 'c', 'cde', 'de']
         labels = ([np.asarray(list(lbl)) for lbl in labels])
-        train_inds, test_inds = vak.dataset.split.train_test_dur_split_inds(durs,
-                                                                            labels,
-                                                                            labelset,
-                                                                            train_dur=18,
-                                                                            test_dur=4)
+        train_inds, test_inds, _ = vak.dataset.split.train_test_dur_split_inds(durs,
+                                                                               labels,
+                                                                               labelset,
+                                                                               train_dur=18,
+                                                                               test_dur=4)
         all_inds_out = sorted(train_inds + test_inds)
         all_inds_in = list(range(len(durs)))
         self.assertTrue(all_inds_out == all_inds_in)
@@ -95,7 +96,10 @@ class TestSplit(unittest.TestCase):
         train_vds, test_vds = vak.dataset.split.train_test_dur_split(vds,
                                                                      labelset=self.labelset_mat,
                                                                      train_dur=200,
-                                                                     test_dur=200)
+
+                                                                             test_dur=200)
+        for vds in (train_vds, test_vds):
+            self.assertTrue(type(vds) == VocalizationDataset)
 
 
 if __name__ == '__main__':
