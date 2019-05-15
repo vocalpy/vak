@@ -88,10 +88,10 @@ class TestSplit(unittest.TestCase):
         self.assertTrue(all_inds_out == all_inds_in)
 
     def test_train_test_dur_split(self):
-        vds = vak.dataset.spect.from_arr_files(array_format='mat',
-                                               array_dir=self.array_dir_mat,
-                                               annot_list=self.annot_list_mat,
-                                               load_spects=False)
+        vds = vak.dataset.spect.from_files(array_format='mat',
+                                           array_dir=self.array_dir_mat,
+                                           annot_list=self.annot_list_mat,
+                                           load_spects=False)
 
         train_vds, test_vds = vak.dataset.split.train_test_dur_split(vds,
                                                                      labelset=self.labelset_mat,
