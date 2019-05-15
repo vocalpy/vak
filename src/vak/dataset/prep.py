@@ -44,7 +44,13 @@ def prep(labelset,
         Default is None. If None, then the filename will be
         'vocalization_dataset_prepared_{timestamp}.json'.
     return_vds : bool
-        if True, return
+        if True, return prepared VocalizationDataset. Default is True.
+    return_path : bool
+        if True, return path to saved VocalizationDataset. Default is True.
+    load_spects : bool
+        if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
+        Default is True. Set to False when you want to create a VocalDataset for use
+        later, but don't want to load all the spectrograms into memory yet.
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
     array_format : str
