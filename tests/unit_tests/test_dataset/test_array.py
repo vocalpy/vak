@@ -109,7 +109,7 @@ class TestArray(unittest.TestCase):
     def test_array_annot_map(self):
         array_annot_map = dict(zip(self.array_files, self.annot_list))
         vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     array_annot_map=array_annot_map,
+                                                     spect_annot_map=array_annot_map,
                                                      load_spects=True)
         self.assertTrue(
             self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset)
@@ -117,7 +117,7 @@ class TestArray(unittest.TestCase):
 
         # make sure we're not loading arrays when we don't want to
         vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     array_annot_map=array_annot_map,
+                                                     spect_annot_map=array_annot_map,
                                                      load_spects=False)
         self.assertTrue(
             self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset,
@@ -146,20 +146,20 @@ class TestArray(unittest.TestCase):
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(self.array_format,
                                          spect_dir=self.array_dir,
-                                         array_annot_map=array_annot_map,
+                                         spect_annot_map=array_annot_map,
                                          load_spects=True)
 
         # can't specify both list and array_annot_map
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(self.array_format,
                                          spect_files=self.array_files,
-                                         array_annot_map=array_annot_map,
+                                         spect_annot_map=array_annot_map,
                                          load_spects=True)
 
         # can't specify both annotations list and array_annot_map
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(self.array_format,
-                                         array_annot_map=array_annot_map,
+                                         spect_annot_map=array_annot_map,
                                          annot_list=self.annot_list,
                                          load_spects=True)
 
