@@ -91,11 +91,11 @@ class TestClasses(unittest.TestCase):
                                                    timebin_dur=None,
                                                    n_decimals_trunc=3)
             dur = spect.timebin_dur * spect.array.shape[-1]
-            voc = Vocalization(annotation=annot,
+            voc = Vocalization(annot=annot,
                                duration=dur,
                                spect=spect,
                                spect_file=arr_file)
-            for attr in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+            for attr in ['annot', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
                 self.assertTrue(hasattr(voc, attr))
             self.assertTrue(voc.duration == dur)
             self.assertTrue(voc.spect_file == arr_file)
@@ -105,11 +105,11 @@ class TestClasses(unittest.TestCase):
         for cbin_file, annot in zip(self.array_list_mat, self.annot_list):
             arr_file_dict = loadmat(arr_file, squeeze_me=True)
             dur = spect.timebin_dur * spect.array.shape[-1]
-            voc = Vocalization(annotation=self.annot_list[0],
+            voc = Vocalization(annot=self.annot_list[0],
                                duration=dur,
                                spect=spect,
                                spect_file=arr_file)
-            for attr in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+            for attr in ['annot', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
                 self.assertTrue(hasattr(voc, attr))
             self.assertTrue(voc.duration == dur)
             self.assertTrue(voc.spect_file == arr_file)
@@ -119,27 +119,27 @@ class TestClasses(unittest.TestCase):
         with self.assertRaises(ValueError):
             # because we didn't specify audio or spect or audio_file or spect_file
             # notice we lazily re-use last value of annot and dur from loop above
-            Vocalization(annotation=annot,
+            Vocalization(annot=annot,
                          duration=dur)
 
         with self.assertRaises(ValueError):
             # because we didn't specify spect file
-            Vocalization(annotation=annot,
+            Vocalization(annot=annot,
                          duration=dur,
                          spect=spect)
 
         with self.assertRaises(ValueError):
             # because we didn't specify audio file
-            Vocalization(annotation=annot,
+            Vocalization(annot=annot,
                          duration=dur,
                          audio=np.random.normal(size=(1000, 1)))
 
         # this should work, because we want to be able to have a Vocalization
         # without loading the spectrogram into it
-        a_voc = Vocalization(annotation=annot,
+        a_voc = Vocalization(annot=annot,
                              duration=dur,
                              spect_file=arr_file)
-        for attr in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+        for attr in ['annot', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
             self.assertTrue(hasattr(voc, attr))
         self.assertTrue(a_voc.duration == dur)
         self.assertTrue(a_voc.spect is None)
@@ -149,10 +149,10 @@ class TestClasses(unittest.TestCase):
 
         # this should work, because we want to be able to have a Vocalization
         # without loading the audio into it
-        a_voc = Vocalization(annotation=annot,
+        a_voc = Vocalization(annot=annot,
                              duration=dur,
                              audio_file=self.audio_files_cbin[0])
-        for attr in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+        for attr in ['annot', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
             self.assertTrue(hasattr(voc, attr))
         self.assertTrue(a_voc.duration == dur)
         self.assertTrue(a_voc.spect is None)
@@ -171,7 +171,7 @@ class TestClasses(unittest.TestCase):
                                                    timebin_dur=None,
                                                    n_decimals_trunc=3)
             dur = spect.timebin_dur * spect.array.shape[-1]
-            voc = Vocalization(annotation=annot,
+            voc = Vocalization(annot=annot,
                                duration=dur,
                                spect=spect,
                                spect_file=arr_file)
@@ -206,7 +206,7 @@ class TestClasses(unittest.TestCase):
         voc_list = vds_json['voc_list']
         self.assertTrue(type(voc_list) == list)
         for voc in voc_list:
-            for key in ['annotation', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
+            for key in ['annot', 'duration', 'spect', 'spect_file', 'audio', 'audio_file']:
                 self.assertTrue(key in voc)
 
         vds_from_json = VocalizationDataset.from_json(json_str=vds_json_str)
