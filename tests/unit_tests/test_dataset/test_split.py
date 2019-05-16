@@ -96,8 +96,7 @@ class TestSplit(unittest.TestCase):
         train_vds, test_vds = vak.dataset.split.train_test_dur_split(vds,
                                                                      labelset=self.labelset_mat,
                                                                      train_dur=200,
-
-                                                                             test_dur=200)
+                                                                     test_dur=200)
         for vds in (train_vds, test_vds):
             self.assertTrue(type(vds) == VocalizationDataset)
 
