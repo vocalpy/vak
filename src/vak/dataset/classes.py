@@ -2,6 +2,9 @@ import json
 from json import JSONEncoder
 
 import numpy as np
+from scipy.io import loadmat
+import dask.bag as db
+from dask.diagnostics import ProgressBar
 import attr
 from attr.validators import optional, instance_of
 from crowsetta import Sequence
@@ -167,6 +170,90 @@ class VocalizationDataset:
     def all_voc(self, attribute, value):
         if not all([type(element) == Vocalization for element in value]):
             raise TypeError(f'all elements in voc_list must be of type vak.dataset.Vocalization')
+
+    def load_spects(self,
+                    freqbins_key='f',
+                    timebins_key='t',
+                    spect_key='s',
+                    n_decimals_trunc=3,
+                    ):
+        if not all(
+            [hasattr(voc, 'spect_file') for voc in self.voc_list]
+        ):
+            raise ValueError(
+                "not all Vocalizations in voc_list have a spect_file attribute, "
+                "can't load spectrogram arrays"
+            )
+
+        if all([voc.spect_file.endswith('.mat') for voc in self.voc_list]):
+            ext = 'mat'
+        elif all([voc.spect_file.endswith('.npz') for voc in self.voc_list]):
+            ext = 'npz'
+        else:
+            ext_set = [voc.spect_file.split[-1] for voc in self.voc_list]
+            ext_set = set(ext_set)
+            raise ValueError(
+                f"unable to load spectrogram files, found multiple extensions: {ext_set}"
+            )
+
+        def _load_spect(voc):
+            """helper function to load spectrogram into a Vocalization"""
+            if ext == 'mat':
+                arr_dict = loadmat(voc.spect_file)
+            elif ext == 'npz':
+                arr_dict = np.load(voc.spect_file)
+            spect_dict = {
+                'freq_bins': arr_dict[freqbins_key],
+                'time_bins': arr_dict[timebins_key],
+                'timebin_dur': timebin_dur_from_vec(arr_dict[timebins_key], n_decimals_trunc),
+                'array': arr_dict[spect_key],
+            }
+            spect = Spectrogram(**spect_dict)
+            voc.spect = spect
+            return voc
+
+        voc_db = db.from_sequence(self.voc_list)
+        with ProgressBar():
+            self.voc_list = list(voc_db.map(_load_spect))
+
+    def clear_spects(self):
+        for voc in self.voc_list:
+            voc.spect = None
+
+    def are_spects_loaded(self):
+        if all([voc.spect is None for voc in self.voc_list]):
+            return False
+        elif all([type(voc.spect == Spectrogram) for voc in self.voc_list]):
+            return True
+        else:
+            raise ValueError(
+                """Not all Vocalizations in voc_list have spectrograms loaded. 
+                Call load_spects() to load all or clear_spects() to set them all to None"""
+            )
+
+    def spects_list(self, load=True, load_kwargs=None):
+        """returns list of spectrograms (2-d arrays),
+        one for each vocalization in VocalizationDataset.voc_list"""
+        if self.are_spects_loaded() is False:
+            if load is True:
+                self.load_spects(**load_kwargs)
+            elif load is False:
+                raise ValueError('cannot create list of spectrograms, because they are not loaded '
+                                 'and load is set to False. Either call load_spects method or set '
+                                 'load=True when calling spects_list')
+
+        spects = []
+        for voc in self.voc_list:
+            spects.append(voc.spect.array)
+        return spects
+
+    def labels_list(self):
+        """returns list of labels from annotations,
+        one for each vocalization in VocalizationDataset.voc_list"""
+        labels = []
+        for voc in self.voc_list:
+            labels.append(voc.annot.labels)
+        return labels
 
     def to_json(self, json_fname=None):
         voc_dataset_dict = attr.asdict(self)
