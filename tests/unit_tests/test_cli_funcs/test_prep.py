@@ -1,12 +1,9 @@
-"""tests for vak.cli.make_data module"""
+"""tests for vak.cli.prep module"""
 import os
 import tempfile
 import shutil
 from glob import glob
 import unittest
-
-import joblib
-
 
 import vak.cli.prep
 from vak.config.spectrogram import SpectConfig
@@ -36,40 +33,41 @@ class TestMakeData(unittest.TestCase):
 
         vak.cli.prep(labelset=labelset,
                      data_dir=data_dir,
-                     total_train_set_dur=20,
-                     val_dur=10,
-                     test_dur=20,
+                     total_train_set_dur=35,
+                     val_dur=20,
+                     test_dur=35,
                      config_file=self.tmp_config_path,
                      annot_format='notmat',
-                     silent_gap_label=0,
                      skip_files_with_labels_not_in_labelset=True,
                      output_dir=self.tmp_output_dir,
                      audio_format='cbin',
-                     array_format=None,
+                     spect_format=None,
                      annot_file=None,
                      spect_params=spect_params)
 
-        data_dicts = glob(os.path.join(self.tmp_output_dir, 'spectrograms*', '*dict*'))
-        assert len(data_dicts) == 3
+        vds_paths = glob(os.path.join(self.tmp_output_dir, '*vds.json'))
+        self.assertTrue(len(vds_paths) == 4)
 
     def test_prep_with_array_mat(self):
-        data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb11', 'spect')
-        annot_file = os.path.join(TEST_DATA_DIR, 'mat', 'llb11', 'llb11_annot_subset.mat')
-        labelset = {1, 4, 5, 9, 10, 13, 15, 16, 17, 19, 20, 21, 23, 27}
+        data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
+        annot_file = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
+        labelset = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
         vak.cli.prep(labelset=labelset,
                      data_dir=data_dir,
-                     total_train_set_dur=20,
-                     val_dur=10,
-                     test_dur=20,
+                     total_train_set_dur=200,
+                     val_dur=100,
+                     test_dur=200,
                      config_file=self.tmp_config_path,
                      annot_format='yarden',
-                     silent_gap_label=0,
                      skip_files_with_labels_not_in_labelset=True,
                      output_dir=self.tmp_output_dir,
                      audio_format=None,
-                     array_format='mat',
+                     spect_format='mat',
                      annot_file=annot_file,
                      spect_params=None)
+
+        vds_paths = glob(os.path.join(self.tmp_output_dir, '*vds.json'))
+        self.assertTrue(len(vds_paths) == 4)
 
 
 if __name__ == '__main__':
