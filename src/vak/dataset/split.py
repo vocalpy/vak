@@ -1,5 +1,3 @@
-import random
-import itertools
 import warnings
 
 from .classes import VocalizationDataset
@@ -41,7 +39,7 @@ def train_test_dur_split_inds(durs,
     algo : str
         algorithm to use. One of {'brute_force', 'inc_freq'}. Default is 'brute_force'. For more information
         on the algorithms, see the docstrings, e.g., vak.dataset.splitalgos.brute_force
-
+.
     Returns
     -------
     train_inds, test_inds, val_inds : numpy.ndarray
@@ -88,7 +86,7 @@ def train_test_dur_split_inds(durs,
             f'training, test, and (if specified) validation sets: {total_target_dur}'
         )
 
-    if algo='brute_force':
+    if algo == 'brute_force':
         train_inds, test_inds, val_inds = brute_force(durs, labels, labelset, train_dur, test_dur, val_dur)
     else:
         raise NotImplementedError(
