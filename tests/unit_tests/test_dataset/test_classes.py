@@ -160,7 +160,7 @@ class TestClasses(unittest.TestCase):
         self.assertTrue(a_voc.audio is None)
         self.assertTrue(a_voc.audio_file == self.audio_files_cbin[0])
 
-    def test_VocalDataset_init(self):
+    def test_VocalizationDataset_init(self):
         voc_list = []
         for arr_file, annot in zip(self.array_list_mat, self.annot_list):
             arr_file_dict = loadmat(arr_file, squeeze_me=True)
@@ -193,7 +193,7 @@ class TestClasses(unittest.TestCase):
         # if all assertTrues are True
         return True
 
-    def test_vocal_dataset_json(self):
+    def test_VocalizationDataset_json(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.array_dir_mat,
                                            annot_list=self.annot_list,
@@ -214,6 +214,67 @@ class TestClasses(unittest.TestCase):
         self.assertTrue(hasattr(vds, 'voc_list'))
         self.assertTrue(
             all([type(voc) == Vocalization for voc in vds.voc_list])
+        )
+
+    def test_VocalizationDataset_load_spects(self):
+        vds = vak.dataset.spect.from_files(spect_format='mat',
+                                           spect_dir=self.array_dir_mat,
+                                           annot_list=self.annot_list,
+                                           load_spects=False)
+        self.assertTrue(
+            all([voc.spect is None for voc in vds.voc_list])
+        )
+
+        spect_files_before = [voc.spect_file for voc in vds.voc_list]
+        vds.load_spects()
+        self.assertTrue(
+            all([type(voc.spect) == Spectrogram for voc in vds.voc_list])
+        )
+        spect_files_after = [voc.spect_file for voc in vds.voc_list]
+        for before, after in zip(spect_files_before, spect_files_after):
+            self.assertTrue(
+                before == after
+            )
+
+    def test_VocalizationDataset_clear_spects(self):
+        vds = vak.dataset.spect.from_files(spect_format='mat',
+                                           spect_dir=self.array_dir_mat,
+                                           annot_list=self.annot_list,
+                                           load_spects=True)
+        self.assertTrue(
+            all([type(voc.spect) == Spectrogram for voc in vds.voc_list])
+        )
+
+        vds.clear_spects()
+        self.assertTrue(
+            all([voc.spect is None for voc in vds.voc_list])
+        )
+
+    def test_VocalizationDataset_are_spects_loaded(self):
+        vds = vak.dataset.spect.from_files(spect_format='mat',
+                                           spect_dir=self.array_dir_mat,
+                                           annot_list=self.annot_list,
+                                           load_spects=False)
+        self.assertTrue(
+            vds.are_spects_loaded() is False
+        )
+
+        vds.load_spects()
+        self.assertTrue(
+            vds.are_spects_loaded() is True
+        )
+
+    def test_VocalizationDataset_spects_list(self):
+        vds = vak.dataset.spect.from_files(spect_format='mat',
+                                           spect_dir=self.array_dir_mat,
+                                           annot_list=self.annot_list,
+                                           load_spects=True)
+        spects_list = vds.spects_list()
+        self.assertTrue(
+            type(spects_list == list)
+        )
+        self.assertTrue(
+            all([type(spect) == np.ndarray for spect in spects_list])
         )
 
 
