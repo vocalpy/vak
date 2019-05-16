@@ -187,7 +187,7 @@ def from_files(spect_format,
             spect = None
 
         voc = Vocalization(
-            annotation=annot,
+            annot=annot,
             spect_file=arr_path,
             spect=spect,
             audio_file=annot.file,
