@@ -96,7 +96,7 @@ class Vocalization:
 
     Attributes
     ----------
-    annotation : crowsetta.Sequence
+    annot : crowsetta.Sequence
         annotations of vocalizations for files
     audio_file : str
         path to file containing audio of vocalization
@@ -116,8 +116,8 @@ class Vocalization:
     # less mandatory: annotation
     # need at least labels from annotation + duration to split a dataset up by duration
     # while maintaining class balance
-    annotation = attr.ib(validator=optional(instance_of(Sequence)), default=None)
-    @annotation.validator
+    annot = attr.ib(validator=optional(instance_of(Sequence)), default=None)
+    @annot.validator
     def is_list_tup_or_seq(self, attribute, value):
         if type(value) not in (list, tuple, Sequence):
             raise TypeError(
@@ -191,8 +191,8 @@ class VocalizationDataset:
             voc_dataset_dict = json.loads(json_str)
 
         for a_voc_dict in voc_dataset_dict['voc_list']:
-            if a_voc_dict['annotation'] is not None:
-                a_voc_dict['annotation'] = Sequence.from_dict(a_voc_dict['annotation'])
+            if a_voc_dict['annot'] is not None:
+                a_voc_dict['annot'] = Sequence.from_dict(a_voc_dict['annot'])
             if a_voc_dict['spect'] is not None:
                 a_voc_dict['spect'] = Spectrogram(**a_voc_dict['spect'])
 
