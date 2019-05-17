@@ -82,7 +82,7 @@ class SpectrogramFile:
 
         return cls(freq_bins=arr_file_dict[freqbins_key],
                    time_bins=arr_file_dict[timebins_key],
-                   array=arr_file_dict[spect_key],
+                   spect=arr_file_dict[spect_key],
                    timebin_dur=timebin_dur)
 
 
