@@ -90,7 +90,7 @@ class TestClasses(unittest.TestCase):
                                                        spect_key='s',
                                                        timebin_dur=None,
                                                        n_decimals_trunc=3)
-            dur = spect.timebin_dur * spect.array.shape[-1]
+            dur = spect.timebin_dur * spect.spect.shape[-1]
             voc = Vocalization(annot=annot,
                                duration=dur,
                                spect=spect,
@@ -104,7 +104,7 @@ class TestClasses(unittest.TestCase):
 
         for cbin_file, annot in zip(self.array_list_mat, self.annot_list):
             arr_file_dict = loadmat(arr_file, squeeze_me=True)
-            dur = spect.timebin_dur * spect.array.shape[-1]
+            dur = spect.timebin_dur * spect.spect.shape[-1]
             voc = Vocalization(annot=self.annot_list[0],
                                duration=dur,
                                spect=spect,
@@ -170,7 +170,7 @@ class TestClasses(unittest.TestCase):
                                                        spect_key='s',
                                                        timebin_dur=None,
                                                        n_decimals_trunc=3)
-            dur = spect.timebin_dur * spect.array.shape[-1]
+            dur = spect.timebin_dur * spect.spect.shape[-1]
             voc = Vocalization(annot=annot,
                                duration=dur,
                                spect=spect,
