@@ -50,17 +50,17 @@ def cli(command, config_file):
                              'either.')
 
         prep(labelset=data_config.labelset,
-             all_labels_are_int=data_config.all_labels_are_int,
              data_dir=data_config.data_dir,
              total_train_set_dur=data_config.total_train_set_dur,
-             val_dur=data_config.val_dur,
              test_dur=data_config.test_dur,
              config_file=config_file,
-             silent_gap_label=data_config.silent_gap_label,
+             annot_format=data_config.annot_format,
+             val_dur=data_config.val_dur,
              skip_files_with_labels_not_in_labelset=data_config.skip_files_with_labels_not_in_labelset,
              output_dir=data_config.output_dir,
-             mat_spect_files_path=data_config.mat_spect_files_path,
-             mat_spects_annotation_file=data_config.mat_spects_annotation_file,
+             audio_format=data_config.audio_format,
+             spect_format=data_config.spect_format,
+             annot_file=data_config.annot_file,
              spect_params=spect_params)
 
     elif command == 'train':
