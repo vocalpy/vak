@@ -2,6 +2,7 @@ import random
 import itertools
 import logging
 
+
 def inc_freq(durs, labels, labelset, train_dur, test_dur, val_dur):
     """randomly partition vocalizations into training, test, and validation
     sets
@@ -42,6 +43,14 @@ def inc_freq(durs, labels, labelset, train_dur, test_dur, val_dur):
     )
     # we use this to loop through labelset in order of increasing occurrence below
     labelset_incfreq = [tup[0] for tup in labelset_num_occurs]
+
+    if val_dur is None:
+        total_target_dur = sum([train_dur,
+                                test_dur])
+    elif val_dur is not None:
+        total_target_dur = sum([train_dur,
+                                test_dur,
+                                val_dur])
 
     iter = 1
     all_labels_err = ('Did not successfully divide data into training, '
