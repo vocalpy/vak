@@ -87,7 +87,12 @@ def train_test_dur_split_inds(durs,
         )
 
     if algo == 'brute_force':
-        train_inds, test_inds, val_inds = brute_force(durs, labels, labelset, train_dur, test_dur, val_dur)
+        train_inds, test_inds, val_inds = brute_force(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
     else:
         raise NotImplementedError(
             f'algorithm {algo} not implemented'
@@ -122,7 +127,7 @@ def train_test_dur_split(vds,
     train_vds, test_vds, val_vds
     """
     durs = [voc.duration for voc in vds.voc_list]
-    labels = [voc.annotation.labels for voc in vds.voc_list]
+    labels = [voc.annot.labels for voc in vds.voc_list]
 
     train_inds, test_inds, val_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
