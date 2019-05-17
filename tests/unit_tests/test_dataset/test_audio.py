@@ -12,7 +12,7 @@ import crowsetta
 from vak.config.spectrogram import SpectConfig
 from vak.dataset.annot import files_from_dir
 import vak.dataset.audio
-from vak.dataset.classes import VocalizationDataset, Vocalization, Spectrogram
+from vak.dataset.classes import VocalizationDataset, Vocalization, SpectrogramFile
 
 
 HERE = os.path.dirname(__file__)

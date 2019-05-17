@@ -9,7 +9,7 @@ import crowsetta
 
 import vak.dataset.spect
 import vak.dataset.annot
-from vak.dataset.classes import VocalizationDataset, Vocalization, Spectrogram
+from vak.dataset.classes import VocalizationDataset, Vocalization, SpectrogramFile
 
 
 HERE = os.path.dirname(__file__)
@@ -53,11 +53,11 @@ class TestClasses(unittest.TestCase):
     def test_Spectrogram_init(self):
         for arr_file in self.array_list_mat:
             arr = loadmat(arr_file, squeeze_me=True)
-            a_spect = Spectrogram(freq_bins=arr['f'],
-                                  time_bins=arr['t'],
-                                  timebin_dur=0.002,
-                                  array=arr['s']
-                                  )
+            a_spect = SpectrogramFile(freq_bins=arr['f'],
+                                      time_bins=arr['t'],
+                                      timebin_dur=0.002,
+                                      array=arr['s']
+                                      )
             for attr in ['freq_bins', 'time_bins', 'timebin_dur', 'array']:
                 self.assertTrue(hasattr(a_spect, attr))
                 if attr in ['freq_bins', 'time_bins', 'array']:
@@ -68,12 +68,12 @@ class TestClasses(unittest.TestCase):
     def test_Spectrogram_from_arr_file_dict(self):
         for arr_file in self.array_list_mat:
             arr_file_dict = loadmat(arr_file, squeeze_me=True)
-            a_spect = Spectrogram.from_arr_file_dict(arr_file_dict=arr_file_dict,
-                                                     freqbins_key='f',
-                                                     timebins_key='t',
-                                                     spect_key='s',
-                                                     timebin_dur=None,
-                                                     n_decimals_trunc=3)
+            a_spect = SpectrogramFile.from_arr_file_dict(arr_file_dict=arr_file_dict,
+                                                         freqbins_key='f',
+                                                         timebins_key='t',
+                                                         spect_key='s',
+                                                         timebin_dur=None,
+                                                         n_decimals_trunc=3)
             for attr in ['freq_bins', 'time_bins', 'timebin_dur', 'array']:
                 self.assertTrue(hasattr(a_spect, attr))
                 if attr in ['freq_bins', 'time_bins', 'array']:
@@ -84,12 +84,12 @@ class TestClasses(unittest.TestCase):
     def test_Vocalization_init(self):
         for arr_file, annot in zip(self.array_list_mat, self.annot_list):
             arr_file_dict = loadmat(arr_file, squeeze_me=True)
-            spect = Spectrogram.from_arr_file_dict(arr_file_dict=arr_file_dict,
-                                                   freqbins_key='f',
-                                                   timebins_key='t',
-                                                   spect_key='s',
-                                                   timebin_dur=None,
-                                                   n_decimals_trunc=3)
+            spect = SpectrogramFile.from_arr_file_dict(arr_file_dict=arr_file_dict,
+                                                       freqbins_key='f',
+                                                       timebins_key='t',
+                                                       spect_key='s',
+                                                       timebin_dur=None,
+                                                       n_decimals_trunc=3)
             dur = spect.timebin_dur * spect.array.shape[-1]
             voc = Vocalization(annot=annot,
                                duration=dur,
@@ -164,12 +164,12 @@ class TestClasses(unittest.TestCase):
         voc_list = []
         for arr_file, annot in zip(self.array_list_mat, self.annot_list):
             arr_file_dict = loadmat(arr_file, squeeze_me=True)
-            spect = Spectrogram.from_arr_file_dict(arr_file_dict=arr_file_dict,
-                                                   freqbins_key='f',
-                                                   timebins_key='t',
-                                                   spect_key='s',
-                                                   timebin_dur=None,
-                                                   n_decimals_trunc=3)
+            spect = SpectrogramFile.from_arr_file_dict(arr_file_dict=arr_file_dict,
+                                                       freqbins_key='f',
+                                                       timebins_key='t',
+                                                       spect_key='s',
+                                                       timebin_dur=None,
+                                                       n_decimals_trunc=3)
             dur = spect.timebin_dur * spect.array.shape[-1]
             voc = Vocalization(annot=annot,
                                duration=dur,
@@ -228,7 +228,7 @@ class TestClasses(unittest.TestCase):
         spect_files_before = [voc.spect_file for voc in vds.voc_list]
         vds.load_spects()
         self.assertTrue(
-            all([type(voc.spect) == Spectrogram for voc in vds.voc_list])
+            all([type(voc.spect) == SpectrogramFile for voc in vds.voc_list])
         )
         spect_files_after = [voc.spect_file for voc in vds.voc_list]
         for before, after in zip(spect_files_before, spect_files_after):
@@ -242,7 +242,7 @@ class TestClasses(unittest.TestCase):
                                            annot_list=self.annot_list,
                                            load_spects=True)
         self.assertTrue(
-            all([type(voc.spect) == Spectrogram for voc in vds.voc_list])
+            all([type(voc.spect) == SpectrogramFile for voc in vds.voc_list])
         )
 
         vds.clear_spects()

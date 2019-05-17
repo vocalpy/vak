@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from .classes import Spectrogram, Vocalization, VocalizationDataset
+from .classes import SpectrogramFile, Vocalization, VocalizationDataset
 from ..config import validators
 from ..utils.general import timebin_dur_from_vec
 
@@ -182,7 +182,7 @@ def from_files(spect_format,
                 'timebin_dur': timebin_dur,
                 'array': arr[spect_key],
             }
-            spect = Spectrogram(**spect_dict)
+            spect = SpectrogramFile(**spect_dict)
         else:
             spect = None
 

@@ -23,7 +23,7 @@ def asarray_if_not(val):
 
 
 @attr.s(cmp=False)
-class Spectrogram:
+class SpectrogramFile:
     """class to represent a spectrogram
 
     Attributes
@@ -72,7 +72,7 @@ class Spectrogram:
 
         Returns
         -------
-        spect : vak.dataset.classes.Spectrogram
+        spect : vak.dataset.classes.SpectrogramFile
             a Spectrogram instance with attributes freq_bins, time_bins, array, and timebin_dur
         """
         if timebin_dur is None:
@@ -132,7 +132,7 @@ class Vocalization:
                     default=None)
     audio_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
                          default=None)
-    spect = attr.ib(validator=optional(instance_of(Spectrogram)),
+    spect = attr.ib(validator=optional(instance_of(SpectrogramFile)),
                     default=None)
     spect_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
                          default=None)
@@ -208,7 +208,7 @@ class VocalizationDataset:
                 'timebin_dur': timebin_dur_from_vec(arr_dict[timebins_key], n_decimals_trunc),
                 'array': arr_dict[spect_key],
             }
-            spect = Spectrogram(**spect_dict)
+            spect = SpectrogramFile(**spect_dict)
             voc.spect = spect
             return voc
 
@@ -223,7 +223,7 @@ class VocalizationDataset:
     def are_spects_loaded(self):
         if all([voc.spect is None for voc in self.voc_list]):
             return False
-        elif all([type(voc.spect == Spectrogram) for voc in self.voc_list]):
+        elif all([type(voc.spect == SpectrogramFile) for voc in self.voc_list]):
             return True
         else:
             raise ValueError(
@@ -281,7 +281,7 @@ class VocalizationDataset:
             if a_voc_dict['annot'] is not None:
                 a_voc_dict['annot'] = Sequence.from_dict(a_voc_dict['annot'])
             if a_voc_dict['spect'] is not None:
-                a_voc_dict['spect'] = Spectrogram(**a_voc_dict['spect'])
+                a_voc_dict['spect'] = SpectrogramFile(**a_voc_dict['spect'])
 
         voc_dataset_dict['voc_list'] = [Vocalization(**voc) for voc in voc_dataset_dict['voc_list']]
 
