@@ -20,7 +20,8 @@ def prep(labelset,
          annot_file=None,
          audio_format=None,
          spect_format=None,
-         spect_params=None):
+         spect_params=None,
+         spect_output_dir=None):
     """prepare a VocalizationDataset from a directory of audio or spectrogram files
     containing vocalizations, and (optionally) annotation for those files
 
@@ -65,6 +66,9 @@ def prep(labelset,
     spect_params : dict
         Dictionary of parameters for creating spectrograms.
         Default is None (implying that spectrograms are already made).
+    spect_output_dir : str
+        path to location where spectrogram files should be saved. Default is None,
+        in which case it defaults to 'spectrograms_generated_{time stamp}'.
 
     Returns
     -------
@@ -118,6 +122,12 @@ def prep(labelset,
                          "unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms from array files")
 
+    if spect_output_dir:
+        if not os.path.isdir(spect_output_dir):
+            raise NotADirectoryError(
+                f'spect_output_dir not found: {spect_output_dir}'
+            )
+
     if annot_file is None:
         annot_files = annot.files_from_dir(annot_dir=data_dir,
                                            annot_format=annot_format)
@@ -133,9 +143,13 @@ def prep(labelset,
             f'making array files containing spectrograms from audio files in: {data_dir}'
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
+        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+        if spect_output_dir is None:
+            spect_output_dir = os.path.join(output_dir, f'spectograms_generated_{timenow}')
+            os.makedirs(spect_output_dir)
         spect_files = audio.to_spect(audio_format=audio_format,
                                      spect_params=spect_params,
-                                     output_dir=output_dir,
+                                     output_dir=spect_output_dir,
                                      audio_files=audio_files,
                                      annot_list=annot_list,
                                      labelset=labelset,
