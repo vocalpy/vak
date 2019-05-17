@@ -207,7 +207,7 @@ class VocalizationDataset:
                 'freq_bins': arr_dict[freqbins_key],
                 'time_bins': arr_dict[timebins_key],
                 'timebin_dur': timebin_dur_from_vec(arr_dict[timebins_key], n_decimals_trunc),
-                'array': arr_dict[spect_key],
+                'spect': arr_dict[spect_key],
             }
             spect = SpectrogramFile(**spect_dict)
             voc.spect = spect
