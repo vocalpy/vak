@@ -13,8 +13,8 @@ spect_params = vak.config.parse.parse_spect_config(config_obj)
 data_config = vak.config.parse.parse_data_config(config_obj, config_file)
 output_config = vak.config.parse.parse_output_config(config_obj)
 
-vak.cli.learncurve(train_data_dict_path=train_config.train_data_dict_path,
-                   val_data_dict_path=train_config.val_data_dict_path,
+vak.cli.learncurve(train_data_dict_path=train_config.train_vds_path,
+                   val_data_dict_path=train_config.val_vds_path,
                    spect_params=spect_params,
                    total_train_set_duration=data_config.total_train_set_dur,
                    train_set_durs=train_config.train_set_durs,
