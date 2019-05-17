@@ -21,6 +21,14 @@ def brute_force(durs, labels, labelset, train_dur, test_dur, val_dur):
                       'after 1000 iterations.'
                       ' Try increasing the total size of the data set.')
 
+    if val_dur is None:
+        total_target_dur = sum([train_dur,
+                                test_dur])
+    elif val_dur is not None:
+        total_target_dur = sum([train_dur,
+                                test_dur,
+                                val_dur])
+
     durs_labels_list = list(zip(durs, labels))
 
     while 1:
