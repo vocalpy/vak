@@ -127,7 +127,7 @@ def prep(labelset,
     config.read(config_file)
     for key, path in saved_vds_dict.items():
         config.set(section='TRAIN',
-                   option=key + '_data_path',
+                   option=key + '_vds_path',
                    value=path)
 
     with open(config_file, 'w') as config_file_rewrite:
