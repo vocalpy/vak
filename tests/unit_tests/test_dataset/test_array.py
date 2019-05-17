@@ -6,7 +6,7 @@ import numpy as np
 import crowsetta
 
 import vak.dataset.spect
-from vak.dataset.classes import VocalizationDataset, Vocalization, Spectrogram
+from vak.dataset.classes import VocalizationDataset, Vocalization, SpectrogramFile
 
 
 HERE = os.path.dirname(__file__)
@@ -57,7 +57,7 @@ class TestArray(unittest.TestCase):
                 all([type(voc.spect.array) == np.ndarray for voc in vocal_dataset.voc_list])
             )
             self.assertTrue(
-                all([type(voc.spect) == Spectrogram for voc in vocal_dataset.voc_list])
+                all([type(voc.spect) == SpectrogramFile for voc in vocal_dataset.voc_list])
             )
 
         elif load_spects is False:
