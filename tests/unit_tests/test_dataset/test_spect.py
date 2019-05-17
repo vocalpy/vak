@@ -20,19 +20,19 @@ SETUP_SCRIPTS_DIR = os.path.join(HERE,
                                  'setup_scripts')
 
 
-class TestArray(unittest.TestCase):
+class TestSpect(unittest.TestCase):
     def setUp(self):
-        self.array_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
-        self.array_files = glob(os.path.join(self.array_dir, '*.mat'))
-        self.array_format = 'mat'
+        self.spect_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
+        self.spect_files = glob(os.path.join(self.spect_dir, '*.mat'))
+        self.spect_format = 'mat'
 
         self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
         self.scribe = crowsetta.Transcriber(voc_format='yarden')
         self.annot_list = self.scribe.to_seq(self.annot_mat)
         self.labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
 
-    def _check_vocal_dataset_returned_by_from_arr_files(self, vocal_dataset, load_spects=True):
-        """assertions that are shared across unit tests for vak.dataset.array.from_arr_files"""
+    def _check_vocal_dataset_returned_by_from_spect_files(self, vocal_dataset, load_spects=True):
+        """assertions that are shared across unit tests for vak.dataset.spect.from_files"""
         self.assertTrue(
             type(vocal_dataset) == VocalizationDataset
         )
@@ -45,16 +45,16 @@ class TestArray(unittest.TestCase):
             all([hasattr(voc, 'spect') for voc in vocal_dataset.voc_list])
         )
 
-        array_file_basenames = [os.path.basename(arr_path) for arr_path in self.array_files]
+        spect_file_basenames = [os.path.basename(spect_path) for spect_path in self.spect_files]
         spect_files = [os.path.basename(voc.spect_file)
                        for voc in vocal_dataset.voc_list]
         self.assertTrue(
-            all([spect_file in array_file_basenames for spect_file in spect_files])
+            all([spect_file in spect_file_basenames for spect_file in spect_files])
         )
 
         if load_spects:
             self.assertTrue(
-                all([type(voc.spect.array) == np.ndarray for voc in vocal_dataset.voc_list])
+                all([type(voc.spect.spect) == np.ndarray for voc in vocal_dataset.voc_list])
             )
             self.assertTrue(
                 all([type(voc.spect) == SpectrogramFile for voc in vocal_dataset.voc_list])
@@ -68,98 +68,98 @@ class TestArray(unittest.TestCase):
         # if all assertTrues were True
         return True
 
-    def test_array_dir_annot(self):
-        vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     spect_dir=self.array_dir,
+    def test_spect_dir_annot(self):
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_dir=self.spect_dir,
                                                      annot_list=self.annot_list,
                                                      load_spects=True)
         self.assertTrue(
-            self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset)
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset)
         )
 
-        # make sure we're not loading arrays when we don't want to
-        vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     spect_dir=self.array_dir,
+        # make sure we're not loading spects when we don't want to
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_dir=self.spect_dir,
                                                      annot_list=self.annot_list,
                                                      load_spects=False)
         self.assertTrue(
-            self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset,
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
                                                                  load_spects=False)
         )
 
-    def test_array_files_annot(self):
-        vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     spect_files=self.array_files,
+    def test_spect_files_annot(self):
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_files=self.spect_files,
                                                      annot_list=self.annot_list,
                                                      load_spects=True)
         self.assertTrue(
-            self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset)
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset)
         )
 
-        # make sure we're not loading arrays when we don't want to
-        vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     spect_files=self.array_files,
+        # make sure we're not loading spects when we don't want to
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_files=self.spect_files,
                                                      annot_list=self.annot_list,
                                                      load_spects=False)
         self.assertTrue(
-            self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset,
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
                                                                  load_spects=False)
         )
 
-    def test_array_annot_map(self):
-        array_annot_map = dict(zip(self.array_files, self.annot_list))
-        vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     spect_annot_map=array_annot_map,
+    def test_spect_annot_map(self):
+        spect_annot_map = dict(zip(self.spect_files, self.annot_list))
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_annot_map=spect_annot_map,
                                                      load_spects=True)
         self.assertTrue(
-            self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset)
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset)
         )
 
-        # make sure we're not loading arrays when we don't want to
-        vocal_dataset = vak.dataset.spect.from_files(self.array_format,
-                                                     spect_annot_map=array_annot_map,
+        # make sure we're not loading spects when we don't want to
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_annot_map=spect_annot_map,
                                                      load_spects=False)
         self.assertTrue(
-            self._check_vocal_dataset_returned_by_from_arr_files(vocal_dataset,
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
                                                                  load_spects=False)
         )
 
     def test_bad_inputs_raise(self):
-        # invalid array format
+        # invalid spect format
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(spect_format='npy',
-                                         spect_dir=self.array_dir,
-                                         spect_files=self.array_files,
+                                         spect_dir=self.spect_dir,
+                                         spect_files=self.spect_files,
                                          annot_list=self.annot_list,
                                          load_spects=True)
 
         # can't specify both dir and list
         with self.assertRaises(ValueError):
-            vak.dataset.spect.from_files(self.array_format,
-                                         spect_dir=self.array_dir,
-                                         spect_files=self.array_files,
+            vak.dataset.spect.from_files(self.spect_format,
+                                         spect_dir=self.spect_dir,
+                                         spect_files=self.spect_files,
                                          annot_list=self.annot_list,
                                          load_spects=True)
 
-        # can't specify both dir and array_annot_map
-        array_annot_map = dict(zip(self.array_files, self.annot_list))
+        # can't specify both dir and spect_annot_map
+        spect_annot_map = dict(zip(self.spect_files, self.annot_list))
         with self.assertRaises(ValueError):
-            vak.dataset.spect.from_files(self.array_format,
-                                         spect_dir=self.array_dir,
-                                         spect_annot_map=array_annot_map,
+            vak.dataset.spect.from_files(self.spect_format,
+                                         spect_dir=self.spect_dir,
+                                         spect_annot_map=spect_annot_map,
                                          load_spects=True)
 
-        # can't specify both list and array_annot_map
+        # can't specify both list and spect_annot_map
         with self.assertRaises(ValueError):
-            vak.dataset.spect.from_files(self.array_format,
-                                         spect_files=self.array_files,
-                                         spect_annot_map=array_annot_map,
+            vak.dataset.spect.from_files(self.spect_format,
+                                         spect_files=self.spect_files,
+                                         spect_annot_map=spect_annot_map,
                                          load_spects=True)
 
-        # can't specify both annotations list and array_annot_map
+        # can't specify both annotations list and spect_annot_map
         with self.assertRaises(ValueError):
-            vak.dataset.spect.from_files(self.array_format,
-                                         spect_annot_map=array_annot_map,
+            vak.dataset.spect.from_files(self.spect_format,
+                                         spect_annot_map=spect_annot_map,
                                          annot_list=self.annot_list,
                                          load_spects=True)
 
