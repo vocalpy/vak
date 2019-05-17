@@ -245,7 +245,7 @@ class VocalizationDataset:
 
         spects = []
         for voc in self.voc_list:
-            spects.append(voc.spect.array)
+            spects.append(voc.spect.spect)
         return spects
 
     def labels_list(self):
