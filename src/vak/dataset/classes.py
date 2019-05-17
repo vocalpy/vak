@@ -40,7 +40,7 @@ class SpectrogramFile:
     freq_bins = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
     time_bins = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
     timebin_dur = attr.ib(validator=instance_of(float))
-    array = attr.ib(validator=optional(instance_of(np.ndarray)), converter=asarray_if_not)
+    spect = attr.ib(validator=optional(instance_of(np.ndarray)), converter=asarray_if_not)
 
     @classmethod
     def from_arr_file_dict(cls,
