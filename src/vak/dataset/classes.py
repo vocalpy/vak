@@ -44,13 +44,13 @@ class SpectrogramFile:
     spect = attr.ib(validator=optional(instance_of(np.ndarray)), converter=asarray_if_not)
 
     @classmethod
-    def from_arr_file_dict(cls,
-                           arr_file_dict,
-                           freqbins_key='f',
-                           timebins_key='t',
-                           spect_key='s',
-                           timebin_dur=None,
-                           n_decimals_trunc=3):
+    def from_dict(cls,
+                  arr_file_dict,
+                  freqbins_key='f',
+                  timebins_key='t',
+                  spect_key='s',
+                  timebin_dur=None,
+                  n_decimals_trunc=3):
         """create a Spectrogram instance from a dictionary-like object that
         provides access to arrays loaded from a file, e.g. a .mat or .npz file
 
