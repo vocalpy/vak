@@ -41,7 +41,7 @@ def from_files(spect_format,
     Parameters
     ----------
     spect_format : str
-        format of array files. One of {'mat', 'npz'}
+        format of files containing spectrograms. One of {'mat', 'npz'}
     spect_dir : str
         path to directory of files containing spectrograms as arrays.
         Default is None.
@@ -50,13 +50,13 @@ def from_files(spect_format,
     annot_list : list
         of annotations for array files. Default is None.
     spect_annot_map : dict
-        Where keys are paths to array files and value corresponding to each key is
-        the annotation for that array file.
+        Where keys are paths to files and value corresponding to each key is
+        the annotation for that file.
         Default is None.
     labelset : list
         of str or int, set of unique labels for vocalizations.
     skip_files_with_labels_not_in_labelset : bool
-        if True, skip array files where the associated annotations contain labels not in labelset.
+        if True, skip files where the associated annotations contain labels not in labelset.
         Default is False.
     load_spects : bool
         if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
@@ -64,7 +64,7 @@ def from_files(spect_format,
         later, but don't want to load all the spectrograms into memory yet.
     n_decimals_trunc : int
         number of decimal places to keep when truncating the timebin duration calculated from
-        the spectrogram arrays.
+        the vector of time bins.
         Default is 3, i.e. assumes milliseconds is the last significant digit.
     freqbins_key : str
         key for accessing vector of frequency bins in files. Default is 'f'.
@@ -80,7 +80,7 @@ def from_files(spect_format,
     """
     if spect_format not in validators.VALID_SPECT_FORMATS:
         raise ValueError(
-            f"array format must be one of '{validators.VALID_SPECT_FORMATS}'; "
+            f"spect_format must be one of '{validators.VALID_SPECT_FORMATS}'; "
             f"format '{spect_format}' not recognized."
         )
 
@@ -113,23 +113,23 @@ def from_files(spect_format,
             spect_files = glob(os.path.join(spect_dir, '*.npz'))
 
     if spect_files:
-        spect_annot_map = dict((arr_path, annot) for arr_path, annot in zip(spect_files, annot_list))
+        spect_annot_map = dict((spect_path, annot) for spect_path, annot in zip(spect_files, annot_list))
 
     # this is defined here so all other arguments to 'from_arr_files' are in scope
-    def _voc_from_array_annot(arr_path_annot_tup):
+    def _voc_from_spect_path_annot_tup(spect_path_annot_tup):
         """helper function that enables parallelized creation of list of Vocalizations.
-        Accepts a tuple with the path to an array file and annotations,
+        Accepts a tuple with the path to an spectrogram file and annotations,
         and returns a Vocalization object."""
-        (arr_path, annot) = arr_path_annot_tup
-        arr_file = os.path.basename(arr_path)
+        (spect_path, annot) = spect_path_annot_tup
+        spect_file = os.path.basename(spect_path)
         if spect_format == 'mat':
-            arr = loadmat(arr_path, squeeze_me=True)
+            spect_dict = loadmat(spect_path, squeeze_me=True)
         elif spect_format == 'npz':
-            arr = np.load(arr_path)
+            spect_dict = np.load(spect_path)
 
-        if spect_key not in arr:
+        if spect_key not in spect_dict:
             logger.info(
-                f'Did not find a spectrogram in array file: {arr_file}.\nSkipping this file.\n'
+                f'Did not find a spectrogram in file: {spect_file}.\nSkipping this file.\n'
             )
             return
 
@@ -141,63 +141,63 @@ def from_files(spect_format,
                 # because there's some label in labels
                 # that's not in labels_mapping
                 logger.info(
-                    f'Found labels, {extra_labels}, in {arr_file}, that are not in labels_mapping. '
+                    f'Found labels, {extra_labels}, in {spect_file}, that are not in labels_mapping. '
                     'Skipping file.'
                 )
                 return
 
         if 'freq_bins' not in locals() and 'time_bins' not in locals():
-            freq_bins = arr[freqbins_key]
-            time_bins = arr[timebins_key]
+            freq_bins = spect_dict[freqbins_key]
+            time_bins = spect_dict[timebins_key]
             timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
         else:
-            if not np.array_equal(arr[freqbins_key], freq_bins):
+            if not np.array_equal(spect_dict[freqbins_key], freq_bins):
                 raise ValueError(
                     f'freq_bins in {arr_file} does not freq_bins from other array files'
                 )
             curr_file_timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
             if not np.allclose(curr_file_timebin_dur, timebin_dur):
                 raise ValueError(
-                    f'duration of timebin in file {arr_file} did not match duration of '
+                    f'duration of timebin in file {spect_file} did not match duration of '
                     'timebin from other array files.'
                 )
 
         # number of freq. bins should equal number of rows
-        if arr[freqbins_key].shape[-1] != arr[spect_key].shape[0]:
+        if spect_dict[freqbins_key].shape[-1] != spect_dict[spect_key].shape[0]:
             raise ValueError(
-                f'length of frequency bins in {arr_file} does not match number of rows in spectrogram'
+                f'length of frequency bins in {spect_file} does not match number of rows in spectrogram'
             )
         # number of time bins should equal number of columns
-        if arr[timebins_key].shape[-1] != arr[spect_key].shape[1]:
+        if spect_dict[timebins_key].shape[-1] != spect_dict[spect_key].shape[1]:
             raise ValueError(
-                f'length of time_bins in {arr_file} does not match number of columns in spectrogram'
+                f'length of time_bins in {spect_file} does not match number of columns in spectrogram'
             )
 
-        spect_dur = arr[spect_key].shape[-1] * timebin_dur
+        spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
 
         if load_spects:
             spect_dict = {
-                'freq_bins': arr[freqbins_key],
-                'time_bins': arr[timebins_key],
+                'freq_bins': spect_dict[freqbins_key],
+                'time_bins': spect_dict[timebins_key],
                 'timebin_dur': timebin_dur,
-                'array': arr[spect_key],
+                'spect': spect_dict[spect_key],
             }
-            spect = SpectrogramFile(**spect_dict)
+            spect_file = SpectrogramFile(**spect_dict)
         else:
-            spect = None
+            spect_file = None
 
         voc = Vocalization(
             annot=annot,
-            spect_file=arr_path,
-            spect=spect,
+            spect_file=spect_path,
+            spect=spect_file,
             audio_file=annot.file,
             duration=spect_dur)
 
         return voc
 
-    arr_path_annot_tups = db.from_sequence(spect_annot_map.items())
-    logger.info('creating VocalDataset')
+    spect_path_annot_tups = db.from_sequence(spect_annot_map.items())
+    logger.info('creating VocalizationDataset')
     with ProgressBar():
-        voc_list = list(arr_path_annot_tups.map(_voc_from_array_annot))
+        voc_list = list(spect_path_annot_tups.map(_voc_from_spect_path_annot_tup))
 
     return VocalizationDataset(voc_list=voc_list)
