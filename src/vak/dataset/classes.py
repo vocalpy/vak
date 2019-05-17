@@ -24,7 +24,8 @@ def asarray_if_not(val):
 
 @attr.s(cmp=False)
 class SpectrogramFile:
-    """class to represent a spectrogram
+    """class to represent a spectrogram file, e.g. a .mat or .npz file that
+    contains the spectrogram and associated arrays
 
     Attributes
     ----------
@@ -34,7 +35,7 @@ class SpectrogramFile:
         vector of times in spectrogram, where each value is a bin center.
     timebin_dur : numpy.ndarray
         duration of a timebin in seconds from spectrogram
-    array : numpy.ndarray
+    spect : numpy.ndarray
         spectrogram contained in an array
     """
     freq_bins = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
