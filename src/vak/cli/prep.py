@@ -107,26 +107,25 @@ def prep(labelset,
         train_vds, test_vds = dataset.split.train_test_dur_split(vds,
                                                                  labelset=labelset,
                                                                  train_dur=total_train_set_dur,
-                                                                 val_dur=val_dur,
                                                                  test_dur=test_dur)
         val_vds = None
 
-    vds_to_save_key = ['train', 'test']
-    vds_to_save_val = [train_vds, test_vds]
+    vds_to_save_keys = ['train', 'test']
+    vds_to_save_vals = [train_vds, test_vds]
     if val_vds:
-        vds_to_save_key.append('val')
-        vds_to_save_val.append(val_vds)
+        vds_to_save_keys.append('val')
+        vds_to_save_vals.append(val_vds)
 
-    saved_data_dict = {}
-    for key, a_vds in zip(vds_to_save_key, vds_to_save_val):
+    saved_vds_dict = {}
+    for key, a_vds in zip(vds_to_save_keys, vds_to_save_vals):
         json_fname = os.path.join(output_dir, vds_stem + f'.{key}' + VDS_JSON_EXT)
         a_vds.save(json_fname=json_fname)
-        saved_data_dict[key] = json_fname
+        saved_vds_dict[key] = json_fname
 
     # rewrite config file with paths where VocalizationDatasets were saved
     config = ConfigParser()
     config.read(config_file)
-    for key, path in saved_data_dict.items():
+    for key, path in saved_vds_dict.items():
         config.set(section='TRAIN',
                    option=key + '_data_path',
                    value=path)
