@@ -6,7 +6,7 @@ import numpy as np
 import crowsetta
 
 import vak.dataset.spect
-from vak.dataset.classes import VocalizationDataset, Vocalization, SpectrogramFile
+from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
 
 
 HERE = os.path.dirname(__file__)
@@ -42,7 +42,7 @@ class TestSpect(unittest.TestCase):
         )
 
         self.assertTrue(
-            all([hasattr(voc, 'spect_file') for voc in vocal_dataset.voc_list])
+            all([hasattr(voc, 'metaspect') for voc in vocal_dataset.voc_list])
         )
 
         spect_files_from_test_data = [os.path.basename(spect_path) for spect_path in self.spect_files]
@@ -54,15 +54,15 @@ class TestSpect(unittest.TestCase):
 
         if load_spects:
             self.assertTrue(
-                all([type(voc.spect_file.spect) == np.ndarray for voc in vocal_dataset.voc_list])
+                all([type(voc.metaspect.spect) == np.ndarray for voc in vocal_dataset.voc_list])
             )
             self.assertTrue(
-                all([type(voc.spect_file) == SpectrogramFile for voc in vocal_dataset.voc_list])
+                all([type(voc.metaspect) == MetaSpect for voc in vocal_dataset.voc_list])
             )
 
         elif load_spects is False:
             self.assertTrue(
-                all([voc.spect_file is None for voc in vocal_dataset.voc_list])
+                all([voc.metaspect is None for voc in vocal_dataset.voc_list])
             )
 
         # if all assertTrues were True
