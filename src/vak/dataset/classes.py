@@ -23,25 +23,34 @@ def asarray_if_not(val):
 
 
 @attr.s(cmp=False)
-class SpectrogramFile:
-    """class to represent a spectrogram file, e.g. a .mat or .npz file that
-    contains the spectrogram and associated arrays
+class MetaSpect:
+    """class to represent a spectrogram and 'metadata' associated with it,
+    such as the vectors of frequency and time bin centers, and things that
+    are more vocalization specific, like a vector of labels for each time bin.
+
+    Will typically correspond to a single file, e.g. a .mat or .npz file that
+    contains the spectrogram and associated arrays.
 
     Attributes
     ----------
+    spect : numpy.ndarray
+        spectrogram contained in an array
     freq_bins : numpy.ndarray
         vector of frequencies in spectrogram, where each value is a bin center.
     time_bins : numpy.ndarray
         vector of times in spectrogram, where each value is a bin center.
     timebin_dur : numpy.ndarray
         duration of a timebin in seconds from spectrogram
-    spect : numpy.ndarray
-        spectrogram contained in an array
+    lbl_tb : numpy.ndarray
+        labeled time bins, i.e. result of taking labels, onsets and offsets of
+        segments from some annotation file and then converting them into a vector
+        using the `vak.utils.labels.label_timebin` function
     """
+    spect = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
     freq_bins = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
     time_bins = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
-    timebin_dur = attr.ib(validator=instance_of(float))
-    spect = attr.ib(validator=optional(instance_of(np.ndarray)), converter=asarray_if_not)
+    timebin_dur = attr.ib(validator=optional(instance_of(float)), default=None)
+    lbl_tb = attr.ib(validator=optional(instance_of(np.ndarray)), converter=asarray_if_not, default=None)
 
     @classmethod
     def from_dict(cls,
@@ -74,7 +83,7 @@ class SpectrogramFile:
 
         Returns
         -------
-        spect : vak.dataset.classes.SpectrogramFile
+        spect : vak.dataset.classes.MetaSpect
             a Spectrogram instance with attributes freq_bins, time_bins, array, and timebin_dur
         """
         if timebin_dur is None:
@@ -109,7 +118,7 @@ class Vocalization:
         audio waveform loaded into a numpy array
     spect_file : str
         path to file containing spectrogram of vocalization as an array
-    spect : vak.dataset.Spectrogram
+    spect : vak.dataset.classes.MetaSpect
         spectrogram of vocalization. Represented as an instance of the
         Spectrogram class, see docstring of that class for its attributes.
     duration : float
@@ -128,13 +137,13 @@ class Vocalization:
             raise TypeError(
                 f'annotations for Vocalization must be a crowsetta.Sequence'
             )
-    # optional: need *one of* audio_file + audio or spect + spect_file
+    # optional: need *one of* audio_file + audio or spect + metaspect
     audio = attr.ib(validator=optional(instance_of(np.ndarray)),
                     converter=asarray_if_not,
                     default=None)
     audio_path = attr.ib(validator=[optional(instance_of(str)), voc_path_validator],
                          default=None)
-    spect_file = attr.ib(validator=optional(instance_of(SpectrogramFile)),
+    metaspect = attr.ib(validator=optional(instance_of(MetaSpect)),
                          default=None)
     spect_path = attr.ib(validator=[optional(instance_of(str)), voc_path_validator],
                          default=None)
@@ -204,13 +213,13 @@ class VocalizationDataset:
                 spect_dict = loadmat(voc.spect_path)
             elif ext == 'npz':
                 spect_dict = np.load(voc.spect_path)
-            spect_file_kwargs = {
+            metaspect_kwargs = {
                 'freq_bins': spect_dict[freqbins_key],
                 'time_bins': spect_dict[timebins_key],
                 'timebin_dur': timebin_dur_from_vec(spect_dict[timebins_key], n_decimals_trunc),
                 'spect': spect_dict[spect_key],
             }
-            voc.spect_file = SpectrogramFile(**spect_file_kwargs)
+            voc.metaspect = MetaSpect(**metaspect_kwargs)
             return voc
 
         voc_db = db.from_sequence(self.voc_list)
@@ -219,12 +228,12 @@ class VocalizationDataset:
 
     def clear_spects(self):
         for voc in self.voc_list:
-            voc.spect_file = None
+            voc.metaspect = None
 
     def are_spects_loaded(self):
-        if all([voc.spect_file is None for voc in self.voc_list]):
+        if all([voc.metaspect is None for voc in self.voc_list]):
             return False
-        elif all([type(voc.spect_file == SpectrogramFile) for voc in self.voc_list]):
+        elif all([type(voc.metaspect == MetaSpect) for voc in self.voc_list]):
             return True
         else:
             raise ValueError(
@@ -245,7 +254,7 @@ class VocalizationDataset:
 
         spects_list = []
         for voc in self.voc_list:
-            spects_list.append(voc.spect_file.spect)
+            spects_list.append(voc.metaspect.spect)
         return spects_list
 
     def labels_list(self):
@@ -281,8 +290,8 @@ class VocalizationDataset:
         for a_voc_dict in voc_dataset_dict['voc_list']:
             if a_voc_dict['annot'] is not None:
                 a_voc_dict['annot'] = Sequence.from_dict(a_voc_dict['annot'])
-            if a_voc_dict['spect_file'] is not None:
-                a_voc_dict['spect_file'] = SpectrogramFile(**a_voc_dict['spect_file'])
+            if a_voc_dict['metaspect'] is not None:
+                a_voc_dict['metaspect'] = MetaSpect(**a_voc_dict['metaspect'])
 
         voc_dataset_dict['voc_list'] = [Vocalization(**voc) for voc in voc_dataset_dict['voc_list']]
 
