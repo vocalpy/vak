@@ -10,6 +10,7 @@ from attr.validators import optional, instance_of
 from crowsetta import Sequence
 
 from ..utils.general import timebin_dur_from_vec
+from ..utils.labels import label_timebins
 
 
 def asarray_if_not(val):
@@ -284,11 +285,45 @@ class VocalizationDataset:
 
     def labels_list(self):
         """returns list of labels from annotations,
-        one for each vocalization in VocalizationDataset.voc_list"""
+        one for each vocalization in VocalizationDataset.voc_list
+
+        Returns
+        -------
+        labels_list : list
+            of Vocalization.annot.labels, one for each Vocalization in the VocalizationDataset.
+            Each element of the list is a numpy.ndarray.
+        """
         labels_list = []
         for voc in self.voc_list:
             labels_list.append(voc.annot.labels)
         return labels_list
+
+    def lbl_tb_list(self, silent_gap_label=0):
+        """returns list of labeled time bin vectors from annotations,
+        one for each vocalization in VocalizationDataset.voc_list
+
+        Parameters
+        ----------
+        silent_gap_label : str or int
+            default is 0. Label applied to time bins that fall within "silent gaps" between
+            onsets and offsets of labeled segments, if there are any.
+
+        Returns
+        -------
+        lbl_tb_list : list
+            that results from applying utils.labels.label_timebins to each Vocalization
+            in the VocalizationDataset.
+        """
+        lbl_tb_list = []
+        for voc in self.voc_list:
+            lbl_tb_list.append(
+                label_timebins(voc.annot.labels,
+                               voc.annot.onsets,
+                               voc.annot.offsets,
+                               voc.spect.time_bins,
+                               silent_gap_label)
+            )
+        return lbl_tb_list
 
     def to_json(self, json_fname=None):
         voc_dataset_dict = attr.asdict(self)
