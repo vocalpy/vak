@@ -10,7 +10,7 @@ import crowsetta
 from vak.evfuncs import load_cbin
 import vak.dataset.spect
 import vak.dataset.annot
-from vak.dataset.classes import VocalizationDataset, Vocalization, SpectrogramFile
+from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
 
 
 HERE = os.path.dirname(__file__)
@@ -54,11 +54,11 @@ class TestClasses(unittest.TestCase):
     def test_Spectrogram_init(self):
         for spect_path in self.spect_list_mat:
             spect_dict = loadmat(spect_path, squeeze_me=True)
-            a_spect = SpectrogramFile(freq_bins=spect_dict['f'],
-                                      time_bins=spect_dict['t'],
-                                      timebin_dur=0.002,
-                                      spect=spect_dict['s']
-                                      )
+            a_spect = MetaSpect(freq_bins=spect_dict['f'],
+                                time_bins=spect_dict['t'],
+                                timebin_dur=0.002,
+                                spect=spect_dict['s']
+                                )
             for attr in ['freq_bins', 'time_bins', 'timebin_dur', 'spect']:
                 self.assertTrue(hasattr(a_spect, attr))
                 if attr in ['freq_bins', 'time_bins', 'spect']:
@@ -69,34 +69,34 @@ class TestClasses(unittest.TestCase):
     def test_SpectrogramFile_from_dict(self):
         for spect_path in self.spect_list_mat:
             spect_dict = loadmat(spect_path, squeeze_me=True)
-            spect_file = SpectrogramFile.from_dict(spect_file_dict=spect_dict,
-                                                   freqbins_key='f',
-                                                   timebins_key='t',
-                                                   spect_key='s',
-                                                   timebin_dur=None,
-                                                   n_decimals_trunc=3)
+            metaspect = MetaSpect.from_dict(spect_file_dict=spect_dict,
+                                            freqbins_key='f',
+                                            timebins_key='t',
+                                            spect_key='s',
+                                            timebin_dur=None,
+                                            n_decimals_trunc=3)
             for attr in ['freq_bins', 'time_bins', 'timebin_dur', 'spect']:
-                self.assertTrue(hasattr(spect_file, attr))
+                self.assertTrue(hasattr(metaspect, attr))
                 if attr in ['freq_bins', 'time_bins', 'spect']:
-                    self.assertTrue(type(getattr(spect_file, attr)) == np.ndarray)
+                    self.assertTrue(type(getattr(metaspect, attr)) == np.ndarray)
                 elif attr == 'timebin_dur':
-                    self.assertTrue(type(getattr(spect_file, attr)) in (float, np.float16, np.float32, np.float64))
+                    self.assertTrue(type(getattr(metaspect, attr)) in (float, np.float16, np.float32, np.float64))
 
     def test_Vocalization_init(self):
         for spect_path, annot in zip(self.spect_list_mat, self.annot_list):
             spect_dict = loadmat(spect_path, squeeze_me=True)
-            spect_file = SpectrogramFile.from_dict(spect_file_dict=spect_dict,
-                                                   freqbins_key='f',
-                                                   timebins_key='t',
-                                                   spect_key='s',
-                                                   timebin_dur=None,
-                                                   n_decimals_trunc=3)
-            dur = spect_file.timebin_dur * spect_file.spect.shape[-1]
+            metaspect = MetaSpect.from_dict(spect_file_dict=spect_dict,
+                                            freqbins_key='f',
+                                            timebins_key='t',
+                                            spect_key='s',
+                                            timebin_dur=None,
+                                            n_decimals_trunc=3)
+            dur = metaspect.timebin_dur * metaspect.spect.shape[-1]
             voc = Vocalization(annot=annot,
                                duration=dur,
-                               spect_file=spect_file,
+                               metaspect=metaspect,
                                spect_path=spect_path)
-            for attr in ['annot', 'duration', 'spect_path', 'spect_file', 'audio', 'audio_path']:
+            for attr in ['annot', 'duration', 'spect_path', 'metaspect', 'audio', 'audio_path']:
                 self.assertTrue(hasattr(voc, attr))
             self.assertTrue(voc.duration == dur)
             self.assertTrue(voc.spect_path == spect_path)
@@ -110,7 +110,7 @@ class TestClasses(unittest.TestCase):
                                duration=dur,
                                audio=audio,
                                audio_path=audio_path)
-            for attr in ['annot', 'duration', 'spect_path', 'spect_file', 'audio', 'audio_path']:
+            for attr in ['annot', 'duration', 'spect_path', 'metaspect', 'audio', 'audio_path']:
                 self.assertTrue(hasattr(voc, attr))
             self.assertTrue(voc.duration == dur)
             self.assertTrue(voc.spect_path is None)
@@ -118,7 +118,7 @@ class TestClasses(unittest.TestCase):
             self.assertTrue(voc.audio_path == audio_path)
 
         with self.assertRaises(ValueError):
-            # because we didn't specify audio or spect or audio_file or spect_file
+            # because we didn't specify audio or metaspect or audio_path or spect_path
             # notice we lazily re-use last value of annot and dur from loop above
             Vocalization(annot=annot,
                          duration=dur)
@@ -127,7 +127,7 @@ class TestClasses(unittest.TestCase):
             # because we didn't specify spect path
             Vocalization(annot=annot,
                          duration=dur,
-                         spect_file=spect_file)
+                         metaspect=metaspect)
 
         with self.assertRaises(ValueError):
             # because we didn't specify audio path
@@ -140,10 +140,10 @@ class TestClasses(unittest.TestCase):
         a_voc = Vocalization(annot=annot,
                              duration=dur,
                              spect_path=spect_path)
-        for attr in ['annot', 'duration', 'spect_path', 'spect_file', 'audio', 'audio_path']:
+        for attr in ['annot', 'duration', 'spect_path', 'metaspect', 'audio', 'audio_path']:
             self.assertTrue(hasattr(a_voc, attr))
         self.assertTrue(a_voc.duration == dur)
-        self.assertTrue(a_voc.spect_file is None)
+        self.assertTrue(a_voc.metaspect is None)
         self.assertTrue(a_voc.spect_path == spect_path)
         self.assertTrue(a_voc.audio is None)
         self.assertTrue(a_voc.audio_path is None)
@@ -153,10 +153,10 @@ class TestClasses(unittest.TestCase):
         a_voc = Vocalization(annot=annot,
                              duration=dur,
                              audio_path=self.audio_files_cbin[0])
-        for attr in ['annot', 'duration', 'spect_path', 'spect_file', 'audio', 'audio_path']:
+        for attr in ['annot', 'duration', 'spect_path', 'metaspect', 'audio', 'audio_path']:
             self.assertTrue(hasattr(a_voc, attr))
         self.assertTrue(a_voc.duration == dur)
-        self.assertTrue(a_voc.spect_file is None)
+        self.assertTrue(a_voc.metaspect is None)
         self.assertTrue(a_voc.spect_path is None)
         self.assertTrue(a_voc.audio is None)
         self.assertTrue(a_voc.audio_path == self.audio_files_cbin[0])
@@ -165,16 +165,16 @@ class TestClasses(unittest.TestCase):
         voc_list = []
         for spect_path, annot in zip(self.spect_list_mat, self.annot_list):
             spect_dict = loadmat(spect_path, squeeze_me=True)
-            spect_file = SpectrogramFile.from_dict(spect_file_dict=spect_dict,
-                                                   freqbins_key='f',
-                                                   timebins_key='t',
-                                                   spect_key='s',
-                                                   timebin_dur=None,
-                                                   n_decimals_trunc=3)
-            dur = spect_file.timebin_dur * spect_file.spect.shape[-1]
+            metaspect = MetaSpect.from_dict(spect_file_dict=spect_dict,
+                                            freqbins_key='f',
+                                            timebins_key='t',
+                                            spect_key='s',
+                                            timebin_dur=None,
+                                            n_decimals_trunc=3)
+            dur = metaspect.timebin_dur * metaspect.spect.shape[-1]
             voc = Vocalization(annot=annot,
                                duration=dur,
-                               spect_file=spect_file,
+                               metaspect=metaspect,
                                spect_path=spect_path)
             voc_list.append(voc)
 
@@ -207,7 +207,7 @@ class TestClasses(unittest.TestCase):
         voc_list = vds_json['voc_list']
         self.assertTrue(type(voc_list) == list)
         for voc in voc_list:
-            for key in ['annot', 'duration', 'spect_path', 'spect_file', 'audio', 'audio_path']:
+            for key in ['annot', 'duration', 'spect_path', 'metaspect', 'audio', 'audio_path']:
                 self.assertTrue(key in voc)
 
         vds_from_json = VocalizationDataset.from_json(json_str=vds_json_str)
@@ -223,7 +223,7 @@ class TestClasses(unittest.TestCase):
                                            annot_list=self.annot_list,
                                            load_spects=False)
         self.assertTrue(
-            all([voc.spect_file is None for voc in vds.voc_list])
+            all([voc.metaspect is None for voc in vds.voc_list])
         )
 
         # check whether order of spect paths changes because we convert voc_list
@@ -232,7 +232,7 @@ class TestClasses(unittest.TestCase):
         spect_paths_before = [voc.spect_path for voc in vds.voc_list]
         vds.load_spects()
         self.assertTrue(
-            all([type(voc.spect_file) == SpectrogramFile for voc in vds.voc_list])
+            all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
         )
         spect_paths_after = [voc.spect_path for voc in vds.voc_list]
         for before, after in zip(spect_paths_before, spect_paths_after):
@@ -246,12 +246,12 @@ class TestClasses(unittest.TestCase):
                                            annot_list=self.annot_list,
                                            load_spects=True)
         self.assertTrue(
-            all([type(voc.spect_file) == SpectrogramFile for voc in vds.voc_list])
+            all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
         )
 
         vds.clear_spects()
         self.assertTrue(
-            all([voc.spect_file is None for voc in vds.voc_list])
+            all([voc.metaspect is None for voc in vds.voc_list])
         )
 
     def test_VocalizationDataset_are_spects_loaded(self):
