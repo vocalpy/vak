@@ -87,11 +87,11 @@ class SpectrogramFile:
                    timebin_dur=timebin_dur)
 
 
-def voc_file_validator(instance, attribute, value):
-    if ((attribute.name == 'audio_file' and value is None) and (instance.spect_file is None) or
-            (attribute.name == 'spect_file' and value is None) and (instance.audio_file is None)):
+def voc_path_validator(instance, attribute, value):
+    if ((attribute.name == 'audio_path' and value is None) and (instance.spect_path is None) or
+            (attribute.name == 'spect_path' and value is None) and (instance.audio_path is None)):
         raise ValueError(
-            'a vocalization must have either an audio_file or spect_file associated with it'
+            'a vocalization must have either an audio_path or spect_path associated with it'
             )
 
 
@@ -132,11 +132,11 @@ class Vocalization:
     audio = attr.ib(validator=optional(instance_of(np.ndarray)),
                     converter=asarray_if_not,
                     default=None)
-    audio_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
+    audio_path = attr.ib(validator=[optional(instance_of(str)), voc_path_validator],
                          default=None)
-    spect = attr.ib(validator=optional(instance_of(SpectrogramFile)),
-                    default=None)
-    spect_file = attr.ib(validator=[optional(instance_of(str)), voc_file_validator],
+    spect_file = attr.ib(validator=optional(instance_of(SpectrogramFile)),
+                         default=None)
+    spect_path = attr.ib(validator=[optional(instance_of(str)), voc_path_validator],
                          default=None)
 
 
@@ -180,19 +180,19 @@ class VocalizationDataset:
                     n_decimals_trunc=3,
                     ):
         if not all(
-            [hasattr(voc, 'spect_file') for voc in self.voc_list]
+            [hasattr(voc, 'spect_path') for voc in self.voc_list]
         ):
             raise ValueError(
-                "not all Vocalizations in voc_list have a spect_file attribute, "
+                "not all Vocalizations in voc_list have a spect_path attribute, "
                 "can't load spectrogram arrays"
             )
 
-        if all([voc.spect_file.endswith('.mat') for voc in self.voc_list]):
+        if all([voc.spect_path.endswith('.mat') for voc in self.voc_list]):
             ext = 'mat'
-        elif all([voc.spect_file.endswith('.npz') for voc in self.voc_list]):
+        elif all([voc.spect_path.endswith('.npz') for voc in self.voc_list]):
             ext = 'npz'
         else:
-            ext_set = [voc.spect_file.split[-1] for voc in self.voc_list]
+            ext_set = [voc.spect_path.split[-1] for voc in self.voc_list]
             ext_set = set(ext_set)
             raise ValueError(
                 f"unable to load spectrogram files, found multiple extensions: {ext_set}"
@@ -201,17 +201,16 @@ class VocalizationDataset:
         def _load_spect(voc):
             """helper function to load spectrogram into a Vocalization"""
             if ext == 'mat':
-                arr_dict = loadmat(voc.spect_file)
+                spect_dict = loadmat(voc.spect_path)
             elif ext == 'npz':
-                arr_dict = np.load(voc.spect_file)
-            spect_dict = {
-                'freq_bins': arr_dict[freqbins_key],
-                'time_bins': arr_dict[timebins_key],
-                'timebin_dur': timebin_dur_from_vec(arr_dict[timebins_key], n_decimals_trunc),
-                'spect': arr_dict[spect_key],
+                spect_dict = np.load(voc.spect_path)
+            spect_file_kwargs = {
+                'freq_bins': spect_dict[freqbins_key],
+                'time_bins': spect_dict[timebins_key],
+                'timebin_dur': timebin_dur_from_vec(spect_dict[timebins_key], n_decimals_trunc),
+                'spect': spect_dict[spect_key],
             }
-            spect = SpectrogramFile(**spect_dict)
-            voc.spect = spect
+            voc.spect_file = SpectrogramFile(**spect_file_kwargs)
             return voc
 
         voc_db = db.from_sequence(self.voc_list)
@@ -220,12 +219,12 @@ class VocalizationDataset:
 
     def clear_spects(self):
         for voc in self.voc_list:
-            voc.spect = None
+            voc.spect_file = None
 
     def are_spects_loaded(self):
-        if all([voc.spect is None for voc in self.voc_list]):
+        if all([voc.spect_file is None for voc in self.voc_list]):
             return False
-        elif all([type(voc.spect == SpectrogramFile) for voc in self.voc_list]):
+        elif all([type(voc.spect_file == SpectrogramFile) for voc in self.voc_list]):
             return True
         else:
             raise ValueError(
@@ -244,18 +243,18 @@ class VocalizationDataset:
                                  'and load is set to False. Either call load_spects method or set '
                                  'load=True when calling spects_list')
 
-        spects = []
+        spects_list = []
         for voc in self.voc_list:
-            spects.append(voc.spect.spect)
-        return spects
+            spects_list.append(voc.spect_file.spect)
+        return spects_list
 
     def labels_list(self):
         """returns list of labels from annotations,
         one for each vocalization in VocalizationDataset.voc_list"""
-        labels = []
+        labels_list = []
         for voc in self.voc_list:
-            labels.append(voc.annot.labels)
-        return labels
+            labels_list.append(voc.annot.labels)
+        return labels_list
 
     def to_json(self, json_fname=None):
         voc_dataset_dict = attr.asdict(self)
@@ -282,8 +281,8 @@ class VocalizationDataset:
         for a_voc_dict in voc_dataset_dict['voc_list']:
             if a_voc_dict['annot'] is not None:
                 a_voc_dict['annot'] = Sequence.from_dict(a_voc_dict['annot'])
-            if a_voc_dict['spect'] is not None:
-                a_voc_dict['spect'] = SpectrogramFile(**a_voc_dict['spect'])
+            if a_voc_dict['spect_file'] is not None:
+                a_voc_dict['spect_file'] = SpectrogramFile(**a_voc_dict['spect_file'])
 
         voc_dataset_dict['voc_list'] = [Vocalization(**voc) for voc in voc_dataset_dict['voc_list']]
 
