@@ -227,10 +227,23 @@ class VocalizationDataset:
             self.voc_list = list(voc_db.map(_load_spect))
 
     def clear_spects(self):
+        """sets Vocalization.metaspect to None, for every Vocalization in VocaliationDataset.voc_list
+
+        Useful for clearing arrays from the VocalizationDataset before saving; going to and from .json
+        with numpy.ndarrays loaded into MetaSpect attributes can be very slow.
+        """
         for voc in self.voc_list:
             voc.metaspect = None
 
     def are_spects_loaded(self):
+        """reports whether spectrogram files have been loaded into MetaSpect instances
+
+        Returns
+        -------
+        spects_loaded : bool
+            True if all Vocalizations in a VocalizationDataset have a metaspect.
+            False if instead the metaspect attribute for all Vocalizations is set to None.
+        """
         if all([voc.metaspect is None for voc in self.voc_list]):
             return False
         elif all([type(voc.metaspect == MetaSpect) for voc in self.voc_list]):
@@ -243,7 +256,19 @@ class VocalizationDataset:
 
     def spects_list(self, load=True, load_kwargs=None):
         """returns list of spectrograms (2-d arrays),
-        one for each vocalization in VocalizationDataset.voc_list"""
+        one for each vocalization in VocalizationDataset.voc_list
+
+        Parameters
+        ----------
+        load
+        load_kwargs
+
+        Returns
+        -------
+        spects_list : list
+            of Vocalization.metaspect.spect, one for each Vocalization in the VocalizationDataset.
+            Each element is a spectrogram in a numpy.ndarray.
+        """
         if self.are_spects_loaded() is False:
             if load is True:
                 self.load_spects(**load_kwargs)
