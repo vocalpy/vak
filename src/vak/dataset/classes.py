@@ -45,10 +45,10 @@ class SpectrogramFile:
 
     @classmethod
     def from_dict(cls,
-                  arr_file_dict,
+                  spect_file_dict,
+                  spect_key='s',
                   freqbins_key='f',
                   timebins_key='t',
-                  spect_key='s',
                   timebin_dur=None,
                   n_decimals_trunc=3):
         """create a Spectrogram instance from a dictionary-like object that
@@ -56,8 +56,9 @@ class SpectrogramFile:
 
         Parameters
         ----------
-        arr_file_dict : dict-like
-            dictionary-like object providing access to .mat or .npz file
+        spect_file_dict : dict-like
+            dictionary-like object providing access to .mat or .npz file that contains
+            a spectrogram and associated arrays
         freqbins_key : str
             key for accessing vector of frequency bins in files. Default is 'f'.
         timebins_key : str
@@ -77,12 +78,12 @@ class SpectrogramFile:
             a Spectrogram instance with attributes freq_bins, time_bins, array, and timebin_dur
         """
         if timebin_dur is None:
-            timebin_dur = timebin_dur_from_vec(time_bins=arr_file_dict[timebins_key],
+            timebin_dur = timebin_dur_from_vec(time_bins=spect_file_dict[timebins_key],
                                                n_decimals_trunc=n_decimals_trunc)
 
-        return cls(freq_bins=arr_file_dict[freqbins_key],
-                   time_bins=arr_file_dict[timebins_key],
-                   spect=arr_file_dict[spect_key],
+        return cls(freq_bins=spect_file_dict[freqbins_key],
+                   time_bins=spect_file_dict[timebins_key],
+                   spect=spect_file_dict[spect_key],
                    timebin_dur=timebin_dur)
 
 
