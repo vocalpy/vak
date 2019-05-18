@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from .classes import SpectrogramFile, Vocalization, VocalizationDataset
+from .classes import MetaSpect, Vocalization, VocalizationDataset
 from ..config import validators
 from ..utils.general import timebin_dur_from_vec
 
@@ -182,14 +182,14 @@ def from_files(spect_format,
                 'timebin_dur': timebin_dur,
                 'spect': spect_dict[spect_key],
             }
-            spect_file = SpectrogramFile(**spect_dict)
+            metaspect = MetaSpect(**spect_dict)
         else:
-            spect_file = None
+            metaspect = None
 
         voc = Vocalization(
             annot=annot,
             spect_path=spect_path,
-            spect_file=spect_file,
+            metaspect=metaspect,
             audio_path=annot.file,
             duration=spect_dur)
 
