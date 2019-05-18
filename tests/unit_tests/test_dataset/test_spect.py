@@ -42,27 +42,27 @@ class TestSpect(unittest.TestCase):
         )
 
         self.assertTrue(
-            all([hasattr(voc, 'spect') for voc in vocal_dataset.voc_list])
+            all([hasattr(voc, 'spect_file') for voc in vocal_dataset.voc_list])
         )
 
-        spect_file_basenames = [os.path.basename(spect_path) for spect_path in self.spect_files]
-        spect_files = [os.path.basename(voc.spect_file)
-                       for voc in vocal_dataset.voc_list]
+        spect_files_from_test_data = [os.path.basename(spect_path) for spect_path in self.spect_files]
+        spect_files_from_vds = [os.path.basename(voc.spect_path)
+                                for voc in vocal_dataset.voc_list]
         self.assertTrue(
-            all([spect_file in spect_file_basenames for spect_file in spect_files])
+            all([spect_file in spect_files_from_test_data for spect_file in spect_files_from_vds])
         )
 
         if load_spects:
             self.assertTrue(
-                all([type(voc.spect.spect) == np.ndarray for voc in vocal_dataset.voc_list])
+                all([type(voc.spect_file.spect) == np.ndarray for voc in vocal_dataset.voc_list])
             )
             self.assertTrue(
-                all([type(voc.spect) == SpectrogramFile for voc in vocal_dataset.voc_list])
+                all([type(voc.spect_file) == SpectrogramFile for voc in vocal_dataset.voc_list])
             )
 
         elif load_spects is False:
             self.assertTrue(
-                all([voc.spect is None for voc in vocal_dataset.voc_list])
+                all([voc.spect_file is None for voc in vocal_dataset.voc_list])
             )
 
         # if all assertTrues were True
@@ -84,7 +84,7 @@ class TestSpect(unittest.TestCase):
                                                      load_spects=False)
         self.assertTrue(
             self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
-                                                                 load_spects=False)
+                                                                   load_spects=False)
         )
 
     def test_spect_files_annot(self):
@@ -103,7 +103,7 @@ class TestSpect(unittest.TestCase):
                                                      load_spects=False)
         self.assertTrue(
             self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
-                                                                 load_spects=False)
+                                                                   load_spects=False)
         )
 
     def test_spect_annot_map(self):
@@ -121,7 +121,7 @@ class TestSpect(unittest.TestCase):
                                                      load_spects=False)
         self.assertTrue(
             self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
-                                                                 load_spects=False)
+                                                                   load_spects=False)
         )
 
     def test_bad_inputs_raise(self):
