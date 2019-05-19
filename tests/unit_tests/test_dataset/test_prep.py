@@ -49,10 +49,10 @@ class TestPrep(unittest.TestCase):
         vds_loaded = VocalizationDataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
-                voc.audio_file == voc_loaded.audio_file
+                voc.audio_path == voc_loaded.audio_path
             )
             self.assertTrue(
-                voc.audio_file == voc_loaded.audio_file
+                voc.audio_path == voc_loaded.audio_path
             )
 
     def test_prep_with_array_mat(self):
@@ -86,10 +86,10 @@ class TestPrep(unittest.TestCase):
         vds_loaded = VocalizationDataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
-                voc.audio_file == voc_loaded.audio_file
+                voc.audio_path == voc_loaded.audio_path
             )
             self.assertTrue(
-                voc.spect_file == voc_loaded.spect_file
+                voc.spect_path == voc_loaded.spect_path
             )
 
 
