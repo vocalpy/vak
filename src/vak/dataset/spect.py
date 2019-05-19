@@ -84,6 +84,9 @@ def from_files(spect_format,
             f"format '{spect_format}' not recognized."
         )
 
+    if all([arg is None for arg in (spect_dir, spect_files, spect_annot_map)]):
+        raise ValueError('must specify one of: spect_dir, spect_files, spect_annot_map')
+
     if spect_dir and spect_files:
         raise ValueError('received values for spect_dir and spect_files, unclear which to use')
 
