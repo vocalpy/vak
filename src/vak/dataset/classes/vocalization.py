@@ -42,12 +42,7 @@ class Vocalization:
     # need at least labels from annotation + duration to split a dataset up by duration
     # while maintaining class balance
     annot = attr.ib(validator=optional(instance_of(Sequence)), default=None)
-    @annot.validator
-    def is_list_tup_or_seq(self, attribute, value):
-        if type(value) not in (list, tuple, Sequence):
-            raise TypeError(
-                f'annotations for Vocalization must be a crowsetta.Sequence'
-            )
+
     # optional: need *one of* audio_file + audio or spect + metaspect
     audio = attr.ib(validator=optional(instance_of(np.ndarray)),
                     converter=asarray_if_not,
