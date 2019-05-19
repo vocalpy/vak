@@ -106,6 +106,9 @@ def to_spect(audio_format,
             f"format '{audio_format}' not recognized."
         )
 
+    if all([arg is None for arg in (audio_dir, audio_files, audio_annot_map)]):
+        raise ValueError('must specify one of: audio_dir, audio_files, audio_annot_map')
+
     if audio_dir and audio_files:
         raise ValueError('received values for audio_dir and audio_files, unclear which to use')
 
