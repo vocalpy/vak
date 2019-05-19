@@ -125,6 +125,14 @@ class TestSpect(unittest.TestCase):
         )
 
     def test_bad_inputs_raise(self):
+        # must specify one of: spect dir, spect files, or spect files/annotations mapping
+        with self.assertRaises(ValueError):
+            vak.dataset.spect.from_files(spect_format='npz',
+                                         spect_dir=None,
+                                         spect_files=None,
+                                         annot_list=self.annot_list,
+                                         spect_annot_map=None,
+                                         load_spects=True)
         # invalid spect format
         with self.assertRaises(ValueError):
             vak.dataset.spect.from_files(spect_format='npy',
