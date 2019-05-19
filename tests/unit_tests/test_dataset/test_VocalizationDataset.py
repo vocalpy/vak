@@ -169,6 +169,44 @@ class TestVocalizationDataset(unittest.TestCase):
         self.assertTrue(
             all([type(spect) == np.ndarray for spect in spects_list])
         )
+        self.assertTrue(
+            len(spects_list) == len(vds.voc_list)
+        )
+
+    def test_VocalizationDataset_labels_list(self):
+        vds = vak.dataset.spect.from_files(spect_format='mat',
+                                           spect_dir=self.spect_dir_mat,
+                                           annot_list=self.annot_list,
+                                           load_spects=False)
+        labels_list = vds.labels_list()
+        self.assertTrue(
+            type(labels_list == list)
+        )
+        self.assertTrue(
+            all([type(labels) == np.ndarray for labels in labels_list])
+        )
+        self.assertTrue(
+            len(labels_list) == len(vds.voc_list)
+        )
+
+    def test_VocalizationDataset_lbl_tb_list(self):
+        vds = vak.dataset.spect.from_files(labelset=self.labelset_mat,
+                                           spect_format='mat',
+                                           spect_dir=self.spect_dir_mat,
+                                           annot_list=self.annot_list,
+                                           load_spects=True)
+        labelmap = vak.utils.labels.to_map(vds.labelset)
+        vds.labelmap = labelmap
+        lbl_tb_list = vds.lbl_tb_list()
+        self.assertTrue(
+            type(lbl_tb_list == list)
+        )
+        self.assertTrue(
+            all([type(lbl_tb) == np.ndarray for lbl_tb in lbl_tb_list])
+        )
+        self.assertTrue(
+            len(lbl_tb_list) == len(vds.voc_list)
+        )
 
 
 if __name__ == '__main__':
