@@ -46,7 +46,7 @@ def prep(data_dir,
         filename for VocalDataset, which will be saved as a .json file.
         If filename does not end in .json, then that extension will be appended.
         Default is None. If None, then the filename will be
-        'vocalization_dataset_prepared_{timestamp}.json'.
+        'prep_{timestamp}.vds.json'.
     return_vds : bool
         if True, return prepared VocalizationDataset. Default is True.
     return_path : bool
@@ -183,7 +183,7 @@ def prep(data_dir,
     if save_vds:
         if vds_fname is None:
             timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-            vds_fname = f'vocalization_dataset_prepared_{timenow}.json'
+            vds_fname = f'prep_{timenow}.vds.json'
 
         if not vds_fname.endswith('.json'):
             vds_fname += '.json'
