@@ -41,7 +41,7 @@ def prep(data_dir,
         path to location where data sets should be saved. Default is None,
         in which case data sets is saved in data_dir.
     save_vds : bool
-        if True, save the VocalizationDataset created as a .json file.
+        if True, save the VocalizationDataset created as a .json file. Default is False.
     vds_fname : str
         filename for VocalDataset, which will be saved as a .json file.
         If filename does not end in .json, then that extension will be appended.
