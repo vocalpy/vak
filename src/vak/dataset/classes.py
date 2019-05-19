@@ -315,6 +315,12 @@ class VocalizationDataset:
             that results from applying utils.labels.label_timebins to each Vocalization
             in the VocalizationDataset.
         """
+        if self.labelmap is None:
+            raise ValueError(
+                'this VocalizationDataset has no labelmap; please create a labelmap from '
+                'the labelset and assign it to the labelmap attribute'
+            )
+
         if 'unlabeled' in self.labelmap:
             unlabeled_label = self.labelmap['unlabeled']
         else:
