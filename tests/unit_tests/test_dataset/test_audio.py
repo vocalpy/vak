@@ -121,6 +121,21 @@ class TestAudio(unittest.TestCase):
         )
 
     def test_bad_inputs_raise(self):
+        # must specify one of: audio files, audio list, or audio files/annotations mapping
+        with self.assertRaises(ValueError):
+            spect_files = vak.dataset.audio.to_spect(audio_format='ape',
+                                                     spect_params=self.spect_params,
+                                                     output_dir=self.tmp_output_dir,
+                                                     audio_dir=None,
+                                                     audio_files=None,
+                                                     annot_list=self.annot_list_cbin,
+                                                     audio_annot_map=None,
+                                                     labelset=self.labelset_cbin,
+                                                     skip_files_with_labels_not_in_labelset=True,
+                                                     freqbins_key='f',
+                                                     timebins_key='t',
+                                                     spect_key='s')
+
         # invalid audio format
         with self.assertRaises(ValueError):
             spect_files = vak.dataset.audio.to_spect(audio_format='ape',
