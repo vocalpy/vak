@@ -168,8 +168,15 @@ class VocalizationDataset:
     ----------
     voc_list : list
         of Vocalizations.
+    labelset : set
+        (unique) set of labels used in annotations for all Vocalizations in data set
+    labelmap : dict
+        dictionary that maps labelset to consecutive integer values {0,1,2,...N} where N
+        is the number of classes / label types
     """
-    voc_list = attr.ib()
+    voc_list = attr.ib(validator=instance_of(list))
+    labelset = attr.ib(validator=optional(instance_of(set)), default=None)
+    labelmap = attr.ib(validator=optional(instance_of(dict)), default=None)
 
     @voc_list.validator
     def is_list_or_tuple(self, attribute, value):
