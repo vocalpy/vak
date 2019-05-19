@@ -7,9 +7,9 @@ from crowsetta import Transcriber
 from . import annot, spect, audio
 
 
-def prep(labelset,
-         data_dir,
-         annot_format,
+def prep(data_dir,
+         annot_format=None,
+         labelset=None,
          skip_files_with_labels_not_in_labelset=True,
          output_dir=None,
          save_vds=False,
@@ -27,10 +27,13 @@ def prep(labelset,
 
     Parameters
     ----------
-    labelset : set, list
-        of str or int, set of labels for vocalizations.
     data_dir : str
         path to directory with audio or spectrogram files from which to make dataset
+    annot_format : str
+        format of annotations. Any format that can be used with the
+        crowsetta library is valid. Default is None.
+    labelset : set, list
+        of str or int, set of labels for vocalizations. Default is None.
     skip_files_with_labels_not_in_labelset : bool
         if True, skip a file if the labels variable contains labels not
         found in 'labelset'. Default is True.
@@ -57,9 +60,6 @@ def prep(labelset,
     spect_format : str
         format of array files containing spectrograms as 2-d matrices.
         One of {'mat', 'npz'}.
-    annot_format : str
-        format of annotations. Any format that can be used with the
-        crowsetta library is valid.
     annot_file : str
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
