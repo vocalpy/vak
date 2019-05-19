@@ -49,36 +49,27 @@ class TestAudio(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp_output_dir)
 
-    def _check_arr_files_returned_by_to_arr_files(self, arr_files):
+    def _check_spect_files_returned_by_to_spect_files(self, spect_files):
         """assertions that are shared across unit tests for vak.dataset.audio.to_spect"""
         self.assertTrue(
-            type(arr_files) == list
+            type(spect_files) == list
         )
 
         self.assertTrue(
-            all([os.path.isfile(arr_file) for arr_file in arr_files])
+            all([os.path.isfile(spect_file) for spect_file in spect_files])
         )
 
-        # self.assertTrue(
-        #     all([hasattr(voc, 'spect') for voc in vocal_dataset.voc_list])
-        # )
-        #
-        # self.assertTrue(
-        #     all([type(voc.spect) == Spectrogram for voc in vocal_dataset.voc_list])
-        # )
-        #
-        # array_list_basenames = [os.path.basename(arr_path) for arr_path in self.array_list]
-        # spect_files = [os.path.basename(voc.spect_file)
-        #                for voc in vocal_dataset.voc_list]
-        # self.assertTrue(
-        #     all([spect_file in array_list_basenames for spect_file in spect_files])
-        # )
+        for spect_file in spect_files:
+            spect_dict = np.load(spect_file)
+            for key in ['s', 'f', 't']:
+                self.assertTrue(key in spect_dict)
+                self.assertTrue(type(spect_dict[key]) == np.ndarray)
 
         # if all assertTrues were True
         return True
 
     def test_audio_dir_annot_cbin(self):
-        array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+        spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                  spect_params=self.spect_params,
                                                  output_dir=self.tmp_output_dir,
                                                  audio_dir=self.audio_dir_cbin,
@@ -91,11 +82,11 @@ class TestAudio(unittest.TestCase):
                                                  timebins_key='t',
                                                  spect_key='s')
         self.assertTrue(
-            self._check_arr_files_returned_by_to_arr_files(array_files)
+            self._check_spect_files_returned_by_to_spect_files(spect_files)
         )
 
     def test_audio_files_annot_cbin(self):
-        array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+        spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                  spect_params=self.spect_params,
                                                  output_dir=self.tmp_output_dir,
                                                  audio_dir=None,
@@ -108,12 +99,12 @@ class TestAudio(unittest.TestCase):
                                                  timebins_key='t',
                                                  spect_key='s')
         self.assertTrue(
-            self._check_arr_files_returned_by_to_arr_files(array_files)
+            self._check_spect_files_returned_by_to_spect_files(spect_files)
         )
 
     def test_audio_annot_map_cbin(self):
         audio_annot_map = dict(zip(self.audio_files_cbin, self.annot_list_cbin))
-        array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+        spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                  spect_params=self.spect_params,
                                                  output_dir=self.tmp_output_dir,
                                                  audio_dir=None,
@@ -126,13 +117,13 @@ class TestAudio(unittest.TestCase):
                                                  timebins_key='t',
                                                  spect_key='s')
         self.assertTrue(
-            self._check_arr_files_returned_by_to_arr_files(array_files)
+            self._check_spect_files_returned_by_to_spect_files(spect_files)
         )
 
     def test_bad_inputs_raise(self):
         # invalid audio format
         with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_spect(audio_format='ape',
+            spect_files = vak.dataset.audio.to_spect(audio_format='ape',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
                                                      audio_dir=self.audio_dir_cbin,
@@ -147,7 +138,7 @@ class TestAudio(unittest.TestCase):
 
         # can't specify both dir and files
         with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+            spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
                                                      audio_dir=self.audio_dir_cbin,
@@ -162,7 +153,7 @@ class TestAudio(unittest.TestCase):
         # can't specify both dir and audio_annot_map
         audio_annot_map = dict(zip(self.audio_files_cbin, self.annot_list_cbin))
         with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+            spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
                                                      audio_dir=self.audio_dir_cbin,
@@ -177,7 +168,7 @@ class TestAudio(unittest.TestCase):
 
         # can't specify both list and audio_annot_map
         with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+            spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
                                                      audio_dir=None,
@@ -192,7 +183,7 @@ class TestAudio(unittest.TestCase):
 
         # can't specify both annotations list and audio_annot_map
         with self.assertRaises(ValueError):
-            array_files = vak.dataset.audio.to_spect(audio_format='cbin',
+            spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                      spect_params=self.spect_params,
                                                      output_dir=self.tmp_output_dir,
                                                      audio_dir=None,
