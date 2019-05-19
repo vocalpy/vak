@@ -323,8 +323,9 @@ class VocalizationDataset:
         """
         lbl_tb_list = []
         for voc in self.voc_list:
+            lbls_int = [self.labelmap[lbl] for lbl in voc.annot.labels]
             lbl_tb_list.append(
-                label_timebins(voc.annot.labels,
+                label_timebins(lbls_int,
                                voc.annot.onsets,
                                voc.annot.offsets,
                                voc.spect.time_bins,
