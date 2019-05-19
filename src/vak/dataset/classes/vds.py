@@ -198,9 +198,9 @@ class VocalizationDataset:
             lbls_int = [self.labelmap[lbl] for lbl in voc.annot.labels]
             lbl_tb_list.append(
                 label_timebins(lbls_int,
-                               voc.annot.onsets,
-                               voc.annot.offsets,
-                               voc.spect.time_bins,
+                               voc.annot.onsets_s,
+                               voc.annot.offsets_s,
+                               voc.metaspect.time_bins,
                                unlabeled_label=unlabeled_label)
             )
         return lbl_tb_list
