@@ -158,3 +158,48 @@ def sort(uniq_labels, occurrences, ascending=True):
         return uniq_labels_sorted, occurrences_sorted
     else:
         return uniq_labels_sorted.reverse(), occurrences_sorted.reverse()
+
+
+def to_map(labelset, map_unlabeled=True):
+    """map set of labels to series of consecutive integers from 0 to n inclusive,
+    where n is the number of labels in the set.
+
+    This 'labelmap' is used when mapping labels from annotations of a vocalization into
+    a label for every time bin in a spectrogram of that vocalization.
+
+    If map_unlabeled is True, 'unlabeled' will be added to labelset, and will map to 0,
+    so the total number of classes is n + 1.
+
+    Parameters
+    ----------
+    labelset : set
+        of labels used to annotate a VocalizationDataset.
+    map_unlabeled : bool
+        if True, include key 'unlabeled' in mapping. Any time bins in a spectrogram
+        that do not have a label associated with them, e.g. a silent gap between vocalizations,
+        will be assigned the integer that the 'unlabeled' key maps to.
+
+    Returns
+    -------
+    labelmap : dict
+        maps labels to integers
+    """
+    if type(labelset) != set:
+        raise TypeError(
+            f'type of labelset must be set, got type {type(labelset)}'
+        )
+
+    labellist = []
+    if map_unlabeled is True:
+        labellist.append('unlabeled')
+
+    labellist.extend(
+        sorted(list(labelset))
+    )
+
+    labelmap = dict(
+        zip(
+            labellist, range(len(labellist))
+        )
+    )
+    return labelmap
