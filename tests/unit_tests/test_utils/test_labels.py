@@ -55,7 +55,6 @@ class TestLabels(unittest.TestCase):
             )
         )
 
-
     def test_sort(self):
         uniq_labels = list('abc')
         occurrences = [
@@ -75,6 +74,43 @@ class TestLabels(unittest.TestCase):
             all(
                 [np.array_equal(arr1, arr2) for arr1, arr2 in zip(occur_sorted, occur_sorted_expected)]
             )
+        )
+
+    def test_to_map(self):
+        labelset = set(list('abcde'))
+        labelmap = vak.utils.labels.to_map(labelset, map_unlabeled=False)
+        self.assertTrue(
+            type(labelmap) == dict
+        )
+        self.assertTrue(
+            len(labelmap) == len(labelset)  # because map_unlabeled=False
+        )
+
+        labelset = set(list('abcde'))
+        labelmap = vak.utils.labels.to_map(labelset, map_unlabeled=True)
+        self.assertTrue(
+            type(labelmap) == dict
+        )
+        self.assertTrue(
+            len(labelmap) == len(labelset) + 1  # because map_unlabeled=True
+        )
+
+        labelset = {1, 2, 3, 4, 5, 6}
+        labelmap = vak.utils.labels.to_map(labelset, map_unlabeled=False)
+        self.assertTrue(
+            type(labelmap) == dict
+        )
+        self.assertTrue(
+            len(labelmap) == len(labelset)  # because map_unlabeled=False
+        )
+
+        labelset = {1, 2, 3, 4, 5, 6}
+        labelmap = vak.utils.labels.to_map(labelset, map_unlabeled=True)
+        self.assertTrue(
+            type(labelmap) == dict
+        )
+        self.assertTrue(
+            len(labelmap) == len(labelset) + 1  # because map_unlabeled=True
         )
 
 
