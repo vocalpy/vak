@@ -159,8 +159,10 @@ def to_spect(audio_format,
         # annot_list can be None when creating spectrograms from
         # unlabeled audio for predicting labels
         if annot_list is None:
-            # this makes a list of empty tuples to pair with audio files
-            annot_list = [() for _ in range(len(audio_files))]
+            # this makes a list of None to pair with audio files so function still works
+            # e.g. when we're making spectrograms without annotations so we can use spectrograms
+            # to predict what the annotations are
+            annot_list = [None for _ in range(len(audio_files))]
 
         audio_annot_map = dict(
             (audio_file, annot) for audio_file, annot in zip(audio_files, annot_list)
