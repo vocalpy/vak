@@ -120,6 +120,25 @@ class TestAudio(unittest.TestCase):
             self._check_spect_files_returned_by_to_spect_files(spect_files)
         )
 
+    def test_audio_dir_without_annot(self):
+        # make sure we can make a spectrograms from audio files without annotations,
+        # e.g. if we're going to predict the annotations using the spectrograms
+        spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                 spect_params=self.spect_params,
+                                                 output_dir=self.tmp_output_dir,
+                                                 audio_dir=self.audio_dir_cbin,
+                                                 audio_files=None,
+                                                 annot_list=None,
+                                                 audio_annot_map=None,
+                                                 labelset=None,
+                                                 skip_files_with_labels_not_in_labelset=False,
+                                                 freqbins_key='f',
+                                                 timebins_key='t',
+                                                 spect_key='s')
+        self.assertTrue(
+            self._check_spect_files_returned_by_to_spect_files(spect_files)
+        )
+
     def test_bad_inputs_raise(self):
         # must specify one of: audio files, audio list, or audio files/annotations mapping
         with self.assertRaises(ValueError):
