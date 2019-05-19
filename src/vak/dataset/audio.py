@@ -88,6 +88,7 @@ def to_spect(audio_format,
 
     Notes
     -----
+    For each audio file, a corresponding 'spect.npz' file will be created.
     Each '.spect.npz' file contains the following arrays:
         s : numpy.ndarray
             spectrogram, a 2-d array
