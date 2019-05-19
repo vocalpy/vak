@@ -117,8 +117,8 @@ def from_files(spect_format,
 
     if spect_files:
         if annot_list is None:
-            # this makes a list of empty tuples to pair with audio files
-            annot_list = [() for _ in range(len(spect_files))]
+            # this makes a list of None to pair with spectrogram files
+            annot_list = [None for _ in range(len(spect_files))]
 
         spect_annot_map = dict((spect_path, annot) for spect_path, annot in zip(spect_files, annot_list))
 
@@ -183,24 +183,26 @@ def from_files(spect_format,
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
 
         if load_spects:
-            spect_dict = {
+            spect_kwargs = {
                 'freq_bins': spect_dict[freqbins_key],
                 'time_bins': spect_dict[timebins_key],
                 'timebin_dur': timebin_dur,
                 'spect': spect_dict[spect_key],
             }
-            metaspect = MetaSpect(**spect_dict)
+            metaspect = MetaSpect(**spect_kwargs)
         else:
             metaspect = None
 
-        voc = Vocalization(
-            annot=annot,
-            spect_path=spect_path,
-            metaspect=metaspect,
-            audio_path=annot.file,
-            duration=spect_dur)
+        voc_kwargs = {
+            'annot': annot,
+            'spect_path': spect_path,
+            'metaspect': metaspect,
+            'duration': spect_dur
+        }
+        if annot is not None:
+            voc_kwargs['audio_path'] = annot.file
 
-        return voc
+        return Vocalization(**voc_kwargs)
 
     spect_path_annot_tups = db.from_sequence(spect_annot_map.items())
     logger.info('creating VocalizationDataset')
