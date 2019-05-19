@@ -3,42 +3,44 @@ import numpy as np
 from .validation import column_or_1d
 
 
-def label_timebins(labels,
-                   onsets,
-                   offsets,
+def label_timebins(labels_int,
+                   onsets_s,
+                   offsets_s,
                    time_bins,
-                   silent_gap_label=0):
-    """makes a vector of labels for each timebin from a spectrogram,
-    given labels for syllables plus onsets and offsets of syllables
+                   unlabeled_label=0):
+    """makes a vector of labels for each time bin from a spectrogram,
+    given labels, onsets, and offsets of vocalizations
 
     Parameters
     ----------
-    labels : ints
-        should be mapping returned by make_labels_mapping
-    onsets : ndarray
-        1d vector of floats, syllable onsets in seconds
-    offsets : ndarray
-        1d vector of floats, offsets in seconds
-    time_bins : ndarray
-        1d vector of floats,
-        time in seconds for each time bin of a spectrogram
-    silent_gap_label : int
-        label assigned to silent gaps
-        default is 0
+    labels_int : list, numpy.ndarray
+        a list or array of labels from the annotation for a vocalization,
+        mapped to integers
+    onsets_s : numpy.ndarray
+        1d vector of floats, segment onsets in seconds
+    offsets_s : numpy.ndarray
+        1-d vector of floats, segment offsets in seconds
+    time_bins : mumpy.ndarray
+        1-d vector of floats, time in seconds for center of each time bin of a spectrogram
+    unlabeled_label : int
+        label assigned to time bins that do not have labels associated with them.
+        Default is 0
 
     Returns
     -------
-    label_vec : ndarray
-        same length as time_bins, with each element a label for
-        each time bin
+    lbl_tb : numpy.ndarray
+        same length as time_bins, with each element a label for each time bin
     """
-    labels = [int(label) for label in labels]
-    label_vec = np.ones((time_bins.shape[-1], 1), dtype='int8') * silent_gap_label
+    if (type(labels_int) == list and not all([type(lbl) == int for lbl in labels_int]) or
+            (type(labels_int) == np.ndarray and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64])):
+        raise TypeError('labels_int must be a list or numpy.ndarray of integers')
+
+    label_vec = np.ones((time_bins.shape[-1], 1), dtype='int8') * unlabeled_label
     onset_inds = [np.argmin(np.abs(time_bins - onset))
-                  for onset in onsets]
+                  for onset in onsets_s]
     offset_inds = [np.argmin(np.abs(time_bins - offset))
-                   for offset in offsets]
-    for label, onset, offset in zip(labels, onset_inds, offset_inds):
+                   for offset in offsets_s]
+    for label, onset, offset in zip(labels_int, onset_inds, offset_inds):
         label_vec[onset:offset+1] = label
         # offset_inds[ind]+1 because of Matlab one-indexing
     return label_vec
