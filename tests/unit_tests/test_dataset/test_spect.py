@@ -87,6 +87,17 @@ class TestSpect(unittest.TestCase):
                                                                    load_spects=False)
         )
 
+    def test_spect_dir_without_annot(self):
+        # make sure we can make a dataset from spectrogram files without annotations,
+        # e.g. if we're going to predict the annotations using the spectrograms
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_dir=self.spect_dir,
+                                                     annot_list=None,
+                                                     load_spects=True)
+        self.assertTrue(
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset)
+        )
+
     def test_spect_files_annot(self):
         vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
                                                      spect_files=self.spect_files,
