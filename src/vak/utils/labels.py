@@ -203,3 +203,25 @@ def to_map(labelset, map_unlabeled=True):
         )
     )
     return labelmap
+
+
+def to_set(labels_list):
+    """given a list of labels from annotations, return the set of (unique) labels
+
+    Parameters
+    ----------
+    labels_list : list
+         of lists, i.e. labels from annotations
+
+    Returns
+    -------
+    labelset
+
+    Examples
+    --------
+    >>> labels_list = [voc.annot.labels for voc in vds.voc_list]
+    >>> labelset = to_set(labels_list)
+    """
+    all_labels = [lbl for labels in labels_list for lbl in labels]
+    labelset = set(all_labels)
+    return labelset
