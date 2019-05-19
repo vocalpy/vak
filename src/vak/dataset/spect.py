@@ -116,6 +116,10 @@ def from_files(spect_format,
             spect_files = glob(os.path.join(spect_dir, '*.npz'))
 
     if spect_files:
+        if annot_list is None:
+            # this makes a list of empty tuples to pair with audio files
+            annot_list = [() for _ in range(len(spect_files))]
+
         spect_annot_map = dict((spect_path, annot) for spect_path, annot in zip(spect_files, annot_list))
 
     # this is defined here so all other arguments to 'from_arr_files' are in scope
