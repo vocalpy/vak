@@ -305,15 +305,9 @@ class VocalizationDataset:
             labels_list.append(voc.annot.labels)
         return labels_list
 
-    def lbl_tb_list(self, silent_gap_label=0):
+    def lbl_tb_list(self):
         """returns list of labeled time bin vectors from annotations,
         one for each vocalization in VocalizationDataset.voc_list
-
-        Parameters
-        ----------
-        silent_gap_label : str or int
-            default is 0. Label applied to time bins that fall within "silent gaps" between
-            onsets and offsets of labeled segments, if there are any.
 
         Returns
         -------
@@ -321,6 +315,13 @@ class VocalizationDataset:
             that results from applying utils.labels.label_timebins to each Vocalization
             in the VocalizationDataset.
         """
+        if 'unlabeled' in self.labelmap:
+            unlabeled_label = self.labelmap['unlabeled']
+        else:
+            # if there is no "unlabeled label" (e.g., because all segments have labels)
+            # just assign dummy value that will be replaced by some label in label_timebins()
+            unlabeled_label = 0
+
         lbl_tb_list = []
         for voc in self.voc_list:
             lbls_int = [self.labelmap[lbl] for lbl in voc.annot.labels]
@@ -329,7 +330,7 @@ class VocalizationDataset:
                                voc.annot.onsets,
                                voc.annot.offsets,
                                voc.spect.time_bins,
-                               silent_gap_label)
+                               unlabeled_label=unlabeled_label)
             )
         return lbl_tb_list
 
