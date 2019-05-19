@@ -113,6 +113,18 @@ class TestLabels(unittest.TestCase):
             len(labelmap) == len(labelset) + 1  # because map_unlabeled=True
         )
 
+    def test_to_set(self):
+        labels1 = [1, 1, 1, 1, 2, 2, 3, 3, 3]
+        labels2 = [1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
+        labels_list = [labels1, labels2]
+        labelset = vak.utils.labels.to_set(labels_list)
+        self.assertTrue(
+            type(labelset) == set
+        )
+        self.assertTrue(
+            labelset == {1, 2, 3}
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
