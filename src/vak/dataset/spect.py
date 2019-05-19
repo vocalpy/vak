@@ -200,4 +200,4 @@ def from_files(spect_format,
     with ProgressBar():
         voc_list = list(spect_path_annot_tups.map(_voc_from_spect_path_annot_tup))
 
-    return VocalizationDataset(voc_list=voc_list)
+    return VocalizationDataset(voc_list=voc_list, labelset=labelset)
