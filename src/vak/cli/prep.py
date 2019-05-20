@@ -8,14 +8,13 @@ from .. import dataset
 VDS_JSON_EXT = '.vds.json'
 
 
-def prep(labelset,
-         data_dir,
+def prep(data_dir,
          total_train_set_dur,
          test_dur,
          config_file,
          annot_format,
          val_dur=None,
-         skip_files_with_labels_not_in_labelset=True,
+         labelset=None,
          output_dir=None,
          audio_format=None,
          spect_format=None,
@@ -26,8 +25,6 @@ def prep(labelset,
 
     Parameters
     ----------
-    labelset : list
-        of str or int, set of labels for syllables
     data_dir : str
         path to directory with audio files or spectrogram files from which to make dataset
     total_train_set_dur : float
@@ -37,9 +34,10 @@ def prep(labelset,
         total duration of validation set, in seconds.
     test_dur : float
         total duration of test set, in seconds.
-    skip_files_with_labels_not_in_labelset : bool
-        if True, skip a file if the labels variable contains labels not
-        found in 'labelset'. Default is True.
+    labelset : list
+        of str or int, set of labels for syllables. Default is None.
+        If not None, then files will be skipped where the 'labels' array in the
+        corresponding annotation contains labels that are not found in labelset
     output_dir : str
         Path to location where data sets should be saved. Default is None,
         in which case data sets are saved in the current working directory.
@@ -74,6 +72,22 @@ def prep(labelset,
                          "unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms from array files")
 
+    if labelset is not None:
+        if type(labelset) not in (set, list):
+            raise TypeError(
+                f"type of labelset must be set or list, but type was: {type(labelset)}"
+            )
+
+        if type(labelset) == list:
+            labelset_set = set(labelset)
+            if len(labelset) != len(labelset_set):
+                raise ValueError(
+                    'labelset contains repeated elements, should be a set (i.e. all members unique.\n'
+                    f'Labelset was: {labelset}'
+                )
+            else:
+                labelset = labelset_set
+
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
@@ -85,7 +99,6 @@ def prep(labelset,
     vds, vds_path = dataset.prep(labelset=labelset,
                                  data_dir=data_dir,
                                  annot_format=annot_format,
-                                 skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset,
                                  output_dir=output_dir,
                                  save_vds=True,
                                  vds_fname=vds_fname,
