@@ -25,9 +25,9 @@ class VocalDatasetJSONEncoder(JSONEncoder):
             return json.JSONEncoder.default(self, o)
 
 
-@attr.s(cmp=False)
+@attr.s(frozen=True)
 class VocalizationDataset:
-    """class to represent a dataset of annotated vocalizations
+    """class to represent a dataset of vocalizations
 
     Attributes
     ----------
@@ -117,6 +117,16 @@ class VocalizationDataset:
                     spect_key='s',
                     n_decimals_trunc=3,
                     ):
+        """returns new VocalizationDataset with spectrogram files loaded into it
+
+        A new instance is returned because VocalizationDatasets are immutable
+        (so a new one is made with the same attributes as the old one + the spectrograms loaded).
+
+        Examples
+        --------
+        >>> vds = vak.dataset.spect.from_files(**from_files_kwargs)
+        >>> vds_loaded = vds.load_spects()
+        """
         if not all(
             [hasattr(voc, 'spect_path') for voc in self.voc_list]
         ):
@@ -153,16 +163,21 @@ class VocalizationDataset:
 
         voc_db = db.from_sequence(self.voc_list)
         with ProgressBar():
-            self.voc_list = list(voc_db.map(_load_spect))
+            voc_list = list(voc_db.map(_load_spect))
+        return attr.evolve(self, voc_list=voc_list)
 
     def clear_spects(self):
-        """sets Vocalization.metaspect to None, for every Vocalization in VocaliationDataset.voc_list
+        """returns new VocalizationDataset with Vocalization.metaspect set to None
+         for every Vocalization in VocaliationDataset.voc_list
 
         Useful for clearing arrays from the VocalizationDataset before saving; going to and from .json
         with numpy.ndarrays loaded into MetaSpect attributes can be very slow.
         """
+        new_voc_list = []
         for voc in self.voc_list:
             voc.metaspect = None
+            new_voc_list.append(voc)
+        return attr.evolve(self, voc_list=new_voc_list)
 
     def are_spects_loaded(self):
         """reports whether spectrogram files have been loaded into MetaSpect instances
