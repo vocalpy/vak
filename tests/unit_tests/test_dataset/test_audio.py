@@ -77,7 +77,6 @@ class TestAudio(unittest.TestCase):
                                                  annot_list=self.annot_list_cbin,
                                                  audio_annot_map=None,
                                                  labelset=self.labelset_cbin,
-                                                 skip_files_with_labels_not_in_labelset=True,
                                                  freqbins_key='f',
                                                  timebins_key='t',
                                                  spect_key='s')
@@ -94,7 +93,6 @@ class TestAudio(unittest.TestCase):
                                                  annot_list=self.annot_list_cbin,
                                                  audio_annot_map=None,
                                                  labelset=self.labelset_cbin,
-                                                 skip_files_with_labels_not_in_labelset=True,
                                                  freqbins_key='f',
                                                  timebins_key='t',
                                                  spect_key='s')
@@ -112,7 +110,6 @@ class TestAudio(unittest.TestCase):
                                                  annot_list=None,
                                                  audio_annot_map=audio_annot_map,
                                                  labelset=self.labelset_cbin,
-                                                 skip_files_with_labels_not_in_labelset=True,
                                                  freqbins_key='f',
                                                  timebins_key='t',
                                                  spect_key='s')
@@ -131,7 +128,6 @@ class TestAudio(unittest.TestCase):
                                                  annot_list=None,
                                                  audio_annot_map=None,
                                                  labelset=None,
-                                                 skip_files_with_labels_not_in_labelset=False,
                                                  freqbins_key='f',
                                                  timebins_key='t',
                                                  spect_key='s')
@@ -150,7 +146,6 @@ class TestAudio(unittest.TestCase):
                                                      annot_list=self.annot_list_cbin,
                                                      audio_annot_map=None,
                                                      labelset=self.labelset_cbin,
-                                                     skip_files_with_labels_not_in_labelset=True,
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
@@ -165,7 +160,6 @@ class TestAudio(unittest.TestCase):
                                                      annot_list=self.annot_list_cbin,
                                                      audio_annot_map=None,
                                                      labelset=self.labelset_cbin,
-                                                     skip_files_with_labels_not_in_labelset=True,
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
@@ -180,7 +174,6 @@ class TestAudio(unittest.TestCase):
                                                      annot_list=self.annot_list_cbin,
                                                      audio_annot_map=None,
                                                      labelset=self.labelset_cbin,
-                                                     skip_files_with_labels_not_in_labelset=True,
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
@@ -195,7 +188,6 @@ class TestAudio(unittest.TestCase):
                                                      annot_list=None,
                                                      audio_annot_map=audio_annot_map,
                                                      labelset=self.labelset_cbin,
-                                                     skip_files_with_labels_not_in_labelset=True,
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
@@ -210,7 +202,6 @@ class TestAudio(unittest.TestCase):
                                                      annot_list=None,
                                                      audio_annot_map=audio_annot_map,
                                                      labelset=self.labelset_cbin,
-                                                     skip_files_with_labels_not_in_labelset=True,
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
@@ -225,7 +216,6 @@ class TestAudio(unittest.TestCase):
                                                      annot_list=self.annot_list_cbin,
                                                      audio_annot_map=audio_annot_map,
                                                      labelset=self.labelset_cbin,
-                                                     skip_files_with_labels_not_in_labelset=True,
                                                      freqbins_key='f',
                                                      timebins_key='t',
                                                      spect_key='s')
