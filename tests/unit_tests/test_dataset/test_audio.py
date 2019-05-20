@@ -44,7 +44,7 @@ class TestAudio(unittest.TestCase):
         scribe_cbin = crowsetta.Transcriber(voc_format='notmat')
         self.annot_list_cbin = scribe_cbin.to_seq(file=annot_files_cbin)
 
-        self.labelset_cbin = list('iabcdefghjk')
+        self.labelset_cbin = set(list('iabcdefghjk'))
 
     def tearDown(self):
         shutil.rmtree(self.tmp_output_dir)
