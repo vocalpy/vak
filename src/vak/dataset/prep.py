@@ -128,14 +128,17 @@ def prep(data_dir,
                 f'spect_output_dir not found: {spect_output_dir}'
             )
 
-    if annot_file is None:
-        annot_files = annot.files_from_dir(annot_dir=data_dir,
-                                           annot_format=annot_format)
-        scribe = Transcriber(voc_format=annot_format)
-        annot_list = scribe.to_seq(file=annot_files)
+    if annot_format is not None:
+        if annot_file is None:
+            annot_files = annot.files_from_dir(annot_dir=data_dir,
+                                               annot_format=annot_format)
+            scribe = Transcriber(voc_format=annot_format)
+            annot_list = scribe.to_seq(file=annot_files)
+        else:
+            scribe = Transcriber(voc_format=annot_format)
+            annot_list = scribe.to_seq(file=annot_file)
     else:
-        scribe = Transcriber(voc_format=annot_format)
-        annot_list = scribe.to_seq(file=annot_file)
+        annot_list = None
 
     # ------ if making dataset from audio files, need to make into array files first! ----------------------------
     if audio_format:
