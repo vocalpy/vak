@@ -80,6 +80,22 @@ class TestAudio(unittest.TestCase):
             self._check_spect_files_returned_by_to_spect_files(spect_files)
         )
 
+    def test_audio_dir_annot_cbin_no_labelset(self):
+        spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                 spect_params=self.spect_params,
+                                                 output_dir=self.tmp_output_dir,
+                                                 audio_dir=self.audio_dir_cbin,
+                                                 audio_files=None,
+                                                 annot_list=self.annot_list_cbin,
+                                                 audio_annot_map=None,
+                                                 labelset=None,
+                                                 freqbins_key='f',
+                                                 timebins_key='t',
+                                                 spect_key='s')
+        self.assertTrue(
+            self._check_spect_files_returned_by_to_spect_files(spect_files)
+        )
+
     def test_audio_files_annot_cbin(self):
         spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
                                                  spect_params=self.spect_params,
@@ -89,6 +105,22 @@ class TestAudio(unittest.TestCase):
                                                  annot_list=self.annot_list_cbin,
                                                  audio_annot_map=None,
                                                  labelset=self.labelset_cbin,
+                                                 freqbins_key='f',
+                                                 timebins_key='t',
+                                                 spect_key='s')
+        self.assertTrue(
+            self._check_spect_files_returned_by_to_spect_files(spect_files)
+        )
+
+    def test_audio_files_annot_cbin_no_labelset(self):
+        spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                 spect_params=self.spect_params,
+                                                 output_dir=self.tmp_output_dir,
+                                                 audio_dir=None,
+                                                 audio_files=self.audio_files_cbin,
+                                                 annot_list=self.annot_list_cbin,
+                                                 audio_annot_map=None,
+                                                 labelset=None,
                                                  freqbins_key='f',
                                                  timebins_key='t',
                                                  spect_key='s')
@@ -106,6 +138,23 @@ class TestAudio(unittest.TestCase):
                                                  annot_list=None,
                                                  audio_annot_map=audio_annot_map,
                                                  labelset=self.labelset_cbin,
+                                                 freqbins_key='f',
+                                                 timebins_key='t',
+                                                 spect_key='s')
+        self.assertTrue(
+            self._check_spect_files_returned_by_to_spect_files(spect_files)
+        )
+
+    def test_audio_annot_map_cbin_no_labelset(self):
+        audio_annot_map = dict(zip(self.audio_files_cbin, self.annot_list_cbin))
+        spect_files = vak.dataset.audio.to_spect(audio_format='cbin',
+                                                 spect_params=self.spect_params,
+                                                 output_dir=self.tmp_output_dir,
+                                                 audio_dir=None,
+                                                 audio_files=None,
+                                                 annot_list=None,
+                                                 audio_annot_map=audio_annot_map,
+                                                 labelset=None,
                                                  freqbins_key='f',
                                                  timebins_key='t',
                                                  spect_key='s')
