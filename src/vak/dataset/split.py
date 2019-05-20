@@ -121,7 +121,6 @@ def train_test_dur_split(vds,
     test_dur : float
         total duration of test set, in seconds. Default is None.
 
-
     Returns
     -------
     train_vds, test_vds, val_vds
