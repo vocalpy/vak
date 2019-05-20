@@ -119,7 +119,7 @@ class TestVocalizationDataset(unittest.TestCase):
         # to a dask bag to parallelize loading and order is usually preserved but this
         # is not guaranteed
         spect_paths_before = [voc.spect_path for voc in vds.voc_list]
-        vds.load_spects()
+        vds = vds.load_spects()
         self.assertTrue(
             all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
         )
@@ -138,7 +138,7 @@ class TestVocalizationDataset(unittest.TestCase):
             all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
         )
 
-        vds.clear_spects()
+        vds = vds.clear_spects()
         self.assertTrue(
             all([voc.metaspect is None for voc in vds.voc_list])
         )
@@ -152,7 +152,7 @@ class TestVocalizationDataset(unittest.TestCase):
             vds.are_spects_loaded() is False
         )
 
-        vds.load_spects()
+        vds = vds.load_spects()
         self.assertTrue(
             vds.are_spects_loaded() is True
         )
@@ -195,8 +195,6 @@ class TestVocalizationDataset(unittest.TestCase):
                                            spect_dir=self.spect_dir_mat,
                                            annot_list=self.annot_list,
                                            load_spects=True)
-        labelmap = vak.utils.labels.to_map(vds.labelset)
-        vds.labelmap = labelmap
         lbl_tb_list = vds.lbl_tb_list()
         self.assertTrue(
             type(lbl_tb_list == list)
