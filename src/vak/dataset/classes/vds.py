@@ -82,6 +82,10 @@ class VocalizationDataset:
     def default_labelmap(self):
         if self.labelset is None:
             return None
+        elif all([voc.metaspect is None for voc in self.voc_list]):
+            return None
+        elif all([voc.annot is None for voc in self.voc_list]):
+            return None
         else:
             tmp_labelmap = to_map(self.labelset, map_unlabeled=False)
             has_unlabeled_voclist = []
