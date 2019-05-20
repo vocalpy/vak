@@ -29,7 +29,7 @@ def prep(labelset,
     labelset : list
         of str or int, set of labels for syllables
     data_dir : str
-        path to directory with audio files from which to make dataset
+        path to directory with audio files or spectrogram files from which to make dataset
     total_train_set_dur : float
         total duration of training set, in seconds.
         Training subsets of shorter duration will be drawn from this set.
