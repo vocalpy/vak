@@ -71,6 +71,7 @@ class TestSpect(unittest.TestCase):
     def test_spect_dir_annot(self):
         vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
                                                      spect_dir=self.spect_dir,
+                                                     labelset=self.labelset_mat,
                                                      annot_list=self.annot_list,
                                                      load_spects=True)
         self.assertTrue(
@@ -80,6 +81,28 @@ class TestSpect(unittest.TestCase):
         # make sure we're not loading spects when we don't want to
         vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
                                                      spect_dir=self.spect_dir,
+                                                     labelset=self.labelset_mat,
+                                                     annot_list=self.annot_list,
+                                                     load_spects=False)
+        self.assertTrue(
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
+                                                                   load_spects=False)
+        )
+
+    def test_spect_dir_annot_no_labelset(self):
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_dir=self.spect_dir,
+                                                     labelset=None,
+                                                     annot_list=self.annot_list,
+                                                     load_spects=True)
+        self.assertTrue(
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset)
+        )
+
+        # make sure we're not loading spects when we don't want to
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_dir=self.spect_dir,
+                                                     labelset=None,
                                                      annot_list=self.annot_list,
                                                      load_spects=False)
         self.assertTrue(
@@ -101,6 +124,7 @@ class TestSpect(unittest.TestCase):
     def test_spect_files_annot(self):
         vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
                                                      spect_files=self.spect_files,
+                                                     labelset=self.labelset_mat,
                                                      annot_list=self.annot_list,
                                                      load_spects=True)
         self.assertTrue(
@@ -110,6 +134,28 @@ class TestSpect(unittest.TestCase):
         # make sure we're not loading spects when we don't want to
         vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
                                                      spect_files=self.spect_files,
+                                                     labelset=self.labelset_mat,
+                                                     annot_list=self.annot_list,
+                                                     load_spects=False)
+        self.assertTrue(
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
+                                                                   load_spects=False)
+        )
+
+    def test_spect_files_annot_no_labelset(self):
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_files=self.spect_files,
+                                                     labelset=None,
+                                                     annot_list=self.annot_list,
+                                                     load_spects=True)
+        self.assertTrue(
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset)
+        )
+
+        # make sure we're not loading spects when we don't want to
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     spect_files=self.spect_files,
+                                                     labelset=None,
                                                      annot_list=self.annot_list,
                                                      load_spects=False)
         self.assertTrue(
@@ -120,6 +166,7 @@ class TestSpect(unittest.TestCase):
     def test_spect_annot_map(self):
         spect_annot_map = dict(zip(self.spect_files, self.annot_list))
         vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     labelset=self.labelset_mat,
                                                      spect_annot_map=spect_annot_map,
                                                      load_spects=True)
         self.assertTrue(
@@ -128,6 +175,27 @@ class TestSpect(unittest.TestCase):
 
         # make sure we're not loading spects when we don't want to
         vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     labelset=self.labelset_mat,
+                                                     spect_annot_map=spect_annot_map,
+                                                     load_spects=False)
+        self.assertTrue(
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset,
+                                                                   load_spects=False)
+        )
+
+    def test_spect_annot_map_no_labelset(self):
+        spect_annot_map = dict(zip(self.spect_files, self.annot_list))
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     labelset=None,
+                                                     spect_annot_map=spect_annot_map,
+                                                     load_spects=True)
+        self.assertTrue(
+            self._check_vocal_dataset_returned_by_from_spect_files(vocal_dataset)
+        )
+
+        # make sure we're not loading spects when we don't want to
+        vocal_dataset = vak.dataset.spect.from_files(self.spect_format,
+                                                     labelset=None,
                                                      spect_annot_map=spect_annot_map,
                                                      load_spects=False)
         self.assertTrue(
