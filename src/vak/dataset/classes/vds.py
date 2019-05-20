@@ -12,7 +12,7 @@ from crowsetta import Sequence
 from .vocalization import Vocalization
 from .metaspect import MetaSpect
 from ...utils.general import timebin_dur_from_vec
-from ...utils.labels import label_timebins
+from ...utils.labels import label_timebins, to_map, has_unlabeled
 
 
 class VocalDatasetJSONEncoder(JSONEncoder):
@@ -40,8 +40,8 @@ class VocalizationDataset:
         is the number of classes / label types
     """
     voc_list = attr.ib(validator=instance_of(list))
-    labelset = attr.ib(validator=optional(instance_of(set)), default=None)
-    labelmap = attr.ib(validator=optional(instance_of(dict)), default=None)
+    labelset = attr.ib(validator=optional(instance_of(set)))
+    labelmap = attr.ib(validator=optional(instance_of(dict)))
 
     @voc_list.validator
     def is_list_or_tuple(self, attribute, value):
@@ -54,6 +54,62 @@ class VocalizationDataset:
     def all_voc(self, attribute, value):
         if not all([type(element) == Vocalization for element in value]):
             raise TypeError(f'all elements in voc_list must be of type vak.dataset.Vocalization')
+
+    @labelset.default
+    def default_labelset(self):
+        if all([voc.annot is None for voc in self.voc_list]):
+            # no annotations, so no set of labels
+            return None
+        else:
+            # find the set "manually" since user didn't specify when making set
+            all_labels = [lbl for voc in self.voc_list for lbl in voc.annot.labels]
+            return set(all_labels)
+
+    @labelset.validator
+    def matches_annot(self, attribute, value):
+        if value is None:
+            return
+        else:
+            all_labels = [lbl for voc in self.voc_list for lbl in voc.annot.labels]
+            all_labels_set = set(all_labels)
+            if value < all_labels_set:
+                extra_labels = all_labels_set - value
+                raise ValueError(
+                    f'found the following labels in Vocalizations that are not in the labelset: {extra_labels}'
+                )
+
+    @labelmap.default
+    def default_labelmap(self):
+        if self.labelset is None:
+            return None
+        else:
+            tmp_labelmap = to_map(self.labelset, map_unlabeled=False)
+            has_unlabeled_voclist = []
+            for voc in self.voc_list:
+                lbls_int = [tmp_labelmap[lbl] for lbl in voc.annot.labels]
+                has_unlabeled_voclist.append(
+                    has_unlabeled(lbls_int,
+                                  voc.annot.onsets_s,
+                                  voc.annot.offsets_s,
+                                  voc.metaspect.time_bins)
+                )
+
+            if any(has_unlabeled_voclist):
+                map_unlabeled = True
+            else:
+                map_unlabeled = False
+            return to_map(self.labelset, map_unlabeled)
+
+    @labelmap.validator
+    def matches_labelset(self, attribute, value):
+        if value is None and self.labelset is None:
+            return
+        else:
+            labelset_from_map = set(self.labelmap.keys()) - {'unlabeled'}
+            if self.labelset != labelset_from_map:
+                raise ValueError(
+                    f'labelset, {self.labelset}, does not match set of labels in labelmap, {labelset_from_map}'
+                )
 
     def load_spects(self,
                     freqbins_key='f',
