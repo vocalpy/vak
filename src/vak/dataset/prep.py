@@ -10,7 +10,6 @@ from . import annot, spect, audio
 def prep(data_dir,
          annot_format=None,
          labelset=None,
-         skip_files_with_labels_not_in_labelset=True,
          output_dir=None,
          save_vds=False,
          vds_fname=None,
@@ -34,9 +33,8 @@ def prep(data_dir,
         crowsetta library is valid. Default is None.
     labelset : set, list
         of str or int, set of labels for vocalizations. Default is None.
-    skip_files_with_labels_not_in_labelset : bool
-        if True, skip a file if the labels variable contains labels not
-        found in 'labelset'. Default is True.
+        If not None, then files will be skipped where the 'labels' array in the
+        corresponding annotation contains labels that are not found in labelset
     output_dir : str
         path to location where data sets should be saved. Default is None,
         in which case data sets is saved in data_dir.
@@ -85,20 +83,21 @@ def prep(data_dir,
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
-    if type(labelset) not in (set, list):
-        raise TypeError(
-            f"type of labelset must be set or list, but type was: {type(labelset)}"
-        )
-
-    if type(labelset) == list:
-        labelset_set = set(labelset)
-        if len(labelset) != len(labelset_set):
-            raise ValueError(
-                'labelset contains repeated elements, should be a set (i.e. all members unique.\n'
-                f'Labelset was: {labelset}'
+    if labelset is not None:
+        if type(labelset) not in (set, list):
+            raise TypeError(
+                f"type of labelset must be set or list, but type was: {type(labelset)}"
             )
-        else:
-            labelset = labelset_set
+
+        if type(labelset) == list:
+            labelset_set = set(labelset)
+            if len(labelset) != len(labelset_set):
+                raise ValueError(
+                    'labelset contains repeated elements, should be a set (i.e. all members unique.\n'
+                    f'Labelset was: {labelset}'
+                )
+            else:
+                labelset = labelset_set
 
     if vds_fname is not None:
         if type(vds_fname) != str:
@@ -155,9 +154,7 @@ def prep(data_dir,
                                      output_dir=spect_output_dir,
                                      audio_files=audio_files,
                                      annot_list=annot_list,
-                                     labelset=labelset,
-                                     skip_files_with_labels_not_in_labelset=skip_files_with_labels_not_in_labelset
-                                     )
+                                     labelset=labelset)
         spect_format = 'npz'
     else:
         spect_files = None
@@ -165,7 +162,6 @@ def prep(data_dir,
     from_files_kwargs = {
         'spect_format': spect_format,
         'labelset': labelset,
-        'skip_files_with_labels_not_in_labelset': skip_files_with_labels_not_in_labelset,
         'load_spects': load_spects,
         'annot_list': annot_list,
     }
