@@ -106,8 +106,12 @@ class VocalizationDataset:
 
     @labelmap.validator
     def matches_labelset(self, attribute, value):
-        if value is None and self.labelset is None:
+        if value is None:
             return
+        elif value is not None and self.labelset is None:
+            raise ValueError(
+                'cannot assign a labelmap to a VocalizationDataset without a labelset.'
+            )
         else:
             labelset_from_map = set(self.labelmap.keys()) - {'unlabeled'}
             if self.labelset != labelset_from_map:
