@@ -125,6 +125,21 @@ class TestLabels(unittest.TestCase):
             labelset == {1, 2, 3}
         )
 
+    def test_has_unlabeled(self):
+        labels_1 = [1, 1, 1, 1, 2, 2, 3, 3, 3]
+        onsets_s1 = np.asarray([0, 2, 4, 6, 8, 10, 12, 14, 16])
+        offsets_s1 = np.asarray([1, 3, 5, 7, 9, 11, 13, 15, 17])
+        time_bins = np.arange(0, 18, 0.001)
+        has_ = vak.utils.labels.has_unlabeled(labels_1, onsets_s1, offsets_s1, time_bins)
+        self.assertTrue(has_ is True)
+
+        labels_1 = [1, 1, 1, 1, 2, 2, 3, 3, 3]
+        onsets_s1 = np.asarray([0, 2, 4, 6, 8, 10, 12, 14, 16])
+        offsets_s1 = np.asarray([1.999, 3.999, 5.999, 7.999, 9.999, 11.999, 13.999, 15.999, 17.999])
+        time_bins = np.arange(0, 18, 0.001)
+        has_ = vak.utils.labels.has_unlabeled(labels_1, onsets_s1, offsets_s1, time_bins)
+        self.assertTrue(has_ is False)
+
 
 if __name__ == '__main__':
     unittest.main()
