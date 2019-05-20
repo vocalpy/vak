@@ -3,16 +3,12 @@ import unittest
 from glob import glob
 import tempfile
 import shutil
-from collections import namedtuple
-import copy
 
 import numpy as np
 import crowsetta
 
-from vak.config.spectrogram import SpectConfig
 from vak.dataset.annot import files_from_dir
 import vak.dataset.audio
-from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
 
 
 HERE = os.path.dirname(__file__)
