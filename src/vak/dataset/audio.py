@@ -45,7 +45,6 @@ def to_spect(audio_format,
              annot_list=None,
              audio_annot_map=None,
              labelset=None,
-             skip_files_with_labels_not_in_labelset=True,
              freqbins_key='f',
              timebins_key='t',
              spect_key='s'):
@@ -69,11 +68,10 @@ def to_spect(audio_format,
         parameters for computing spectrogram, from .ini file
     output_dir : str
         directory in which to save .spect.npz file generated for each audio file.
-    labelset : list
-        of str or int, set of unique labels for vocalizations.
-    skip_files_with_labels_not_in_labelset : bool
-        if True, skip .cbin files where the 'labels' array in the corresponding
-        .cbin.not.mat file contains str labels not found in labels_mapping
+    labelset : set
+        of str or int, set of unique labels for vocalizations. Default is None.
+        If not None, then files will be skipped where the 'labels' array in the
+        corresponding annotation contains labels that are not found in labelset
     freqbins_key : str
         key for accessing vector of frequency bins in files. Default is 'f'.
     timebins_key : str
@@ -123,10 +121,11 @@ def to_spect(audio_format,
             'received values for annot_list and array_annot_map, unclear which annotations to use'
         )
 
-    if labelset is None and skip_files_with_labels_not_in_labelset is True:
-        raise ValueError(
-            "must provide labelset when 'skip_files_with_labels_not_in_labelset' is True"
-        )
+    if labelset is not None:
+        if type(labelset) != set:
+            raise TypeError(
+                f'type of labelset must be set, but was: {type(labelset)}'
+            )
 
     if type(spect_params) == SpectConfig:
         spect_params = spect_params._asdict()
@@ -179,7 +178,7 @@ def to_spect(audio_format,
         (audio_file, annot) = audio_annot_tup  # tuple unpacking
         basename = os.path.basename(audio_file)
 
-        if skip_files_with_labels_not_in_labelset:
+        if labelset:
             annot_labelset = set(annot.labels)
             # below, set(labels_mapping) is a set of that dict's keys
             if not annot_labelset.issubset(set(labelset)):
