@@ -86,8 +86,9 @@ def label_timebins(labels_int,
     offset_inds = [np.argmin(np.abs(time_bins - offset))
                    for offset in offsets_s]
     for label, onset, offset in zip(labels_int, onset_inds, offset_inds):
+        # offset_inds[ind]+1 because offset time bin is still "part of" syllable
         label_vec[onset:offset+1] = label
-        # offset_inds[ind]+1 because of Matlab one-indexing
+
     return label_vec
 
 
