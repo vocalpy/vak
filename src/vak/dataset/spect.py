@@ -18,7 +18,6 @@ def from_files(spect_format,
                annot_list=None,
                spect_annot_map=None,
                labelset=None,
-               skip_files_with_labels_not_in_labelset=False,
                load_spects=True,
                n_decimals_trunc=3,
                freqbins_key='f',
@@ -54,10 +53,8 @@ def from_files(spect_format,
         the annotation for that file.
         Default is None.
     labelset : list
-        of str or int, set of unique labels for vocalizations.
-    skip_files_with_labels_not_in_labelset : bool
-        if True, skip files where the associated annotations contain labels not in labelset.
-        Default is False.
+        of str or int, set of unique labels for vocalizations. Default is None.
+        If not None, skip files where the associated annotations contain labels not in labelset.
     load_spects : bool
         if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
         Default is True. Set to False when you want to create a VocalDataset for use
@@ -101,10 +98,11 @@ def from_files(spect_format,
             'received values for annot_list and spect_annot_map, unclear which annotations to use'
         )
 
-    if labelset is None and skip_files_with_labels_not_in_labelset is True:
-        raise ValueError(
-            "must provide labelset when 'skip_files_with_labels_not_in_labelset' is True"
-        )
+    if labelset is not None:
+        if type(labelset) != set:
+            raise TypeError(
+                f'type of labelset must be set, but was: {type(labelset)}'
+            )
 
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
@@ -140,7 +138,7 @@ def from_files(spect_format,
             )
             return
 
-        if skip_files_with_labels_not_in_labelset:
+        if labelset:
             labels_set = set(annot.labels)
             # below, set(labels_mapping) is a set of that dict's keys
             if not labels_set.issubset(set(labelset)):
