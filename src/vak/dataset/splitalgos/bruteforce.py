@@ -9,8 +9,8 @@ def brute_force(durs,
                 labels,
                 labelset,
                 train_dur,
-                test_dur,
                 val_dur,
+                test_dur,
                 max_iter=5000):
     """finds indices that split (labels, durations) tuples into training,
     test, and validation sets of specified durations, with the set of unique labels
