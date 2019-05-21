@@ -117,7 +117,7 @@ class TestBruteforce(unittest.TestCase):
         labels = [list('abcde') for _ in range(5)]
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, test_dur, val_dur)
+            train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, val_dur, test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -140,8 +140,8 @@ class TestBruteforce(unittest.TestCase):
                                                           self.labels_cbin,
                                                           self.labelset_cbin,
                                                           train_dur,
-                                                          test_dur,
-                                                          val_dur)
+                                                          val_dur,
+                                                          test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -164,8 +164,8 @@ class TestBruteforce(unittest.TestCase):
                                                           self.labels_mat,
                                                           self.labelset_mat,
                                                           train_dur,
-                                                          test_dur,
-                                                          val_dur)
+                                                          val_dur,
+                                                          test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -187,7 +187,7 @@ class TestBruteforce(unittest.TestCase):
         labels = [list('abcde') for _ in range(5)]
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, test_dur, val_dur)
+            train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, val_dur, test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -210,8 +210,8 @@ class TestBruteforce(unittest.TestCase):
                                                           self.labels_cbin,
                                                           self.labelset_cbin,
                                                           train_dur,
-                                                          test_dur,
-                                                          val_dur)
+                                                          val_dur,
+                                                          test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -234,8 +234,8 @@ class TestBruteforce(unittest.TestCase):
                                                           self.labels_mat,
                                                           self.labelset_mat,
                                                           train_dur,
-                                                          test_dur,
-                                                          val_dur)
+                                                          val_dur,
+                                                          test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -257,7 +257,7 @@ class TestBruteforce(unittest.TestCase):
         labels = [list('abcde') for _ in range(5)]
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, test_dur, val_dur)
+            train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, val_dur, test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -280,8 +280,8 @@ class TestBruteforce(unittest.TestCase):
                                                           self.labels_cbin,
                                                           self.labelset_cbin,
                                                           train_dur,
-                                                          test_dur,
-                                                          val_dur)
+                                                          val_dur,
+                                                          test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -304,8 +304,8 @@ class TestBruteforce(unittest.TestCase):
                                                           self.labels_mat,
                                                           self.labelset_mat,
                                                           train_dur,
-                                                          test_dur,
-                                                          val_dur)
+                                                          val_dur,
+                                                          test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
