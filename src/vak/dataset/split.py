@@ -87,10 +87,10 @@ def train_test_dur_split_inds(durs,
 
 def train_test_dur_split(vds,
                          labelset,
-                         train_dur,
-                         test_dur,
+                         train_dur=None,
+                         test_dur=None,
                          val_dur=None):
-    """split a VocalizationDataset
+    """split a VocalizationDataset into training, test, and (optionally) validation sets.
 
     Parameters
     ----------
@@ -99,20 +99,23 @@ def train_test_dur_split(vds,
     labelset : set, list
         of str or int, set of labels for vocalizations.
     train_dur : float
-        total duration of training set, in seconds. Default is None.
-    val_dur : float
-        total duration of validation set, in seconds. Default is None.
+        total duration of training set, in seconds. Default is None
     test_dur : float
         total duration of test set, in seconds. Default is None.
+    val_dur : float
+        total duration of validation set, in seconds. Default is None.
 
     Returns
     -------
     train_vds, test_vds, val_vds
     """
     durs = [voc.duration for voc in vds.voc_list]
+    vds_dur = sum(durs)
+    train_dur, val_dur, test_dur = _validate_durs(train_dur, val_dur, test_dur, vds_dur)
+
     labels = [voc.annot.labels for voc in vds.voc_list]
 
-    train_inds, test_inds, val_inds = train_test_dur_split_inds(durs=durs,
+    train_inds, val_inds, test_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
                                                                 labelset=labelset,
                                                                 train_dur=train_dur,
