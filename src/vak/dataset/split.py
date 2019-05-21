@@ -8,8 +8,8 @@ from .splitalgos import brute_force
 def train_test_dur_split_inds(durs,
                               labels,
                               labelset,
-                              train_dur=None,
-                              test_dur=None,
+                              train_dur,
+                              test_dur,
                               val_dur=None,
                               algo='brute_force'):
     """return indices to split a dataset into training, test, and validation sets of specified durations.
@@ -52,54 +52,37 @@ def train_test_dur_split_inds(durs,
         )
 
     total_dur = sum(durs)
+    train_dur, val_dur, test_dur = _validate_durs(train_dur, val_dur, test_dur, total_dur)
 
-    if train_dur is None and test_dur is None:
-        raise ValueError(
-            'must specify either train_dur or test_dur'
-        )
+    if -1 not in (train_dur, val_dur, test_dur):
+        total_target_dur = sum([dur for dur in (train_dur, test_dur, val_dur) if dur is not None])
 
-    if val_dur is None:
-        if train_dur is None:
-            train_dur = total_dur - test_dur
-        elif test_dur is None:
-            test_dur = total_dur - train_dur
-        total_target_dur = sum([train_dur,
-                                test_dur])
-    elif val_dur is not None:
-        if train_dur is None:
-            train_dur = total_dur - (test_dur + val_dur)
-        elif test_dur is None:
-            test_dur = total_dur - (train_dur + val_dur)
-        total_target_dur = sum([train_dur,
-                                test_dur,
-                                val_dur])
+        if total_target_dur < total_dur:
+            warnings.warn(
+                'Total target duration of training, test, and (if specified) validation sets, '
+                f'{total_target_dur} seconds, is less than total duration of dataset: {total_dur:.3f}. '
+                'Not all of dataset will be used.'
+            )
 
-    if total_target_dur < total_dur:
-        warnings.warn(
-            'Total target duration of training, test, and (if specified) validation sets, '
-            f'{total_target_dur} seconds, is less than total duration of dataset: {total_dur:.3f}. '
-            'Not all of dataset will be used.'
-        )
-
-    if total_target_dur > total_dur:
-        raise ValueError(
-            f'Total duration of dataset, {total_dur} seconds, is less than total target duration of '
-            f'training, test, and (if specified) validation sets: {total_target_dur}'
-        )
+        if total_target_dur > total_dur:
+            raise ValueError(
+                f'Total duration of dataset, {total_dur} seconds, is less than total target duration of '
+                f'training, test, and (if specified) validation sets: {total_target_dur}'
+            )
 
     if algo == 'brute_force':
-        train_inds, test_inds, val_inds = brute_force(durs,
-                                                      labels,
-                                                      labelset,
-                                                      train_dur,
-                                                      test_dur,
-                                                      val_dur)
+        train_inds,  val_inds, test_inds = brute_force(durs,
+                                                       labels,
+                                                       labelset,
+                                                       train_dur,
+                                                       val_dur,
+                                                       test_dur)
     else:
         raise NotImplementedError(
             f'algorithm {algo} not implemented'
         )
 
-    return train_inds, test_inds, val_inds
+    return train_inds, val_inds, test_inds
 
 
 def train_test_dur_split(vds,
