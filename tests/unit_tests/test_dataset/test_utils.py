@@ -67,7 +67,7 @@ class TestUtils(unittest.TestCase):
         test_dur_in = None
         val_dur_in = 100
         vds_dur = 200
-        # because we only specified duration for validation set
+        # because negative duration is invalid
         with self.assertRaises(InvalidDurationError):
             vak.dataset.split._validate_durs(train_dur_in, val_dur_in, test_dur_in, vds_dur)
 
