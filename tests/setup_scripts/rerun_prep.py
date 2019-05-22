@@ -5,6 +5,10 @@ import vak
 
 HERE = os.path.dirname(__file__)
 config_file = os.path.join(HERE, 'tmp_Makefile_config.ini')
+if not os.path.isfile(config_file):
+    raise FileNotFoundError(
+        f'{config_file} not found')
+
 config = ConfigParser()
 config.read(config_file)
 data_config = vak.config.parse.parse_data_config(config, config_file)
