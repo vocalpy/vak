@@ -130,6 +130,24 @@ class VocalizationDataset:
         A new instance is returned because VocalizationDatasets are immutable
         (so a new one is made with the same attributes as the old one + the spectrograms loaded).
 
+        Parameters
+        ----------
+        freqbins_key : str
+            key for accessing vector of frequency bins in files. Default is 'f'.
+        timebins_key : str
+            key for accessing vector of time bins in files. Default is 't'.
+        spect_key : str
+            key for accessing spectrogram in files. Default is 's'.
+        n_decimals_trunc : int
+            number of decimal places to keep when truncating the timebin duration calculated from
+            the vector of time bins. Default is 3, i.e. assumes milliseconds is the last significant digit.
+
+        Returns
+        -------
+        vds : vak.dataset.VocalizationDataset
+            new instance of dataset, with spectrogram loaded into metaspect attribute
+            for each Vocalization in set
+
         Examples
         --------
         >>> vds = vak.dataset.spect.from_files(**from_files_kwargs)
