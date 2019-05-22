@@ -190,7 +190,9 @@ class VocalizationDataset:
         voc_db = db.from_sequence(self.voc_list)
         with ProgressBar():
             voc_list = list(voc_db.map(_load_spect))
-        return attr.evolve(self, voc_list=voc_list)
+        # note we don't pass self.labelmap because it will be None,
+        # and we want new instance with spectrograms loaded to default to a labelmap made from labelset
+        return VocalizationDataset(voc_list=voc_list, labelset=self.labelset)
 
     def clear_spects(self):
         """returns new VocalizationDataset with Vocalization.metaspect set to None
