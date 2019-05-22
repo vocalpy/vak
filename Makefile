@@ -4,8 +4,8 @@ CBIN_DIR=./tests/test_data/cbins/gy6or6/032312
 CBINS=$(wildcard $(CBIN_DIR)/*.cbin)
 NOTDIR_CBINS=$(notdir $(CBINS))
 SPECT_FILES=$(patsubst %.cbin, ./tests/test_data/vds/%.cbin.spect.npz, $(NOTDIR_CBINS))
-SPECTS_SCRIPT=./tests/setup_scripts/remake_spects.py
-RESULTS_SCRIPT=./tests/setup_scripts/remake_results.py
+SPECTS_SCRIPT=./tests/setup_scripts/rerun_prep.py
+RESULTS_SCRIPT=./tests/setup_scripts/rerun_learncurve.py
 
 .PHONY: variables clean download config data results all
 
