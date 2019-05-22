@@ -80,3 +80,40 @@ def timebin_dur_from_vec(time_bins, n_decimals_trunc=3):
     decade = 10 ** n_decimals_trunc
     timebin_dur = np.trunc(timebin_dur * decade) / decade
     return timebin_dur
+
+
+def safe_truncate(X, Y, spect_ID_vector, labelmap, target_dur, timebin_dur):
+    correct_length = np.round(target_dur / timebin_dur).astype(int)
+    if X.shape[-1] == correct_length:
+        return X, Y, spect_ID_vector
+    elif X.shape[-1] > correct_length:
+        # truncate from the front
+        X_out = X[:, :correct_length]
+        Y_out = Y[:correct_length, :]
+        spect_ID_vector_out = spect_ID_vector[:correct_length]
+
+        mapvals = np.asarray(
+            sorted(list(labelmap.values()))
+        )
+
+        if np.array_equal(np.unique(Y_out), mapvals):
+            pass
+        else:
+            # if all classes weren't in truncated arrays,
+            # try truncating from the back instead
+            X_out = X[:, -correct_length:]
+            Y_out = Y[-correct_length:, :]
+            spect_ID_vector_out = spect_ID_vector[:correct_length]
+
+            if not np.array_equal(np.unique(Y_out), mapvals):
+                raise ValueError(
+                    "was not able to truncate in a way that maintained all classes in dataset"
+                )
+
+        return X_out, Y_out, spect_ID_vector_out
+
+    elif X.shape[-1] < correct_length:
+        raise ValueError(
+            f"arrays have length {X.shape[-1]} that is shorter than correct length, {correct_length}, "
+            f"(= target duration {target_dur} / duration of timebins, {timebin_dur})."
+        )
