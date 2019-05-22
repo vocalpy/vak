@@ -224,28 +224,33 @@ class VocalizationDataset:
                 Call load_spects() to load all or clear_spects() to set them all to None"""
             )
 
-    def spects_list(self, load=True, load_kwargs=None):
-        """returns list of spectrograms (2-d arrays),
-        one for each vocalization in VocalizationDataset.voc_list
-
-        Parameters
-        ----------
-        load
-        load_kwargs
+    def spects_list(self):
+        """returns list of spectrograms (2-d arrays), one for each vocalization in VocalizationDataset.voc_list.
 
         Returns
         -------
         spects_list : list
             of Vocalization.metaspect.spect, one for each Vocalization in the VocalizationDataset.
             Each element is a spectrogram in a numpy.ndarray.
+
+        Notes
+        -----
+        VocalizationDataset needs to have spectrograms loaded into it before calling this function.
+
+        Examples
+        --------
+        >>> train_vds.are_spects_loaded()
+        False
+        >>> train_vds = train_vds.load_spects()
+        [########################################] | 100% Completed |  0.4s
+        >>> X_train = train_vds.spects_list()
+        >>> X_train = np.concatenate(X_train, axis=1)  # to concatenate into one big spectrogram
         """
         if self.are_spects_loaded() is False:
-            if load is True:
-                self.load_spects(**load_kwargs)
-            elif load is False:
-                raise ValueError('cannot create list of spectrograms, because they are not loaded '
-                                 'and load is set to False. Either call load_spects method or set '
-                                 'load=True when calling spects_list')
+            raise ValueError('cannot create list of spectrograms, because they are not loaded into '
+                             'this VocalizationDataset. Please call load_spects() to create a new '
+                             'copy of the dataset that has the spectrograms loaded into it, like so:\n'
+                             '>>> vds = vds.load_spects()')
 
         spects_list = []
         for voc in self.voc_list:
