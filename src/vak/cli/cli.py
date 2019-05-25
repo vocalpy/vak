@@ -42,21 +42,14 @@ def cli(command, config_file):
     if command == 'prep':
         data_config = parse_data_config(config_obj, config_file)
         spect_params = parse_spect_config(config_obj)
-        if spect_params is None and data_config.mat_spect_files_path is None:
-            # then user needs to specify spectrogram parameters
-            raise ValueError('No annotation_path specified in config_file that '
-                             'would point to annotated spectrograms, but no '
-                             'parameters provided to generate spectrograms '
-                             'either.')
 
         prep(labelset=data_config.labelset,
              data_dir=data_config.data_dir,
-             total_train_set_dur=data_config.total_train_set_dur,
+             train_dur=data_config.total_train_set_dur,
              test_dur=data_config.test_dur,
              config_file=config_file,
              annot_format=data_config.annot_format,
              val_dur=data_config.val_dur,
-             skip_files_with_labels_not_in_labelset=data_config.skip_files_with_labels_not_in_labelset,
              output_dir=data_config.output_dir,
              audio_format=data_config.audio_format,
              spect_format=data_config.spect_format,
@@ -68,8 +61,8 @@ def cli(command, config_file):
         nets_config = _get_nets_config(config_obj, train_config.networks)
         spect_params = parse_spect_config(config_obj)
         output_config = parse_output_config(config_obj)
-        train(train_data_dict_path=train_config.train_data_dict_path,
-              val_data_dict_path=train_config.val_data_dict_path,
+        train(train_data_dict_path=train_config.train_vds_path,
+              val_data_dict_path=train_config.val_vds_path,
               spect_params=spect_params,
               networks=nets_config,
               num_epochs=train_config.num_epochs,
@@ -110,15 +103,14 @@ def cli(command, config_file):
         spect_params = parse_spect_config(config_obj)
         data_config = parse_data_config(config_obj, config_file)
         output_config = parse_output_config(config_obj)
-        if train_config.train_data_dict_path is None:
-            raise ValueError("must set 'train_data_path' option in [TRAIN] section of config.ini file "
+        if train_config.train_vds_path is None:
+            raise ValueError("must set 'train_vds_path' option in [TRAIN] section of config.ini file "
                              "before running 'learncurve'")
-        if train_config.val_data_dict_path is None:
-            raise ValueError("must set 'val_data_path' option in [TRAIN] section of config.ini file "
+        if train_config.val_vds_path is None:
+            raise ValueError("must set 'val_vds_path' option in [TRAIN] section of config.ini file "
                              "before running 'learncurve'")
-        learncurve(train_data_dict_path=train_config.train_data_dict_path,
-                   val_data_dict_path=train_config.val_data_dict_path,
-                   spect_params=spect_params,
+        learncurve(train_vds_path=train_config.train_vds_path,
+                   val_vds_path=train_config.val_vds_path,
                    total_train_set_duration=data_config.total_train_set_dur,
                    train_set_durs=train_config.train_set_durs,
                    num_replicates=train_config.num_replicates,
@@ -141,11 +133,11 @@ def cli(command, config_file):
         data_config = parse_data_config(config_obj, config_file)
         output_config = parse_output_config(config_obj)
         summary(results_dirname=output_config.results_dirname,
-                train_data_dict_path=train_config.train_data_dict_path,
+                train_data_dict_path=train_config.train_vds_path,
                 networks=nets_config,
                 train_set_durs=train_config.train_set_durs,
                 num_replicates=train_config.num_replicates,
                 labelset=data_config.labelset,
-                test_data_dict_path=train_config.test_data_dict_path,
+                test_data_dict_path=train_config.test_vds_path,
                 normalize_spectrograms=train_config.normalize_spectrograms,
                 save_transformed_data=data_config.save_transformed_data)
