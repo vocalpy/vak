@@ -59,11 +59,9 @@ def cli(command, config_file):
     elif command == 'train':
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
-        spect_params = parse_spect_config(config_obj)
         output_config = parse_output_config(config_obj)
-        train(train_data_dict_path=train_config.train_vds_path,
-              val_data_dict_path=train_config.val_vds_path,
-              spect_params=spect_params,
+        train(train_vds_path=train_config.train_vds_path,
+              val_vds_path=train_config.val_vds_path,
               networks=nets_config,
               num_epochs=train_config.num_epochs,
               config_file=config_file,
@@ -84,7 +82,6 @@ def cli(command, config_file):
         spect_params = parse_spect_config(config_obj)
         predict(checkpoint_path=predict_config.checkpoint_path,
                 networks=nets_config,
-                labels_mapping_path=predict_config.labels_mapping_path,
                 spect_params=spect_params,
                 dir_to_predict=predict_config.dir_to_predict,
                 spect_scaler_path=predict_config.spect_scaler_path)
@@ -100,7 +97,6 @@ def cli(command, config_file):
             )
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
-        spect_params = parse_spect_config(config_obj)
         data_config = parse_data_config(config_obj, config_file)
         output_config = parse_output_config(config_obj)
         if train_config.train_vds_path is None:
