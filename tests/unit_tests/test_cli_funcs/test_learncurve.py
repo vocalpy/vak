@@ -128,6 +128,46 @@ class TestLearncurve(unittest.TestCase):
             output_config, train_config, nets_config, data_config, time_before, time_after
         ))
 
+    def test_learncurve_no_validation(self):
+        # this kind of repeats what happens in self.setUp, but
+        # this is the way cli does it using what user passed in
+        # so we repeat that logic here
+        config_file = self.tmp_config_path
+        config_obj = ConfigParser()
+        config_obj.read(config_file)
+        train_config = vak.config.parse_train_config(config_obj, config_file)
+        nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
+        data_config = vak.config.parse_data_config(config_obj, config_file)
+        output_config = vak.config.parse_output_config(config_obj)
+
+        # want time to make sure results dir generated has correct time;
+        # have to drop microseconds from datetime object because we don't include that in
+        # the string format that's in the directory name, and if we keep it here then
+        # the time recovered from the directory name can be "less than" the time
+        # from before starting--i.e. some datetime with microseconds is less than the
+        # exact same date time but with some number of microseconds
+        time_before = datetime.now().replace(microsecond=0)
+        vak.cli.learncurve(train_vds_path=train_config.train_vds_path,
+                           val_vds_path=None,
+                           total_train_set_duration=data_config.total_train_set_dur,
+                           train_set_durs=train_config.train_set_durs,
+                           num_replicates=train_config.num_replicates,
+                           num_epochs=train_config.num_epochs,
+                           config_file=config_file,
+                           networks=nets_config,
+                           val_error_step=None,
+                           checkpoint_step=train_config.checkpoint_step,
+                           patience=train_config.patience,
+                           save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
+                           normalize_spectrograms=train_config.normalize_spectrograms,
+                           use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
+                           previous_run_path=train_config.previous_run_path,
+                           root_results_dir=output_config.root_results_dir,
+                           save_transformed_data=data_config.save_transformed_data)
+        time_after = datetime.now().replace(microsecond=0)
+        self.assertTrue(self._check_learncurve_output(
+            output_config, train_config, nets_config, data_config, time_before, time_after
+        ))
 
 if __name__ == '__main__':
     unittest.main()
