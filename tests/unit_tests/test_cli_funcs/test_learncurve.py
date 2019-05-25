@@ -1,8 +1,8 @@
 """tests for vak.cli.learncurve module"""
 import os
+from pathlib import Path
 import tempfile
 import shutil
-from glob import glob
 import unittest
 from datetime import datetime
 from configparser import ConfigParser
@@ -10,15 +10,9 @@ from configparser import ConfigParser
 import vak.cli.learncurve
 import vak.config
 
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE,
-                             '..',
-                             '..',
-                             'test_data')
-SETUP_SCRIPTS_DIR = os.path.join(HERE,
-                                 '..',
-                                 '..',
-                                 'setup_scripts')
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
 class TestLearncurve(unittest.TestCase):
@@ -26,25 +20,26 @@ class TestLearncurve(unittest.TestCase):
         self.tmp_output_dir = tempfile.mkdtemp()
         # Makefile copies Makefile_config to a tmp version (that gets changed by make_data
         # and other functions)
-        tmp_makefile_config = os.path.join(SETUP_SCRIPTS_DIR, 'tmp_Makefile_config.ini')
+        tmp_makefile_config = SETUP_SCRIPTS_DIR.joinpath('tmp_Makefile_config.ini')
         # Now we want a copy (of the changed version) to use for tests
         # since this is what the test data was made with
         self.tmp_config_dir = tempfile.mkdtemp()
-        self.tmp_config_path = os.path.join(self.tmp_config_dir, 'tmp_config.ini')
+        self.tmp_config_path = Path(self.tmp_config_dir).joinpath('tmp_config.ini')
         shutil.copy(tmp_makefile_config, self.tmp_config_path)
 
         # rewrite config so it points to data for testing + temporary output dirs
         config = ConfigParser()
         config.read(self.tmp_config_path)
-        test_data_spects_path = glob(os.path.join(TEST_DATA_DIR,
-                                                  'spects',
-                                                  'spectrograms_*'))[0]
-        config['TRAIN']['train_data_path'] = os.path.join(test_data_spects_path, 'train_data_dict')
-        config['TRAIN']['val_data_path'] = os.path.join(test_data_spects_path, 'val_data_dict')
-        config['TRAIN']['test_data_path'] = os.path.join(test_data_spects_path, 'test_data_dict')
-        config['DATA']['output_dir'] = self.tmp_output_dir
-        config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
+        test_data_vds_path = list(TEST_DATA_DIR.glob('vds'))[0]
+        for stem in ['train', 'test', 'val']:
+            vds_path = list(test_data_vds_path.glob(f'*.{stem}.vds.json'))
+            self.assertTrue(len(vds_path) == 1)
+            vds_path = vds_path[0]
+            config['TRAIN'][f'{stem}_vds_path'] = str(vds_path)
+
+        config['DATA']['output_dir'] = str(self.tmp_output_dir)
+        config['DATA']['data_dir'] = str(TEST_DATA_DIR.joinpath('cbins', 'gy6or6', '032312'))
+        config['OUTPUT']['root_results_dir'] = str(self.tmp_output_dir)
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)
 
@@ -83,7 +78,7 @@ class TestLearncurve(unittest.TestCase):
                     net_name.lower() in [item.lower() for item in records_dir_list]
                 )
 
-            if train_config.val_data_dict_path:
+            if train_config.val_vds_path:
                 self.assertTrue('val_errs' in records_dir_list)
 
             if data_config.save_transformed_data:
@@ -101,7 +96,6 @@ class TestLearncurve(unittest.TestCase):
         config_obj.read(config_file)
         train_config = vak.config.parse_train_config(config_obj, config_file)
         nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
-        spect_params = vak.config.parse_spect_config(config_obj)
         data_config = vak.config.parse_data_config(config_obj, config_file)
         output_config = vak.config.parse_output_config(config_obj)
 
@@ -112,9 +106,8 @@ class TestLearncurve(unittest.TestCase):
         # from before starting--i.e. some datetime with microseconds is less than the
         # exact same date time but with some number of microseconds
         time_before = datetime.now().replace(microsecond=0)
-        vak.cli.learncurve(train_data_dict_path=train_config.train_data_dict_path,
-                           val_data_dict_path=train_config.val_data_dict_path,
-                           spect_params=spect_params,
+        vak.cli.learncurve(train_vds_path=train_config.train_vds_path,
+                           val_vds_path=train_config.val_vds_path,
                            total_train_set_duration=data_config.total_train_set_dur,
                            train_set_durs=train_config.train_set_durs,
                            num_replicates=train_config.num_replicates,
