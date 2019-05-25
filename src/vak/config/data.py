@@ -23,17 +23,6 @@ class DataConfig:
         total duration of validation set, in seconds.
     test_dur : float
         total duration of test set, in seconds.
-    all_labels_are_int : bool
-        if True, labels are of type int, not str
-    silent_gap_label  : int
-        label for time bins of silent gaps between syllables.
-        Type is int because labels are converted to a set of
-        n consecutive integers {0,1,2...n} where n is the number
-        of syllable classes + the silent gap class.
-        Default is 0 (in which case labels are {1,2,3,...,n}).
-    skip_files_with_labels_not_in_labelset : bool
-        if True, skip a file if the labels variable contains labels not
-        found in 'labelset'. Default is True.
     output_dir : str
         Path to location where data sets should be saved. Default is None,
         in which case data sets are saved in the current working directory.
@@ -63,9 +52,6 @@ class DataConfig:
     val_dur = attr.ib(validator=optional(instance_of(float)), default=None)
     test_dur = attr.ib(validator=optional(instance_of(float)), default=None)
 
-    all_labels_are_int = attr.ib(validator=instance_of(bool), default=False)
-    silent_gap_label = attr.ib(validator=instance_of(int), default=0)
-    skip_files_with_labels_not_in_labelset = attr.ib(validator=instance_of(bool), default=True)
     output_dir = attr.ib(validator=optional(is_a_directory), default=None)
 
     audio_format = attr.ib(validator=optional(is_audio_format), default=None)
@@ -119,21 +105,6 @@ def parse_data_config(config, config_file):
 
     if config.has_option('DATA', 'test_set_duration'):
         config_dict['test_dur'] = float(config['DATA']['test_set_duration'])
-
-    # to make type-checking consistent across .mat / .cbin / Koumura .wav files
-    # set all_labels_are_int flag
-    # currently only used with .mat files
-    if config.has_option('DATA', 'all_labels_are_int'):
-        config_dict['all_labels_are_int'] = config.getboolean('DATA', 'all_labels_are_int')
-
-    if config.has_option('DATA', 'silent_gap_label'):
-        config_dict['silent_gap_label'] = int(config['DATA']['silent_gap_label'])
-
-    if config.has_option('DATA', 'skip_files_with_labels_not_in_labelset'):
-        config_dict[
-            'skip_files_with_labels_not_in_labelset'
-        ] = config.getboolean('DATA',
-                              'skip_files_with_labels_not_in_labelset')
 
     if config.has_option('DATA', 'output_dir'):
         output_dir = config['DATA']['output_dir']
