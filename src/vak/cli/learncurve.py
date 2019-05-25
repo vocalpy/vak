@@ -222,26 +222,32 @@ def learncurve(train_vds_path,
         for train_set_dur in train_set_durs:
             train_inds_dict[train_set_dur] = {}
             for replicate in range(1, num_replicates + 1):
+                train_records_dirname = ('records_for_training_set_with_duration_of_'
+                                         + str(train_set_dur) + '_sec_replicate_'
+                                         + str(replicate))
+
                 pbar.set_description(
-                    f"Getting training subset with duration {train_set_dur}, replicate {replicate}"
+                    f"Getting indices for training subset with duration {train_set_dur}, replicate {replicate}"
                 )
 
                 if use_train_subsets_from_previous_run:
                     train_inds_path = os.path.join(previous_run_path,
-                                                   training_records_dir,
+                                                   train_records_dirname,
                                                    'train_inds')
                     logger.info(
-                        f"loading indices for training data subset from: {train_inds_path}"
+                        f"loading indices for training subset with duration {train_set_dur}, replicate {replicate} "
+                        f"from: {train_inds_path}"
                     )
                     with open(train_inds_path, 'rb') as f:
                         train_inds = pickle.load(f)
 
                 else:  # if not re-using subsets, need to generate them
-                    training_records_dir = ('records_for_training_set_with_duration_of_'
-                                            + str(train_set_dur) + '_sec_replicate_'
-                                            + str(replicate))
+                    logger.info(
+                        f"generating indices for training subset with duration {train_set_dur}, replicate {replicate}"
+                    )
+
                     training_records_path = os.path.join(results_dirname,
-                                                         training_records_dir)
+                                                         train_records_dirname)
 
                     if not os.path.isdir(training_records_path):
                         os.makedirs(training_records_path)
@@ -336,9 +342,11 @@ def learncurve(train_vds_path,
         for replicate in range(1, num_replicates + 1):
             logger.info("training with training set duration of {} seconds,"
                         "replicate #{}".format(train_set_dur, replicate))
-            training_records_dir = ('records_for_training_set_with_duration_of_'
-                                    + str(train_set_dur) + '_sec_replicate_'
-                                    + str(replicate))
+            train_records_dirname = ('records_for_training_set_with_duration_of_'
+                                     + str(train_set_dur) + '_sec_replicate_'
+                                     + str(replicate))
+            training_records_path = os.path.join(results_dirname,
+                                                 train_records_dirname)
 
             train_inds = train_inds_dict[train_set_dur][replicate]
             X_train_subset = X_train[train_inds, :]
