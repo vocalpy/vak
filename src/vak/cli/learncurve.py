@@ -107,7 +107,6 @@ def learncurve(train_vds_path,
             f"a validation data set that can be used to check error rate very {val_error_step} steps"
         )
 
-    # ---------------- pre-conditions ----------------------------------------------------------------------------------
     if val_vds_path and val_error_step is None:
         raise ValueError(
             "val_vds_path was provided but val_error_step is None; please provide a value for val_error_step"
@@ -313,9 +312,11 @@ def learncurve(train_vds_path,
         logger.info(
             f'will measure error on validation set every {val_error_step} steps of training'
         )
+    else:
+        X_val = None  # so we can just check 'if X_val' below, clearer than e.g. 'if val_vds_path'
 
     logger.info(
-        'will save a checkpoint file every {checkpoint_step} steps of training'
+        f'will save a checkpoint file every {checkpoint_step} steps of training'
     )
 
     if save_only_single_checkpoint_file:
@@ -333,8 +334,9 @@ def learncurve(train_vds_path,
 
     if normalize_spectrograms:
         logger.info('will normalize spectrograms for each training set')
-        # need a copy of X_val when we normalize it below
-        X_val_copy = copy.deepcopy(X_val)
+        if X_val is not None:
+            # need a copy of X_val when we normalize it below
+            X_val_copy = copy.deepcopy(X_val)
 
     NETWORKS = network._load()
 
@@ -360,8 +362,9 @@ def learncurve(train_vds_path,
             if normalize_spectrograms:
                 spect_scaler = SpectScaler()
                 X_train_subset = spect_scaler.fit_transform(X_train_subset)
-                logger.info('normalizing validation set to match training set')
-                X_val = spect_scaler.transform(X_val_copy)
+                if X_val is not None:
+                    logger.info('normalizing validation set to match training set')
+                    X_val = spect_scaler.transform(X_val_copy)
                 scaler_name = ('spect_scaler_duration_{}_replicate_{}'
                                .format(train_set_dur, replicate))
                 joblib.dump(spect_scaler,
@@ -372,8 +375,9 @@ def learncurve(train_vds_path,
                                                     'scaled_spects_duration_{}_replicate_{}'
                                                     .format(train_set_dur, replicate))
                 scaled_data_dict = {'X_train_subset_scaled': X_train_subset,
-                                    'X_val_scaled': X_val,
                                     'Y_train_subset': Y_train_subset}
+                if X_val is not None:
+                    scaled_data_dict['X_val_scaled'] = X_val
                 joblib.dump(scaled_data_dict, scaled_data_filename)
 
             freq_bins = X_train_subset.shape[-1]  # number of columns
@@ -407,22 +411,25 @@ def learncurve(train_vds_path,
 
                 net.add_summary_writer(logs_path=logs_path)
 
-                (X_val_batch,
-                 Y_val_batch,
-                 num_batches_val) = utils.data.reshape_data_for_batching(X_val,
-                                                                         net_config.batch_size,
-                                                                         net_config.time_bins,
-                                                                         Y_val)
+                if X_val is not None:
+                    (X_val_batch,
+                     Y_val_batch,
+                     num_batches_val) = utils.data.reshape_data_for_batching(X_val,
+                                                                             net_config.batch_size,
+                                                                             net_config.time_bins,
+                                                                             Y_val)
 
                 if save_transformed_data:
                     scaled_reshaped_data_filename = os.path.join(training_records_path,
                                                                  'scaled_reshaped_spects_duration_{}_replicate_{}'
                                                                  .format(train_set_dur, replicate))
                     scaled_reshaped_data_dict = {'X_train_subset_scaled_reshaped': X_train_subset,
-                                                 'Y_train_subset_reshaped': Y_train_subset,
-                                                 'X_val_scaled_batch': X_val_batch,
-                                                 'Y_val_batch': Y_val_batch}
-                    joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
+                                                 'Y_train_subset_reshaped': Y_train_subset}
+                    if X_val is not None:
+                        scaled_reshaped_data_dict['X_val_scaled_batch'] = X_val_batch
+                        scaled_reshaped_data_dict['Y_val_batch'] = Y_val_batch
+
+                        joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
 
                 costs = []
                 val_errs = []
@@ -482,7 +489,7 @@ def learncurve(train_vds_path,
                                 f"epoch {epoch + 1}, batch {batch_num + 1} of {num_batches}, cost: {_cost:8.4f}"
                             )
 
-                        if val_error_step:
+                        if X_val is not None:
                             if epoch % val_error_step == 0:
                                 if 'Y_pred_val' in locals():
                                     del Y_pred_val
