@@ -663,14 +663,14 @@ def reshape_data_for_batching(X, batch_size, time_steps, Y=None):
 def convert_timebins_to_labels(labeled_timebins,
                                labels_mapping,
                                spect_ID_vector=None):
-    """converts output of cnn-bilstm from label for each frame
+    """converts output of network from label for each frame
     to one label for each continuous segment
 
     Parameters
     ----------
     labeled_timebins : ndarray
         where each element is a label for a time bin.
-        Such an array is the output of the cnn-bilstm network.
+        Such an array is the output of the network.
     labels_mapping : dict
         that maps str labels to consecutive integers.
         The mapping is inverted to convert back to str labels.
@@ -690,16 +690,15 @@ def convert_timebins_to_labels(labeled_timebins,
         where each str corresponds to predicted labels for each predicted
         segment in each spectrogram as identified by spect_ID_vector.
     """
-
     idx = np.diff(labeled_timebins, axis=0).astype(np.bool)
     idx = np.insert(idx, 0, True)
 
     labels = labeled_timebins[idx]
 
-    # remove silent gap label
-    silent_gap_label = labels_mapping['silent_gap_label']
-    labels = labels[labels != silent_gap_label]
-    labels = labels.tolist()
+    # remove 'unlabeled' label
+    if 'unlabeled' in labels_mapping:
+        labels = labels[labels != labels_mapping['unlabeled']]
+        labels = labels.tolist()
 
     inverse_labels_mapping = dict((v, k) for k, v
                                   in labels_mapping.items())
@@ -722,7 +721,7 @@ def convert_timebins_to_labels(labeled_timebins,
                 labels_list.append(curr_labels)
         return labels_list, spect_ID_vector
     else:
-        if all([type(el) is str for el in labels]):
+        if all([type(el) is str or type(el) is np.str_ for el in labels]):
             return ''.join(labels)
         elif all([type(el) is int for el in labels]):
             return labels
