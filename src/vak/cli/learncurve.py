@@ -11,13 +11,14 @@ from .. import core
 
 
 def learncurve(train_vds_path,
-               val_vds_path,
+               test_vds_path,
                total_train_set_duration,
                train_set_durs,
                num_replicates,
                networks,
                num_epochs,
                config_file,
+               val_vds_path=None,
                val_error_step=None,
                checkpoint_step=None,
                patience=None,
@@ -28,14 +29,15 @@ def learncurve(train_vds_path,
                root_results_dir=None,
                save_transformed_data=False,
                ):
-    """train models used by vak.cli.summary to generate learning curve
+    """generate learning curve, by training models on training sets across a
+    range of sizes and then measure accuracy of those models on a test set
 
     Parameters
     ----------
     train_vds_path : str
         path to VocalizationDataset that represents training data
-    val_vds_path : str
-        path to VocalizationDataset that represents validation data
+    test_vds_path : str
+        path to VocalizationDataset that represents test data
     total_train_set_duration : int
         total duration of training set, in seconds
     train_set_durs : list
@@ -55,9 +57,14 @@ def learncurve(train_vds_path,
     config_file : str
         path to config.ini file. Used to rewrite file with options determined by
         this function and needed for other functions (e.g. cli.summary)
+    val_vds_path : str
+        path to VocalizationDataset that represents validation data.
+        Default is None, in which case accuracy is not measured on validation set
+        during training.
     val_error_step : int
         step/epoch at which to estimate accuracy using validation set.
-        Default is None, in which case no validation is done.
+        Default is None, in which case accuracy is not measured on validation set
+        during training.
     checkpoint_step : int
         step/epoch at which to save to checkpoint file.
         Default is None, in which case checkpoint is only saved at the last epoch.
@@ -131,6 +138,7 @@ def learncurve(train_vds_path,
     # --------------- let core.learncurve do all the work --------------------------------------------------------------
     results_dirname = core.learncurve(train_vds_path,
                                       val_vds_path,
+                                      test_vds_path,
                                       total_train_set_duration,
                                       train_set_durs,
                                       num_replicates,
