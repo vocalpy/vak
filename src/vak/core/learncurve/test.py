@@ -1,7 +1,6 @@
 import os
 import logging
 import pickle
-import sys
 from datetime import datetime
 from glob import glob
 
@@ -20,6 +19,7 @@ def test(results_dirname,
          networks,
          train_set_durs,
          num_replicates,
+         output_dir=None,
          normalize_spectrograms=False,
          save_transformed_data=False):
     """generate summary learning curve from networks trained by cli.learncurve
@@ -45,6 +45,9 @@ def test(results_dirname,
         to better estimate mean accuracy for a training set of that size.
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
+    output_dir : str
+        path to directory where output should be saved. Default is None, in which
+        case results are saved in results_dirname.
     normalize_spectrograms : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
@@ -60,13 +63,24 @@ def test(results_dirname,
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
     if not os.path.isdir(results_dirname):
-        raise FileNotFoundError('directory {}, specified as '
-                                'results_dir_made_by_main_script, is not found.'
-                                .format(results_dirname))
+        raise NotADirectoryError(
+            f'directory specified as results_dirname not found: {results_dirname}'
+        )
+
+    if output_dir:
+        if not os.path.isdir(output_dir):
+            raise NotADirectoryError(
+                f'specified output directory not found: {output_dir}'
+            )
+
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    summary_dirname = os.path.join(results_dirname,
-                                   'summary_' + timenow)
-    os.makedirs(summary_dirname)
+    if output_dir:
+        test_dirname = os.path.join(output_dir,
+                                       f'learncurve.test.{timenow}')
+    else:
+        test_dirname = os.path.join(results_dirname,
+                                       f'learncurve.test.{timenow}')
+    os.makedirs(test_dirname)
 
     # ---------------- logging -----------------------------------------------------------------------------------------
     logger = logging.getLogger('learncurve.test')
@@ -74,7 +88,7 @@ def test(results_dirname,
     if logging.getLevelName(logger.level) != 'INFO':
         logger.setLevel('INFO')
 
-    logger.info(f"Logging run of summary to '{summary_dirname}'")
+    logger.info(f"Logging run of learncurve.test to '{test_dirname}'")
 
     # ---------------- load training data  -----------------------------------------------------------------------------
     logger.info('Loading training VocalizationDataset from {}'.format(
@@ -212,7 +226,7 @@ def test(results_dirname,
                 X_test = spect_scaler.transform(X_test)
 
             if save_transformed_data:
-                scaled_test_data_filename = os.path.join(summary_dirname,
+                scaled_test_data_filename = os.path.join(test_dirname,
                                                          'scaled_test_spects_duration_{}_replicate_{}'
                                                          .format(train_set_dur,
                                                                  replicate))
@@ -269,7 +283,7 @@ def test(results_dirname,
                     Y_test)
 
                 if save_transformed_data:
-                    scaled_reshaped_data_filename = os.path.join(summary_dirname,
+                    scaled_reshaped_data_filename = os.path.join(test_dirname,
                                                                  'scaled_reshaped_spects_duration_{}_replicate_{}'
                                                                  .format(train_set_dur,
                                                                          replicate))
@@ -402,22 +416,22 @@ def test(results_dirname,
         Y_pred_train_labels_all.append(Y_pred_train_labels_this_dur)
         Y_pred_test_labels_all.append(Y_pred_test_labels_this_dur)
 
-    Y_pred_train_filename = os.path.join(summary_dirname,
+    Y_pred_train_filename = os.path.join(test_dirname,
                                          'Y_pred_train_all')
     with open(Y_pred_train_filename, 'wb') as Y_pred_train_file:
         pickle.dump(Y_pred_train_all, Y_pred_train_file)
 
-    Y_pred_test_filename = os.path.join(summary_dirname,
+    Y_pred_test_filename = os.path.join(test_dirname,
                                         'Y_pred_test_all')
     with open(Y_pred_test_filename, 'wb') as Y_pred_test_file:
         pickle.dump(Y_pred_test_all, Y_pred_test_file)
 
-    train_err_filename = os.path.join(summary_dirname,
+    train_err_filename = os.path.join(test_dirname,
                                       'train_err')
     with open(train_err_filename, 'wb') as train_err_file:
         pickle.dump(train_err_arr, train_err_file)
 
-    test_err_filename = os.path.join(summary_dirname,
+    test_err_filename = os.path.join(test_dirname,
                                      'test_err')
     with open(test_err_filename, 'wb') as test_err_file:
         pickle.dump(test_err_arr, test_err_file)
@@ -437,6 +451,6 @@ def test(results_dirname,
                          'train_set_durs': train_set_durs,
                          'num_replicates': num_replicates}
 
-    pred_err_dict_filename = os.path.join(summary_dirname,
+    pred_err_dict_filename = os.path.join(test_dirname,
                                           'y_preds_and_err_for_train_and_test')
     joblib.dump(pred_and_err_dict, pred_err_dict_filename)
