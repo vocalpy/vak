@@ -10,16 +10,16 @@ import numpy as np
 import tensorflow as tf
 
 from .. import metrics, utils
-import vak.network
+from .. import network
+from ..dataset import VocalizationDataset
 
 
 def summary(results_dirname,
-            train_data_dict_path,
+            test_vds_path,
+            train_vds_path,
             networks,
             train_set_durs,
             num_replicates,
-            labelset,
-            test_data_dict_path,
             normalize_spectrograms=False,
             save_transformed_data=False):
     """generate summary learning curve from networks trained by cli.learncurve
@@ -30,8 +30,10 @@ def summary(results_dirname,
     ----------
     results_dirname : str
         path to directory containing results created by a run of learncurve
-    train_data_dict_path : str
-        path to training data
+    test_vds_path : str
+        path to VocalizationDataset that represents test data
+    train_vds_path : str
+        path to VocalizationDataset that represents training data
     networks : dict
         where each key is the name of a neural network and the corresponding
         value is the configuration for that network (in a namedtuple or a dict)
@@ -43,10 +45,6 @@ def summary(results_dirname,
         to better estimate mean accuracy for a training set of that size.
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
-    labelset : list
-        of str or int, set of labels for syllables
-    test_data_dict_path : str
-        path to test data
     normalize_spectrograms : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
@@ -60,6 +58,7 @@ def summary(results_dirname,
     -------
     None
     """
+    # ---------------- pre-conditions ----------------------------------------------------------------------------------
     if not os.path.isdir(results_dirname):
         raise FileNotFoundError('directory {}, specified as '
                                 'results_dir_made_by_main_script, is not found.'
@@ -69,6 +68,7 @@ def summary(results_dirname,
                                    'summary_' + timenow)
     os.makedirs(summary_dirname)
 
+    # ---------------- logging -----------------------------------------------------------------------------------------
     logfile_name = os.path.join(summary_dirname,
                                 'logfile_from_running_summary_' + timenow + '.log')
     logger = logging.getLogger(__name__)
@@ -77,104 +77,81 @@ def summary(results_dirname,
     logger.addHandler(logging.StreamHandler(sys.stdout))
     logger.info(f"Logging run of summary to '{summary_dirname}'")
 
-    labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
-    with open(labels_mapping_file, 'rb') as labels_map_file_obj:
-        labels_mapping = pickle.load(labels_map_file_obj)
+    # ---------------- load training data  -----------------------------------------------------------------------------
+    logger.info('Loading training VocalizationDataset from {}'.format(
+        os.path.dirname(
+            train_vds_path)))
+    train_vds = VocalizationDataset.load(json_fname=train_vds_path)
 
-    logger.info(f'Loading training data from: {train_data_dict_path}')
-    train_data_dict = joblib.load(train_data_dict_path)
-    (X_train,
-     Y_train,
-     train_timebin_dur,
-     train_spect_params,
-     train_labels) = (train_data_dict['X_train'],
-                      train_data_dict['Y_train'],
-                      train_data_dict['timebin_dur'],
-                      train_data_dict['spect_params'],
-                      train_data_dict['labels'])
-    labels_mapping = train_data_dict['labels_mapping']
-    n_syllables = len(labels_mapping)
+    if train_vds.are_spects_loaded() is False:
+        train_vds = train_vds.load_spects()
+
+    X_train = train_vds.spects_list()
+    X_train = np.concatenate(X_train, axis=1)
+    Y_train = train_vds.lbl_tb_list()
+    Y_train = np.concatenate(Y_train)
+    # transpose so rows are time bins
     X_train = X_train.T
 
-    # only get this just to have in summary file if needed
-    if all(type(labels_el) is str for labels_el in train_labels):
-        # when taken from .not.mat files associated with .cbin audio files
-        Y_train_labels = ''.join(train_labels)
-        Y_train_labels_for_lev = Y_train_labels
-    elif all(type(labels_el) is np.ndarray for labels_el in train_labels):
-        # when taken from annotation.mat supplied with .wav audio files
-        Y_train_labels = np.concatenate(train_labels).tolist()
-        Y_train_labels_for_lev = ''.join([chr(lbl) for lbl in Y_train_labels])
-    elif all(type(labels_el) is list for labels_el in train_labels):
-        # when taken from annotation.xml supplied with Koumura .wav audio files
-        Y_train_labels = [lbl for lbl_list in train_labels for lbl in lbl_list]
-        if all([type(lbl) is int for lbl in Y_train_labels]):
-            Y_train_labels_for_lev = ''.join(
-                [chr(lbl) for lbl in Y_train_labels])
-        elif all([type(lbl) is str for lbl in Y_train_labels]):
-            Y_train_labels_for_lev = ''.join(Y_train_labels)
-        else:
-            raise TypeError('Couldn\'t determine type for training labels in {}'
-                            .format(type(train_data_dict_path)))
+    n_classes = len(train_vds.labelmap)
+    logger.debug('n_classes: '.format(n_classes))
+
+    timebin_dur = set([voc.metaspect.timebin_dur for voc in train_vds.voc_list])
+    if len(timebin_dur) > 1:
+        raise ValueError(
+            f'found more than one time bin duration in training VocalizationDataset: {timebin_dur}'
+        )
+    elif len(timebin_dur) == 1:
+        timebin_dur = timebin_dur.pop()
+        logger.info('Size of each timebin in spectrogram, in seconds: {timebin_dur}')
     else:
-        raise TypeError('Not able to determine type of labels in train data')
+        raise ValueError(
+            f'invalid time bin durations from training set: {timebin_dur}'
+        )
 
-    logger.info(f'Loading test data from: {test_data_dict_path}')
-    test_data_dict = joblib.load(test_data_dict_path)
+    # ---------------- load test data  -----------------------------------------------------------------------------
+    logger.info('Loading test VocalizationDataset from {}'.format(
+        os.path.dirname(
+            test_vds_path)))
+    test_vds = VocalizationDataset.load(json_fname=test_vds_path)
 
-    # notice data is called `X_test_copy` and `Y_test_copy`
-    # because main loop below needs a copy of the original
-    # to normalize and reshape
-    (X_test_copy,
-     Y_test_copy,
-     test_timebin_dur,
-     files_used,
-     test_spect_params,
-     test_labels) = (test_data_dict['X_test'],
-                     test_data_dict['Y_test'],
-                     test_data_dict['timebin_dur'],
-                     test_data_dict['filenames'],
-                     test_data_dict['spect_params'],
-                     test_data_dict['labels'])
+    if test_vds.are_spects_loaded() is False:
+        test_vds = test_vds.load_spects()
 
-    if train_spect_params != test_spect_params:
-        raise ValueError('Spectrogram parameters for training data do not match those '
-                         'for test data, will give incorrect error rate.')
-    if train_timebin_dur != test_timebin_dur:
-        raise ValueError('Durations of time bins in spectrograms for training data '
-                         'does not match that of test data, will give incorrect error rate.')
+    if test_vds.labelmap != train_vds.labelmap:
+        raise ValueError(
+            f'labelmap of test set, {test_vds.labelmap}, does not match labelmap of training set, '
+            f'{train_vds.labelmap}'
+        )
 
-    # have to transpose X_test so rows are timebins and columns are frequencies
-    X_test_copy = X_test_copy.T
-    if X_train.shape[-1] != X_test_copy.shape[-1]:
+    def unpack_test():
+        """helper function because we want to get back test set unmodified every time we go through
+        main loop below, without copying giant arrays"""
+        X_test = test_vds.spects_list()
+        X_test = np.concatenate(X_test, axis=1)
+        # transpose so rows are time bins
+        X_test = X_test.T
+        Y_test = test_vds.lbl_tb_list()
+        Y_test = np.concatenate(Y_test)
+        return X_test, Y_test
+
+    # just get X_test to make sure it has the right shape
+    X_test, _ = unpack_test()
+    if X_train.shape[-1] != X_test.shape[-1]:
         raise ValueError(f'Number of frequency bins in training set spectrograms, {X_train.shape[-1]}, '
-                         f'does not equal number in test set spectrograms, {X_test_copy.shape[-1]}.')
-    freq_bins = X_test_copy.shape[-1]  # number of columns
+                         f'does not equal number in test set spectrograms, {X_test.shape[-1]}.')
+    freq_bins = X_test.shape[-1]  # number of columns
 
+    # concatenate labels into one big string
     # used for Levenshtein distance + syllable error rate
-    if all(type(labels_el) is str for labels_el in test_labels):
-        # when taken from .not.mat files associated with .cbin audio files
-        Y_test_labels = ''.join(test_labels)
-        Y_test_labels_for_lev = Y_test_labels
-    elif all(type(labels_el) is np.ndarray for labels_el in test_labels):
-        # when taken from annotation.mat supplied with .wav audio files
-        Y_test_labels = np.concatenate(test_labels).tolist()
-        Y_test_labels_for_lev = ''.join([chr(lbl) for lbl in Y_test_labels])
-    elif all(type(labels_el) is list for labels_el in test_labels):
-        # when taken from annotation.xml supplied with Koumura .wav audio files
-        Y_test_labels = [lbl for lbl_list in test_labels for lbl in lbl_list]
-        if all([type(lbl) is int for lbl in Y_train_labels]):
-            Y_test_labels_for_lev = ''.join(
-                [chr(lbl) for lbl in Y_test_labels])
-        elif all([type(lbl) is str for lbl in Y_train_labels]):
-            Y_test_labels_for_lev = ''.join(Y_test_labels)
-        else:
-            raise TypeError('Couldn\'t determine type for test labels in {}'
-                            .format(type(test_data_dict_path)))
-    else:
-        raise TypeError('Not able to determine type of labels in test data')
+    Y_train_labels = [voc.annot.labels.tolist() for voc in train_vds.voc_list]
+    Y_train_labels_for_lev = ''.join([chr(lbl) if type(lbl) is int else lbl
+                                      for labels in Y_train_labels for lbl in labels])
+    Y_test_labels = [voc.annot.labels.tolist() for voc in test_vds.voc_list]
+    Y_test_labels_for_lev = ''.join([chr(lbl) if type(lbl) is int else lbl
+                                     for labels in Y_train_labels for lbl in labels])
 
-    replicates = range(num_replicates)
+    replicates = range(1, num_replicates + 1)
     # initialize arrays to hold summary results
     Y_pred_test_all = []  # will be a nested list
     Y_pred_train_all = []  # will be a nested list
@@ -187,7 +164,7 @@ def summary(results_dirname,
     train_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
     test_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
 
-    NETWORKS = vak.network._load()
+    NETWORKS = network._load()
 
     for dur_ind, train_set_dur in enumerate(train_set_durs):
 
@@ -230,15 +207,10 @@ def summary(results_dirname,
                     os.path.join(training_records_path, scaler_name))
                 X_train_subset = spect_scaler.transform(X_train_subset)
 
+            X_test, Y_test = unpack_test()
             # Normalize before reshaping to avoid even more convoluted array reshaping.
             if normalize_spectrograms:
-                X_test = spect_scaler.transform(X_test_copy)
-            else:
-                # get back "un-reshaped" X_test
-                X_test = np.copy(X_test_copy)
-
-            # need to get Y_test from copy because it gets reshaped every time through loop
-            Y_test = np.copy(Y_test_copy)
+                X_test = spect_scaler.transform(X_test)
 
             if save_transformed_data:
                 scaled_test_data_filename = os.path.join(summary_dirname,
@@ -251,7 +223,7 @@ def summary(results_dirname,
             for net_name, net_config in networks.items():
                 # reload network #
                 net_config_dict = net_config._asdict()
-                net_config_dict['n_syllables'] = n_syllables
+                net_config_dict['n_syllables'] = n_classes
                 if 'freq_bins' in net_config_dict:
                     net_config_dict['freq_bins'] = freq_bins
                 net = NETWORKS[net_name](**net_config_dict)
@@ -346,9 +318,9 @@ def summary(results_dirname,
                     Y_pred_train_this_dur.append(Y_pred_train)
 
                     Y_train_subset_labels = utils.data.convert_timebins_to_labels(Y_train_subset,
-                                                                                  labels_mapping)
+                                                                                  train_vds.labelmap)
                     Y_pred_train_labels = utils.data.convert_timebins_to_labels(Y_pred_train,
-                                                                                labels_mapping)
+                                                                                train_vds.labelmap)
                     Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
 
                     if all([type(el) is int for el in Y_train_subset_labels]):
@@ -367,9 +339,8 @@ def summary(results_dirname,
                     train_lev_arr[dur_ind, rep_ind] = train_lev
                     print('Levenshtein distance for train set was {}'.format(
                         train_lev))
-                    train_syl_err_rate = metrics.syllable_error_rate(
-                        Y_train_subset_labels,
-                        Y_pred_train_labels)
+                    train_syl_err_rate = metrics.syllable_error_rate(Y_train_subset_labels,
+                                                                     Y_pred_train_labels)
                     train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
                     print('Syllable error rate for train set was {}'.format(
                         train_syl_err_rate))
@@ -393,16 +364,16 @@ def summary(results_dirname,
                             Y_pred_test = Y_pred_test.reshape(net_config.batch_size, -1)
 
                     # again get rid of zero padding predictions
-                    Y_pred_test = Y_pred_test.ravel()[:Y_test_copy.shape[0],
+                    Y_pred_test = Y_pred_test.ravel()[:Y_test.shape[0],
                                   np.newaxis]
-                    test_err = np.sum(Y_pred_test - Y_test_copy != 0) / \
-                               Y_test_copy.shape[0]
+                    test_err = np.sum(Y_pred_test - Y_test != 0) / \
+                               Y_test.shape[0]
                     test_err_arr[dur_ind, rep_ind] = test_err
                     print('test error was {}'.format(test_err))
                     Y_pred_test_this_dur.append(Y_pred_test)
 
                     Y_pred_test_labels = utils.data.convert_timebins_to_labels(Y_pred_test,
-                                                                               labels_mapping)
+                                                                               test_vds.labelmap)
                     Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
                     if all([type(el) is int for el in Y_pred_test_labels]):
                         # if labels are ints instead of str
@@ -470,8 +441,3 @@ def summary(results_dirname,
     pred_err_dict_filename = os.path.join(summary_dirname,
                                           'y_preds_and_err_for_train_and_test')
     joblib.dump(pred_and_err_dict, pred_err_dict_filename)
-
-
-if __name__ == '__main__':
-    config_file = sys.argv[1]
-    summary(config_file)
