@@ -128,6 +128,8 @@ def learncurve(train_vds_path,
     # ---------------- logging -----------------------------------------------------------------------------------------
     logfile_name = os.path.join(results_dirname,
                                 'logfile_from_running_learncurve_' + timenow + '.log')
+    # give logger same name that core.learncurve will use, so it will have the same level and handlers
+    # as what's declared here
     logger = logging.getLogger('learncurve')
     logger.setLevel('INFO')
     logger.addHandler(logging.FileHandler(logfile_name))
