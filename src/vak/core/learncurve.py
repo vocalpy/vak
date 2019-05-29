@@ -129,12 +129,12 @@ def learncurve(train_vds_path,
     if logging.getLevelName(logger.level) != 'INFO':
         logger.setLevel('INFO')
 
-    if not logging.FileHandler in [type(handler) for handler in logger.handlers]:
+    if logging.FileHandler not in [type(handler) for handler in logger.handlers]:
         logfile_name = os.path.join(results_dirname,
                                     'logfile_from_running_learncurve_' + timenow + '.log')
         logger.addHandler(logging.FileHandler(logfile_name))
         logger.info('Logging results to {}'.format(results_dirname))
-    if not logging.StreamHandler in [type(handler) for handler in logger.handlers]:
+    if logging.StreamHandler not in [type(handler) for handler in logger.handlers]:
         logger.addHandler(logging.StreamHandler(sys.stdout))
 
     train(train_vds_path,
