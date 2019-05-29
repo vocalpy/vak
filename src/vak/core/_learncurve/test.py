@@ -75,11 +75,9 @@ def test(results_dirname,
 
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     if output_dir:
-        test_dirname = os.path.join(output_dir,
-                                       f'learncurve.test.{timenow}')
+        test_dirname = os.path.join(output_dir, 'test')
     else:
-        test_dirname = os.path.join(results_dirname,
-                                       f'learncurve.test.{timenow}')
+        test_dirname = os.path.join(results_dirname, 'test')
     os.makedirs(test_dirname)
 
     # ---------------- logging -----------------------------------------------------------------------------------------
