@@ -5,8 +5,8 @@ from datetime import datetime
 
 import numpy as np
 
-from vak.core.learncurve.train import train
-from vak.core.learncurve.test import test
+from ._learncurve.train import train
+from ._learncurve.test import test
 
 
 def learncurve(train_vds_path,
