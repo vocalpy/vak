@@ -17,13 +17,13 @@ from ...dataset.classes import VocalizationDataset
 
 
 def train(train_vds_path,
-          val_vds_path,
           total_train_set_duration,
           train_set_durs,
           num_replicates,
           networks,
           num_epochs,
-          results_dirname,
+          output_dir,
+          val_vds_path=None,
           val_error_step=None,
           checkpoint_step=None,
           patience=None,
@@ -38,8 +38,6 @@ def train(train_vds_path,
     ----------
     train_vds_path : str
         path to VocalizationDataset that represents training data
-    val_vds_path : str
-        path to VocalizationDataset that represents validation data
     total_train_set_duration : int
         total duration of training set, in seconds
     train_set_durs : list
@@ -56,9 +54,10 @@ def train(train_vds_path,
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
-    results_dirname : str
-        name of subdirectory created by vak.cli.learncurve inside root_results_dir,
-        where results from this run of 'train' will be saved.
+    output_dir : str
+        name of directory where results from this run of 'train' will be saved.
+    val_vds_path : str
+        path to VocalizationDataset that represents validation data
     val_error_step : int
         step/epoch at which to estimate accuracy using validation set.
         Default is None, in which case no validation is done.
@@ -85,6 +84,11 @@ def train(train_vds_path,
         be used on a subsequent run of learncurve (e.g. if you want to compare results
         from different hyperparameters across the exact same training set).
         Also useful if you need to check what the data looks like when fed to networks.
+
+    Returns
+    -------
+    train_dirname : str
+        path to directory where results from training were saved
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
     if val_error_step and val_vds_path is None:
@@ -103,6 +107,15 @@ def train(train_vds_path,
         raise ValueError('Largest duration for a training set of {} '
                          'is greater than total duration of training set, {}'
                          .format(max_train_set_dur, total_train_set_duration))
+
+    if output_dir:
+        if not os.path.isdir(output_dir):
+            raise NotADirectoryError(
+                f'specified output directory not found: {output_dir}'
+            )
+
+    train_dirname = os.path.join(output_dir, 'train')
+    os.makedirs(train_dirname)
 
     # ---------------- logging -----------------------------------------------------------------------------------------
     logger = logging.getLogger('learncurve.train')
@@ -172,8 +185,8 @@ def train(train_vds_path,
     # because networks expect this orientation for input
     X_train = X_train.T
     if save_transformed_data:
-        joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
-        joblib.dump(Y_train, os.path.join(results_dirname, 'Y_train'))
+        joblib.dump(X_train, os.path.join(train_dirname, 'X_train'))
+        joblib.dump(Y_train, os.path.join(train_dirname, 'Y_train'))
 
     logger.info(
         f'Will train network with training sets of following durations (in s): {train_set_durs}'
@@ -216,7 +229,7 @@ def train(train_vds_path,
                         f"generating indices for training subset with duration {train_set_dur}, replicate {replicate}"
                     )
 
-                    training_records_path = os.path.join(results_dirname,
+                    training_records_path = os.path.join(train_dirname,
                                                          train_records_dirname)
 
                     if not os.path.isdir(training_records_path):
@@ -277,8 +290,8 @@ def train(train_vds_path,
         #####################################################
         X_val = X_val.T
         if save_transformed_data:
-            joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
-            joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
+            joblib.dump(X_val, os.path.join(train_dirname, 'X_val'))
+            joblib.dump(Y_val, os.path.join(train_dirname, 'Y_val'))
 
         logger.info(
             f'will measure error on validation set every {val_error_step} steps of training'
@@ -318,7 +331,7 @@ def train(train_vds_path,
             train_records_dirname = ('records_for_training_set_with_duration_of_'
                                      + str(train_set_dur) + '_sec_replicate_'
                                      + str(replicate))
-            training_records_path = os.path.join(results_dirname,
+            training_records_path = os.path.join(train_dirname,
                                                  train_records_dirname)
 
             train_inds = train_inds_dict[train_set_dur][replicate]
@@ -526,3 +539,5 @@ def train(train_vds_path,
                             with open(os.path.join(results_dirname_this_net, "val_errs"),
                                       'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
+
+    return train_dirname
