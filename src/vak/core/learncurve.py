@@ -160,6 +160,7 @@ def learncurve(train_vds_path,
          networks,
          train_set_durs,
          num_replicates,
+         root_results_dir,
          normalize_spectrograms,
          save_transformed_data)
 
