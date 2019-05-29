@@ -25,7 +25,7 @@ def learncurve(train_vds_path,
                use_train_subsets_from_previous_run=False,
                previous_run_path=None,
                save_transformed_data=False,
-               root_results_dir=None):
+               output_dir=None):
     """generate learning curve, by first running learncurve.train
     to train models with a range of training set sizes, and then
     running learncurve.test to measure accuracy of those models on
@@ -81,10 +81,10 @@ def learncurve(train_vds_path,
         be used on a subsequent run of learncurve (e.g. if you want to compare results
         from different hyperparameters across the exact same training set).
         Also useful if you need to check what the data looks like when fed to networks.
-    root_results_dir : str
-        path in which to create results directory for this run of learncurve. Default is
-        None. If none, then a directory for results will be created in the current working
-        directory.
+    output_dir : str
+        path to directory where results from this run of learncurve should be saved.
+        Default is None. If none, then a directory for results will be created in
+        the current working directory.
 
     Returns
     -------
@@ -109,15 +109,21 @@ def learncurve(train_vds_path,
                          'is greater than total duration of training set, {}'
                          .format(max_train_set_dur, total_train_set_duration))
 
+    if output_dir:
+        if not os.path.isdir(output_dir):
+            raise NotADirectoryError(
+                f'specified output directory not found: {output_dir}'
+            )
+
     # ---------------- logging -----------------------------------------------------------------------------------------
     # need to set up a results dir so we have some place to put the log file
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-
-    if root_results_dir:
-        results_dirname = os.path.join(root_results_dir,
-                                       'results_' + timenow)
+    results_dirname = f'learncurve.{timenow}'
+    if output_dir:
+        results_dirname = os.path.join(output_dir,
+                                       results_dirname)
     else:
-        results_dirname = os.path.join('.', 'results_' + timenow)
+        results_dirname = os.path.join(os.getcwd(), results_dirname)
 
     if not os.path.isdir(results_dirname):
         os.makedirs(results_dirname)
