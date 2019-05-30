@@ -1,4 +1,4 @@
-"""tests for vak.cli.learncurve module"""
+"""tests for vak.core.learncurve module"""
 import os
 from pathlib import Path
 import tempfile
