@@ -49,25 +49,26 @@ class TestLearncurve(unittest.TestCase):
 
     def _check_learncurve_output(self, output_config, train_config, nets_config, data_config,
                                  time_before, time_after):
-        root_results_after = os.listdir(output_config.root_results_dir)
-        self.assertTrue(len(root_results_after) == 1)
+        output_dir_after = os.listdir(output_config.root_results_dir)
+        self.assertTrue(len(output_dir_after) == 1)
 
-        results_dir = root_results_after[0]
-        self.assertTrue('results_' in results_dir)
+        results_dir = output_dir_after[0]
+        self.assertTrue('learncurve.' in results_dir)
 
-        time_str_results_dir = results_dir.replace('results_', '')  # to get just datestr
+        time_str_results_dir = results_dir.replace('learncurve.', '')  # to get just datestr
         time_results_dir = datetime.strptime(time_str_results_dir, '%y%m%d_%H%M%S')
         self.assertTrue(time_before <= time_results_dir <= time_after)
 
-        results_path = os.path.join(output_config.root_results_dir, results_dir)
-        results_dir_list = os.listdir(results_path)
-        records_dirs = [item for item in results_dir_list if 'records' in item]
+        # -------- test output of _learncurve.train --------------------------------------------------------------------
+        train_dirname = os.path.join(output_config.root_results_dir, results_dir, 'train')
+        train_dir_list = os.listdir(train_dirname)
+        records_dirs = [item for item in train_dir_list if 'records' in item]
         self.assertTrue(
             len(records_dirs) == len(train_config.train_set_durs) * train_config.num_replicates
         )
 
         for record_dir in records_dirs:
-            records_path = os.path.join(results_path, record_dir)
+            records_path = os.path.join(train_dirname, record_dir)
             records_dir_list = os.listdir(records_path)
 
             self.assertTrue('train_inds' in records_dir_list)
@@ -82,8 +83,23 @@ class TestLearncurve(unittest.TestCase):
                 self.assertTrue('val_errs' in records_dir_list)
 
             if data_config.save_transformed_data:
-                self.assertTrue('val_errs' in records_dir_list)
-                self.assertTrue('val_errs' in records_dir_list)
+                self.assertTrue('X_train' in records_dir_list)
+                self.assertTrue('Y_train' in records_dir_list)
+                if train_config.val_vds_path:
+                    self.assertTrue('X_val' in records_dir_list)
+                    self.assertTrue('Y_val' in records_dir_list)
+                self.assertTrue('scaled_spects' in records_dir_list)
+                self.assertTrue('scaled_reshaped_spects' in records_dir_list)
+
+        # -------- test output of _learncurve.test ---------------------------------------------------------------------
+        test_dirname = os.path.join(output_config.root_results_dir, results_dir, 'test')
+        self.assertTrue(os.path.isdir(test_dirname))
+        test_dir_list = os.listdir(test_dirname)
+        self.assertTrue('test_err' in test_dir_list)
+        self.assertTrue('train_err' in test_dir_list)
+        self.assertTrue('Y_pred_test_all' in test_dir_list)
+        self.assertTrue('Y_pred_train_all' in test_dir_list)
+        self.assertTrue('y_preds_and_err_for_train_and_test' in test_dir_list)
 
         return True
 
@@ -107,13 +123,14 @@ class TestLearncurve(unittest.TestCase):
         # exact same date time but with some number of microseconds
         time_before = datetime.now().replace(microsecond=0)
         vak.cli.learncurve(train_vds_path=train_config.train_vds_path,
-                           val_vds_path=train_config.val_vds_path,
+                           test_vds_path=train_config.test_vds_path,
                            total_train_set_duration=data_config.total_train_set_dur,
                            train_set_durs=train_config.train_set_durs,
                            num_replicates=train_config.num_replicates,
                            num_epochs=train_config.num_epochs,
                            config_file=config_file,
                            networks=nets_config,
+                           val_vds_path=train_config.val_vds_path,
                            val_error_step=train_config.val_error_step,
                            checkpoint_step=train_config.checkpoint_step,
                            patience=train_config.patience,
@@ -148,13 +165,14 @@ class TestLearncurve(unittest.TestCase):
         # exact same date time but with some number of microseconds
         time_before = datetime.now().replace(microsecond=0)
         vak.cli.learncurve(train_vds_path=train_config.train_vds_path,
-                           val_vds_path=None,
+                           test_vds_path=train_config.test_vds_path,
                            total_train_set_duration=data_config.total_train_set_dur,
                            train_set_durs=train_config.train_set_durs,
                            num_replicates=train_config.num_replicates,
                            num_epochs=train_config.num_epochs,
                            config_file=config_file,
                            networks=nets_config,
+                           val_vds_path=None,
                            val_error_step=None,
                            checkpoint_step=train_config.checkpoint_step,
                            patience=train_config.patience,
@@ -168,6 +186,7 @@ class TestLearncurve(unittest.TestCase):
         self.assertTrue(self._check_learncurve_output(
             output_config, train_config, nets_config, data_config, time_before, time_after
         ))
+
 
 if __name__ == '__main__':
     unittest.main()
