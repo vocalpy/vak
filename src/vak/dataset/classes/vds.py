@@ -184,12 +184,14 @@ class VocalizationDataset:
                 'timebin_dur': timebin_dur_from_vec(spect_dict[timebins_key], n_decimals_trunc),
                 'spect': spect_dict[spect_key],
             }
-            voc.metaspect = MetaSpect(**metaspect_kwargs)
+            # avoid mutating inputs
+            voc = attr.evolve(voc, metaspect=MetaSpect(**metaspect_kwargs))
             return voc
 
         voc_db = db.from_sequence(self.voc_list)
         with ProgressBar():
             voc_list = list(voc_db.map(_load_spect))
+
         # note we don't pass self.labelmap because it will be None,
         # and we want new instance with spectrograms loaded to default to a labelmap made from labelset
         return VocalizationDataset(voc_list=voc_list, labelset=self.labelset)
