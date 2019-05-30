@@ -153,7 +153,7 @@ def learncurve(train_vds_path,
                                       normalize_spectrograms,
                                       use_train_subsets_from_previous_run,
                                       previous_run_path,
-                                      root_results_dir=root_results_dir,
+                                      output_dir=root_results_dir,
                                       save_transformed_data=save_transformed_data)
 
     # lastly rewrite config file,
