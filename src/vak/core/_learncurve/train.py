@@ -31,7 +31,8 @@ def train(train_vds_path,
           normalize_spectrograms=False,
           use_train_subsets_from_previous_run=False,
           previous_run_path=None,
-          save_transformed_data=False):
+          save_transformed_data=False,
+          measure_train_err=True):
     """train models used by vak.core.learncurve.test to generate learning curve
 
     Parameters
@@ -415,7 +416,7 @@ def train(train_vds_path,
 
                         joblib.dump(scaled_reshaped_data_dict, scaled_reshaped_data_filename)
 
-                costs = []
+                loss_history = []
                 val_errs = []
                 curr_min_err = 1  # i.e. 100%
                 err_patience_counter = 0
@@ -443,10 +444,11 @@ def train(train_vds_path,
                                         new_last_ind,
                                         num_windows - new_last_ind))
 
-                    for epoch in range(num_epochs):
+                    for epoch in range(1, num_epochs + 1):
                         # every epoch we are going to shuffle the order in which we look at every window
                         shuffle_order = np.random.permutation(num_windows)
                         shuffle_order = shuffle_order[:new_last_ind].reshape(num_batches, net_config.batch_size)
+                        total_loss = 0  # per epoch
                         pbar = tqdm(shuffle_order)
                         for batch_num, batch_inds in enumerate(pbar):
                             X_batch = []
@@ -463,59 +465,85 @@ def train(train_vds_path,
                             d = {net.X: X_batch,
                                  net.y: Y_batch,
                                  net.lng: [net_config.time_bins] * net_config.batch_size}
-                            _cost, _, summary = sess.run((net.cost,
-                                                          net.optimize,
-                                                          net.merged_summary_op),
-                                                feed_dict=d)
-                            costs.append(_cost)
+                            loss, _, summary = sess.run((net.cost, net.optimize, net.merged_summary_op), feed_dict=d)
+                            total_loss += loss
                             net.summary_writer.add_summary(summary, epoch)
                             pbar.set_description(
-                                f"epoch {epoch + 1}, batch {batch_num + 1} of {num_batches}, cost: {_cost:8.4f}"
+                                f"epoch {epoch}, batch {batch_num + 1} of {num_batches}, loss: {loss:7.3f}"
+                            )
+
+                        avg_loss = total_loss / num_batches
+                        logger.info(f"Epoch {epoch}, average loss: {avg_loss:7.3f}")
+                        loss_history.append(avg_loss)
+
+                        if measure_train_err is True:
+                            (X_tr_batch,
+                             Y_tr_batch,
+                             num_batches_tr) = utils.data.reshape_data_for_batching(X_train_subset,
+                                                                                    net_config.batch_size,
+                                                                                    net_config.time_bins,
+                                                                                    Y_train_subset[:, np.newaxis])
+                            Y_pred_tr = []
+                            for b in range(num_batches_tr):  # "b" is "batch number"
+                                X_b = X_tr_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :]
+                                d = {net.X: X_b,
+                                     net.lng: [net_config.time_bins] * net_config.batch_size}
+
+                                preds = sess.run(net.predict, feed_dict=d)
+                                preds = preds.reshape(net_config.batch_size, -1)
+                                Y_pred_tr.append(preds)
+
+                            Y_pred_tr = np.concatenate(Y_pred_tr, axis=1)
+                            # get rid of zero padding predictions
+                            Y_pred_tr = Y_pred_tr.ravel()[:Y_train_subset.shape[0]]
+                            train_err = np.sum(Y_pred_tr != Y_train_subset) / Y_train_subset.shape[0]
+                            logger.info(
+                                f"epoch {epoch}, training error: {train_err:7.3f}"
                             )
 
                         if X_val is not None:
                             if epoch % val_error_step == 0:
-                                if 'Y_pred_val' in locals():
-                                    del Y_pred_val
+                                Y_pred_val = []
 
                                 for b in range(num_batches_val):  # "b" is "batch number"
                                     X_b = X_val_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :]
-                                    Y_b = Y_val_batch[:, b * net_config.time_bins: (b + 1) * net_config.time_bins]
                                     d = {net.X: X_b,
-                                         net.y: Y_b,
                                          net.lng: [net_config.time_bins] * net_config.batch_size}
 
-                                    if 'Y_pred_val' in locals():
-                                        preds = sess.run(net.predict, feed_dict=d)
-                                        preds = preds.reshape(net_config.batch_size, -1)
-                                        Y_pred_val = np.concatenate((Y_pred_val, preds), axis=1)
-                                    else:
-                                        Y_pred_val = sess.run(net.predict, feed_dict=d)
-                                        Y_pred_val = Y_pred_val.reshape(net_config.batch_size, -1)
+                                    preds = sess.run(net.predict, feed_dict=d)
+                                    preds = preds.reshape(net_config.batch_size, -1)
+                                    Y_pred_val.append(preds)
 
+                                Y_pred_val = np.concatenate(Y_pred_val, axis=1)
                                 # get rid of zero padding predictions
                                 Y_pred_val = Y_pred_val.ravel()[:Y_val.shape[0], np.newaxis]
-                                val_errs.append(np.sum(Y_pred_val - Y_val != 0) / Y_val.shape[0])
-                                print("epoch {}, validation error: {}".format(epoch + 1, val_errs[-1]))
+                                val_errs.append(np.sum(Y_pred_val != Y_val) / Y_val.shape[0])
+                                logger.info(
+                                    f"epoch {epoch}, validation error: {val_errs[-1]:7.3f}"
+                                )
 
-                            if patience:
-                                if val_errs[-1] < curr_min_err:
-                                    # error went down, set as new min and reset counter
-                                    curr_min_err = val_errs[-1]
-                                    err_patience_counter = 0
-                                    print("Validation error improved.\n"
-                                          "Saving checkpoint to {}".format(checkpoint_path))
-                                    net.saver.save(sess, os.path.join(checkpoint_path, checkpoint_filename))
-                                else:
-                                    err_patience_counter += 1
-                                    if err_patience_counter > patience:
-                                        print("stopping because validation error has not improved in {} epochs"
-                                              .format(patience))
-                                        with open(os.path.join(training_records_path, "costs"), 'wb') as costs_file:
-                                            pickle.dump(costs, costs_file)
-                                        with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
-                                            pickle.dump(val_errs, val_errs_file)
-                                        break
+                                if patience:
+                                    if val_errs[-1] < curr_min_err:
+                                        # error went down, set as new min and reset counter
+                                        curr_min_err = val_errs[-1]
+                                        err_patience_counter = 0
+                                        logger.info("Validation error improved.\n"
+                                                    "Saving checkpoint to {}".format(checkpoint_path))
+                                        net.saver.save(sess, os.path.join(checkpoint_path, checkpoint_filename))
+                                    else:
+                                        err_patience_counter += 1
+                                        if err_patience_counter > patience:
+                                            logger.info(
+                                                "stopping because validation error has not improved "
+                                                f"after checking validation error {patience} times"
+                                                  )
+                                            with open(os.path.join(training_records_path, "loss"), 'wb') as loss_file:
+                                                pickle.dump(loss_history, loss_file)
+                                            with open(
+                                                    os.path.join(
+                                                        training_records_path, "val_errs"), 'wb') as val_errs_file:
+                                                pickle.dump(val_errs, val_errs_file)
+                                            break
 
                         if save_only_single_checkpoint_file is False:
                             checkpoint_path_tmp = os.path.join(checkpoint_path,
@@ -525,17 +553,17 @@ def train(train_vds_path,
 
                         if checkpoint_step:
                             if epoch % checkpoint_step == 0:
-                                "Saving checkpoint."
+                                logger.info("Saving checkpoint.")
                                 net.saver.save(sess, checkpoint_path_tmp)
                                 with open(os.path.join(training_records_path, "val_errs"), 'wb') as val_errs_file:
                                     pickle.dump(val_errs, val_errs_file)
 
                         if epoch == (num_epochs-1):  # if this is the last epoch
-                            "Reached max. number of epochs, saving checkpoint."
+                            logger.info("Reached max. number of epochs, saving checkpoint.")
                             net.saver.save(sess, checkpoint_path_tmp)
-                            with open(os.path.join(results_dirname_this_net, "costs"),
-                                      'wb') as costs_file:
-                                pickle.dump(costs, costs_file)
+                            with open(os.path.join(results_dirname_this_net, "loss"),
+                                      'wb') as loss_file:
+                                pickle.dump(loss_history, loss_file)
                             with open(os.path.join(results_dirname_this_net, "val_errs"),
                                       'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
