@@ -264,16 +264,18 @@ def test(results_dirname,
                     data_file = data_file[0]
 
                 # reshape data for batching using net_config #
+                # Notice we don't reshape Y_train
                 (X_train_subset,
-                 Y_train_subset,
+                 _,
                  num_batches_train) = utils.data.reshape_data_for_batching(
                     X_train_subset,
                     net_config.batch_size,
                     net_config.time_bins,
                     Y_train_subset)
 
+                # Notice we don't reshape Y_test
                 (X_test,
-                 Y_test,
+                 _,
                  num_batches_test) = utils.data.reshape_data_for_batching(
                     X_test,
                     net_config.batch_size,
@@ -318,14 +320,11 @@ def test(results_dirname,
                             Y_pred_train = sess.run(net.predict, feed_dict=d)
                             Y_pred_train = Y_pred_train.reshape(net_config.batch_size, -1)
 
-                    Y_train_subset = Y_train[train_inds]  # get back "unreshaped" Y_train_subset
                     # get rid of predictions to zero padding that don't matter
-                    Y_pred_train = Y_pred_train.ravel()[:Y_train_subset.shape[0],
-                                   np.newaxis]
-                    train_err = np.sum(Y_pred_train - Y_train_subset != 0) / \
-                                Y_train_subset.shape[0]
+                    Y_pred_train = Y_pred_train.ravel()[:Y_train_subset.shape[0], np.newaxis]
+                    train_err = np.sum(Y_pred_train != Y_train_subset) / Y_train_subset.shape[0]
                     train_err_arr[dur_ind, rep_ind] = train_err
-                    print('train error was {}'.format(train_err))
+                    logger.info('train error was {}'.format(train_err))
                     Y_pred_train_this_dur.append(Y_pred_train)
 
                     Y_train_subset_labels = utils.data.convert_timebins_to_labels(Y_train_subset,
@@ -348,12 +347,12 @@ def test(results_dirname,
                     train_lev = metrics.levenshtein(Y_pred_train_labels,
                                                     Y_train_subset_labels)
                     train_lev_arr[dur_ind, rep_ind] = train_lev
-                    print('Levenshtein distance for train set was {}'.format(
+                    logger.info('Levenshtein distance for train set was {}'.format(
                         train_lev))
                     train_syl_err_rate = metrics.syllable_error_rate(Y_train_subset_labels,
                                                                      Y_pred_train_labels)
                     train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
-                    print('Syllable error rate for train set was {}'.format(
+                    logger.info('Syllable error rate for train set was {}'.format(
                         train_syl_err_rate))
 
                     if 'Y_pred_test' in locals():
@@ -375,12 +374,10 @@ def test(results_dirname,
                             Y_pred_test = Y_pred_test.reshape(net_config.batch_size, -1)
 
                     # again get rid of zero padding predictions
-                    Y_pred_test = Y_pred_test.ravel()[:Y_test.shape[0],
-                                  np.newaxis]
-                    test_err = np.sum(Y_pred_test - Y_test != 0) / \
-                               Y_test.shape[0]
+                    Y_pred_test = Y_pred_test.ravel()[:Y_test.shape[0], np.newaxis]
+                    test_err = np.sum(Y_pred_test != Y_test) / Y_test.shape[0]
                     test_err_arr[dur_ind, rep_ind] = test_err
-                    print('test error was {}'.format(test_err))
+                    logger.info('test error was {}'.format(test_err))
                     Y_pred_test_this_dur.append(Y_pred_test)
 
                     Y_pred_test_labels = utils.data.convert_timebins_to_labels(Y_pred_test,
