@@ -19,6 +19,7 @@ output_config = vak.config.parse.parse_output_config(config_obj)
 
 vak.cli.learncurve(train_vds_path=train_config.train_vds_path,
                    val_vds_path=train_config.val_vds_path,
+                   test_vds_path=train_config.test_vds_path,
                    total_train_set_duration=data_config.total_train_set_dur,
                    train_set_durs=train_config.train_set_durs,
                    num_replicates=train_config.num_replicates,
