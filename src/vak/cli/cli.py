@@ -107,6 +107,7 @@ def cli(command, config_file):
                              "before running 'learncurve'")
         learncurve(train_vds_path=train_config.train_vds_path,
                    val_vds_path=train_config.val_vds_path,
+                   test_vds_path=train_config.test_vds_path,
                    total_train_set_duration=data_config.total_train_set_dur,
                    train_set_durs=train_config.train_set_durs,
                    num_replicates=train_config.num_replicates,
