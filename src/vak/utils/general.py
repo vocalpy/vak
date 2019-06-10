@@ -29,7 +29,9 @@ def _files_from_dir(dir_path, ext):
     used by vak.dataset.audio.files_from_dir and vak.dataset.annot.files_from_dir
     """
     wildcard_with_extension = f'*.{ext}'
-    files = glob(os.path.join(dir_path, wildcard_with_extension))
+    files = sorted(
+        glob(os.path.join(dir_path, wildcard_with_extension))
+    )
     if len(files) == 0:
         # if we don't any files with extension, look in sub-directories
         files = []
