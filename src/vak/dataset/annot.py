@@ -20,3 +20,49 @@ def files_from_dir(annot_dir, annot_format):
     annot_files = _files_from_dir(annot_dir, ext)
     return annot_files
 
+
+def source_annot_map(source_files, annot_list):
+    """map annotations to their source files, i.e. audio or spectrogram files
+
+    Parameters
+    ----------
+    source_files : list
+        of audio or spectrogram files. The names of the files must match the
+        file attribute of the annotations. E.g., if an audio file is
+        'bird0-2016-05-04-133027.wav', then there must be an annotation whose
+        file attribute equals that filename. Spectrogram files should include
+        the audio file name, e.g. 'bird0-2016-05-04-133027.wav.mat' or
+        'bird0-2016-05-04-133027.spect.npz'
+    annot_list : list
+        of Annotations corresponding to files in source_files
+    """
+    # pair audio files with annotations, make list of tuples
+    source_annot_map = []
+    for annot in annot_list:
+        source_file_ind = [ind for ind, source_file in enumerate(source_files)
+                          if annot.file in source_file]
+        if len(source_file_ind) > 1:
+            more_than_one = [source_files[ind] for ind in source_file_ind]
+            raise ValueError(
+                "Found more than one source file that matches an annotation."
+                f"\nSource files are: {more_than_one}."
+                f"\nAnnotation has file set to '{annot.file}' and is: {annot}"
+            )
+        elif len(source_file_ind) == 0:
+            raise ValueError(
+                'Did not find a source file matching the following annotation: '
+                f'\n{annot}'
+            )
+        else:
+            source_file_ind = source_file_ind[0]
+            source_annot_map.append(
+                (source_files.pop(source_file_ind), annot)
+            )
+
+    if len(source_files) > 0:
+        raise ValueError(
+            'could not map the following source files to annotations: '
+            f'{audio_files}'
+        )
+
+    return dict(source_annot_map)
