@@ -5,6 +5,7 @@ import numpy as np
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
+from .annot import source_annot_map
 from ..config import validators
 from ..config.spectrogram import SpectConfig
 from ..utils.general import _files_from_dir
@@ -48,7 +49,7 @@ def to_spect(audio_format,
              freqbins_key='f',
              timebins_key='t',
              spect_key='s'):
-    """makes spectrograms from audio files and save in array files
+    """makes spectrograms from audio files and saves in array files
 
     Parameters
     ----------
@@ -131,7 +132,7 @@ def to_spect(audio_format,
         spect_params = spect_params._asdict()
 
     # validate audio files if supplied by user
-    if audio_files is not None:
+    if audio_files:
         # make sure audio files are all the same type, and the same as audio format specified
         exts = []
         for audio_file in audio_files:
@@ -150,60 +151,57 @@ def to_spect(audio_format,
                     f"audio format. '{audio_format}', does not match extensions in audio_files, '{ext_str}''"
                 )
 
-    # otherwise get audio files using audio dir (won't need to validate)
-    if audio_dir is not None:
+        if annot_list:  # make map we can validate below
+            audio_annot_map = source_annot_map(audio_files, annot_list)
+
+    # otherwise get audio files using audio dir (won't need to validate audio files)
+    if audio_dir:
         audio_files = files_from_dir(audio_dir, audio_format)
-
-    if audio_annot_map is None:
-        # annot_list can be None when creating spectrograms from
-        # unlabeled audio for predicting labels
-        if annot_list is None:
-            # this makes a list of None to pair with audio files so function still works
-            # e.g. when we're making spectrograms without annotations so we can use spectrograms
-            # to predict what the annotations are
-            annot_list = [None for _ in range(len(audio_files))]
-
-        audio_annot_map = dict(
-            (audio_file, annot) for audio_file, annot in zip(audio_files, annot_list)
-        )
+        if annot_list:
+            audio_annot_map = source_annot_map(audio_files, annot_list)
 
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
+    logger.info('creating array files with spectrograms')
+
+    # use mapping (if generated/supplied) with labelset, if supplied, to filter
+    if audio_annot_map:
+        if labelset:  # then remove annotations with labels not in labelset
+            # note we do this here so it happens regardless of whether
+            # user supplied audio_annot_map *or* we constructed it above
+            for audio_file, annot in list(audio_annot_map.items()):
+                # loop in a verbose way (i.e. not a comprehension)
+                # so we can give user warning when we skip files
+                annot_labelset = set(annot.labels)
+                # below, set(labels_mapping) is a set of that dict's keys
+                if not annot_labelset.issubset(set(labelset)):
+                    # because there's some label in labels that's not in labelset
+                    audio_annot_map.pop(audio_file)
+                    logger.info(
+                        f'found labels in {annot.file} not in labels_mapping, '
+                        f'skipping audio file: {audio_file}'
+                    )
+        audio_files = sorted(list(audio_annot_map.keys()))
 
     # this is defined here so all other arguments to 'to_spect' are in scope
-    def _array_file_from_audio_annot_tup(audio_annot_tup):
-        """helper function that enables parallelized creation of array files containing spectrograms.
-        Accepts a tuple with the path to an audio file and annotations,
-        and returns a Vocalization object."""
-        (audio_file, annot) = audio_annot_tup  # tuple unpacking
-        basename = os.path.basename(audio_file)
-
-        if labelset:
-            annot_labelset = set(annot.labels)
-            # below, set(labels_mapping) is a set of that dict's keys
-            if not annot_labelset.issubset(set(labelset)):
-                # because there's some label in labels that's not in labelset
-                logger.info(
-                    f'found labels in {basename} not in labels_mapping, skipping file'
-                )
-                return
-
+    def _spect_file(audio_file):
+        """helper function that enables parallelized creation of array
+        files containing spectrograms.
+        Accepts path to audio file, saves .npz file with spectrogram"""
         fs, dat = AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
-
         s, f, t = spectrogram(dat, fs, **spect_params)
-
         spect_dict = {spect_key: s,
                       freqbins_key: f,
                       timebins_key: t}
-
+        basename = os.path.basename(audio_file)
         npz_fname = os.path.join(os.path.normpath(output_dir),
                                  basename + '.spect.npz')
         np.savez(npz_fname, **spect_dict)
         return npz_fname
 
-    bag = db.from_sequence(audio_annot_map.items())
-    logger.info('creating array files with spectrograms')
+    bag = db.from_sequence(audio_files)
     with ProgressBar():
-        spect_files = list(bag.map(_array_file_from_audio_annot_tup))
-
+        spect_files = list(bag.map(_spect_file))
+    # sort because ordering from Dask not guaranteed
+    spect_files = sorted(spect_files)
     return spect_files
