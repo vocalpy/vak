@@ -25,16 +25,18 @@ def files_from_dir(annot_dir, annot_format):
 
 
 def _recursive_stem(path_str):
-    stem = Path(path_str).stem
-    while True:
-        # keep stemming until we can't stem anymore
-        # e.g. until' 0.wav.spect.npz' becomes '0'
-        stem_path = Path(stem)
-        stem_path_stem = stem_path.stem
-        if stem_path_stem == stem:
-            break
+    name = Path(path_str).name
+    stem, ext = os.path.splitext(name)
+    ext = ext.replace('.', '')
+    while ext not in validators.VALID_AUDIO_FORMATS:
+        new_stem, ext = os.path.splitext(stem)
+        ext = ext.replace('.', '')
+        if new_stem == stem:
+            raise ValueError(
+                f'unable to compute stem of {path_str}'
+            )
         else:
-            stem = stem_path_stem
+            stem = new_stem
     return stem
 
 
