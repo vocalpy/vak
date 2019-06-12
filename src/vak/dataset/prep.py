@@ -136,6 +136,24 @@ def prep(data_dir,
         else:
             scribe = Transcriber(voc_format=annot_format)
             annot_list = scribe.to_seq(file=annot_file)
+
+        # do this here instead of asking to_spect / from_file functions to do it
+        # so we know we're using the same annot_list for both functions
+        if labelset:  # then remove annotations with labels not in labelset
+            for ind, annot in enumerate(annot_list[:]):  # [:] to iterate over a copy
+                # loop in a verbose way (i.e. not list comprehension)
+                # so we can give user warning when we skip files
+                annot_labelset = set(annot.labels)
+                # below, set(labels_mapping) is a set of that dict's keys
+                if not annot_labelset.issubset(set(labelset)):
+                    # because there's some label in labels that's not in labelset
+                    annot_list.pop(ind)
+                    logger.info(
+                        f'found labels in {basename} not in labels_mapping, skipping file'
+                    )
+                    return
+
+
     else:
         annot_list = None
 
