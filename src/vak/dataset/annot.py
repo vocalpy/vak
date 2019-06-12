@@ -1,3 +1,5 @@
+import os
+
 import crowsetta
 
 from ..config import validators
@@ -36,13 +38,24 @@ def source_annot_map(source_files, annot_list):
     annot_list : list
         of Annotations corresponding to files in source_files
     """
-    # pair audio files with annotations, make list of tuples
-    source_annot_map = []
+    # to pair audio files with annotations, make list of tuples
+    source_annot_map = []  # that we convert a dict before returning
+    # we copy source files so we can pop items off
+    # and validate that function worked by making sure there are no items
+    # left in this list after the loop
+    source_files_cp = source_files.copy()
     for annot in annot_list:
-        source_file_ind = [ind for ind, source_file in enumerate(source_files)
-                          if annot.file in source_file]
+        # remove stem so we can find .spect files that match with audio files,
+        # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
+        # with 'llb3_0003_2018_04_23_14_18_54.wav'
+        annot_file_stem, _ = os.path.splitext(annot.file)
+        if annot_file_stem.endswith('.spect'):  # e.g., bird1_20170409.spect.npz
+            annot_file_stem, _ = os.path.splitext(annot.file)
+
+        source_file_ind = [ind for ind, source_file in enumerate(source_files_cp)
+                          if annot_file_stem in source_file]
         if len(source_file_ind) > 1:
-            more_than_one = [source_files[ind] for ind in source_file_ind]
+            more_than_one = [source_files_cp[ind] for ind in source_file_ind]
             raise ValueError(
                 "Found more than one source file that matches an annotation."
                 f"\nSource files are: {more_than_one}."
@@ -50,16 +63,16 @@ def source_annot_map(source_files, annot_list):
             )
         elif len(source_file_ind) == 0:
             raise ValueError(
-                'Did not find a source file matching the following annotation: '
-                f'\n{annot}'
+                "Did not find a source file matching the following annotation: "
+                f"\n{annot}. Annotation has file set to '{annot.file}'."
             )
         else:
             source_file_ind = source_file_ind[0]
             source_annot_map.append(
-                (source_files.pop(source_file_ind), annot)
+                (source_files_cp.pop(source_file_ind), annot)
             )
 
-    if len(source_files) > 0:
+    if len(source_files_cp) > 0:
         raise ValueError(
             'could not map the following source files to annotations: '
             f'{audio_files}'
