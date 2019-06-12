@@ -137,7 +137,7 @@ def from_files(spect_format,
                 # that's not in labels_mapping
                 logger.info(
                     f'Found labels, {extra_labels}, in {spect_file}, '
-                    'that are not in labels_mapping.Skipping file.'
+                    'that are not in labels_mapping. Skipping file.'
                 )
                 spect_annot_map.pop(spect_path)
                 continue
