@@ -6,6 +6,7 @@ from datetime import datetime
 from crowsetta import Transcriber
 
 from . import annotation, audio, spect
+from .annotation import source_annot_map
 
 
 def prep(data_dir,
@@ -130,7 +131,6 @@ def prep(data_dir,
 
     if annot_format is not None:
         if annot_file is None:
-
             annot_files = annotation.files_from_dir(annot_dir=data_dir,
                                                     annot_format=annot_format)
             scribe = Transcriber(voc_format=annot_format)
@@ -138,23 +138,6 @@ def prep(data_dir,
         else:
             scribe = Transcriber(voc_format=annot_format)
             annot_list = scribe.to_seq(file=annot_file)
-
-        # do this here instead of asking to_spect / from_file functions to do it
-        # so we know we're using the same annot_list for both functions
-        if labelset:  # then remove annotations with labels not in labelset
-            for ind, annot in enumerate(annot_list[:]):  # [:] to iterate over a copy
-                # loop in a verbose way (i.e. not list comprehension)
-                # so we can give user warning when we skip files
-                annot_labelset = set(annot.labels)
-                # below, set(labels_mapping) is a set of that dict's keys
-                if not annot_labelset.issubset(set(labelset)):
-                    # because there's some label in labels that's not in labelset
-                    annot_list.pop(ind)
-                    logger.info(
-                        f'found labels in {Path(annot).name} not in '
-                        'labels_mapping, skipping file'
-                    )
-                    return
     else:  # if annot_format not specified
         annot_list = None
 
@@ -164,9 +147,34 @@ def prep(data_dir,
             f'making array files containing spectrograms from audio files in: {data_dir}'
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
+        if annot_list:
+            audio_annot_map = source_annot_map(audio_files, annot_list)
+            if labelset:  # then remove annotations with labels not in labelset
+                # do this here instead of inside function call so that items get removed
+                # from annot_list here and won't cause an error because they're still
+                # in this list when we call spect.from_files
+                for audio_file, annot in list(audio_annot_map.items()):
+                    # loop in a verbose way (i.e. not a comprehension)
+                    # so we can give user warning when we skip files
+                    annot_labelset = set(annot.labels)
+                    # below, set(labels_mapping) is a set of that dict's keys
+                    if not annot_labelset.issubset(set(labelset)):
+                        # because there's some label in labels that's not in labelset
+                        audio_annot_map.pop(audio_file)
+                        logger.info(
+                            f'found labels in {annot.file} not in labels_mapping, '
+                            f'skipping audio file: {audio_file}'
+                        )
+                audio_files = []
+                annot_list = []
+                for k,v in audio_annot_map.items():
+                    audio_files.append(k)
+                    annot_list.append(v)
+
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
         if spect_output_dir is None:
-            spect_output_dir = os.path.join(output_dir, f'spectograms_generated_{timenow}')
+            spect_output_dir = os.path.join(output_dir,
+                                            f'spectograms_generated_{timenow}')
             os.makedirs(spect_output_dir)
         spect_files = audio.to_spect(audio_format=audio_format,
                                      spect_params=spect_params,
@@ -175,7 +183,7 @@ def prep(data_dir,
                                      annot_list=annot_list,
                                      labelset=labelset)
         spect_format = 'npz'
-    else:
+    else:  # if audio format is None
         spect_files = None
 
     from_files_kwargs = {
@@ -197,7 +205,6 @@ def prep(data_dir,
         )
 
     vds = spect.from_files(**from_files_kwargs)
-
     if save_vds:
         if vds_fname is None:
             timenow = datetime.now().strftime('%y%m%d_%H%M%S')
