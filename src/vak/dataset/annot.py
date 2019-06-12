@@ -24,6 +24,20 @@ def files_from_dir(annot_dir, annot_format):
     return annot_files
 
 
+def _recursive_stem(path_str):
+    stem = Path(path_str).stem
+    while True:
+        # keep stemming until we can't stem anymore
+        # e.g. until' 0.wav.spect.npz' becomes '0'
+        stem_path = Path(stem)
+        stem_path_stem = stem_path.stem
+        if stem_path_stem == stem:
+            break
+        else:
+            stem = stem_path_stem
+    return stem
+
+
 def source_annot_map(source_files, annot_list):
     """map annotations to their source files, i.e. audio or spectrogram files
 
@@ -46,15 +60,13 @@ def source_annot_map(source_files, annot_list):
     # We pop to validate that function worked, by making sure there are
     # no items left in this list after the loop
     source_files_stem = source_files.copy()
-    source_files_stem = [Path(sf).stem for sf in source_files_stem]
+    source_files_stem = [_recursive_stem(sf) for sf in source_files_stem]
     source_file_inds = list(range(len(source_files)))
     for annot in annot_list:
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
-        annot_file_stem = Path(annot.file).stem
-        if annot_file_stem.endswith('.spect'):  # e.g., bird1_20170409.spect.npz
-            annot_file_stem = Path(annot.file).stem
+        annot_file_stem = _recursive_stem(annot.file)
 
         ind_in_stem = [ind
                        for ind, source_file_stem in enumerate(source_files_stem)
