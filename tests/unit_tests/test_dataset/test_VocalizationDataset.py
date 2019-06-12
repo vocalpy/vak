@@ -8,7 +8,7 @@ from scipy.io import loadmat
 import crowsetta
 
 import vak.dataset.spect
-import vak.dataset.annot
+import vak.dataset.annotation
 from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
 
 
@@ -43,8 +43,8 @@ class TestVocalizationDataset(unittest.TestCase):
         self.audio_dir_cbin = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         self.audio_files_cbin = glob(os.path.join(self.audio_dir_cbin, '*.cbin'))
 
-        self.annot_files_cbin = vak.dataset.annot.files_from_dir(annot_dir=self.audio_dir_cbin,
-                                                            annot_format='notmat')
+        self.annot_files_cbin = vak.dataset.annotation.files_from_dir(annot_dir=self.audio_dir_cbin,
+                                                                      annot_format='notmat')
         scribe_cbin = crowsetta.Transcriber(voc_format='notmat')
         self.annot_list_cbin = scribe_cbin.to_seq(file=self.annot_files_cbin)
 

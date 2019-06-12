@@ -4,7 +4,7 @@ from datetime import datetime
 
 from crowsetta import Transcriber
 
-from . import annot, spect, audio
+from . import annotation, audio, spect
 
 
 def prep(data_dir,
@@ -129,8 +129,9 @@ def prep(data_dir,
 
     if annot_format is not None:
         if annot_file is None:
-            annot_files = annot.files_from_dir(annot_dir=data_dir,
-                                               annot_format=annot_format)
+
+            annot_files = annotation.files_from_dir(annot_dir=data_dir,
+                                                    annot_format=annot_format)
             scribe = Transcriber(voc_format=annot_format)
             annot_list = scribe.to_seq(file=annot_files)
         else:
@@ -152,9 +153,7 @@ def prep(data_dir,
                         f'found labels in {basename} not in labels_mapping, skipping file'
                     )
                     return
-
-
-    else:
+    else:  # if annot_format not specified
         annot_list = None
 
     # ------ if making dataset from audio files, need to make into array files first! ----------------------------

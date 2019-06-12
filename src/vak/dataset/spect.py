@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from .annot import source_annot_map
+from .annotation import source_annot_map
 from .classes import MetaSpect, Vocalization, VocalizationDataset
 from ..config import validators
 from ..utils.general import timebin_dur_from_vec
