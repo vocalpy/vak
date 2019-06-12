@@ -7,6 +7,7 @@ from scipy.io import loadmat
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
+from .annot import source_annot_map
 from .classes import MetaSpect, Vocalization, VocalizationDataset
 from ..config import validators
 from ..utils.general import timebin_dur_from_vec
@@ -107,36 +108,25 @@ def from_files(spect_format,
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
-    if spect_dir:
+    if spect_dir:  # then get spect_files from that dir
         if spect_format == 'mat':
             spect_files = glob(os.path.join(spect_dir, '*.mat'))
         elif spect_format == 'npz':
             spect_files = glob(os.path.join(spect_dir, '*.npz'))
 
-    if spect_files:
-        if annot_list is None:
-            # this makes a list of None to pair with spectrogram files
-            annot_list = [None for _ in range(len(spect_files))]
+    if spect_files:  # (or if we just got them from spect_dir)
+        if annot_list:
+            spect_annot_map = source_annot_map(spect_files, annot_list)
+        else:
+            # map spectrogram files to None
+            spect_annot_map = dict((spect_path, None)
+                                   for spect_path in spect_files)
 
-        spect_annot_map = dict((spect_path, annot) for spect_path, annot in zip(spect_files, annot_list))
-
-    # this is defined here so all other arguments to 'from_arr_files' are in scope
-    def _voc_from_spect_path_annot_tup(spect_path_annot_tup):
-        """helper function that enables parallelized creation of list of Vocalizations.
-        Accepts a tuple with the path to an spectrogram file and annotations,
-        and returns a Vocalization object."""
-        (spect_path, annot) = spect_path_annot_tup
+    # lastly need to validate spect_annot_map
+    # regardless of whether we just made it or user supplied it
+    for spect_path, annot in spect_annot_map.items():
+        # get just file name so error messages don't have giant path
         spect_file = os.path.basename(spect_path)
-        if spect_format == 'mat':
-            spect_dict = loadmat(spect_path, squeeze_me=True)
-        elif spect_format == 'npz':
-            spect_dict = np.load(spect_path)
-
-        if spect_key not in spect_dict:
-            logger.info(
-                f'Did not find a spectrogram in file: {spect_file}.\nSkipping this file.\n'
-            )
-            return
 
         if labelset:
             labels_set = set(annot.labels)
@@ -146,10 +136,22 @@ def from_files(spect_format,
                 # because there's some label in labels
                 # that's not in labels_mapping
                 logger.info(
-                    f'Found labels, {extra_labels}, in {spect_file}, that are not in labels_mapping. '
-                    'Skipping file.'
+                    f'Found labels, {extra_labels}, in {spect_file}, '
+                    'that are not in labels_mapping.Skipping file.'
                 )
-                return
+                spect_annot_map.pop(spect_path)
+                continue
+
+        if spect_format == 'mat':
+            spect_dict = loadmat(spect_path, squeeze_me=True)
+        elif spect_format == 'npz':
+            spect_dict = np.load(spect_path)
+
+        if spect_key not in spect_dict:
+            raise KeyError(
+                f"Did not find a spectrogram in file '{spect_file}' "
+                f"using spect_key '{spect_key}'."
+            )
 
         if 'freq_bins' not in locals() and 'time_bins' not in locals():
             freq_bins = spect_dict[freqbins_key]
@@ -158,25 +160,40 @@ def from_files(spect_format,
         else:
             if not np.array_equal(spect_dict[freqbins_key], freq_bins):
                 raise ValueError(
-                    f'freq_bins in {arr_file} does not freq_bins from other array files'
+                    f'freq_bins in {spect_file} does not match '
+                    'freq_bins from other spectrogram files'
                 )
-            curr_file_timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
+            curr_file_timebin_dur = timebin_dur_from_vec(time_bins,
+                                                         n_decimals_trunc)
             if not np.allclose(curr_file_timebin_dur, timebin_dur):
                 raise ValueError(
-                    f'duration of timebin in file {spect_file} did not match duration of '
-                    'timebin from other array files.'
+                    f'duration of timebin in file {spect_file} did not match '
+                    'duration of timebin from other array files.'
                 )
 
         # number of freq. bins should equal number of rows
         if spect_dict[freqbins_key].shape[-1] != spect_dict[spect_key].shape[0]:
             raise ValueError(
-                f'length of frequency bins in {spect_file} does not match number of rows in spectrogram'
+                f'length of frequency bins in {spect_file} '
+                'does not match number of rows in spectrogram'
             )
         # number of time bins should equal number of columns
         if spect_dict[timebins_key].shape[-1] != spect_dict[spect_key].shape[1]:
             raise ValueError(
-                f'length of time_bins in {spect_file} does not match number of columns in spectrogram'
+                f'length of time_bins in {spect_file} '
+                f'does not match number of columns in spectrogram'
             )
+
+    # this is defined here so all other arguments to 'from_arr_files' are in scope
+    def _voc_from_spect_path_annot_tup(spect_path_annot_tup):
+        """helper function that enables parallelized creation of list of Vocalizations.
+        Accepts a tuple with the path to an spectrogram file and annotations,
+        and returns a Vocalization object."""
+        (spect_path, annot) = spect_path_annot_tup
+        if spect_format == 'mat':
+            spect_dict = loadmat(spect_path, squeeze_me=True)
+        elif spect_format == 'npz':
+            spect_dict = np.load(spect_path)
 
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
 
@@ -206,5 +223,4 @@ def from_files(spect_format,
     logger.info('creating VocalizationDataset')
     with ProgressBar():
         voc_list = list(spect_path_annot_tups.map(_voc_from_spect_path_annot_tup))
-
     return VocalizationDataset(voc_list=voc_list, labelset=labelset)
