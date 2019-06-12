@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import crowsetta
 
@@ -40,39 +41,47 @@ def source_annot_map(source_files, annot_list):
     """
     # to pair audio files with annotations, make list of tuples
     source_annot_map = []  # that we convert a dict before returning
-    # we copy source files so we can pop items off
-    # and validate that function worked by making sure there are no items
-    # left in this list after the loop
-    source_files_cp = source_files.copy()
+    # we copy source files so we can convert to stem, and so we can
+    # pop items off copy without losing original list.
+    # We pop to validate that function worked, by making sure there are
+    # no items left in this list after the loop
+    source_files_stem = source_files.copy()
+    source_files_stem = [Path(sf).stem for sf in source_files_stem]
+    source_file_inds = list(range(len(source_files)))
     for annot in annot_list:
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
-        annot_file_stem, _ = os.path.splitext(annot.file)
+        annot_file_stem = Path(annot.file).stem
         if annot_file_stem.endswith('.spect'):  # e.g., bird1_20170409.spect.npz
-            annot_file_stem, _ = os.path.splitext(annot.file)
+            annot_file_stem = Path(annot.file).stem
 
-        source_file_ind = [ind for ind, source_file in enumerate(source_files_cp)
-                          if annot_file_stem in source_file]
-        if len(source_file_ind) > 1:
-            more_than_one = [source_files_cp[ind] for ind in source_file_ind]
+        ind_in_stem = [ind
+                       for ind, source_file_stem in enumerate(source_files_stem)
+                       if annot_file_stem == source_file_stem]
+        if len(ind_in_stem) > 1:
+            more_than_one = [source_file_inds[ind] for ind in ind_in_stem]
+            more_than_one = [source_files[ind] for ind in more_than_one]
             raise ValueError(
                 "Found more than one source file that matches an annotation."
                 f"\nSource files are: {more_than_one}."
                 f"\nAnnotation has file set to '{annot.file}' and is: {annot}"
             )
-        elif len(source_file_ind) == 0:
+        elif len(ind_in_stem) == 0:
             raise ValueError(
                 "Did not find a source file matching the following annotation: "
                 f"\n{annot}. Annotation has file set to '{annot.file}'."
             )
         else:
-            source_file_ind = source_file_ind[0]
+            ind_in_stem = ind_in_stem[0]
+            ind = source_file_inds[ind_in_stem]
             source_annot_map.append(
-                (source_files_cp.pop(source_file_ind), annot)
+                (source_files[ind], annot)
             )
+            source_files_stem.pop(ind_in_stem)
+            source_file_inds.pop(ind_in_stem)
 
-    if len(source_files_cp) > 0:
+    if len(source_files_stem) > 0:
         raise ValueError(
             'could not map the following source files to annotations: '
             f'{audio_files}'
