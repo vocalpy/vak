@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import unittest
 from glob import glob
 
@@ -9,24 +10,20 @@ import vak.dataset.spect
 from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
 
 
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE,
-                             '..',
-                             '..',
-                             'test_data')
-SETUP_SCRIPTS_DIR = os.path.join(HERE,
-                                 '..',
-                                 '..',
-                                 'setup_scripts')
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
 class TestSpect(unittest.TestCase):
     def setUp(self):
-        self.spect_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
-        self.spect_files = glob(os.path.join(self.spect_dir, '*.mat'))
+        self.spect_dir = TEST_DATA_DIR.joinpath('mat', 'llb3', 'spect')
+        self.spect_files = self.spect_dir.glob('*.mat')
+        self.spect_files = sorted([str(path) for path in self.spect_files])
         self.spect_format = 'mat'
 
-        self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
+        self.annot_mat = TEST_DATA_DIR.joinpath('mat', 'llb3', 'llb3_annot_subset.mat')
+        self.annot_mat = str(self.annot_mat)
         self.scribe = crowsetta.Transcriber(voc_format='yarden')
         self.annot_list = self.scribe.to_seq(self.annot_mat)
         self.labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
@@ -45,11 +42,14 @@ class TestSpect(unittest.TestCase):
             all([hasattr(voc, 'metaspect') for voc in vocal_dataset.voc_list])
         )
 
-        spect_files_from_test_data = [os.path.basename(spect_path) for spect_path in self.spect_files]
+        spect_files_from_test_data = [os.path.basename(spect_path)
+                                      for spect_path in self.spect_files]
         spect_files_from_vds = [os.path.basename(voc.spect_path)
                                 for voc in vocal_dataset.voc_list]
+
         self.assertTrue(
-            all([spect_file in spect_files_from_test_data for spect_file in spect_files_from_vds])
+            all([spect_file in spect_files_from_test_data
+                 for spect_file in spect_files_from_vds])
         )
 
         if load_spects:
