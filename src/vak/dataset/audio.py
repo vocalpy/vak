@@ -5,7 +5,7 @@ import numpy as np
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from .annot import source_annot_map
+from .annotation import source_annot_map
 from ..config import validators
 from ..config.spectrogram import SpectConfig
 from ..utils.general import _files_from_dir

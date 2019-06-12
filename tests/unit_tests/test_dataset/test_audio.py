@@ -8,7 +8,7 @@ import shutil
 import numpy as np
 import crowsetta
 
-from vak.dataset.annot import files_from_dir
+from vak.dataset.annotation import files_from_dir
 import vak.dataset.audio
 
 

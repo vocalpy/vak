@@ -8,10 +8,10 @@ import crowsetta
 from scipy.io import loadmat
 
 import vak.dataset.spect
-import vak.dataset.annot
+import vak.dataset.annotation
 import vak.dataset.split
 from vak.evfuncs import load_cbin
-from vak.dataset.annot import files_from_dir
+from vak.dataset.annotation import files_from_dir
 from vak.utils.general import timebin_dur_from_vec
 from vak.dataset.classes import VocalizationDataset
 from vak.dataset.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
