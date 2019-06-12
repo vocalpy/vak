@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import logging
 from datetime import datetime
 
@@ -150,7 +151,8 @@ def prep(data_dir,
                     # because there's some label in labels that's not in labelset
                     annot_list.pop(ind)
                     logger.info(
-                        f'found labels in {basename} not in labels_mapping, skipping file'
+                        f'found labels in {Path(annot).name} not in '
+                        'labels_mapping, skipping file'
                     )
                     return
     else:  # if annot_format not specified
