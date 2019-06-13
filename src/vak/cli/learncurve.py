@@ -117,11 +117,10 @@ def learncurve(train_vds_path,
 
     # need to set up a results dir so we have some place to put the log file
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+    results_dirname = f'learning_curve.{timenow}'
     if root_results_dir:
         results_dirname = os.path.join(root_results_dir,
-                                       'results_' + timenow)
-    else:
-        results_dirname = os.path.join('.', 'results_' + timenow)
+                                       results_dirname)
     os.makedirs(results_dirname)
     shutil.copy(config_file, results_dirname)
 
@@ -153,7 +152,7 @@ def learncurve(train_vds_path,
                                       normalize_spectrograms,
                                       use_train_subsets_from_previous_run,
                                       previous_run_path,
-                                      output_dir=root_results_dir,
+                                      output_dir=results_dirname,
                                       save_transformed_data=save_transformed_data)
 
     # lastly rewrite config file,
