@@ -13,7 +13,7 @@ TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
 
 class TestGeneral(unittest.TestCase):
     def setUp(self):
-        self.mat_spect_path = os.path.join(TEST_DATA_DIR, 'mat', 'llb11', 'spect')
+        self.mat_spect_path = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
         self.cbin_path = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
 
     def test_files_from_dir(self):
