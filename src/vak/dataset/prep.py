@@ -174,7 +174,7 @@ def prep(data_dir,
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
         if spect_output_dir is None:
             spect_output_dir = os.path.join(output_dir,
-                                            f'spectograms_generated_{timenow}')
+                                            f'spectrograms_generated_{timenow}')
             os.makedirs(spect_output_dir)
         spect_files = audio.to_spect(audio_format=audio_format,
                                      spect_params=spect_params,
