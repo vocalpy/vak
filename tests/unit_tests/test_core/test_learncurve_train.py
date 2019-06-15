@@ -9,6 +9,7 @@ from configparser import ConfigParser
 
 import vak.core._learncurve.train
 import vak.config
+from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
@@ -90,7 +91,8 @@ class TestLearncurveTrain(unittest.TestCase):
         output_config = vak.config.parse_output_config(config_obj)
 
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        results_dirname = os.path.join(output_config.root_results_dir, f'learncurve{timenow}')
+        results_dirname = os.path.join(output_config.root_results_dir,
+                                       f'{LEARN_CURVE_DIR_STEM}{timenow}')
         os.makedirs(results_dirname)
 
         train_dirname = vak.core._learncurve.train(train_vds_path=train_config.train_vds_path,
@@ -124,7 +126,8 @@ class TestLearncurveTrain(unittest.TestCase):
         output_config = vak.config.parse_output_config(config_obj)
 
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        results_dirname = os.path.join(output_config.root_results_dir, f'learncurve{timenow}')
+        results_dirname = os.path.join(output_config.root_results_dir,
+                                       f'{LEARN_CURVE_DIR_STEM}{timenow}')
 
         os.makedirs(results_dirname)
 
