@@ -194,6 +194,7 @@ def test(results_dirname,
                                     + str(train_set_dur) + '_sec_replicate_'
                                     + str(replicate))
             training_records_path = os.path.join(results_dirname,
+                                                 'train',
                                                  training_records_dir)
 
             train_inds_file = glob(os.path.join(training_records_path, 'train_inds'))
