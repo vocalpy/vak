@@ -51,20 +51,6 @@ class TestParseDataConfig(unittest.TestCase):
             data_config_obj.labelset, list(int_labels)
         )
 
-    def test_all_labels_are_int_default(self):
-        # test that all_labels_are_int is added
-        # and set to False if we don't specify it
-        data_config_obj = vak.config.data.parse_data_config(self.config_obj, self.config_file)
-        self.assertTrue(data_config_obj.all_labels_are_int is False)
-
-    def test_silent_gap_label_default(self):
-        # test that silent_gap_label is added
-        # and set to 0 if we don't specify it
-        if self.config_obj.has_option('DATA', 'silent_gap_label'):
-            self.config_obj.remove_option('DATA', 'silent_gap_label')
-        data_config_obj = vak.config.data.parse_data_config(self.config_obj, self.config_file)
-        self.assertTrue(data_config_obj.silent_gap_label == 0)
-
     def test_output_dir_default(self):
         # test that output_dir is added
         # and set to None if we don't specify it
