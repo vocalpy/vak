@@ -26,7 +26,6 @@ class TestParsePredictConfig(unittest.TestCase):
         a_results_dir = glob(os.path.join(TEST_DATA_DIR,
                                           'results',
                                           f'{LEARN_CURVE_DIR_STEM}*'))[0]
-        labels_mapping_path = glob(os.path.join(a_results_dir, 'labels_mapping'))[0]
         a_training_records_dir = glob(os.path.join(a_results_dir, 'train'
                                                    'records_for_training_set*')
                                       )[0]
@@ -38,7 +37,6 @@ class TestParsePredictConfig(unittest.TestCase):
         config = ConfigParser()
         config.read(a_config)
         config['PREDICT']['checkpoint_path'] = checkpoint_path
-        config['PREDICT']['labels_mapping_path'] = labels_mapping_path
         config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
         config['PREDICT']['spect_scaler_path'] = spect_scaler
         self.config_obj = config
