@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 import vak.cli.summary
-
+from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
@@ -45,7 +45,7 @@ class TestSummary(unittest.TestCase):
 
         results_dir = glob(os.path.join(TEST_DATA_DIR,
                                         'results',
-                                        'results_*'))[0]
+                                        f'{LEARN_CURVE_DIR_STEM}*'))[0]
         config['OUTPUT']['results_dir_made_by_main_script'] = results_dir
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)
@@ -54,7 +54,7 @@ class TestSummary(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
         shutil.rmtree(self.tmp_config_dir)
 
-    def test_learncurve_func(self):
+    def test_summary_func(self):
         # make sure cli.summary runs without crashing.
         config = vak.config.parse.parse_config(self.tmp_config_path)
         vak.cli.summary(results_dirname=config.output.results_dirname,
