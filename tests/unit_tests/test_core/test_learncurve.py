@@ -9,6 +9,7 @@ from configparser import ConfigParser
 
 import vak.core.learncurve
 import vak.config
+from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
@@ -53,9 +54,9 @@ class TestLearncurve(unittest.TestCase):
         self.assertTrue(len(output_dir_after) == 1)
 
         results_dir = output_dir_after[0]
-        self.assertTrue('learncurve.' in results_dir)
+        self.assertTrue(LEARN_CURVE_DIR_STEM in results_dir)
 
-        time_str_results_dir = results_dir.replace('learncurve.', '')  # to get just datestr
+        time_str_results_dir = results_dir.replace(LEARN_CURVE_DIR_STEM, '')  # to get just datestr
         time_results_dir = datetime.strptime(time_str_results_dir, '%y%m%d_%H%M%S')
         self.assertTrue(time_before <= time_results_dir <= time_after)
 
