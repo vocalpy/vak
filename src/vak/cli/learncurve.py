@@ -8,6 +8,7 @@ from configparser import ConfigParser
 import numpy as np
 
 from .. import core
+from ..core.learncurve import LEARN_CURVE_DIR_STEM
 
 
 def learncurve(train_vds_path,
@@ -117,7 +118,7 @@ def learncurve(train_vds_path,
 
     # need to set up a results dir so we have some place to put the log file
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    results_dirname = f'learning_curve.{timenow}'
+    results_dirname = f'{LEARN_CURVE_DIR_STEM}{timenow}'
     if root_results_dir:
         results_dirname = os.path.join(root_results_dir,
                                        results_dirname)
