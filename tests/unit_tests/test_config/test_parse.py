@@ -27,9 +27,9 @@ class TestParseConfig(unittest.TestCase):
         self.tmp_data_output_dir = tempfile.mkdtemp()
 
         # for train section of config
-        _, self.tmp_train_data_path = tempfile.mkstemp()
-        _, self.tmp_val_data_path = tempfile.mkstemp()
-        _, self.tmp_test_data_path = tempfile.mkstemp()
+        _, self.tmp_train_vds_path = tempfile.mkstemp()
+        _, self.tmp_val_vds_path = tempfile.mkstemp()
+        _, self.tmp_test_vds_path = tempfile.mkstemp()
 
         # for output section of config
         self.tmp_root_dir = tempfile.mkdtemp()
@@ -39,12 +39,6 @@ class TestParseConfig(unittest.TestCase):
         # for predict section of config
         self.tmp_checkpoint_dir = tempfile.mkdtemp()
         self.tmp_dir_to_predict = tempfile.mkdtemp()
-        labels_mapping = dict(zip([int(label) for label in [int(char) for char in '1234567']],
-                                  range(1, len('1234567') + 1)))
-        labels_mapping_file = os.path.join(self.tmp_results_dir, 'labels_mapping')
-        with open(labels_mapping_file, 'wb') as labels_map_file_obj:
-            pickle.dump(labels_mapping, labels_map_file_obj)
-        self.tmp_labels_mapping_path = labels_mapping_file
         a_spect_scaler = vak.utils.spect.SpectScaler()
         a_spect_scaler.fit(np.random.normal(size=(1000, 513)))
         tmp_spect_scaler_path = os.path.join(self.tmp_results_dir, 'spect_scaler')
@@ -67,9 +61,9 @@ class TestParseConfig(unittest.TestCase):
         shutil.rmtree(self.tmp_data_dir)
         shutil.rmtree(self.tmp_data_output_dir)
 
-        os.remove(self.tmp_train_data_path)
-        os.remove(self.tmp_val_data_path)
-        os.remove(self.tmp_test_data_path)
+        os.remove(self.tmp_train_vds_path)
+        os.remove(self.tmp_val_vds_path)
+        os.remove(self.tmp_test_vds_path)
 
     def _add_dirs_to_config_and_save_as_tmp(self, config_file):
         """helper functions called by unit tests to add directories
@@ -83,13 +77,12 @@ class TestParseConfig(unittest.TestCase):
             config['DATA']['data_dir'] = self.tmp_data_dir
             config['DATA']['output_dir'] = self.tmp_data_output_dir
         if config.has_section('TRAIN'):
-            config['TRAIN']['train_data_path'] = self.tmp_train_data_path
-            config['TRAIN']['val_data_path'] = self.tmp_val_data_path
-            config['TRAIN']['test_data_path'] = self.tmp_test_data_path
+            config['TRAIN']['train_vds_path'] = self.tmp_train_vds_path
+            config['TRAIN']['val_vds_path'] = self.tmp_val_vds_path
+            config['TRAIN']['test_vds_path'] = self.tmp_test_vds_path
         if config.has_section('PREDICT'):
             config['PREDICT']['checkpoint_path'] = self.tmp_checkpoint_dir
             config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
-            config['PREDICT']['labels_mapping_path'] = self.tmp_labels_mapping_path
             config['PREDICT']['spect_scaler_path'] = self.tmp_spect_scaler_path
 
         file_obj = tempfile.NamedTemporaryFile(prefix='config', suffix='.ini', mode='w',
