@@ -9,6 +9,8 @@ import numpy as np
 from ._learncurve.train import train
 from ._learncurve.test import test
 
+LEARN_CURVE_DIR_STEM = 'learning_curve.'
+
 
 def learncurve(train_vds_path,
                val_vds_path,
@@ -118,13 +120,13 @@ def learncurve(train_vds_path,
 
     # ---------------- logging -----------------------------------------------------------------------------------------
     # need to set up a results dir so we have some place to put the log file
-    if output_dir and 'learning_curve' in Path(output_dir).name:
+    if output_dir and LEARN_CURVE_DIR_STEM in Path(output_dir).name:
         # (because cli.learncurve made directory already and passed as argument
         # to output dir ... so we don't want to change it)
         results_dirname = output_dir
     else:  # else we need to make a directory
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        results_dirname = f'learning_curve.{timenow}'
+        results_dirname = f'{LEARN_CURVE_DIR_STEM}{timenow}'
 
         if output_dir:
             results_dirname = os.path.join(output_dir,
