@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 import sys
 from datetime import datetime
 
@@ -117,13 +118,19 @@ def learncurve(train_vds_path,
 
     # ---------------- logging -----------------------------------------------------------------------------------------
     # need to set up a results dir so we have some place to put the log file
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    results_dirname = f'learncurve.{timenow}'
-    if output_dir:
-        results_dirname = os.path.join(output_dir,
-                                       results_dirname)
-    else:
-        results_dirname = os.path.join(os.getcwd(), results_dirname)
+    if output_dir and 'learning_curve' in Path(output_dir).name:
+        # (because cli.learncurve made directory already and passed as argument
+        # to output dir ... so we don't want to change it)
+        results_dirname = output_dir
+    else:  # else we need to make a directory
+        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+        results_dirname = f'learning_curve.{timenow}'
+
+        if output_dir:
+            results_dirname = os.path.join(output_dir,
+                                           results_dirname)
+        else:
+            results_dirname = os.path.join(os.getcwd(), results_dirname)
 
     if not os.path.isdir(results_dirname):
         os.makedirs(results_dirname)
