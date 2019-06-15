@@ -491,7 +491,7 @@ class TestSplit(unittest.TestCase):
         self.assertTrue(
             isclose(train_dur_out, vds_dur - test_dur_out)
         )
-        self.assertTrue(test_dur_out >= train_dur)
+        self.assertTrue(test_dur_out >= test_dur)
 
 
 if __name__ == '__main__':
