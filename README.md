@@ -2,7 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 # vak
-## a library to work with neural networks that segment and annotate vocalizations
+## automated annotation of vocalizations for everybody
 [![Build Status](https://travis-ci.com/NickleDave/vak.svg?branch=master)](https://travis-ci.com/NickleDave/vak)
 ## Installation
 To install, run the following command at the command line:  
@@ -47,7 +47,7 @@ the code, and then have its behavior as an installed library reflect those edits
   ```
 
 ## Usage
-### Training models to segment and label birdsong
+### Training models to segment and label vocalizations
 Currently the easiest way to work with `vak` is through the command line.
 You run it with `config.ini` files, using one of a handful of commands.
 Here's the help text that prints when you run `$ vak-cli --help`:  
