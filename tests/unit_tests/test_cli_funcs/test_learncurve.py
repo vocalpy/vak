@@ -60,7 +60,7 @@ class TestLearncurve(unittest.TestCase):
         time_results_dir = datetime.strptime(time_str_results_dir, '%y%m%d_%H%M%S')
         self.assertTrue(time_before <= time_results_dir <= time_after)
 
-        # -------- test output of _learncurve.train --------------------------------------------------------------------
+        # -------- test output of learncurve.train --------------------------------------------------------------------
         train_dirname = os.path.join(output_config.root_results_dir, results_dir, 'train')
         train_dir_list = os.listdir(train_dirname)
         records_dirs = [item for item in train_dir_list if 'records' in item]
@@ -92,7 +92,7 @@ class TestLearncurve(unittest.TestCase):
                 self.assertTrue('scaled_spects' in records_dir_list)
                 self.assertTrue('scaled_reshaped_spects' in records_dir_list)
 
-        # -------- test output of _learncurve.test ---------------------------------------------------------------------
+        # -------- test output of learncurve.test ---------------------------------------------------------------------
         test_dirname = os.path.join(output_config.root_results_dir, results_dir, 'test')
         self.assertTrue(os.path.isdir(test_dirname))
         test_dir_list = os.listdir(test_dirname)

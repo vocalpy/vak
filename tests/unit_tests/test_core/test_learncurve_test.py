@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import unittest
 
-import vak.core._learncurve.test
+import vak.core.learncurve.test
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
 HERE = Path(__file__).parent
@@ -68,15 +68,15 @@ class TestLearncurveTest(unittest.TestCase):
 
     def test_learncurve_test(self):
         config = vak.config.parse.parse_config(self.tmp_config_path)
-        vak.core._learncurve.test(results_dirname=config.output.results_dirname,
-                                  test_vds_path=config.train.test_vds_path,
-                                  train_vds_path=config.train.train_vds_path,
-                                  networks=config.networks,
-                                  train_set_durs=config.train.train_set_durs,
-                                  num_replicates=config.train.num_replicates,
-                                  output_dir=self.tmp_output_dir,
-                                  normalize_spectrograms=config.train.normalize_spectrograms,
-                                  save_transformed_data=config.data.save_transformed_data)
+        vak.core.learncurve.test(results_dirname=config.output.results_dirname,
+                                 test_vds_path=config.train.test_vds_path,
+                                 train_vds_path=config.train.train_vds_path,
+                                 networks=config.networks,
+                                 train_set_durs=config.train.train_set_durs,
+                                 num_replicates=config.train.num_replicates,
+                                 output_dir=self.tmp_output_dir,
+                                 normalize_spectrograms=config.train.normalize_spectrograms,
+                                 save_transformed_data=config.data.save_transformed_data)
         self.assertTrue(self._check_learncurve_test_output())
 
 
