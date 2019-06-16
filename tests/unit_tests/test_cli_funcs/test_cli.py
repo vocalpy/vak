@@ -135,9 +135,6 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(ValueError):
             vak.cli.cli(command='learncurve', config_file=self.tmp_learncurve_config_path)
 
-    def test_summary_command(self):
-        vak.cli.cli(command='summary', config_file=self.tmp_learncurve_config_path)
-
 
 if __name__ == '__main__':
     unittest.main()
