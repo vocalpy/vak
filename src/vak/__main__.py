@@ -15,7 +15,6 @@ def get_parser():
         'predict',
         'finetune',
         'learncurve',
-        'summary',
     ]
 
     parser = argparse.ArgumentParser(description='vak command-line interface',
