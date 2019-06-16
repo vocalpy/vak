@@ -6,8 +6,8 @@ from datetime import datetime
 
 import numpy as np
 
-from ._learncurve.train import train
-from ._learncurve.test import test
+from vak.core._learncurve.train import train
+from vak.core._learncurve.test import test
 
 LEARN_CURVE_DIR_STEM = 'learning_curve.'
 
