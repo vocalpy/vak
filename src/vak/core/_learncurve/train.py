@@ -88,8 +88,7 @@ def train(train_vds_path,
 
     Returns
     -------
-    train_dirname : str
-        path to directory where results from training were saved
+    None
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
     if val_error_step and val_vds_path is None:
@@ -568,4 +567,3 @@ def train(train_vds_path,
                                       'wb') as val_errs_file:
                                 pickle.dump(val_errs, val_errs_file)
 
-    return train_dirname
