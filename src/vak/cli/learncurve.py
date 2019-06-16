@@ -11,25 +11,25 @@ from .. import core
 from ..core.learncurve import LEARN_CURVE_DIR_STEM
 
 
-def learncurve(train_vds_path,
-               test_vds_path,
-               total_train_set_duration,
-               train_set_durs,
-               num_replicates,
-               networks,
-               num_epochs,
-               config_file,
-               val_vds_path=None,
-               val_error_step=None,
-               checkpoint_step=None,
-               patience=None,
-               save_only_single_checkpoint_file=True,
-               normalize_spectrograms=False,
-               use_train_subsets_from_previous_run=False,
-               previous_run_path=None,
-               root_results_dir=None,
-               save_transformed_data=False,
-               ):
+def learning_curve(train_vds_path,
+                   test_vds_path,
+                   total_train_set_duration,
+                   train_set_durs,
+                   num_replicates,
+                   networks,
+                   num_epochs,
+                   config_file,
+                   val_vds_path=None,
+                   val_error_step=None,
+                   checkpoint_step=None,
+                   patience=None,
+                   save_only_single_checkpoint_file=True,
+                   normalize_spectrograms=False,
+                   use_train_subsets_from_previous_run=False,
+                   previous_run_path=None,
+                   root_results_dir=None,
+                   save_transformed_data=False,
+                   ):
     """generate learning curve, by training models on training sets across a
     range of sizes and then measure accuracy of those models on a test set
 
