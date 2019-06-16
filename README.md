@@ -50,28 +50,22 @@ the code, and then have its behavior as an installed library reflect those edits
 ### Training models to segment and label vocalizations
 Currently the easiest way to work with `vak` is through the command line.
 You run it with `config.ini` files, using one of a handful of commands.
-Here's the help text that prints when you run `$ vak-cli --help`:  
+Here's the help text that prints when you run `$ vak -h` (`-h` for `help`):  
 ```
-usage: vak [-h] [-d DATASET] [-g GLOB] [-t TXT] command configfile
+$ vak -h
+usage: vak [-h] command configfile
 
 vak command-line interface
 
 positional arguments:
-  command               Command to run, valid options are:
-                        ['prep', 'train', 'predict', 'finetune', 'learncurve', 'summary']
-                        $ vak train ./configs/config_2018-12-17.ini
-  configfile            name of config.ini file to use 
-                        $ vak train ./configs/config_2018-12-17.ini
+  command     Command to run, valid options are:
+              ['prep', 'train', 'predict', 'finetune', 'learncurve']
+              $ vak train ./configs/config_2018-12-17.ini
+  configfile  name of config.ini file to use 
+              $ vak train ./configs/config_2018-12-17.ini
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -d DATASET, --dataset DATASET
-                        Create a dataset from a list of files in a .txt file, by passing in the name of the .txt file.
-                        $ vak --dataset ./audio_files_list.txt
-  -g GLOB, --glob GLOB  string to use with glob function to search for config files fitting some pattern.
-                        $ vak --glob ./config_finches*.ini
-  -t TXT, --txt TXT     name of .txt file containing list of config files to run
-                        $ vak --text ./list_of_config_filenames.txt
+  -h, --help  show this help message and exit
 ```
 
 As an example, you can run `vak` with a single `config.ini` file 
@@ -92,6 +86,7 @@ and for more details on the config.ini files, see [README_config.md](doc/README_
 ### Data and folder structures
 To train models, you must supply training data in the form of audio files or 
 spectrograms, and annotations for each spectrogram.
+
 #### Spectrograms and labels
 The package can generate spectrograms from `.wav` files or `.cbin` files.
 It can also accept spectrograms in the form of Matlab `.mat` files.
@@ -99,7 +94,6 @@ The locations of these files are specified in the `config.ini` file as explained
 [experiments.md](doc/experiments.md) and [README_config.md](doc/README_config.md).
 
 ## Preparing training files
-
 It is possible to train on any manually annotated data but there are some useful guidelines:
 * __Use as many examples as possible__ - The results will just be better. Specifically, this code will not label correctly syllables it did not encounter while training and will most probably generalize to the nearest sample or ignore the syllable.
 * __Use noise examples__ - This will make the code very good in ignoring noise.
