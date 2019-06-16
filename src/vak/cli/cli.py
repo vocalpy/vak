@@ -5,7 +5,6 @@ from configparser import MissingSectionHeaderError, ParsingError, DuplicateOptio
 from .train import train
 from .predict import predict
 from .learncurve import learncurve
-from .summary import summary
 from .prep import prep
 from ..config import parse_spect_config, parse_data_config, parse_train_config, \
     parse_predict_config, parse_output_config
@@ -18,7 +17,7 @@ def cli(command, config_file):
     Parameters
     ----------
     command : string
-        One of {'prep', 'train', 'predict', 'finetune', 'learncurve', 'summary'}
+        One of {'prep', 'train', 'predict', 'finetune', 'learncurve'}
     config_file : string
         path to a config.ini file
     """
@@ -123,18 +122,3 @@ def cli(command, config_file):
                    previous_run_path=train_config.previous_run_path,
                    root_results_dir=output_config.root_results_dir,
                    save_transformed_data=data_config.save_transformed_data)
-
-    elif command == 'summary':
-        train_config = parse_train_config(config_obj, config_file)
-        nets_config = _get_nets_config(config_obj, train_config.networks)
-        data_config = parse_data_config(config_obj, config_file)
-        output_config = parse_output_config(config_obj)
-        summary(results_dirname=output_config.results_dirname,
-                train_data_dict_path=train_config.train_vds_path,
-                networks=nets_config,
-                train_set_durs=train_config.train_set_durs,
-                num_replicates=train_config.num_replicates,
-                labelset=data_config.labelset,
-                test_data_dict_path=train_config.test_vds_path,
-                normalize_spectrograms=train_config.normalize_spectrograms,
-                save_transformed_data=data_config.save_transformed_data)
