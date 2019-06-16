@@ -60,7 +60,7 @@ class TestLearncurve(unittest.TestCase):
         time_results_dir = datetime.strptime(time_str_results_dir, '%y%m%d_%H%M%S')
         self.assertTrue(time_before <= time_results_dir <= time_after)
 
-        # -------- test output of _learncurve.train --------------------------------------------------------------------
+        # -------- test output of learncurve.train --------------------------------------------------------------------
         train_dirname = os.path.join(output_config.root_results_dir, results_dir, 'train')
         train_dir_list = os.listdir(train_dirname)
         records_dirs = [item for item in train_dir_list if 'records' in item]
@@ -92,7 +92,7 @@ class TestLearncurve(unittest.TestCase):
                 self.assertTrue('scaled_spects' in records_dir_list)
                 self.assertTrue('scaled_reshaped_spects' in records_dir_list)
 
-        # -------- test output of _learncurve.test ---------------------------------------------------------------------
+        # -------- test output of learncurve.test ---------------------------------------------------------------------
         test_dirname = os.path.join(output_config.root_results_dir, results_dir, 'test')
         self.assertTrue(os.path.isdir(test_dirname))
         test_dir_list = os.listdir(test_dirname)
@@ -123,23 +123,23 @@ class TestLearncurve(unittest.TestCase):
         # from before starting--i.e. some datetime with microseconds is less than the
         # exact same date time but with some number of microseconds
         time_before = datetime.now().replace(microsecond=0)
-        vak.core.learncurve(train_vds_path=train_config.train_vds_path,
-                            test_vds_path=train_config.test_vds_path,
-                            total_train_set_duration=data_config.total_train_set_dur,
-                            train_set_durs=train_config.train_set_durs,
-                            num_replicates=train_config.num_replicates,
-                            num_epochs=train_config.num_epochs,
-                            networks=nets_config,
-                            val_vds_path=train_config.val_vds_path,
-                            val_error_step=train_config.val_error_step,
-                            checkpoint_step=train_config.checkpoint_step,
-                            patience=train_config.patience,
-                            save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
-                            normalize_spectrograms=train_config.normalize_spectrograms,
-                            use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
-                            previous_run_path=train_config.previous_run_path,
-                            output_dir=output_config.root_results_dir,
-                            save_transformed_data=data_config.save_transformed_data)
+        vak.core.learning_curve(train_vds_path=train_config.train_vds_path,
+                                test_vds_path=train_config.test_vds_path,
+                                total_train_set_duration=data_config.total_train_set_dur,
+                                train_set_durs=train_config.train_set_durs,
+                                num_replicates=train_config.num_replicates,
+                                num_epochs=train_config.num_epochs,
+                                networks=nets_config,
+                                val_vds_path=train_config.val_vds_path,
+                                val_error_step=train_config.val_error_step,
+                                checkpoint_step=train_config.checkpoint_step,
+                                patience=train_config.patience,
+                                save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
+                                normalize_spectrograms=train_config.normalize_spectrograms,
+                                use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
+                                previous_run_path=train_config.previous_run_path,
+                                output_dir=output_config.root_results_dir,
+                                save_transformed_data=data_config.save_transformed_data)
         time_after = datetime.now().replace(microsecond=0)
         self.assertTrue(self._check_learncurve_output(
             output_config, train_config, nets_config, data_config, time_before, time_after
@@ -164,23 +164,23 @@ class TestLearncurve(unittest.TestCase):
         # from before starting--i.e. some datetime with microseconds is less than the
         # exact same date time but with some number of microseconds
         time_before = datetime.now().replace(microsecond=0)
-        vak.core.learncurve(train_vds_path=train_config.train_vds_path,
-                            test_vds_path=train_config.test_vds_path,
-                            total_train_set_duration=data_config.total_train_set_dur,
-                            train_set_durs=train_config.train_set_durs,
-                            num_replicates=train_config.num_replicates,
-                            num_epochs=train_config.num_epochs,
-                            networks=nets_config,
-                            val_vds_path=None,
-                            val_error_step=None,
-                            checkpoint_step=train_config.checkpoint_step,
-                            patience=train_config.patience,
-                            save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
-                            normalize_spectrograms=train_config.normalize_spectrograms,
-                            use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
-                            previous_run_path=train_config.previous_run_path,
-                            output_dir=output_config.root_results_dir,
-                            save_transformed_data=data_config.save_transformed_data)
+        vak.core.learning_curve(train_vds_path=train_config.train_vds_path,
+                                test_vds_path=train_config.test_vds_path,
+                                total_train_set_duration=data_config.total_train_set_dur,
+                                train_set_durs=train_config.train_set_durs,
+                                num_replicates=train_config.num_replicates,
+                                num_epochs=train_config.num_epochs,
+                                networks=nets_config,
+                                val_vds_path=None,
+                                val_error_step=None,
+                                checkpoint_step=train_config.checkpoint_step,
+                                patience=train_config.patience,
+                                save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
+                                normalize_spectrograms=train_config.normalize_spectrograms,
+                                use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
+                                previous_run_path=train_config.previous_run_path,
+                                output_dir=output_config.root_results_dir,
+                                save_transformed_data=data_config.save_transformed_data)
         time_after = datetime.now().replace(microsecond=0)
         self.assertTrue(self._check_learncurve_output(
             output_config, train_config, nets_config, data_config, time_before, time_after

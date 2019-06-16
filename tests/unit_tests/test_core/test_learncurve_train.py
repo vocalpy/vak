@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime
 from configparser import ConfigParser
 
-import vak.core._learncurve.train
+import vak.core.learncurve.train
 import vak.config
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
@@ -95,22 +95,22 @@ class TestLearncurveTrain(unittest.TestCase):
                                        f'{LEARN_CURVE_DIR_STEM}{timenow}')
         os.makedirs(results_dirname)
 
-        train_dirname = vak.core._learncurve.train(train_vds_path=train_config.train_vds_path,
-                                                   total_train_set_duration=data_config.total_train_set_dur,
-                                                   train_set_durs=train_config.train_set_durs,
-                                                   num_replicates=train_config.num_replicates,
-                                                   num_epochs=train_config.num_epochs,
-                                                   networks=nets_config,
-                                                   output_dir=results_dirname,
-                                                   val_vds_path=train_config.val_vds_path,
-                                                   val_error_step=train_config.val_error_step,
-                                                   checkpoint_step=train_config.checkpoint_step,
-                                                   patience=train_config.patience,
-                                                   save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
-                                                   normalize_spectrograms=train_config.normalize_spectrograms,
-                                                   use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
-                                                   previous_run_path=train_config.previous_run_path,
-                                                   save_transformed_data=data_config.save_transformed_data)
+        train_dirname = vak.core.learncurve.train(train_vds_path=train_config.train_vds_path,
+                                                  total_train_set_duration=data_config.total_train_set_dur,
+                                                  train_set_durs=train_config.train_set_durs,
+                                                  num_replicates=train_config.num_replicates,
+                                                  num_epochs=train_config.num_epochs,
+                                                  networks=nets_config,
+                                                  output_dir=results_dirname,
+                                                  val_vds_path=train_config.val_vds_path,
+                                                  val_error_step=train_config.val_error_step,
+                                                  checkpoint_step=train_config.checkpoint_step,
+                                                  patience=train_config.patience,
+                                                  save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
+                                                  normalize_spectrograms=train_config.normalize_spectrograms,
+                                                  use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
+                                                  previous_run_path=train_config.previous_run_path,
+                                                  save_transformed_data=data_config.save_transformed_data)
 
         self.assertTrue(self._check_learncurve_train_output(
             train_config, nets_config, data_config, train_dirname
@@ -131,22 +131,22 @@ class TestLearncurveTrain(unittest.TestCase):
 
         os.makedirs(results_dirname)
 
-        train_dirname = vak.core._learncurve.train(train_vds_path=train_config.train_vds_path,
-                                                   total_train_set_duration=data_config.total_train_set_dur,
-                                                   train_set_durs=train_config.train_set_durs,
-                                                   num_replicates=train_config.num_replicates,
-                                                   num_epochs=train_config.num_epochs,
-                                                   networks=nets_config,
-                                                   output_dir=results_dirname,
-                                                   val_vds_path=None,
-                                                   val_error_step=None,
-                                                   checkpoint_step=train_config.checkpoint_step,
-                                                   patience=train_config.patience,
-                                                   save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
-                                                   normalize_spectrograms=train_config.normalize_spectrograms,
-                                                   use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
-                                                   previous_run_path=train_config.previous_run_path,
-                                                   save_transformed_data=data_config.save_transformed_data)
+        train_dirname = vak.core.learncurve.train(train_vds_path=train_config.train_vds_path,
+                                                  total_train_set_duration=data_config.total_train_set_dur,
+                                                  train_set_durs=train_config.train_set_durs,
+                                                  num_replicates=train_config.num_replicates,
+                                                  num_epochs=train_config.num_epochs,
+                                                  networks=nets_config,
+                                                  output_dir=results_dirname,
+                                                  val_vds_path=None,
+                                                  val_error_step=None,
+                                                  checkpoint_step=train_config.checkpoint_step,
+                                                  patience=train_config.patience,
+                                                  save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
+                                                  normalize_spectrograms=train_config.normalize_spectrograms,
+                                                  use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
+                                                  previous_run_path=train_config.previous_run_path,
+                                                  save_transformed_data=data_config.save_transformed_data)
 
         self.assertTrue(self._check_learncurve_train_output(
             train_config, nets_config, data_config, train_dirname
