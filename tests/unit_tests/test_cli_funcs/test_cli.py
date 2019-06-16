@@ -43,13 +43,13 @@ class TestCli(unittest.TestCase):
         src = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         copydir(src=src, dst=self.tmp_dir_to_predict)
 
+
         a_results_dir = TEST_DATA_DIR.joinpath(
             'results'
         ).glob(f'{LEARN_CURVE_DIR_STEM}*')
         a_results_dir = list(a_results_dir)[0]
-
         a_training_records_dir = glob(os.path.join(a_results_dir,
-                                                   'train'
+                                                   'train',
                                                    'records_for_training_set*'))[0]
         checkpoint_path = os.path.join(a_training_records_dir, 'TweetyNet', 'checkpoints')
         spect_scaler = glob(os.path.join(a_training_records_dir, 'spect_scaler_*'))[0]
