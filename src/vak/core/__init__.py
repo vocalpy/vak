@@ -1,1 +1,1 @@
-from .learncurve import learncurve
+from .learncurve import learning_curve
