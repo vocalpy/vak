@@ -1,32 +1,43 @@
-import os
-from glob import glob
+from pathlib import Path
 import unittest
 
 import numpy as np
-import joblib
 
+from vak.dataset import VocalizationDataset
 import vak.utils.data
 
 
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
 
 
 class TestData(unittest.TestCase):
 
     def setUp(self):
-        self.test_data_spects_path = glob(os.path.join(TEST_DATA_DIR,
-                                                  'spects',
-                                                  'spectrograms_*'))[0]
-        self.train_data_path = os.path.join(self.test_data_spects_path, 'train_data_dict')
+        test_data_vds_path = TEST_DATA_DIR.joinpath('vds')
+        self.test_data_spects_path = test_data_vds_path.glob('spectrograms_*')
+        self.test_data_spects_path = list(self.test_data_spects_path)[0]
+        self.train_vds_path = test_data_vds_path.glob('*prep*train.vds.json')
+        self.train_vds_path = list(self.train_vds_path)[0]
 
     def test_get_inds_for_dur(self):
-        tdd = joblib.load(self.train_data_path)
-        spect_ID_vec = tdd['spect_ID_vector']
-        lt = tdd['Y_train']
-        lm = tdd['labels_mapping']
+        train_vds = VocalizationDataset.load(json_fname=self.train_vds_path)
+        train_vds = train_vds.load_spects()
+
+        X_train = train_vds.spects_list()
+        spect_ID_vec = np.concatenate(
+            [np.ones((spect.shape[-1],), dtype=np.int64) * ind
+             for ind, spect in enumerate(X_train)]
+        )
+        Y_train = train_vds.lbl_tb_list()
+        lt = np.concatenate(Y_train)
+        lm = train_vds.labelmap
+
         target_dur = 6  # seconds
-        timebin_dur = tdd['timebin_dur']
+        timebin_dur = set([voc.metaspect.timebin_dur
+                           for voc in train_vds.voc_list])
+        timebin_dur = timebin_dur.pop()
+
         inds_to_use = vak.utils.data.get_inds_for_dur(spect_ID_vector=spect_ID_vec,
                                                       labeled_timebins_vector=lt,
                                                       labels_mapping=lm,

@@ -1,10 +1,10 @@
 from configparser import ConfigParser
 import logging
+from math import isclose
 import os
 import pickle
 import shutil
 import sys
-import warnings
 from datetime import datetime
 
 import joblib
@@ -12,14 +12,15 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
+import vak.utils.spect
 from .. import network
 from .. import utils
 from .. import config
+from ..dataset.classes import VocalizationDataset
 
 
-def train(train_data_dict_path,
-          val_data_dict_path,
-          spect_params,
+def train(train_vds_path,
+          val_vds_path,
           networks,
           num_epochs,
           config_file,
@@ -35,14 +36,10 @@ def train(train_data_dict_path,
 
     Parameters
     ----------
-    train_data_dict_path : str
-        path to training data
-    val_data_dict_path : str
-        path to validation data
-    spect_params : dict
-        parameters for creating spectrograms.
-        Used to ensure that what's in config file matches what's in
-        the data.
+    train_vds_path : str
+        path to VocalizationDataset that represents training data
+    val_vds_path : str
+        path to VocalizationDataset that represents validation data
     networks : dict
         where each key is the name of a neural network and the corresponding
         value is the configuration for that network (in a namedtuple or a dict)
@@ -84,6 +81,18 @@ def train(train_data_dict_path,
 
     Saves results in root_results_dir and adds some options to config_file.
     """
+    # ---------------- pre-conditions ----------------------------------------------------------------------------------
+    if val_error_step and val_vds_path is None:
+        raise ValueError(
+            f"val_error_step set to {val_error_step} but val_vds_path is None; please provide a path to "
+            f"a validation data set that can be used to check error rate very {val_error_step} steps"
+        )
+
+    if val_vds_path and val_error_step is None:
+        raise ValueError(
+            "val_vds_path was provided but val_error_step is None; please provide a value for val_error_step"
+        )
+
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     if root_results_dir:
         results_dirname = os.path.join(root_results_dir,
@@ -103,55 +112,23 @@ def train(train_data_dict_path,
     logger.info('Logging results to {}'.format(results_dirname))
     logger.info('Using config file: {}'.format(config_file))
 
-    logger.info('Loading training data from {}'.format(
+    # ---------------- load training data  -----------------------------------------------------------------------------
+    logger.info('Loading training VocalizationDataset from {}'.format(
         os.path.dirname(
-            train_data_dict_path)))
-    train_data_dict = joblib.load(train_data_dict_path)
-    labels_mapping = train_data_dict['labels_mapping']
-    if train_data_dict['spect_params'] == 'matlab':
-        warnings.warn('Not checking parameters used to compute spectrogram in '
-                      'training data,\n because spectrograms were created in '
-                      'Matlab')
-    else:
-        if train_data_dict['spect_params'] != spect_params:
-            raise ValueError('Spectrogram parameters in config file '
-                             'do not match parameters specified in training data_dict.\n'
-                             'Config file is: {}\n'
-                             'Data dict is: {}.'.format(config_file,
-                                                        train_data_dict_path))
+            train_vds_path)))
+    train_vds = VocalizationDataset.load(json_fname=train_vds_path)
 
-    # save copy of labels_mapping in results directory
-    labels_mapping_file = os.path.join(results_dirname, 'labels_mapping')
-    with open(labels_mapping_file, 'wb') as labels_map_file_obj:
-        pickle.dump(labels_mapping, labels_map_file_obj)
+    if train_vds.are_spects_loaded() is False:
+        train_vds = train_vds.load_spects()
 
-    # n_syllables, i.e., number of label classes to predict
-    # Note that mapping includes label for silent gap b/t syllables
-    # Error checking code to ensure that it is in fact a consecutive
-    # series of integers from 0 to n, so we don't predict classes that
-    # don't exist
-    if sorted(labels_mapping.values()) != list(range(len(labels_mapping))):
-        raise ValueError('Labels mapping does not map to a consecutive'
-                         'series of integers from 0 to n (where 0 is the '
-                         'silent gap label and n is the number of syllable'
-                         'labels).')
-    n_syllables = len(labels_mapping)
-    logger.debug('n_syllables: '.format(n_syllables))
+    X_train = train_vds.spects_list()
+    X_train_spect_ID_vector = np.concatenate(
+        [np.ones((spect.shape[-1],), dtype=np.int64) * ind for ind, spect in enumerate(X_train)]
+    )
+    X_train = np.concatenate(X_train, axis=1)
 
-    # copy training data to results dir so we have it stored with results
-    logger.info('copying {} to {}'.format(train_data_dict_path,
-                                          results_dirname))
-    shutil.copy(train_data_dict_path, results_dirname)
-
-    (X_train,
-     Y_train,
-     X_train_spect_ID_vector,
-     timebin_dur,
-     files_used) = (train_data_dict['X_train'],
-                    train_data_dict['Y_train'],
-                    train_data_dict['spect_ID_vector'],
-                    train_data_dict['timebin_dur'],
-                    train_data_dict['filenames'])
+    Y_train = train_vds.lbl_tb_list()
+    Y_train = np.concatenate(Y_train)
 
     if Y_train.ndim > 1:
         # not clear to me right why labeled_timebins get saved as (n, 1)
@@ -159,71 +136,97 @@ def train(train_data_dict_path,
         # Below is hackish way around figuring that out.
         Y_train = np.squeeze(Y_train)
 
-    logger.info('Size of each timebin in spectrogram, in seconds: {}'
-                .format(timebin_dur))
-    # dump filenames to a text file
-    # to be consistent with what the matlab helper function does
-    files_used_filename = os.path.join(results_dirname, 'training_filenames')
-    with open(files_used_filename, 'w') as files_used_fileobj:
-        files_used_fileobj.write('\n'.join(files_used))
+    n_classes = len(train_vds.labelmap)
+    logger.debug('n_classes: '.format(n_classes))
 
-    total_train_set_duration = X_train.shape[-1] * timebin_dur
-    logger.info('Total duration of training set (in s): {}'
-                .format(total_train_set_duration))
+    timebin_dur = set([voc.metaspect.timebin_dur for voc in train_vds.voc_list])
+    if len(timebin_dur) > 1:
+        raise ValueError(
+            f'found more than one time bin duration in training VocalizationDataset: {timebin_dur}'
+        )
+    elif len(timebin_dur) == 1:
+        timebin_dur = timebin_dur.pop()
+        logger.info('Size of each timebin in spectrogram, in seconds: {timebin_dur}')
+    else:
+        raise ValueError(
+            f'invalid time bin durations from training set: {timebin_dur}'
+        )
+
+    X_train_dur = X_train.shape[-1] * timebin_dur
+    logger.info(
+        f'Total duration of training set (in s): {X_train_dur}'
+    )
 
     # transpose X_train, so rows are timebins and columns are frequency bins
-    # because cnn-bilstm network expects this orientation for input
+    # because networks expect this orientation for input
     X_train = X_train.T
-
-    val_data_dict = joblib.load(val_data_dict_path)
-    (X_val,
-     Y_val) = (val_data_dict['X_val'],
-               val_data_dict['Y_val'])
-    if val_data_dict['spect_params'] == 'matlab':
-        warnings.warn('Not checking parameters used to compute spectrogram in '
-                      'validation data,\n because spectrograms were created in '
-                      'Matlab')
-    else:
-        if val_data_dict['spect_params'] != spect_params:
-            raise ValueError('Spectrogram parameters in config file '
-                             'do not match parameters specified in validation data_dict.\n'
-                             'Config file is: {}\n'
-                             'Data dict is: {}.'.format(config_file,
-                                                        val_data_dict_path))
-    #####################################################
-    # note that we 'transpose' the spectrogram          #
-    # so that rows are time and columns are frequencies #
-    #####################################################
-    X_val = X_val.T
     if save_transformed_data:
-        joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
-        joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
+        joblib.dump(X_train, os.path.join(results_dirname, 'X_train'))
+        joblib.dump(Y_train, os.path.join(results_dirname, 'Y_train'))
 
-    logger.info('will measure error on validation set '
-                'every {} steps of training'.format(val_error_step))
-    logger.info('will save a checkpoint file '
-                'every {} steps of training'.format(checkpoint_step))
+    # ---------------- load validation set (if there is one) -----------------------------------------------------------
+    if val_vds_path:
+        val_vds = VocalizationDataset.load(json_fname=val_vds_path)
 
-    if save_only_single_checkpoint_file:
-        logger.info('save_only_single_checkpoint_file = True\n'
-                    'will save only one checkpoint file'
-                    'and overwrite every {} steps of training'.format(checkpoint_step))
+        if val_vds.are_spects_loaded() is False:
+            val_vds = val_vds.load_spects()
+
+        if not val_vds.labelset == train_vds.labelset:
+            raise ValueError(
+                f'set of labels for validation set, {val_vds.labelset}, '
+                f'does not match set for training set: {train_vds.labelset}'
+            )
+
+        X_val = val_vds.spects_list()
+        X_val = np.concatenate(X_val, axis=1)
+
+        Y_val = val_vds.lbl_tb_list()
+        Y_val = np.concatenate(Y_val)
+
+        timebin_dur_val = set([voc.metaspect.timebin_dur for voc in val_vds.voc_list])
+        if len(timebin_dur_val) > 1:
+            raise ValueError(
+                f'found more than one time bin duration in validation VocalizationDataset: {timebin_dur_val}'
+            )
+        elif len(timebin_dur_val) == 1:
+            timebin_dur_val = timebin_dur_val.pop()
+            if timebin_dur_val != timebin_dur:
+                raise ValueError(
+                    f'time bin duration in validation VocalizationDataset, {timebin_dur_val}, did not match that of '
+                    f'training set: {timebin_dur}'
+                )
+
+        X_val_dur = X_val.shape[-1] * timebin_dur
+        logger.info(
+            f'Total duration of validation set (in s): {X_val_dur}'
+        )
+
+        #####################################################
+        # note that we 'transpose' the spectrogram          #
+        # so that rows are time and columns are frequencies #
+        #####################################################
+        X_val = X_val.T
+        if save_transformed_data:
+            joblib.dump(X_val, os.path.join(results_dirname, 'X_val'))
+            joblib.dump(Y_val, os.path.join(results_dirname, 'Y_val'))
+
+        logger.info(
+            f'will measure error on validation set every {val_error_step} steps of training'
+        )
     else:
-        logger.info('save_only_single_checkpoint_file = False\n'
-                    'will save a separate checkpoint file '
-                    'every {} steps of training'.format(checkpoint_step))
+        X_val = None  # so we can just check 'if X_val' below, clearer than e.g. 'if X_val'
 
-    logger.info('\'patience\' is set to: {}'.format(patience))
-
-    logger.info('number of training epochs will be {}'
-                .format(num_epochs))
+    logger.info(
+        f'will save a checkpoint file every {checkpoint_step} steps of training'
+    )
 
     if normalize_spectrograms:
         logger.info('will normalize spectrograms')
-        spect_scaler = utils.data.SpectScaler()
+        spect_scaler = vak.utils.spect.SpectScaler()
         X_train = spect_scaler.fit_transform(X_train)
-        logger.info('normalizing validation set to match training set')
-        X_val = spect_scaler.transform(X_val)
+        if X_val is not None:
+            logger.info('normalizing validation set to match training set')
+            X_val = spect_scaler.transform(X_val)
         joblib.dump(spect_scaler,
                     os.path.join(results_dirname, 'spect_scaler'))
 
@@ -231,8 +234,9 @@ def train(train_data_dict_path,
         scaled_data_filename = os.path.join(results_dirname,
                                             'scaled_spects')
         scaled_data_dict = {'X_train_scaled': X_train,
-                            'X_val_scaled': X_val,
                             'Y_train_subset': Y_train}
+        if X_val is not None:
+            scaled_data_dict['X_val_scaled'] = X_val
         joblib.dump(scaled_data_dict, scaled_data_filename)
 
     freq_bins = X_train.shape[-1]  # number of columns
@@ -242,7 +246,7 @@ def train(train_data_dict_path,
 
     for net_name, net_config in networks.items():
         net_config_dict = net_config._asdict()
-        net_config_dict['n_syllables'] = n_syllables
+        net_config_dict['n_syllables'] = n_classes
         if 'freq_bins' in net_config_dict:
             net_config_dict['freq_bins'] = freq_bins
         net = NETWORKS[net_name](**net_config_dict)
@@ -264,12 +268,13 @@ def train(train_data_dict_path,
 
         net.add_summary_writer(logs_path=logs_path)
 
-        (X_val_batch,
-         Y_val_batch,
-         num_batches_val) = utils.data.reshape_data_for_batching(X_val,
-                                                                 net_config.batch_size,
-                                                                 net_config.time_bins,
-                                                                 Y_val)
+        if X_val is not None:
+            (X_val_batch,
+             Y_val_batch,
+             num_batches_val) = utils.data.reshape_data_for_batching(X_val,
+                                                                     net_config.batch_size,
+                                                                     net_config.time_bins,
+                                                                     Y_val)
 
         if save_transformed_data:
             scaled_reshaped_data_filename = os.path.join(results_dirname_this_net,
@@ -407,17 +412,8 @@ def train(train_data_dict_path,
     # so that paths where results were saved are automatically in config
     config = ConfigParser()
     config.read(config_file)
-    config.set(section='DATA',
-               option='n_syllables',
-               value=str(n_syllables))
     config.set(section='OUTPUT',
                option='results_dir_made_by_main_script',
                value=results_dirname)
     with open(config_file, 'w') as config_file_rewrite:
         config.write(config_file_rewrite)
-
-
-if __name__ == "__main__":
-    config_file = os.path.normpath(sys.argv[1])
-    config = config.parse.parse_config(config_file)
-    train(config_file)

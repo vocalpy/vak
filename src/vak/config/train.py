@@ -17,8 +17,8 @@ class TrainConfig:
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
-    train_data_dict_path : str
-        path to training data
+    train_vds_path : str
+        path to saved VocalizationDataset that contains training data
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -27,9 +27,11 @@ class TrainConfig:
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    val_data_dict_path : str
-        path to validation data. Default is None, in which case accuracy is not measured
-        on a validation set during training.
+    val_vds_path : str
+        path to saved VocalizationDataset that contains validation data.
+        Default is None, in which case accuracy is not measured on a validation set during training.
+    test_vds_path : str
+        path to saved VocalizationDataset that contains test data. Default is None.
     val_error_step : int
         step/epoch at which to estimate accuracy using validation set.
         Default is None, in which case no validation is done.
@@ -65,13 +67,13 @@ class TrainConfig:
     """
     # required for both train and learncurve
     networks = attr.ib(validator=instance_of(list))
-    train_data_dict_path = attr.ib(validator=[instance_of(str), is_a_file])
+    train_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
     num_epochs = attr.ib(validator=instance_of(int))
 
     # used for both train and learncurve, but optional
     normalize_spectrograms = attr.ib(validator=optional(instance_of(bool)), default=False)
-    val_data_dict_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
-    test_data_dict_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
+    val_vds_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
+    test_vds_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
     val_error_step = attr.ib(validator=optional(instance_of(int)), default=None)
     checkpoint_step = attr.ib(validator=optional(instance_of(int)), default=None)
     patience = attr.ib(validator=optional(instance_of(int)), default=None)
@@ -113,8 +115,9 @@ def parse_train_config(config, config_file):
                     config['TRAIN']['networks'].split(',')]
         for network_name in networks:
             if network_name not in NETWORK_NAMES:
-                raise TypeError('Neural network {} not found when importing installed networks.'
-                                .format(network))
+                raise TypeError(
+                    f'Neural network {network_name} not found when importing installed networks.'
+                )
         config_dict['networks'] = networks
     except NoOptionError:
         raise KeyError("'networks' option not found in [TRAIN] section of config.ini file. "
@@ -122,9 +125,9 @@ def parse_train_config(config, config_file):
                        "networks = TweetyNet, GRUnet, convnet")
 
     try:
-        config_dict['train_data_dict_path'] = config['TRAIN']['train_data_path']
+        config_dict['train_vds_path'] = config['TRAIN']['train_vds_path']
     except NoOptionError:
-        raise KeyError("'train_data_path' option not found in [TRAIN] section of config.ini file. "
+        raise KeyError("'train_vds_path' option not found in [TRAIN] section of config.ini file. "
                        "Please add this option.")
 
     if config.has_option('TRAIN', 'train_set_durs'):
@@ -135,11 +138,11 @@ def parse_train_config(config, config_file):
     if config.has_option('TRAIN', 'replicates'):
         config_dict['num_replicates'] = int(config['TRAIN']['replicates'])
 
-    if config.has_option('TRAIN', 'val_data_path'):
-        config_dict['val_data_dict_path'] = config['TRAIN']['val_data_path']
+    if config.has_option('TRAIN', 'val_vds_path'):
+        config_dict['val_vds_path'] = config['TRAIN']['val_vds_path']
 
-    if config.has_option('TRAIN', 'test_data_path'):
-        config_dict['test_data_dict_path'] = config['TRAIN']['test_data_path']
+    if config.has_option('TRAIN', 'test_vds_path'):
+        config_dict['test_vds_path'] = config['TRAIN']['test_vds_path']
 
     if config.has_option('TRAIN', 'val_error_step'):
         config_dict['val_error_step'] = int(config['TRAIN']['val_error_step'])
@@ -149,7 +152,7 @@ def parse_train_config(config, config_file):
 
     if config.has_option('TRAIN', 'save_only_single_checkpoint_file'):
         config_dict['save_only_single_checkpoint_file'] = config.getboolean(
-            'TRAIN','save_only_single_checkpoint_file'
+            'TRAIN', 'save_only_single_checkpoint_file'
         )
 
     if config.has_option('TRAIN', 'num_epochs'):

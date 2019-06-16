@@ -2,21 +2,16 @@
 import os
 import tempfile
 import shutil
-from glob import glob
+from pathlib import Path
 import unittest
 from configparser import ConfigParser
 
 import vak.cli.train
 
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE,
-                             '..',
-                             '..',
-                             'test_data')
-SETUP_SCRIPTS_DIR = os.path.join(HERE,
-                                 '..',
-                                 '..',
-                                 'setup_scripts')
+
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
 class TestTrain(unittest.TestCase):
@@ -34,12 +29,12 @@ class TestTrain(unittest.TestCase):
         # rewrite config so it points to data for testing + temporary output dirs
         config = ConfigParser()
         config.read(self.tmp_config_path)
-        test_data_spects_path = glob(os.path.join(TEST_DATA_DIR,
-                                                  'spects',
-                                                  'spectrograms_*'))[0]
-        config['TRAIN']['train_data_path'] = os.path.join(test_data_spects_path, 'train_data_dict')
-        config['TRAIN']['val_data_path'] = os.path.join(test_data_spects_path, 'val_data_dict')
-        config['TRAIN']['test_data_path'] = os.path.join(test_data_spects_path, 'test_data_dict')
+        test_data_vds_path = list(TEST_DATA_DIR.glob('vds'))[0]
+        for stem in ['train', 'test', 'val']:
+            vds_path = list(test_data_vds_path.glob(f'*.{stem}.vds.json'))
+            self.assertTrue(len(vds_path) == 1)
+            vds_path = vds_path[0]
+            config['TRAIN'][f'{stem}_vds_path'] = str(vds_path)
         config['DATA']['output_dir'] = self.tmp_output_dir
         config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
@@ -53,13 +48,28 @@ class TestTrain(unittest.TestCase):
     def test_train_func(self):
         # make sure train runs without crashing.
         config = vak.config.parse.parse_config(self.tmp_config_path)
-        vak.cli.train(train_data_dict_path=config.train.train_data_dict_path,
-                      val_data_dict_path=config.train.val_data_dict_path,
-                      spect_params=config.spect_params,
+        vak.cli.train(train_vds_path=config.train.train_vds_path,
+                      val_vds_path=config.train.val_vds_path,
                       networks=config.networks,
                       num_epochs=config.train.num_epochs,
                       config_file=self.tmp_config_path,
                       val_error_step=config.train.val_error_step,
+                      checkpoint_step=config.train.checkpoint_step,
+                      patience=config.train.patience,
+                      save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
+                      normalize_spectrograms=config.train.normalize_spectrograms,
+                      root_results_dir=config.output.root_results_dir,
+                      save_transformed_data=False)
+
+    def test_train_func_no_val_set(self):
+        # make sure train runs without a validation set
+        config = vak.config.parse.parse_config(self.tmp_config_path)
+        vak.cli.train(train_vds_path=config.train.train_vds_path,
+                      val_vds_path=None,
+                      networks=config.networks,
+                      num_epochs=config.train.num_epochs,
+                      config_file=self.tmp_config_path,
+                      val_error_step=None,
                       checkpoint_step=config.train.checkpoint_step,
                       patience=config.train.patience,
                       save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
