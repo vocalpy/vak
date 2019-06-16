@@ -115,8 +115,9 @@ def parse_train_config(config, config_file):
                     config['TRAIN']['networks'].split(',')]
         for network_name in networks:
             if network_name not in NETWORK_NAMES:
-                raise TypeError('Neural network {} not found when importing installed networks.'
-                                .format(network))
+                raise TypeError(
+                    f'Neural network {network_name} not found when importing installed networks.'
+                )
         config_dict['networks'] = networks
     except NoOptionError:
         raise KeyError("'networks' option not found in [TRAIN] section of config.ini file. "
