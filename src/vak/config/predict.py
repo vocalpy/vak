@@ -19,9 +19,6 @@ class PredictConfig:
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
-    labels_mapping_path : str
-        path to file that contains labels mapping, to convert output from consecutive
-        digits back to labels used for audio segments (e.g. birdsong syllables)
     dir_to_predict : str
         path to directory where input files are located
     spect_scaler_path : str
@@ -31,7 +28,6 @@ class PredictConfig:
     """
     checkpoint_path = attr.ib(validator=[instance_of(str), is_a_directory])
     networks = attr.ib()
-    labels_mapping_path = attr.ib(validator=[instance_of(str), is_a_file])
     dir_to_predict = attr.ib(validator=[instance_of(str), is_a_directory])
     spect_scaler_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
 
@@ -77,12 +73,6 @@ def parse_predict_config(config):
         raise KeyError("'networks' option not found in [PREDICT] section of config.ini file. "
                        "Please add this option as a comma-separated list of neural network names, e.g.:\n"
                        "networks = TweetyNet, GRUnet, convnet")
-
-    try:
-        config_dict['labels_mapping_path'] = config['PREDICT']['labels_mapping_path']
-    except NoOptionError:
-        raise KeyError('must specify labels_mapping_path in [PREDICT] section '
-                       'of config.ini file')
 
     try:
         config_dict['dir_to_predict'] = config['PREDICT']['dir_to_predict']

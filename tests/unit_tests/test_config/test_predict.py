@@ -8,6 +8,7 @@ from glob import glob
 
 import vak.config.predict
 import vak.utils
+from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
@@ -22,11 +23,12 @@ class TestParsePredictConfig(unittest.TestCase):
         self.tmp_dir_to_predict = os.path.join(self.tmp_dir_to_predict, '032312')
         os.makedirs(self.tmp_dir_to_predict)
 
-        a_results_dir = glob(os.path.join(TEST_DATA_DIR, 'results', 'results_*'))[0]
-        labels_mapping_path = glob(os.path.join(a_results_dir, 'labels_mapping'))[0]
+        a_results_dir = glob(os.path.join(TEST_DATA_DIR,
+                                          'results',
+                                          f'{LEARN_CURVE_DIR_STEM}*'))[0]
         a_training_records_dir = glob(os.path.join(a_results_dir,
-                                                   'records_for_training_set*')
-                                      )[0]
+                                                   'train',
+                                                   'records_for_training_set*'))[0]
         checkpoint_path = os.path.join(a_training_records_dir, 'TweetyNet', 'checkpoints')
         spect_scaler = glob(os.path.join(a_training_records_dir, 'spect_scaler_*'))[0]
 
@@ -35,7 +37,6 @@ class TestParsePredictConfig(unittest.TestCase):
         config = ConfigParser()
         config.read(a_config)
         config['PREDICT']['checkpoint_path'] = checkpoint_path
-        config['PREDICT']['labels_mapping_path'] = labels_mapping_path
         config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
         config['PREDICT']['spect_scaler_path'] = spect_scaler
         self.config_obj = config

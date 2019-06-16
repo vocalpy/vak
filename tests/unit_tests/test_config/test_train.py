@@ -15,21 +15,21 @@ TEST_CONFIGS_DIR = os.path.join(TEST_DATA_DIR, 'configs')
 
 class TestParseTrainConfig(unittest.TestCase):
     def setUp(self):
-        _, self.tmp_train_data_path = tempfile.mkstemp()
-        _, self.tmp_val_data_path = tempfile.mkstemp()
-        _, self.tmp_test_data_path = tempfile.mkstemp()
+        _, self.tmp_train_vds_path = tempfile.mkstemp()
+        _, self.tmp_val_vds_path = tempfile.mkstemp()
+        _, self.tmp_test_vds_path = tempfile.mkstemp()
 
         self.config_file = os.path.join(TEST_DATA_DIR, 'configs', 'test_learncurve_config.ini')
         self.config_obj = ConfigParser()
         self.config_obj.read(self.config_file)
-        self.config_obj['TRAIN']['train_data_path'] = self.tmp_train_data_path
-        self.config_obj['TRAIN']['val_data_path'] = self.tmp_val_data_path
-        self.config_obj['TRAIN']['test_data_path'] = self.tmp_test_data_path
+        self.config_obj['TRAIN']['train_vds_path'] = self.tmp_train_vds_path
+        self.config_obj['TRAIN']['val_vds_path'] = self.tmp_val_vds_path
+        self.config_obj['TRAIN']['test_vds_path'] = self.tmp_test_vds_path
 
     def tearDown(self):
-        os.remove(self.tmp_train_data_path)
-        os.remove(self.tmp_val_data_path)
-        os.remove(self.tmp_test_data_path)
+        os.remove(self.tmp_train_vds_path)
+        os.remove(self.tmp_val_vds_path)
+        os.remove(self.tmp_test_vds_path)
 
     def test_parse_train_config_returns_TrainConfig_instance(self):
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
@@ -46,7 +46,7 @@ class TestParseTrainConfig(unittest.TestCase):
             vak.config.train.parse_train_config(self.config_obj, self.config_file)
 
     def test_no_train_path_raises(self):
-        self.config_obj.remove_option('TRAIN', 'train_data_path')
+        self.config_obj.remove_option('TRAIN', 'train_vds_path')
         with self.assertRaises(KeyError):
             vak.config.train.parse_train_config(self.config_obj, self.config_file)
 
@@ -61,14 +61,14 @@ class TestParseTrainConfig(unittest.TestCase):
         self.assertTrue(train_config_obj.num_replicates is None)
 
     def test_val_data_dict_path_default(self):
-        self.config_obj.remove_option('TRAIN', 'val_data_path')
+        self.config_obj.remove_option('TRAIN', 'val_vds_path')
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_obj.val_data_dict_path is None)
+        self.assertTrue(train_config_obj.val_vds_path is None)
 
-    def test_test_data_dict_path_default(self):
-        self.config_obj.remove_option('TRAIN', 'test_data_path')
+    def test_test_vds_path_default(self):
+        self.config_obj.remove_option('TRAIN', 'test_vds_path')
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_obj.test_data_dict_path is None)
+        self.assertTrue(train_config_obj.test_vds_path is None)
 
     def test_val_error_step_default(self):
         self.config_obj.remove_option('TRAIN', 'val_error_step')

@@ -3,9 +3,9 @@ TMP_CONFIG_FILE=./tests/setup_scripts/tmp_Makefile_config.ini
 CBIN_DIR=./tests/test_data/cbins/gy6or6/032312
 CBINS=$(wildcard $(CBIN_DIR)/*.cbin)
 NOTDIR_CBINS=$(notdir $(CBINS))
-SPECT_FILES=$(patsubst %.cbin, ./tests/test_data/spects/%.cbin.spect, $(NOTDIR_CBINS))
-SPECTS_SCRIPT=./tests/setup_scripts/remake_spects.py
-RESULTS_SCRIPT=./tests/setup_scripts/remake_results.py
+SPECT_FILES=$(patsubst %.cbin, ./tests/test_data/vds/%.cbin.spect.npz, $(NOTDIR_CBINS))
+SPECTS_SCRIPT=./tests/setup_scripts/rerun_prep.py
+RESULTS_SCRIPT=./tests/setup_scripts/rerun_learncurve.py
 
 .PHONY: variables clean download config data results all
 
@@ -18,7 +18,7 @@ variables:
 
 clean :
 	rm -rf ./tests/test_data/results/*
-	rm -rf ./tests/test_data/spects/*
+	rm -rf ./tests/test_data/vds/*
 	rm $(TMP_CONFIG_FILE)
 
 download :
