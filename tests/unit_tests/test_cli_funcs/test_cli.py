@@ -28,8 +28,11 @@ class TestCli(unittest.TestCase):
         # copy temporary configs inside TEST_CONFIGS_PATH
         predict_config = TEST_CONFIGS_PATH.joinpath('test_predict_config.ini')
         learncurve_config = TEST_CONFIGS_PATH.joinpath('test_learncurve_config.ini')
-        self.tmp_predict_config_path = TEST_CONFIGS_PATH.joinpath('tmp_predict_config.ini')
-        self.tmp_learncurve_config_path = TEST_CONFIGS_PATH.joinpath('tmp_learncurve_config.ini')
+        self.tmp_config_dir = Path(tempfile.mkdtemp())
+        self.tmp_predict_config_path = self.tmp_config_dir.joinpath(
+            'tmp_predict_config.ini')
+        self.tmp_learncurve_config_path = self.tmp_config_dir.joinpath(
+            'tmp_learncurve_config.ini')
         shutil.copy(predict_config, self.tmp_predict_config_path)
         shutil.copy(learncurve_config, self.tmp_learncurve_config_path)
 
@@ -42,7 +45,6 @@ class TestCli(unittest.TestCase):
         os.makedirs(self.tmp_dir_to_predict)
         src = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         copydir(src=src, dst=self.tmp_dir_to_predict)
-
 
         a_results_dir = TEST_DATA_DIR.joinpath(
             'results'
@@ -94,10 +96,9 @@ class TestCli(unittest.TestCase):
                 config.write(fp)
 
     def tearDown(self):
-        os.remove(self.tmp_predict_config_path)
-        os.remove(self.tmp_learncurve_config_path)
         shutil.rmtree(self.tmp_output_dir)
         shutil.rmtree(self.tmp_dir_to_predict)
+        shutil.rmtree(self.tmp_config_dir)
 
     def test_prep_command(self):
         # remove data path options, this function should work without them
