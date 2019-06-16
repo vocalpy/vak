@@ -23,7 +23,7 @@ URL = 'https://github.com/NickleDave/vak'
 EMAIL = 'dnicho4@emory.edu'
 AUTHOR = 'David Nicholson, Yarden Cohen'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.1.0a8'
+VERSION = '0.1.0'
 LICENSE = 'BSD'
 
 REQUIRED = [
