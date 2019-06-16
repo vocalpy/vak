@@ -152,31 +152,30 @@ def learncurve(train_vds_path,
     if logging.StreamHandler not in [type(handler) for handler in logger.handlers]:
         logger.addHandler(logging.StreamHandler(sys.stdout))
 
-    train_dirname = train(train_vds_path,
-                          total_train_set_duration,
-                          train_set_durs,
-                          num_replicates,
-                          networks,
-                          num_epochs,
-                          results_dirname,
-                          val_vds_path,
-                          val_error_step,
-                          checkpoint_step,
-                          patience,
-                          save_only_single_checkpoint_file,
-                          normalize_spectrograms,
-                          use_train_subsets_from_previous_run,
-                          previous_run_path,
-                          save_transformed_data)
+    train(train_vds_path,
+          total_train_set_duration,
+          train_set_durs,
+          num_replicates,
+          networks,
+          num_epochs,
+          results_dirname,
+          val_vds_path,
+          val_error_step,
+          checkpoint_step,
+          patience,
+          save_only_single_checkpoint_file,
+          normalize_spectrograms,
+          use_train_subsets_from_previous_run,
+          previous_run_path,
+          save_transformed_data)
 
-    test(train_dirname,
+    test(results_dirname,
          test_vds_path,
          train_vds_path,
          networks,
          train_set_durs,
          num_replicates,
-         results_dirname,
-         normalize_spectrograms,
-         save_transformed_data)
+         normalize_spectrograms=normalize_spectrograms,
+         save_transformed_data=save_transformed_data)
 
     return results_dirname
