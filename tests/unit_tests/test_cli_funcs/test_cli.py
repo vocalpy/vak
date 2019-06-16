@@ -70,27 +70,22 @@ class TestCli(unittest.TestCase):
                 config['PREDICT']['spect_scaler_path'] = spect_scaler
 
             if config.has_section('TRAIN'):
-                test_data_spects_path = TEST_DATA_DIR.joinpath(
-                    'vds').glob(
-                    'spectrograms_*')
-                test_data_spects_path = list(test_data_spects_path)[0]
+                test_data_vds_path = TEST_DATA_DIR.joinpath('vds')
 
-                train_vds_path = Path(test_data_spects_path).glob('*train.vds.json')
+                train_vds_path = test_data_vds_path.glob('*train.vds.json')
                 train_vds_path = str(list(train_vds_path)[0])
                 config['TRAIN']['train_vds_path'] = train_vds_path
 
-                val_vds_path = Path(test_data_spects_path).glob('*val.vds.json')
+                val_vds_path = test_data_vds_path.glob('*val.vds.json')
                 val_vds_path = str(list(val_vds_path)[0])
                 config['TRAIN']['val_vds_path'] = val_vds_path
 
-                test_vds_path = Path(test_data_spects_path).glob('*test.vds.json')
-                test_vds_path = str(list(train_vds_path)[0])
+                test_vds_path = test_data_vds_path.glob('*test.vds.json')
+                test_vds_path = str(list(test_vds_path)[0])
                 config['TRAIN']['test_vds_path'] = test_vds_path
 
                 config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
-                config['OUTPUT']['results_dir_made_by_main_script'] = glob(os.path.join(TEST_DATA_DIR,
-                                                                                        'results',
-                                                                                        'results_*'))[0]
+                config['OUTPUT']['results_dir_made_by_main_script'] = str(a_results_dir)
 
             with open(tmp_config_path, 'w') as fp:
                 config.write(fp)
