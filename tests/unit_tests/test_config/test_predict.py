@@ -26,9 +26,9 @@ class TestParsePredictConfig(unittest.TestCase):
         a_results_dir = glob(os.path.join(TEST_DATA_DIR,
                                           'results',
                                           f'{LEARN_CURVE_DIR_STEM}*'))[0]
-        a_training_records_dir = glob(os.path.join(a_results_dir, 'train'
-                                                   'records_for_training_set*')
-                                      )[0]
+        a_training_records_dir = glob(os.path.join(a_results_dir,
+                                                   'train',
+                                                   'records_for_training_set*'))[0]
         checkpoint_path = os.path.join(a_training_records_dir, 'TweetyNet', 'checkpoints')
         spect_scaler = glob(os.path.join(a_training_records_dir, 'spect_scaler_*'))[0]
 
