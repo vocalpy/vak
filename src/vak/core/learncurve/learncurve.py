@@ -6,29 +6,29 @@ from datetime import datetime
 
 import numpy as np
 
-from vak.core._learncurve.train import train
-from vak.core._learncurve.test import test
+from .train import train
+from .test import test
 
 LEARN_CURVE_DIR_STEM = 'learning_curve.'
 
 
-def learncurve(train_vds_path,
-               val_vds_path,
-               test_vds_path,
-               total_train_set_duration,
-               train_set_durs,
-               num_replicates,
-               networks,
-               num_epochs,
-               val_error_step=None,
-               checkpoint_step=None,
-               patience=None,
-               save_only_single_checkpoint_file=True,
-               normalize_spectrograms=False,
-               use_train_subsets_from_previous_run=False,
-               previous_run_path=None,
-               save_transformed_data=False,
-               output_dir=None):
+def learning_curve(train_vds_path,
+                   val_vds_path,
+                   test_vds_path,
+                   total_train_set_duration,
+                   train_set_durs,
+                   num_replicates,
+                   networks,
+                   num_epochs,
+                   val_error_step=None,
+                   checkpoint_step=None,
+                   patience=None,
+                   save_only_single_checkpoint_file=True,
+                   normalize_spectrograms=False,
+                   use_train_subsets_from_previous_run=False,
+                   previous_run_path=None,
+                   save_transformed_data=False,
+                   output_dir=None):
     """generate learning curve, by first running learncurve.train
     to train models with a range of training set sizes, and then
     running learncurve.test to measure accuracy of those models on
