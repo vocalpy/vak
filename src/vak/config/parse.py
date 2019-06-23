@@ -12,6 +12,7 @@ from .train import parse_train_config, TrainConfig
 from .output import parse_output_config, OutputConfig
 from .predict import parse_predict_config, PredictConfig
 from .. import network
+from .validators import are_sections_valid, are_options_valid
 
 
 def _get_nets_config(config_obj, networks):
@@ -135,20 +136,25 @@ def parse_config(config_file):
         print(f"Unexpected error when opening the following config_file: {config_file}")
         raise
 
+    are_sections_valid(config_obj, config_file)
+
     config_dict = {}
     if config_obj.has_section('DATA'):
         config_dict['data'] = parse_data_config(config_obj, config_file)
 
     ### if **not** using spectrograms from .mat files ###
     if config_obj.has_section('SPECTROGRAM'):
+        are_options_valid(config_obj, 'SPECTROGRAM', config_file)
         config_dict['spect_params'] = parse_spect_config(config_obj)
 
     networks = []
     if config_obj.has_section('TRAIN'):
+        are_options_valid(config_obj, 'TRAIN', config_file)
         config_dict['train'] = parse_train_config(config_obj, config_file)
         networks += config_dict['train'].networks
 
     if config_obj.has_section('PREDICT'):
+        are_options_valid(config_obj, 'PREDICT', config_file)
         config_dict['predict'] = parse_predict_config(config_obj)
         networks += config_dict['predict'].networks
 
@@ -156,6 +162,7 @@ def parse_config(config_file):
         config_dict['networks'] = _get_nets_config(config_obj, networks)
 
     if config_obj.has_section('OUTPUT'):
+        are_options_valid(config_obj, 'OUTPUT', config_file)
         config_dict['output'] = parse_output_config(config_obj)
 
     return Config(**config_dict)
