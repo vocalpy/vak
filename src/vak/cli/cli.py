@@ -56,6 +56,7 @@ def cli(command, config_file):
              spect_params=spect_params)
 
     elif command == 'train':
+        data_config = parse_data_config(config_obj, config_file)
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
         output_config = parse_output_config(config_obj)
@@ -70,7 +71,7 @@ def cli(command, config_file):
               save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
               normalize_spectrograms=train_config.normalize_spectrograms,
               root_results_dir=output_config.root_results_dir,
-              save_transformed_data=train_config.save_transformed_data)
+              save_transformed_data=data_config.save_transformed_data)
 
     elif command == 'finetune':
         raise NotImplementedError
