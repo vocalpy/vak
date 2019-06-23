@@ -58,7 +58,7 @@ def prep(data_dir,
         corresponding annotation contains labels that are not found in labelset
     output_dir : str
         Path to location where data sets should be saved. Default is None,
-        in which case data sets are saved in the current working directory.
+        in which case data sets is saved in data_dir.
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
     spect_format : str
