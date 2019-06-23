@@ -1,4 +1,5 @@
 """parses [TRAIN] section of config"""
+import os
 from configparser import NoOptionError
 
 import attr
@@ -119,7 +120,7 @@ def parse_train_config(config, config_file):
                        "networks = TweetyNet, GRUnet, convnet")
 
     try:
-        config_dict['train_vds_path'] = config['TRAIN']['train_vds_path']
+        config_dict['train_vds_path'] = os.path.expanduser(config['TRAIN']['train_vds_path'])
     except NoOptionError:
         raise KeyError("'train_vds_path' option not found in [TRAIN] section of config.ini file. "
                        "Please add this option.")
@@ -133,10 +134,10 @@ def parse_train_config(config, config_file):
         config_dict['num_replicates'] = int(config['TRAIN']['replicates'])
 
     if config.has_option('TRAIN', 'val_vds_path'):
-        config_dict['val_vds_path'] = config['TRAIN']['val_vds_path']
+        config_dict['val_vds_path'] = os.path.expanduser(config['TRAIN']['val_vds_path'])
 
     if config.has_option('TRAIN', 'test_vds_path'):
-        config_dict['test_vds_path'] = config['TRAIN']['test_vds_path']
+        config_dict['test_vds_path'] = os.path.expanduser(config['TRAIN']['test_vds_path'])
 
     if config.has_option('TRAIN', 'val_error_step'):
         config_dict['val_error_step'] = int(config['TRAIN']['val_error_step'])
@@ -175,7 +176,7 @@ def parse_train_config(config, config_file):
             'TRAIN', 'use_train_subsets_from_previous_run')
         if config_dict['use_train_subsets_from_previous_run']:
             try:
-                config_dict['previous_run_path'] = config['TRAIN']['previous_run_path']
+                config_dict['previous_run_path'] = os.path.expanduser(config['TRAIN']['previous_run_path'])
             except KeyError:
                 raise KeyError('In config.file {}, '
                                'use_train_subsets_from_previous_run = Yes, but '
