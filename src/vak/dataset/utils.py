@@ -25,7 +25,7 @@ def _validate_durs(train_dur, val_dur, test_dur, vds_dur):
     If only val_dur is specified, this raises a ValDurError; not clear what durations of training
     and test set should be.
 
-    If only train_dur is specified, then test_dur is set to -1; similarly if oly test_dur is
+    If only train_dur is specified, then test_dur is set to -1; similarly if only test_dur is
     specified, then train_dur is set to -1. Other functions interpret this as "first get the
     split for the set with a value specified, then use the remainder of the dataset in the split
     whose duration is set to -1".
@@ -49,8 +49,8 @@ def _validate_durs(train_dur, val_dur, test_dur, vds_dur):
         raise ValueError("train_dur, val_dur, and test_dur were all None; must specify at least train_dur or test_dur")
 
     else:
-        if not all([dur > 0 or dur == -1 for dur in (train_dur, val_dur, test_dur) if dur is not None]):
-            raise InvalidDurationError("all durations for split must be real positive number or "
+        if not all([dur >= 0 or dur == -1 for dur in (train_dur, val_dur, test_dur) if dur is not None]):
+            raise InvalidDurationError("all durations for split must be real non-negative number or "
                                        "set to -1 (meaning 'use the remaining dataset)")
 
         if val_dur and train_dur is None and test_dur is None:
