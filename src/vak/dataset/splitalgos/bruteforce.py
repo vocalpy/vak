@@ -123,7 +123,11 @@ def brute_force(durs,
                     break
 
         else:
-            choice = ['train', 'test']
+            choice = []
+            if train_dur > 0:
+                choice.append('train')
+            if test_dur > 0:
+                choice.append('test')
             if val_dur:
                 choice.append('val')
 
@@ -191,9 +195,10 @@ def brute_force(durs,
                 [tup[1] for tup in train_tups])
             train_labels = set(train_labels)  # make set to get unique values
 
-            test_labels = itertools.chain.from_iterable(
-                [tup[1] for tup in test_tups])
-            test_labels = set(test_labels)
+            if test_dur > 0:
+                test_labels = itertools.chain.from_iterable(
+                    [tup[1] for tup in test_tups])
+                test_labels = set(test_labels)
 
             if val_dur:
                 val_labels = itertools.chain.from_iterable(
@@ -210,17 +215,20 @@ def brute_force(durs,
                         f'Getting new training set. Iteration {iter}'
                     )
                     continue
-            elif test_labels != set(labelset):
-                iter += 1
-                if iter > max_iter:
-                    raise ValueError(all_labels_err)
-                else:
-                    logger.debug(
-                        'Test labels did not contain all labels in labelset. '
-                        f'Getting new test set. Iteration {iter}'
-                    )
-                    continue
-            elif val_dur is not None and val_labels != set(labelset):
+
+            if test_dur > 0:
+                if test_labels != set(labelset):
+                    iter += 1
+                    if iter > max_iter:
+                        raise ValueError(all_labels_err)
+                    else:
+                        logger.debug(
+                            'Test labels did not contain all labels in labelset. '
+                            f'Getting new test set. Iteration {iter}'
+                        )
+                        continue
+
+            if val_dur is not None and val_labels != set(labelset):
                 iter += 1
                 if iter > max_iter:
                     raise ValueError(all_labels_err)
