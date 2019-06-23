@@ -103,6 +103,14 @@ def prep(data_dir,
             else:
                 labelset = labelset_set
 
+    if output_dir:
+        if not os.path.isdir(output_dir):
+            raise NotADirectoryError(
+                f'output_dir not found: {output_dir}'
+            )
+    elif output_dir is None:
+        output_dir = data_dir
+
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
