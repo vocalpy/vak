@@ -50,6 +50,11 @@ EXTRAS = {
     'dev': dev_deps,
 }
 
+# need to make sure the valid.ini file in vak/config/ gets included
+PACKAGE_DATA = {
+                   '': ['*.ini',],
+               },
+
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
 # Except, perhaps the License and Trove Classifiers!
@@ -131,6 +136,7 @@ setup(
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
+    package_data=PACKAGE_DATA,
     include_package_data=True,
     license=LICENSE,
     classifiers=[
