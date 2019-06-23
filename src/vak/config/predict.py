@@ -1,5 +1,6 @@
 """parses [PREDICT] section of config"""
 from configparser import NoOptionError
+import os
 
 import attr
 from attr.validators import instance_of, optional
@@ -75,12 +76,13 @@ def parse_predict_config(config):
                        "networks = TweetyNet, GRUnet, convnet")
 
     try:
-        config_dict['dir_to_predict'] = config['PREDICT']['dir_to_predict']
+        dir_to_predict = config['PREDICT']['dir_to_predict']
     except NoOptionError:
         raise KeyError('must specify dir_to_predict in [PREDICT] section '
                        'of config.ini file')
+    config_dict['dir_to_predict'] = os.path.expanduser(dir_to_predict)
 
-    if config.has_option('PREDICT','spect_scaler_path'):
+    if config.has_option('PREDICT', 'spect_scaler_path'):
         config_dict['spect_scaler_path'] = config['PREDICT']['spect_scaler_path']
 
     return PredictConfig(**config_dict)
