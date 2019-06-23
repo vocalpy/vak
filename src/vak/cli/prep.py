@@ -160,8 +160,12 @@ def prep(data_dir,
                                                                      test_dur=test_dur)
             val_vds = None
 
-        vds_to_save_keys = ['train', 'test']
-        vds_to_save_vals = [train_vds, test_vds]
+        vds_to_save_keys = ['train']
+        vds_to_save_vals = [train_vds]
+
+        if test_dur > 0:
+            vds_to_save_keys.append('test')
+            vds_to_save_vals.append(test_vds)
 
         if val_dur is not None:
             vds_to_save_keys.append('val')
