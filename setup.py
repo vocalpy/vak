@@ -17,14 +17,18 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'vak'
-DESCRIPTION = 'library to work with neural networks that segment and annotate vocalizations'
-URL = 'https://github.com/NickleDave/vak'
-EMAIL = 'dnicho4@emory.edu'
-AUTHOR = 'David Nicholson, Yarden Cohen'
+about = {}
+with open("src/vak/__about__.py") as fp:
+    exec(fp.read(), about)
+
+NAME = about['__title__']
+DESCRIPTION = about['__summary__']
+URL = about['__uri__']
+EMAIL = about['__email__']
+AUTHOR = about['__author__']
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.1.0'
-LICENSE = 'BSD'
+VERSION = about['__version__']
+LICENSE = about['__license__']
 
 REQUIRED = [
     'tensorflow', 'numpy', 'scipy', 'matplotlib', 'dask', 'joblib', 'tqdm', 'attrs', 'crowsetta>=1.1.1',
