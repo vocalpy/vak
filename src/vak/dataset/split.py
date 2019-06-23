@@ -123,7 +123,12 @@ def train_test_dur_split(vds,
                                                                 val_dur=val_dur)
 
     train_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in train_inds], labelset=labelset)
-    test_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in test_inds], labelset=labelset)
+
+    if test_dur > 0:
+        test_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in test_inds], labelset=labelset)
+    else:
+        test_vds = None
+
     if val_inds:
         val_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in val_inds], labelset=labelset)
     else:
