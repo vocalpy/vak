@@ -1,5 +1,7 @@
-"""validators used by attrs-based classes"""
+"""validators used by attrs-based classes and by vak.parse.parse_config"""
+from configparser import ConfigParser
 import os
+from pathlib import Path
 
 from scipy.io import wavfile
 import crowsetta.formats
@@ -54,4 +56,36 @@ def is_spect_format(instance, attribute, value):
         raise ValueError(
             f'{value} is not a valid format for spectrogram files.\n'
             f'Valid formats are: {VALID_SPECT_FORMATS}'
+        )
+
+
+CONFIG_DIR = Path(__file__).parent
+VALID_INI_PATH = CONFIG_DIR.joinpath('valid.ini')
+VALID_INI = ConfigParser()
+VALID_INI.read(VALID_INI_PATH)
+VALID_SECTIONS = VALID_INI.sections()
+VALID_OPTIONS = {
+    section: VALID_INI.options(section)
+    for section in VALID_SECTIONS
+}
+
+
+def are_sections_valid(user_config_parser, user_config_path):
+    user_sections = user_config_parser.sections()
+    for section in user_sections:
+        if section not in VALID_SECTIONS:
+            raise ValueError(
+                f'section defined in {user_config_path} is not '
+                f'valid: {section}'
+            )
+
+
+def are_options_valid(user_config_parser, section, user_config_path):
+    user_options = set(user_config_parser.options(section))
+    valid_options = set(VALID_OPTIONS[section])
+    if not user_options.issubset(valid_options):
+        invalid_options = user_options - valid_options
+        raise ValueError(
+            f"the following options from {section} section in "
+            f"{user_config_path} are not valid: {invalid_options}"
         )
