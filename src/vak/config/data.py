@@ -121,7 +121,7 @@ def parse_data_config(config, config_file):
         config_dict['annot_format'] = config['DATA']['annot_format']
 
     if config.has_option('DATA', 'annot_file'):
-        config_dict['annot_file'] = config['DATA']['annot_file']
+        config_dict['annot_file'] = os.path.expanduser(config['DATA']['annot_file'])
 
     if config.has_option('DATA', 'data_dir'):
         data_dir = config['DATA']['data_dir']
