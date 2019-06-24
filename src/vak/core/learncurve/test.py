@@ -160,7 +160,7 @@ def test(results_dirname,
                                       for labels in Y_train_labels for lbl in labels])
     Y_test_labels = [voc.annot.labels.tolist() for voc in test_vds.voc_list]
     Y_test_labels_for_lev = ''.join([chr(lbl) if type(lbl) is int else lbl
-                                     for labels in Y_train_labels for lbl in labels])
+                                     for labels in Y_test_labels for lbl in labels])
 
     replicates = range(1, num_replicates + 1)
     # initialize arrays to hold summary results
