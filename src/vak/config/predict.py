@@ -15,22 +15,35 @@ class PredictConfig:
 
     Attributes
     ----------
+    predict_vds_path : str
+        path to saved VocalizationDataset that contains data for which annotations
+        should be predicted.
+    train_vds_path : str
+        path to VocalizationDataset that represents training data.
+        To fetch labelmap used during training, to map labels used
+        in annotation to a series of consecutive integers that become
+        outputs of the neural network. Used here to convert
+        back to labels used in annotation.
     checkpoint_path : str
         path to directory with checkpoint files saved by Tensorflow, to reload model
+    train_vds_path : str
+        path to saved VocalizationDataset that contains data for which annotations
+        should be predicted.
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
-    dir_to_predict : str
-        path to directory where input files are located
     spect_scaler_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     """
+    predict_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
+    train_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
     checkpoint_path = attr.ib(validator=[instance_of(str), is_a_directory])
     networks = attr.ib()
-    dir_to_predict = attr.ib(validator=[instance_of(str), is_a_directory])
-    spect_scaler_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
+
+    spect_scaler_path = attr.ib(validator=optional([instance_of(str), is_a_file]),
+                                default=None)
 
 
 def parse_predict_config(config):
