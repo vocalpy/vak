@@ -1,6 +1,5 @@
 from configparser import ConfigParser
 import logging
-from math import isclose
 import os
 import pickle
 import shutil
@@ -12,11 +11,10 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-import vak.utils.spect
+from ..dataset.classes import VocalizationDataset
 from .. import network
 from .. import utils
-from .. import config
-from ..dataset.classes import VocalizationDataset
+from ..utils.spect import SpectScaler
 
 
 def train(train_vds_path,
@@ -222,7 +220,7 @@ def train(train_vds_path,
 
     if normalize_spectrograms:
         logger.info('will normalize spectrograms')
-        spect_scaler = vak.utils.spect.SpectScaler()
+        spect_scaler = SpectScaler()
         X_train = spect_scaler.fit_transform(X_train)
         if X_val is not None:
             logger.info('normalizing validation set to match training set')
