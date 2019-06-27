@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   + using the "Warehouse" approach from the PyPA page (thanks Donald Stufft)
     <https://packaging.python.org/guides/single-sourcing-package-version/#single-sourcing-the-version>
 
+### Fixed
+- syllable error rate calculated correctly for test data set by `vak.core.learning_curve.test`
+
 ## [0.1.0]
 ### Added
 - add helper function to TestLearncurve that multiple unit tests can use to assert all outputs 
