@@ -26,9 +26,6 @@ class PredictConfig:
         back to labels used in annotation.
     checkpoint_path : str
         path to directory with checkpoint files saved by Tensorflow, to reload model
-    train_vds_path : str
-        path to saved VocalizationDataset that contains data for which annotations
-        should be predicted.
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
@@ -63,8 +60,23 @@ def parse_predict_config(config):
     config_dict = {}
 
     try:
+        config_dict['predict_vds_path'] = os.path.expanduser(
+            config['PREDICT']['predict_vds_path']
+        )
+    except KeyError:
+        raise KeyError("'predict_vds_path' option not found in [PREDICT] section of "
+                            "config.ini file. Please add this option.")
+    try:
+        config_dict['train_vds_path'] = os.path.expanduser(
+            config['PREDICT']['train_vds_path']
+        )
+    except KeyError:
+        raise KeyError("'train_vds_path' option not found in [PREDICT] section of "
+                            "config.ini file. Please add this option.")
+
+    try:
         config_dict['checkpoint_path'] = config['PREDICT']['checkpoint_path']
-    except NoOptionError:
+    except KeyError:
         raise KeyError('must specify checkpoint_path in [PREDICT] section '
                        'of config.ini file')
 
@@ -87,13 +99,6 @@ def parse_predict_config(config):
         raise KeyError("'networks' option not found in [PREDICT] section of config.ini file. "
                        "Please add this option as a comma-separated list of neural network names, e.g.:\n"
                        "networks = TweetyNet, GRUnet, convnet")
-
-    try:
-        dir_to_predict = config['PREDICT']['dir_to_predict']
-    except NoOptionError:
-        raise KeyError('must specify dir_to_predict in [PREDICT] section '
-                       'of config.ini file')
-    config_dict['dir_to_predict'] = os.path.expanduser(dir_to_predict)
 
     if config.has_option('PREDICT', 'spect_scaler_path'):
         config_dict['spect_scaler_path'] = config['PREDICT']['spect_scaler_path']
