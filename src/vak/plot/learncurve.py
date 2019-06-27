@@ -7,7 +7,6 @@ from configparser import ConfigParser
 import joblib
 import numpy as np
 import matplotlib.pyplot as plt
-%matplotlib inline
 
 
 def get_all_results_list(root, these_dirs_branch, config_file):
