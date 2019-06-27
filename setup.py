@@ -52,8 +52,8 @@ EXTRAS = {
 
 # need to make sure the valid.ini file in vak/config/ gets included
 PACKAGE_DATA = {
-                   '': ['*.ini',],
-               },
+                   'vak': ['*.ini',],
+               }
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
@@ -115,7 +115,6 @@ class UploadCommand(Command):
         os.system('git push --tags')
 
         sys.exit()
-
 
 # Where the magic happens:
 setup(
