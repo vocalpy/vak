@@ -177,8 +177,8 @@ def predict(predict_vds_path,
             for lbl_tb, voc in zip(lbl_tbs, predict_vds.voc_list):
                 voc.metaspect.lbl_tb = lbl_tb
                 # TODO: change this when Crowsetta uses Annotation instead of Sequence
-                annot_dict = voc.annot.as_dict()
-                annot_dict['labels'] == lbl_tb2labels(lbl_tb, labelmap)
+                # annot_dict = voc.annot.as_dict()
+                labels = lbl_tb2labels(lbl_tb, labelmap)
                 voc.annot = crowsetta.Sequence.from_dict(annot_dict)
 
             if save_predict_vds:
