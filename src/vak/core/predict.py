@@ -1,7 +1,6 @@
 from glob import glob
 import os
 
-import attr
 import crowsetta
 import joblib
 import numpy as np
