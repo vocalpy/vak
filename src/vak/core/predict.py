@@ -1,6 +1,7 @@
 from glob import glob
 import os
 
+import attr
 import crowsetta
 import joblib
 import numpy as np
@@ -10,17 +11,18 @@ from tqdm import tqdm
 from ..dataset import VocalizationDataset
 from .. import network
 from ..utils.data import reshape_data_for_batching
-from ..utils.labels import lbl_tb2labels
+from ..utils.labels import lbl_tb2segments
 
 
 def predict(predict_vds_path,
             checkpoint_path,
             networks,
             labelmap,
-            spect_scaler_path=None,
-            save_predict_vds=True
-            ):
-    """make predictions with one trained model
+            spect_scaler_path=None):
+    """make predictions with one trained model.
+    For each path to a VocalizationDataset in predict_vds_path,
+    load that dataset, make predictions using the model, and then
+    save the dataset again to the same path.
 
     Parameters
     ----------
@@ -40,9 +42,6 @@ def predict(predict_vds_path,
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
         Default is None.
-    save_predict_vds : bool
-        if True, save VocalizationDataset after predicting labels.
-        Default is True.
 
     Returns
     -------
@@ -73,7 +72,7 @@ def predict(predict_vds_path,
         )
 
     n_classes = len(labelmap)  # used below when instantiating network
-    predict_vds_out = []
+
     for p_vds_path in predict_vds_path:
         predict_vds = VocalizationDataset.load(json_fname=p_vds_path)
 
@@ -97,7 +96,7 @@ def predict(predict_vds_path,
             timebin_dur = timebin_dur.pop()
         else:
             raise ValueError(
-                f'invalid time bin durations from training set: {timebin_dur}'
+                f'invalid time bin durations from VocalizationDataset: {timebin_dur}'
             )
 
         # transpose X_data, so rows are timebins and columns are frequency bins
@@ -173,16 +172,25 @@ def predict(predict_vds_path,
 
             lbl_tbs = [Y_pred[X_data_spect_ID_vector == ind]
                        for ind in np.unique(X_data_spect_ID_vector)]
+
+            new_voc_list = []
             for lbl_tb, voc in zip(lbl_tbs, predict_vds.voc_list):
-                voc.metaspect.lbl_tb = lbl_tb
+                labels, onsets_s, offsets_s = lbl_tb2segments(lbl_tb,
+                                                              labelmap,
+                                                              timebin_dur)
                 # TODO: change this when Crowsetta uses Annotation instead of Sequence
-                # annot_dict = voc.annot.as_dict()
-                labels = lbl_tb2labels(lbl_tb, labelmap)
-                voc.annot = crowsetta.Sequence.from_dict(annot_dict)
+                annot_dict = {
+                    'labels': labels,
+                    'onsets_s': onsets_s,
+                    'offsets_s': offsets_s,
+                    'file': voc.annot.file,
+                }
 
-            if save_predict_vds:
+                seq = crowsetta.Sequence.from_dict(annot_dict)
+                metaspect = attr.evolve(voc.metaspect, lbl_tb=lbl_tb)
+                voc = attr.evolve(voc, annot=seq, metaspect=metaspect)
+                new_voc_list.append(voc)
+
+                predict_vds = attr.evolve(predict_vds, voc_list=new_voc_list)
+                predict_vds.clear_spects()
                 predict_vds.save(json_fname=p_vds_path)
-
-            predict_vds_out.append(predict_vds)
-
-    return predict_vds_out
