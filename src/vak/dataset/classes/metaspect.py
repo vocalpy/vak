@@ -23,6 +23,8 @@ class MetaSpect:
         vector of frequencies in spectrogram, where each value is a bin center.
     time_bins : numpy.ndarray
         vector of times in spectrogram, where each value is a bin center.
+    audio_path : str
+        path to audio file from which spectrogram was generated
     timebin_dur : numpy.ndarray
         duration of a timebin in seconds from spectrogram
     lbl_tb : numpy.ndarray
@@ -33,6 +35,7 @@ class MetaSpect:
     spect = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
     freq_bins = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
     time_bins = attr.ib(validator=instance_of(np.ndarray), converter=asarray_if_not)
+    audio_path = attr.ib(validator=optional(instance_of(str)), default=None)
     timebin_dur = attr.ib(validator=optional(instance_of(float)), default=None)
     lbl_tb = attr.ib(validator=optional(instance_of(np.ndarray)), converter=asarray_if_not, default=None)
 
@@ -42,6 +45,7 @@ class MetaSpect:
                   spect_key='s',
                   freqbins_key='f',
                   timebins_key='t',
+                  audio_path_key='audio_path',
                   timebin_dur=None,
                   n_decimals_trunc=3):
         """create a Spectrogram instance from a dictionary-like object that
@@ -64,6 +68,9 @@ class MetaSpect:
             number of decimal places to keep when truncating the timebin duration calculated from
             the spectrogram arrays.
             Default is 3, i.e. assumes milliseconds is the last significant digit.
+        audio_path_key : str
+            key for accessing path to source audio file for spectogram in files.
+            Default is 'audio_path'.
 
         Returns
         -------
@@ -73,8 +80,13 @@ class MetaSpect:
         if timebin_dur is None:
             timebin_dur = timebin_dur_from_vec(time_bins=spect_file_dict[timebins_key],
                                                n_decimals_trunc=n_decimals_trunc)
+        if audio_path_key in spect_file_dict:
+            audio_path = spect_file_dict[audio_path_key]
+        else:
+            audio_path = None
 
         return cls(freq_bins=spect_file_dict[freqbins_key],
                    time_bins=spect_file_dict[timebins_key],
                    spect=spect_file_dict[spect_key],
-                   timebin_dur=timebin_dur)
+                   timebin_dur=timebin_dur,
+                   audio_path=audio_path)
