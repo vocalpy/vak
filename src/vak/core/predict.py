@@ -183,7 +183,7 @@ def predict(predict_vds_path,
                     'labels': labels,
                     'onsets_s': onsets_s,
                     'offsets_s': offsets_s,
-                    'file': voc.annot.file,
+                    'file': voc.metaspect.audio_path,
                 }
 
                 seq = crowsetta.Sequence.from_dict(annot_dict)
