@@ -74,7 +74,8 @@ def from_files(spect_format,
                n_decimals_trunc=3,
                freqbins_key='f',
                timebins_key='t',
-               spect_key='s'
+               spect_key='s',
+               audio_path_key='audio_path'
                ):
     """create VocalizationDataset from already-made spectrograms that are in
     files containing arrays, i.e., .mat files created by Matlab or .npz files created by numpy
@@ -121,6 +122,9 @@ def from_files(spect_format,
         key for accessing vector of time bins in files. Default is 't'.
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
+    audio_path_key : str
+        key for accessing path to source audio file for spectogram in files.
+        Default is 'audio_path'.
 
     Returns
     -------
@@ -247,6 +251,13 @@ def from_files(spect_format,
             spect_dict = np.load(spect_path)
 
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
+        if audio_path_key in spect_dict:
+            audio_path = spect_dict[audio_path_key]
+        else:
+            # try to figure out audio filename programatically
+            # if we can't, then we'll get back a None
+            # (or an error)
+            audio_path = find_audio_fname(spect_path)
 
         if load_spects:
             spect_kwargs = {
@@ -254,6 +265,7 @@ def from_files(spect_format,
                 'time_bins': spect_dict[timebins_key],
                 'timebin_dur': timebin_dur,
                 'spect': spect_dict[spect_key],
+                'audio_path': audio_path,
             }
             metaspect = MetaSpect(**spect_kwargs)
         else:
@@ -262,6 +274,7 @@ def from_files(spect_format,
         voc_kwargs = {
             'annot': annot,
             'spect_path': spect_path,
+            'audio_path': audio_path,
             'metaspect': metaspect,
             'duration': spect_dur
         }
