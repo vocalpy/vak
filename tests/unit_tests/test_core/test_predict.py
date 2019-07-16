@@ -75,6 +75,13 @@ class TestPredict(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
 
     def test_predict_func(self):
+        # make sure we're working with a vds that needs prediction
+        predict_vds_before = VocalizationDataset.load(self.predict_vds_path)
+        predict_vds_before = predict_vds_before.load_spects()
+        for voc in predict_vds_before.voc_list:
+            self.assertTrue(voc.metaspect.lbl_tb is None)
+            self.assertTrue(voc.annot is None)
+
         predict_config = vak.config.predict.parse_predict_config(self.config_obj)
         networks = vak.config.parse._get_nets_config(self.config_obj,
                                                      predict_config.networks)
@@ -82,9 +89,9 @@ class TestPredict(unittest.TestCase):
                          labelmap=self.labelmap,
                          checkpoint_path=self.checkpoint_path,
                          networks=networks,
-                         spect_scaler_path=self.spect_scaler_path,
-                         save_predict_vds=True)
+                         spect_scaler_path=self.spect_scaler_path)
         predict_vds_after = VocalizationDataset.load(self.predict_vds_path)
+
         for voc in predict_vds_after.voc_list:
             self.assertTrue(type(voc.metaspect.lbl_tb) is np.ndarray)
             self.assertTrue(type(voc.annot.labels) is np.ndarray)
