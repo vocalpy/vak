@@ -15,6 +15,14 @@ class TestGeneral(unittest.TestCase):
         self.mat_spect_path = TEST_DATA_DIR.joinpath('mat', 'llb3', 'spect')
         self.cbin_path = TEST_DATA_DIR.joinpath('cbins', 'gy6or6', '032312')
 
+    def test_find_fname(self):
+        fname = 'llb3_0003_2018_04_23_14_18_54.wav.mat'
+        ext = 'wav'
+        out = vak.utils.general.find_fname(fname, ext)
+        self.assertTrue(
+            out == 'llb3_0003_2018_04_23_14_18_54.wav'
+        )
+
     def test_files_from_dir(self):
         # check works for .mat files
         mat_files = self.mat_spect_path.glob('*.mat')
