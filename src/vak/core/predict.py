@@ -187,8 +187,7 @@ def predict(predict_vds_path,
                 }
 
                 seq = crowsetta.Sequence.from_dict(annot_dict)
-                metaspect = attr.evolve(voc.metaspect, lbl_tb=lbl_tb)
-                voc = attr.evolve(voc, annot=seq, metaspect=metaspect)
+                voc = attr.evolve(voc, annot=seq, metaspect=voc.metaspect)
                 new_voc_list.append(voc)
 
                 predict_vds = attr.evolve(predict_vds, voc_list=new_voc_list)
