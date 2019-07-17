@@ -253,8 +253,11 @@ def from_files(spect_format,
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
         if audio_path_key in spect_dict:
             audio_path = spect_dict[audio_path_key]
+            if type(audio_path) == np.ndarray:
+                # (because everything stored in .npz has to be in an ndarray)
+                audio_path = audio_path.tolist()
         else:
-            # try to figure out audio filename programatically
+            # try to figure out audio filename programmatically
             # if we can't, then we'll get back a None
             # (or an error)
             audio_path = find_audio_fname(spect_path)
