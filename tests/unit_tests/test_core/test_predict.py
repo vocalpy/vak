@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import unittest
 
+import crowsetta
 import numpy as np
 
 import vak.core.predict
@@ -91,9 +92,10 @@ class TestPredict(unittest.TestCase):
                          networks=networks,
                          spect_scaler_path=self.spect_scaler_path)
         predict_vds_after = VocalizationDataset.load(self.predict_vds_path)
+        predict_vds_after = predict_vds_after.load_spects()
 
         for voc in predict_vds_after.voc_list:
-            self.assertTrue(type(voc.metaspect.lbl_tb) is np.ndarray)
+            self.assertTrue(type(voc.annot) == crowsetta.Sequence)
             self.assertTrue(type(voc.annot.labels) is np.ndarray)
 
 
