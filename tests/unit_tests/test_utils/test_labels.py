@@ -163,7 +163,7 @@ class TestLabels(unittest.TestCase):
             np.array_equal(onset_inds, np.asarray([0, 4, 8]))
         )
         self.assertTrue(
-            np.array_equal(onset_inds, np.asarray([3, 7, 11]))
+            np.array_equal(offset_inds, np.asarray([3, 7, 11]))
         )
 
     def test_lbl_tb2segments(self):
@@ -176,17 +176,17 @@ class TestLabels(unittest.TestCase):
         ).pop()
 
         for lbl_tb, voc in zip(lbl_tb_list, vds.voc_list):
-            labels, onsets_s, offsets_s = vak.utils.labels.lbl_tb2seq(lbl_tb,
-                                                                      labelmap,
-                                                                      timebin_dur)
+            labels, onsets_s, offsets_s = vak.utils.labels.lbl_tb2segments(lbl_tb,
+                                                                           labelmap,
+                                                                           timebin_dur)
             self.assertTrue(
                 np.array_equal(labels, voc.annot.labels)
             )
             self.assertTrue(
-                np.allclose(onsets_s, voc.annot.onsets_s, atol=0.001, rtol=0.02)
+                np.allclose(onsets_s, voc.annot.onsets_s, atol=0.001, rtol=0.03)
             )
             self.assertTrue(
-                np.allclose(offsets_s, voc.annot.offsets_s, atol=0.001, rtol=0.02)
+                np.allclose(offsets_s, voc.annot.offsets_s, atol=0.001, rtol=0.03)
             )
 
 
