@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import unittest
 
+import crowsetta
 import numpy as np
 
 import vak.cli.predict
@@ -50,20 +51,18 @@ class TestPredict(unittest.TestCase):
         config['PREDICT']['spect_scaler_path'] = spect_scaler
 
         test_data_vds_path = list(TEST_DATA_DIR.glob('vds'))[0]
-        for stem in ['train', 'test']:
-            vds_path = list(test_data_vds_path.glob(f'*.{stem}.vds.json'))
-            self.assertTrue(len(vds_path) == 1)
-            vds_path = vds_path[0]
-            if stem == 'train':
-                self.train_vds_path = str(shutil.copy(vds_path, self.tmp_output_dir))
-                config['PREDICT']['train_vds_path'] = self.train_vds_path
-            elif stem == 'test':
-                # pretend test data is data we want to predict
-                self.predict_vds_path = str(shutil.copy(vds_path, self.tmp_output_dir))
-                dst = self.predict_vds_path.replace('test', 'predict_before')
-                self.predict_vds_path_before = shutil.copyfile(self.predict_vds_path,
-                                                               dst=dst)
-                config['PREDICT']['predict_vds_path'] = self.predict_vds_path
+
+        vds_path = list(test_data_vds_path.glob(f'*.train.vds.json'))
+        self.assertTrue(len(vds_path) == 1)
+        vds_path = vds_path[0]
+        self.train_vds_path = str(shutil.copy(vds_path, self.tmp_output_dir))
+        config['PREDICT']['train_vds_path'] = self.train_vds_path
+
+        vds_path = list(test_data_vds_path.glob(f'*.predict.vds.json'))
+        self.assertTrue(len(vds_path) == 1)
+        vds_path = vds_path[0]
+        self.predict_vds_path = str(shutil.copy(vds_path, self.tmp_output_dir))
+        config['PREDICT']['predict_vds_path'] = self.predict_vds_path
 
         self.config_obj = config
 
@@ -80,8 +79,10 @@ class TestPredict(unittest.TestCase):
                         networks=networks,
                         spect_scaler_path=predict_config.spect_scaler_path)
         predict_vds_after = VocalizationDataset.load(self.predict_vds_path)
+        predict_vds_after = predict_vds_after.load_spects()
+
         for voc in predict_vds_after.voc_list:
-            self.assertTrue(type(voc.metaspect.lbl_tb) is np.ndarray)
+            self.assertTrue(type(voc.annot) == crowsetta.Sequence)
             self.assertTrue(type(voc.annot.labels) is np.ndarray)
 
 
