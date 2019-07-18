@@ -165,8 +165,6 @@ class TestPrep(unittest.TestCase):
         val_dur = None
         test_dur = None
 
-
-
         vak.cli.prep(labelset=labelset,
                      data_dir=data_dir,
                      train_dur=train_dur,
