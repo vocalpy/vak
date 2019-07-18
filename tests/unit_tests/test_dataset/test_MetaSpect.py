@@ -97,7 +97,7 @@ class TestMetaSpect(unittest.TestCase):
                 elif attr == 'timebin_dur':
                     self.assertTrue(type(getattr(metaspect, attr)) in (float, np.float16, np.float32, np.float64))
                 elif attr == 'audio_path':
-                    self.assertTrue(type(getattr(metaspect, attr)) is None)
+                    self.assertTrue(getattr(metaspect, attr) is None)
 
     def test_MetaSpect_from_dict_npz(self):
         for spect_path in self.spect_list_npz:
@@ -117,7 +117,7 @@ class TestMetaSpect(unittest.TestCase):
                 elif attr == 'timebin_dur':
                     self.assertTrue(type(getattr(metaspect, attr)) in (float, np.float16, np.float32, np.float64))
                 elif attr == 'audio_path':
-                    self.assertTrue(type(getattr(metaspect, attr)) is None)
+                    self.assertTrue(type(getattr(metaspect, attr)) is str)
 
 
 if __name__ == '__main__':
