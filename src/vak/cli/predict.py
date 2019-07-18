@@ -69,5 +69,4 @@ def predict(predict_vds_path,
                  networks,
                  labelmap,
                  spect_scaler_path,
-                 save_predict_vds=True
                  )
