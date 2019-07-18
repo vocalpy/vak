@@ -105,10 +105,6 @@ class TestParseTrainConfig(unittest.TestCase):
         with self.assertRaises(KeyError):
             vak.config.train.parse_train_config(self.config_obj, self.config_file)
 
-    def test_save_transformed_data_default(self):
-        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_obj.save_transformed_data is False)
-
 
 if __name__ == '__main__':
     unittest.main()
