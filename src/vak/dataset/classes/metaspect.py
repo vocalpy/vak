@@ -82,6 +82,9 @@ class MetaSpect:
                                                n_decimals_trunc=n_decimals_trunc)
         if audio_path_key in spect_file_dict:
             audio_path = spect_file_dict[audio_path_key]
+            if type(audio_path) is np.ndarray:
+                # because can only store arrays in .npz files
+                audio_path = audio_path.tolist()
         else:
             audio_path = None
 
