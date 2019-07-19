@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import unittest
 from glob import glob
 import json
@@ -11,26 +12,21 @@ import vak.dataset.spect
 import vak.dataset.annotation
 from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
 
-
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE,
-                             '..',
-                             '..',
-                             'test_data')
-SETUP_SCRIPTS_DIR = os.path.join(HERE,
-                                 '..',
-                                 '..',
-                                 'setup_scripts')
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
 class TestVocalizationDataset(unittest.TestCase):
     def setUp(self):
-        self.spect_dir_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
-        self.spect_list_mat = glob(os.path.join(self.spect_dir_mat, '*.mat'))
+        self.spect_dir_mat = TEST_DATA_DIR.joinpath('mat', 'llb3', 'spect')
+        self.spect_list_mat = list(self.spect_dir_mat.glob('*.mat'))
+        self.spect_list_mat = [str(path) for path in self.spect_list_mat]
 
-        self.annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
-        self.scribe = crowsetta.Transcriber(voc_format='yarden')
-        self.annot_list = self.scribe.to_seq(self.annot_mat)
+        self.annot_mat = str(TEST_DATA_DIR.joinpath('mat', 'llb3',
+                                                    'llb3_annot_subset.mat'))
+        scribe_mat = crowsetta.Transcriber(voc_format='yarden')
+        self.annot_list_mat = scribe_mat.to_seq(self.annot_mat)
         self.labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
 
         self.spect_params = dict(fft_size=512,
@@ -39,20 +35,32 @@ class TestVocalizationDataset(unittest.TestCase):
                                  thresh=6.25,
                                  transform_type='log_spect')
 
-        # ---- cbins -------------------------------
+        # ---- in .npz files, made from .cbin audio files -------------------------------
+        self.labelset_cbin = list('iabcdefghjk')
+
+        self.spect_dir_npz = list(TEST_DATA_DIR.joinpath('vds').glob(
+            'spectrograms_generated*')
+        )
+        self.spect_dir_npz = self.spect_dir_npz[0]
+        self.spect_list_npz = list(self.spect_dir_npz.glob('*.spect.npz'))
+        self.spect_list_npz = [str(path) for path in self.spect_list_npz]
+
+        # now that we have .npz file list, use that to filter .not.mat list which we need when calling from_files
         self.audio_dir_cbin = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         self.audio_files_cbin = glob(os.path.join(self.audio_dir_cbin, '*.cbin'))
-
         self.annot_files_cbin = vak.dataset.annotation.files_from_dir(annot_dir=self.audio_dir_cbin,
                                                                       annot_format='notmat')
+        self.annot_files_cbin = [annot_file_cbin
+                                 for annot_file_cbin in self.annot_files_cbin
+                                 if any([Path(annot_file_cbin).name.replace('.not.mat', '') in npz
+                                         for npz in self.spect_list_npz])
+                                 ]
         scribe_cbin = crowsetta.Transcriber(voc_format='notmat')
         self.annot_list_cbin = scribe_cbin.to_seq(file=self.annot_files_cbin)
 
-        self.labelset_cbin = list('iabcdefghjk')
-
     def test_VocalizationDataset_init(self):
         voc_list = []
-        for spect_path, annot in zip(self.spect_list_mat, self.annot_list):
+        for spect_path, annot in zip(self.spect_list_mat, self.annot_list_mat):
             spect_dict = loadmat(spect_path, squeeze_me=True)
             metaspect = MetaSpect.from_dict(spect_file_dict=spect_dict,
                                             freqbins_key='f',
@@ -86,7 +94,7 @@ class TestVocalizationDataset(unittest.TestCase):
     def test_VocalizationDataset_json(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
-                                           annot_list=self.annot_list,
+                                           annot_list=self.annot_list_mat,
                                            load_spects=True)
         vds_json_str = vds.to_json(json_fname=None)
         vds_json = json.loads(vds_json_str)
@@ -106,10 +114,10 @@ class TestVocalizationDataset(unittest.TestCase):
             all([type(voc) == Vocalization for voc in vds.voc_list])
         )
 
-    def test_VocalizationDataset_load_spects(self):
+    def test_VocalizationDataset_load_spects_mat(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
-                                           annot_list=self.annot_list,
+                                           annot_list=self.annot_list_mat,
                                            load_spects=False)
         self.assertTrue(
             all([voc.metaspect is None for voc in vds.voc_list])
@@ -123,6 +131,52 @@ class TestVocalizationDataset(unittest.TestCase):
         self.assertTrue(
             all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
         )
+        # test that loaded metaspects have all attributes we expect them to have
+        for voc in vds.voc_list:
+            for attr in ['freq_bins', 'time_bins', 'timebin_dur', 'spect', 'audio_path']:
+                self.assertTrue(hasattr(voc.metaspect, attr))
+                if attr in ['freq_bins', 'time_bins', 'spect']:
+                    self.assertTrue(type(getattr(voc.metaspect, attr)) == np.ndarray)
+                elif attr == 'timebin_dur':
+                    self.assertTrue(type(getattr(voc.metaspect, attr)) in (float, np.float16, np.float32, np.float64))
+                elif attr == 'audio_path':
+                    # check that we default to None when .mat file doesn't have 'audio_path' defined
+                    self.assertTrue(getattr(voc.metaspect, attr) is None)
+
+        spect_paths_after = [voc.spect_path for voc in vds.voc_list]
+        for before, after in zip(spect_paths_before, spect_paths_after):
+            self.assertTrue(
+                before == after
+            )
+
+    def test_VocalizationDataset_load_spects_npz(self):
+        vds = vak.dataset.spect.from_files(spect_format='npz',
+                                           spect_dir=self.spect_dir_npz,
+                                           annot_list=self.annot_list_cbin,
+                                           load_spects=False)
+        self.assertTrue(
+            all([voc.metaspect is None for voc in vds.voc_list])
+        )
+
+        # check whether order of spect paths changes because we convert voc_list
+        # to a dask bag to parallelize loading and order is usually preserved but this
+        # is not guaranteed
+        spect_paths_before = [voc.spect_path for voc in vds.voc_list]
+        vds = vds.load_spects()
+        self.assertTrue(
+            all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
+        )
+        # test that loaded metaspects have all attributes we expect them to have
+        for voc in vds.voc_list:
+            for attr in ['freq_bins', 'time_bins', 'timebin_dur', 'spect', 'audio_path']:
+                self.assertTrue(hasattr(voc.metaspect, attr))
+                if attr in ['freq_bins', 'time_bins', 'spect']:
+                    self.assertTrue(type(getattr(voc.metaspect, attr)) == np.ndarray)
+                elif attr == 'timebin_dur':
+                    self.assertTrue(type(getattr(voc.metaspect, attr)) in (float, np.float16, np.float32, np.float64))
+                elif attr == 'audio_path':
+                    self.assertTrue(type(getattr(voc.metaspect, attr)) is str)
+
         spect_paths_after = [voc.spect_path for voc in vds.voc_list]
         for before, after in zip(spect_paths_before, spect_paths_after):
             self.assertTrue(
@@ -132,7 +186,7 @@ class TestVocalizationDataset(unittest.TestCase):
     def test_VocalizationDataset_clear_spects(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
-                                           annot_list=self.annot_list,
+                                           annot_list=self.annot_list_mat,
                                            load_spects=True)
         self.assertTrue(
             all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
@@ -146,7 +200,7 @@ class TestVocalizationDataset(unittest.TestCase):
     def test_VocalizationDataset_are_spects_loaded(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
-                                           annot_list=self.annot_list,
+                                           annot_list=self.annot_list_mat,
                                            load_spects=False)
         self.assertTrue(
             vds.are_spects_loaded() is False
@@ -160,7 +214,7 @@ class TestVocalizationDataset(unittest.TestCase):
     def test_VocalizationDataset_spects_list(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
-                                           annot_list=self.annot_list,
+                                           annot_list=self.annot_list_mat,
                                            load_spects=True)
         spects_list = vds.spects_list()
         self.assertTrue(
@@ -176,7 +230,7 @@ class TestVocalizationDataset(unittest.TestCase):
     def test_VocalizationDataset_labels_list(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
-                                           annot_list=self.annot_list,
+                                           annot_list=self.annot_list_mat,
                                            load_spects=False)
         labels_list = vds.labels_list()
         self.assertTrue(
@@ -193,7 +247,7 @@ class TestVocalizationDataset(unittest.TestCase):
         vds = vak.dataset.spect.from_files(labelset=self.labelset_mat,
                                            spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
-                                           annot_list=self.annot_list,
+                                           annot_list=self.annot_list_mat,
                                            load_spects=True)
         lbl_tb_list = vds.lbl_tb_list()
         self.assertTrue(
