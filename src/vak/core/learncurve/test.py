@@ -14,6 +14,193 @@ from ... import network
 from ...dataset import VocalizationDataset
 
 
+def test_one_model(net_name,
+                   net_config_dict,
+                   NETWORKS,
+                   n_classes,
+                   labelmap,
+                   checkpoint_path,
+                   X_train,
+                   Y_train,
+                   num_batches_train,
+                   X_test,
+                   Y_test,
+                   num_batches_test,
+                   Y_train_labels=None,
+                   Y_test_labels=None,
+                   logger=None):
+    """function to measure accuracy and other metrics of a single trained model on training and test datasets
+
+    Parameters
+    ----------
+    net_name : str
+        name of neural network architecture
+    net_config_dict : dict
+        where keys are hyperparameter names and values are the hyperparameter values
+    NETWORKS : dict-like
+        imported modules that containing functions that return neural networks
+    n_classes : int
+        number of classes model predicts
+    labelmap : dict
+        that maps labels for segments (i.e., syllables) to a set of consecutive integers
+    checkpoint_path : str
+        path to Tensorflow checkpoint for model
+    X_train : numpy.ndarray
+    Y_train : numpy.ndarray
+    num_batches_train : int
+    X_test : numpy.ndarray
+    Y_test : numpy.ndarray
+    num_batches_test : int
+
+    Y_train_labels : list
+        of labels. Default is None in which case Y_train_labels are determined from Y_traib using lbl_tb2labels
+    Y_test_labels : list
+        of labels. Default is None in which case Y_test_labels are determined from Y_test using lbl_tb2labels
+    logger : logging.logger
+        that logs results computed by this function.
+        Used by vak.learncurve.test function.
+
+    Returns
+    -------
+    Y_pred_train, Y_pred_test,  Y_pred_train_labels, Y_pred_test_labels,
+    train_err, train_lev, train_syl_err_rate, test_err, test_lev, test_syl_err_rate
+    """
+    net = NETWORKS[net_name](**net_config_dict)
+
+    # we use latest checkpoint when doing summary for learncurve, assume that's "best trained"
+    checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path)
+
+    meta_file = glob(checkpoint_file + '*meta')
+    if len(meta_file) != 1:
+        raise ValueError('Incorrect number of meta files for last saved checkpoint.\n'
+                         'For checkpoint {}, found these files:\n'
+                         '{}'
+                         .format(checkpoint_file, meta_file))
+    else:
+        meta_file = meta_file[0]
+
+    data_file = glob(checkpoint_file + '*data*')
+    if len(data_file) != 1:
+        raise ValueError('Incorrect number of data files for last saved checkpoint.\n'
+                         'For checkpoint {}, found these files:\n'
+                         '{}'
+                         .format(checkpoint_file, data_file))
+    else:
+        data_file = data_file[0]
+
+    with tf.Session(graph=net.graph) as sess:
+        tf.logging.set_verbosity(tf.logging.ERROR)
+
+        net.restore(sess=sess,
+                    meta_file=meta_file,
+                    data_file=data_file)
+
+        if logger:
+            logger.info('calculating training set error')
+
+        for b in range(num_batches_train):  # "b" is "batch number"
+            d = {net.X: X_train[:, b * net_config_dict['time_bins']: (b + 1) * net_config_dict['time_bins'], :],
+                 net.lng: [net_config_dict['time_bins']] * net_config_dict['batch_size']}
+
+            if 'Y_pred_train' in locals():
+                preds = sess.run(net.predict, feed_dict=d)
+                preds = preds.reshape(net_config_dict['batch_size'], -1)
+                Y_pred_train = np.concatenate((Y_pred_train, preds),
+                                              axis=1)
+            else:
+                Y_pred_train = sess.run(net.predict, feed_dict=d)
+                Y_pred_train = Y_pred_train.reshape(net_config_dict['batch_size'], -1)
+
+        # get rid of predictions to zero padding that don't matter
+        Y_pred_train = Y_pred_train.ravel()[:Y_train.shape[0], np.newaxis]
+        train_err = np.sum(Y_pred_train != Y_train) / Y_train.shape[0]
+
+        if logger:
+            logger.info('train error was {}'.format(train_err))
+
+        if Y_train_labels is None:
+            Y_train_labels = lbl_tb2labels(Y_train, labelmap)
+        Y_pred_train_labels = lbl_tb2labels(Y_pred_train, labelmap)
+
+        if all([type(el) is int for el in Y_train_labels]):
+            # if labels are ints instead of str
+            # convert to str just to calculate Levenshtein distance
+            # and syllable error rate.
+            # Let them be weird characters (e.g. '\t') because that doesn't matter
+            # for calculating Levenshtein distance / syl err rate
+            Y_train_labels = ''.join(
+                [chr(el) for el in Y_train_labels])
+            Y_pred_train_labels = ''.join(
+                [chr(el) for el in Y_pred_train_labels])
+
+        train_lev = metrics.levenshtein(Y_pred_train_labels,
+                                        Y_train_labels)
+        if logger:
+            logger.info('Levenshtein distance for train set was {}'.format(
+                train_lev))
+        train_syl_err_rate = metrics.syllable_error_rate(Y_train_labels,
+                                                         Y_pred_train_labels)
+
+        if logger:
+            logger.info('Syllable error rate for train set was {}'.format(
+                train_syl_err_rate))
+            logger.info('calculating test set error')
+
+        for b in range(num_batches_test):  # "b" is "batch number"
+            d = {
+                net.X: X_test[:, b * net_config_dict['time_bins']: (b + 1) * net_config_dict['time_bins'], :],
+                net.lng: [net_config_dict['time_bins']] * net_config_dict['batch_size']}
+
+            if 'Y_pred_test' in locals():
+                preds = sess.run(net.predict, feed_dict=d)
+                preds = preds.reshape(net_config_dict['batch_size'], -1)
+                Y_pred_test = np.concatenate((Y_pred_test, preds),
+                                             axis=1)
+            else:
+                Y_pred_test = sess.run(net.predict, feed_dict=d)
+                Y_pred_test = Y_pred_test.reshape(net_config_dict['batch_size'], -1)
+
+        # again get rid of zero padding predictions
+        Y_pred_test = Y_pred_test.ravel()[:Y_test.shape[0], np.newaxis]
+        test_err = np.sum(Y_pred_test != Y_test) / Y_test.shape[0]
+        if logger:
+            logger.info('test error was {}'.format(test_err))
+
+        Y_pred_test_labels = lbl_tb2labels(Y_pred_test,
+                                           labelmap)
+
+        if all([type(el) is int for el in Y_pred_test_labels]):
+            # if labels are ints instead of str
+            # convert to str just to calculate Levenshtein distance
+            # and syllable error rate.
+            # Let them be weird characters (e.g. '\t') because that doesn't matter
+            # for calculating Levenshtein distance / syl err rate
+            Y_pred_test_labels = ''.join(
+                [chr(el) for el in Y_pred_test_labels])
+            # already converted actual Y_test_labels from int to str above,
+            # stored in variable `Y_test_labels_for_lev`
+
+        if Y_test_labels is None:
+            Y_test_labels = lbl_tb2labels(Y_test, labelmap)
+
+        test_lev = metrics.levenshtein(Y_pred_test_labels,
+                                       Y_test_labels)
+
+        if logger:
+            logger.info(
+                'Levenshtein distance for test set was {}'.format(test_lev))
+        test_syl_err_rate = metrics.syllable_error_rate(
+            Y_test_labels,
+            Y_pred_test_labels)
+        if logger:
+            logger.info('Syllable error rate for test set was {}'.format(
+                test_syl_err_rate))
+
+    return (Y_pred_train, Y_pred_test,  Y_pred_train_labels, Y_pred_test_labels,
+            train_err, train_lev, train_syl_err_rate,
+            test_err, test_lev, test_syl_err_rate)
+
+
 def test(results_dirname,
          test_vds_path,
          train_vds_path,
@@ -234,37 +421,6 @@ def test(results_dirname,
                 joblib.dump(scaled_test_data_dict, scaled_test_data_filename)
 
             for net_name, net_config in networks.items():
-                # reload network #
-                net_config_dict = net_config._asdict()
-                net_config_dict['n_syllables'] = n_classes
-                if 'freq_bins' in net_config_dict:
-                    net_config_dict['freq_bins'] = freq_bins
-                net = NETWORKS[net_name](**net_config_dict)
-
-                results_dirname_this_net = os.path.join(training_records_path, net_name)
-
-                checkpoint_path = os.path.join(results_dirname_this_net, 'checkpoints')
-                # we use latest checkpoint when doing summary for learncurve, assume that's "best trained"
-                checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path)
-
-                meta_file = glob(checkpoint_file + '*meta')
-                if len(meta_file) != 1:
-                    raise ValueError('Incorrect number of meta files for last saved checkpoint.\n'
-                                     'For checkpoint {}, found these files:\n'
-                                     '{}'
-                                     .format(checkpoint_file, meta_file))
-                else:
-                    meta_file = meta_file[0]
-
-                data_file = glob(checkpoint_file + '*data*')
-                if len(data_file) != 1:
-                    raise ValueError('Incorrect number of data files for last saved checkpoint.\n'
-                                     'For checkpoint {}, found these files:\n'
-                                     '{}'
-                                     .format(checkpoint_file, data_file))
-                else:
-                    data_file = data_file[0]
-
                 # reshape data for batching using net_config #
                 # Notice we don't reshape Y_train
                 (X_train_subset,
@@ -297,116 +453,50 @@ def test(results_dirname,
                     joblib.dump(scaled_reshaped_data_dict,
                                 scaled_reshaped_data_filename)
 
-                with tf.Session(graph=net.graph) as sess:
-                    tf.logging.set_verbosity(tf.logging.ERROR)
+                # reload network #
+                net_config_dict = net_config._asdict()
+                net_config_dict['n_syllables'] = n_classes
+                if 'freq_bins' in net_config_dict:
+                    net_config_dict['freq_bins'] = freq_bins
 
-                    net.restore(sess=sess,
-                                meta_file=meta_file,
-                                data_file=data_file)
+                results_dirname_this_net = os.path.join(training_records_path, net_name)
+                checkpoint_path = os.path.join(results_dirname_this_net, 'checkpoints')
 
-                    if 'Y_pred_train' in locals():
-                        del Y_pred_train
+                (Y_pred_train,
+                 Y_pred_test,
+                 Y_pred_train_labels,
+                 Y_pred_test_labels,
+                 train_err,
+                 train_lev,
+                 train_syl_err_rate,
+                 test_err,
+                 test_lev,
+                 test_syl_err_rate) = test_one_model(net_name,
+                                                     net_config_dict,
+                                                     NETWORKS,
+                                                     n_classes,
+                                                     train_vds.labelmap,
+                                                     checkpoint_path,
+                                                     X_train_subset,
+                                                     Y_train_subset,
+                                                     num_batches_train,
+                                                     X_test,
+                                                     Y_test,
+                                                     num_batches_test,
+                                                     Y_test_labels=Y_test_labels_for_lev,
+                                                     logger=logger)
 
-                    logger.info('calculating training set error')
-                    for b in range(num_batches_train):  # "b" is "batch number"
-                        d = {net.X: X_train_subset[:,
-                                    b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
-                             net.lng: [net_config.time_bins] * net_config.batch_size}
+                Y_pred_train_this_dur.append(Y_pred_train)
+                Y_pred_test_this_dur.append(Y_pred_test)
+                Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
+                Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
 
-                        if 'Y_pred_train' in locals():
-                            preds = sess.run(net.predict, feed_dict=d)
-                            preds = preds.reshape(net_config.batch_size, -1)
-                            Y_pred_train = np.concatenate((Y_pred_train, preds),
-                                                          axis=1)
-                        else:
-                            Y_pred_train = sess.run(net.predict, feed_dict=d)
-                            Y_pred_train = Y_pred_train.reshape(net_config.batch_size, -1)
-
-                    # get rid of predictions to zero padding that don't matter
-                    Y_pred_train = Y_pred_train.ravel()[:Y_train_subset.shape[0], np.newaxis]
-                    train_err = np.sum(Y_pred_train != Y_train_subset) / Y_train_subset.shape[0]
-                    train_err_arr[dur_ind, rep_ind] = train_err
-                    logger.info('train error was {}'.format(train_err))
-                    Y_pred_train_this_dur.append(Y_pred_train)
-
-                    Y_train_subset_labels = lbl_tb2labels(Y_train_subset,
-                                                          train_vds.labelmap)
-                    Y_pred_train_labels = lbl_tb2labels(Y_pred_train,
-                                                        train_vds.labelmap)
-                    Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
-
-                    if all([type(el) is int for el in Y_train_subset_labels]):
-                        # if labels are ints instead of str
-                        # convert to str just to calculate Levenshtein distance
-                        # and syllable error rate.
-                        # Let them be weird characters (e.g. '\t') because that doesn't matter
-                        # for calculating Levenshtein distance / syl err rate
-                        Y_train_subset_labels = ''.join(
-                            [chr(el) for el in Y_train_subset_labels])
-                        Y_pred_train_labels = ''.join(
-                            [chr(el) for el in Y_pred_train_labels])
-
-                    train_lev = metrics.levenshtein(Y_pred_train_labels,
-                                                    Y_train_subset_labels)
-                    train_lev_arr[dur_ind, rep_ind] = train_lev
-                    logger.info('Levenshtein distance for train set was {}'.format(
-                        train_lev))
-                    train_syl_err_rate = metrics.syllable_error_rate(Y_train_subset_labels,
-                                                                     Y_pred_train_labels)
-                    train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
-                    logger.info('Syllable error rate for train set was {}'.format(
-                        train_syl_err_rate))
-
-                    if 'Y_pred_test' in locals():
-                        del Y_pred_test
-
-                    logger.info('calculating test set error')
-                    for b in range(num_batches_test):  # "b" is "batch number"
-                        d = {
-                            net.X: X_test[:, b * net_config.time_bins: (b + 1) * net_config.time_bins, :],
-                            net.lng: [net_config.time_bins] * net_config.batch_size}
-
-                        if 'Y_pred_test' in locals():
-                            preds = sess.run(net.predict, feed_dict=d)
-                            preds = preds.reshape(net_config.batch_size, -1)
-                            Y_pred_test = np.concatenate((Y_pred_test, preds),
-                                                         axis=1)
-                        else:
-                            Y_pred_test = sess.run(net.predict, feed_dict=d)
-                            Y_pred_test = Y_pred_test.reshape(net_config.batch_size, -1)
-
-                    # again get rid of zero padding predictions
-                    Y_pred_test = Y_pred_test.ravel()[:Y_test.shape[0], np.newaxis]
-                    test_err = np.sum(Y_pred_test != Y_test) / Y_test.shape[0]
-                    test_err_arr[dur_ind, rep_ind] = test_err
-                    logger.info('test error was {}'.format(test_err))
-                    Y_pred_test_this_dur.append(Y_pred_test)
-
-                    Y_pred_test_labels = lbl_tb2labels(Y_pred_test,
-                                                       test_vds.labelmap)
-                    Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
-                    if all([type(el) is int for el in Y_pred_test_labels]):
-                        # if labels are ints instead of str
-                        # convert to str just to calculate Levenshtein distance
-                        # and syllable error rate.
-                        # Let them be weird characters (e.g. '\t') because that doesn't matter
-                        # for calculating Levenshtein distance / syl err rate
-                        Y_pred_test_labels = ''.join(
-                            [chr(el) for el in Y_pred_test_labels])
-                        # already converted actual Y_test_labels from int to str above,
-                        # stored in variable `Y_test_labels_for_lev`
-
-                    test_lev = metrics.levenshtein(Y_pred_test_labels,
-                                                   Y_test_labels_for_lev)
-                    test_lev_arr[dur_ind, rep_ind] = test_lev
-                    logger.info(
-                        'Levenshtein distance for test set was {}'.format(test_lev))
-                    test_syl_err_rate = metrics.syllable_error_rate(
-                        Y_test_labels_for_lev,
-                        Y_pred_test_labels)
-                    logger.info('Syllable error rate for test set was {}'.format(
-                        test_syl_err_rate))
-                    test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
+                train_err_arr[dur_ind, rep_ind] = train_err
+                train_lev_arr[dur_ind, rep_ind] = train_lev
+                train_syl_err_arr[dur_ind, rep_ind] = train_syl_err_rate
+                test_err_arr[dur_ind, rep_ind] = test_err
+                test_lev_arr[dur_ind, rep_ind] = test_lev
+                test_syl_err_arr[dur_ind, rep_ind] = test_syl_err_rate
 
         Y_pred_train_all.append(Y_pred_train_this_dur)
         Y_pred_test_all.append(Y_pred_test_this_dur)
