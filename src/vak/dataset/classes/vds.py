@@ -123,6 +123,7 @@ class VocalizationDataset:
                     freqbins_key='f',
                     timebins_key='t',
                     spect_key='s',
+                    audio_path_key='audio_path',
                     n_decimals_trunc=3,
                     ):
         """returns new VocalizationDataset with spectrogram files loaded into it
@@ -138,6 +139,10 @@ class VocalizationDataset:
             key for accessing vector of time bins in files. Default is 't'.
         spect_key : str
             key for accessing spectrogram in files. Default is 's'.
+        audio_path_key : str
+            key for accessing path to source audio file for spectogram in files.
+            Default is 'audio_path'. If the audio_path_key is not found in files
+            containing spectrograms, then the value for audio_path will default to None.
         n_decimals_trunc : int
             number of decimal places to keep when truncating the timebin duration calculated from
             the vector of time bins. Default is 3, i.e. assumes milliseconds is the last significant digit.
@@ -184,6 +189,15 @@ class VocalizationDataset:
                 'timebin_dur': timebin_dur_from_vec(spect_dict[timebins_key], n_decimals_trunc),
                 'spect': spect_dict[spect_key],
             }
+            if audio_path_key in spect_dict:
+                audio_path = spect_dict[audio_path_key]
+                if type(audio_path) is np.ndarray:
+                    # because .npz files can only hold arrays
+                    # need to unpack string from array
+                    audio_path = audio_path.tolist()
+            else:
+                audio_path = None
+            metaspect_kwargs['audio_path'] = audio_path
             # avoid mutating inputs
             voc = attr.evolve(voc, metaspect=MetaSpect(**metaspect_kwargs))
             return voc
