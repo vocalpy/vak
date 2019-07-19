@@ -1,48 +1,50 @@
 """tests for vak.config.predict module"""
-import os
-import tempfile
-import shutil
-import unittest
 from configparser import ConfigParser
-from glob import glob
+from pathlib import Path
+import unittest
 
 import vak.config.predict
 import vak.utils
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
-TEST_CONFIGS_DIR = os.path.join(TEST_DATA_DIR, 'configs')
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+TEST_CONFIGS_PATH = TEST_DATA_DIR.joinpath('configs')
 
 
 class TestParsePredictConfig(unittest.TestCase):
     def setUp(self):
-        self.tmp_output_dir = tempfile.mkdtemp()
-
-        self.tmp_dir_to_predict = tempfile.mkdtemp()
-        self.tmp_dir_to_predict = os.path.join(self.tmp_dir_to_predict, '032312')
-        os.makedirs(self.tmp_dir_to_predict)
-
-        a_results_dir = glob(os.path.join(TEST_DATA_DIR,
-                                          'results',
-                                          f'{LEARN_CURVE_DIR_STEM}*'))[0]
-        a_training_records_dir = glob(os.path.join(a_results_dir,
-                                                   'train',
-                                                   'records_for_training_set*'))[0]
-        checkpoint_path = os.path.join(a_training_records_dir, 'TweetyNet', 'checkpoints')
-        spect_scaler = glob(os.path.join(a_training_records_dir, 'spect_scaler_*'))[0]
+        a_results_dir = list(
+            TEST_DATA_DIR.joinpath('results').glob(
+                f'{LEARN_CURVE_DIR_STEM}*'))[0]
+        a_training_records_dir = list(
+            Path(a_results_dir).joinpath(
+                'train').glob('records_for_training_set*'))[0]
+        checkpoint_path = str(Path(a_training_records_dir).joinpath(
+            'TweetyNet', 'checkpoints'))
+        spect_scaler = list(
+            Path(a_training_records_dir).glob('spect_scaler_*'))[0]
+        spect_scaler = str(spect_scaler)
 
         # rewrite config so it points to data for testing + temporary output dirs
-        a_config = os.path.join(TEST_CONFIGS_DIR, 'test_predict_config.ini')
+        a_config = str(TEST_CONFIGS_PATH.joinpath('test_predict_config.ini'))
         config = ConfigParser()
         config.read(a_config)
         config['PREDICT']['checkpoint_path'] = checkpoint_path
-        config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
         config['PREDICT']['spect_scaler_path'] = spect_scaler
-        self.config_obj = config
+        test_data_vds_path = list(TEST_DATA_DIR.glob('vds'))[0]
+        test_data_vds_path = Path(test_data_vds_path)
+        for stem in ['train', 'test']:
+            vds_path = list(test_data_vds_path.glob(f'*.{stem}.vds.json'))
+            self.assertTrue(len(vds_path) == 1)
+            vds_path = vds_path[0]
+            if stem == 'train':
+                config['PREDICT']['train_vds_path'] = str(vds_path)
+            elif stem == 'test':
+                # pretend test data is data we want to predict
+                config['PREDICT']['predict_vds_path'] = str(vds_path)
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp_dir_to_predict)
+        self.config_obj = config
 
     def test_parse_predict_config_returns_PredictConfig_instance(self):
         predict_config_obj = vak.config.predict.parse_predict_config(self.config_obj)
@@ -63,8 +65,13 @@ class TestParsePredictConfig(unittest.TestCase):
         with self.assertRaises(KeyError):
             vak.config.predict.parse_predict_config(self.config_obj)
 
-    def test_missing_dir_to_predict_raises(self):
-        self.config_obj.remove_option('PREDICT', 'dir_to_predict')
+    def test_missing_predict_vds_path_raises(self):
+        self.config_obj.remove_option('PREDICT', 'predict_vds_path')
+        with self.assertRaises(KeyError):
+            vak.config.predict.parse_predict_config(self.config_obj)
+
+    def test_missing_train_vds_path_raises(self):
+        self.config_obj.remove_option('PREDICT', 'train_vds_path')
         with self.assertRaises(KeyError):
             vak.config.predict.parse_predict_config(self.config_obj)
 
@@ -73,8 +80,13 @@ class TestParsePredictConfig(unittest.TestCase):
         with self.assertRaises(NotADirectoryError):
             vak.config.predict.parse_predict_config(self.config_obj)
 
-    def test_nonexistent_dir_to_predict_raises(self):
-        self.config_obj['PREDICT']['dir_to_predict'] = 'obviously/non/existent/dir'
+    def test_nonexistent_predict_vds_path_raises(self):
+        self.config_obj['PREDICT']['predict_vds_path'] = 'obviously/non/existent/dir'
+        with self.assertRaises(NotADirectoryError):
+            vak.config.predict.parse_predict_config(self.config_obj)
+
+    def test_nonexistent_train_vds_path_raises(self):
+        self.config_obj['PREDICT']['train_vds_path'] = 'obviously/non/existent/dir'
         with self.assertRaises(NotADirectoryError):
             vak.config.predict.parse_predict_config(self.config_obj)
 

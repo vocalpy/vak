@@ -15,22 +15,32 @@ class PredictConfig:
 
     Attributes
     ----------
+    predict_vds_path : str
+        path to saved VocalizationDataset that contains data for which annotations
+        should be predicted.
+    train_vds_path : str
+        path to VocalizationDataset that represents training data.
+        To fetch labelmap used during training, to map labels used
+        in annotation to a series of consecutive integers that become
+        outputs of the neural network. Used here to convert
+        back to labels used in annotation.
     checkpoint_path : str
         path to directory with checkpoint files saved by Tensorflow, to reload model
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
-    dir_to_predict : str
-        path to directory where input files are located
     spect_scaler_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     """
+    predict_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
+    train_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
     checkpoint_path = attr.ib(validator=[instance_of(str), is_a_directory])
     networks = attr.ib()
-    dir_to_predict = attr.ib(validator=[instance_of(str), is_a_directory])
-    spect_scaler_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
+
+    spect_scaler_path = attr.ib(validator=optional([instance_of(str), is_a_file]),
+                                default=None)
 
 
 def parse_predict_config(config):
@@ -50,8 +60,23 @@ def parse_predict_config(config):
     config_dict = {}
 
     try:
+        config_dict['predict_vds_path'] = os.path.expanduser(
+            config['PREDICT']['predict_vds_path']
+        )
+    except KeyError:
+        raise KeyError("'predict_vds_path' option not found in [PREDICT] section of "
+                            "config.ini file. Please add this option.")
+    try:
+        config_dict['train_vds_path'] = os.path.expanduser(
+            config['PREDICT']['train_vds_path']
+        )
+    except KeyError:
+        raise KeyError("'train_vds_path' option not found in [PREDICT] section of "
+                            "config.ini file. Please add this option.")
+
+    try:
         config_dict['checkpoint_path'] = config['PREDICT']['checkpoint_path']
-    except NoOptionError:
+    except KeyError:
         raise KeyError('must specify checkpoint_path in [PREDICT] section '
                        'of config.ini file')
 
@@ -74,13 +99,6 @@ def parse_predict_config(config):
         raise KeyError("'networks' option not found in [PREDICT] section of config.ini file. "
                        "Please add this option as a comma-separated list of neural network names, e.g.:\n"
                        "networks = TweetyNet, GRUnet, convnet")
-
-    try:
-        dir_to_predict = config['PREDICT']['dir_to_predict']
-    except NoOptionError:
-        raise KeyError('must specify dir_to_predict in [PREDICT] section '
-                       'of config.ini file')
-    config_dict['dir_to_predict'] = os.path.expanduser(dir_to_predict)
 
     if config.has_option('PREDICT', 'spect_scaler_path'):
         config_dict['spect_scaler_path'] = config['PREDICT']['spect_scaler_path']

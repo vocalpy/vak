@@ -1,7 +1,37 @@
-import os
 from glob import glob
+import os
+import re
 
 import numpy as np
+
+
+def find_fname(fname, ext):
+    """given a file extension, finds a filename with that extension within
+    another filename. Useful to find e.g. names of audio files in
+    names of spectrogram files.
+
+    Parameters
+    ----------
+    fname : str
+        filename to search for another filename with a specific extension
+    ext : str
+        extension to search for in filename
+
+    Returns
+    -------
+    sub_fname : str or None
+
+
+    Examples
+    --------
+    >>> sub_fname(fname='llb3_0003_2018_04_23_14_18_54.wav.mat', ext='wav')
+    'llb3_0003_2018_04_23_14_18_54.wav'
+    """
+    m = re.match(f'[\S]*{ext}', fname)
+    if hasattr(m, 'group'):
+        return m.group()
+    elif m is None:
+        return m
 
 
 def _files_from_dir(dir_path, ext):

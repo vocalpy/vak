@@ -30,6 +30,7 @@ class TestParseConfig(unittest.TestCase):
         _, self.tmp_train_vds_path = tempfile.mkstemp()
         _, self.tmp_val_vds_path = tempfile.mkstemp()
         _, self.tmp_test_vds_path = tempfile.mkstemp()
+        _, self.tmp_predict_vds_path = tempfile.mkstemp()
 
         # for output section of config
         self.tmp_root_dir = tempfile.mkdtemp()
@@ -82,7 +83,8 @@ class TestParseConfig(unittest.TestCase):
             config['TRAIN']['test_vds_path'] = self.tmp_test_vds_path
         if config.has_section('PREDICT'):
             config['PREDICT']['checkpoint_path'] = self.tmp_checkpoint_dir
-            config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
+            config['PREDICT']['train_vds_path'] = self.tmp_train_vds_path
+            config['PREDICT']['predict_vds_path'] = self.tmp_predict_vds_path
             config['PREDICT']['spect_scaler_path'] = self.tmp_spect_scaler_path
 
         file_obj = tempfile.NamedTemporaryFile(prefix='config', suffix='.ini', mode='w',
