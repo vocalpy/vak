@@ -195,7 +195,7 @@ def brute_force(durs,
                 [tup[1] for tup in train_tups])
             train_labels = set(train_labels)  # make set to get unique values
 
-            if test_dur > 0:
+            if test_dur > 0 or test_dur == -1:
                 test_labels = itertools.chain.from_iterable(
                     [tup[1] for tup in test_tups])
                 test_labels = set(test_labels)
@@ -216,7 +216,7 @@ def brute_force(durs,
                     )
                     continue
 
-            if test_dur > 0:
+            if test_dur > 0 or test_dur == -1:
                 if test_labels != set(labelset):
                     iter += 1
                     if iter > max_iter:

@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 import numpy as np
 import dask.bag as db
@@ -48,7 +48,8 @@ def to_spect(audio_format,
              labelset=None,
              freqbins_key='f',
              timebins_key='t',
-             spect_key='s'):
+             spect_key='s',
+             audio_path_key='audio_path'):
     """makes spectrograms from audio files and saves in array files
 
     Parameters
@@ -79,6 +80,9 @@ def to_spect(audio_format,
         key for accessing vector of time bins in files. Default is 't'.
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
+    audio_path_key : str
+        key for accessing path to source audio file for spectogram in files.
+        Default is 'audio_path'.
 
     Returns
     -------
@@ -95,9 +99,11 @@ def to_spect(audio_format,
             vector of centers of frequency bins from spectrogram
         t : numpy.ndarray
             vector of centers of tme bins from spectrogram
+        audio_path : numpy.ndarray
+            path to source audio file used to create spectrogram
 
     The names of the arrays are defaults, and will change if different values are specified for
-    'spect_key', 'freqbins_key', or 'timebins_key'.
+    'spect_key', 'freqbins_key', 'timebins_key', or 'audio_path_key'.
     """
     if audio_format not in validators.VALID_AUDIO_FORMATS:
         raise ValueError(
@@ -192,7 +198,8 @@ def to_spect(audio_format,
         s, f, t = spectrogram(dat, fs, **spect_params)
         spect_dict = {spect_key: s,
                       freqbins_key: f,
-                      timebins_key: t}
+                      timebins_key: t,
+                      audio_path_key: audio_file}
         basename = os.path.basename(audio_file)
         npz_fname = os.path.join(os.path.normpath(output_dir),
                                  basename + '.spect.npz')

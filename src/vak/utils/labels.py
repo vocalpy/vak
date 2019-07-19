@@ -1,3 +1,4 @@
+import crowsetta
 import numpy as np
 
 from .validation import column_or_1d
@@ -273,3 +274,160 @@ def to_set(labels_list):
     all_labels = [lbl for labels in labels_list for lbl in labels]
     labelset = set(all_labels)
     return labelset
+
+
+def lbl_tb2labels(labeled_timebins,
+                  labels_mapping,
+                  spect_ID_vector=None):
+    """converts output of network from label for each frame
+    to one label for each continuous segment
+
+    Parameters
+    ----------
+    labeled_timebins : ndarray
+        where each element is a label for a time bin.
+        Such an array is the output of the network.
+    labels_mapping : dict
+        that maps str labels to consecutive integers.
+        The mapping is inverted to convert back to str labels.
+    spect_ID_vector : ndarray
+        of same length as labeled_timebins, where each element
+        is an ID # for the spectrogram from which labeled_timebins
+        was taken.
+        If provided, used to split the converted labels back to
+        a list of label str, with one for each spectrogram.
+        Default is None, in which case the return value is one long str.
+
+    Returns
+    -------
+    labels : str or list
+        labeled_timebins mapped back to label str.
+        If spect_ID_vector was provided, then labels is split into a list of str,
+        where each str corresponds to predicted labels for each predicted
+        segment in each spectrogram as identified by spect_ID_vector.
+    """
+    idx = np.diff(labeled_timebins, axis=0).astype(np.bool)
+    idx = np.insert(idx, 0, True)
+
+    labels = labeled_timebins[idx]
+
+    # remove 'unlabeled' label
+    if 'unlabeled' in labels_mapping:
+        labels = labels[labels != labels_mapping['unlabeled']]
+        labels = labels.tolist()
+
+    inverse_labels_mapping = dict((v, k) for k, v
+                                  in labels_mapping.items())
+    labels = [inverse_labels_mapping[label] for label in labels]
+
+    if spect_ID_vector:
+        labels_list = []
+        spect_ID_vector = spect_ID_vector[idx]
+        labels_arr = np.asarray(labels)
+        # need to split up labels by spect_ID_vector
+        # this is probably not the most efficient way:
+        spect_IDs = np.unique(spect_ID_vector)
+
+        for spect_ID in spect_IDs:
+            these = np.where(spect_ID_vector == spect_ID)
+            curr_labels = labels_arr[these].tolist()
+            if all([type(el) is str for el in curr_labels]):
+                labels_list.append(''.join(curr_labels))
+            elif all([type(el) is int for el in curr_labels]):
+                labels_list.append(curr_labels)
+        return labels_list, spect_ID_vector
+    else:
+        if all([type(el) is str or type(el) is np.str_ for el in labels]):
+            return ''.join(labels)
+        elif all([type(el) is int for el in labels]):
+            return labels
+
+
+def _segment_lbl_tb(lbl_tb):
+    """helper function that segments vector of labeled timebins.
+
+    Parameters
+    ----------
+    lbl_tb : numpy.ndarray
+        vector where each element represents a label for a timebin
+
+    Returns
+    -------
+    labels : numpy.ndarray
+        vector where each element is a label for a segment with its onset
+        and offset indices given by the corresponding element in onset_inds
+        and offset_inds.
+    onset_inds : numpy.ndarray
+        vector where each element is the onset index for a segment.
+        Each onset corresponds to the value at the same index in labels.
+    offset_inds : numpy.ndarray
+        vector where each element is the offset index for a segment
+        Each offset corresponds to the value at the same index in labels.
+    """
+    # factored out as a separate function to be able to test
+    # and in case user wants to do just this with output of neural net
+    offset_inds = np.where(np.diff(lbl_tb, axis=0))[0]
+    onset_inds = offset_inds + 1
+    offset_inds = np.concatenate(
+        (offset_inds, np.asarray([lbl_tb.shape[0] - 1]))
+    )
+    onset_inds = np.concatenate(
+        (np.asarray([0]), onset_inds)
+    )
+    labels = lbl_tb[onset_inds]
+    return labels, onset_inds, offset_inds
+
+
+def lbl_tb2segments(lbl_tb,
+                    labelmap,
+                    timebin_dur):
+    """convert vector of labeled timebins into segments,
+    by finding where continuous runs of a single label start
+    and stop. Returns vectors of labels and onsets and offsets
+    in units of seconds.
+
+    Parameters
+    ----------
+    lbl_tb : numpy.ndarray
+        vector of labeled spectrogram time bins, i.e.,
+        where each element is a label for a time bin.
+        Output of a neural network.
+    labelmap : dict
+        that maps labels to consecutive integers.
+        The mapping is inverted to convert back to labels.
+    timebin_dur : float
+        Duration of a single timebin in the spectrogram, in seconds.
+        Used to convert onset and offset indices in lbl_tb to seconds.
+
+    Returns
+    -------
+    labels : numpy.ndarray
+        vector where each element is a label for a segment with its onset
+        and offset indices given by the corresponding element in onset_inds
+        and offset_inds.
+    onsets_s : numpy.ndarray
+        vector where each element is the onset in seconds a segment.
+        Each onset corresponds to the value at the same index in labels.
+    offsets_s : numpy.ndarray
+        vector where each element is the offset in seconds of a segment.
+        Each offset corresponds to the value at the same index in labels.
+    """
+    lbl_tb = column_or_1d(lbl_tb)
+    labels, onset_inds, offset_inds = _segment_lbl_tb(lbl_tb)
+
+    # remove 'unlabeled' label
+    if 'unlabeled' in labelmap:
+        keep = np.where(labels != labelmap['unlabeled'])[0]
+        labels = labels[keep]
+        onset_inds = onset_inds[keep]
+        offset_inds = offset_inds[keep]
+    inverse_labelmap = dict((v, k) for k, v
+                            in labelmap.items())
+    labels = labels.tolist()
+    labels = np.asarray(
+        [inverse_labelmap[label] for label in labels]
+    )
+    onsets_s = onset_inds * timebin_dur
+    offsets_s = offset_inds * timebin_dur
+
+    return labels, onsets_s, offsets_s

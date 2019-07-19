@@ -102,10 +102,7 @@ class TestSplit(unittest.TestCase):
                         )
 
                 all_lbls_this_set = [lbl for ind in inds for lbl in labels[ind]]
-                try:
-                    self.assertTrue(labelset == set(all_lbls_this_set))
-                except AssertionError:
-                    import pdb;pdb.set_trace()
+                self.assertTrue(labelset == set(all_lbls_this_set))
             else:
                 self.assertTrue(inds is None)
 

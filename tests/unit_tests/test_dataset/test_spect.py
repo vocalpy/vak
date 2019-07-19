@@ -1,21 +1,59 @@
 import os
 from pathlib import Path
 import unittest
-from glob import glob
 
 import numpy as np
 import crowsetta
 
 import vak.dataset.spect
 from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
-
+from vak.config.validators import VALID_AUDIO_FORMATS
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
 SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
-class TestSpect(unittest.TestCase):
+class TestFindAudioFname(unittest.TestCase):
+    """class to test find_audio_fname function"""
+    def setUp(self):
+        # ---- in .mat files -------------------------------
+        self.spect_dir_mat = TEST_DATA_DIR.joinpath('mat', 'llb3', 'spect')
+        self.spect_list_mat = list(self.spect_dir_mat.glob('*.mat'))
+        self.spect_list_mat = [str(path) for path in self.spect_list_mat]
+
+        # ---- in .npz files, made from .cbin audio files -------------------------------
+        self.spect_dir_npz = list(TEST_DATA_DIR.joinpath('vds').glob(
+            'spectrograms_generated*')
+        )
+        self.spect_dir_npz = self.spect_dir_npz[0]
+        self.spect_list_npz = list(self.spect_dir_npz.glob('*.spect.npz'))
+        self.spect_list_npz = [str(path) for path in self.spect_list_npz]
+
+    def test_with_mat(self):
+        audio_fnames = [vak.dataset.spect.find_audio_fname(spect_path)
+                        for spect_path in self.spect_list_mat]
+        for mat_spect_path, audio_fname in zip(self.spect_list_mat, audio_fnames):
+            # make sure we gout out a filename that was actually in spect_path
+            self.assertTrue(audio_fname in mat_spect_path)
+            # make sure it's some valid audio format
+            self.assertTrue(
+                Path(audio_fname).suffix.replace('.', '') in VALID_AUDIO_FORMATS
+            )
+
+    def test_with_npz(self):
+        audio_fnames = [vak.dataset.spect.find_audio_fname(spect_path)
+                        for spect_path in self.spect_list_npz]
+        for npz_spect_path, audio_fname in zip(self.spect_list_npz, audio_fnames):
+            # make sure we gout out a filename that was actually in spect_path
+            self.assertTrue(audio_fname in npz_spect_path)
+            self.assertTrue(
+                Path(audio_fname).suffix.replace('.', '') in VALID_AUDIO_FORMATS
+            )
+
+
+class TestFromFiles(unittest.TestCase):
+    """class to tests spect.from_files function"""
     def setUp(self):
         self.spect_dir = TEST_DATA_DIR.joinpath('mat', 'llb3', 'spect')
         self.spect_files = self.spect_dir.glob('*.mat')
@@ -249,6 +287,7 @@ class TestSpect(unittest.TestCase):
                                          spect_annot_map=spect_annot_map,
                                          annot_list=self.annot_list,
                                          load_spects=True)
+
 
 
 if __name__ == '__main__':

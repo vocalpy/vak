@@ -1,11 +1,24 @@
+from pathlib import Path
 import unittest
 
 import numpy as np
 
-import vak.utils.labels
+import vak
+
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
+TEST_DATA_VDS_PATH = list(TEST_DATA_DIR.glob('vds'))[0]
 
 
 class TestLabels(unittest.TestCase):
+    def setUp(self):
+        self.a_vds_path = list(
+            TEST_DATA_VDS_PATH.glob(f'*.train.vds.json')
+        )
+        self.assertTrue(len(self.a_vds_path) > 0)
+        self.a_vds_path = self.a_vds_path[0]
+
     def test_where(self):
         labels_arr_0 = np.zeros(shape=(10,), dtype=np.int64)
         labels_arr_1 = np.ones(shape=(10,), dtype=np.int64)
@@ -139,6 +152,42 @@ class TestLabels(unittest.TestCase):
         time_bins = np.arange(0, 18, 0.001)
         has_ = vak.utils.labels.has_unlabeled(labels_1, onsets_s1, offsets_s1, time_bins)
         self.assertTrue(has_ is False)
+
+    def test_segment_lbl_tb(self):
+        lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+        labels, onset_inds, offset_inds = vak.utils.labels._segment_lbl_tb(lbl_tb)
+        self.assertTrue(
+            np.array_equal(labels, np.asarray([0, 1, 0]))
+        )
+        self.assertTrue(
+            np.array_equal(onset_inds, np.asarray([0, 4, 8]))
+        )
+        self.assertTrue(
+            np.array_equal(offset_inds, np.asarray([3, 7, 11]))
+        )
+
+    def test_lbl_tb2segments(self):
+        vds = vak.dataset.VocalizationDataset.load(json_fname=self.a_vds_path)
+        vds = vds.load_spects()
+        lbl_tb_list = vds.lbl_tb_list()
+        labelmap = vds.labelmap
+        timebin_dur = set(
+            [voc.metaspect.timebin_dur for voc in vds.voc_list]
+        ).pop()
+
+        for lbl_tb, voc in zip(lbl_tb_list, vds.voc_list):
+            labels, onsets_s, offsets_s = vak.utils.labels.lbl_tb2segments(lbl_tb,
+                                                                           labelmap,
+                                                                           timebin_dur)
+            self.assertTrue(
+                np.array_equal(labels, voc.annot.labels)
+            )
+            self.assertTrue(
+                np.allclose(onsets_s, voc.annot.onsets_s, atol=0.001, rtol=0.03)
+            )
+            self.assertTrue(
+                np.allclose(offsets_s, voc.annot.offsets_s, atol=0.001, rtol=0.03)
+            )
 
 
 if __name__ == '__main__':
