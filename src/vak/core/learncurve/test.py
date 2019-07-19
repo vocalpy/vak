@@ -9,6 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 from ... import metrics, utils
+from ... utils.labels import lbl_tb2labels
 from ... import network
 from ...dataset import VocalizationDataset
 
@@ -328,10 +329,10 @@ def test(results_dirname,
                     logger.info('train error was {}'.format(train_err))
                     Y_pred_train_this_dur.append(Y_pred_train)
 
-                    Y_train_subset_labels = utils.data.convert_timebins_to_labels(Y_train_subset,
-                                                                                  train_vds.labelmap)
-                    Y_pred_train_labels = utils.data.convert_timebins_to_labels(Y_pred_train,
-                                                                                train_vds.labelmap)
+                    Y_train_subset_labels = lbl_tb2labels(Y_train_subset,
+                                                          train_vds.labelmap)
+                    Y_pred_train_labels = lbl_tb2labels(Y_pred_train,
+                                                        train_vds.labelmap)
                     Y_pred_train_labels_this_dur.append(Y_pred_train_labels)
 
                     if all([type(el) is int for el in Y_train_subset_labels]):
@@ -381,8 +382,8 @@ def test(results_dirname,
                     logger.info('test error was {}'.format(test_err))
                     Y_pred_test_this_dur.append(Y_pred_test)
 
-                    Y_pred_test_labels = utils.data.convert_timebins_to_labels(Y_pred_test,
-                                                                               test_vds.labelmap)
+                    Y_pred_test_labels = lbl_tb2labels(Y_pred_test,
+                                                       test_vds.labelmap)
                     Y_pred_test_labels_this_dur.append(Y_pred_test_labels)
                     if all([type(el) is int for el in Y_pred_test_labels]):
                         # if labels are ints instead of str

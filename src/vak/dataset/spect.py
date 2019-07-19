@@ -1,6 +1,7 @@
-import os
 from glob import glob
 import logging
+import os
+from pathlib import Path
 
 import numpy as np
 from scipy.io import loadmat
@@ -10,7 +11,57 @@ from dask.diagnostics import ProgressBar
 from .annotation import source_annot_map
 from .classes import MetaSpect, Vocalization, VocalizationDataset
 from ..config import validators
-from ..utils.general import timebin_dur_from_vec
+from ..utils.general import find_fname, timebin_dur_from_vec
+
+
+def find_audio_fname(spect_path, audio_ext=None):
+    """finds name of audio file in a path to a spectogram file,
+    if one is present.
+
+    Checks for any extension that is a valid audio file format
+    and returns path up to and including that extension,
+    i.e. with the spectrogram file extension removed.
+
+    Parameters
+    ----------
+    spect_path : str
+        path to a spectrogram file
+    audio_ext : str
+        extension associated with an audio file format, used to
+        find audio file name in spect_path.
+        Default is None. If None, search for any valid audio format
+        (as defined by vak.config.validators.VALID_AUDIO_FORMATS)
+
+    Returns
+    -------
+    audio_fname : str
+        name of audio file found in spect_path
+    """
+    if audio_ext is None:
+        audio_ext = validators.VALID_AUDIO_FORMATS
+    elif type(audio_ext) is str:
+        audio_ext = [audio_ext]
+    else:
+        raise TypeError(
+            f'invalid type for audio_ext: {type(audio_ext)}'
+        )
+
+    audio_fnames = []
+    for ext in audio_ext:
+        audio_fnames.append(
+            find_fname(spect_path, ext)
+        )
+    # remove Nones
+    audio_fnames = [path for path in audio_fnames if path is not None]
+    # keep just file name from spect path
+    audio_fnames = [Path(path).name for path in audio_fnames]
+
+    if len(audio_fnames) == 1:
+        return audio_fnames[0]
+    else:
+        raise ValueError(
+            f'unable to determine filename of audio file from: {spect_path}'
+        )
 
 
 def from_files(spect_format,
@@ -23,7 +74,8 @@ def from_files(spect_format,
                n_decimals_trunc=3,
                freqbins_key='f',
                timebins_key='t',
-               spect_key='s'
+               spect_key='s',
+               audio_path_key='audio_path'
                ):
     """create VocalizationDataset from already-made spectrograms that are in
     files containing arrays, i.e., .mat files created by Matlab or .npz files created by numpy
@@ -70,6 +122,9 @@ def from_files(spect_format,
         key for accessing vector of time bins in files. Default is 't'.
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
+    audio_path_key : str
+        key for accessing path to source audio file for spectogram in files.
+        Default is 'audio_path'.
 
     Returns
     -------
@@ -196,6 +251,16 @@ def from_files(spect_format,
             spect_dict = np.load(spect_path)
 
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
+        if audio_path_key in spect_dict:
+            audio_path = spect_dict[audio_path_key]
+            if type(audio_path) == np.ndarray:
+                # (because everything stored in .npz has to be in an ndarray)
+                audio_path = audio_path.tolist()
+        else:
+            # try to figure out audio filename programmatically
+            # if we can't, then we'll get back a None
+            # (or an error)
+            audio_path = find_audio_fname(spect_path)
 
         if load_spects:
             spect_kwargs = {
@@ -203,6 +268,7 @@ def from_files(spect_format,
                 'time_bins': spect_dict[timebins_key],
                 'timebin_dur': timebin_dur,
                 'spect': spect_dict[spect_key],
+                'audio_path': audio_path,
             }
             metaspect = MetaSpect(**spect_kwargs)
         else:
@@ -211,6 +277,7 @@ def from_files(spect_format,
         voc_kwargs = {
             'annot': annot,
             'spect_path': spect_path,
+            'audio_path': audio_path,
             'metaspect': metaspect,
             'duration': spect_dur
         }

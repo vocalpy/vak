@@ -124,9 +124,9 @@ def train(train_vds_path,
         logger.setLevel('INFO')
 
     # ---------------- load training data  -----------------------------------------------------------------------------
-    logger.info('Loading training VocalizationDataset from {}'.format(
-        os.path.dirname(
-            train_vds_path)))
+    logger.info(
+        f'Loading training VocalizationDataset:\n{train_vds_path}'
+    )
     train_vds = VocalizationDataset.load(json_fname=train_vds_path)
 
     if train_vds.are_spects_loaded() is False:
@@ -151,7 +151,9 @@ def train(train_vds_path,
         )
     elif len(timebin_dur) == 1:
         timebin_dur = timebin_dur.pop()
-        logger.info('Size of each timebin in spectrogram, in seconds: {timebin_dur}')
+        logger.info(
+            f'Size of each timebin in spectrogram, in seconds: {timebin_dur}'
+        )
     else:
         raise ValueError(
             f'invalid time bin durations from training set: {timebin_dur}'
@@ -189,16 +191,20 @@ def train(train_vds_path,
         joblib.dump(Y_train, os.path.join(train_dirname, 'Y_train'))
 
     logger.info(
-        f'Will train network with training sets of following durations (in s): {train_set_durs}'
+        'Will train network with training sets of following durations (in s): '
+        f'{train_set_durs}'
     )
 
     logger.info(
-        f'will replicate training {num_replicates} times for each duration of training set'
+        f'will replicate training {num_replicates} times '
+        'for each duration of training set'
     )
 
     # ---------------- grab all indices for subsets of training data *before* doing any training -------------------
     # we want to fail here, rather than later in the middle of training networks
-    logger.info("getting all randomly-drawn subsets of training data before starting training")
+    logger.info(
+        "getting all randomly-drawn subsets of training data before starting training"
+    )
     with tqdm(total=len(train_set_durs) * num_replicates) as pbar:
         train_inds_dict = {}
 
@@ -210,7 +216,8 @@ def train(train_vds_path,
                                          + str(replicate))
 
                 pbar.set_description(
-                    f"Getting indices for training subset with duration {train_set_dur}, replicate {replicate}"
+                    f"Getting indices for training subset with duration {train_set_dur}, "
+                    f"replicate {replicate}"
                 )
 
                 if use_train_subsets_from_previous_run:
@@ -218,7 +225,8 @@ def train(train_vds_path,
                                                    train_records_dirname,
                                                    'train_inds')
                     logger.info(
-                        f"loading indices for training subset with duration {train_set_dur}, replicate {replicate} "
+                        "loading indices for training subset with duration "
+                        f"{train_set_dur}, replicate {replicate} "
                         f"from: {train_inds_path}"
                     )
                     with open(train_inds_path, 'rb') as f:
@@ -226,7 +234,8 @@ def train(train_vds_path,
 
                 else:  # if not re-using subsets, need to generate them
                     logger.info(
-                        f"generating indices for training subset with duration {train_set_dur}, replicate {replicate}"
+                        "generating indices for training subset with "
+                        f"duration {train_set_dur}, replicate {replicate}"
                     )
 
                     training_records_path = os.path.join(train_dirname,
@@ -269,14 +278,16 @@ def train(train_vds_path,
         timebin_dur_val = set([voc.metaspect.timebin_dur for voc in val_vds.voc_list])
         if len(timebin_dur_val) > 1:
             raise ValueError(
-                f'found more than one time bin duration in validation VocalizationDataset: {timebin_dur_val}'
+                'found more than one time bin duration in validation VocalizationDataset:'
+                f' {timebin_dur_val}'
             )
         elif len(timebin_dur_val) == 1:
             timebin_dur_val = timebin_dur_val.pop()
             if timebin_dur_val != timebin_dur:
                 raise ValueError(
-                    f'time bin duration in validation VocalizationDataset, {timebin_dur_val}, did not match that of '
-                    f'training set: {timebin_dur}'
+                    f'time bin duration in validation VocalizationDataset, '
+                    f'{timebin_dur_val}, did not match that of training set: '
+                    f'{timebin_dur}'
                 )
 
         X_val_dur = X_val.shape[-1] * timebin_dur
@@ -294,7 +305,8 @@ def train(train_vds_path,
             joblib.dump(Y_val, os.path.join(train_dirname, 'Y_val'))
 
         logger.info(
-            f'will measure error on validation set every {val_error_step} steps of training'
+            f'will measure error on validation set every {val_error_step} '
+            'steps of training'
         )
     else:
         X_val = None  # so we can just check 'if X_val' below, clearer than e.g. 'if val_vds_path'
