@@ -72,7 +72,7 @@ def prep(data_dir,
 
     Returns
     -------
-    vds : vak.dataset.VocalizationDataset
+    vds : vak.dataset.Dataset
         the VocalizationDataset prepared from the directory specified
     vds_path : str
         path to where VocalizationDataset was saved

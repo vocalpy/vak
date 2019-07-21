@@ -6,7 +6,7 @@ import numpy as np
 import crowsetta
 
 import vak.dataset.spect
-from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
+from vak.dataset.classes import Dataset, Vocalization, MetaSpect
 from vak.config.validators import VALID_AUDIO_FORMATS
 
 HERE = Path(__file__).parent
@@ -69,7 +69,7 @@ class TestFromFiles(unittest.TestCase):
     def _check_vocal_dataset_returned_by_from_spect_files(self, vocal_dataset, load_spects=True):
         """assertions that are shared across unit tests for vak.dataset.spect.from_files"""
         self.assertTrue(
-            type(vocal_dataset) == VocalizationDataset
+            type(vocal_dataset) == Dataset
         )
 
         self.assertTrue(

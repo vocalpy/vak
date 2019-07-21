@@ -1,7 +1,7 @@
 import os
 
 from .. import core
-from ..dataset import VocalizationDataset
+from ..dataset import Dataset
 
 
 def predict(predict_vds_path,
@@ -15,10 +15,10 @@ def predict(predict_vds_path,
     Parameters
     ----------
     predict_vds_path : str
-        path to saved VocalizationDataset that contains data for which annotations
+        path to saved Dataset that contains data for which annotations
         should be predicted.
     train_vds_path : str
-        path to VocalizationDataset that represents training data.
+        path to Dataset that represents training data.
         To fetch labelmap used during training, to map labels used
         in annotation to a series of consecutive integers that become
         outputs of the neural network. Used here to convert
@@ -58,7 +58,7 @@ def predict(predict_vds_path,
             f'of string paths, but type was {type(predict_vds_path)}'
         )
 
-    train_vds = VocalizationDataset.load(json_fname=train_vds_path)
+    train_vds = Dataset.load(json_fname=train_vds_path)
     if train_vds.are_spects_loaded() is False:
         train_vds = train_vds.load_spects()
     labelmap = train_vds.labelmap

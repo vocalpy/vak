@@ -11,7 +11,7 @@ import numpy as np
 
 import vak.core.predict
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
-from vak.dataset import VocalizationDataset
+from vak.dataset import Dataset
 import vak.utils
 
 HERE = Path(__file__).parent
@@ -58,7 +58,7 @@ class TestPredict(unittest.TestCase):
         self.train_vds_path = str(shutil.copy(vds_path, self.tmp_output_dir))
         config['PREDICT']['train_vds_path'] = self.train_vds_path
 
-        train_vds = VocalizationDataset.load(json_fname=vds_path)
+        train_vds = Dataset.load(json_fname=vds_path)
         if train_vds.are_spects_loaded() is False:
             train_vds = train_vds.load_spects()
         self.labelmap = train_vds.labelmap
@@ -77,7 +77,7 @@ class TestPredict(unittest.TestCase):
 
     def test_predict_func(self):
         # make sure we're working with a vds that needs prediction
-        predict_vds_before = VocalizationDataset.load(self.predict_vds_path)
+        predict_vds_before = Dataset.load(self.predict_vds_path)
         predict_vds_before = predict_vds_before.load_spects()
         for voc in predict_vds_before.voc_list:
             self.assertTrue(voc.metaspect.lbl_tb is None)
@@ -91,7 +91,7 @@ class TestPredict(unittest.TestCase):
                          checkpoint_path=self.checkpoint_path,
                          networks=networks,
                          spect_scaler_path=self.spect_scaler_path)
-        predict_vds_after = VocalizationDataset.load(self.predict_vds_path)
+        predict_vds_after = Dataset.load(self.predict_vds_path)
         predict_vds_after = predict_vds_after.load_spects()
 
         for voc in predict_vds_after.voc_list:

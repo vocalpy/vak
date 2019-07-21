@@ -76,8 +76,8 @@ def prep(data_dir,
     -------
     None
 
-    Saves a VocalizationDataset generated from data_dir, as well as training, test, and
-    validation sets created from that VocalizationDataset.
+    Saves a Dataset generated from data_dir, as well as training, test, and
+    validation sets created from that Dataset.
     """
     if audio_format is None and spect_format is None:
         raise ValueError("Must specify either audio_format or spect_format")
