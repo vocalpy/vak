@@ -11,7 +11,7 @@ import tensorflow as tf
 from ... import metrics, utils
 from ... utils.labels import lbl_tb2labels
 from ... import network
-from ...dataset import VocalizationDataset
+from ...dataset import Dataset
 
 
 def test_one_model(net_name,
@@ -219,9 +219,9 @@ def test(results_dirname,
     results_dirname : str
         path to directory containing results created by a run of learncurve.train
     test_vds_path : str
-        path to VocalizationDataset that represents test data
+        path to Dataset that represents test data
     train_vds_path : str
-        path to VocalizationDataset that represents training data
+        path to Dataset that represents training data
     networks : dict
         where each key is the name of a neural network and the corresponding
         value is the configuration for that network (in a namedtuple or a dict)
@@ -277,10 +277,10 @@ def test(results_dirname,
     logger.info(f"Logging run of learncurve.test to '{test_dirname}'")
 
     # ---------------- load training data  -----------------------------------------------------------------------------
-    logger.info('Loading training VocalizationDataset from {}'.format(
+    logger.info('Loading training Dataset from {}'.format(
         os.path.dirname(
             train_vds_path)))
-    train_vds = VocalizationDataset.load(json_fname=train_vds_path)
+    train_vds = Dataset.load(json_fname=train_vds_path)
 
     if train_vds.are_spects_loaded() is False:
         train_vds = train_vds.load_spects()
@@ -298,7 +298,7 @@ def test(results_dirname,
     timebin_dur = set([voc.metaspect.timebin_dur for voc in train_vds.voc_list])
     if len(timebin_dur) > 1:
         raise ValueError(
-            f'found more than one time bin duration in training VocalizationDataset: {timebin_dur}'
+            f'found more than one time bin duration in training Dataset: {timebin_dur}'
         )
     elif len(timebin_dur) == 1:
         timebin_dur = timebin_dur.pop()
@@ -309,10 +309,10 @@ def test(results_dirname,
         )
 
     # ---------------- load test data  -----------------------------------------------------------------------------
-    logger.info('Loading test VocalizationDataset from {}'.format(
+    logger.info('Loading test Dataset from {}'.format(
         os.path.dirname(
             test_vds_path)))
-    test_vds = VocalizationDataset.load(json_fname=test_vds_path)
+    test_vds = Dataset.load(json_fname=test_vds_path)
 
     if test_vds.are_spects_loaded() is False:
         test_vds = test_vds.load_spects()

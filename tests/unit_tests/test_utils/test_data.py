@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from vak.dataset import VocalizationDataset
+from vak.dataset import Dataset
 import vak.utils.data
 
 
@@ -21,7 +21,7 @@ class TestData(unittest.TestCase):
         self.train_vds_path = list(self.train_vds_path)[0]
 
     def test_get_inds_for_dur(self):
-        train_vds = VocalizationDataset.load(json_fname=self.train_vds_path)
+        train_vds = Dataset.load(json_fname=self.train_vds_path)
         train_vds = train_vds.load_spects()
 
         X_train = train_vds.spects_list()

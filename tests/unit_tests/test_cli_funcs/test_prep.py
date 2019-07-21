@@ -10,7 +10,7 @@ import crowsetta
 
 import vak.cli.prep
 from vak.config.spectrogram import SpectConfig
-from vak.dataset import VocalizationDataset
+from vak.dataset import Dataset
 import vak.dataset
 
 HERE = os.path.dirname(__file__)
@@ -49,7 +49,7 @@ class TestPrep(unittest.TestCase):
             data_files_from_dir = vak.utils.general._files_from_dir(data_dir, spect_format)
 
         if num_expected_paths == 1:
-            vds = VocalizationDataset.from_json(json_fname=vds_paths[0])
+            vds = Dataset.from_json(json_fname=vds_paths[0])
             if audio_format:
                 data_files_in_vds = [voc.audio_path for voc in vds.voc_list]
             elif spect_format:
@@ -81,27 +81,27 @@ class TestPrep(unittest.TestCase):
                 self.assertTrue(len(path) == 1)
                 path = path[0]
                 if specd_dur > 0:
-                    vds_loaded = VocalizationDataset.from_json(json_fname=path)
+                    vds_loaded = Dataset.from_json(json_fname=path)
                     total_dur = sum([voc.duration for voc in vds_loaded.voc_list])
                     self.assertTrue((total_dur >= specd_dur))
 
                 elif specd_dur == -1:
-                    vds_loaded = VocalizationDataset.from_json(json_fname=path)
+                    vds_loaded = Dataset.from_json(json_fname=path)
                     total_dur = sum([voc.duration for voc in vds_loaded.voc_list])
                     source_vds_path = [path for path in vds_paths if 'test' not in path and 'train' not in path][0]
-                    source_vds = VocalizationDataset.from_json(json_fname=source_vds_path)
+                    source_vds = Dataset.from_json(json_fname=source_vds_path)
                     source_dur = sum([voc.duration for voc in source_vds.voc_list])
 
                     if split == 'train':
                         test_path = [path for path in vds_paths if 'test' in path][0]
-                        test_vds = VocalizationDataset.from_json(json_fname=test_path)
+                        test_vds = Dataset.from_json(json_fname=test_path)
                         test_dur = sum([voc.duration for voc in test_vds.voc_list])
                         self.assertTrue(
                             isclose(total_dur, source_dur - test_dur)
                         )
                     elif split == 'test':
                         train_path = [path for path in vds_paths if 'train' in path][0]
-                        train_vds = VocalizationDataset.from_json(json_fname=train_path)
+                        train_vds = Dataset.from_json(json_fname=train_path)
                         train_dur = sum([voc.duration for voc in train_vds.voc_list])
                         self.assertTrue(
                             isclose(total_dur, source_dur - train_dur)
