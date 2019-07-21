@@ -20,10 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - error checking in cli that raises ValueError when cli command is `learncurve` and the option
   'results_dir_made_by_main_script' is already defined in [OUTPUT] section, since running
   'learncurve' would overwrite it. 
-- `dataset` subpackage that houses `VocalizationDataset` and related classes that facilitate creating data sets for training neural networks from heterogeneous data: audio files, files of arrays containing spectrograms, different annotation types, etc.
+- `dataset` subpackage that houses `Dataset` and related classes that facilitate creating data sets for training neural networks from heterogeneous data: audio files, files of arrays containing spectrograms, different annotation types, etc.
   - also includes modules for handling each data source
     + e.g. `audio.to_spect` creates spectrograms from audio files
-    + `spect.from_files` creates a `VocalizationDataset` from spectrogram files
+    + `spect.from_files` creates a `Dataset` from spectrogram files
 - `core` sub-package that contains / will contain functions that do heavy lifting: `learning_curve`, `train`, `predict`
   + `learning_curve` is a sub-sub-module that does both `train` and `test` of models, instead of having a separate `learncurve` and `summary` function (i.e. train and test). Still will confuse some ML/AI people that this "learning curve" has a test data step but whatevs
   + `cli` sub-package calls / will call these functions and handle any command-line-interface specific logic
@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `skip_files_with_labels_not_in_labelset` option
   + now happens whenever `labelset` is specified; if no `labelset` is given then no filtering is done
 - `summary` command-line option, since `learncurve` now runs trains models and also tests them on separate data set
-- `silent_label_gap` option, because `VocalizationDataset` class determines if a label for unlabeled segments between other segments is needed, and if so automatically assigns this a label of 0 when mapping user labels to consecutive integers
+- `silent_label_gap` option, because `Dataset` class determines if a label for unlabeled segments between other segments is needed, and if so automatically assigns this a label of 0 when mapping user labels to consecutive integers
   + this way user does not have to think about it
   + and program doesn't have to keep track of a `labels_mapping` file that saves what user specified
 

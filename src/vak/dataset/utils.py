@@ -39,7 +39,7 @@ def _validate_durs(train_dur, val_dur, test_dur, vds_dur):
     test_dur : int, float
         Target duration for test set, in seconds.
     vds_dur : int, float
-        Total duration of VocalizationDataset.
+        Total duration of Dataset.
 
     Returns
     -------
@@ -71,7 +71,7 @@ def _validate_durs(train_dur, val_dur, test_dur, vds_dur):
             if total_splits_dur > vds_dur:
                 raise SplitsDurationGreaterThanDatasetDurationError(
                     f'total of durations specified for dataset split, {total_splits_dur} s, '
-                    f'is greater than total duration of VocalizationDataset, {vds_dur}.'
+                    f'is greater than total duration of Dataset, {vds_dur}.'
                 )
 
     return train_dur, val_dur, test_dur

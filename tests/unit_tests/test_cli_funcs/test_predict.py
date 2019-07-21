@@ -11,7 +11,7 @@ import numpy as np
 
 import vak.cli.predict
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
-from vak.dataset import VocalizationDataset
+from vak.dataset import Dataset
 import vak.utils
 
 HERE = Path(__file__).parent
@@ -78,7 +78,7 @@ class TestPredict(unittest.TestCase):
                         checkpoint_path=predict_config.checkpoint_path,
                         networks=networks,
                         spect_scaler_path=predict_config.spect_scaler_path)
-        predict_vds_after = VocalizationDataset.load(self.predict_vds_path)
+        predict_vds_after = Dataset.load(self.predict_vds_path)
         predict_vds_after = predict_vds_after.load_spects()
 
         for voc in predict_vds_after.voc_list:

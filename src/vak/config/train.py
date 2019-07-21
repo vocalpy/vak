@@ -19,7 +19,7 @@ class TrainConfig:
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
     train_vds_path : str
-        path to saved VocalizationDataset that contains training data
+        path to saved Dataset that contains training data
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -29,10 +29,10 @@ class TrainConfig:
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     val_vds_path : str
-        path to saved VocalizationDataset that contains validation data.
+        path to saved Dataset that contains validation data.
         Default is None, in which case accuracy is not measured on a validation set during training.
     test_vds_path : str
-        path to saved VocalizationDataset that contains test data. Default is None.
+        path to saved Dataset that contains test data. Default is None.
     val_error_step : int
         step/epoch at which to estimate accuracy using validation set.
         Default is None, in which case no validation is done.
