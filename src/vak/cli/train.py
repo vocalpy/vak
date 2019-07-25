@@ -11,7 +11,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from ..dataset.classes import VocalizationDataset
+from ..dataset.classes import Dataset
 from .. import network
 from .. import utils
 from ..utils.spect import SpectScaler
@@ -35,9 +35,9 @@ def train(train_vds_path,
     Parameters
     ----------
     train_vds_path : str
-        path to VocalizationDataset that represents training data
+        path to Dataset that represents training data
     val_vds_path : str
-        path to VocalizationDataset that represents validation data
+        path to Dataset that represents validation data
     networks : dict
         where each key is the name of a neural network and the corresponding
         value is the configuration for that network (in a namedtuple or a dict)
@@ -111,10 +111,10 @@ def train(train_vds_path,
     logger.info('Using config file: {}'.format(config_file))
 
     # ---------------- load training data  -----------------------------------------------------------------------------
-    logger.info('Loading training VocalizationDataset from {}'.format(
+    logger.info('Loading training Dataset from {}'.format(
         os.path.dirname(
             train_vds_path)))
-    train_vds = VocalizationDataset.load(json_fname=train_vds_path)
+    train_vds = Dataset.load(json_fname=train_vds_path)
 
     if train_vds.are_spects_loaded() is False:
         train_vds = train_vds.load_spects()
@@ -140,7 +140,7 @@ def train(train_vds_path,
     timebin_dur = set([voc.metaspect.timebin_dur for voc in train_vds.voc_list])
     if len(timebin_dur) > 1:
         raise ValueError(
-            f'found more than one time bin duration in training VocalizationDataset: {timebin_dur}'
+            f'found more than one time bin duration in training Dataset: {timebin_dur}'
         )
     elif len(timebin_dur) == 1:
         timebin_dur = timebin_dur.pop()
@@ -164,7 +164,7 @@ def train(train_vds_path,
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if val_vds_path:
-        val_vds = VocalizationDataset.load(json_fname=val_vds_path)
+        val_vds = Dataset.load(json_fname=val_vds_path)
 
         if val_vds.are_spects_loaded() is False:
             val_vds = val_vds.load_spects()
@@ -184,13 +184,13 @@ def train(train_vds_path,
         timebin_dur_val = set([voc.metaspect.timebin_dur for voc in val_vds.voc_list])
         if len(timebin_dur_val) > 1:
             raise ValueError(
-                f'found more than one time bin duration in validation VocalizationDataset: {timebin_dur_val}'
+                f'found more than one time bin duration in validation Dataset: {timebin_dur_val}'
             )
         elif len(timebin_dur_val) == 1:
             timebin_dur_val = timebin_dur_val.pop()
             if timebin_dur_val != timebin_dur:
                 raise ValueError(
-                    f'time bin duration in validation VocalizationDataset, {timebin_dur_val}, did not match that of '
+                    f'time bin duration in validation Dataset, {timebin_dur_val}, did not match that of '
                     f'training set: {timebin_dur}'
                 )
 

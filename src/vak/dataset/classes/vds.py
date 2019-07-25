@@ -26,7 +26,7 @@ class VocalDatasetJSONEncoder(JSONEncoder):
 
 
 @attr.s(frozen=True)
-class VocalizationDataset:
+class Dataset:
     """class to represent a dataset of vocalizations
 
     Attributes
@@ -110,7 +110,7 @@ class VocalizationDataset:
             return
         elif value is not None and self.labelset is None:
             raise ValueError(
-                'cannot assign a labelmap to a VocalizationDataset without a labelset.'
+                'cannot assign a labelmap to a Dataset without a labelset.'
             )
         else:
             labelset_from_map = set(self.labelmap.keys()) - {'unlabeled'}
@@ -126,7 +126,7 @@ class VocalizationDataset:
                     audio_path_key='audio_path',
                     n_decimals_trunc=3,
                     ):
-        """returns new VocalizationDataset with spectrogram files loaded into it
+        """returns new Dataset with spectrogram files loaded into it
 
         A new instance is returned because VocalizationDatasets are immutable
         (so a new one is made with the same attributes as the old one + the spectrograms loaded).
@@ -208,13 +208,13 @@ class VocalizationDataset:
 
         # note we don't pass self.labelmap because it will be None,
         # and we want new instance with spectrograms loaded to default to a labelmap made from labelset
-        return VocalizationDataset(voc_list=voc_list, labelset=self.labelset)
+        return Dataset(voc_list=voc_list, labelset=self.labelset)
 
     def clear_spects(self):
-        """returns new VocalizationDataset with Vocalization.metaspect set to None
+        """returns new Dataset with Vocalization.metaspect set to None
          for every Vocalization in VocaliationDataset.voc_list
 
-        Useful for clearing arrays from the VocalizationDataset before saving; going to and from .json
+        Useful for clearing arrays from the Dataset before saving; going to and from .json
         with numpy.ndarrays loaded into MetaSpect attributes can be very slow.
         """
         new_voc_list = []
@@ -229,7 +229,7 @@ class VocalizationDataset:
         Returns
         -------
         spects_loaded : bool
-            True if all Vocalizations in a VocalizationDataset have a metaspect.
+            True if all Vocalizations in a Dataset have a metaspect.
             False if instead the metaspect attribute for all Vocalizations is set to None.
         """
         if all([voc.metaspect is None for voc in self.voc_list]):
@@ -243,17 +243,17 @@ class VocalizationDataset:
             )
 
     def spects_list(self):
-        """returns list of spectrograms (2-d arrays), one for each vocalization in VocalizationDataset.voc_list.
+        """returns list of spectrograms (2-d arrays), one for each vocalization in Dataset.voc_list.
 
         Returns
         -------
         spects_list : list
-            of Vocalization.metaspect.spect, one for each Vocalization in the VocalizationDataset.
+            of Vocalization.metaspect.spect, one for each Vocalization in the Dataset.
             Each element is a spectrogram in a numpy.ndarray.
 
         Notes
         -----
-        VocalizationDataset needs to have spectrograms loaded into it before calling this function.
+        Dataset needs to have spectrograms loaded into it before calling this function.
 
         Examples
         --------
@@ -266,7 +266,7 @@ class VocalizationDataset:
         """
         if self.are_spects_loaded() is False:
             raise ValueError('cannot create list of spectrograms, because they are not loaded into '
-                             'this VocalizationDataset. Please call load_spects() to create a new '
+                             'this Dataset. Please call load_spects() to create a new '
                              'copy of the dataset that has the spectrograms loaded into it, like so:\n'
                              '>>> vds = vds.load_spects()')
 
@@ -277,12 +277,12 @@ class VocalizationDataset:
 
     def labels_list(self):
         """returns list of labels from annotations,
-        one for each vocalization in VocalizationDataset.voc_list
+        one for each vocalization in Dataset.voc_list
 
         Returns
         -------
         labels_list : list
-            of Vocalization.annot.labels, one for each Vocalization in the VocalizationDataset.
+            of Vocalization.annot.labels, one for each Vocalization in the Dataset.
             Each element of the list is a numpy.ndarray.
         """
         labels_list = []
@@ -292,17 +292,17 @@ class VocalizationDataset:
 
     def lbl_tb_list(self):
         """returns list of labeled time bin vectors from annotations,
-        one for each vocalization in VocalizationDataset.voc_list
+        one for each vocalization in Dataset.voc_list
 
         Returns
         -------
         lbl_tb_list : list
             that results from applying utils.labels.label_timebins to each Vocalization
-            in the VocalizationDataset.
+            in the Dataset.
         """
         if self.labelmap is None:
             raise ValueError(
-                'this VocalizationDataset has no labelmap; please create a labelmap from '
+                'this Dataset has no labelmap; please create a labelmap from '
                 'the labelset and assign it to the labelmap attribute'
             )
 

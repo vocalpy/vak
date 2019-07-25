@@ -16,10 +16,10 @@ class PredictConfig:
     Attributes
     ----------
     predict_vds_path : str
-        path to saved VocalizationDataset that contains data for which annotations
+        path to saved Dataset that contains data for which annotations
         should be predicted.
     train_vds_path : str
-        path to VocalizationDataset that represents training data.
+        path to Dataset that represents training data.
         To fetch labelmap used during training, to map labels used
         in annotation to a series of consecutive integers that become
         outputs of the neural network. Used here to convert

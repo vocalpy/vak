@@ -80,10 +80,10 @@ def cli(command, config_file):
         predict_config = parse_predict_config(config_obj)
         nets_config = _get_nets_config(config_obj, predict_config.networks)
         spect_params = parse_spect_config(config_obj)
-        predict(checkpoint_path=predict_config.checkpoint_path,
+        predict(predict_vds_path=predict_config.predict_vds_path,
+                train_vds_path=predict_config.train_vds_path,
+                checkpoint_path=predict_config.checkpoint_path,
                 networks=nets_config,
-                spect_params=spect_params,
-                dir_to_predict=predict_config.dir_to_predict,
                 spect_scaler_path=predict_config.spect_scaler_path)
 
     elif command == 'learncurve':

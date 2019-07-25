@@ -13,7 +13,7 @@ import vak.dataset.split
 from vak.evfuncs import load_cbin
 from vak.dataset.annotation import files_from_dir
 from vak.utils.general import timebin_dur_from_vec
-from vak.dataset.classes import VocalizationDataset
+from vak.dataset.classes import Dataset
 from vak.dataset.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 
 HERE = os.path.dirname(__file__)
@@ -437,7 +437,7 @@ class TestSplit(unittest.TestCase):
                                                                      train_dur=train_dur,
                                                                      test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
-            self.assertTrue(type(vds_out) == VocalizationDataset)
+            self.assertTrue(type(vds_out) == Dataset)
 
         train_dur_out = sum([voc.duration for voc in train_vds.voc_list])
         self.assertTrue(train_dur_out >= train_dur)
@@ -456,7 +456,7 @@ class TestSplit(unittest.TestCase):
                                                                      labelset=self.labelset_mat,
                                                                      train_dur=train_dur)
         for vds_out in (train_vds, test_vds):
-            self.assertTrue(type(vds_out) == VocalizationDataset)
+            self.assertTrue(type(vds_out) == Dataset)
 
         train_dur_out = sum([voc.duration for voc in train_vds.voc_list])
         test_dur_out = sum([voc.duration for voc in test_vds.voc_list])
@@ -479,7 +479,7 @@ class TestSplit(unittest.TestCase):
                                                                      labelset=self.labelset_mat,
                                                                      test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
-            self.assertTrue(type(vds_out) == VocalizationDataset)
+            self.assertTrue(type(vds_out) == Dataset)
 
         train_dur_out = sum([voc.duration for voc in train_vds.voc_list])
         test_dur_out = sum([voc.duration for voc in test_vds.voc_list])

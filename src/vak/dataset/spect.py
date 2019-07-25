@@ -9,7 +9,7 @@ import dask.bag as db
 from dask.diagnostics import ProgressBar
 
 from .annotation import source_annot_map
-from .classes import MetaSpect, Vocalization, VocalizationDataset
+from .classes import MetaSpect, Vocalization, Dataset
 from ..config import validators
 from ..utils.general import find_fname, timebin_dur_from_vec
 
@@ -77,7 +77,7 @@ def from_files(spect_format,
                spect_key='s',
                audio_path_key='audio_path'
                ):
-    """create VocalizationDataset from already-made spectrograms that are in
+    """create Dataset from already-made spectrograms that are in
     files containing arrays, i.e., .mat files created by Matlab or .npz files created by numpy
 
     Each file should contain a spectrogram as a matrix and two vectors associated with it, a
@@ -287,7 +287,7 @@ def from_files(spect_format,
         return Vocalization(**voc_kwargs)
 
     spect_path_annot_tups = db.from_sequence(spect_annot_map.items())
-    logger.info('creating VocalizationDataset')
+    logger.info('creating Dataset')
     with ProgressBar():
         voc_list = list(spect_path_annot_tups.map(_voc_from_spect_path_annot_tup))
-    return VocalizationDataset(voc_list=voc_list, labelset=labelset)
+    return Dataset(voc_list=voc_list, labelset=labelset)
