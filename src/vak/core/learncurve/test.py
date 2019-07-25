@@ -46,12 +46,23 @@ def test_one_model(net_name,
     checkpoint_path : str
         path to Tensorflow checkpoint for model
     X_train : numpy.ndarray
+        training data; spectrograms, already re-shaped using the function
+        vak.utils.data.reshape_data_for_batching
     Y_train : numpy.ndarray
+        vectors of labels for time bins in spectrograms, already re-shaped
+        using the function vak.utils.data.reshape_data_for_batching
     num_batches_train : int
+        number of batches in training set. Number returned by the funciton
+        vak.utils.data.reshape_data_for_batching
     X_test : numpy.ndarray
+        test data; spectrograms, , already re-shaped
+        using the function vak.utils.data.reshape_data_for_batching
     Y_test : numpy.ndarray
+        vectors of ground truth labels for time bins in spectrograms,
+        , already re-shaped using the function vak.utils.data.reshape_data_for_batching
     num_batches_test : int
-
+        number of batches in test set. Number returned by the funciton
+        vak.utils.data.reshape_data_for_batching
     Y_train_labels : list
         of labels. Default is None in which case Y_train_labels are determined from Y_traib using lbl_tb2labels
     Y_test_labels : list
