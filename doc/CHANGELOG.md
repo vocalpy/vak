@@ -5,10 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.2.0]
+### Added
+- `vak.core.learncurve.test_one_model` function that makes it easier to
+  measure frame and syllable error, etc., on a single trained model
+
 ### Changed
 - single-source version
   + using the "Warehouse" approach from the PyPA page (thanks Donald Stufft)
     <https://packaging.python.org/guides/single-sourcing-package-version/#single-sourcing-the-version>
+- rename `VocalizationDataset`, it's now just `Dataset` and is imported
+  at top-level of package; both changes make code concise and reduce typing
+  (and the `Vocalization` is implied anyway).
 
 ### Fixed
 - syllable error rate calculated correctly for test data set by `vak.core.learning_curve.test`
