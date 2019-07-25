@@ -222,7 +222,7 @@ def to_map(labelset, map_unlabeled=True):
     Parameters
     ----------
     labelset : set
-        of labels used to annotate a VocalizationDataset.
+        of labels used to annotate a Dataset.
     map_unlabeled : bool
         if True, include key 'unlabeled' in mapping. Any time bins in a spectrogram
         that do not have a label associated with them, e.g. a silent gap between vocalizations,

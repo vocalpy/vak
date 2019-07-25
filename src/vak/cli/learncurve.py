@@ -36,9 +36,9 @@ def learning_curve(train_vds_path,
     Parameters
     ----------
     train_vds_path : str
-        path to VocalizationDataset that represents training data
+        path to Dataset that represents training data
     test_vds_path : str
-        path to VocalizationDataset that represents test data
+        path to Dataset that represents test data
     total_train_set_duration : int
         total duration of training set, in seconds
     train_set_durs : list
@@ -59,7 +59,7 @@ def learning_curve(train_vds_path,
         path to config.ini file. Used to rewrite file with options determined by
         this function and needed for other functions (e.g. cli.summary)
     val_vds_path : str
-        path to VocalizationDataset that represents validation data.
+        path to Dataset that represents validation data.
         Default is None, in which case accuracy is not measured on validation set
         during training.
     val_error_step : int

@@ -1,6 +1,6 @@
 import warnings
 
-from .classes import VocalizationDataset
+from .classes import Dataset
 from .utils import _validate_durs
 from .splitalgos import brute_force
 
@@ -94,7 +94,7 @@ def train_test_dur_split(vds,
 
     Parameters
     ----------
-    vds : vak.dataset.VocalizationDataset
+    vds : vak.dataset.Dataset
         a dataset of vocalizations
     labelset : set, list
         of str or int, set of labels for vocalizations.
@@ -122,15 +122,15 @@ def train_test_dur_split(vds,
                                                                 test_dur=test_dur,
                                                                 val_dur=val_dur)
 
-    train_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in train_inds], labelset=labelset)
+    train_vds = Dataset(voc_list=[vds.voc_list[ind] for ind in train_inds], labelset=labelset)
 
     if test_dur > 0 or test_dur == -1:
-        test_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in test_inds], labelset=labelset)
+        test_vds = Dataset(voc_list=[vds.voc_list[ind] for ind in test_inds], labelset=labelset)
     else:
         test_vds = None
 
     if val_inds:
-        val_vds = VocalizationDataset(voc_list=[vds.voc_list[ind] for ind in val_inds], labelset=labelset)
+        val_vds = Dataset(voc_list=[vds.voc_list[ind] for ind in val_inds], labelset=labelset)
     else:
         val_vds = None
 

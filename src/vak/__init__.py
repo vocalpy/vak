@@ -24,3 +24,4 @@ from . import network
 from . import utils
 
 from .dataset import mat
+from .dataset import Dataset, MetaSpect, Vocalization

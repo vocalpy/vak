@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from ..dataset import VocalizationDataset
+from ..dataset import Dataset
 from .. import network
 from ..utils.data import reshape_data_for_batching
 from ..utils.labels import lbl_tb2segments
@@ -20,14 +20,14 @@ def predict(predict_vds_path,
             labelmap,
             spect_scaler_path=None):
     """make predictions with one trained model.
-    For each path to a VocalizationDataset in predict_vds_path,
+    For each path to a Dataset in predict_vds_path,
     load that dataset, make predictions using the model, and then
     save the dataset again to the same path.
 
     Parameters
     ----------
     predict_vds_path : str, list
-        path or list of paths to VocalizationDataset(s) for which
+        path or list of paths to Dataset(s) for which
         annotation should be predicted.
     checkpoint_path : str
         path to directory with saved model
@@ -74,7 +74,7 @@ def predict(predict_vds_path,
     n_classes = len(labelmap)  # used below when instantiating network
 
     for p_vds_path in predict_vds_path:
-        predict_vds = VocalizationDataset.load(json_fname=p_vds_path)
+        predict_vds = Dataset.load(json_fname=p_vds_path)
 
         if predict_vds.are_spects_loaded() is False:
             predict_vds = predict_vds.load_spects()
@@ -90,13 +90,13 @@ def predict(predict_vds_path,
         if len(timebin_dur) > 1:
             raise ValueError(
                 'found more than one time bin duration in '
-                f'VocalizationDataset: {timebin_dur}'
+                f'Dataset: {timebin_dur}'
             )
         elif len(timebin_dur) == 1:
             timebin_dur = timebin_dur.pop()
         else:
             raise ValueError(
-                f'invalid time bin durations from VocalizationDataset: {timebin_dur}'
+                f'invalid time bin durations from Dataset: {timebin_dur}'
             )
 
         # transpose X_data, so rows are timebins and columns are frequency bins

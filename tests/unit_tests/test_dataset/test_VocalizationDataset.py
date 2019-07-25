@@ -10,7 +10,7 @@ import crowsetta
 
 import vak.dataset.spect
 import vak.dataset.annotation
-from vak.dataset.classes import VocalizationDataset, Vocalization, MetaSpect
+from vak.dataset.classes import Dataset, Vocalization, MetaSpect
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
@@ -75,8 +75,8 @@ class TestVocalizationDataset(unittest.TestCase):
                                spect_path=spect_path)
             voc_list.append(voc)
 
-        vds = VocalizationDataset(voc_list=voc_list)
-        self.assertTrue(type(vds) == VocalizationDataset)
+        vds = Dataset(voc_list=voc_list)
+        self.assertTrue(type(vds) == Dataset)
         self.assertTrue(hasattr(vds, 'voc_list'))
         self.assertTrue(
             all([type(voc) == Vocalization for voc in vds.voc_list])
@@ -107,8 +107,8 @@ class TestVocalizationDataset(unittest.TestCase):
             for key in ['annot', 'duration', 'spect_path', 'metaspect', 'audio', 'audio_path']:
                 self.assertTrue(key in voc)
 
-        vds_from_json = VocalizationDataset.from_json(json_str=vds_json_str)
-        self.assertTrue(type(vds_from_json) == VocalizationDataset)
+        vds_from_json = Dataset.from_json(json_str=vds_json_str)
+        self.assertTrue(type(vds_from_json) == Dataset)
         self.assertTrue(hasattr(vds, 'voc_list'))
         self.assertTrue(
             all([type(voc) == Vocalization for voc in vds.voc_list])

@@ -9,6 +9,7 @@ README.md
 *egg-info
 dist/
 build/
+doc/_build/
 tests/test_data/results/
 tests/test_data/vds/
 tests/test_data/*.tar.gz
