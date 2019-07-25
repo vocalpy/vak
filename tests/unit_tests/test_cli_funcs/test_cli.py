@@ -66,8 +66,27 @@ class TestCli(unittest.TestCase):
 
             if config.has_section('PREDICT'):
                 config['PREDICT']['checkpoint_path'] = checkpoint_path
-                config['PREDICT']['dir_to_predict'] = self.tmp_dir_to_predict
                 config['PREDICT']['spect_scaler_path'] = spect_scaler
+
+                test_data_vds_path = list(TEST_DATA_DIR.glob('vds'))[0]
+
+                vds_path = list(test_data_vds_path.glob(f'*.train.vds.json'))
+                self.assertTrue(len(vds_path) == 1)
+                vds_path = vds_path[0]
+                self.train_vds_path = str(shutil.copy(vds_path, self.tmp_output_dir))
+                config['PREDICT']['train_vds_path'] = self.train_vds_path
+
+                train_vds = vak.Dataset.load(json_fname=vds_path)
+                if train_vds.are_spects_loaded() is False:
+                    train_vds = train_vds.load_spects()
+                self.labelmap = train_vds.labelmap
+                del train_vds
+
+                vds_path = list(test_data_vds_path.glob(f'*.predict.vds.json'))
+                self.assertTrue(len(vds_path) == 1)
+                vds_path = vds_path[0]
+                self.predict_vds_path = str(shutil.copy(vds_path, self.tmp_output_dir))
+                config['PREDICT']['predict_vds_path'] = self.predict_vds_path
 
             if config.has_section('TRAIN'):
                 test_data_vds_path = TEST_DATA_DIR.joinpath('vds')
