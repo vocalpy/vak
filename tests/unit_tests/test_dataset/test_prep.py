@@ -6,7 +6,7 @@ import unittest
 
 import vak.dataset.prep
 from vak.config.spectrogram import SpectConfig
-from vak.dataset.classes import VocalizationDataset
+from vak.dataset.classes import Dataset
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
@@ -41,12 +41,12 @@ class TestPrep(unittest.TestCase):
                                          annot_file=None,
                                          spect_params=spect_params)
 
-        self.assertTrue(type(vds) == VocalizationDataset)
+        self.assertTrue(type(vds) == Dataset)
         json_fname = os.path.join(self.tmp_output_dir, vds_fname)
         self.assertTrue(
             os.path.isfile(json_fname)
         )
-        vds_loaded = VocalizationDataset.load(json_fname=json_fname)
+        vds_loaded = Dataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
                 voc.audio_path == voc_loaded.audio_path
@@ -77,12 +77,12 @@ class TestPrep(unittest.TestCase):
                                          annot_file=None,
                                          spect_params=spect_params)
 
-        self.assertTrue(type(vds) == VocalizationDataset)
+        self.assertTrue(type(vds) == Dataset)
         json_fname = os.path.join(self.tmp_output_dir, vds_fname)
         self.assertTrue(
             os.path.isfile(json_fname)
         )
-        vds_loaded = VocalizationDataset.load(json_fname=json_fname)
+        vds_loaded = Dataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
                 voc.audio_path == voc_loaded.audio_path
@@ -113,12 +113,12 @@ class TestPrep(unittest.TestCase):
                                          annot_file=None,
                                          spect_params=spect_params)
 
-        self.assertTrue(type(vds) == VocalizationDataset)
+        self.assertTrue(type(vds) == Dataset)
         json_fname = os.path.join(self.tmp_output_dir, vds_fname)
         self.assertTrue(
             os.path.isfile(json_fname)
         )
-        vds_loaded = VocalizationDataset.load(json_fname=json_fname)
+        vds_loaded = Dataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
                 voc.audio_path == voc_loaded.audio_path
@@ -148,7 +148,7 @@ class TestPrep(unittest.TestCase):
                                          annot_file=annot_file,
                                          spect_params=None)
 
-        self.assertTrue(type(vds) == VocalizationDataset)
+        self.assertTrue(type(vds) == Dataset)
         json_fname = os.path.join(self.tmp_output_dir, vds_fname)
         self.assertTrue(
             os.path.abspath(vds_path) == os.path.abspath(json_fname)
@@ -156,7 +156,7 @@ class TestPrep(unittest.TestCase):
         self.assertTrue(
             os.path.isfile(json_fname)
         )
-        vds_loaded = VocalizationDataset.load(json_fname=json_fname)
+        vds_loaded = Dataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
                 voc.audio_path == voc_loaded.audio_path
@@ -185,7 +185,7 @@ class TestPrep(unittest.TestCase):
                                          annot_file=annot_file,
                                          spect_params=None)
 
-        self.assertTrue(type(vds) == VocalizationDataset)
+        self.assertTrue(type(vds) == Dataset)
         json_fname = os.path.join(self.tmp_output_dir, vds_fname)
         self.assertTrue(
             os.path.abspath(vds_path) == os.path.abspath(json_fname)
@@ -193,7 +193,7 @@ class TestPrep(unittest.TestCase):
         self.assertTrue(
             os.path.isfile(json_fname)
         )
-        vds_loaded = VocalizationDataset.load(json_fname=json_fname)
+        vds_loaded = Dataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
                 voc.audio_path == voc_loaded.audio_path
@@ -223,7 +223,7 @@ class TestPrep(unittest.TestCase):
                                          annot_file=annot_file,
                                          spect_params=None)
 
-        self.assertTrue(type(vds) == VocalizationDataset)
+        self.assertTrue(type(vds) == Dataset)
         json_fname = os.path.join(self.tmp_output_dir, vds_fname)
         self.assertTrue(
             os.path.abspath(vds_path) == os.path.abspath(json_fname)
@@ -231,7 +231,7 @@ class TestPrep(unittest.TestCase):
         self.assertTrue(
             os.path.isfile(json_fname)
         )
-        vds_loaded = VocalizationDataset.load(json_fname=json_fname)
+        vds_loaded = Dataset.load(json_fname=json_fname)
         for voc, voc_loaded in zip(vds.voc_list, vds_loaded.voc_list):
             self.assertTrue(
                 voc.audio_path == voc_loaded.audio_path
