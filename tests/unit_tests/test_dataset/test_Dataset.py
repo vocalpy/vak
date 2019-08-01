@@ -1,8 +1,10 @@
-import os
-from pathlib import Path
-import unittest
 from glob import glob
 import json
+import os
+from pathlib import Path
+import shutil
+import tempfile
+import unittest
 
 import numpy as np
 from scipy.io import loadmat
@@ -17,7 +19,7 @@ TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
 SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
-class TestVocalizationDataset(unittest.TestCase):
+class TestDataset(unittest.TestCase):
     def setUp(self):
         self.spect_dir_mat = TEST_DATA_DIR.joinpath('mat', 'llb3', 'spect')
         self.spect_list_mat = list(self.spect_dir_mat.glob('*.mat'))
@@ -58,7 +60,7 @@ class TestVocalizationDataset(unittest.TestCase):
         scribe_cbin = crowsetta.Transcriber(voc_format='notmat')
         self.annot_list_cbin = scribe_cbin.to_seq(file=self.annot_files_cbin)
 
-    def test_VocalizationDataset_init(self):
+    def test_Dataset_init(self):
         voc_list = []
         for spect_path, annot in zip(self.spect_list_mat, self.annot_list_mat):
             spect_dict = loadmat(spect_path, squeeze_me=True)
@@ -91,7 +93,7 @@ class TestVocalizationDataset(unittest.TestCase):
         # if all assertTrues are True
         return True
 
-    def test_VocalizationDataset_json(self):
+    def test_Dataset_json(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
                                            annot_list=self.annot_list_mat,
@@ -114,7 +116,7 @@ class TestVocalizationDataset(unittest.TestCase):
             all([type(voc) == Vocalization for voc in vds.voc_list])
         )
 
-    def test_VocalizationDataset_load_spects_mat(self):
+    def test_Dataset_load_spects_mat(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
                                            annot_list=self.annot_list_mat,
@@ -149,7 +151,7 @@ class TestVocalizationDataset(unittest.TestCase):
                 before == after
             )
 
-    def test_VocalizationDataset_load_spects_npz(self):
+    def test_Dataset_load_spects_npz(self):
         vds = vak.dataset.spect.from_files(spect_format='npz',
                                            spect_dir=self.spect_dir_npz,
                                            annot_list=self.annot_list_cbin,
@@ -183,7 +185,7 @@ class TestVocalizationDataset(unittest.TestCase):
                 before == after
             )
 
-    def test_VocalizationDataset_clear_spects(self):
+    def test_Dataset_clear_spects(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
                                            annot_list=self.annot_list_mat,
@@ -197,7 +199,38 @@ class TestVocalizationDataset(unittest.TestCase):
             all([voc.metaspect is None for voc in vds.voc_list])
         )
 
-    def test_VocalizationDataset_are_spects_loaded(self):
+    def test_Dataset_move_spects_npz(self):
+        vds = vak.dataset.spect.from_files(spect_format='npz',
+                                           spect_dir=self.spect_dir_npz,
+                                           annot_list=self.annot_list_cbin,
+                                           load_spects=False)
+        tmp_dir = tempfile.mkdtemp()
+        dst = os.path.join(tmp_dir, self.spect_dir_npz.name)
+        tmp_spects_dir = shutil.copytree(src=self.spect_dir_npz,
+                                         dst=dst)
+
+        vds = vds.move_spects(new_root=tmp_dir)
+        self.assertTrue(
+            all([tmp_spects_dir in voc.spect_path for voc in vds.voc_list])
+        )
+
+    def test_Dataset_move_spects_mat(self):
+        vds = vak.dataset.spect.from_files(spect_format='mat',
+                                           spect_dir=self.spect_dir_mat,
+                                           annot_list=self.annot_list_mat,
+                                           load_spects=True)
+
+        tmp_dir = tempfile.mkdtemp()
+        dst = os.path.join(tmp_dir, self.spect_dir_mat.name)
+        tmp_spects_dir = shutil.copytree(src=self.spect_dir_mat,
+                                         dst=dst)
+
+        vds = vds.move_spects(new_root=tmp_dir, spect_dir_str='spect')
+        self.assertTrue(
+            all([tmp_spects_dir in voc.spect_path for voc in vds.voc_list])
+        )
+
+    def test_Dataset_are_spects_loaded(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
                                            annot_list=self.annot_list_mat,
@@ -211,7 +244,7 @@ class TestVocalizationDataset(unittest.TestCase):
             vds.are_spects_loaded() is True
         )
 
-    def test_VocalizationDataset_spects_list(self):
+    def test_Dataset_spects_list(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
                                            annot_list=self.annot_list_mat,
@@ -227,7 +260,7 @@ class TestVocalizationDataset(unittest.TestCase):
             len(spects_list) == len(vds.voc_list)
         )
 
-    def test_VocalizationDataset_labels_list(self):
+    def test_Dataset_labels_list(self):
         vds = vak.dataset.spect.from_files(spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
                                            annot_list=self.annot_list_mat,
@@ -243,7 +276,7 @@ class TestVocalizationDataset(unittest.TestCase):
             len(labels_list) == len(vds.voc_list)
         )
 
-    def test_VocalizationDataset_lbl_tb_list(self):
+    def test_Dataset_lbl_tb_list(self):
         vds = vak.dataset.spect.from_files(labelset=self.labelset_mat,
                                            spect_format='mat',
                                            spect_dir=self.spect_dir_mat,
