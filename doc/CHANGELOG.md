@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `vak.core.learncurve.test_one_model` function that makes it easier to
   measure frame and syllable error, etc., on a single trained model
+- add `move_spects` method to `Dataset` so an instance of a `Dataset` is not locked to a 
+  particular location
 
 ### Changed
 - single-source version
