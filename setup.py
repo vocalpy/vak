@@ -43,12 +43,17 @@ test_deps = [
     'vak_test_net', 'tweetynet>=0.1.1a4',
 ]
 
+doc_deps = [
+    'sphinx',
+]
+
 # this is here so that the .travis.yml script can install
 # dependencies just for the tests by running
 # pip install .[tests]
 EXTRAS = {
     'tests': test_deps,
     'dev': dev_deps,
+    'doc': doc_deps,
 }
 
 # need to make sure the valid.ini file in vak/config/ gets included
