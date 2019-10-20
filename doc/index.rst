@@ -1,5 +1,10 @@
 vak वाच् *vāc*
 ====================================
+automated annotation of vocalizations for everybody
+---------------------------------------------------
+
+`vak` is an open-source Python library that enables researchers studying vocalizations
+to automate annotation of large datasets, using neural networks
 
 .. toctree::
    :maxdepth: 2
@@ -10,10 +15,3 @@ vak वाच् *vāc*
    howto/howto
    reference/reference
    explanations/explanations
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
