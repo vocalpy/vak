@@ -5,6 +5,7 @@ vak वाच् *vāc*
    :maxdepth: 2
    :caption: Contents:
 
+   get_started/installation
    tutorial/tutorial
    howto/howto
    reference/reference
