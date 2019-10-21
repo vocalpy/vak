@@ -15,7 +15,11 @@ class DataConfig:
     Attributes
     ----------
     labelset : list
-        of str or int, set of labels for syllables
+        of str or int, the set of labels that correspond to annotated segments
+        that a network should learn to segment and classify. Note that
+        segments that are not annotated, e.g. silent gaps between songbird
+        syllables, then `vak` will assign a dummy label to those segments
+        -- you don't have to give them a label here.
     total_train_set_dur : float
         total duration of training set, in seconds.
         Training subsets of shorter duration will be drawn from this set.
