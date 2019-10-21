@@ -2,7 +2,6 @@
 config.ini files spec
 =====================
 
-
 Valid Sections
 ==============
 Following is the set of valid section names:
@@ -18,6 +17,61 @@ Valid Options by Section
 ========================
 DATA
 -----
+1. `labelset`
+Type str, the set of labels that correspond to annotated segments
+that a network should learn to segment and classify. Note that
+segments that are not annotated, e.g. silent gaps between songbird
+syllables, then `vak` will assign a dummy label to those segments
+-- you don't have to give them a label here.
+
+.. code-block:: console
+
+    labelset = iabcdefghjk
+
+2. `data_dir`
+Type str, path to directory with audio files from which to make dataset
+
+.. code-block:: console
+
+    data_dir = ./tests/test_data/cbins/gy6or6/032312
+
+3. `total_train_set_duration`
+Type int, total duration of training set, in seconds.
+Training subsets of shorter duration will be drawn from this set.
+
+.. code-block:: console
+
+    total_train_set_duration = 50
+
+4. `validation_set_duration`
+
+.. code-block:: console
+
+    validation_set_duration = 15
+
+5. `test_set_duration`
+
+.. code-block:: console
+
+    test_set_duration = 30
+
+6. `output_dir`
+
+.. code-block:: console
+
+    output_dir = ./tests/test_data/vds/
+
+7. `audio_format`
+
+.. code-block:: console
+
+    audio_format = cbin
+
+8. `annot_format`
+
+.. code-block:: console
+
+    annot_format = notmat
 
 TRAIN
 -----
@@ -25,61 +79,85 @@ TRAIN
 
 Type str, path to training data
 
-```
-train_data_path = /some/path/here
-```
+.. code-block:: console
+
+    train_data_path = /some/path/here
+
 
 2. `val_data_path`
 
 Type str, path to validation dat
 
-```
-val_data_path = /some/path/here
-```
+.. code-block:: console
+
+    val_data_path = /some/path/here
+
 
 3. `test_data_path`
 Type str, path to test data
 
-```
-test_data_path = /some/path/here
-```
+.. code-block:: console
+
+    test_data_path = /some/path/here
 
 4. `normalize_spectrograms`
 Type bool, whether to normalize spectrograms.
 
-```
-normalize_spectrograms = Yes
-```
+.. code-block:: console
+
+    normalize_spectrograms = Yes
 
 5. `train_set_durs`
 list of comma-separated integers
 Duration of subsets of training data used for learning curve
 
-```
-train_set_durs = 4, 6
-```
+.. code-block:: console
+
+    train_set_durs = 4, 6
+
 
 6. num_epochs
 
- = 2
+.. code-block:: console
+
+    num_epochs = 2
 
 7. val_error_step
 step/epoch at which to estimate accuracy using validation set.
 Default is None, in which case no validation is done.
 
- = 1
+.. code-block:: console
+
+    val_error_step = 1
 
 8. checkpoint_step = 1
 step/epoch at which to save to checkpoint file.
 Default is None, in which case checkpoint is only saved at the last epoch.
 
-9. save_only_single_checkpoint_file = True
+9. save
 
-10. patience = None
+.. code-block:: console
+
+    save_only_single_checkpoint_file = True
+
+10.
+
+.. code-block:: console
+
+    patience = None
+
 number of epochs to wait without the error dropping before stopping the
 training. Default is None, in which case training continues for num_epochs
 
-11. replicates = 2
+11. replicates
 
-12. networks = TweetyNet
+.. code-block:: console
+
+    replicates = 2
+
+12. networks
+
+.. code-block:: console
+
+    networks = TweetyNet
 
