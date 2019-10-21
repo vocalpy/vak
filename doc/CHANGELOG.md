@@ -4,11 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.1]
-### Fixed
-- pin `crowsetta` version to 1.1.1 in setup.py
-  + so that `pip` doesn't install version 2.0, which causes an error
-
 ## [0.2.0]
 ### Added
 - `vak.core.learncurve.test_one_model` function that makes it easier to
@@ -26,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - syllable error rate calculated correctly for test data set by `vak.core.learning_curve.test`
+- pin `crowsetta` version to 1.1.1 in setup.py
+  + so that `pip` doesn't install version 2.0, which causes an error
+- `predict` command in command-line interface now works
 
 ## [0.1.0]
 ### Added
