@@ -23,7 +23,7 @@ __title__ = "vak"
 __summary__ = "automated annotation of vocalizations for everybody"
 __uri__ = "https://github.com/NickleDave/vak"
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 if base_dir is not None and os.path.exists(os.path.join(base_dir, ".commit")):
     with open(os.path.join(base_dir, ".commit")) as fp:
