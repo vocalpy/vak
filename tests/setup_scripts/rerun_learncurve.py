@@ -14,13 +14,13 @@ config_obj.read(config_file)
 train_config = vak.config.parse.parse_train_config(config_obj, config_file)
 nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
 spect_params = vak.config.parse.parse_spect_config(config_obj)
-data_config = vak.config.parse.parse_data_config(config_obj, config_file)
+prep_config = vak.config.parse.parse_prep_config(config_obj, config_file)
 output_config = vak.config.parse.parse_output_config(config_obj)
 
 vak.cli.learning_curve(train_vds_path=train_config.train_vds_path,
                        val_vds_path=train_config.val_vds_path,
                        test_vds_path=train_config.test_vds_path,
-                       total_train_set_duration=data_config.total_train_set_dur,
+                       total_train_set_duration=prep_config.total_train_set_dur,
                        train_set_durs=train_config.train_set_durs,
                        num_replicates=train_config.num_replicates,
                        num_epochs=train_config.num_epochs,
