@@ -48,7 +48,7 @@ class TestLearncurveTrain(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
         shutil.rmtree(self.tmp_config_dir)
 
-    def _check_learncurve_train_output(self, train_config, nets_config, data_config, results_dirname):
+    def _check_learncurve_train_output(self, train_config, nets_config, prep_config, results_dirname):
         train_dirname = os.path.join(results_dirname, 'train')
         train_dir_list = os.listdir(train_dirname)
         records_dirs = [item for item in train_dir_list if 'records' in item]
@@ -71,7 +71,7 @@ class TestLearncurveTrain(unittest.TestCase):
             if train_config.val_vds_path:
                 self.assertTrue('val_errs' in records_dir_list)
 
-            if data_config.save_transformed_data:
+            if prep_config.save_transformed_data:
                 self.assertTrue('X_train' in records_dir_list)
                 self.assertTrue('Y_train' in records_dir_list)
                 if train_config.val_vds_path:
@@ -88,7 +88,7 @@ class TestLearncurveTrain(unittest.TestCase):
         config_obj.read(config_file)
         train_config = vak.config.parse_train_config(config_obj, config_file)
         nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
-        data_config = vak.config.parse_data_config(config_obj, config_file)
+        prep_config = vak.config.parse_prep_config(config_obj, config_file)
         output_config = vak.config.parse_output_config(config_obj)
 
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
@@ -97,7 +97,7 @@ class TestLearncurveTrain(unittest.TestCase):
         os.makedirs(results_dirname)
 
         vak.core.learncurve.train(train_vds_path=train_config.train_vds_path,
-                                  total_train_set_duration=data_config.total_train_set_dur,
+                                  total_train_set_duration=prep_config.total_train_set_dur,
                                   train_set_durs=train_config.train_set_durs,
                                   num_replicates=train_config.num_replicates,
                                   num_epochs=train_config.num_epochs,
@@ -111,10 +111,10 @@ class TestLearncurveTrain(unittest.TestCase):
                                   normalize_spectrograms=train_config.normalize_spectrograms,
                                   use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                                   previous_run_path=train_config.previous_run_path,
-                                  save_transformed_data=data_config.save_transformed_data)
+                                  save_transformed_data=prep_config.save_transformed_data)
 
         self.assertTrue(self._check_learncurve_train_output(
-            train_config, nets_config, data_config, results_dirname
+            train_config, nets_config, prep_config, results_dirname
         ))
 
     def test_learncurve_train_no_validation(self):
@@ -123,7 +123,7 @@ class TestLearncurveTrain(unittest.TestCase):
         config_obj.read(config_file)
         train_config = vak.config.parse_train_config(config_obj, config_file)
         nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
-        data_config = vak.config.parse_data_config(config_obj, config_file)
+        prep_config = vak.config.parse_prep_config(config_obj, config_file)
         output_config = vak.config.parse_output_config(config_obj)
 
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
@@ -133,7 +133,7 @@ class TestLearncurveTrain(unittest.TestCase):
         os.makedirs(results_dirname)
 
         vak.core.learncurve.train(train_vds_path=train_config.train_vds_path,
-                                  total_train_set_duration=data_config.total_train_set_dur,
+                                  total_train_set_duration=prep_config.total_train_set_dur,
                                   train_set_durs=train_config.train_set_durs,
                                   num_replicates=train_config.num_replicates,
                                   num_epochs=train_config.num_epochs,
@@ -147,10 +147,10 @@ class TestLearncurveTrain(unittest.TestCase):
                                   normalize_spectrograms=train_config.normalize_spectrograms,
                                   use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                                   previous_run_path=train_config.previous_run_path,
-                                  save_transformed_data=data_config.save_transformed_data)
+                                  save_transformed_data=prep_config.save_transformed_data)
 
         self.assertTrue(self._check_learncurve_train_output(
-            train_config, nets_config, data_config, results_dirname
+            train_config, nets_config, prep_config, results_dirname
         ))
 
 
