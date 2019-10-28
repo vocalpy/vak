@@ -71,7 +71,7 @@ def cli(command, config_file):
               save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
               normalize_spectrograms=train_config.normalize_spectrograms,
               root_results_dir=output_config.root_results_dir,
-              save_transformed_data=prep_config.save_transformed_data)
+              save_transformed_data=train_config.save_transformed_data)
 
     elif command == 'finetune':
         raise NotImplementedError
@@ -122,4 +122,4 @@ def cli(command, config_file):
                        use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                        previous_run_path=train_config.previous_run_path,
                        root_results_dir=output_config.root_results_dir,
-                       save_transformed_data=prep_config.save_transformed_data)
+                       save_transformed_data=train_config.save_transformed_data)
