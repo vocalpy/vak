@@ -42,13 +42,7 @@ class PrepConfig:
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
     data_dir : str
-        path to directory with audio files from which to make dataset
-    save_transformed_data : bool
-        if True, save transformed data (i.e. scaled, reshaped). The data can then
-        be used on a subsequent run (e.g. if you want to compare results
-        from different hyperparameters across the exact same training set).
-        Also useful if you need to check what the data looks like when fed to networks.
-        Default is False.
+        path to directory with files from which to make dataset
     """
     labelset = attr.ib(validator=instance_of(list))
 
@@ -63,7 +57,6 @@ class PrepConfig:
     annot_file = attr.ib(validator=optional(is_a_file), default=None)
     annot_format = attr.ib(validator=optional(is_annot_format), default=None)
     data_dir = attr.ib(validator=optional(is_a_directory), default=None)
-    save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
 def parse_prep_config(config, config_file):
@@ -130,8 +123,5 @@ def parse_prep_config(config, config_file):
     if config.has_option('PREP', 'data_dir'):
         data_dir = config['PREP']['data_dir']
         config_dict['data_dir'] = os.path.expanduser(data_dir)
-
-    if config.has_option('PREP', 'save_transformed_data'):
-        config_dict['save_transformed_data'] = config.getboolean('PREP', 'save_transformed_data')
 
     return PrepConfig(**config_dict)
