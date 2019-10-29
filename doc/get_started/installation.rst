@@ -27,6 +27,7 @@ Here are the steps to follow after installing Anaconda:
 Once you create and activate the environment, you can install `vak`:
 
 .. code-block:: console
+
     (vak-env) you@your-computer: ~/Documents $ conda install vak -c nickledave
 
 Eventually `vak` will be available through the conda-forge channel.
