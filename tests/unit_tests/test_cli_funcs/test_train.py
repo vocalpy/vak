@@ -35,8 +35,8 @@ class TestTrain(unittest.TestCase):
             self.assertTrue(len(vds_path) == 1)
             vds_path = vds_path[0]
             config['TRAIN'][f'{stem}_vds_path'] = str(vds_path)
-        config['DATA']['output_dir'] = self.tmp_output_dir
-        config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+        config['PREP']['output_dir'] = self.tmp_output_dir
+        config['PREP']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
         config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)

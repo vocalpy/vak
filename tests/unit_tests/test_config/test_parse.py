@@ -50,7 +50,7 @@ class TestParseConfig(unittest.TestCase):
         self.tmp_config_dir = tempfile.mkdtemp()
 
         self.section_to_attr_map = {
-            'DATA': 'data',
+            'PREP': 'data',
             'SPECTROGRAM': 'spect_params',
             'TRAIN': 'train',
             'OUTPUT': 'output',
@@ -74,9 +74,9 @@ class TestParseConfig(unittest.TestCase):
         if config.has_section('OUTPUT'):
             config['OUTPUT']['root_results_dir'] = self.tmp_root_dir
             config['OUTPUT']['results_dir_made_by_main_script'] = self.tmp_results_dir
-        if config.has_section('DATA'):
-            config['DATA']['data_dir'] = self.tmp_data_dir
-            config['DATA']['output_dir'] = self.tmp_data_output_dir
+        if config.has_section('PREP'):
+            config['PREP']['data_dir'] = self.tmp_data_dir
+            config['PREP']['output_dir'] = self.tmp_data_output_dir
         if config.has_section('TRAIN'):
             config['TRAIN']['train_vds_path'] = self.tmp_train_vds_path
             config['TRAIN']['val_vds_path'] = self.tmp_val_vds_path

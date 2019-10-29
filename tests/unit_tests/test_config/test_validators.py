@@ -25,7 +25,7 @@ class TestValidators(unittest.TestCase):
             'invalid_option_config.ini'
         )
         invalid_option_config = str(invalid_option_config)
-        section_with_invalid_option = 'DATA'
+        section_with_invalid_option = 'PREP'
         user_config_parser = ConfigParser()
         user_config_parser.read(invalid_option_config)
         with self.assertRaises(ValueError):
