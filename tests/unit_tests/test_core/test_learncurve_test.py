@@ -76,7 +76,7 @@ class TestLearncurveTest(unittest.TestCase):
                                  num_replicates=config.train.num_replicates,
                                  output_dir=self.tmp_output_dir,
                                  normalize_spectrograms=config.train.normalize_spectrograms,
-                                 save_transformed_data=config.data.save_transformed_data)
+                                 save_transformed_data=config.train.save_transformed_data)
         self.assertTrue(self._check_learncurve_test_output())
 
 
