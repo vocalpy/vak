@@ -86,29 +86,6 @@ class TestParseDataConfig(unittest.TestCase):
         with self.assertRaises(NotADirectoryError):
             vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
 
-    def test_save_transformed_data(self):
-        self.config_obj['PREP']['save_transformed_data'] = 'True'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is True)
-
-        self.config_obj['PREP']['save_transformed_data'] = 'Yes'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is True)
-
-        self.config_obj['PREP']['save_transformed_data'] = 'False'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is False)
-
-        self.config_obj['PREP']['save_transformed_data'] = 'No'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is False)
-
-    def test_save_transformed_data_default(self):
-        # test that save_transformed_data is added
-        # and set to False, if we don't specify it
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is False)
-
 
 if __name__ == '__main__':
     unittest.main()
