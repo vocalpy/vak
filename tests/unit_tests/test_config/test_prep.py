@@ -1,4 +1,4 @@
-"""tests for vak.config.data module"""
+"""tests for vak.config.prep module"""
 import os
 import unittest
 from configparser import ConfigParser
