@@ -61,8 +61,8 @@ class TestCli(unittest.TestCase):
             # rewrite config so it points to data for testing + temporary output dirs
             config = ConfigParser()
             config.read(tmp_config_path)
-            config['DATA']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-            config['DATA']['output_dir'] = self.tmp_output_dir
+            config['PREP']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+            config['PREP']['output_dir'] = self.tmp_output_dir
 
             if config.has_section('PREDICT'):
                 config['PREDICT']['checkpoint_path'] = checkpoint_path
