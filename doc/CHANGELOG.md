@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1]
+### Added
+- recipe for `conda` build
+- made build available on an Anaconda cloud channel
+
+### Changed
+- rewrote Installation page of docs
+  + basically saying `conda` is required for install currently
+
 ## [0.2.0]
 ### Added
 - `vak.core.learncurve.test_one_model` function that makes it easier to
