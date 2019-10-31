@@ -107,25 +107,25 @@ class TestParseTrainConfig(unittest.TestCase):
 
     def test_save_transformed_data(self):
         self.config_obj['TRAIN']['save_transformed_data'] = 'True'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is True)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is True)
 
         self.config_obj['TRAIN']['save_transformed_data'] = 'Yes'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is True)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is True)
 
         self.config_obj['TRAIN']['save_transformed_data'] = 'False'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is False)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is False)
 
         self.config_obj['TRAIN']['save_transformed_data'] = 'No'
-        prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
-        self.assertTrue(prep_config_obj.save_transformed_data is False)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is False)
 
     def test_save_transformed_data_default(self):
         # test that save_transformed_data is added
         # and set to False, if we don't specify it
-        train_config_obj = vak.config.prep.parse_train_config(self.config_obj, self.config_file)
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
         self.assertTrue(train_config_obj.save_transformed_data is False)
 
 
