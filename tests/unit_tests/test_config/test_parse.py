@@ -50,7 +50,7 @@ class TestParseConfig(unittest.TestCase):
         self.tmp_config_dir = tempfile.mkdtemp()
 
         self.section_to_attr_map = {
-            'PREP': 'data',
+            'PREP': 'prep',
             'SPECTROGRAM': 'spect_params',
             'TRAIN': 'train',
             'OUTPUT': 'output',
