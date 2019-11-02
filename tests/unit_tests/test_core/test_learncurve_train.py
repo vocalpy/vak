@@ -71,7 +71,7 @@ class TestLearncurveTrain(unittest.TestCase):
             if train_config.val_vds_path:
                 self.assertTrue('val_errs' in records_dir_list)
 
-            if prep_config.save_transformed_data:
+            if train_config.save_transformed_data:
                 self.assertTrue('X_train' in records_dir_list)
                 self.assertTrue('Y_train' in records_dir_list)
                 if train_config.val_vds_path:
@@ -111,7 +111,7 @@ class TestLearncurveTrain(unittest.TestCase):
                                   normalize_spectrograms=train_config.normalize_spectrograms,
                                   use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                                   previous_run_path=train_config.previous_run_path,
-                                  save_transformed_data=prep_config.save_transformed_data)
+                                  save_transformed_data=train_config.save_transformed_data)
 
         self.assertTrue(self._check_learncurve_train_output(
             train_config, nets_config, prep_config, results_dirname
@@ -147,7 +147,7 @@ class TestLearncurveTrain(unittest.TestCase):
                                   normalize_spectrograms=train_config.normalize_spectrograms,
                                   use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                                   previous_run_path=train_config.previous_run_path,
-                                  save_transformed_data=prep_config.save_transformed_data)
+                                  save_transformed_data=train_config.save_transformed_data)
 
         self.assertTrue(self._check_learncurve_train_output(
             train_config, nets_config, prep_config, results_dirname
