@@ -37,8 +37,8 @@ class TestLearncurveTest(unittest.TestCase):
             vds_path = vds_path[0]
             config['TRAIN'][f'{stem}_vds_path'] = str(vds_path)
 
-        config['DATA']['output_dir'] = str(self.tmp_output_dir)
-        config['DATA']['data_dir'] = str(TEST_DATA_DIR.joinpath('cbins', 'gy6or6', '032312'))
+        config['PREP']['output_dir'] = str(self.tmp_output_dir)
+        config['PREP']['data_dir'] = str(TEST_DATA_DIR.joinpath('cbins', 'gy6or6', '032312'))
         config['OUTPUT']['root_results_dir'] = str(self.tmp_output_dir)
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)
@@ -76,7 +76,7 @@ class TestLearncurveTest(unittest.TestCase):
                                  num_replicates=config.train.num_replicates,
                                  output_dir=self.tmp_output_dir,
                                  normalize_spectrograms=config.train.normalize_spectrograms,
-                                 save_transformed_data=config.data.save_transformed_data)
+                                 save_transformed_data=config.train.save_transformed_data)
         self.assertTrue(self._check_learncurve_test_output())
 
 

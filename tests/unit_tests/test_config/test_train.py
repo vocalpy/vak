@@ -105,6 +105,29 @@ class TestParseTrainConfig(unittest.TestCase):
         with self.assertRaises(KeyError):
             vak.config.train.parse_train_config(self.config_obj, self.config_file)
 
+    def test_save_transformed_data(self):
+        self.config_obj['TRAIN']['save_transformed_data'] = 'True'
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is True)
+
+        self.config_obj['TRAIN']['save_transformed_data'] = 'Yes'
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is True)
+
+        self.config_obj['TRAIN']['save_transformed_data'] = 'False'
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is False)
+
+        self.config_obj['TRAIN']['save_transformed_data'] = 'No'
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is False)
+
+    def test_save_transformed_data_default(self):
+        # test that save_transformed_data is added
+        # and set to False, if we don't specify it
+        train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
+        self.assertTrue(train_config_obj.save_transformed_data is False)
+
 
 if __name__ == '__main__':
     unittest.main()

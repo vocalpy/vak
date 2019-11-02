@@ -1,4 +1,4 @@
-"""parses [DATA] section of config"""
+"""parses [PREP] section of config"""
 import os
 
 import attr
@@ -9,8 +9,8 @@ from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_for
 
 
 @attr.s
-class DataConfig:
-    """class to represent [DATA] section of config.ini file
+class PrepConfig:
+    """class to represent [PREP] section of config.ini file
 
     Attributes
     ----------
@@ -42,13 +42,7 @@ class DataConfig:
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
     data_dir : str
-        path to directory with audio files from which to make dataset
-    save_transformed_data : bool
-        if True, save transformed data (i.e. scaled, reshaped). The data can then
-        be used on a subsequent run (e.g. if you want to compare results
-        from different hyperparameters across the exact same training set).
-        Also useful if you need to check what the data looks like when fed to networks.
-        Default is False.
+        path to directory with files from which to make dataset
     """
     labelset = attr.ib(validator=instance_of(list))
 
@@ -63,11 +57,10 @@ class DataConfig:
     annot_file = attr.ib(validator=optional(is_a_file), default=None)
     annot_format = attr.ib(validator=optional(is_annot_format), default=None)
     data_dir = attr.ib(validator=optional(is_a_directory), default=None)
-    save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
-def parse_data_config(config, config_file):
-    """parse [DATA] section of config.ini file
+def parse_prep_config(config, config_file):
+    """parse [PREP] section of config.ini file
 
     Parameters
     ----------
@@ -78,21 +71,21 @@ def parse_data_config(config, config_file):
 
     Returns
     -------
-    data_config : vak.config.data.DataConfig
-        instance of class that represents [DATA] section of config.ini file
+    prep_config : vak.config.prep.PrepConfig
+        instance of class that represents [PREP] section of config.ini file
     """
-    if config.has_option('DATA', 'spect_format') and config.has_option('DATA', 'audio_format'):
-        raise ValueError("[DATA] section of config.ini file cannot specify both audio_format and "
+    if config.has_option('PREP', 'spect_format') and config.has_option('PREP', 'audio_format'):
+        raise ValueError("[PREP] section of config.ini file cannot specify both audio_format and "
                          "spect_format, unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms")
 
-    if not(config.has_option('DATA', 'spect_format')) and not(config.has_option('DATA', 'audio_format')):
-        raise ValueError("[DATA] section of config.ini file must specify either audio_format or "
+    if not(config.has_option('PREP', 'spect_format')) and not(config.has_option('PREP', 'audio_format')):
+        raise ValueError("[PREP] section of config.ini file must specify either audio_format or "
                          "spect_format")
 
     config_dict = {}
 
-    labelset = config['DATA']['labelset']
+    labelset = config['PREP']['labelset']
     # make mapping from syllable labels to consecutive integers
     # start at 1, because 0 is assumed to be label for silent gaps
     if '-' in labelset or ',' in labelset:
@@ -101,37 +94,34 @@ def parse_data_config(config, config_file):
     else:  # assume labelset is characters
         config_dict['labelset'] = list(labelset)
 
-    if config.has_option('DATA', 'total_train_set_duration'):
-        config_dict['total_train_set_dur'] = float(config['DATA']['total_train_set_duration'])
+    if config.has_option('PREP', 'total_train_set_duration'):
+        config_dict['total_train_set_dur'] = float(config['PREP']['total_train_set_duration'])
 
-    if config.has_option('DATA', 'validation_set_duration'):
-        config_dict['val_dur'] = float(config['DATA']['validation_set_duration'])
+    if config.has_option('PREP', 'validation_set_duration'):
+        config_dict['val_dur'] = float(config['PREP']['validation_set_duration'])
 
-    if config.has_option('DATA', 'test_set_duration'):
-        config_dict['test_dur'] = float(config['DATA']['test_set_duration'])
+    if config.has_option('PREP', 'test_set_duration'):
+        config_dict['test_dur'] = float(config['PREP']['test_set_duration'])
 
-    if config.has_option('DATA', 'output_dir'):
-        output_dir = config['DATA']['output_dir']
+    if config.has_option('PREP', 'output_dir'):
+        output_dir = config['PREP']['output_dir']
         output_dir = os.path.expanduser(output_dir)
         config_dict['output_dir'] = os.path.abspath(output_dir)
 
-    if config.has_option('DATA', 'audio_format'):
-        config_dict['audio_format'] = config['DATA']['audio_format']
+    if config.has_option('PREP', 'audio_format'):
+        config_dict['audio_format'] = config['PREP']['audio_format']
 
-    if config.has_option('DATA', 'spect_format'):
-        config_dict['spect_format'] = config['DATA']['spect_format']
+    if config.has_option('PREP', 'spect_format'):
+        config_dict['spect_format'] = config['PREP']['spect_format']
 
-    if config.has_option('DATA', 'annot_format'):
-        config_dict['annot_format'] = config['DATA']['annot_format']
+    if config.has_option('PREP', 'annot_format'):
+        config_dict['annot_format'] = config['PREP']['annot_format']
 
-    if config.has_option('DATA', 'annot_file'):
-        config_dict['annot_file'] = os.path.expanduser(config['DATA']['annot_file'])
+    if config.has_option('PREP', 'annot_file'):
+        config_dict['annot_file'] = os.path.expanduser(config['PREP']['annot_file'])
 
-    if config.has_option('DATA', 'data_dir'):
-        data_dir = config['DATA']['data_dir']
+    if config.has_option('PREP', 'data_dir'):
+        data_dir = config['PREP']['data_dir']
         config_dict['data_dir'] = os.path.expanduser(data_dir)
 
-    if config.has_option('DATA', 'save_transformed_data'):
-        config_dict['save_transformed_data'] = config.getboolean('DATA', 'save_transformed_data')
-
-    return DataConfig(**config_dict)
+    return PrepConfig(**config_dict)
