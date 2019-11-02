@@ -23,6 +23,14 @@ class TrainConfig:
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
+    root_results_dir : str
+        directory in which results *will* be created.
+        The vak.cli.train function will create
+        a subdirectory in this directory each time it runs.
+    results_dirname : str
+        name of subdirectory created by vak.cli.train.
+        This option is added programatically by that function
+        when it runs.
     normalize_spectrograms : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
@@ -71,6 +79,8 @@ class TrainConfig:
     networks = attr.ib(validator=instance_of(list))
     train_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
     num_epochs = attr.ib(validator=instance_of(int))
+    root_results_dir = attr.ib(validator=is_a_directory)
+    results_dirname = attr.ib(validator=optional(is_a_directory), default=None)
 
     # used for both train and learncurve, but optional
     normalize_spectrograms = attr.ib(validator=optional(instance_of(bool)), default=False)
@@ -131,6 +141,22 @@ def parse_train_config(config, config_file):
     except NoOptionError:
         raise KeyError("'train_vds_path' option not found in [TRAIN] section of config.ini file. "
                        "Please add this option.")
+
+    try:
+        root_results_dir = config['TRAIN']['root_results_dir']
+        config_dict['root_results_dir'] = os.path.expanduser(root_results_dir)
+    except NoOptionError:
+        raise KeyError('must specify root_results_dir in [TRAIN] section '
+                       'of config.ini file')
+
+    if config.has_option('TRAIN', 'results_dir_made_by_main_script'):
+        # don't check whether it exists because it may not yet,
+        # depending on which function we are calling.
+        # So it's up to calling function to check for existence of directory
+        results_dirname = config['TRAIN']['results_dir_made_by_main_script']
+        config_dict['results_dirname'] = os.path.expanduser(results_dirname)
+    else:
+        config_dict['results_dirname'] = None
 
     if config.has_option('TRAIN', 'train_set_durs'):
         config_dict['train_set_durs'] = [int(element)
