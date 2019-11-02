@@ -60,6 +60,12 @@ class TrainConfig:
     previous_run_path : str
         path to results directory from a previous run.
         Used for training if use_train_subsets_from_previous_run is True.
+    save_transformed_data : bool
+        if True, save transformed data (i.e. scaled, reshaped). The data can then
+        be used on a subsequent run (e.g. if you want to compare results
+        from different hyperparameters across the exact same training set).
+        Also useful if you need to check what the data looks like when fed to networks.
+        Default is False.
     """
     # required for both train and learncurve
     networks = attr.ib(validator=instance_of(list))
@@ -82,6 +88,7 @@ class TrainConfig:
     save_only_single_checkpoint_file = attr.ib(validator=instance_of(bool), default=True)
     use_train_subsets_from_previous_run = attr.ib(validator=instance_of(bool), default=False)
     previous_run_path = attr.ib(validator=optional([instance_of(str), is_a_directory]), default=None)
+    save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
 def parse_train_config(config, config_file):
@@ -197,5 +204,8 @@ def parse_train_config(config, config_file):
     if config.has_option('TRAIN', 'save_transformed_data'):
         config_dict['save_transformed_data'] = config.getboolean(
             'TRAIN', 'save_transformed_data')
+
+    if config.has_option('TRAIN', 'save_transformed_data'):
+        config_dict['save_transformed_data'] = config.getboolean('TRAIN', 'save_transformed_data')
 
     return TrainConfig(**config_dict)

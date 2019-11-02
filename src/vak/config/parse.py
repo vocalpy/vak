@@ -6,7 +6,7 @@ from configparser import NoSectionError, MissingSectionHeaderError, ParsingError
 import attr
 from attr.validators import instance_of, optional
 
-from .data import parse_data_config, DataConfig
+from .prep import parse_prep_config, PrepConfig
 from .spectrogram import parse_spect_config, SpectConfig
 from .train import parse_train_config, TrainConfig
 from .output import parse_output_config, OutputConfig
@@ -82,8 +82,8 @@ class Config:
 
     Attributes
     ----------
-    data : vak.config.data.DataConfig
-        represents [DATA] section of config.ini file
+    prep : vak.config.prep.PrepConfig
+        represents [PREP] section of config.ini file
     spect_params : vak.config.spectrogram.SpectConfig
         represents [SPECTROGRAM] section of config.ini file
     train : vak.config.train.TrainConfig
@@ -96,7 +96,7 @@ class Config:
         contains neural network configuration sections of config.ini file.
         These will vary depending on which networks the user specifies.
     """
-    data = attr.ib(validator=optional(instance_of(DataConfig)), default=None)
+    prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
     spect_params = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
@@ -139,8 +139,8 @@ def parse_config(config_file):
     are_sections_valid(config_obj, config_file)
 
     config_dict = {}
-    if config_obj.has_section('DATA'):
-        config_dict['data'] = parse_data_config(config_obj, config_file)
+    if config_obj.has_section('PREP'):
+        config_dict['prep'] = parse_prep_config(config_obj, config_file)
 
     ### if **not** using spectrograms from .mat files ###
     if config_obj.has_section('SPECTROGRAM'):

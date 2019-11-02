@@ -6,7 +6,7 @@ from .train import train
 from .predict import predict
 from .learncurve import learning_curve
 from .prep import prep
-from ..config import parse_spect_config, parse_data_config, parse_train_config, \
+from ..config import parse_spect_config, parse_prep_config, parse_train_config, \
     parse_predict_config, parse_output_config
 from ..config.parse import _get_nets_config
 
@@ -39,24 +39,24 @@ def cli(command, config_file):
         raise
 
     if command == 'prep':
-        data_config = parse_data_config(config_obj, config_file)
+        prep_config = parse_prep_config(config_obj, config_file)
         spect_params = parse_spect_config(config_obj)
 
-        prep(labelset=data_config.labelset,
-             data_dir=data_config.data_dir,
-             train_dur=data_config.total_train_set_dur,
-             test_dur=data_config.test_dur,
+        prep(labelset=prep_config.labelset,
+             data_dir=prep_config.data_dir,
+             train_dur=prep_config.total_train_set_dur,
+             test_dur=prep_config.test_dur,
              config_file=config_file,
-             annot_format=data_config.annot_format,
-             val_dur=data_config.val_dur,
-             output_dir=data_config.output_dir,
-             audio_format=data_config.audio_format,
-             spect_format=data_config.spect_format,
-             annot_file=data_config.annot_file,
+             annot_format=prep_config.annot_format,
+             val_dur=prep_config.val_dur,
+             output_dir=prep_config.output_dir,
+             audio_format=prep_config.audio_format,
+             spect_format=prep_config.spect_format,
+             annot_file=prep_config.annot_file,
              spect_params=spect_params)
 
     elif command == 'train':
-        data_config = parse_data_config(config_obj, config_file)
+        prep_config = parse_prep_config(config_obj, config_file)
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
         output_config = parse_output_config(config_obj)
@@ -71,7 +71,7 @@ def cli(command, config_file):
               save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
               normalize_spectrograms=train_config.normalize_spectrograms,
               root_results_dir=output_config.root_results_dir,
-              save_transformed_data=data_config.save_transformed_data)
+              save_transformed_data=train_config.save_transformed_data)
 
     elif command == 'finetune':
         raise NotImplementedError
@@ -97,7 +97,7 @@ def cli(command, config_file):
             )
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
-        data_config = parse_data_config(config_obj, config_file)
+        prep_config = parse_prep_config(config_obj, config_file)
         output_config = parse_output_config(config_obj)
         if train_config.train_vds_path is None:
             raise ValueError("must set 'train_vds_path' option in [TRAIN] section of config.ini file "
@@ -108,7 +108,7 @@ def cli(command, config_file):
         learning_curve(train_vds_path=train_config.train_vds_path,
                        val_vds_path=train_config.val_vds_path,
                        test_vds_path=train_config.test_vds_path,
-                       total_train_set_duration=data_config.total_train_set_dur,
+                       total_train_set_duration=prep_config.total_train_set_dur,
                        train_set_durs=train_config.train_set_durs,
                        num_replicates=train_config.num_replicates,
                        num_epochs=train_config.num_epochs,
@@ -122,4 +122,4 @@ def cli(command, config_file):
                        use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                        previous_run_path=train_config.previous_run_path,
                        root_results_dir=output_config.root_results_dir,
-                       save_transformed_data=data_config.save_transformed_data)
+                       save_transformed_data=train_config.save_transformed_data)
