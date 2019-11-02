@@ -9,7 +9,6 @@ from attr.validators import instance_of, optional
 from .prep import parse_prep_config, PrepConfig
 from .spectrogram import parse_spect_config, SpectConfig
 from .train import parse_train_config, TrainConfig
-from .output import parse_output_config, OutputConfig
 from .predict import parse_predict_config, PredictConfig
 from .. import network
 from .validators import are_sections_valid, are_options_valid
@@ -90,8 +89,6 @@ class Config:
         represents [TRAIN] section of config.ini file
     predict : vak.config.predict.PredictConfig
         represents [PREDICT] section of config.ini file.
-    output : vak.config.output.OutputConfig
-        represents [OUTPUT] section of config.ini file
     networks : dict
         contains neural network configuration sections of config.ini file.
         These will vary depending on which networks the user specifies.
@@ -100,7 +97,6 @@ class Config:
     spect_params = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
-    output = attr.ib(validator=optional(instance_of(OutputConfig)), default=None)
     networks = attr.ib(validator=optional(instance_of(dict)), default=None)
 
 
@@ -160,9 +156,5 @@ def parse_config(config_file):
 
     if networks:
         config_dict['networks'] = _get_nets_config(config_obj, networks)
-
-    if config_obj.has_section('OUTPUT'):
-        are_options_valid(config_obj, 'OUTPUT', config_file)
-        config_dict['output'] = parse_output_config(config_obj)
 
     return Config(**config_dict)
