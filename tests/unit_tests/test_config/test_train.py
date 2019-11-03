@@ -1,6 +1,7 @@
 """tests for vak.config.train module"""
 import unittest
 import os
+import shutil
 import tempfile
 from configparser import ConfigParser
 
@@ -18,6 +19,8 @@ class TestParseTrainConfig(unittest.TestCase):
         _, self.tmp_train_vds_path = tempfile.mkstemp()
         _, self.tmp_val_vds_path = tempfile.mkstemp()
         _, self.tmp_test_vds_path = tempfile.mkstemp()
+        self.tmp_root_dir = tempfile.mkdtemp()
+        self.tmp_results_dir = tempfile.mkdtemp(dir=self.tmp_root_dir)
 
         self.config_file = os.path.join(TEST_DATA_DIR, 'configs', 'test_learncurve_config.ini')
         self.config_obj = ConfigParser()
@@ -25,11 +28,14 @@ class TestParseTrainConfig(unittest.TestCase):
         self.config_obj['TRAIN']['train_vds_path'] = self.tmp_train_vds_path
         self.config_obj['TRAIN']['val_vds_path'] = self.tmp_val_vds_path
         self.config_obj['TRAIN']['test_vds_path'] = self.tmp_test_vds_path
+        self.config_obj['TRAIN']['root_results_dir'] = self.tmp_root_dir
+        self.config_obj['TRAIN']['results_dir_made_by_main_script'] = self.tmp_results_dir
 
     def tearDown(self):
         os.remove(self.tmp_train_vds_path)
         os.remove(self.tmp_val_vds_path)
         os.remove(self.tmp_test_vds_path)
+        shutil.rmtree(self.tmp_root_dir)
 
     def test_parse_train_config_returns_TrainConfig_instance(self):
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
@@ -128,7 +134,21 @@ class TestParseTrainConfig(unittest.TestCase):
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
         self.assertTrue(train_config_obj.save_transformed_data is False)
 
+    def test_missing_root_results_dir_raises(self):
+        self.config_obj.remove_option('TRAIN', 'root_results_dir')
+        with self.assertRaises(KeyError):
+            vak.config.train.parse_train_config(self.config_obj)
+
+    def test_nonexistent_root_results_dir_raises(self):
+        self.config_obj['TRAIN']['root_results_dir'] = 'obviously/non/existent/dir'
+        with self.assertRaises(NotADirectoryError):
+            vak.config.train.parse_train_config(self.config_obj)
+
+    def test_no_results_dir_defaults_to_None(self):
+        self.config_obj.remove_option('TRAIN', 'results_dir_made_by_main_script')
+        train_config_tup = vak.config.train.parse_train_config(self.config_obj)
+        self.assertTrue(train_config_tup.results_dirname is None)
+
 
 if __name__ == '__main__':
     unittest.main()
-
