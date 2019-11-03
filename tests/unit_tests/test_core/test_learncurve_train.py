@@ -89,10 +89,9 @@ class TestLearncurveTrain(unittest.TestCase):
         train_config = vak.config.parse_train_config(config_obj, config_file)
         nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
         prep_config = vak.config.parse_prep_config(config_obj, config_file)
-        output_config = vak.config.parse_output_config(config_obj)
 
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        results_dirname = os.path.join(output_config.root_results_dir,
+        results_dirname = os.path.join(train_config.root_results_dir,
                                        f'{LEARN_CURVE_DIR_STEM}{timenow}')
         os.makedirs(results_dirname)
 
@@ -124,10 +123,9 @@ class TestLearncurveTrain(unittest.TestCase):
         train_config = vak.config.parse_train_config(config_obj, config_file)
         nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
         prep_config = vak.config.parse_prep_config(config_obj, config_file)
-        output_config = vak.config.parse_output_config(config_obj)
 
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        results_dirname = os.path.join(output_config.root_results_dir,
+        results_dirname = os.path.join(train_config.root_results_dir,
                                        f'{LEARN_CURVE_DIR_STEM}{timenow}')
 
         os.makedirs(results_dirname)
