@@ -15,7 +15,6 @@ train_config = vak.config.parse.parse_train_config(config_obj, config_file)
 nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
 spect_params = vak.config.parse.parse_spect_config(config_obj)
 prep_config = vak.config.parse.parse_prep_config(config_obj, config_file)
-output_config = vak.config.parse.parse_output_config(config_obj)
 
 vak.cli.learning_curve(train_vds_path=train_config.train_vds_path,
                        val_vds_path=train_config.val_vds_path,
@@ -33,4 +32,4 @@ vak.cli.learning_curve(train_vds_path=train_config.train_vds_path,
                        normalize_spectrograms=train_config.normalize_spectrograms,
                        use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                        previous_run_path=train_config.previous_run_path,
-                       root_results_dir=output_config.root_results_dir)
+                       root_results_dir=train_config.root_results_dir)
