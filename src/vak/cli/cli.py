@@ -6,8 +6,7 @@ from .train import train
 from .predict import predict
 from .learncurve import learning_curve
 from .prep import prep
-from ..config import parse_spect_config, parse_prep_config, parse_train_config, \
-    parse_predict_config, parse_output_config
+from ..config import parse_spect_config, parse_prep_config, parse_train_config, parse_predict_config
 from ..config.parse import _get_nets_config
 
 
@@ -59,7 +58,6 @@ def cli(command, config_file):
         prep_config = parse_prep_config(config_obj, config_file)
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
-        output_config = parse_output_config(config_obj)
         train(train_vds_path=train_config.train_vds_path,
               val_vds_path=train_config.val_vds_path,
               networks=nets_config,
@@ -70,7 +68,7 @@ def cli(command, config_file):
               patience=train_config.patience,
               save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
               normalize_spectrograms=train_config.normalize_spectrograms,
-              root_results_dir=output_config.root_results_dir,
+              root_results_dir=train_config.root_results_dir,
               save_transformed_data=train_config.save_transformed_data)
 
     elif command == 'finetune':
@@ -87,18 +85,17 @@ def cli(command, config_file):
                 spect_scaler_path=predict_config.spect_scaler_path)
 
     elif command == 'learncurve':
-        if config_obj.has_option('OUTPUT', 'results_dir_made_by_main_script'):
+        if config_obj.has_option('TRAIN', 'results_dir_made_by_main_script'):
             raise ValueError(
                 f"config file {config_file} already has option 'results_dir_made_by_main_script' "
-                "in [OUTPUT] section. \nRunning learncurve will overwrite that option."
+                "in [TRAIN] section. \nRunning learncurve will overwrite that option."
                 "Please either remove the option from this file or make a copy of the config.ini "
                 "file with a new name and remove it from that file.\n"
-                f"Currently the option is set to: {config_obj['OUTPUT']['results_dir_made_by_main_script']}"
+                f"Currently the option is set to: {config_obj['TRAIN']['results_dir_made_by_main_script']}"
             )
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
         prep_config = parse_prep_config(config_obj, config_file)
-        output_config = parse_output_config(config_obj)
         if train_config.train_vds_path is None:
             raise ValueError("must set 'train_vds_path' option in [TRAIN] section of config.ini file "
                              "before running 'learncurve'")
@@ -121,5 +118,5 @@ def cli(command, config_file):
                        normalize_spectrograms=train_config.normalize_spectrograms,
                        use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                        previous_run_path=train_config.previous_run_path,
-                       root_results_dir=output_config.root_results_dir,
+                       root_results_dir=train_config.root_results_dir,
                        save_transformed_data=train_config.save_transformed_data)
