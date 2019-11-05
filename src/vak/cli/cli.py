@@ -55,7 +55,6 @@ def cli(command, config_file):
              spect_params=spect_params)
 
     elif command == 'train':
-        prep_config = parse_prep_config(config_obj, config_file)
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
         train(train_vds_path=train_config.train_vds_path,
@@ -77,7 +76,6 @@ def cli(command, config_file):
     elif command == 'predict':
         predict_config = parse_predict_config(config_obj)
         nets_config = _get_nets_config(config_obj, predict_config.networks)
-        spect_params = parse_spect_config(config_obj)
         predict(predict_vds_path=predict_config.predict_vds_path,
                 train_vds_path=predict_config.train_vds_path,
                 checkpoint_path=predict_config.checkpoint_path,
