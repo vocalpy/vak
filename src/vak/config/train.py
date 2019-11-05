@@ -39,8 +39,6 @@ class TrainConfig:
     val_vds_path : str
         path to saved Dataset that contains validation data.
         Default is None, in which case accuracy is not measured on a validation set during training.
-    test_vds_path : str
-        path to saved Dataset that contains test data. Default is None.
     val_error_step : int
         step/epoch at which to estimate accuracy using validation set.
         Default is None, in which case no validation is done.
@@ -50,15 +48,6 @@ class TrainConfig:
     patience : int
         number of epochs to wait without the error dropping before stopping the
         training. Default is None, in which case training continues for num_epochs
-    train_set_durs : list
-        of int, durations in seconds of subsets taken from training data
-        to create a learning curve, e.g. [5, 10, 15, 20]. Default is None
-        (when training a single model on all available training data).
-    num_replicates : int
-        number of times to replicate training for each training set duration
-        to better estimate mean accuracy for a training set of that size.
-        Each replicate uses a different randomly drawn subset of the training
-        data (but of the same duration).
     save_only_single_checkpoint_file : bool
         if True, save only one checkpoint file instead of separate files every time
         we save. Default is True.
@@ -75,24 +64,20 @@ class TrainConfig:
         Also useful if you need to check what the data looks like when fed to networks.
         Default is False.
     """
-    # required for both train and learncurve
+    # required
     networks = attr.ib(validator=instance_of(list))
     train_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
     num_epochs = attr.ib(validator=instance_of(int))
     root_results_dir = attr.ib(validator=is_a_directory)
     results_dirname = attr.ib(validator=optional(is_a_directory), default=None)
 
-    # used for both train and learncurve, but optional
+    # optional
     normalize_spectrograms = attr.ib(validator=optional(instance_of(bool)), default=False)
     val_vds_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
-    test_vds_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
+
     val_error_step = attr.ib(validator=optional(instance_of(int)), default=None)
     checkpoint_step = attr.ib(validator=optional(instance_of(int)), default=None)
     patience = attr.ib(validator=optional(instance_of(int)), default=None)
-
-    # used for learncurve, not train
-    train_set_durs = attr.ib(validator=optional(instance_of(list)), default=None)
-    num_replicates = attr.ib(validator=optional(instance_of(int)), default=None)
 
     # things most users probably won't care about
     save_only_single_checkpoint_file = attr.ib(validator=instance_of(bool), default=True)
@@ -158,19 +143,8 @@ def parse_train_config(config, config_file):
     else:
         config_dict['results_dirname'] = None
 
-    if config.has_option('TRAIN', 'train_set_durs'):
-        config_dict['train_set_durs'] = [int(element)
-                                         for element in
-                                         config['TRAIN']['train_set_durs'].split(',')]
-
-    if config.has_option('TRAIN', 'replicates'):
-        config_dict['num_replicates'] = int(config['TRAIN']['replicates'])
-
     if config.has_option('TRAIN', 'val_vds_path'):
         config_dict['val_vds_path'] = os.path.expanduser(config['TRAIN']['val_vds_path'])
-
-    if config.has_option('TRAIN', 'test_vds_path'):
-        config_dict['test_vds_path'] = os.path.expanduser(config['TRAIN']['test_vds_path'])
 
     if config.has_option('TRAIN', 'val_error_step'):
         config_dict['val_error_step'] = int(config['TRAIN']['val_error_step'])
