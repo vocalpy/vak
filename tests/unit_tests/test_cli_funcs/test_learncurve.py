@@ -40,7 +40,7 @@ class TestLearncurve(unittest.TestCase):
 
         config['PREP']['output_dir'] = str(self.tmp_output_dir)
         config['PREP']['data_dir'] = str(TEST_DATA_DIR.joinpath('cbins', 'gy6or6', '032312'))
-        config['OUTPUT']['root_results_dir'] = str(self.tmp_output_dir)
+        config['TRAIN']['root_results_dir'] = str(self.tmp_output_dir)
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)
 
@@ -48,9 +48,8 @@ class TestLearncurve(unittest.TestCase):
         shutil.rmtree(self.tmp_output_dir)
         shutil.rmtree(self.tmp_config_dir)
 
-    def _check_learncurve_output(self, output_config, train_config, nets_config, prep_config,
-                                 time_before, time_after):
-        output_dir_after = os.listdir(output_config.root_results_dir)
+    def _check_learncurve_output(self, train_config, nets_config, data_config, time_before, time_after):
+        output_dir_after = os.listdir(train_config.root_results_dir)
         self.assertTrue(len(output_dir_after) == 1)
 
         results_dir = output_dir_after[0]
@@ -61,7 +60,7 @@ class TestLearncurve(unittest.TestCase):
         self.assertTrue(time_before <= time_results_dir <= time_after)
 
         # -------- test output of learncurve.train --------------------------------------------------------------------
-        train_dirname = os.path.join(output_config.root_results_dir, results_dir, 'train')
+        train_dirname = os.path.join(train_config.root_results_dir, results_dir, 'train')
         train_dir_list = os.listdir(train_dirname)
         records_dirs = [item for item in train_dir_list if 'records' in item]
         self.assertTrue(
@@ -93,7 +92,7 @@ class TestLearncurve(unittest.TestCase):
                 self.assertTrue('scaled_reshaped_spects' in records_dir_list)
 
         # -------- test output of learncurve.test ---------------------------------------------------------------------
-        test_dirname = os.path.join(output_config.root_results_dir, results_dir, 'test')
+        test_dirname = os.path.join(train_config.root_results_dir, results_dir, 'test')
         self.assertTrue(os.path.isdir(test_dirname))
         test_dir_list = os.listdir(test_dirname)
         self.assertTrue('test_err' in test_dir_list)
@@ -114,7 +113,6 @@ class TestLearncurve(unittest.TestCase):
         train_config = vak.config.parse_train_config(config_obj, config_file)
         nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
         prep_config = vak.config.parse_prep_config(config_obj, config_file)
-        output_config = vak.config.parse_output_config(config_obj)
 
         # want time to make sure results dir generated has correct time;
         # have to drop microseconds from datetime object because we don't include that in
@@ -139,11 +137,11 @@ class TestLearncurve(unittest.TestCase):
                                normalize_spectrograms=train_config.normalize_spectrograms,
                                use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                                previous_run_path=train_config.previous_run_path,
-                               root_results_dir=output_config.root_results_dir,
+                               root_results_dir=train_config.root_results_dir,
                                save_transformed_data=train_config.save_transformed_data)
         time_after = datetime.now().replace(microsecond=0)
         self.assertTrue(self._check_learncurve_output(
-            output_config, train_config, nets_config, prep_config, time_before, time_after
+            train_config, nets_config, data_config, time_before, time_after
         ))
 
     def test_learncurve_no_validation(self):
@@ -156,7 +154,6 @@ class TestLearncurve(unittest.TestCase):
         train_config = vak.config.parse_train_config(config_obj, config_file)
         nets_config = vak.config.parse._get_nets_config(config_obj, train_config.networks)
         prep_config = vak.config.parse_prep_config(config_obj, config_file)
-        output_config = vak.config.parse_output_config(config_obj)
 
         # want time to make sure results dir generated has correct time;
         # have to drop microseconds from datetime object because we don't include that in
@@ -181,11 +178,11 @@ class TestLearncurve(unittest.TestCase):
                                normalize_spectrograms=train_config.normalize_spectrograms,
                                use_train_subsets_from_previous_run=train_config.use_train_subsets_from_previous_run,
                                previous_run_path=train_config.previous_run_path,
-                               root_results_dir=output_config.root_results_dir,
+                               root_results_dir=train_config.root_results_dir,
                                save_transformed_data=train_config.save_transformed_data)
         time_after = datetime.now().replace(microsecond=0)
         self.assertTrue(self._check_learncurve_output(
-            output_config, train_config, nets_config, prep_config, time_before, time_after
+            train_config, nets_config, data_config, time_before, time_after
         ))
 
 
