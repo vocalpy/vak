@@ -139,6 +139,13 @@ def parse_config(config_file):
 
     are_sections_valid(config_obj, config_file)
 
+    if config_obj.has_section('TRAIN') and config_obj.has_section('LEARNCURVE'):
+        raise ValueError(
+            'a single config.ini file cannot contain both TRAIN and LEARNCURVE sections, '
+            'because it is unclear which of those two sections to add paths to when running '
+            'the "prep" command to prepare datasets'
+        )
+
     config_dict = {}
     if config_obj.has_section('PREP'):
         config_dict['prep'] = parse_prep_config(config_obj, config_file)
