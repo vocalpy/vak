@@ -1,36 +1,34 @@
 """tests for vak.cli.train module"""
-import os
-import tempfile
-import shutil
-from pathlib import Path
-import unittest
 from configparser import ConfigParser
+import os
+from pathlib import Path
+import shutil
+import tempfile
+import unittest
 
 import vak.cli.train
 
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+TEST_CONFIGS_DIR = TEST_DATA_DIR.joinpath('configs')
 SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
 class TestTrain(unittest.TestCase):
     def setUp(self):
         self.tmp_output_dir = tempfile.mkdtemp()
-        # Makefile copies Makefile_config to a tmp version (that gets changed by make_data
-        # and other functions)
-        tmp_makefile_config = os.path.join(SETUP_SCRIPTS_DIR, 'tmp_Makefile_config.ini')
-        # Now we want a copy (of the changed version) to use for tests
-        # since this is what the test data was made with
+
+        test_train_config = TEST_CONFIGS_DIR.joinpath('test_train_config.ini')
         self.tmp_config_dir = tempfile.mkdtemp()
-        self.tmp_config_path = os.path.join(self.tmp_config_dir, 'tmp_config.ini')
-        shutil.copy(tmp_makefile_config, self.tmp_config_path)
+        self.tmp_config_path = os.path.join(self.tmp_config_dir, 'tmp_test_train_config.ini')
+        shutil.copy(test_train_config, self.tmp_config_path)
 
         # rewrite config so it points to data for testing + temporary output dirs
         config = ConfigParser()
         config.read(self.tmp_config_path)
         test_data_vds_path = list(TEST_DATA_DIR.glob('vds'))[0]
-        for stem in ['train', 'test', 'val']:
+        for stem in ['train', 'val']:
             vds_path = list(test_data_vds_path.glob(f'*.{stem}.vds.json'))
             self.assertTrue(len(vds_path) == 1)
             vds_path = vds_path[0]
