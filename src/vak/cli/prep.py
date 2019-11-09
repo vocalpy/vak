@@ -185,8 +185,13 @@ def prep(data_dir,
     # rewrite config file with paths where VocalizationDatasets were saved
     config = ConfigParser()
     config.read(config_file)
+    if config.has_section('TRAIN'):
+        section = 'TRAIN'
+    elif config.has_section('LEARNCURVE'):
+        section = 'LEARNCURVE'
+
     for key, path in saved_vds_dict.items():
-        config.set(section='TRAIN',
+        config.set(section=section,
                    option=f'{key}_vds_path',
                    value=path)
 
