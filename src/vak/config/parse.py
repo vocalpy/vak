@@ -146,6 +146,14 @@ def parse_config(config_file):
             'the "prep" command to prepare datasets'
         )
 
+    if config_obj.has_section('TRAIN'):
+        if config_obj.has_option('PREP', 'test_set_duration'):
+            raise ValueError(
+                "cannot define 'test_set_duration' option for PREP section when using with vak 'train' command, "
+                "'test_set_duration' is not a valid option for the TRAIN section. "
+                "Were you trying to use the 'learncurve' command instead?"
+            )
+
     config_dict = {}
     if config_obj.has_section('PREP'):
         config_dict['prep'] = parse_prep_config(config_obj, config_file)
