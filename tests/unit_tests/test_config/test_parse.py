@@ -161,6 +161,15 @@ class TestParseConfig(unittest.TestCase):
         with self.assertRaises(ValueError):
             vak.config.parse_config(invalid_option_config)
 
+    def test_train_and_learncurve_defined_raises(self):
+        # should throw a ValueError
+        # because both TRAIN and LEARNCURVE sections are defined
+        invalid_config = os.path.join(
+            TEST_CONFIGS_PATH, 'invalid_train_and_learncurve_config.ini'
+        )
+        with self.assertRaises(ValueError):
+            vak.config.parse_config(invalid_config)
+
 
 if __name__ == '__main__':
     unittest.main()
