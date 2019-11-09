@@ -1,17 +1,18 @@
 """tests for vak.config.learncurve module"""
-import unittest
 import os
+from pathlib import Path
 import shutil
 import tempfile
+import unittest
 from configparser import ConfigParser
 
 import vak.config.learncurve
 import vak.utils
 
-
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
-TEST_CONFIGS_DIR = os.path.join(TEST_DATA_DIR, 'configs')
+HERE = Path(__file__).parent
+TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
+TEST_CONFIGS_DIR = TEST_DATA_DIR.joinpath('configs')
+SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
 
 
 class TestParseLearncurveConfig(unittest.TestCase):
@@ -22,7 +23,7 @@ class TestParseLearncurveConfig(unittest.TestCase):
         self.tmp_root_dir = tempfile.mkdtemp()
         self.tmp_results_dir = tempfile.mkdtemp(dir=self.tmp_root_dir)
 
-        self.config_file = os.path.join(TEST_DATA_DIR, 'configs', 'test_learncurve_config.ini')
+        self.config_file = TEST_CONFIGS_DIR.joinpath('test_learncurve_config.ini')
         self.config_obj = ConfigParser()
         self.config_obj.read(self.config_file)
         self.config_obj['LEARNCURVE']['train_vds_path'] = self.tmp_train_vds_path
