@@ -110,6 +110,22 @@ def parse_learncurve_config(config, config_file):
         raise KeyError("'train_vds_path' option not found in [LEARNCURVE] section of config.ini file. "
                        "Please add this option.")
 
+    try:
+        root_results_dir = config['LEARNCURVE']['root_results_dir']
+        config_dict['root_results_dir'] = os.path.expanduser(root_results_dir)
+    except NoOptionError:
+        raise KeyError('must specify root_results_dir in [LEARNCURVE] section '
+                       'of config.ini file')
+
+    if config.has_option('LEARNCURVE', 'results_dir_made_by_main_script'):
+        # don't check whether it exists because it may not yet,
+        # depending on which function we are calling.
+        # So it's up to calling function to check for existence of directory
+        results_dirname = config['LEARNCURVE']['results_dir_made_by_main_script']
+        config_dict['results_dirname'] = os.path.expanduser(results_dirname)
+    else:
+        config_dict['results_dirname'] = None
+
     if config.has_option('LEARNCURVE', 'train_set_durs'):
         config_dict['train_set_durs'] = [int(element)
                                          for element in
