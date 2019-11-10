@@ -6,7 +6,8 @@ from .train import train
 from .predict import predict
 from .learncurve import learning_curve
 from .prep import prep
-from ..config import parse_spect_config, parse_prep_config, parse_train_config, parse_predict_config
+from ..config import parse_learncurve_config, parse_predict_config, parse_prep_config, parse_spect_config, \
+    parse_train_config
 from ..config.parse import _get_nets_config
 
 
