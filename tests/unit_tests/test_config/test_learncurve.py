@@ -57,25 +57,25 @@ class TestParseLearncurveConfig(unittest.TestCase):
         with self.assertRaises(KeyError):
             vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
 
-    def test_train_set_durs_default(self):
+    def test_no_train_set_durs_raises(self):
         self.config_obj.remove_option('LEARNCURVE', 'train_set_durs')
-        learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
-        self.assertTrue(learncurve_config_obj.train_set_durs is None)
+        with self.assertRaises(TypeError):
+            learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
 
-    def test_replicates_default(self):
+    def test_no_replicates_raises(self):
         self.config_obj.remove_option('LEARNCURVE', 'replicates')
-        learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
-        self.assertTrue(learncurve_config_obj.num_replicates is None)
+        with self.assertRaises(TypeError):
+            learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
 
     def test_val_data_dict_path_default(self):
         self.config_obj.remove_option('LEARNCURVE', 'val_vds_path')
         learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
         self.assertTrue(learncurve_config_obj.val_vds_path is None)
 
-    def test_test_vds_path_default(self):
+    def test_no_test_vds_path_raises(self):
         self.config_obj.remove_option('LEARNCURVE', 'test_vds_path')
-        learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
-        self.assertTrue(learncurve_config_obj.test_vds_path is None)
+        with self.assertRaises(TypeError):
+            learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
 
     def test_val_error_step_default(self):
         self.config_obj.remove_option('LEARNCURVE', 'val_error_step')
@@ -138,16 +138,16 @@ class TestParseLearncurveConfig(unittest.TestCase):
     def test_missing_root_results_dir_raises(self):
         self.config_obj.remove_option('LEARNCURVE', 'root_results_dir')
         with self.assertRaises(KeyError):
-            vak.config.learncurve.parse_learncurve_config(self.config_obj)
+            vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
 
     def test_nonexistent_root_results_dir_raises(self):
         self.config_obj['LEARNCURVE']['root_results_dir'] = 'obviously/non/existent/dir'
         with self.assertRaises(NotADirectoryError):
-            vak.config.learncurve.parse_learncurve_config(self.config_obj)
+            vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
 
     def test_no_results_dir_defaults_to_None(self):
         self.config_obj.remove_option('LEARNCURVE', 'results_dir_made_by_main_script')
-        train_config_tup = vak.config.learncurve.parse_learncurve_config(self.config_obj)
+        train_config_tup = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
         self.assertTrue(train_config_tup.results_dirname is None)
 
 
