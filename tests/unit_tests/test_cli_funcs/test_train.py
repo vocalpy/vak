@@ -35,7 +35,7 @@ class TestTrain(unittest.TestCase):
             config['TRAIN'][f'{stem}_vds_path'] = str(vds_path)
         config['PREP']['output_dir'] = self.tmp_output_dir
         config['PREP']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
+        config['TRAIN']['root_results_dir'] = self.tmp_output_dir
         with open(self.tmp_config_path, 'w') as fp:
             config.write(fp)
 
@@ -56,7 +56,7 @@ class TestTrain(unittest.TestCase):
                       patience=config.train.patience,
                       save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
                       normalize_spectrograms=config.train.normalize_spectrograms,
-                      root_results_dir=config.output.root_results_dir,
+                      root_results_dir=config.train.root_results_dir,
                       save_transformed_data=False)
 
     def test_train_func_no_val_set(self):
@@ -72,7 +72,7 @@ class TestTrain(unittest.TestCase):
                       patience=config.train.patience,
                       save_only_single_checkpoint_file=config.train.save_only_single_checkpoint_file,
                       normalize_spectrograms=config.train.normalize_spectrograms,
-                      root_results_dir=config.output.root_results_dir,
+                      root_results_dir=config.train.root_results_dir,
                       save_transformed_data=False)
 
 
