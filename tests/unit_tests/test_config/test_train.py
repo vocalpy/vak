@@ -119,16 +119,16 @@ class TestParseTrainConfig(unittest.TestCase):
     def test_missing_root_results_dir_raises(self):
         self.config_obj.remove_option('TRAIN', 'root_results_dir')
         with self.assertRaises(KeyError):
-            vak.config.train.parse_train_config(self.config_obj)
+            vak.config.train.parse_train_config(self.config_obj, self.config_file)
 
     def test_nonexistent_root_results_dir_raises(self):
         self.config_obj['TRAIN']['root_results_dir'] = 'obviously/non/existent/dir'
         with self.assertRaises(NotADirectoryError):
-            vak.config.train.parse_train_config(self.config_obj)
+            vak.config.train.parse_train_config(self.config_obj, self.config_file)
 
     def test_no_results_dir_defaults_to_None(self):
         self.config_obj.remove_option('TRAIN', 'results_dir_made_by_main_script')
-        train_config_tup = vak.config.train.parse_train_config(self.config_obj)
+        train_config_tup = vak.config.train.parse_train_config(self.config_obj, self.config_file)
         self.assertTrue(train_config_tup.results_dirname is None)
 
 
