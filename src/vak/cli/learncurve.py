@@ -160,7 +160,7 @@ def learning_curve(train_vds_path,
     # so that paths where results were saved are automatically in config
     config = ConfigParser()
     config.read(config_file)
-    config.set(section='TRAIN',
+    config.set(section='LEARNCURVE',
                option='results_dir_made_by_main_script',
                value=results_dirname)
     with open(config_file, 'w') as config_file_rewrite:

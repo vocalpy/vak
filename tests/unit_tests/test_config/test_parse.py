@@ -53,7 +53,7 @@ class TestParseConfig(unittest.TestCase):
             'PREP': 'prep',
             'SPECTROGRAM': 'spect_params',
             'TRAIN': 'train',
-            'OUTPUT': 'output',
+            'LEARNCURVE': 'learncurve',
             'PREDICT': 'predict',
         }
 
@@ -71,16 +71,24 @@ class TestParseConfig(unittest.TestCase):
         that actually exist to avoid spurious NotADirectory errors"""
         config = ConfigParser()
         config.read(config_file)
-        if config.has_section('OUTPUT'):
-            config['OUTPUT']['root_results_dir'] = self.tmp_root_dir
-            config['OUTPUT']['results_dir_made_by_main_script'] = self.tmp_results_dir
+
         if config.has_section('PREP'):
             config['PREP']['data_dir'] = self.tmp_data_dir
             config['PREP']['output_dir'] = self.tmp_data_output_dir
+
         if config.has_section('TRAIN'):
             config['TRAIN']['train_vds_path'] = self.tmp_train_vds_path
             config['TRAIN']['val_vds_path'] = self.tmp_val_vds_path
-            config['TRAIN']['test_vds_path'] = self.tmp_test_vds_path
+            config['TRAIN']['root_results_dir'] = self.tmp_root_dir
+            config['TRAIN']['results_dir_made_by_main_script'] = self.tmp_results_dir
+
+        if config.has_section('LEARNCURVE'):
+            config['LEARNCURVE']['train_vds_path'] = self.tmp_train_vds_path
+            config['LEARNCURVE']['val_vds_path'] = self.tmp_val_vds_path
+            config['LEARNCURVE']['test_vds_path'] = self.tmp_test_vds_path
+            config['LEARNCURVE']['root_results_dir'] = self.tmp_root_dir
+            config['LEARNCURVE']['results_dir_made_by_main_script'] = self.tmp_results_dir
+
         if config.has_section('PREDICT'):
             config['PREDICT']['checkpoint_path'] = self.tmp_checkpoint_dir
             config['PREDICT']['train_vds_path'] = self.tmp_train_vds_path
@@ -160,6 +168,15 @@ class TestParseConfig(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             vak.config.parse_config(invalid_option_config)
+
+    def test_train_and_learncurve_defined_raises(self):
+        # should throw a ValueError
+        # because both TRAIN and LEARNCURVE sections are defined
+        invalid_config = os.path.join(
+            TEST_CONFIGS_PATH, 'invalid_train_and_learncurve_config.ini'
+        )
+        with self.assertRaises(ValueError):
+            vak.config.parse_config(invalid_config)
 
 
 if __name__ == '__main__':
