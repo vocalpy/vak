@@ -26,15 +26,20 @@ def copydir(src, dst):
 class TestCli(unittest.TestCase):
     def setUp(self):
         # copy temporary configs inside TEST_CONFIGS_PATH
-        predict_config = TEST_CONFIGS_PATH.joinpath('test_predict_config.ini')
         learncurve_config = TEST_CONFIGS_PATH.joinpath('test_learncurve_config.ini')
+        predict_config = TEST_CONFIGS_PATH.joinpath('test_predict_config.ini')
+        train_config = TEST_CONFIGS_PATH.joinpath('test_train_config.ini')
+
         self.tmp_config_dir = Path(tempfile.mkdtemp())
-        self.tmp_predict_config_path = self.tmp_config_dir.joinpath(
-            'tmp_predict_config.ini')
         self.tmp_learncurve_config_path = self.tmp_config_dir.joinpath(
             'tmp_learncurve_config.ini')
-        shutil.copy(predict_config, self.tmp_predict_config_path)
+        self.tmp_predict_config_path = self.tmp_config_dir.joinpath(
+            'tmp_predict_config.ini')
+        self.tmp_train_config_path = self.tmp_config_dir.joinpath(
+            'tmp_train_config.ini')
         shutil.copy(learncurve_config, self.tmp_learncurve_config_path)
+        shutil.copy(train_config, self.tmp_train_config_path)
+        shutil.copy(predict_config, self.tmp_predict_config_path)
 
         # make temporary output dir
         self.tmp_output_dir = tempfile.mkdtemp()
@@ -56,13 +61,33 @@ class TestCli(unittest.TestCase):
         checkpoint_path = os.path.join(a_training_records_dir, 'TweetyNet', 'checkpoints')
         spect_scaler = glob(os.path.join(a_training_records_dir, 'spect_scaler_*'))[0]
 
-        for tmp_config_path in (self.tmp_predict_config_path,
-                                self.tmp_learncurve_config_path):
+        for tmp_config_path in (self.tmp_learncurve_config_path,
+                                self.tmp_predict_config_path,
+                                self.tmp_train_config_path,
+                                ):
             # rewrite config so it points to data for testing + temporary output dirs
             config = ConfigParser()
             config.read(tmp_config_path)
             config['PREP']['data_dir'] = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
             config['PREP']['output_dir'] = self.tmp_output_dir
+
+            if config.has_section('LEARNCURVE'):
+                test_data_vds_path = TEST_DATA_DIR.joinpath('vds')
+
+                train_vds_path = test_data_vds_path.glob('*train.vds.json')
+                train_vds_path = str(list(train_vds_path)[0])
+                config['LEARNCURVE']['train_vds_path'] = train_vds_path
+
+                val_vds_path = test_data_vds_path.glob('*val.vds.json')
+                val_vds_path = str(list(val_vds_path)[0])
+                config['LEARNCURVE']['val_vds_path'] = val_vds_path
+
+                test_vds_path = test_data_vds_path.glob('*test.vds.json')
+                test_vds_path = str(list(test_vds_path)[0])
+                config['LEARNCURVE']['test_vds_path'] = test_vds_path
+
+                config['LEARNCURVE']['root_results_dir'] = self.tmp_output_dir
+                config['LEARNCURVE']['results_dir_made_by_main_script'] = str(a_results_dir)
 
             if config.has_section('PREDICT'):
                 config['PREDICT']['checkpoint_path'] = checkpoint_path
@@ -99,12 +124,8 @@ class TestCli(unittest.TestCase):
                 val_vds_path = str(list(val_vds_path)[0])
                 config['TRAIN']['val_vds_path'] = val_vds_path
 
-                test_vds_path = test_data_vds_path.glob('*test.vds.json')
-                test_vds_path = str(list(test_vds_path)[0])
-                config['TRAIN']['test_vds_path'] = test_vds_path
-
-                config['OUTPUT']['root_results_dir'] = self.tmp_output_dir
-                config['OUTPUT']['results_dir_made_by_main_script'] = str(a_results_dir)
+                config['TRAIN']['root_results_dir'] = self.tmp_output_dir
+                config['TRAIN']['results_dir_made_by_main_script'] = str(a_results_dir)
 
             with open(tmp_config_path, 'w') as fp:
                 config.write(fp)
@@ -114,14 +135,15 @@ class TestCli(unittest.TestCase):
         shutil.rmtree(self.tmp_dir_to_predict)
         shutil.rmtree(self.tmp_config_dir)
 
-    def test_prep_command(self):
+    def test_prep_command_with_learncurve_section(self):
         # remove data path options, this function should work without them
         # present in .ini file, and should add them when it runs
         config = ConfigParser()
         config.read(self.tmp_learncurve_config_path)
-        config.remove_option('TRAIN', 'train_vds_path')
-        config.remove_option('TRAIN', 'val_vds_path')
-        config.remove_option('TRAIN', 'test_vds_path')
+        # remove options that will get added by prep
+        config.remove_option('LEARNCURVE', 'train_vds_path')
+        config.remove_option('LEARNCURVE', 'val_vds_path')
+        config.remove_option('LEARNCURVE', 'test_vds_path')
         with open(self.tmp_learncurve_config_path, 'w') as fp:
             config.write(fp)
 
@@ -131,6 +153,26 @@ class TestCli(unittest.TestCase):
         config = ConfigParser()
         config.read(self.tmp_learncurve_config_path)
         for option in ('train_vds_path', 'val_vds_path', 'test_vds_path'):
+            self.assertTrue(config.has_option('TRAIN', option))
+
+    def test_prep_command_with_train_section(self):
+        # remove data path options, this function should work without them
+        # present in .ini file, and should add them when it runs
+        config = ConfigParser()
+        config.read(self.tmp_train_config_path)
+        # remove options that will get added by prep
+        config.remove_option('TRAIN', 'train_vds_path')
+        config.remove_option('TRAIN', 'val_vds_path')
+        config.remove_option('TRAIN', 'test_vds_path')
+        with open(self.tmp_train_config_path, 'w') as fp:
+            config.write(fp)
+
+        vak.cli.cli(command='prep', config_file=self.tmp_train_config_path)
+
+        # assert that data path options got added
+        config = ConfigParser()
+        config.read(self.tmp_train_config_path)
+        for option in ('train_vds_path', 'val_vds_path'):
             self.assertTrue(config.has_option('TRAIN', option))
 
     def test_train_command(self):
@@ -143,7 +185,7 @@ class TestCli(unittest.TestCase):
         # remove option that should not be defined yet so it doesn't cause crash
         config = ConfigParser()
         config.read(self.tmp_learncurve_config_path)
-        config.remove_option('OUTPUT', 'results_dir_made_by_main_script')
+        config.remove_option('learncurve', 'results_dir_made_by_main_script')
         with open(self.tmp_learncurve_config_path, 'w') as fp:
             config.write(fp)
 
