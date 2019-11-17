@@ -10,7 +10,7 @@ Currently, installing ``vak`` requires use of the ``conda`` tool to create a vir
 install the libraries that ``vak`` depends on into that environment. The easiest way to use ``conda`` is to install the
 Anaconda platform (https://www.anaconda.com/download) (which is free).
 For a more detailed explanation of why you would use a virtual environment, please see
-`Why use a virtual environment?`_.
+:ref:`why-virtualenv`.
 
 Here are the steps to follow after installing Anaconda:
 
@@ -60,6 +60,8 @@ the code, and then have its behavior as an installed library reflect those edits
 
     (you can install `git` from Github, with your operating system package manager, or using ``conda``.)
   * Install the package with `pip` using the `-e` flag (for ``editable``).
+
+.. _why-virtualenv:
 
 Why use a virtual environment?
 ------------------------------
