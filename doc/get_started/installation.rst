@@ -4,7 +4,7 @@ Installation
 ============
 
 with ``conda`` environment and package manager
---------------------------------------------
+----------------------------------------------
 
 Currently, installing ``vak`` requires use of the ``conda`` tool to create a virtual environment and
 install the libraries that ``vak`` depends on into that environment. The easiest way to use ``conda`` is to install the
