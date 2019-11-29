@@ -14,19 +14,8 @@ class PrepConfig:
 
     Attributes
     ----------
-    labelset : list
-        of str or int, the set of labels that correspond to annotated segments
-        that a network should learn to segment and classify. Note that
-        segments that are not annotated, e.g. silent gaps between songbird
-        syllables, then `vak` will assign a dummy label to those segments
-        -- you don't have to give them a label here.
-    total_train_set_dur : float
-        total duration of training set, in seconds.
-        Training subsets of shorter duration will be drawn from this set.
-    val_dur : float
-        total duration of validation set, in seconds.
-    test_dur : float
-        total duration of test set, in seconds.
+    data_dir : str
+        path to directory with files from which to make dataset
     output_dir : str
         Path to location where data sets should be saved. Default is None,
         in which case data sets are saved in the current working directory.
@@ -41,22 +30,33 @@ class PrepConfig:
     annot_file : str
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
-    data_dir : str
-        path to directory with files from which to make dataset
+    labelset : list
+        of str or int, the set of labels that correspond to annotated segments
+        that a network should learn to segment and classify. Note that
+        segments that are not annotated, e.g. silent gaps between songbird
+        syllables, then `vak` will assign a dummy label to those segments
+        -- you don't have to give them a label here.
+    total_train_set_dur : float
+        total duration of training set, in seconds.
+        For a learning curve, training subsets of shorter duration will be drawn from this set.
+    val_dur : float
+        total duration of validation set, in seconds.
+    test_dur : float
+        total duration of test set, in seconds.
     """
-    labelset = attr.ib(validator=instance_of(list))
-
-    total_train_set_dur = attr.ib(validator=optional(instance_of(float)), default=None)
-    val_dur = attr.ib(validator=optional(instance_of(float)), default=None)
-    test_dur = attr.ib(validator=optional(instance_of(float)), default=None)
-
-    output_dir = attr.ib(validator=optional(is_a_directory), default=None)
+    data_dir = attr.ib(validator=is_a_directory)
+    output_dir = attr.ib(validator=is_a_directory)
 
     audio_format = attr.ib(validator=optional(is_audio_format), default=None)
     spect_format = attr.ib(validator=optional(is_spect_format), default=None)
     annot_file = attr.ib(validator=optional(is_a_file), default=None)
     annot_format = attr.ib(validator=optional(is_annot_format), default=None)
-    data_dir = attr.ib(validator=optional(is_a_directory), default=None)
+
+    labelset = attr.ib(validator=optional(instance_of(list)), default=None)
+
+    total_train_set_dur = attr.ib(validator=optional(instance_of(float)), default=None)
+    val_dur = attr.ib(validator=optional(instance_of(float)), default=None)
+    test_dur = attr.ib(validator=optional(instance_of(float)), default=None)
 
 
 def parse_prep_config(config, config_file):
@@ -85,28 +85,14 @@ def parse_prep_config(config, config_file):
 
     config_dict = {}
 
-    labelset = config['PREP']['labelset']
-    # make mapping from syllable labels to consecutive integers
-    # start at 1, because 0 is assumed to be label for silent gaps
-    if '-' in labelset or ',' in labelset:
-        # if user specified range of ints using a str
-        config_dict['labelset'] = range_str(labelset)
-    else:  # assume labelset is characters
-        config_dict['labelset'] = list(labelset)
-
-    if config.has_option('PREP', 'total_train_set_duration'):
-        config_dict['total_train_set_dur'] = float(config['PREP']['total_train_set_duration'])
-
-    if config.has_option('PREP', 'validation_set_duration'):
-        config_dict['val_dur'] = float(config['PREP']['validation_set_duration'])
-
-    if config.has_option('PREP', 'test_set_duration'):
-        config_dict['test_dur'] = float(config['PREP']['test_set_duration'])
-
     if config.has_option('PREP', 'output_dir'):
         output_dir = config['PREP']['output_dir']
         output_dir = os.path.expanduser(output_dir)
         config_dict['output_dir'] = os.path.abspath(output_dir)
+
+    if config.has_option('PREP', 'data_dir'):
+        data_dir = config['PREP']['data_dir']
+        config_dict['data_dir'] = os.path.expanduser(data_dir)
 
     if config.has_option('PREP', 'audio_format'):
         config_dict['audio_format'] = config['PREP']['audio_format']
@@ -120,8 +106,21 @@ def parse_prep_config(config, config_file):
     if config.has_option('PREP', 'annot_file'):
         config_dict['annot_file'] = os.path.expanduser(config['PREP']['annot_file'])
 
-    if config.has_option('PREP', 'data_dir'):
-        data_dir = config['PREP']['data_dir']
-        config_dict['data_dir'] = os.path.expanduser(data_dir)
+    if config.has_option('PREP', 'labelset'):
+        labelset = config['PREP']['labelset']
+        # make mapping from syllable labels to consecutive integers
+        # start at 1, because 0 is assumed to be label for silent gaps
+        if '-' in labelset or ',' in labelset:
+            # if user specified range of ints using a str
+            config_dict['labelset'] = range_str(labelset)
+        else:  # assume labelset is characters
+            config_dict['labelset'] = list(labelset)
+
+    if config.has_option('PREP', 'total_train_set_duration'):
+        config_dict['total_train_set_dur'] = float(config['PREP']['total_train_set_duration'])
+    if config.has_option('PREP', 'validation_set_duration'):
+        config_dict['val_dur'] = float(config['PREP']['validation_set_duration'])
+    if config.has_option('PREP', 'test_set_duration'):
+        config_dict['test_dur'] = float(config['PREP']['test_set_duration'])
 
     return PrepConfig(**config_dict)
