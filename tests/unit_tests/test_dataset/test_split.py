@@ -7,7 +7,7 @@ import numpy as np
 import crowsetta
 from scipy.io import loadmat
 
-import vak.dataset.spect
+import vak.dataset.dataframe
 import vak.dataset.annotation
 import vak.dataset.split
 from vak.evfuncs import load_cbin
@@ -424,10 +424,10 @@ class TestSplit(unittest.TestCase):
                                                         val_dur)
 
     def test_train_test_dur_split_mat_train_test(self):
-        vds = vak.dataset.spect.from_files(spect_format='mat',
-                                           spect_dir=spect_dir_mat,
-                                           annot_list=annot_list_mat,
-                                           load_spects=False)
+        vds = vak.dataset.dataframe.from_files(spect_format='mat',
+                                               spect_dir=spect_dir_mat,
+                                               annot_list=annot_list_mat,
+                                               load_spects=False)
 
         train_dur = 200
         test_dur = 200
@@ -445,10 +445,10 @@ class TestSplit(unittest.TestCase):
         self.assertTrue(test_dur_out >= test_dur)
 
     def test_train_test_dur_split_mat_train(self):
-        vds = vak.dataset.spect.from_files(spect_format='mat',
-                                           spect_dir=spect_dir_mat,
-                                           annot_list=annot_list_mat,
-                                           load_spects=False)
+        vds = vak.dataset.dataframe.from_files(spect_format='mat',
+                                               spect_dir=spect_dir_mat,
+                                               annot_list=annot_list_mat,
+                                               load_spects=False)
 
         train_dur = 200
 
@@ -468,10 +468,10 @@ class TestSplit(unittest.TestCase):
         )
 
     def test_train_test_dur_split_mat_test(self):
-        vds = vak.dataset.spect.from_files(spect_format='mat',
-                                           spect_dir=spect_dir_mat,
-                                           annot_list=annot_list_mat,
-                                           load_spects=False)
+        vds = vak.dataset.dataframe.from_files(spect_format='mat',
+                                               spect_dir=spect_dir_mat,
+                                               annot_list=annot_list_mat,
+                                               load_spects=False)
 
         test_dur = 200
 
