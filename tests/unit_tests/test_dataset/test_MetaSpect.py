@@ -5,7 +5,7 @@ import numpy as np
 from scipy.io import loadmat
 import crowsetta
 
-import vak.dataset.spect
+import vak.dataset.dataframe
 import vak.dataset.annotation
 from vak.dataset.classes import MetaSpect
 
@@ -45,7 +45,7 @@ class TestMetaSpect(unittest.TestCase):
     def test_MetaSpect_init_mat(self):
         for spect_path in self.spect_list_mat:
             spect_dict = loadmat(spect_path, squeeze_me=True)
-            audio_fname = vak.dataset.spect.find_audio_fname(spect_path)
+            audio_fname = vak.dataset.dataframe.find_audio_fname(spect_path)
             a_spect = MetaSpect(freq_bins=spect_dict['f'],
                                 time_bins=spect_dict['t'],
                                 timebin_dur=0.002,
@@ -64,7 +64,7 @@ class TestMetaSpect(unittest.TestCase):
     def test_MetaSpect_init_npz(self):
         for spect_path in self.spect_list_npz:
             spect_dict = np.load(spect_path)
-            audio_fname = vak.dataset.spect.find_audio_fname(spect_path)
+            audio_fname = vak.dataset.dataframe.find_audio_fname(spect_path)
             a_spect = MetaSpect(freq_bins=spect_dict['f'],
                                 time_bins=spect_dict['t'],
                                 timebin_dur=0.002,
@@ -102,7 +102,7 @@ class TestMetaSpect(unittest.TestCase):
     def test_MetaSpect_from_dict_npz(self):
         for spect_path in self.spect_list_npz:
             spect_dict = np.load(spect_path)
-            audio_fname = vak.dataset.spect.find_audio_fname(spect_path)
+            audio_fname = vak.dataset.dataframe.find_audio_fname(spect_path)
             metaspect = MetaSpect.from_dict(spect_file_dict=spect_dict,
                                             freqbins_key='f',
                                             timebins_key='t',
