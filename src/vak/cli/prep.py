@@ -31,8 +31,7 @@ def prep(data_dir,
     If no durations for any of the training sets are specified, then the
     function assumes all the vocalizations constitute a single training
     dataset. If the duration of either the training or test set is provided,
-    then the function attempts to split the dataset into training and test
-    sets; the
+    then the function attempts to split the dataset into training and test sets.
 
     Parameters
     ----------
@@ -79,6 +78,7 @@ def prep(data_dir,
     Saves a Dataset generated from data_dir, as well as training, test, and
     validation sets created from that Dataset.
     """
+    # pre-conditions ---------------------------------------------------------------------------------------------------
     if audio_format is None and spect_format is None:
         raise ValueError("Must specify either audio_format or spect_format")
 
@@ -111,15 +111,34 @@ def prep(data_dir,
     elif output_dir is None:
         output_dir = data_dir
 
+    # ---- logging -----------------------------------------------------------------------------------------------------
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
+    # ---- figure out what section we will be saving path in, and prefix of option name in that section ----------------
+    # (e.g., if it's PREDICT section then the prefix will be 'predict' for 'predict_vds_path' option
+    config = ConfigParser()
+    config.read(config_file)
+    if config.has_section('TRAIN'):
+        section = 'TRAIN'
+    elif config.has_section('LEARNCURVE'):
+        section = 'LEARNCURVE'
+    elif config.has_section('PREDICT'):
+        section = 'PREDICT'
+    else:
+        raise ValueError(
+            'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.ini file;'
+            ' unable to determine which section to add paths to prepared datasets to"
+        )
+
+    # ---- figure out file name ----------------------------------------------------------------------------------------
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     _, tail = os.path.split(data_dir)
     vds_fname_stem = f'{tail}_prep_{timenow}'
 
+    # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
     if all([dur is None for dur in (train_dur, val_dur, test_dur)]):
-        # assume the whole dataset is a training set
+        # then we're not going to split
         do_split = False
         save_vds = False  # because we'll save it in the loop below
         vds_fname = None
@@ -132,6 +151,7 @@ def prep(data_dir,
             save_vds = True
             vds_fname = os.path.join(output_dir, f'{vds_fname_stem}{VDS_JSON_EXT}')
 
+    # ---- actually make the dataset -----------------------------------------------------------------------------------
     vds = dataset.prep(labelset=labelset,
                        data_dir=data_dir,
                        annot_format=annot_format,
@@ -173,7 +193,10 @@ def prep(data_dir,
 
     elif do_split is False:
         # we assumed the whole dataset is a training set
-        vds_to_save_keys = ['train']
+        if section == 'TRAIN':
+            vds_to_save_keys = ['train']
+        elif section == 'PREDICT':
+            vds_to_save_keys = ['predict']
         vds_to_save_vals = [vds]  # was returned above, but hasn't been saved yet
 
     saved_vds_dict = {}
@@ -181,14 +204,6 @@ def prep(data_dir,
         json_fname = os.path.join(output_dir, f'{vds_fname_stem}.{key}{VDS_JSON_EXT}')
         a_vds.save(json_fname=json_fname)
         saved_vds_dict[key] = json_fname
-
-    # rewrite config file with paths where VocalizationDatasets were saved
-    config = ConfigParser()
-    config.read(config_file)
-    if config.has_section('TRAIN'):
-        section = 'TRAIN'
-    elif config.has_section('LEARNCURVE'):
-        section = 'LEARNCURVE'
 
     for key, path in saved_vds_dict.items():
         config.set(section=section,
