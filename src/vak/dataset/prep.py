@@ -191,7 +191,6 @@ def prep(data_dir,
     from_files_kwargs = {
         'spect_format': spect_format,
         'labelset': labelset,
-        'load_spects': load_spects,
         'annot_list': annot_list,
         'annot_format': annot_format,
     }
