@@ -5,7 +5,7 @@ from datetime import datetime
 
 from crowsetta import Transcriber
 
-from . import annotation, audio, spect
+from . import annotation, audio, dataframe
 from .annotation import source_annot_map
 
 
