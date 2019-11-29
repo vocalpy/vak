@@ -1,7 +1,6 @@
-import os
-from pathlib import Path
-import logging
 from datetime import datetime
+import logging
+import os
 
 from crowsetta import Transcriber
 
@@ -13,18 +12,19 @@ def prep(data_dir,
          annot_format=None,
          labelset=None,
          output_dir=None,
-         save_vds=False,
-         vds_fname=None,
-         return_vds=True,
+         save_csv=False,
+         csv_fname=None,
+         return_df=True,
          return_path=True,
-         load_spects=True,
          annot_file=None,
          audio_format=None,
          spect_format=None,
          spect_params=None,
          spect_output_dir=None):
-    """prepare a VocalizationDataset from a directory of audio or spectrogram files
-    containing vocalizations, and (optionally) annotation for those files
+    """prepare a dataset from a directory of audio or spectrogram files containing vocalizations,
+     and (optionally) annotation for those files.
+
+     The dataset is returned as a pandas DataFrame and, if csv_fname is specified, also saved as a .csv file.
 
     Parameters
     ----------
@@ -40,14 +40,13 @@ def prep(data_dir,
     output_dir : str
         path to location where data sets should be saved. Default is None,
         in which case data sets is saved in data_dir.
-    save_vds : bool
-        if True, save the VocalizationDataset created as a .json file. Default is False.
-    vds_fname : str
-        filename for VocalDataset, which will be saved as a .json file.
-        If filename does not end in .json, then that extension will be appended.
+    save_csv : bool
+        if True, save the dataset created as a .csv file. Default is False.
+    csv_fname : str
+        filename for dataset, which will be saved as a .csv file.
         Default is None. If None, then the filename will be
-        'prep_{timestamp}.vds.json'.
-    return_vds : bool
+        'prep_{timestamp}.csv'.
+    return_df : bool
         if True, return prepared VocalizationDataset. Default is True.
     return_path : bool
         if True, return path to saved VocalizationDataset. Default is True.
@@ -72,19 +71,18 @@ def prep(data_dir,
 
     Returns
     -------
-    vds : vak.dataset.Dataset
-        the VocalizationDataset prepared from the directory specified
-    vds_path : str
-        path to where VocalizationDataset was saved
+    vak_df : pandas.Dataframe
+        the dataset prepared from the directory specified
+    csv_path : str
+        path to where dataset was saved as a csv.
+        Only returned if save_csv and return_path are True
 
     Notes
     -----
     If dataset is created from audio files, then .spect.npz files will be
     generated from the audio files and saved in output_dir.
     """
-    logger = logging.getLogger(__name__)
-    logger.setLevel('INFO')
-
+    # ---- pre-conditions ----------------------------------------------------------------------------------------------
     if labelset is not None:
         if type(labelset) not in (set, list):
             raise TypeError(
@@ -101,10 +99,10 @@ def prep(data_dir,
             else:
                 labelset = labelset_set
 
-    if vds_fname is not None:
-        if type(vds_fname) != str:
+    if csv_fname is not None:
+        if type(csv_fname) != str:
             raise TypeError(
-                f"vds_fname should be a string, but type was: {type(vds_fname)}"
+                f"csv_fname should be a string, but type was: {type(csv_fname)}"
             )
 
     if output_dir:
@@ -141,7 +139,11 @@ def prep(data_dir,
     else:  # if annot_format not specified
         annot_list = None
 
-    # ------ if making dataset from audio files, need to make into array files first! ----------------------------
+    # ---- logging -----------------------------------------------------------------------------------------------------
+    logger = logging.getLogger(__name__)
+    logger.setLevel('INFO')
+
+    # ------ if making dataset from audio files, need to make into array files first! ----------------------------------
     if audio_format:
         logger.info(
             f'making array files containing spectrograms from audio files in: {data_dir}'
@@ -191,40 +193,41 @@ def prep(data_dir,
         'labelset': labelset,
         'load_spects': load_spects,
         'annot_list': annot_list,
+        'annot_format': annot_format,
     }
 
     if spect_files:
         from_files_kwargs['spect_files'] = spect_files
         logger.info(
-            f'creating VocalDataset from spectrogram files in: {output_dir}'
+            f'creating datasetfrom spectrogram files in: {output_dir}'
         )
     else:
         from_files_kwargs['spect_dir'] = data_dir
         logger.info(
-            f'creating VocalDataset from spectrogram files in: {data_dir}'
+            f'creating dataset from spectrogram files in: {data_dir}'
         )
 
-    vds = spect.from_files(**from_files_kwargs)
-    if save_vds:
-        if vds_fname is None:
+    vak_df = dataframe.from_files(**from_files_kwargs)
+    if save_csv:
+        if csv_fname is None:
             timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-            vds_fname = f'prep_{timenow}.vds.json'
+            csv_fname = f'prep_{timenow}.csv'
 
-        if not vds_fname.endswith('.json'):
-            vds_fname += '.json'
+        if not csv_fname.endswith('.csv'):
+            csv_fname += '.csv'
 
         if output_dir:
-            vds_path = os.path.join(output_dir, vds_fname)
+            csv_path = os.path.join(output_dir, csv_fname)
         else:
-            vds_path = os.path.join(os.getcwd(), vds_fname)
+            csv_path = os.path.join(os.getcwd(), csv_fname)
 
-        vds.save(json_fname=vds_path)
+        vak_df.to_csv(csv_path)
     else:
-        vds_path = None
+        csv_path = None
 
-    if return_vds and return_path:
-        return vds, vds_path
+    if return_df and return_path:
+        return vak_df, csv_path
     elif return_path:
-        return vds_path
-    elif return_vds:
-        return vds
+        return csv_path
+    elif return_df:
+        return vak_df
