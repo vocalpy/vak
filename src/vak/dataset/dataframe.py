@@ -1,15 +1,16 @@
+"""functions for dealing with vocalization datasets as pandas DataFrames"""
 from glob import glob
 import logging
 import os
 from pathlib import Path
 
-import numpy as np
-from scipy.io import loadmat
 import dask.bag as db
 from dask.diagnostics import ProgressBar
+import numpy as np
+import pandas as pd
+from scipy.io import loadmat
 
 from .annotation import source_annot_map
-from .classes import MetaSpect, Vocalization, Dataset
 from ..config import validators
 from ..utils.general import find_fname, timebin_dur_from_vec
 
@@ -63,32 +64,32 @@ def find_audio_fname(spect_path, audio_ext=None):
             f'unable to determine filename of audio file from: {spect_path}'
         )
 
+# constant, used for names of columns in DataFrame below
+DF_COLUMNS = [
+    'audio_path',
+    'spect_path',
+    'annot_path',
+    'annot_format',
+    'duration',
+    'timebin_dur',
+]
+
 
 def from_files(spect_format,
                spect_dir=None,
                spect_files=None,
                annot_list=None,
+               annot_format=None,
                spect_annot_map=None,
                labelset=None,
-               load_spects=True,
                n_decimals_trunc=3,
                freqbins_key='f',
                timebins_key='t',
                spect_key='s',
                audio_path_key='audio_path'
                ):
-    """create Dataset from already-made spectrograms that are in
-    files containing arrays, i.e., .mat files created by Matlab or .npz files created by numpy
-
-    Each file should contain a spectrogram as a matrix and two vectors associated with it, a
-    vector of frequency bins and time bins, where the values in those vectors are the values
-    at the bin centers. (As far as vak is concerned, "vector" and "matrix" are synonymous with
-    "array".)
-
-    Since both .mat files and .npz files load into a dictionary-like structure,
-    the arrays will be accessed with keys. By convention, these keys are 's', 'f', and 't'.
-    If you use different keys you can let this function know by changing
-    the appropriate arguments: spect_key, freqbins_key, timebins_key
+    """create vocalization dataset as Pandas dataframe, from files containing spectrograms,
+    i.e., arrays in .mat files created by Matlab or .npz files created by numpy
 
     Parameters
     ----------
@@ -100,7 +101,12 @@ def from_files(spect_format,
     spect_files : list
         List of paths to array files. Default is None.
     annot_list : list
-        of annotations for array files. Default is None.
+        of annotations for array files. Default is None
+    annot_format : str
+        name of annotation format. Added as a column to the DataFrame if specified.
+        Used by other functions that open annotation files via their paths from the DataFrame.
+        Should be a format that the crowsetta library recognizes.
+        Default is None.
     spect_annot_map : dict
         Where keys are paths to files and value corresponding to each key is
         the annotation for that file.
@@ -108,10 +114,6 @@ def from_files(spect_format,
     labelset : list
         of str or int, set of unique labels for vocalizations. Default is None.
         If not None, skip files where the associated annotations contain labels not in labelset.
-    load_spects : bool
-        if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
-        Default is True. Set to False when you want to create a VocalDataset for use
-        later, but don't want to load all the spectrograms into memory yet.
     n_decimals_trunc : int
         number of decimal places to keep when truncating the timebin duration calculated from
         the vector of time bins.
@@ -128,9 +130,22 @@ def from_files(spect_format,
 
     Returns
     -------
-    vocalset : vak.dataset.VocalDataset
-        dataset of annotated vocalizations
+    vak_df : pandas.Dataframe
+        that represents a vocalization dataset
+
+    Notes
+    -----
+    Each file should contain a spectrogram as a matrix and two vectors associated with it, a
+    vector of frequency bins and time bins, where the values in those vectors are the values
+    at the bin centers. (As far as vak is concerned, "vector" and "matrix" are synonymous with
+    "array".)
+
+    Since both .mat files and .npz files load into a dictionary-like structure,
+    the arrays will be accessed with keys. By convention, these keys are 's', 'f', and 't'.
+    If you use different keys you can let this function know by changing
+    the appropriate arguments: spect_key, freqbins_key, timebins_key
     """
+    # pre-conditions ---------------------------------------------------------------------------------------------------
     if spect_format not in validators.VALID_SPECT_FORMATS:
         raise ValueError(
             f"spect_format must be one of '{validators.VALID_SPECT_FORMATS}'; "
@@ -160,9 +175,11 @@ def from_files(spect_format,
                 f'type of labelset must be set, but was: {type(labelset)}'
             )
 
+    # ---- logging -----------------------------------------------------------------------------------------------------
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
 
+    # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
         if spect_format == 'mat':
             spect_files = glob(os.path.join(spect_dir, '*.mat'))
@@ -173,17 +190,17 @@ def from_files(spect_format,
         if annot_list:
             spect_annot_map = source_annot_map(spect_files, annot_list)
         else:
-            # map spectrogram files to None
+            # no annotation, so map spectrogram files to None
             spect_annot_map = dict((spect_path, None)
                                    for spect_path in spect_files)
 
-    # lastly need to validate spect_annot_map
+    # ---- validate spect_annot_map ------------------------------------------------------------------------------------
     # regardless of whether we just made it or user supplied it
     for spect_path, annot in spect_annot_map.items():
         # get just file name so error messages don't have giant path
         spect_file = os.path.basename(spect_path)
 
-        if labelset:
+        if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
             labels_set = set(annot.labels)
             # below, set(labels_mapping) is a set of that dict's keys
             if not labels_set.issubset(set(labelset)):
@@ -239,12 +256,14 @@ def from_files(spect_format,
                 f'does not match number of columns in spectrogram'
             )
 
-    # this is defined here so all other arguments to 'from_arr_files' are in scope
-    def _voc_from_spect_path_annot_tup(spect_path_annot_tup):
-        """helper function that enables parallelized creation of list of Vocalizations.
-        Accepts a tuple with the path to an spectrogram file and annotations,
-        and returns a Vocalization object."""
-        (spect_path, annot) = spect_path_annot_tup
+    # ---- actually make the dataframe ---------------------------------------------------------------------------------
+    # this is defined here so all other arguments to 'from_files' are in scope
+    def _to_record(spect_annot_tuple):
+        """helper function that enables parallelized creation of "records",
+        i.e. rows for dataframe, from .
+        Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
+        and (2) annotation for that file"""
+        spect_dict, annot = spect_annot_tuple
         if spect_format == 'mat':
             spect_dict = loadmat(spect_path, squeeze_me=True)
         elif spect_format == 'npz':
@@ -262,32 +281,25 @@ def from_files(spect_format,
             # (or an error)
             audio_path = find_audio_fname(spect_path)
 
-        if load_spects:
-            spect_kwargs = {
-                'freq_bins': spect_dict[freqbins_key],
-                'time_bins': spect_dict[timebins_key],
-                'timebin_dur': timebin_dur,
-                'spect': spect_dict[spect_key],
-                'audio_path': audio_path,
-            }
-            metaspect = MetaSpect(**spect_kwargs)
-        else:
-            metaspect = None
-
-        voc_kwargs = {
-            'annot': annot,
-            'spect_path': spect_path,
-            'audio_path': audio_path,
-            'metaspect': metaspect,
-            'duration': spect_dur
-        }
         if annot is not None:
-            voc_kwargs['audio_path'] = annot.file
+            # TODO: change to annot.annot_path when changing dependency to crowsetta>=2.0
+            annot_path = annot.file
+        else:
+            annot_path = None
 
-        return Vocalization(**voc_kwargs)
+        record = tuple([
+            audio_path,
+            spect_path,
+            annot_path,
+            annot_format,
+            spect_dur,
+            timebin_dur,
+        ])
+        return record
 
-    spect_path_annot_tups = db.from_sequence(spect_annot_map.items())
-    logger.info('creating Dataset')
+    spect_path_annot_tuples = db.from_sequence(spect_annot_map.items())
+    logger.info('creating dataset')
     with ProgressBar():
-        voc_list = list(spect_path_annot_tups.map(_voc_from_spect_path_annot_tup))
-    return Dataset(voc_list=voc_list, labelset=labelset)
+        records = list(spect_path_annot_tuples.map(_to_record))
+
+    return pd.DataFrame.from_records(data=records, columns=DF_COLUMNS)
