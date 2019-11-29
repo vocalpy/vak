@@ -2,9 +2,10 @@ import os
 import logging
 from configparser import ConfigParser
 from datetime import datetime
-from .. import dataset
 
-VDS_JSON_EXT = '.vds.json'
+import numpy as np
+
+from .. import dataset
 
 
 def prep(data_dir,
@@ -19,19 +20,7 @@ def prep(data_dir,
          spect_format=None,
          annot_file=None,
          spect_params=None):
-    """command-line function that prepares datasets from vocalizations
-
-    Datasets are used to train neural networks that segment audio files into
-    vocalizations, and then predict labels for those segments.
-    The function also prepares datasets so neural networks can predict the
-    segmentation and annotation of vocalizations in them.
-    It can also split a dataset into training, validation, and test sets,
-    e.g. for benchmarking different neural network architectures.
-
-    If no durations for any of the training sets are specified, then the
-    function assumes all the vocalizations constitute a single training
-    dataset. If the duration of either the training or test set is provided,
-    then the function attempts to split the dataset into training and test sets.
+    """function called by command-line interface to prepare datasets from vocalizations
 
     Parameters
     ----------
@@ -75,8 +64,22 @@ def prep(data_dir,
     -------
     None
 
+    Notes
+    -----
     Saves a Dataset generated from data_dir, as well as training, test, and
     validation sets created from that Dataset.
+
+    Datasets are used to train neural networks that segment audio files into
+    vocalizations, and then predict labels for those segments.
+    The function also prepares datasets so neural networks can predict the
+    segmentation and annotation of vocalizations in them.
+    It can also split a dataset into training, validation, and test sets,
+    e.g. for benchmarking different neural network architectures.
+
+    If no durations for any of the training sets are specified, then the
+    function assumes all the vocalizations constitute a single training
+    dataset. If the duration of either the training or test set is provided,
+    then the function attempts to split the dataset into training and test sets.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if audio_format is None and spect_format is None:
@@ -128,80 +131,62 @@ def prep(data_dir,
     else:
         raise ValueError(
             'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.ini file;'
-            ' unable to determine which section to add paths to prepared datasets to"
+            ' unable to determine which section to add paths to prepared datasets to'
         )
 
     # ---- figure out file name ----------------------------------------------------------------------------------------
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     _, tail = os.path.split(data_dir)
-    vds_fname_stem = f'{tail}_prep_{timenow}'
+    csv_fname_stem = f'{tail}_prep_{timenow}'
+    csv_fname = os.path.join(output_dir, f'{csv_fname_stem}.csv')
 
     # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
     if all([dur is None for dur in (train_dur, val_dur, test_dur)]):
         # then we're not going to split
         do_split = False
-        save_vds = False  # because we'll save it in the loop below
-        vds_fname = None
+        save_csv = False  # because we'll save it in the loop below
     else:
         if val_dur is not None and train_dur is None and test_dur is None:
             raise ValueError('cannot specify only val_dur, unclear how to split dataset into training and test sets')
         else:
             # save before splitting, jic duration args are not valid (we can't know until we make dataset)
             do_split = True
-            save_vds = True
-            vds_fname = os.path.join(output_dir, f'{vds_fname_stem}{VDS_JSON_EXT}')
+            save_csv = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    vds = dataset.prep(labelset=labelset,
-                       data_dir=data_dir,
-                       annot_format=annot_format,
-                       output_dir=output_dir,
-                       save_vds=save_vds,
-                       vds_fname=vds_fname,
-                       return_vds=True,
-                       return_path=False,
-                       load_spects=False,
-                       annot_file=annot_file,
-                       audio_format=audio_format,
-                       spect_format=spect_format,
-                       spect_params=spect_params)
+    vak_df = dataset.prep(labelset=labelset,
+                          data_dir=data_dir,
+                          annot_format=annot_format,
+                          output_dir=output_dir,
+                          save_csv=save_csv,
+                          csv_fname=csv_fname,
+                          return_df=True,
+                          return_path=False,
+                          annot_file=annot_file,
+                          audio_format=audio_format,
+                          spect_format=spect_format,
+                          spect_params=spect_params)
 
     if do_split:
-        if val_dur is not None:
-            train_vds, val_vds, test_vds = dataset.split.train_test_dur_split(vds,
-                                                                              labelset=labelset,
-                                                                              train_dur=train_dur,
-                                                                              val_dur=val_dur,
-                                                                              test_dur=test_dur)
-        else:
-            train_vds, test_vds = dataset.split.train_test_dur_split(vds,
-                                                                     labelset=labelset,
-                                                                     train_dur=train_dur,
-                                                                     test_dur=test_dur)
-            val_vds = None
-
-        vds_to_save_keys = ['train']
-        vds_to_save_vals = [train_vds]
-
-        if test_vds is not None:
-            vds_to_save_keys.append('test')
-            vds_to_save_vals.append(test_vds)
-
-        if val_dur is not None:
-            vds_to_save_keys.append('val')
-            vds_to_save_vals.append(val_vds)
+        vak_df = dataset.split.train_test_dur_split(vak_df,
+                                                    labelset=labelset,
+                                                    train_dur=train_dur,
+                                                    val_dur=val_dur,
+                                                    test_dur=test_dur)
 
     elif do_split is False:
-        # we assumed the whole dataset is a training set
+        # make a split column, but assign everything to the same 'split'
         if section == 'TRAIN':
-            vds_to_save_keys = ['train']
+            split_col = np.asarray(['train' for _ in range(len(vak_df))], dtype='object')
         elif section == 'PREDICT':
-            vds_to_save_keys = ['predict']
-        vds_to_save_vals = [vds]  # was returned above, but hasn't been saved yet
+            split_col = np.asarray(['predict' for _ in range(len(vak_df))], dtype='object')
+        vak_df['split'] = split_col
+
+    vak_df.to_csv(csv_fname)
 
     saved_vds_dict = {}
     for key, a_vds in zip(vds_to_save_keys, vds_to_save_vals):
-        json_fname = os.path.join(output_dir, f'{vds_fname_stem}.{key}{VDS_JSON_EXT}')
+        json_fname = os.path.join(output_dir, f'{csv_fname_stem}.{key}{VDS_JSON_EXT}')
         a_vds.save(json_fname=json_fname)
         saved_vds_dict[key] = json_fname
 
