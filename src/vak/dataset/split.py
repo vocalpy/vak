@@ -1,6 +1,8 @@
 import warnings
 
-from .classes import Dataset
+from crowsetta import Transcriber
+import numpy as np
+
 from .utils import _validate_durs
 from .splitalgos import brute_force
 
@@ -85,17 +87,21 @@ def train_test_dur_split_inds(durs,
     return train_inds, val_inds, test_inds
 
 
-def train_test_dur_split(vds,
+def train_test_dur_split(vak_df,
                          labelset,
                          train_dur=None,
                          test_dur=None,
                          val_dur=None):
-    """split a VocalizationDataset into training, test, and (optionally) validation sets.
+    """split a dataset of vocalizations into training, test, and (optionally) validation subsets,
+    specified by their duration.
+
+    Takes dataset represented as a pandas DataFrame and adds a 'split' column that assigns each
+    row to 'train', 'val', 'test', or 'None'.
 
     Parameters
     ----------
-    vds : vak.dataset.Dataset
-        a dataset of vocalizations
+    vak_df : pandas.Dataframe
+        a dataset of vocalizations.
     labelset : set, list
         of str or int, set of labels for vocalizations.
     train_dur : float
@@ -107,13 +113,34 @@ def train_test_dur_split(vds,
 
     Returns
     -------
-    train_vds, test_vds, val_vds
-    """
-    durs = [voc.duration for voc in vds.voc_list]
-    vds_dur = sum(durs)
-    train_dur, val_dur, test_dur = _validate_durs(train_dur, val_dur, test_dur, vds_dur)
+    vak_df : pandas.Dataframe
+        with 'split' column added, that assigns each vocalization (row) to a subset, i.e., train, validation, or test.
+        If the vocalization was not added to one of the subsets, its value for 'split' will be 'None'.
 
-    labels = [voc.annot.labels for voc in vds.voc_list]
+    Notes
+    -----
+    uses the function `vak.dataset.split.train_test_dur_split_inds` to find indices for each subset.
+    """
+    annot_format = vak_df['annot_format'].unique()
+    if len(annot_format) == 1:
+        annot_format = annot_format.item()
+        # if annot_format is None, throw an error -- otherwise continue on and try to use it
+        if annot_format is None:
+            raise ValueError(
+                'unable to load labels for dataset, the annot_format is None'
+            )
+    elif len(annot_format) > 1:
+        raise ValueError(
+            f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
+        )
+    # TODO: change this keyword argument to annot_format when changing dependency to crowsetta 2.0
+    scribe = Transcriber(voc_format=annot_format)
+    labels = [scribe.to_seq(annot_file).labels
+              for annot_file in vak_df['annot_path'].values]
+
+    durs = vak_df['duration'].values
+    total_dataset_dur = durs.sum()
+    train_dur, val_dur, test_dur = _validate_durs(train_dur, val_dur, test_dur, total_dataset_dur)
 
     train_inds, val_inds, test_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
@@ -122,19 +149,18 @@ def train_test_dur_split(vds,
                                                                 test_dur=test_dur,
                                                                 val_dur=val_dur)
 
-    train_vds = Dataset(voc_list=[vds.voc_list[ind] for ind in train_inds], labelset=labelset)
+    # start off with all elements set to 'None'
+    # so we don't have to change any that are not assigned to one of the subsets to 'None' after
+    split_col = np.asarray(['None' for _ in range(len(vak_df))], dtype='object')
+    split_zip = zip(
+        ['train', 'val', 'test'],
+        [train_inds, val_inds, test_inds]
+    )
+    for split_name, split_inds in split_zip:
+        if split_inds is not None:
+            split_col[split_inds] = split_name
 
-    if test_dur > 0 or test_dur == -1:
-        test_vds = Dataset(voc_list=[vds.voc_list[ind] for ind in test_inds], labelset=labelset)
-    else:
-        test_vds = None
+    # add split column to dataframe
+    vak_df['split'] = split_col
 
-    if val_inds:
-        val_vds = Dataset(voc_list=[vds.voc_list[ind] for ind in val_inds], labelset=labelset)
-    else:
-        val_vds = None
-
-    if val_vds:
-        return train_vds, val_vds, test_vds
-    else:
-        return train_vds, test_vds
+    return vak_df
