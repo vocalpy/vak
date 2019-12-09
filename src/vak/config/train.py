@@ -18,8 +18,8 @@ class TrainConfig:
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
-    train_vds_path : str
-        path to saved Dataset that contains training data
+    csv_path : str
+        path to where dataset was saved as a csv.
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -36,9 +36,6 @@ class TrainConfig:
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    val_vds_path : str
-        path to saved Dataset that contains validation data.
-        Default is None, in which case accuracy is not measured on a validation set during training.
     val_error_step : int
         step/epoch at which to estimate accuracy using validation set.
         Default is None, in which case no validation is done.
@@ -66,15 +63,13 @@ class TrainConfig:
     """
     # required
     networks = attr.ib(validator=instance_of(list))
-    train_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
+    csv_path = attr.ib(validator=[instance_of(str), is_a_file])
     num_epochs = attr.ib(validator=instance_of(int))
     root_results_dir = attr.ib(validator=is_a_directory)
     results_dirname = attr.ib(validator=optional(is_a_directory), default=None)
 
     # optional
     normalize_spectrograms = attr.ib(validator=optional(instance_of(bool)), default=False)
-    val_vds_path = attr.ib(validator=optional([instance_of(str), is_a_file]), default=None)
-
     val_error_step = attr.ib(validator=optional(instance_of(int)), default=None)
     checkpoint_step = attr.ib(validator=optional(instance_of(int)), default=None)
     patience = attr.ib(validator=optional(instance_of(int)), default=None)
@@ -122,9 +117,9 @@ def parse_train_config(config, config_file):
                        "networks = TweetyNet, GRUnet, convnet")
 
     try:
-        config_dict['train_vds_path'] = os.path.expanduser(config['TRAIN']['train_vds_path'])
+        config_dict['csv_path'] = os.path.expanduser(config['TRAIN']['csv_path'])
     except NoOptionError:
-        raise KeyError("'train_vds_path' option not found in [TRAIN] section of config.ini file. "
+        raise KeyError("'csv_path' option not found in [TRAIN] section of config.ini file. "
                        "Please add this option.")
 
     try:
@@ -142,9 +137,6 @@ def parse_train_config(config, config_file):
         config_dict['results_dirname'] = os.path.expanduser(results_dirname)
     else:
         config_dict['results_dirname'] = None
-
-    if config.has_option('TRAIN', 'val_vds_path'):
-        config_dict['val_vds_path'] = os.path.expanduser(config['TRAIN']['val_vds_path'])
 
     if config.has_option('TRAIN', 'val_error_step'):
         config_dict['val_error_step'] = int(config['TRAIN']['val_error_step'])
