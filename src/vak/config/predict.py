@@ -15,15 +15,8 @@ class PredictConfig:
 
     Attributes
     ----------
-    predict_vds_path : str
-        path to saved Dataset that contains data for which annotations
-        should be predicted.
-    train_vds_path : str
-        path to Dataset that represents training data.
-        To fetch labelmap used during training, to map labels used
-        in annotation to a series of consecutive integers that become
-        outputs of the neural network. Used here to convert
-        back to labels used in annotation.
+    csv_path : str
+        path to where dataset was saved as a csv.
     checkpoint_path : str
         path to directory with checkpoint files saved by Tensorflow, to reload model
     networks : namedtuple
@@ -34,8 +27,7 @@ class PredictConfig:
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     """
-    predict_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
-    train_vds_path = attr.ib(validator=[instance_of(str), is_a_file])
+    csv_path = attr.ib(validator=[instance_of(str), is_a_file])
     checkpoint_path = attr.ib(validator=[instance_of(str), is_a_directory])
     networks = attr.ib()
 
