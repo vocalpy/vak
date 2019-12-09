@@ -19,8 +19,8 @@ class LearncurveConfig(TrainConfig):
     networks : namedtuple
         where each field is the Config tuple for a neural network and the name
         of that field is the name of the class that represents the network.
-    train_vds_path : str
-        path to saved Dataset that contains training data
+    csv_path : str
+        path to where dataset was saved as a csv.
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -29,14 +29,6 @@ class LearncurveConfig(TrainConfig):
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    val_vds_path : str
-        path to saved Dataset that contains validation data.
-        Default is None, in which case accuracy is not measured on a validation set during training.
-    test_vds_path : str
-        path to saved Dataset that contains test data. Default is None.
-    val_error_step : int
-        step/epoch at which to estimate accuracy using validation set.
-        Default is None, in which case no validation is done.
     checkpoint_step : int
         step/epoch at which to save to checkpoint file.
         Default is None, in which case checkpoint is only saved at the last epoch.
@@ -62,9 +54,6 @@ class LearncurveConfig(TrainConfig):
         path to results directory from a previous run.
         Used for training if use_train_subsets_from_previous_run is True.
     """
-    # use kw_only=True so we can add attributes to sub-class without defaults, i.e. mandatory
-    test_vds_path = attr.ib(validator=[instance_of(str), is_a_file], kw_only=True)
-
     train_set_durs = attr.ib(validator=instance_of(list), kw_only=True)
     num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
 
