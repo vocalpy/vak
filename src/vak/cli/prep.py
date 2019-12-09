@@ -184,16 +184,10 @@ def prep(data_dir,
 
     vak_df.to_csv(csv_fname)
 
-    saved_vds_dict = {}
-    for key, a_vds in zip(vds_to_save_keys, vds_to_save_vals):
-        json_fname = os.path.join(output_dir, f'{csv_fname_stem}.{key}{VDS_JSON_EXT}')
-        a_vds.save(json_fname=json_fname)
-        saved_vds_dict[key] = json_fname
-
-    for key, path in saved_vds_dict.items():
-        config.set(section=section,
-                   option=f'{key}_vds_path',
-                   value=path)
+    # use config and section from above to add csv_fname to config.ini file
+    config.set(section=section,
+               option=f'csv_fname',
+               value=csv_fname)
 
     with open(config_file, 'w') as config_file_rewrite:
         config.write(config_file_rewrite)
