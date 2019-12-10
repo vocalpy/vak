@@ -10,7 +10,7 @@ import numpy as np
 from scipy.io import loadmat
 import crowsetta
 
-import vak.io.dataframe
+import vak.io.spect
 import vak.io.annotation
 from vak.io.classes import Dataset, Vocalization, MetaSpect
 
@@ -94,10 +94,10 @@ class TestDataset(unittest.TestCase):
         return True
 
     def test_Dataset_json(self):
-        vds = vak.io.dataframe.from_files(spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=True)
+        vds = vak.io.spect.to_dataframe(spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=True)
         vds_json_str = vds.to_json(json_fname=None)
         vds_json = json.loads(vds_json_str)
 
@@ -117,10 +117,10 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_Dataset_load_spects_mat(self):
-        vds = vak.io.dataframe.from_files(spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=False)
+        vds = vak.io.spect.to_dataframe(spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=False)
         self.assertTrue(
             all([voc.metaspect is None for voc in vds.voc_list])
         )
@@ -152,10 +152,10 @@ class TestDataset(unittest.TestCase):
             )
 
     def test_Dataset_load_spects_npz(self):
-        vds = vak.io.dataframe.from_files(spect_format='npz',
-                                          spect_dir=self.spect_dir_npz,
-                                          annot_list=self.annot_list_cbin,
-                                          load_spects=False)
+        vds = vak.io.spect.to_dataframe(spect_format='npz',
+                                        spect_dir=self.spect_dir_npz,
+                                        annot_list=self.annot_list_cbin,
+                                        load_spects=False)
         self.assertTrue(
             all([voc.metaspect is None for voc in vds.voc_list])
         )
@@ -186,10 +186,10 @@ class TestDataset(unittest.TestCase):
             )
 
     def test_Dataset_clear_spects(self):
-        vds = vak.io.dataframe.from_files(spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=True)
+        vds = vak.io.spect.to_dataframe(spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=True)
         self.assertTrue(
             all([type(voc.metaspect) == MetaSpect for voc in vds.voc_list])
         )
@@ -200,10 +200,10 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_Dataset_move_spects_npz(self):
-        vds = vak.io.dataframe.from_files(spect_format='npz',
-                                          spect_dir=self.spect_dir_npz,
-                                          annot_list=self.annot_list_cbin,
-                                          load_spects=False)
+        vds = vak.io.spect.to_dataframe(spect_format='npz',
+                                        spect_dir=self.spect_dir_npz,
+                                        annot_list=self.annot_list_cbin,
+                                        load_spects=False)
         tmp_dir = tempfile.mkdtemp()
         dst = os.path.join(tmp_dir, self.spect_dir_npz.name)
         tmp_spects_dir = shutil.copytree(src=self.spect_dir_npz,
@@ -215,10 +215,10 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_Dataset_move_spects_mat(self):
-        vds = vak.io.dataframe.from_files(spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=True)
+        vds = vak.io.spect.to_dataframe(spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=True)
 
         tmp_dir = tempfile.mkdtemp()
         dst = os.path.join(tmp_dir, self.spect_dir_mat.name)
@@ -231,10 +231,10 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_Dataset_are_spects_loaded(self):
-        vds = vak.io.dataframe.from_files(spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=False)
+        vds = vak.io.spect.to_dataframe(spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=False)
         self.assertTrue(
             vds.are_spects_loaded() is False
         )
@@ -245,10 +245,10 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_Dataset_spects_list(self):
-        vds = vak.io.dataframe.from_files(spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=True)
+        vds = vak.io.spect.to_dataframe(spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=True)
         spects_list = vds.spects_list()
         self.assertTrue(
             type(spects_list == list)
@@ -261,10 +261,10 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_Dataset_labels_list(self):
-        vds = vak.io.dataframe.from_files(spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=False)
+        vds = vak.io.spect.to_dataframe(spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=False)
         labels_list = vds.labels_list()
         self.assertTrue(
             type(labels_list == list)
@@ -277,11 +277,11 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_Dataset_lbl_tb_list(self):
-        vds = vak.io.dataframe.from_files(labelset=self.labelset_mat,
-                                          spect_format='mat',
-                                          spect_dir=self.spect_dir_mat,
-                                          annot_list=self.annot_list_mat,
-                                          load_spects=True)
+        vds = vak.io.spect.to_dataframe(labelset=self.labelset_mat,
+                                        spect_format='mat',
+                                        spect_dir=self.spect_dir_mat,
+                                        annot_list=self.annot_list_mat,
+                                        load_spects=True)
         lbl_tb_list = vds.lbl_tb_list()
         self.assertTrue(
             type(lbl_tb_list == list)
