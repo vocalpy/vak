@@ -51,9 +51,9 @@ test:
     - vak.config
     - vak.core
     - vak.core.learncurve
-    - vak.dataset
-    - vak.dataset.classes
-    - vak.dataset.splitalgos
+    - vak.io
+    - vak.io.classes
+    - vak.io.splitalgos
     - vak.plot
     - vak.utils
   commands:
