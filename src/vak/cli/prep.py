@@ -5,8 +5,8 @@ from datetime import datetime
 
 import numpy as np
 
-from .. import io
 from ..io import dataset
+from ..utils import train_test_dur_split
 
 
 def prep(data_dir,
@@ -170,11 +170,11 @@ def prep(data_dir,
                                 spect_params=spect_params)
 
     if do_split:
-        vak_df = io.split.train_test_dur_split(vak_df,
-                                               labelset=labelset,
-                                               train_dur=train_dur,
-                                               val_dur=val_dur,
-                                               test_dur=test_dur)
+        vak_df = train_test_dur_split(vak_df,
+                                      labelset=labelset,
+                                      train_dur=train_dur,
+                                      val_dur=val_dur,
+                                      test_dur=test_dur)
 
     elif do_split is False:
         # make a split column, but assign everything to the same 'split'
