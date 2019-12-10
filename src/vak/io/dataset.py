@@ -8,21 +8,22 @@ from . import annotation, audio, spect
 from .annotation import source_annot_map
 
 
-def prep(data_dir,
-         annot_format=None,
-         labelset=None,
-         output_dir=None,
-         save_csv=False,
-         csv_fname=None,
-         return_df=True,
-         return_path=True,
-         annot_file=None,
-         audio_format=None,
-         spect_format=None,
-         spect_params=None,
-         spect_output_dir=None):
-    """prepare a dataset from a directory of audio or spectrogram files containing vocalizations,
-     and (optionally) annotation for those files.
+def from_files(data_dir,
+               annot_format=None,
+               labelset=None,
+               output_dir=None,
+               save_csv=False,
+               csv_fname=None,
+               return_df=True,
+               return_path=True,
+               annot_file=None,
+               audio_format=None,
+               spect_format=None,
+               spect_params=None,
+               spect_output_dir=None):
+    """prepare a dataset of vocalizations from a directory of audio or spectrogram files containing vocalizations,
+     and (optionally) annotation for those files. Datasets are used to train neural networks, or for predicting
+     annotations for the dataset itself using a trained neural network.
 
      The dataset is returned as a pandas DataFrame and, if csv_fname is specified, also saved as a .csv file.
 
