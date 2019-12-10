@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import crowsetta
 
 from vak.evfuncs import load_cbin
-import vak.io.dataframe
+import vak.io.spect
 import vak.io.annotation
 from vak.io.classes import Vocalization, MetaSpect
 
