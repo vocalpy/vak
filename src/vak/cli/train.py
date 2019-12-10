@@ -11,7 +11,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from ..dataset.classes import Dataset
+from ..io.classes import Dataset
 from .. import network
 from .. import utils
 from ..utils.spect import SpectScaler

@@ -11,7 +11,7 @@ import tensorflow as tf
 from ... import metrics, utils
 from ... utils.labels import lbl_tb2labels
 from ... import network
-from ...dataset import Dataset
+from ...io import Dataset
 
 
 def test_one_model(net_name,

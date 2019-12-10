@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from ..dataset import Dataset
+from ..io import Dataset
 from .. import network
 from ..utils.data import reshape_data_for_batching
 from ..utils.labels import lbl_tb2segments

@@ -41,7 +41,7 @@ def train_test_dur_split_inds(durs,
         If None, no indices are returned for validation set.
     algo : str
         algorithm to use. One of {'brute_force', 'inc_freq'}. Default is 'brute_force'. For more information
-        on the algorithms, see the docstrings, e.g., vak.dataset.splitalgos.brute_force
+        on the algorithms, see the docstrings, e.g., vak.io.splitalgos.brute_force
 .
     Returns
     -------

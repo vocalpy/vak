@@ -5,7 +5,7 @@ from datetime import datetime
 
 import numpy as np
 
-from .. import dataset
+from .. import io
 
 
 def prep(data_dir,
@@ -154,25 +154,25 @@ def prep(data_dir,
             save_csv = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    vak_df = dataset.prep(labelset=labelset,
-                          data_dir=data_dir,
-                          annot_format=annot_format,
-                          output_dir=output_dir,
-                          save_csv=save_csv,
-                          csv_fname=csv_fname,
-                          return_df=True,
-                          return_path=False,
-                          annot_file=annot_file,
-                          audio_format=audio_format,
-                          spect_format=spect_format,
-                          spect_params=spect_params)
+    vak_df = io.prep(labelset=labelset,
+                     data_dir=data_dir,
+                     annot_format=annot_format,
+                     output_dir=output_dir,
+                     save_csv=save_csv,
+                     csv_fname=csv_fname,
+                     return_df=True,
+                     return_path=False,
+                     annot_file=annot_file,
+                     audio_format=audio_format,
+                     spect_format=spect_format,
+                     spect_params=spect_params)
 
     if do_split:
-        vak_df = dataset.split.train_test_dur_split(vak_df,
-                                                    labelset=labelset,
-                                                    train_dur=train_dur,
-                                                    val_dur=val_dur,
-                                                    test_dur=test_dur)
+        vak_df = io.split.train_test_dur_split(vak_df,
+                                               labelset=labelset,
+                                               train_dur=train_dur,
+                                               val_dur=val_dur,
+                                               test_dur=test_dur)
 
     elif do_split is False:
         # make a split column, but assign everything to the same 'split'
