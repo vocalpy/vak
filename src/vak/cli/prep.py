@@ -6,6 +6,7 @@ from datetime import datetime
 import numpy as np
 
 from .. import io
+from ..io import dataset
 
 
 def prep(data_dir,
@@ -20,7 +21,8 @@ def prep(data_dir,
          spect_format=None,
          annot_file=None,
          spect_params=None):
-    """function called by command-line interface to prepare datasets from vocalizations
+    """function called by command-line interface to prepare datasets from vocalizations.
+
 
     Parameters
     ----------
@@ -154,18 +156,18 @@ def prep(data_dir,
             save_csv = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    vak_df = io.prep(labelset=labelset,
-                     data_dir=data_dir,
-                     annot_format=annot_format,
-                     output_dir=output_dir,
-                     save_csv=save_csv,
-                     csv_fname=csv_fname,
-                     return_df=True,
-                     return_path=False,
-                     annot_file=annot_file,
-                     audio_format=audio_format,
-                     spect_format=spect_format,
-                     spect_params=spect_params)
+    vak_df = dataset.from_files(labelset=labelset,
+                                data_dir=data_dir,
+                                annot_format=annot_format,
+                                output_dir=output_dir,
+                                save_csv=save_csv,
+                                csv_fname=csv_fname,
+                                return_df=True,
+                                return_path=False,
+                                annot_file=annot_file,
+                                audio_format=audio_format,
+                                spect_format=spect_format,
+                                spect_params=spect_params)
 
     if do_split:
         vak_df = io.split.train_test_dur_split(vak_df,
