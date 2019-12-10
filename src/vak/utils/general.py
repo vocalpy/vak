@@ -56,7 +56,7 @@ def _files_from_dir(dir_path, ext):
 
     Notes
     -----
-    used by vak.dataset.audio.files_from_dir and vak.dataset.annot.files_from_dir
+    used by vak.io.audio.files_from_dir and vak.io.annot.files_from_dir
     """
     wildcard_with_extension = f'*.{ext}'
     files = sorted(
