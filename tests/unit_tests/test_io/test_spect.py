@@ -51,7 +51,7 @@ class TestFindAudioFname(unittest.TestCase):
             )
 
 
-class TestFromFiles(unittest.TestCase):
+class TestToDataframe(unittest.TestCase):
     """class to test vak.io.dataframe.from_files function"""
     def setUp(self):
         self.spect_dir = TEST_DATA_DIR.joinpath('mat', 'llb3', 'spect')
