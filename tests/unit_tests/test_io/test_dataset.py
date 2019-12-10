@@ -42,9 +42,11 @@ class TestFromFiles(unittest.TestCase):
                                                      spect_params=spect_params)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
-        json_fname = os.path.join(self.tmp_output_dir, csv_fname)
         self.assertTrue(
-            os.path.isfile(json_fname)
+            os.path.isfile(csv_path)
+        )
+        self.assertTrue(
+            csv_path == os.path.join(self.tmp_output_dir, csv_fname)
         )
 
     def test_from_files_with_audio_cbin_no_annot(self):
