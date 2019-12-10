@@ -9,12 +9,12 @@ from scipy.io import loadmat
 
 import vak.io.spect
 import vak.io.annotation
-import vak.io.split
+import vak.utils.split
 from vak.evfuncs import load_cbin
 from vak.io.annotation import files_from_dir
 from vak.utils.general import timebin_dur_from_vec
 from vak.io.classes import Dataset
-from vak.io.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
+from vak.utils.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
@@ -121,11 +121,11 @@ class TestSplit(unittest.TestCase):
         test_dur = 5
         labels = ([np.asarray(list(labelset)) for _ in range(5)])
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(durs,
-                                                                                     labels,
-                                                                                     labelset,
-                                                                                     train_dur,
-                                                                                     test_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(durs,
+                                                                                        labels,
+                                                                                        labelset,
+                                                                                        train_dur,
+                                                                                        test_dur)
 
         self.assertTrue(
             self._check_output(train_dur,
@@ -148,11 +148,11 @@ class TestSplit(unittest.TestCase):
         labels = ([np.asarray(list(lbl)) for lbl in labels])
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(durs,
-                                                                                     labels,
-                                                                                     labelset,
-                                                                                     train_dur,
-                                                                                     test_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(durs,
+                                                                                        labels,
+                                                                                        labelset,
+                                                                                        train_dur,
+                                                                                        test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -175,12 +175,12 @@ class TestSplit(unittest.TestCase):
         test_dur = 7
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(durs,
-                                                                                     labels,
-                                                                                     labelset,
-                                                                                     train_dur,
-                                                                                     test_dur,
-                                                                                     val_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(durs,
+                                                                                        labels,
+                                                                                        labelset,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -202,12 +202,12 @@ class TestSplit(unittest.TestCase):
         val_dur = 2
         test_dur = 4
         with self.assertRaises(ValueError):
-            vak.io.split.train_test_dur_split_inds(durs,
-                                                   labels,
-                                                   labelset,
-                                                   train_dur,
-                                                   test_dur,
-                                                   val_dur)
+            vak.utils.split.train_test_dur_split_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
     def test_train_test_dur_split_inds_cbin_train_test_val(self):
         train_dur = 35
@@ -215,12 +215,12 @@ class TestSplit(unittest.TestCase):
         test_dur = 35
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(self.durs_cbin,
-                                                                                     self.labels_cbin,
-                                                                                     self.labelset_cbin,
-                                                                                     train_dur,
-                                                                                     test_dur,
-                                                                                     val_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(self.durs_cbin,
+                                                                                        self.labels_cbin,
+                                                                                        self.labelset_cbin,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -239,12 +239,12 @@ class TestSplit(unittest.TestCase):
         test_dur = -1
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(self.durs_cbin,
-                                                                                     self.labels_cbin,
-                                                                                     self.labelset_cbin,
-                                                                                     train_dur,
-                                                                                     test_dur,
-                                                                                     val_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(self.durs_cbin,
+                                                                                        self.labels_cbin,
+                                                                                        self.labelset_cbin,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -263,12 +263,12 @@ class TestSplit(unittest.TestCase):
         test_dur = 35
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(self.durs_cbin,
-                                                                                     self.labels_cbin,
-                                                                                     self.labelset_cbin,
-                                                                                     train_dur,
-                                                                                     test_dur,
-                                                                                     val_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(self.durs_cbin,
+                                                                                        self.labels_cbin,
+                                                                                        self.labelset_cbin,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -287,12 +287,12 @@ class TestSplit(unittest.TestCase):
         test_dur = 200
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(self.durs_mat,
-                                                                                     self.labels_mat,
-                                                                                     self.labelset_mat,
-                                                                                     train_dur,
-                                                                                     test_dur,
-                                                                                     val_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(self.durs_mat,
+                                                                                        self.labels_mat,
+                                                                                        self.labelset_mat,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -311,12 +311,12 @@ class TestSplit(unittest.TestCase):
         test_dur = -1
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(self.durs_mat,
-                                                                                     self.labels_mat,
-                                                                                     self.labelset_mat,
-                                                                                     train_dur,
-                                                                                     test_dur,
-                                                                                     val_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(self.durs_mat,
+                                                                                        self.labels_mat,
+                                                                                        self.labelset_mat,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -335,12 +335,12 @@ class TestSplit(unittest.TestCase):
         test_dur = 200
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.io.split.train_test_dur_split_inds(self.durs_mat,
-                                                                                     self.labels_mat,
-                                                                                     self.labelset_mat,
-                                                                                     train_dur,
-                                                                                     test_dur,
-                                                                                     val_dur)
+            train_inds, val_inds, test_inds = vak.utils.split.train_test_dur_split_inds(self.durs_mat,
+                                                                                        self.labels_mat,
+                                                                                        self.labelset_mat,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -363,12 +363,12 @@ class TestSplit(unittest.TestCase):
         test_dur = None
 
         with self.assertRaises(ValueError):
-            vak.io.split.train_test_dur_split_inds(durs,
-                                                   labels,
-                                                   labelset,
-                                                   train_dur,
-                                                   test_dur,
-                                                   val_dur)
+            vak.utils.split.train_test_dur_split_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
     def test_train_test_dur_split_only_val_raises(self):
         durs = (5, 5, 5, 5, 5)
@@ -381,12 +381,12 @@ class TestSplit(unittest.TestCase):
 
         # because we only specified duration for validation set
         with self.assertRaises(OnlyValDurError):
-            vak.io.split.train_test_dur_split_inds(durs,
-                                                   labels,
-                                                   labelset,
-                                                   train_dur,
-                                                   test_dur,
-                                                   val_dur)
+            vak.utils.split.train_test_dur_split_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
     def test_train_test_dur_split_negative_dur_raises(self):
         durs = (5, 5, 5, 5, 5)
@@ -399,12 +399,12 @@ class TestSplit(unittest.TestCase):
 
         # because negative duration is invalid
         with self.assertRaises(InvalidDurationError):
-            vak.io.split.train_test_dur_split_inds(durs,
-                                                   labels,
-                                                   labelset,
-                                                   train_dur,
-                                                   test_dur,
-                                                   val_dur)
+            vak.utils.split.train_test_dur_split_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
     def test_train_test_dur_split_specd_dur_gt_raises(self):
         durs = (5, 5, 5, 5, 5)
@@ -416,12 +416,12 @@ class TestSplit(unittest.TestCase):
         val_dur = 100
         # because total splits duration is greater than dataset duration
         with self.assertRaises(SplitsDurationGreaterThanDatasetDurationError):
-            vak.io.split.train_test_dur_split_inds(durs,
-                                                   labels,
-                                                   labelset,
-                                                   train_dur,
-                                                   test_dur,
-                                                   val_dur)
+            vak.utils.split.train_test_dur_split_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
     def test_train_test_dur_split_mat_train_test(self):
         vds = vak.io.spect.to_dataframe(spect_format='mat',
@@ -432,10 +432,10 @@ class TestSplit(unittest.TestCase):
         train_dur = 200
         test_dur = 200
 
-        train_vds, test_vds = vak.io.split.train_test_dur_split(vds,
-                                                                labelset=self.labelset_mat,
-                                                                train_dur=train_dur,
-                                                                test_dur=test_dur)
+        train_vds, test_vds = vak.utils.split.train_test_dur_split(vds,
+                                                                   labelset=self.labelset_mat,
+                                                                   train_dur=train_dur,
+                                                                   test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
             self.assertTrue(type(vds_out) == Dataset)
 
@@ -452,9 +452,9 @@ class TestSplit(unittest.TestCase):
 
         train_dur = 200
 
-        train_vds, test_vds = vak.io.split.train_test_dur_split(vds,
-                                                                labelset=self.labelset_mat,
-                                                                train_dur=train_dur)
+        train_vds, test_vds = vak.utils.split.train_test_dur_split(vds,
+                                                                   labelset=self.labelset_mat,
+                                                                   train_dur=train_dur)
         for vds_out in (train_vds, test_vds):
             self.assertTrue(type(vds_out) == Dataset)
 
@@ -475,9 +475,9 @@ class TestSplit(unittest.TestCase):
 
         test_dur = 200
 
-        train_vds, test_vds = vak.io.split.train_test_dur_split(vds,
-                                                                labelset=self.labelset_mat,
-                                                                test_dur=test_dur)
+        train_vds, test_vds = vak.utils.split.train_test_dur_split(vds,
+                                                                   labelset=self.labelset_mat,
+                                                                   test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
             self.assertTrue(type(vds_out) == Dataset)
 
