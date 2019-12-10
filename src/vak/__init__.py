@@ -23,5 +23,4 @@ from . import metrics
 from . import network
 from . import utils
 
-from .io import mat
 from .io import Dataset, MetaSpect, Vocalization
