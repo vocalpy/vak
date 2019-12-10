@@ -194,5 +194,41 @@ class TestFromFiles(unittest.TestCase):
         )
 
 
+class TestAddSplitCol(unittest.TestCase):
+    """class to test vak.io.dataframe.add_split_col function"""
+    def test_add_split_col(self):
+        # make a df to test on
+        data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                   transform_type='log_spect')
+        annot_format = 'notmat'
+        labelset = list('iabcdefghjk')
+        csv_fname = 'test.csv'
+
+        vak_df, csv_path = vak.io.dataset.from_files(data_dir=data_dir,
+                                                     labelset=labelset,
+                                                     annot_format=annot_format,
+                                                     output_dir=self.tmp_output_dir,
+                                                     save_csv=True,
+                                                     csv_fname=csv_fname,
+                                                     return_df=True,
+                                                     return_path=True,
+                                                     audio_format='cbin',
+                                                     spect_format=None,
+                                                     annot_file=None,
+                                                     spect_params=spect_params)
+
+        self.assertTrue(
+            'split' not in vak_df.columns
+        )
+        vak_df = vak.io.dataset.add_split_col(vak_df, split='train')
+        self.assertTrue(
+            'split' in vak_df.columns
+        )
+        self.assertTrue(
+            vak_df['split'].unique().items() == 'train'
+        )
+
+
 if __name__ == '__main__':
     unittest.main()
