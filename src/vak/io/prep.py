@@ -4,7 +4,7 @@ import os
 
 from crowsetta import Transcriber
 
-from . import annotation, audio, dataframe
+from . import annotation, audio, spect
 from .annotation import source_annot_map
 
 
@@ -206,7 +206,7 @@ def prep(data_dir,
             f'creating dataset from spectrogram files in: {data_dir}'
         )
 
-    vak_df = dataframe.from_files(**from_files_kwargs)
+    vak_df = spect.to_dataframe(**from_files_kwargs)
     if save_csv:
         if csv_fname is None:
             timenow = datetime.now().strftime('%y%m%d_%H%M%S')
