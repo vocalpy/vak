@@ -1,7 +1,7 @@
 import unittest
 
-import vak.dataset.utils
-from vak.dataset.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
+import vak.io.utils
+from vak.io.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 
 
 class TestUtils(unittest.TestCase):
@@ -10,10 +10,10 @@ class TestUtils(unittest.TestCase):
         val_dur_in = 25
         test_dur_in = 75
         vds_dur = 200
-        train_dur_out, val_dur_out, test_dur_out = vak.dataset.split._validate_durs(train_dur_in,
-                                                                                    val_dur_in,
-                                                                                    test_dur_in,
-                                                                                    vds_dur)
+        train_dur_out, val_dur_out, test_dur_out = vak.io.split._validate_durs(train_dur_in,
+                                                                               val_dur_in,
+                                                                               test_dur_in,
+                                                                               vds_dur)
         self.assertTrue(
             all([out_ == in_ for out_, in_ in zip((train_dur_in, val_dur_in, test_dur_in),
                                                   (train_dur_out, val_dur_out, test_dur_out))]))
@@ -22,10 +22,10 @@ class TestUtils(unittest.TestCase):
         val_dur_in = None
         test_dur_in = None
         vds_dur = 200
-        train_dur_out, val_dur_out, test_dur_out = vak.dataset.split._validate_durs(train_dur_in,
-                                                                                    val_dur_in,
-                                                                                    test_dur_in,
-                                                                                    vds_dur)
+        train_dur_out, val_dur_out, test_dur_out = vak.io.split._validate_durs(train_dur_in,
+                                                                               val_dur_in,
+                                                                               test_dur_in,
+                                                                               vds_dur)
         self.assertTrue(
             all([train_dur_out == train_dur_in,
                  test_dur_out == -1,
@@ -35,10 +35,10 @@ class TestUtils(unittest.TestCase):
         val_dur_in = None
         test_dur_in = 100
         vds_dur = 200
-        train_dur_out, val_dur_out, test_dur_out = vak.dataset.split._validate_durs(train_dur_in,
-                                                                                    val_dur_in,
-                                                                                    test_dur_in,
-                                                                                    vds_dur)
+        train_dur_out, val_dur_out, test_dur_out = vak.io.split._validate_durs(train_dur_in,
+                                                                               val_dur_in,
+                                                                               test_dur_in,
+                                                                               vds_dur)
         self.assertTrue(
             all([train_dur_out == -1,
                  test_dur_out == test_dur_in,
@@ -50,10 +50,10 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         with self.assertRaises(ValueError):
             # because we have to specify at least one of train_dur or test_dur
-            vak.dataset.split._validate_durs(train_dur_in,
-                                             val_dur_in,
-                                             test_dur_in,
-                                             vds_dur)
+            vak.io.split._validate_durs(train_dur_in,
+                                        val_dur_in,
+                                        test_dur_in,
+                                        vds_dur)
 
         train_dur_in = None
         val_dur_in = 100
@@ -61,7 +61,7 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         # because we only specified duration for validation set
         with self.assertRaises(OnlyValDurError):
-            vak.dataset.split._validate_durs(train_dur_in, val_dur_in, test_dur_in, vds_dur)
+            vak.io.split._validate_durs(train_dur_in, val_dur_in, test_dur_in, vds_dur)
 
         train_dur_in = -2
         test_dur_in = None
@@ -69,7 +69,7 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         # because negative duration is invalid
         with self.assertRaises(InvalidDurationError):
-            vak.dataset.split._validate_durs(train_dur_in, val_dur_in, test_dur_in, vds_dur)
+            vak.io.split._validate_durs(train_dur_in, val_dur_in, test_dur_in, vds_dur)
 
         train_dur_in = 100
         test_dur_in = 100
@@ -77,7 +77,7 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         # because total splits duration is greater than dataset duration
         with self.assertRaises(SplitsDurationGreaterThanDatasetDurationError):
-            vak.dataset.split._validate_durs(train_dur_in, val_dur_in, test_dur_in, vds_dur)
+            vak.io.split._validate_durs(train_dur_in, val_dur_in, test_dur_in, vds_dur)
 
 
 if __name__ == '__main__':
