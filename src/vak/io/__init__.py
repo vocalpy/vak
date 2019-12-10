@@ -4,4 +4,4 @@
 - associated annotation files
 - .csv files that represent a dataset of vocalizations that combines all those files together"""
 from .classes import MetaSpect, Vocalization, Dataset
-from . import annotation, audio, dataset, spect, split
+from . import annotation, audio, dataset, spect
