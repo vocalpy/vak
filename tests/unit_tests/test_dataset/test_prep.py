@@ -1,4 +1,4 @@
-"""tests for vak.dataset.prep module"""
+"""tests for vak.io.prep module"""
 import os
 import tempfile
 import shutil
@@ -6,7 +6,7 @@ import unittest
 
 import pandas as pd
 
-import vak.dataset.prep
+import vak.io.prep
 from vak.config.spectrogram import SpectConfig
 
 HERE = os.path.dirname(__file__)
@@ -28,18 +28,18 @@ class TestPrep(unittest.TestCase):
         labelset = list('iabcdefghjk')
         csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.dataset.prep(data_dir=data_dir,
-                                            labelset=labelset,
-                                            annot_format=annot_format,
-                                            output_dir=self.tmp_output_dir,
-                                            save_csv=True,
-                                            csv_fname=csv_fname,
-                                            return_df=True,
-                                            return_path=True,
-                                            audio_format='cbin',
-                                            spect_format=None,
-                                            annot_file=None,
-                                            spect_params=spect_params)
+        vak_df, csv_path = vak.io.prep(data_dir=data_dir,
+                                       labelset=labelset,
+                                       annot_format=annot_format,
+                                       output_dir=self.tmp_output_dir,
+                                       save_csv=True,
+                                       csv_fname=csv_fname,
+                                       return_df=True,
+                                       return_path=True,
+                                       audio_format='cbin',
+                                       spect_format=None,
+                                       annot_file=None,
+                                       spect_params=spect_params)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
         json_fname = os.path.join(self.tmp_output_dir, csv_fname)
@@ -55,18 +55,18 @@ class TestPrep(unittest.TestCase):
         labelset = None
         csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.dataset.prep(data_dir=data_dir,
-                                            annot_format=annot_format,
-                                            labelset=labelset,
-                                            output_dir=self.tmp_output_dir,
-                                            save_csv=True,
-                                            csv_fname=csv_fname,
-                                            return_df=True,
-                                            return_path=True,
-                                            audio_format='cbin',
-                                            spect_format=None,
-                                            annot_file=None,
-                                            spect_params=spect_params)
+        vak_df, csv_path = vak.io.prep(data_dir=data_dir,
+                                       annot_format=annot_format,
+                                       labelset=labelset,
+                                       output_dir=self.tmp_output_dir,
+                                       save_csv=True,
+                                       csv_fname=csv_fname,
+                                       return_df=True,
+                                       return_path=True,
+                                       audio_format='cbin',
+                                       spect_format=None,
+                                       annot_file=None,
+                                       spect_params=spect_params)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
         self.assertTrue(
@@ -84,18 +84,18 @@ class TestPrep(unittest.TestCase):
         labelset = None
         csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.dataset.prep(data_dir=data_dir,
-                                            annot_format=annot_format,
-                                            labelset=labelset,
-                                            output_dir=self.tmp_output_dir,
-                                            save_csv=True,
-                                            csv_fname=csv_fname,
-                                            return_df=True,
-                                            return_path=True,
-                                            audio_format='cbin',
-                                            spect_format=None,
-                                            annot_file=None,
-                                            spect_params=spect_params)
+        vak_df, csv_path = vak.io.prep(data_dir=data_dir,
+                                       annot_format=annot_format,
+                                       labelset=labelset,
+                                       output_dir=self.tmp_output_dir,
+                                       save_csv=True,
+                                       csv_fname=csv_fname,
+                                       return_df=True,
+                                       return_path=True,
+                                       audio_format='cbin',
+                                       spect_format=None,
+                                       annot_file=None,
+                                       spect_params=spect_params)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
         self.assertTrue(
@@ -113,18 +113,18 @@ class TestPrep(unittest.TestCase):
         annot_format = 'yarden'
         csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.dataset.prep(data_dir=data_dir,
-                                            labelset=labelset,
-                                            annot_format=annot_format,
-                                            output_dir=self.tmp_output_dir,
-                                            save_csv=True,
-                                            csv_fname=csv_fname,
-                                            return_df=True,
-                                            return_path=True,
-                                            audio_format=None,
-                                            spect_format='mat',
-                                            annot_file=annot_file,
-                                            spect_params=None)
+        vak_df, csv_path = vak.io.prep(data_dir=data_dir,
+                                       labelset=labelset,
+                                       annot_format=annot_format,
+                                       output_dir=self.tmp_output_dir,
+                                       save_csv=True,
+                                       csv_fname=csv_fname,
+                                       return_df=True,
+                                       return_path=True,
+                                       audio_format=None,
+                                       spect_format='mat',
+                                       annot_file=annot_file,
+                                       spect_params=None)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
         self.assertTrue(
@@ -141,18 +141,18 @@ class TestPrep(unittest.TestCase):
         annot_format = None
         csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.dataset.prep(data_dir=data_dir,
-                                            labelset=labelset,
-                                            annot_format=annot_format,
-                                            output_dir=self.tmp_output_dir,
-                                            save_csv=True,
-                                            csv_fname=csv_fname,
-                                            return_df=True,
-                                            return_path=True,
-                                            audio_format=None,
-                                            spect_format='mat',
-                                            annot_file=annot_file,
-                                            spect_params=None)
+        vak_df, csv_path = vak.io.prep(data_dir=data_dir,
+                                       labelset=labelset,
+                                       annot_format=annot_format,
+                                       output_dir=self.tmp_output_dir,
+                                       save_csv=True,
+                                       csv_fname=csv_fname,
+                                       return_df=True,
+                                       return_path=True,
+                                       audio_format=None,
+                                       spect_format='mat',
+                                       annot_file=annot_file,
+                                       spect_params=None)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
         self.assertTrue(
@@ -170,18 +170,18 @@ class TestPrep(unittest.TestCase):
         annot_format = 'yarden'
         csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.dataset.prep(data_dir=data_dir,
-                                            labelset=labelset,
-                                            annot_format=annot_format,
-                                            output_dir=self.tmp_output_dir,
-                                            save_csv=True,
-                                            csv_fname=csv_fname,
-                                            return_df=True,
-                                            return_path=True,
-                                            audio_format=None,
-                                            spect_format='mat',
-                                            annot_file=annot_file,
-                                            spect_params=None)
+        vak_df, csv_path = vak.io.prep(data_dir=data_dir,
+                                       labelset=labelset,
+                                       annot_format=annot_format,
+                                       output_dir=self.tmp_output_dir,
+                                       save_csv=True,
+                                       csv_fname=csv_fname,
+                                       return_df=True,
+                                       return_path=True,
+                                       audio_format=None,
+                                       spect_format='mat',
+                                       annot_file=annot_file,
+                                       spect_params=None)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
         self.assertTrue(

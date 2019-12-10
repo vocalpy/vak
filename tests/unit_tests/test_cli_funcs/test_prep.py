@@ -10,8 +10,8 @@ import crowsetta
 
 import vak.cli.prep
 from vak.config.spectrogram import SpectConfig
-from vak.dataset import Dataset
-import vak.dataset
+from vak.io import Dataset
+import vak.io
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
@@ -44,7 +44,7 @@ class TestPrep(unittest.TestCase):
         # check that all files from data_dir that should've gone into dataset
         # actually made it into dataset
         if audio_format:
-            data_files_from_dir = vak.dataset.audio.files_from_dir(data_dir, audio_format)
+            data_files_from_dir = vak.io.audio.files_from_dir(data_dir, audio_format)
         elif spect_format:
             data_files_from_dir = vak.utils.general._files_from_dir(data_dir, spect_format)
 
@@ -62,7 +62,7 @@ class TestPrep(unittest.TestCase):
                 if annot_file:
                     annot_list = scribe.to_seq(file=annot_file)
                 else:
-                    annot_files = vak.dataset.annotation.files_from_dir(annot_dir=data_dir, annot_format=annot_format)
+                    annot_files = vak.io.annotation.files_from_dir(annot_dir=data_dir, annot_format=annot_format)
                     annot_list = scribe.to_seq(file=annot_files)
                 for data_file, annot in zip(data_files_from_dir, annot_list):
                     if set(annot.labels).issubset(labelset):
