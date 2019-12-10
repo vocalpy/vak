@@ -75,21 +75,21 @@ DF_COLUMNS = [
 ]
 
 
-def from_files(spect_format,
-               spect_dir=None,
-               spect_files=None,
-               annot_list=None,
-               annot_format=None,
-               spect_annot_map=None,
-               labelset=None,
-               n_decimals_trunc=3,
-               freqbins_key='f',
-               timebins_key='t',
-               spect_key='s',
-               audio_path_key='audio_path'
-               ):
-    """create vocalization dataset as Pandas dataframe, from files containing spectrograms,
-    i.e., arrays in .mat files created by Matlab or .npz files created by numpy
+def to_dataframe(spect_format,
+                 spect_dir=None,
+                 spect_files=None,
+                 annot_list=None,
+                 annot_format=None,
+                 spect_annot_map=None,
+                 labelset=None,
+                 n_decimals_trunc=3,
+                 freqbins_key='f',
+                 timebins_key='t',
+                 spect_key='s',
+                 audio_path_key='audio_path'
+                 ):
+    """convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
+    Spectrogram files are array in .npz files created by numpy or in .mat files created by Matlab.
 
     Parameters
     ----------
@@ -131,7 +131,7 @@ def from_files(spect_format,
     Returns
     -------
     vak_df : pandas.Dataframe
-        that represents a vocalization dataset
+        that represents a dataset of vocalizations.
 
     Notes
     -----
