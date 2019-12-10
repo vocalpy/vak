@@ -167,7 +167,7 @@ class TestLabels(unittest.TestCase):
         )
 
     def test_lbl_tb2segments(self):
-        vds = vak.dataset.Dataset.load(json_fname=self.a_vds_path)
+        vds = vak.io.Dataset.load(json_fname=self.a_vds_path)
         vds = vds.load_spects()
         lbl_tb_list = vds.lbl_tb_list()
         labelmap = vds.labelmap

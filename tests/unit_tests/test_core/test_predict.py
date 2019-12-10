@@ -11,7 +11,7 @@ import numpy as np
 
 import vak.core.predict
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
-from vak.dataset import Dataset
+from vak.io import Dataset
 import vak.utils
 
 HERE = Path(__file__).parent

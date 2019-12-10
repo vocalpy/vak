@@ -5,8 +5,8 @@ from glob import glob
 
 import crowsetta
 
-import vak.dataset.annotation
-import vak.dataset.audio
+import vak.io.annotation
+import vak.io.audio
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
@@ -23,8 +23,8 @@ class TestAnnot(unittest.TestCase):
         annot_list = scribe.to_seq(file=annot_xml, wavpath=str(wavpath))
         audio_files = wavpath.glob('*.wav')
         audio_files = [str(path) for path in audio_files]
-        source_annot_map = vak.dataset.annotation.source_annot_map(source_files=audio_files,
-                                                                   annot_list=annot_list)
+        source_annot_map = vak.io.annotation.source_annot_map(source_files=audio_files,
+                                                              annot_list=annot_list)
 
         for source, annot in list(source_annot_map.items()):
             self.assertTrue(source in audio_files)
@@ -44,8 +44,8 @@ class TestAnnot(unittest.TestCase):
 
         audio_files = cbin_dir.glob('*.cbin')
         audio_files = [str(path) for path in audio_files]
-        source_annot_map = vak.dataset.annotation.source_annot_map(source_files=audio_files,
-                                                                   annot_list=annot_list)
+        source_annot_map = vak.io.annotation.source_annot_map(source_files=audio_files,
+                                                              annot_list=annot_list)
 
         for source, annot in list(source_annot_map.items()):
             self.assertTrue(source in audio_files)
@@ -65,8 +65,8 @@ class TestAnnot(unittest.TestCase):
         spect_files = mat_dir.joinpath('spect').glob('*.mat')
         spect_files = [str(path) for path in spect_files]
 
-        source_annot_map = vak.dataset.annotation.source_annot_map(source_files=spect_files,
-                                                                   annot_list=annot_list)
+        source_annot_map = vak.io.annotation.source_annot_map(source_files=spect_files,
+                                                              annot_list=annot_list)
 
         for source, annot in list(source_annot_map.items()):
             self.assertTrue(source in spect_files)
@@ -80,7 +80,7 @@ class TestAnnot(unittest.TestCase):
 
     def test_files_from_dir(self):
         notmat_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        annot_files = vak.dataset.annotation.files_from_dir(notmat_dir, annot_format='notmat')
+        annot_files = vak.io.annotation.files_from_dir(notmat_dir, annot_format='notmat')
 
         notmat_files = glob(os.path.join(notmat_dir, '*.not.mat'))
         self.assertTrue(

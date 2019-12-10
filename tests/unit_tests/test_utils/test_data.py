@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from vak.dataset import Dataset
+from vak.io import Dataset
 import vak.utils.data
 
 
