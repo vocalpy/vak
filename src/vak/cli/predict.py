@@ -1,7 +1,7 @@
 import os
 
 from .. import core
-from ..dataset import Dataset
+from ..io import Dataset
 
 
 def predict(predict_vds_path,

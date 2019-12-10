@@ -13,7 +13,7 @@ from ...utils.general import safe_truncate
 from ...utils.spect import SpectScaler
 from ... import network
 from ... import utils
-from ...dataset.classes import Dataset
+from ...io.classes import Dataset
 
 
 def train(train_vds_path,

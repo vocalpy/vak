@@ -16,12 +16,12 @@ from . import cli
 from . import config
 from . import core
 from . import curvefit
-from . import dataset
+from . import io
 from . import evfuncs
 from . import koumura_utils
 from . import metrics
 from . import network
 from . import utils
 
-from .dataset import mat
-from .dataset import Dataset, MetaSpect, Vocalization
+from .io import mat
+from .io import Dataset, MetaSpect, Vocalization
