@@ -52,7 +52,7 @@ test:
     - vak.core
     - vak.core.learncurve
     - vak.io
-    - vak.io.classes
+    - vak.io.dataset
     - vak.io.splitalgos
     - vak.plot
     - vak.utils
