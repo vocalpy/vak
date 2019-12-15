@@ -34,10 +34,10 @@ def main():
     # make a "predict.vds.json" to use when testing predict functions
     dir_to_predict = TEST_DATA_DIR.joinpath('cbins', 'gy6or6', '032412')
     for_vds_fname = dir_to_predict.name
-    vak_df = vak.io.dataset.from_files(data_dir=str(dir_to_predict),
-                                       audio_format='cbin',
-                                       spect_params=spect_params)
-    vak_df = vak.io.dataset.add_split_col(vak_df, split='predict')
+    vak_df = vak.io.dataframe.from_files(data_dir=str(dir_to_predict),
+                                         audio_format='cbin',
+                                         spect_params=spect_params)
+    vak_df = vak.io.dataframe.add_split_col(vak_df, split='predict')
     csv_path = TEST_DATA_DIR.joinpath(f'{for_vds_fname}.predict.csv')
     vak_df.to_csv(csv_path)
 
