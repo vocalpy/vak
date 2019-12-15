@@ -74,7 +74,7 @@ class MetaSpect:
 
         Returns
         -------
-        spect : vak.dataset.classes.MetaSpect
+        spect : vak.io.dataset.MetaSpect
             a Spectrogram instance with attributes freq_bins, time_bins, array, and timebin_dur
         """
         if timebin_dur is None:

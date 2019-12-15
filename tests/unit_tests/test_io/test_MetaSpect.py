@@ -7,7 +7,7 @@ import crowsetta
 
 import vak.io.spect
 import vak.io.annotation
-from vak.io.classes import MetaSpect
+from vak.io.dataset import MetaSpect
 
 
 HERE = Path(__file__).parent

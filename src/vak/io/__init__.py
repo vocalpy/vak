@@ -3,5 +3,5 @@
 - spectrograms made from audio files of vocalizations
 - associated annotation files
 - .csv files that represent a dataset of vocalizations that combines all those files together"""
-from .classes import MetaSpect, Vocalization, Dataset
+from .dataset import MetaSpect, Vocalization, Dataset
 from . import annotation, audio, dataframe, spect
