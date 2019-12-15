@@ -13,7 +13,7 @@ import vak.utils.split
 from vak.evfuncs import load_cbin
 from vak.io.annotation import files_from_dir
 from vak.utils.general import timebin_dur_from_vec
-from vak.io.classes import Dataset
+from vak.io.dataset import Dataset
 from vak.utils.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 
 HERE = os.path.dirname(__file__)

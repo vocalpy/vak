@@ -29,7 +29,7 @@ class Vocalization:
         audio waveform loaded into a numpy array
     spect_file : str
         path to file containing spectrogram of vocalization as an array
-    spect : vak.dataset.classes.MetaSpect
+    spect : vak.io.dataset.MetaSpect
         spectrogram of vocalization. Represented as an instance of the
         Spectrogram class, see docstring of that class for its attributes.
     duration : float

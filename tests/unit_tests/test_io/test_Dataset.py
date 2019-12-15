@@ -12,7 +12,7 @@ import crowsetta
 
 import vak.io.spect
 import vak.io.annotation
-from vak.io.classes import Dataset, Vocalization, MetaSpect
+from vak.io.dataset import Dataset, Vocalization, MetaSpect
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')

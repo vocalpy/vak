@@ -9,7 +9,7 @@ import crowsetta
 from vak.evfuncs import load_cbin
 import vak.io.spect
 import vak.io.annotation
-from vak.io.classes import Vocalization, MetaSpect
+from vak.io.dataset import Vocalization, MetaSpect
 
 
 HERE = os.path.dirname(__file__)
