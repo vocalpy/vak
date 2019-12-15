@@ -4,7 +4,6 @@ import os
 
 from crowsetta import Transcriber
 import numpy as np
-import pandas as pd
 
 from . import annotation, audio, spect
 from .annotation import source_annot_map
