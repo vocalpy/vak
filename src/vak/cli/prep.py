@@ -19,7 +19,8 @@ def prep(data_dir,
          spect_format=None,
          annot_file=None,
          spect_params=None):
-    """function called by command-line interface to prepare datasets from vocalizations.
+    """prepare datasets from vocalizations.
+    Function called by command-line interface.
 
     Parameters
     ----------
@@ -65,7 +66,9 @@ def prep(data_dir,
 
     Notes
     -----
-    Saves a Dataset generated from data_dir, as well as training, test, and
+    Saves a .csv file representing the dataset generated from data_dir.
+    If durations were specified for validation and test sets, then the .csv
+    has a column representing which files belong to the training, test, and
     validation sets created from that Dataset.
 
     Datasets are used to train neural networks that segment audio files into
