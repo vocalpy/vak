@@ -3,7 +3,7 @@ import logging
 from configparser import ConfigParser
 from datetime import datetime
 
-from ..io import dataset
+from ..io import dataframe
 from ..utils import train_test_dur_split
 
 
@@ -156,18 +156,18 @@ def prep(data_dir,
             save_csv = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    vak_df = dataset.from_files(labelset=labelset,
-                                data_dir=data_dir,
-                                annot_format=annot_format,
-                                output_dir=output_dir,
-                                save_csv=save_csv,
-                                csv_fname=csv_fname,
-                                return_df=True,
-                                return_path=False,
-                                annot_file=annot_file,
-                                audio_format=audio_format,
-                                spect_format=spect_format,
-                                spect_params=spect_params)
+    vak_df = dataframe.from_files(labelset=labelset,
+                                  data_dir=data_dir,
+                                  annot_format=annot_format,
+                                  output_dir=output_dir,
+                                  save_csv=save_csv,
+                                  csv_fname=csv_fname,
+                                  return_df=True,
+                                  return_path=False,
+                                  annot_file=annot_file,
+                                  audio_format=audio_format,
+                                  spect_format=spect_format,
+                                  spect_params=spect_params)
 
     if do_split:
         vak_df = train_test_dur_split(vak_df,
@@ -178,7 +178,7 @@ def prep(data_dir,
 
     elif do_split is False:
         # add a split column, but assign everything to the same 'split'
-        vak_df = dataset.add_split_col(vak_df, split=section.lower())
+        vak_df = dataframe.add_split_col(vak_df, split=section.lower())
 
     vak_df.to_csv(csv_fname)
 

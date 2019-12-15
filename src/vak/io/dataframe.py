@@ -23,10 +23,11 @@ def from_files(data_dir,
                spect_params=None,
                spect_output_dir=None):
     """prepare a dataset of vocalizations from a directory of audio or spectrogram files containing vocalizations,
-     and (optionally) annotation for those files. Datasets are used to train neural networks, or for predicting
-     annotations for the dataset itself using a trained neural network.
+    and (optionally) annotation for those files. The dataset is returned as a pandas DataFrame and,
+    if csv_fname is specified, also saved as a .csv file.
 
-     The dataset is returned as a pandas DataFrame and, if csv_fname is specified, also saved as a .csv file.
+    Datasets are used to train neural networks, or for predicting annotations for the dataset itself using a
+    trained neural network.
 
     Parameters
     ----------
