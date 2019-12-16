@@ -1,4 +1,5 @@
 """functions for dealing with vocalization datasets as pandas DataFrames"""
+from functools import partial
 from glob import glob
 import logging
 import os
@@ -63,6 +64,42 @@ def find_audio_fname(spect_path, audio_ext=None):
         raise ValueError(
             f'unable to determine filename of audio file from: {spect_path}'
         )
+
+
+SPECT_FORMAT_LOAD_FUNCTION_MAP = {
+    'mat': partial(loadmat, squeeze_me=True),
+    'npz': np.load,
+}
+
+
+def array_dict_from_path(spect_path, spect_format=None):
+    """load spectrogram and related arrays from a file,
+    return as an object that provides Python dictionary-like
+    access
+
+    Parameters
+    ----------
+    spect_path : str, Path
+        to an array file.
+    spect_format : str
+        Valid formats are defined in vak.io.spect.SPECT_FORMAT_LOAD_FUNCTION_MAP.
+        Default is None, in which case the extension of the file is used.
+
+    Returns
+    -------
+    spect_dict : dict-like
+        either a dictionary or dictionary-like object that provides access to arrays
+        from the file via keys, e.g. spect_dict['s'] for the spectrogram.
+        See docstring for vak.audio.to_spect for default keys for spectrogram
+        array files that function creates.
+    """
+    spect_path = Path(spect_path)
+    if spect_format is None:
+        # "replace('.', '')", because suffix returns file extension with period included
+        spect_format = spect_path.suffix.replace('.', '')
+    spect_dict = SPECT_FORMAT_LOAD_FUNCTION_MAP[spect_format](spect_path)
+    return spect_dict
+
 
 # constant, used for names of columns in DataFrame below
 DF_COLUMNS = [
@@ -214,10 +251,7 @@ def to_dataframe(spect_format,
                 spect_annot_map.pop(spect_path)
                 continue
 
-        if spect_format == 'mat':
-            spect_dict = loadmat(spect_path, squeeze_me=True)
-        elif spect_format == 'npz':
-            spect_dict = np.load(spect_path)
+        spect_dict = array_dict_from_path(spect_path, spect_format)
 
         if spect_key not in spect_dict:
             raise KeyError(
@@ -263,11 +297,8 @@ def to_dataframe(spect_format,
         i.e. rows for dataframe, from .
         Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
         and (2) annotation for that file"""
-        spect_dict, annot = spect_annot_tuple
-        if spect_format == 'mat':
-            spect_dict = loadmat(spect_path, squeeze_me=True)
-        elif spect_format == 'npz':
-            spect_dict = np.load(spect_path)
+        spect_path, annot = spect_annot_tuple
+        spect_dict = array_dict_from_path(spect_path, spect_format)
 
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
         if audio_path_key in spect_dict:
