@@ -98,7 +98,7 @@ def source_annot_map(source_files, annot_list):
     if len(source_files_stem) > 0:
         raise ValueError(
             'could not map the following source files to annotations: '
-            f'{audio_files}'
+            f'{source_files_stem}'
         )
 
     return dict(source_annot_map)
