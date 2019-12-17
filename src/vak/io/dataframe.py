@@ -161,13 +161,13 @@ def from_files(data_dir,
                 for audio_file, annot in list(audio_annot_map.items()):
                     # loop in a verbose way (i.e. not a comprehension)
                     # so we can give user warning when we skip files
-                    annot_labelset = set(annot.labels)
+                    annot_labelset = set(annot.seq.labels)
                     # below, set(labels_mapping) is a set of that dict's keys
                     if not annot_labelset.issubset(set(labelset)):
                         # because there's some label in labels that's not in labelset
                         audio_annot_map.pop(audio_file)
                         logger.info(
-                            f'found labels in {annot.annot_path} for {audio_path} not in labels_mapping, '
+                            f'found labels in {annot.annot_file} for {audio_file} not in labels_mapping, '
                             f'skipping audio file: {audio_file}'
                         )
                 audio_files = []
