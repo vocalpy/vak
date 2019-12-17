@@ -134,8 +134,8 @@ def train_test_dur_split(vak_df,
             f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
         )
     # TODO: change this keyword argument to annot_format when changing dependency to crowsetta 2.0
-    scribe = Transcriber(voc_format=annot_format)
-    labels = [scribe.to_seq(annot_file).labels
+    scribe = Transcriber(annot_format=annot_format)
+    labels = [scribe.from_file(annot_file=annot_file).seq.labels
               for annot_file in vak_df['annot_path'].values]
 
     durs = vak_df['duration'].values
