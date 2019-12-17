@@ -218,10 +218,8 @@ def to_dataframe(spect_format,
 
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
-        if spect_format == 'mat':
-            spect_files = glob(os.path.join(spect_dir, '*.mat'))
-        elif spect_format == 'npz':
-            spect_files = glob(os.path.join(spect_dir, '*.npz'))
+        # note we already validated format above
+        spect_files = glob(os.path.join(spect_dir, f'*{spect_format}'))
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
