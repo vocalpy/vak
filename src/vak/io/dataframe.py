@@ -134,11 +134,11 @@ def from_files(data_dir,
         if annot_file is None:
             annot_files = annotation.files_from_dir(annot_dir=data_dir,
                                                     annot_format=annot_format)
-            scribe = Transcriber(voc_format=annot_format)
-            annot_list = scribe.to_seq(file=annot_files)
+            scribe = Transcriber(annot_format=annot_format)
+            annot_list = scribe.from_file(annot_file=annot_files)
         else:
-            scribe = Transcriber(voc_format=annot_format)
-            annot_list = scribe.to_seq(file=annot_file)
+            scribe = Transcriber(annot_format=annot_format)
+            annot_list = scribe.from_file(annot_file=annot_file)
     else:  # if annot_format not specified
         annot_list = None
 
@@ -167,7 +167,7 @@ def from_files(data_dir,
                         # because there's some label in labels that's not in labelset
                         audio_annot_map.pop(audio_file)
                         logger.info(
-                            f'found labels in {annot.file} not in labels_mapping, '
+                            f'found labels in {annot.annot_path} for {audio_path} not in labels_mapping, '
                             f'skipping audio file: {audio_file}'
                         )
                 audio_files = []
