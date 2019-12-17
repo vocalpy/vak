@@ -289,7 +289,7 @@ def to_dataframe(spect_format,
             )
 
     # ---- actually make the dataframe ---------------------------------------------------------------------------------
-    # this is defined here so all other arguments to 'from_files' are in scope
+    # this is defined here so all other arguments to 'to_dataframe' are in scope
     def _to_record(spect_annot_tuple):
         """helper function that enables parallelized creation of "records",
         i.e. rows for dataframe, from .
