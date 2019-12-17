@@ -18,7 +18,7 @@ variables:
 
 clean :
 	rm -rf ./tests/test_data/results/*
-	rm -rf ./tests/test_data/vds/*
+	rm -rf ./tests/test_data/csv/*
 	rm $(TMP_CONFIG_FILE)
 
 download :
