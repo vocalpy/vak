@@ -68,7 +68,7 @@ def source_annot_map(source_files, annot_list):
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
-        annot_file_stem = _recursive_stem(annot.file)
+        annot_file_stem = _recursive_stem(annot.audio_file)
 
         ind_in_stem = [ind
                        for ind, source_file_stem in enumerate(source_files_stem)
@@ -79,12 +79,12 @@ def source_annot_map(source_files, annot_list):
             raise ValueError(
                 "Found more than one source file that matches an annotation."
                 f"\nSource files are: {more_than_one}."
-                f"\nAnnotation has file set to '{annot.file}' and is: {annot}"
+                f"\nAnnotation has file set to '{annot.audio_file}' and is: {annot}"
             )
         elif len(ind_in_stem) == 0:
             raise ValueError(
                 "Did not find a source file matching the following annotation: "
-                f"\n{annot}. Annotation has file set to '{annot.file}'."
+                f"\n{annot}. Annotation has file set to '{annot.audio_file}'."
             )
         else:
             ind_in_stem = ind_in_stem[0]
