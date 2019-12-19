@@ -13,18 +13,13 @@ def from_files(data_dir,
                annot_format=None,
                labelset=None,
                output_dir=None,
-               save_csv=False,
-               csv_fname=None,
-               return_df=True,
-               return_path=True,
                annot_file=None,
                audio_format=None,
                spect_format=None,
                spect_params=None,
                spect_output_dir=None):
     """prepare a dataset of vocalizations from a directory of audio or spectrogram files containing vocalizations,
-    and (optionally) annotation for those files. The dataset is returned as a pandas DataFrame and,
-    if csv_fname is specified, also saved as a .csv file.
+    and (optionally) annotation for those files. The dataset is returned as a pandas DataFrame.
 
     Datasets are used to train neural networks, or for predicting annotations for the dataset itself using a
     trained neural network.
@@ -43,16 +38,6 @@ def from_files(data_dir,
     output_dir : str
         path to location where data sets should be saved. Default is None,
         in which case data sets is saved in data_dir.
-    save_csv : bool
-        if True, save the dataset created as a .csv file. Default is False.
-    csv_fname : str
-        filename for dataset, which will be saved as a .csv file.
-        Default is None. If None, then the filename will be
-        'prep_{timestamp}.csv'.
-    return_df : bool
-        if True, return prepared VocalizationDataset. Default is True.
-    return_path : bool
-        if True, return path to saved VocalizationDataset. Default is True.
     load_spects : bool
         if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
         Default is True. Set to False when you want to create a VocalDataset for use
@@ -76,9 +61,6 @@ def from_files(data_dir,
     -------
     vak_df : pandas.DataFrame
         the dataset prepared from the directory specified
-    csv_path : str
-        path to where dataset was saved as a csv.
-        Only returned if save_csv and return_path are True
 
     Notes
     -----
@@ -101,12 +83,6 @@ def from_files(data_dir,
                 )
             else:
                 labelset = labelset_set
-
-    if csv_fname is not None:
-        if type(csv_fname) != str:
-            raise TypeError(
-                f"csv_fname should be a string, but type was: {type(csv_fname)}"
-            )
 
     if output_dir:
         if not os.path.isdir(output_dir):
@@ -210,29 +186,7 @@ def from_files(data_dir,
         )
 
     vak_df = spect.to_dataframe(**from_files_kwargs)
-    if save_csv:
-        if csv_fname is None:
-            timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-            csv_fname = f'prep_{timenow}.csv'
-
-        if not csv_fname.endswith('.csv'):
-            csv_fname += '.csv'
-
-        if output_dir:
-            csv_path = os.path.join(output_dir, csv_fname)
-        else:
-            csv_path = os.path.join(os.getcwd(), csv_fname)
-
-        vak_df.to_csv(csv_path)
-    else:
-        csv_path = None
-
-    if return_df and return_path:
-        return vak_df, csv_path
-    elif return_path:
-        return csv_path
-    elif return_df:
-        return vak_df
+    return vak_df
 
 
 def add_split_col(df, split):
