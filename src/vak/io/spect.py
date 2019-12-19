@@ -236,7 +236,7 @@ def to_dataframe(spect_format,
         spect_file = os.path.basename(spect_path)
 
         if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
-            labels_set = set(annot.labels)
+            labels_set = set(annot.seq.labels)
             # below, set(labels_mapping) is a set of that dict's keys
             if not labels_set.issubset(set(labelset)):
                 extra_labels = labels_set - set(labelset)
@@ -312,7 +312,7 @@ def to_dataframe(spect_format,
 
         if annot is not None:
             # TODO: change to annot.annot_path when changing dependency to crowsetta>=2.0
-            annot_path = annot.file
+            annot_path = annot.annot_file
         else:
             annot_path = None
 
