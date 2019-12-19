@@ -140,36 +140,31 @@ def prep(data_dir,
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     _, tail = os.path.split(data_dir)
     csv_fname_stem = f'{tail}_prep_{timenow}'
-    csv_fname = os.path.join(output_dir, f'{csv_fname_stem}.csv')
+    csv_path = os.path.join(output_dir, f'{csv_fname_stem}.csv')
 
     # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
     if all([dur is None for dur in (train_dur, val_dur, test_dur)]):
         # then we're not going to split
         do_split = False
-        save_csv = False  # because we'll save it in the loop below
     else:
         if val_dur is not None and train_dur is None and test_dur is None:
             raise ValueError('cannot specify only val_dur, unclear how to split dataset into training and test sets')
         else:
-            # save before splitting, jic duration args are not valid (we can't know until we make dataset)
             do_split = True
-            save_csv = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
     vak_df = dataframe.from_files(labelset=labelset,
                                   data_dir=data_dir,
                                   annot_format=annot_format,
                                   output_dir=output_dir,
-                                  save_csv=save_csv,
-                                  csv_fname=csv_fname,
-                                  return_df=True,
-                                  return_path=False,
                                   annot_file=annot_file,
                                   audio_format=audio_format,
                                   spect_format=spect_format,
                                   spect_params=spect_params)
 
     if do_split:
+        # save before splitting, jic duration args are not valid (we can't know until we make dataset)
+        vak_df.to_csv(csv_path)
         vak_df = train_test_dur_split(vak_df,
                                       labelset=labelset,
                                       train_dur=train_dur,
@@ -180,12 +175,12 @@ def prep(data_dir,
         # add a split column, but assign everything to the same 'split'
         vak_df = dataframe.add_split_col(vak_df, split=section.lower())
 
-    vak_df.to_csv(csv_fname)
+    vak_df.to_csv(csv_path)
 
-    # use config and section from above to add csv_fname to config.ini file
+    # use config and section from above to add csv_path to config.ini file
     config.set(section=section,
-               option=f'csv_fname',
-               value=csv_fname)
+               option=f'csv_path',
+               value=csv_path)
 
     with open(config_file, 'w') as config_file_rewrite:
         config.write(config_file_rewrite)
