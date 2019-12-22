@@ -3,8 +3,6 @@ import logging
 from configparser import ConfigParser
 from datetime import datetime
 
-import numpy as np
-
 from ..io import dataset
 from ..utils import train_test_dur_split
 
@@ -22,7 +20,6 @@ def prep(data_dir,
          annot_file=None,
          spect_params=None):
     """function called by command-line interface to prepare datasets from vocalizations.
-
 
     Parameters
     ----------
@@ -177,12 +174,8 @@ def prep(data_dir,
                                       test_dur=test_dur)
 
     elif do_split is False:
-        # make a split column, but assign everything to the same 'split'
-        if section == 'TRAIN':
-            split_col = np.asarray(['train' for _ in range(len(vak_df))], dtype='object')
-        elif section == 'PREDICT':
-            split_col = np.asarray(['predict' for _ in range(len(vak_df))], dtype='object')
-        vak_df['split'] = split_col
+        # add a split column, but assign everything to the same 'split'
+        vak_df = dataset.add_split_col(vak_df, split=section.lower())
 
     vak_df.to_csv(csv_fname)
 
