@@ -3,6 +3,8 @@ import logging
 import os
 
 from crowsetta import Transcriber
+import numpy as np
+import pandas as pd
 
 from . import annotation, audio, spect
 from .annotation import source_annot_map
@@ -72,7 +74,7 @@ def from_files(data_dir,
 
     Returns
     -------
-    vak_df : pandas.Dataframe
+    vak_df : pandas.DataFrame
         the dataset prepared from the directory specified
     csv_path : str
         path to where dataset was saved as a csv.
@@ -231,3 +233,26 @@ def from_files(data_dir,
         return csv_path
     elif return_df:
         return vak_df
+
+
+def add_split_col(df, split):
+    """add a 'split' column to a pandas DataFrame.
+    Useful for assigning an entire dataset to the same "split",
+    e.g. 'train' or 'predict'.
+    All rows in the 'split' column will have the value specified.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        that represents a dataset of vocalizations
+    split : str
+        string that will be assigned to every row in the added "split" column.
+        One of {'train', 'val', 'test', 'predict'}.
+    """
+    if split not in {'train', 'val', 'test', 'predict'}:
+        raise ValueError(
+            f"value for split should be one of {{'train', 'val', 'test', 'predict'}}, but was {split}"
+        )
+    split_col = np.asarray([split for _ in range(len(df))], dtype='object')
+    df['split'] = split_col
+    return df
