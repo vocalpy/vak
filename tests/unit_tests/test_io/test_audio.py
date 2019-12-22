@@ -36,23 +36,23 @@ class TestAudio(unittest.TestCase):
 
         self.annot_files_cbin = files_from_dir(annot_dir=self.audio_dir_cbin,
                                                annot_format='notmat')
-        scribe_cbin = crowsetta.Transcriber(voc_format='notmat')
-        self.annot_list_cbin = scribe_cbin.to_seq(file=self.annot_files_cbin)
+        scribe_cbin = crowsetta.Transcriber(annot_format='notmat')
+        self.annot_list_cbin = scribe_cbin.from_file(annot_file=self.annot_files_cbin)
 
         self.labelset_cbin = set(list('iabcdefghjk'))
 
         # sort annotation, audio into lists so we can verify labelset works
         # "good" = all labels in annotation are in labelset
-        self.good = [(annot_file, Path(annot.file).name)
+        self.good = [(annot_file, Path(annot.audio_file).name)
                      for annot_file, annot in zip(self.annot_files_cbin,
                                                   self.annot_list_cbin)
-                     if set(annot.labels).issubset(self.labelset_cbin)]
+                     if set(annot.seq.labels).issubset(self.labelset_cbin)]
 
         # "bad" = has labels not in labelset
-        self.bad = [(annot_file, Path(annot.file).name)
+        self.bad = [(annot_file, Path(annot.audio_file).name)
                     for annot_file, annot in zip(self.annot_files_cbin,
                                              self.annot_list_cbin)
-                    if not set(annot.labels).issubset(self.labelset_cbin)]
+                    if not set(annot.seq.labels).issubset(self.labelset_cbin)]
 
     def tearDown(self):
         shutil.rmtree(self.tmp_output_dir)
