@@ -61,8 +61,8 @@ class TestToDataframe(unittest.TestCase):
 
         self.annot_mat = TEST_DATA_DIR.joinpath('mat', 'llb3', 'llb3_annot_subset.mat')
         self.annot_mat = str(self.annot_mat)
-        self.scribe = crowsetta.Transcriber(voc_format='yarden')
-        self.annot_list = self.scribe.to_seq(self.annot_mat)
+        self.scribe = crowsetta.Transcriber(annot_format='yarden')
+        self.annot_list = self.scribe.from_file(self.annot_mat)
         self.labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
 
     def _check_df_returned_by_from_files(self, vak_df):
