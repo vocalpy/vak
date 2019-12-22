@@ -232,9 +232,6 @@ def to_dataframe(spect_format,
     # ---- validate spect_annot_map ------------------------------------------------------------------------------------
     # regardless of whether we just made it or user supplied it
     for spect_path, annot in spect_annot_map.items():
-        # get just file name so error messages don't have giant path
-        spect_file = os.path.basename(spect_path)
-
         if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
             labels_set = set(annot.seq.labels)
             # below, set(labels_mapping) is a set of that dict's keys
@@ -243,7 +240,7 @@ def to_dataframe(spect_format,
                 # because there's some label in labels
                 # that's not in labels_mapping
                 logger.info(
-                    f'Found labels, {extra_labels}, in {spect_file}, '
+                    f'Found labels, {extra_labels}, in {spect_path.name}, '
                     'that are not in labels_mapping. Skipping file.'
                 )
                 spect_annot_map.pop(spect_path)
@@ -253,7 +250,7 @@ def to_dataframe(spect_format,
 
         if spect_key not in spect_dict:
             raise KeyError(
-                f"Did not find a spectrogram in file '{spect_file}' "
+                f"Did not find a spectrogram in file '{spect_path.name}' "
                 f"using spect_key '{spect_key}'."
             )
 
@@ -264,27 +261,27 @@ def to_dataframe(spect_format,
         else:
             if not np.array_equal(spect_dict[freqbins_key], freq_bins):
                 raise ValueError(
-                    f'freq_bins in {spect_file} does not match '
+                    f'freq_bins in {spect_path.name} does not match '
                     'freq_bins from other spectrogram files'
                 )
             curr_file_timebin_dur = timebin_dur_from_vec(time_bins,
                                                          n_decimals_trunc)
             if not np.allclose(curr_file_timebin_dur, timebin_dur):
                 raise ValueError(
-                    f'duration of timebin in file {spect_file} did not match '
+                    f'duration of timebin in file {spect_path.name} did not match '
                     'duration of timebin from other array files.'
                 )
 
         # number of freq. bins should equal number of rows
         if spect_dict[freqbins_key].shape[-1] != spect_dict[spect_key].shape[0]:
             raise ValueError(
-                f'length of frequency bins in {spect_file} '
+                f'length of frequency bins in {spect_path.name} '
                 'does not match number of rows in spectrogram'
             )
         # number of time bins should equal number of columns
         if spect_dict[timebins_key].shape[-1] != spect_dict[spect_key].shape[1]:
             raise ValueError(
-                f'length of time_bins in {spect_file} '
+                f'length of time_bins in {spect_path.name} '
                 f'does not match number of columns in spectrogram'
             )
 
