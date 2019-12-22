@@ -26,28 +26,17 @@ class TestFromFiles(unittest.TestCase):
                                    transform_type='log_spect')
         annot_format = 'notmat'
         labelset = list('iabcdefghjk')
-        csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.io.dataframe.from_files(data_dir=data_dir,
-                                                       labelset=labelset,
-                                                       annot_format=annot_format,
-                                                       output_dir=self.tmp_output_dir,
-                                                       save_csv=True,
-                                                       csv_fname=csv_fname,
-                                                       return_df=True,
-                                                       return_path=True,
-                                                       audio_format='cbin',
-                                                       spect_format=None,
-                                                       annot_file=None,
-                                                       spect_params=spect_params)
+        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
+                                             labelset=labelset,
+                                             annot_format=annot_format,
+                                             output_dir=self.tmp_output_dir,
+                                             audio_format='cbin',
+                                             spect_format=None,
+                                             annot_file=None,
+                                             spect_params=spect_params)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
-        self.assertTrue(
-            os.path.isfile(csv_path)
-        )
-        self.assertTrue(
-            csv_path == os.path.join(self.tmp_output_dir, csv_fname)
-        )
 
     def test_from_files_with_audio_cbin_no_annot(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
@@ -55,28 +44,17 @@ class TestFromFiles(unittest.TestCase):
                                    transform_type='log_spect')
         annot_format = None
         labelset = None
-        csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.io.dataframe.from_files(data_dir=data_dir,
-                                                       annot_format=annot_format,
-                                                       labelset=labelset,
-                                                       output_dir=self.tmp_output_dir,
-                                                       save_csv=True,
-                                                       csv_fname=csv_fname,
-                                                       return_df=True,
-                                                       return_path=True,
-                                                       audio_format='cbin',
-                                                       spect_format=None,
-                                                       annot_file=None,
-                                                       spect_params=spect_params)
+        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
+                                             annot_format=annot_format,
+                                             labelset=labelset,
+                                             output_dir=self.tmp_output_dir,
+                                             audio_format='cbin',
+                                             spect_format=None,
+                                             annot_file=None,
+                                             spect_params=spect_params)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
-        self.assertTrue(
-            os.path.isfile(csv_path)
-        )
-        self.assertTrue(
-            csv_path == os.path.join(self.tmp_output_dir, csv_fname)
-        )
 
     def test_from_files_with_audio_cbin_no_labelset(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
@@ -84,28 +62,17 @@ class TestFromFiles(unittest.TestCase):
                                    transform_type='log_spect')
         annot_format = 'notmat'
         labelset = None
-        csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.io.dataframe.from_files(data_dir=data_dir,
-                                                       annot_format=annot_format,
-                                                       labelset=labelset,
-                                                       output_dir=self.tmp_output_dir,
-                                                       save_csv=True,
-                                                       csv_fname=csv_fname,
-                                                       return_df=True,
-                                                       return_path=True,
-                                                       audio_format='cbin',
-                                                       spect_format=None,
-                                                       annot_file=None,
-                                                       spect_params=spect_params)
+        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
+                                             annot_format=annot_format,
+                                             labelset=labelset,
+                                             output_dir=self.tmp_output_dir,
+                                             audio_format='cbin',
+                                             spect_format=None,
+                                             annot_file=None,
+                                             spect_params=spect_params)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
-        self.assertTrue(
-            os.path.isfile(csv_path)
-        )
-        self.assertTrue(
-            csv_path == os.path.join(self.tmp_output_dir, csv_fname)
-        )
 
     def test_from_files_with_spect_mat(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
@@ -113,56 +80,34 @@ class TestFromFiles(unittest.TestCase):
 
         labelset = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
         annot_format = 'yarden'
-        csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.io.dataframe.from_files(data_dir=data_dir,
-                                                       labelset=labelset,
-                                                       annot_format=annot_format,
-                                                       output_dir=self.tmp_output_dir,
-                                                       save_csv=True,
-                                                       csv_fname=csv_fname,
-                                                       return_df=True,
-                                                       return_path=True,
-                                                       audio_format=None,
-                                                       spect_format='mat',
-                                                       annot_file=annot_file,
-                                                       spect_params=None)
+        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
+                                             labelset=labelset,
+                                             annot_format=annot_format,
+                                             output_dir=self.tmp_output_dir,
+                                             audio_format=None,
+                                             spect_format='mat',
+                                             annot_file=annot_file,
+                                             spect_params=None)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
-        self.assertTrue(
-            os.path.isfile(csv_path)
-        )
-        self.assertTrue(
-            csv_path == os.path.join(self.tmp_output_dir, csv_fname)
-        )
 
     def test_from_files_with_spect_mat_no_annot(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
         annot_file = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
         labelset = None
         annot_format = None
-        csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.io.dataframe.from_files(data_dir=data_dir,
-                                                       labelset=labelset,
-                                                       annot_format=annot_format,
-                                                       output_dir=self.tmp_output_dir,
-                                                       save_csv=True,
-                                                       csv_fname=csv_fname,
-                                                       return_df=True,
-                                                       return_path=True,
-                                                       audio_format=None,
-                                                       spect_format='mat',
-                                                       annot_file=annot_file,
-                                                       spect_params=None)
+        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
+                                             labelset=labelset,
+                                             annot_format=annot_format,
+                                             output_dir=self.tmp_output_dir,
+                                             audio_format=None,
+                                             spect_format='mat',
+                                             annot_file=annot_file,
+                                             spect_params=None)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
-        self.assertTrue(
-            os.path.isfile(csv_path)
-        )
-        self.assertTrue(
-            csv_path == os.path.join(self.tmp_output_dir, csv_fname)
-        )
 
     def test_from_files_with_spect_mat_no_labelset(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
@@ -170,32 +115,27 @@ class TestFromFiles(unittest.TestCase):
 
         labelset = None
         annot_format = 'yarden'
-        csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.io.dataframe.from_files(data_dir=data_dir,
-                                                       labelset=labelset,
-                                                       annot_format=annot_format,
-                                                       output_dir=self.tmp_output_dir,
-                                                       save_csv=True,
-                                                       csv_fname=csv_fname,
-                                                       return_df=True,
-                                                       return_path=True,
-                                                       audio_format=None,
-                                                       spect_format='mat',
-                                                       annot_file=annot_file,
-                                                       spect_params=None)
+        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
+                                             labelset=labelset,
+                                             annot_format=annot_format,
+                                             output_dir=self.tmp_output_dir,
+                                             audio_format=None,
+                                             spect_format='mat',
+                                             annot_file=annot_file,
+                                             spect_params=None)
 
         self.assertTrue(type(vak_df) == pd.DataFrame)
-        self.assertTrue(
-            os.path.isfile(csv_path)
-        )
-        self.assertTrue(
-            csv_path == os.path.join(self.tmp_output_dir, csv_fname)
-        )
 
 
 class TestAddSplitCol(unittest.TestCase):
     """class to test vak.io.dataframe.add_split_col function"""
+    def setUp(self):
+        self.tmp_output_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_output_dir)
+
     def test_add_split_col(self):
         # make a df to test on
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
@@ -203,20 +143,15 @@ class TestAddSplitCol(unittest.TestCase):
                                    transform_type='log_spect')
         annot_format = 'notmat'
         labelset = list('iabcdefghjk')
-        csv_fname = 'test.csv'
 
-        vak_df, csv_path = vak.io.dataframe.from_files(data_dir=data_dir,
-                                                       labelset=labelset,
-                                                       annot_format=annot_format,
-                                                       output_dir=self.tmp_output_dir,
-                                                       save_csv=True,
-                                                       csv_fname=csv_fname,
-                                                       return_df=True,
-                                                       return_path=True,
-                                                       audio_format='cbin',
-                                                       spect_format=None,
-                                                       annot_file=None,
-                                                       spect_params=spect_params)
+        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
+                                             labelset=labelset,
+                                             annot_format=annot_format,
+                                             output_dir=self.tmp_output_dir,
+                                             audio_format='cbin',
+                                             spect_format=None,
+                                             annot_file=None,
+                                             spect_params=spect_params)
 
         self.assertTrue(
             'split' not in vak_df.columns
@@ -226,7 +161,7 @@ class TestAddSplitCol(unittest.TestCase):
             'split' in vak_df.columns
         )
         self.assertTrue(
-            vak_df['split'].unique().items() == 'train'
+            vak_df['split'].unique().item() == 'train'
         )
 
 
