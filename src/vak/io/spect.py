@@ -313,10 +313,17 @@ def to_dataframe(spect_format,
         else:
             annot_path = None
 
+        def abspath(a_path):
+            if a_path is None:
+                return
+            else:
+                return str(Path(a_path).absolute())
+
+
         record = tuple([
-            audio_path,
-            spect_path,
-            annot_path,
+            abspath(audio_path),
+            abspath(spect_path),
+            abspath(annot_path),
             annot_format,
             spect_dur,
             timebin_dur,
