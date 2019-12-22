@@ -10,7 +10,6 @@ README.md
 dist/
 build/
 doc/_build/
+tests/test_data/prep/*/
 tests/test_data/results/
-tests/test_data/csv/
 tests/test_data/*.tar.gz
-tests/setup_scripts/tmp_Makefile_config.ini
