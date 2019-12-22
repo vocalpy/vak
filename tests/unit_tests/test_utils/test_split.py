@@ -31,28 +31,28 @@ NUM_SAMPLES = 10  # number of times to sample behavior of random-number generato
 audio_dir_cbin = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
 audio_files_cbin = glob(os.path.join(audio_dir_cbin, '*.cbin'))
 annot_files_cbin = files_from_dir(annot_dir=audio_dir_cbin, annot_format='notmat')
-scribe_cbin = crowsetta.Transcriber(voc_format='notmat')
-annot_list_cbin = scribe_cbin.to_seq(file=annot_files_cbin)
+scribe_cbin = crowsetta.Transcriber(annot_format='notmat')
+annot_list_cbin = scribe_cbin.from_file(annot_file=annot_files_cbin)
 labelset_cbin = set(list('iabcdefghjk'))
 durs_cbin = []
 labels_cbin = []
 for audio_file, annot in zip(audio_files_cbin, annot_list_cbin):
-    if set(annot.labels).issubset(labelset_cbin):
-        labels_cbin.append(annot.labels)
+    if set(annot.seq.labels).issubset(labelset_cbin):
+        labels_cbin.append(annot.seq.labels)
         fs, data = load_cbin(audio_file)
         durs_cbin.append(data.shape[0] / fs)
 
 spect_dir_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
 spect_files_mat = glob(os.path.join(spect_dir_mat, '*.mat'))
 annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
-scribe_yarden = crowsetta.Transcriber(voc_format='yarden')
-annot_list_mat = scribe_yarden.to_seq(annot_mat)
+scribe_yarden = crowsetta.Transcriber(annot_format='yarden')
+annot_list_mat = scribe_yarden.from_file(annot_mat)
 labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
 durs_mat = []
 labels_mat = []
 for spect_file_mat, annot in zip(spect_files_mat, annot_list_mat):
-    if set(annot.labels).issubset(labelset_mat):
-        labels_mat.append(annot.labels)
+    if set(annot.seq.labels).issubset(labelset_mat):
+        labels_mat.append(annot.seq.labels)
         mat_dict = loadmat(spect_file_mat)
         timebin_dur = timebin_dur_from_vec(mat_dict['t'])
         dur = mat_dict['s'].shape[-1] * timebin_dur
