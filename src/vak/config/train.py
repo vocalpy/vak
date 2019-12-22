@@ -48,18 +48,6 @@ class TrainConfig:
     save_only_single_checkpoint_file : bool
         if True, save only one checkpoint file instead of separate files every time
         we save. Default is True.
-    use_train_subsets_from_previous_run : bool
-        if True, use training subsets saved in a previous run. Default is False.
-        Requires setting previous_run_path option in config.ini file.
-    previous_run_path : str
-        path to results directory from a previous run.
-        Used for training if use_train_subsets_from_previous_run is True.
-    save_transformed_data : bool
-        if True, save transformed data (i.e. scaled, reshaped). The data can then
-        be used on a subsequent run (e.g. if you want to compare results
-        from different hyperparameters across the exact same training set).
-        Also useful if you need to check what the data looks like when fed to networks.
-        Default is False.
     """
     # required
     networks = attr.ib(validator=instance_of(list))
@@ -73,12 +61,7 @@ class TrainConfig:
     val_error_step = attr.ib(validator=optional(instance_of(int)), default=None)
     checkpoint_step = attr.ib(validator=optional(instance_of(int)), default=None)
     patience = attr.ib(validator=optional(instance_of(int)), default=None)
-
-    # things most users probably won't care about
     save_only_single_checkpoint_file = attr.ib(validator=instance_of(bool), default=True)
-    use_train_subsets_from_previous_run = attr.ib(validator=instance_of(bool), default=False)
-    previous_run_path = attr.ib(validator=optional([instance_of(str), is_a_directory]), default=None)
-    save_transformed_data = attr.ib(validator=instance_of(bool), default=False)
 
 
 def parse_train_config(config, config_file):
@@ -169,35 +152,5 @@ def parse_train_config(config, config_file):
         config_dict['normalize_spectrograms'] = config.getboolean(
             'TRAIN', 'normalize_spectrograms'
         )
-
-    if config.has_option('TRAIN', 'use_train_subsets_from_previous_run'):
-        config_dict['use_train_subsets_from_previous_run'] = config.getboolean(
-            'TRAIN', 'use_train_subsets_from_previous_run')
-        if config_dict['use_train_subsets_from_previous_run']:
-            try:
-                config_dict['previous_run_path'] = os.path.expanduser(config['TRAIN']['previous_run_path'])
-            except KeyError:
-                raise KeyError('In config.file {}, '
-                               'use_train_subsets_from_previous_run = Yes, but '
-                               'no previous_run_path option was found.'
-                               'Please add previous_run_path to config file.'
-                               .format(config_file))
-        else:
-            if config.has_option('TRAIN', 'previous_run_path'):
-                raise ValueError('In config.file {}, '
-                                 'use_train_subsets_from_previous_run = No, but '
-                                 'previous_run_path option was specified as {}.\n'
-                                 'Please fix argument or remove/comment out '
-                                 'previous_run_path.'
-                                 .format(config_file,
-                                         config['TRAIN']['previous_run_path'])
-                                 )
-
-    if config.has_option('TRAIN', 'save_transformed_data'):
-        config_dict['save_transformed_data'] = config.getboolean(
-            'TRAIN', 'save_transformed_data')
-
-    if config.has_option('TRAIN', 'save_transformed_data'):
-        config_dict['save_transformed_data'] = config.getboolean('TRAIN', 'save_transformed_data')
 
     return TrainConfig(**config_dict)
