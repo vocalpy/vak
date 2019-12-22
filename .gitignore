@@ -19,6 +19,6 @@ doc/_build/
 
 # test data
 tests/test_data/prep/*/
-tests/test_data/results/
+tests/test_data/results/*/
 tests/test_data/*.tar.gz
 tests/setup_scripts/tmp_prep_*_config.ini
