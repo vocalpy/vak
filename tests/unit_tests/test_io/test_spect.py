@@ -22,7 +22,7 @@ class TestFindAudioFname(unittest.TestCase):
         self.spect_list_mat = [str(path) for path in self.spect_list_mat]
 
         # ---- in .npz files, made from .cbin audio files -------------------------------
-        self.spect_dir_npz = list(TEST_DATA_DIR.joinpath('vds').glob(
+        self.spect_dir_npz = list(TEST_DATA_DIR.joinpath('prep/train').glob(
             'spectrograms_generated*')
         )
         self.spect_dir_npz = self.spect_dir_npz[0]
