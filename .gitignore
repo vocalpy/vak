@@ -1,15 +1,23 @@
-.ipynb_checkpoints/
-.idea
-*checkpoint.ipynb
-README.md
-*__pycache__*
+# mac os
 .DS_Store
+
+# IDE
+.idea
+
+# Jupyter
+.ipynb_checkpoints/
+*checkpoint.ipynb
+
+# Python
+*__pycache__*
 *egg-info/
-/configs/old/
-*egg-info
 dist/
 build/
+
+# Sphinx
 doc/_build/
+
+# test data
 tests/test_data/prep/*/
 tests/test_data/results/
 tests/test_data/*.tar.gz
