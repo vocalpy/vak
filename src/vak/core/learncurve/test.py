@@ -10,7 +10,7 @@ import tensorflow as tf
 
 from ... import metrics, utils
 from ... utils.labels import lbl_tb2labels
-from ... import network
+from ... import models
 from ...io import Dataset
 
 
@@ -374,7 +374,7 @@ def test(results_dirname,
     train_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
     test_syl_err_arr = np.empty((len(train_set_durs), len(replicates)))
 
-    NETWORKS = network._load()
+    NETWORKS = models._load()
 
     for dur_ind, train_set_dur in enumerate(train_set_durs):
 

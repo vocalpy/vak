@@ -6,7 +6,7 @@ import attr
 from attr.validators import instance_of, optional
 
 from .validators import is_a_directory, is_a_file
-from .. import network
+from .. import models
 
 
 @attr.s
@@ -83,7 +83,7 @@ def parse_train_config(config, config_file):
     # (user would be unable to import networks in other packages
     # that subclass vak.network.AbstractVakNetwork
     # since the module in the other package would need to `import vak`)
-    NETWORKS = network._load()
+    NETWORKS = models._load()
     NETWORK_NAMES = NETWORKS.keys()
     try:
         networks = [network_name for network_name in

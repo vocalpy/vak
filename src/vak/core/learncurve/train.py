@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from ...utils.general import safe_truncate
 from ...utils.spect import SpectScaler
-from ... import network
+from ... import models
 from ... import utils
 from ...io.dataset import Dataset
 
@@ -334,7 +334,7 @@ def train(train_vds_path,
             # need a copy of X_val when we normalize it below
             X_val_copy = copy.deepcopy(X_val)
 
-    NETWORKS = network._load()
+    NETWORKS = models._load()
 
     for train_set_dur in train_set_durs:
         for replicate in range(1, num_replicates + 1):

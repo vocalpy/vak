@@ -6,7 +6,7 @@ import attr
 from attr.validators import instance_of, optional
 
 from .validators import is_a_directory, is_a_file
-from .. import network
+from .. import models
 
 
 @attr.s
@@ -77,7 +77,7 @@ def parse_predict_config(config):
     # (user would be unable to import networks in other packages
     # that subclass vak.network.AbstractVakNetwork
     # since the module in the other package would need to `import vak`)
-    NETWORKS = network._load()
+    NETWORKS = models._load()
     NETWORK_NAMES = NETWORKS.keys()
     try:
         networks = [network_name for network_name in
@@ -85,7 +85,7 @@ def parse_predict_config(config):
         for network_name in networks:
             if network_name not in NETWORK_NAMES:
                 raise TypeError('Neural network {} not found when importing installed networks.'
-                                .format(network))
+                                .format(models))
         config_dict['networks'] = networks
     except NoOptionError:
         raise KeyError("'networks' option not found in [PREDICT] section of config.ini file. "
