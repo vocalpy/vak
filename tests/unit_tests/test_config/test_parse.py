@@ -12,7 +12,7 @@ import joblib
 
 import vak.config
 import vak.utils
-import vak.network
+import vak.models
 import vak.utils.data
 import vak.utils.spect
 
@@ -128,7 +128,7 @@ class TestParseConfig(unittest.TestCase):
     def test_network_sections_match_config(self):
         test_configs = glob(os.path.join(TEST_CONFIGS_PATH,
                                          'test_*_config.ini'))
-        NETWORKS = vak.network._load()
+        NETWORKS = vak.models._load()
         available_net_names = [net_name for net_name in NETWORKS.keys()]
         for test_config in test_configs:
             tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_config)
