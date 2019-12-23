@@ -1,6 +1,6 @@
 import os
 from configparser import ConfigParser
-from configparser import NoSectionError, MissingSectionHeaderError, ParsingError,\
+from configparser import MissingSectionHeaderError, ParsingError,\
     DuplicateOptionError, DuplicateSectionError
 
 import attr
@@ -12,69 +12,7 @@ from .prep import parse_prep_config, PrepConfig
 from .spectrogram import parse_spect_config, SpectConfig
 from .train import parse_train_config, TrainConfig
 
-from .. import network
 from .validators import are_sections_valid, are_options_valid
-
-
-def _get_nets_config(config_obj, networks):
-    """helper function to get configuration for only networks that user specified
-    in a specific section of config.ini file, e.g. in the TRAIN section
-
-    Parameters
-    ----------
-    config_obj : configparser.ConfigParser
-        instance of ConfigParser with config.ini file already read into it
-        that has sections representing configurations for networks
-    networks : list
-        of str, i.e. names of networks specified by a section
-        (such as TRAIN or PREDICT) that should each have corresponding sections
-        specifying their configuration: hyperparameters such as learning
-        rate, number of time steps, etc.
-
-    Returns
-    -------
-    networks_dict : dict
-        where each key is the name of a network and the corresponding value is
-        another dict containing key-value pairs of configuration options and the
-        value specified for that option
-    """
-    # load entry points within function, not at module level,
-    # to avoid circular dependencies
-    # (user would be unable to import networks in other packages
-    # that subclass vak.network.AbstractVakNetwork
-    # since the module in the other package would need to `import vak`)
-    NETWORKS = network._load()
-    sections = config_obj.sections()
-    networks_dict = {}
-    for network_name in networks:
-        if network_name not in sections:
-            raise NoSectionError('No section found specifying parameters for network {}'
-                                 .format(network_name))
-        network_option_names = set(config_obj[network_name].keys())
-        config_field_names = set(NETWORKS[network_name].Config._fields)
-        # if some options in this network's section are not found in the Config tuple
-        # that is a class attribute for that network, raise an error because we don't
-        # know what to do with that option
-        if not network_option_names.issubset(config_field_names):
-            unknown_options = network_option_names - config_field_names
-            raise ValueError('The following option(s) in section for network {} are '
-                             'not found in the Config for that network: {}.\n'
-                             'Valid options are: {}'
-                             .format(network_name, unknown_options, config_field_names))
-
-        options = {}
-        # do type conversion using the networks' Config typed namedtuple
-        # for the rest of the options
-        for option, value in config_obj[network_name].items():
-            option_type = NETWORKS[network_name].Config._field_types[option]
-            try:
-                options[option] = option_type(value)
-            except ValueError:
-                raise ValueError('Could not cast value {} for option {} in {} section '
-                                 ' to specified type {}.'
-                                 .format(value, option, network_name, option_type))
-        networks_dict[network_name] = NETWORKS[network_name].Config(**options)
-        return networks_dict
 
 
 @attr.s
