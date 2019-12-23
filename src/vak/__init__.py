@@ -20,7 +20,7 @@ from . import io
 from . import evfuncs
 from . import koumura_utils
 from . import metrics
-from . import network
+from . import models
 from . import utils
 
 from .io import Dataset, MetaSpect, Vocalization

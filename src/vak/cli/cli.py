@@ -58,18 +58,23 @@ def cli(command, config_file):
     elif command == 'train':
         train_config = parse_train_config(config_obj, config_file)
         nets_config = _get_nets_config(config_obj, train_config.networks)
-        train(train_vds_path=train_config.train_vds_path,
-              val_vds_path=train_config.val_vds_path,
-              networks=nets_config,
+        train(models=models,
+              csv_path=train_config.csv_path,
+              labelset=prep_config.labelset,
               num_epochs=train_config.num_epochs,
               config_file=config_file,
+              batch_size=train_config.batch_size,
+              train_unlabeled=train_config.train_unlabeled,
+              shuffle=train_config.shuffle,
               val_error_step=train_config.val_error_step,
               checkpoint_step=train_config.checkpoint_step,
               patience=train_config.patience,
               save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
               normalize_spectrograms=train_config.normalize_spectrograms,
-              root_results_dir=train_config.root_results_dir,
-              save_transformed_data=train_config.save_transformed_data)
+              spect_key='s',
+              timebins_key='t',
+              root_results_dir=train_config.root_results_dir
+              )
 
     elif command == 'finetune':
         raise NotImplementedError

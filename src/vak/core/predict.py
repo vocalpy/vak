@@ -9,7 +9,7 @@ import tensorflow as tf
 from tqdm import tqdm
 
 from ..io import Dataset
-from .. import network
+from .. import models
 from ..utils.data import reshape_data_for_batching
 from ..utils.labels import lbl_tb2segments
 
@@ -125,7 +125,7 @@ def predict(predict_vds_path,
         else:
             data_file = data_file[0]
 
-        NETWORKS = network._load()
+        NETWORKS = models._load()
 
         for net_name, net_config in networks.items():
             net_config_dict = net_config._asdict()
