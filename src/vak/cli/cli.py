@@ -6,9 +6,9 @@ from .train import train
 from .predict import predict
 from .learncurve import learning_curve
 from .prep import prep
+from .. import config
 from ..config import parse_learncurve_config, parse_predict_config, parse_prep_config, parse_spect_config, \
     parse_train_config
-from ..config.parse import _get_nets_config
 
 
 def cli(command, config_file):
@@ -57,7 +57,8 @@ def cli(command, config_file):
 
     elif command == 'train':
         train_config = parse_train_config(config_obj, config_file)
-        nets_config = _get_nets_config(config_obj, train_config.networks)
+        prep_config = parse_prep_config(config_obj, config_file)
+        models = config.models.from_config(config_obj, train_config.models)
         train(models=models,
               csv_path=train_config.csv_path,
               labelset=prep_config.labelset,
@@ -81,11 +82,11 @@ def cli(command, config_file):
 
     elif command == 'predict':
         predict_config = parse_predict_config(config_obj)
-        nets_config = _get_nets_config(config_obj, predict_config.networks)
+        models = config.models.from_config(config_obj, predict_config.models)
         predict(predict_vds_path=predict_config.predict_vds_path,
                 train_vds_path=predict_config.train_vds_path,
                 checkpoint_path=predict_config.checkpoint_path,
-                networks=nets_config,
+                networks=models,
                 spect_scaler_path=predict_config.spect_scaler_path)
 
     elif command == 'learncurve':
@@ -98,7 +99,7 @@ def cli(command, config_file):
                 f"Currently the option is set to: {config_obj['TRAIN']['results_dir_made_by_main_script']}"
             )
         learncurve_config = parse_learncurve_config(config_obj, config_file)
-        nets_config = _get_nets_config(config_obj, learncurve_config.networks)
+        models = config.models.from_config(config_obj, learncurve_config.models)
         prep_config = parse_prep_config(config_obj, config_file)
         if learncurve_config.train_vds_path is None:
             raise ValueError("must set 'train_vds_path' option in [LEARNCURVE] section of config.ini file "
@@ -114,7 +115,7 @@ def cli(command, config_file):
                        num_replicates=learncurve_config.num_replicates,
                        num_epochs=learncurve_config.num_epochs,
                        config_file=config_file,
-                       networks=nets_config,
+                       networks=models,
                        val_error_step=learncurve_config.val_error_step,
                        checkpoint_step=learncurve_config.checkpoint_step,
                        patience=learncurve_config.patience,
