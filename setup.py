@@ -122,6 +122,14 @@ class UploadCommand(Command):
 
         sys.exit()
 
+
+ENTRY_POINTS = {
+    'console_scripts': ['vak=vak.__main__:main'],
+    'vak.models': [],
+    'vak.model_config_parsers': [],
+}
+
+
 # Where the magic happens:
 setup(
     name=NAME,
@@ -136,9 +144,7 @@ setup(
     packages=find_packages(where="src", exclude=('tests',)),
     package_dir={"": "src"},
     # scripts=['src/bin/vak-cli.py'],
-    entry_points={
-        'console_scripts': ['vak=vak.__main__:main'],
-    },
+    entry_points=ENTRY_POINTS,
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     package_data=PACKAGE_DATA,
