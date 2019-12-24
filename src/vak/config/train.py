@@ -15,9 +15,9 @@ class TrainConfig:
 
     Attributes
     ----------
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
+    models : list
+        comma-separated list of model names.
+        e.g., 'models = TweetyNet, GRUNet, ConvNet'
     csv_path : str
         path to where dataset was saved as a csv.
     num_epochs : int
@@ -50,7 +50,7 @@ class TrainConfig:
         we save. Default is True.
     """
     # required
-    networks = attr.ib(validator=instance_of(list))
+    models = attr.ib(validator=instance_of(list))
     csv_path = attr.ib(validator=[instance_of(str), is_a_file])
     num_epochs = attr.ib(validator=instance_of(int))
     root_results_dir = attr.ib(validator=is_a_directory)
@@ -78,26 +78,23 @@ def parse_train_config(config, config_file):
         instance of TrainConfig class
     """
     config_dict = {}
+
     # load entry points within function, not at module level,
     # to avoid circular dependencies
-    # (user would be unable to import networks in other packages
-    # that subclass vak.network.AbstractVakNetwork
-    # since the module in the other package would need to `import vak`)
-    NETWORKS = models._load()
-    NETWORK_NAMES = NETWORKS.keys()
+    MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
     try:
-        networks = [network_name for network_name in
-                    config['TRAIN']['networks'].split(',')]
-        for network_name in networks:
-            if network_name not in NETWORK_NAMES:
-                raise TypeError(
-                    f'Neural network {network_name} not found when importing installed networks.'
-                )
-        config_dict['networks'] = networks
+        model_names = [model_name
+                       for model_name in config['TRAIN']['models'].split(',')]
     except NoOptionError:
-        raise KeyError("'networks' option not found in [TRAIN] section of config.ini file. "
-                       "Please add this option as a comma-separated list of neural network names, e.g.:\n"
-                       "networks = TweetyNet, GRUnet, convnet")
+        raise KeyError("'models' option not found in [TRAIN] section of config.ini file. "
+                       "Please add this option as a comma-separated list of model names, e.g.:\n"
+                       "models = TweetyNet, GRUnet, convnet")
+    for model_name in model_names:
+        if model_name not in MODEL_NAMES:
+            raise ValueError(
+                f'Model {model_name} not found when importing installed models.'
+            )
+    config_dict['models'] = model_names
 
     try:
         config_dict['csv_path'] = os.path.expanduser(config['TRAIN']['csv_path'])
