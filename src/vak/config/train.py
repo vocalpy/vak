@@ -1,4 +1,5 @@
 """parses [TRAIN] section of config"""
+import ast
 import os
 from configparser import NoOptionError
 
@@ -23,6 +24,8 @@ class TrainConfig:
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
+    batch_size : int
+        number of samples per batch presented to models during training.
     root_results_dir : str
         directory in which results *will* be created.
         The vak.cli.train function will create
@@ -31,6 +34,16 @@ class TrainConfig:
         name of subdirectory created by vak.cli.train.
         This option is added programatically by that function
         when it runs.
+    optimizer : str
+        name of numerical optimizer used to fit model, e.g. 'SGD' for stochastic gradient descent.
+    learning rate : float
+        value used
+    loss : str
+        name of loss function used to fit model, e.g. 'categorical_crossentropy'
+    metrics : str, list, dict
+        metrics evaluated by model during training and testing, e.g. ['accuracy', 'mse']
+    shuffle: bool
+        if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
@@ -53,11 +66,17 @@ class TrainConfig:
     models = attr.ib(validator=instance_of(list))
     csv_path = attr.ib(validator=[instance_of(str), is_a_file])
     num_epochs = attr.ib(validator=instance_of(int))
+    batch_size = attr.ib(converter=int)
     root_results_dir = attr.ib(validator=is_a_directory)
-    results_dirname = attr.ib(validator=optional(is_a_directory), default=None)
+    optimizer = attr.ib(validator=instance_of(str))
+    learning_rate = attr.ib(validator=instance_of(float))
+    loss = attr.ib(validator=instance_of(str))
+    metrics = attr.ib(converter=ast.literal_eval)
 
     # optional
+    results_dirname = attr.ib(validator=optional(is_a_directory), default=None)
     normalize_spectrograms = attr.ib(validator=optional(instance_of(bool)), default=False)
+    shuffle = attr.ib(validator=instance_of(bool), default=True)
     val_error_step = attr.ib(validator=optional(instance_of(int)), default=None)
     checkpoint_step = attr.ib(validator=optional(instance_of(int)), default=None)
     patience = attr.ib(validator=optional(instance_of(int)), default=None)
