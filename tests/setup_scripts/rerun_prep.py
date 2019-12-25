@@ -30,7 +30,7 @@ def main():
                      labelset=prep_config.labelset,
                      config_file=tmp_config_path,
                      annot_format=prep_config.annot_format,
-                     train_dur=prep_config.total_train_set_dur,
+                     train_dur=prep_config.train_dur,
                      test_dur=prep_config.test_dur,
                      val_dur=prep_config.val_dur,
                      output_dir=prep_config.output_dir,
