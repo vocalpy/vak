@@ -1,13 +1,12 @@
 """parses [TRAIN] section of config"""
-import ast
-import os
 from configparser import NoOptionError
 
 import attr
-from attr.validators import instance_of, optional
+from attr import converters, validators
+from attr.validators import instance_of
 
-from .validators import is_a_directory, is_a_file
-from .. import models
+from .converters import bool_from_str, comma_separated_list, expanded_user_path
+from .validators import is_a_directory, is_a_file, is_valid_model_name
 
 
 @attr.s
@@ -63,24 +62,38 @@ class TrainConfig:
         we save. Default is True.
     """
     # required
-    models = attr.ib(validator=instance_of(list))
-    csv_path = attr.ib(validator=[instance_of(str), is_a_file])
-    num_epochs = attr.ib(validator=instance_of(int))
-    batch_size = attr.ib(converter=int)
-    root_results_dir = attr.ib(validator=is_a_directory)
+    models = attr.ib(converter=comma_separated_list,
+                     validator=[instance_of(list), is_valid_model_name])
+    csv_path = attr.ib(converter=expanded_user_path, validator=is_a_file)
+    num_epochs = attr.ib(converter=int, validator=instance_of(int))
+    batch_size = attr.ib(converter=int, validator=instance_of(int))
+    root_results_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
     optimizer = attr.ib(validator=instance_of(str))
-    learning_rate = attr.ib(validator=instance_of(float))
+    learning_rate = attr.ib(converter=float, validator=instance_of(float))
     loss = attr.ib(validator=instance_of(str))
-    metrics = attr.ib(converter=ast.literal_eval)
+    metrics = attr.ib(converter=comma_separated_list)
 
     # optional
-    results_dirname = attr.ib(validator=optional(is_a_directory), default=None)
-    normalize_spectrograms = attr.ib(validator=optional(instance_of(bool)), default=False)
-    shuffle = attr.ib(validator=instance_of(bool), default=True)
-    val_error_step = attr.ib(validator=optional(instance_of(int)), default=None)
-    checkpoint_step = attr.ib(validator=optional(instance_of(int)), default=None)
-    patience = attr.ib(validator=optional(instance_of(int)), default=None)
-    save_only_single_checkpoint_file = attr.ib(validator=instance_of(bool), default=True)
+    results_dirname = attr.ib(converter=converters.optional(expanded_user_path),
+                              validator=validators.optional(is_a_directory), default=None)
+    normalize_spectrograms = attr.ib(converter=bool_from_str,
+                                     validator=validators.optional(instance_of(bool)), default=False)
+    shuffle = attr.ib(converter=bool_from_str, validator=instance_of(bool), default=True)
+    val_error_step = attr.ib(converter=converters.optional(int),
+                             validator=validators.optional(instance_of(int)), default=None)
+    checkpoint_step = attr.ib(converter=converters.optional(int),
+                              validator=validators.optional(instance_of(int)), default=None)
+    patience = attr.ib(converter=converters.optional(int),
+                       validator=validators.optional(instance_of(int)), default=None)
+    save_only_single_checkpoint_file = attr.ib(converter=bool_from_str,
+                                               validator=instance_of(bool), default=True)
+
+
+REQUIRED_TRAIN_OPTIONS = [
+    'models',
+    'csv_path',
+    'root_results_dir',
+]
 
 
 def parse_train_config(config, config_file):
@@ -96,77 +109,12 @@ def parse_train_config(config, config_file):
     train_config : vak.config.train.TrainConfig
         instance of TrainConfig class
     """
-    config_dict = {}
-
-    # load entry points within function, not at module level,
-    # to avoid circular dependencies
-    MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
-    try:
-        model_names = [model_name
-                       for model_name in config['TRAIN']['models'].split(',')]
-    except NoOptionError:
-        raise KeyError("'models' option not found in [TRAIN] section of config.ini file. "
-                       "Please add this option as a comma-separated list of model names, e.g.:\n"
-                       "models = TweetyNet, GRUnet, convnet")
-    for model_name in model_names:
-        if model_name not in MODEL_NAMES:
-            raise ValueError(
-                f'Model {model_name} not found when importing installed models.'
+    train_section = config['TRAIN']
+    train_section = dict(train_section.items())
+    for required_option in REQUIRED_TRAIN_OPTIONS:
+        if required_option not in train_section:
+            raise NoOptionError(
+                f"the '{required_option}' option is required but was not found in the "
+                f"TRAIN section of the config.ini file: {config_file}"
             )
-    config_dict['models'] = model_names
-
-    try:
-        config_dict['csv_path'] = os.path.expanduser(config['TRAIN']['csv_path'])
-    except NoOptionError:
-        raise KeyError("'csv_path' option not found in [TRAIN] section of config.ini file. "
-                       "Please add this option.")
-
-    try:
-        root_results_dir = config['TRAIN']['root_results_dir']
-        config_dict['root_results_dir'] = os.path.expanduser(root_results_dir)
-    except NoOptionError:
-        raise KeyError('must specify root_results_dir in [TRAIN] section '
-                       'of config.ini file')
-
-    if config.has_option('TRAIN', 'results_dir_made_by_main_script'):
-        # don't check whether it exists because it may not yet,
-        # depending on which function we are calling.
-        # So it's up to calling function to check for existence of directory
-        results_dirname = config['TRAIN']['results_dir_made_by_main_script']
-        config_dict['results_dirname'] = os.path.expanduser(results_dirname)
-    else:
-        config_dict['results_dirname'] = None
-
-    if config.has_option('TRAIN', 'val_error_step'):
-        config_dict['val_error_step'] = int(config['TRAIN']['val_error_step'])
-
-    if config.has_option('TRAIN', 'checkpoint_step'):
-        config_dict['checkpoint_step'] = int(config['TRAIN']['checkpoint_step'])
-
-    if config.has_option('TRAIN', 'save_only_single_checkpoint_file'):
-        config_dict['save_only_single_checkpoint_file'] = config.getboolean(
-            'TRAIN', 'save_only_single_checkpoint_file'
-        )
-
-    if config.has_option('TRAIN', 'num_epochs'):
-        config_dict['num_epochs'] = int(config['TRAIN']['num_epochs'])
-
-    if config.has_option('TRAIN', 'patience'):
-        patience = config['TRAIN']['patience']
-        try:
-            patience = int(patience)
-        except ValueError:
-            if patience == 'None':
-                patience = None
-            else:
-                raise TypeError('patience must be an int or None, but'
-                                'is {} and parsed as type {}'
-                                .format(patience, type(patience)))
-        config_dict['patience'] = patience
-
-    if config.has_option('TRAIN', 'normalize_spectrograms'):
-        config_dict['normalize_spectrograms'] = config.getboolean(
-            'TRAIN', 'normalize_spectrograms'
-        )
-
-    return TrainConfig(**config_dict)
+    return TrainConfig(**train_section)
