@@ -3,10 +3,9 @@ import os
 from configparser import NoOptionError
 
 import attr
-from attr.validators import instance_of, optional
+from attr.validators import instance_of
 
 from .train import TrainConfig
-from .validators import is_a_directory, is_a_file
 from .. import models
 
 
