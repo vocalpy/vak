@@ -1,7 +1,7 @@
-import os
 from configparser import ConfigParser
 from configparser import MissingSectionHeaderError, ParsingError,\
     DuplicateOptionError, DuplicateSectionError
+from pathlib import Path
 
 import attr
 from attr.validators import instance_of, optional
@@ -31,24 +31,28 @@ class Config:
         represents [TRAIN] section of config.ini file
     predict : vak.config.predict.PredictConfig
         represents [PREDICT] section of config.ini file.
-    networks : dict
-        contains neural network configuration sections of config.ini file.
-        These will vary depending on which networks the user specifies.
-    """
+\    """
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
     spect_params = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
     learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
-    networks = attr.ib(validator=optional(instance_of(dict)), default=None)
 
 
-def parse_config(config_file):
+SECTION_PARSERS = {
+    'PREP': parse_prep_config,
+    'TRAIN': parse_train_config,
+    'LEARNCURVE': parse_learncurve_config,
+    'PREDICT': parse_predict_config,
+}
+
+
+def from_path(config_path):
     """parse a config.ini file
 
     Parameters
     ----------
-    config_file : str
+    config_path : str, Path
         path to config.ini file
 
     Returns
@@ -57,25 +61,25 @@ def parse_config(config_file):
         instance of Config class, whose attributes correspond to
         sections in a config.ini file.
     """
-    # check config_file exists,
+    # check config_path is a file,
     # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
-    if not os.path.isfile(config_file):
-        raise FileNotFoundError('config file {} is not found'
-                                .format(config_file))
+    config_path = Path(config_path)
+    if not config_path.is_file():
+        raise FileNotFoundError(f'path not recognized as a file: {config_path}')
 
     try:
         config_obj = ConfigParser()
-        config_obj.read(config_file)
+        config_obj.read(config_path)
     except (MissingSectionHeaderError, ParsingError, DuplicateOptionError, DuplicateSectionError):
         # try to add some context for users that do not spend their lives thinking about ConfigParser objects
-        print(f"Error when opening the following config_file: {config_file}")
+        print(f"Error when opening the following config_path: {config_path}")
         raise
     except:
         # say something different if we can't add very good context
-        print(f"Unexpected error when opening the following config_file: {config_file}")
+        print(f"Unexpected error when opening the following config_path: {config_path}")
         raise
 
-    are_sections_valid(config_obj, config_file)
+    are_sections_valid(config_obj, config_path)
 
     if config_obj.has_section('TRAIN') and config_obj.has_section('LEARNCURVE'):
         raise ValueError(
@@ -93,31 +97,15 @@ def parse_config(config_file):
             )
 
     config_dict = {}
-    if config_obj.has_section('PREP'):
-        config_dict['prep'] = parse_prep_config(config_obj, config_file)
+    for section_name, section_parser in SECTION_PARSERS.items():
+        if config_obj.has_section(section_name):
+            are_options_valid(config_obj, section_name, config_path)
+            config_dict[section_name.lower()] = section_parser(config_obj, config_path)
 
-    ### if **not** using spectrograms from .mat files ###
+    # if **not** using spectrograms from .mat files
     if config_obj.has_section('SPECTROGRAM'):
-        are_options_valid(config_obj, 'SPECTROGRAM', config_file)
+        are_options_valid(config_obj, 'SPECTROGRAM', config_path)
+        # have to special case this one because attribute name is different from section name
         config_dict['spect_params'] = parse_spect_config(config_obj)
-
-    networks = []
-    if config_obj.has_section('LEARNCURVE'):
-        are_options_valid(config_obj, 'LEARNCURVE', config_file)
-        config_dict['learncurve'] = parse_learncurve_config(config_obj, config_file)
-        networks += config_dict['learncurve'].networks
-
-    if config_obj.has_section('TRAIN'):
-        are_options_valid(config_obj, 'TRAIN', config_file)
-        config_dict['train'] = parse_train_config(config_obj, config_file)
-        networks += config_dict['train'].networks
-
-    if config_obj.has_section('PREDICT'):
-        are_options_valid(config_obj, 'PREDICT', config_file)
-        config_dict['predict'] = parse_predict_config(config_obj)
-        networks += config_dict['predict'].networks
-
-    if networks:
-        config_dict['networks'] = _get_nets_config(config_obj, networks)
 
     return Config(**config_dict)
