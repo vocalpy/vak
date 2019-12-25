@@ -44,7 +44,7 @@ def cli(command, config_file):
 
         prep(labelset=prep_config.labelset,
              data_dir=prep_config.data_dir,
-             train_dur=prep_config.total_train_set_dur,
+             train_dur=prep_config.train_dur,
              test_dur=prep_config.test_dur,
              config_file=config_file,
              annot_format=prep_config.annot_format,
@@ -110,7 +110,7 @@ def cli(command, config_file):
         learning_curve(train_vds_path=learncurve_config.train_vds_path,
                        val_vds_path=learncurve_config.val_vds_path,
                        test_vds_path=learncurve_config.test_vds_path,
-                       total_train_set_duration=prep_config.total_train_set_dur,
+                       train_dur=prep_config.train_dur,
                        train_set_durs=learncurve_config.train_set_durs,
                        num_replicates=learncurve_config.num_replicates,
                        num_epochs=learncurve_config.num_epochs,
