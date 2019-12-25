@@ -34,7 +34,7 @@ class PredictConfig:
                                 default=None)
 
 
-def parse_predict_config(config):
+def parse_predict_config(config_obj, config_file):
     """parse [PREDICT] section of config.ini file
 
     Parameters
@@ -60,14 +60,14 @@ def parse_predict_config(config):
 
     try:
         config_dict['train_vds_path'] = os.path.expanduser(
-            config['PREDICT']['train_vds_path']
+            config_obj['PREDICT']['train_vds_path']
         )
     except KeyError:
         raise KeyError("'train_vds_path' option not found in [PREDICT] section of "
                             "config.ini file. Please add this option.")
 
     try:
-        config_dict['checkpoint_path'] = config['PREDICT']['checkpoint_path']
+        config_dict['checkpoint_path'] = config_obj['PREDICT']['checkpoint_path']
     except KeyError:
         raise KeyError('must specify checkpoint_path in [PREDICT] section '
                        'of config.ini file')
@@ -77,7 +77,7 @@ def parse_predict_config(config):
     MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
     try:
         model_names = [model_name
-                       for model_name in config['PREDICT']['models'].split(',')]
+                       for model_name in config_obj['PREDICT']['models'].split(',')]
     except NoOptionError:
         raise KeyError("'models' option not found in [PREDICT] section of config.ini file. "
                        "Please add this option as a comma-separated list of model names, e.g.:\n"
@@ -90,6 +90,6 @@ def parse_predict_config(config):
     config_dict['models'] = model_names
 
     if config.has_option('PREDICT', 'spect_scaler_path'):
-        config_dict['spect_scaler_path'] = config['PREDICT']['spect_scaler_path']
+        config_dict['spect_scaler_path'] = config_obj['PREDICT']['spect_scaler_path']
 
     return PredictConfig(**config_dict)
