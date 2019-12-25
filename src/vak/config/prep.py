@@ -1,10 +1,11 @@
 """parses [PREP] section of config"""
-import os
+from configparser import NoOptionError
 
 import attr
-from attr.validators import instance_of, optional
+from attr import converters, validators
+from attr.validators import instance_of
 
-from ..utils.data import range_str
+from .converters import expanded_user_path
 from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_format, is_spect_format
 
 
@@ -36,27 +37,42 @@ class PrepConfig:
         segments that are not annotated, e.g. silent gaps between songbird
         syllables, then `vak` will assign a dummy label to those segments
         -- you don't have to give them a label here.
-    total_train_set_dur : float
-        total duration of training set, in seconds.
-        For a learning curve, training subsets of shorter duration will be drawn from this set.
+    train_dur : float
+        total duration of training set, in seconds. When creating a learning curve,
+        training subsets of shorter duration (specified by the 'train_set_durs' option
+        in the LEARNCURVE section of a config.ini file) will be drawn from this set.
     val_dur : float
         total duration of validation set, in seconds.
     test_dur : float
         total duration of test set, in seconds.
     """
-    data_dir = attr.ib(validator=is_a_directory)
-    output_dir = attr.ib(validator=is_a_directory)
+    data_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
+    output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
 
-    audio_format = attr.ib(validator=optional(is_audio_format), default=None)
-    spect_format = attr.ib(validator=optional(is_spect_format), default=None)
-    annot_file = attr.ib(validator=optional(is_a_file), default=None)
-    annot_format = attr.ib(validator=optional(is_annot_format), default=None)
+    audio_format = attr.ib(validator=validators.optional(is_audio_format), default=None)
+    spect_format = attr.ib(validator=validators.optional(is_spect_format), default=None)
+    annot_file = attr.ib(converter=converters.optional(expanded_user_path),
+                         validator=validators.optional(is_a_file), default=None)
+    annot_format = attr.ib(validator=validators.optional(is_annot_format), default=None)
 
-    labelset = attr.ib(validator=optional(instance_of(list)), default=None)
+    labelset = attr.ib(converter=converters.optional(list),
+                       validator=validators.optional(instance_of(list)),
+                       default=None)
 
-    total_train_set_dur = attr.ib(validator=optional(instance_of(float)), default=None)
-    val_dur = attr.ib(validator=optional(instance_of(float)), default=None)
-    test_dur = attr.ib(validator=optional(instance_of(float)), default=None)
+    train_dur = attr.ib(converter=converters.optional(float),
+                        validator=validators.optional(instance_of(float)),
+                        default=None)
+    val_dur = attr.ib(converter=converters.optional(float),
+                      validator=validators.optional(instance_of(float)),
+                      default=None)
+    test_dur = attr.ib(converter=converters.optional(float),
+                       validator=validators.optional(instance_of(float)),
+                       default=None)
+
+
+REQUIRED_PREP_OPTIONS = [
+    'data_dir',
+]
 
 
 def parse_prep_config(config, config_file):
@@ -83,44 +99,13 @@ def parse_prep_config(config, config_file):
         raise ValueError("[PREP] section of config.ini file must specify either audio_format or "
                          "spect_format")
 
-    config_dict = {}
+    prep_section = config['PREP']
+    prep_section = dict(prep_section.items())
+    for required_option in REQUIRED_PREP_OPTIONS:
+        if required_option not in prep_section:
+            raise NoOptionError(
+                f"the '{required_option}' option is required but was not found in the "
+                f"TRAIN section of the config.ini file: {config_file}"
+            )
 
-    if config.has_option('PREP', 'output_dir'):
-        output_dir = config['PREP']['output_dir']
-        output_dir = os.path.expanduser(output_dir)
-        config_dict['output_dir'] = os.path.abspath(output_dir)
-
-    if config.has_option('PREP', 'data_dir'):
-        data_dir = config['PREP']['data_dir']
-        config_dict['data_dir'] = os.path.expanduser(data_dir)
-
-    if config.has_option('PREP', 'audio_format'):
-        config_dict['audio_format'] = config['PREP']['audio_format']
-
-    if config.has_option('PREP', 'spect_format'):
-        config_dict['spect_format'] = config['PREP']['spect_format']
-
-    if config.has_option('PREP', 'annot_format'):
-        config_dict['annot_format'] = config['PREP']['annot_format']
-
-    if config.has_option('PREP', 'annot_file'):
-        config_dict['annot_file'] = os.path.expanduser(config['PREP']['annot_file'])
-
-    if config.has_option('PREP', 'labelset'):
-        labelset = config['PREP']['labelset']
-        # make mapping from syllable labels to consecutive integers
-        # start at 1, because 0 is assumed to be label for silent gaps
-        if '-' in labelset or ',' in labelset:
-            # if user specified range of ints using a str
-            config_dict['labelset'] = range_str(labelset)
-        else:  # assume labelset is characters
-            config_dict['labelset'] = list(labelset)
-
-    if config.has_option('PREP', 'total_train_set_duration'):
-        config_dict['total_train_set_dur'] = float(config['PREP']['total_train_set_duration'])
-    if config.has_option('PREP', 'validation_set_duration'):
-        config_dict['val_dur'] = float(config['PREP']['validation_set_duration'])
-    if config.has_option('PREP', 'test_set_duration'):
-        config_dict['test_dur'] = float(config['PREP']['test_set_duration'])
-
-    return PrepConfig(**config_dict)
+    return PrepConfig(**prep_section)
