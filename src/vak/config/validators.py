@@ -82,11 +82,13 @@ VALID_OPTIONS = {
 
 def are_sections_valid(user_config_parser, user_config_path):
     user_sections = user_config_parser.sections()
+    MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
+    # add model names to valid sections so users can define model config in sections
+    valid_sections = VALID_SECTIONS + MODEL_NAMES
     for section in user_sections:
-        if section not in VALID_SECTIONS:
+        if section not in valid_sections:
             raise ValueError(
-                f'section defined in {user_config_path} is not '
-                f'valid: {section}'
+                f'section defined in {user_config_path} is not valid: {section}'
             )
 
 
