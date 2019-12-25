@@ -1,16 +1,17 @@
 """validators used by attrs-based classes and by vak.parse.parse_config"""
 from configparser import ConfigParser
-import os
 from pathlib import Path
 
 from scipy.io import wavfile
 import crowsetta.formats
 from ..evfuncs import load_cbin
 
+from .. import models
+
 
 def is_a_directory(instance, attribute, value):
     """check if given path is a directory"""
-    if not os.path.isdir(value):
+    if not Path(value).is_dir():
         raise NotADirectoryError(
             f'Value specified for {attribute.name} of {type(instance)} not recognized as a directory:\n'
             f'{value}'
@@ -18,12 +19,21 @@ def is_a_directory(instance, attribute, value):
 
 
 def is_a_file(instance, attribute, value):
-    """check if given path is a directory"""
-    if not os.path.isfile(value):
-        raise NotADirectoryError(
+    """check if given path is a file"""
+    if not Path(value).is_file():
+        raise FileNotFoundError(
             f'Value specified for {attribute.name} of {type(instance)} not recognized as a file:\n'
             f'{value}'
         )
+
+
+def is_valid_model_name(instance, attribute, value):
+    MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
+    for model_name in value:
+        if model_name not in MODEL_NAMES:
+            raise ValueError(
+                f'Model {model_name} not found when importing installed models.'
+            )
 
 
 AUDIO_FORMAT_FUNC_MAP = {
