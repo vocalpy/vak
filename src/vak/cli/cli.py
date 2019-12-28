@@ -56,26 +56,7 @@ def cli(command, config_file):
              spect_params=spect_params)
 
     elif command == 'train':
-        train_config = parse_train_config(config_obj, config_file)
-        prep_config = parse_prep_config(config_obj, config_file)
-        models = config.models.from_config(config_obj, train_config.models)
-        train(models=models,
-              csv_path=train_config.csv_path,
-              labelset=prep_config.labelset,
-              num_epochs=train_config.num_epochs,
-              config_file=config_file,
-              batch_size=train_config.batch_size,
-              train_unlabeled=train_config.train_unlabeled,
-              shuffle=train_config.shuffle,
-              val_error_step=train_config.val_error_step,
-              checkpoint_step=train_config.checkpoint_step,
-              patience=train_config.patience,
-              save_only_single_checkpoint_file=train_config.save_only_single_checkpoint_file,
-              normalize_spectrograms=train_config.normalize_spectrograms,
-              spect_key='s',
-              timebins_key='t',
-              root_results_dir=train_config.root_results_dir
-              )
+        train(config_path=config_file)
 
     elif command == 'finetune':
         raise NotImplementedError
