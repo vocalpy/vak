@@ -56,13 +56,15 @@ class LearncurveConfig(TrainConfig):
     num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
 
 
-def parse_learncurve_config(config, config_file):
+def parse_learncurve_config(config, config_path):
     """parse [LEARNCURVE] section of config.ini file
 
     Parameters
     ----------
     config : ConfigParser
         containing config.ini file already loaded by parse function
+    config_path : str
+        path to config.ini file (used for error messages)
 
     Returns
     -------
@@ -167,7 +169,7 @@ def parse_learncurve_config(config, config_file):
                                'use_train_subsets_from_previous_run = Yes, but '
                                'no previous_run_path option was found.'
                                'Please add previous_run_path to config file.'
-                               .format(config_file))
+                               .format(config_path))
         else:
             if config.has_option('LEARNCURVE', 'previous_run_path'):
                 raise ValueError('In config.file {}, '
@@ -175,7 +177,7 @@ def parse_learncurve_config(config, config_file):
                                  'previous_run_path option was specified as {}.\n'
                                  'Please fix argument or remove/comment out '
                                  'previous_run_path.'
-                                 .format(config_file,
+                                 .format(config_path,
                                          config['LEARNCURVE']['previous_run_path'])
                                  )
 
