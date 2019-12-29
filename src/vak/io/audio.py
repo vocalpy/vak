@@ -1,6 +1,7 @@
 import logging
 import os
 
+import attr
 import numpy as np
 import dask.bag as db
 from dask.diagnostics import ProgressBar
@@ -135,7 +136,7 @@ def to_spect(audio_format,
             )
 
     if type(spect_params) == SpectConfig:
-        spect_params = spect_params._asdict()
+        spect_params = attr.asdict(spect_params)
 
     # validate audio files if supplied by user
     if audio_files:
