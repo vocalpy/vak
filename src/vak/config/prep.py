@@ -75,15 +75,15 @@ REQUIRED_PREP_OPTIONS = [
 ]
 
 
-def parse_prep_config(config, config_file):
+def parse_prep_config(config, config_path):
     """parse [PREP] section of config.ini file
 
     Parameters
     ----------
     config : ConfigParser
         containing config.ini file already loaded by parse function
-    config_file : str
-        path to config file (used for error messages)
+    config_path : str
+        path to config.ini file (used for error messages)
 
     Returns
     -------
@@ -105,7 +105,7 @@ def parse_prep_config(config, config_file):
         if required_option not in prep_section:
             raise NoOptionError(
                 f"the '{required_option}' option is required but was not found in the "
-                f"TRAIN section of the config.ini file: {config_file}"
+                f"PREP section of the config.ini file: {config_path}"
             )
 
     return PrepConfig(**prep_section)

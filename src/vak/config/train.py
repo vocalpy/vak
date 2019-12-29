@@ -96,13 +96,15 @@ REQUIRED_TRAIN_OPTIONS = [
 ]
 
 
-def parse_train_config(config, config_file):
+def parse_train_config(config, config_path):
     """parse [TRAIN] section of config.ini file
 
     Parameters
     ----------
     config : ConfigParser
         containing config.ini file already loaded by parse function
+    config_path : str
+        path to config.ini file (used for error messages)
 
     Returns
     -------
@@ -115,6 +117,6 @@ def parse_train_config(config, config_file):
         if required_option not in train_section:
             raise NoOptionError(
                 f"the '{required_option}' option is required but was not found in the "
-                f"TRAIN section of the config.ini file: {config_file}"
+                f"TRAIN section of the config.ini file: {config_path}"
             )
     return TrainConfig(**train_section)

@@ -52,7 +52,7 @@ def parse_predict_config(config_obj, config_file):
 
     try:
         config_dict['predict_vds_path'] = os.path.expanduser(
-            config['PREDICT']['predict_vds_path']
+            config_obj['PREDICT']['predict_vds_path']
         )
     except KeyError:
         raise KeyError("'predict_vds_path' option not found in [PREDICT] section of "
@@ -89,7 +89,7 @@ def parse_predict_config(config_obj, config_file):
             )
     config_dict['models'] = model_names
 
-    if config.has_option('PREDICT', 'spect_scaler_path'):
+    if config_obj.has_option('PREDICT', 'spect_scaler_path'):
         config_dict['spect_scaler_path'] = config_obj['PREDICT']['spect_scaler_path']
 
     return PredictConfig(**config_dict)
