@@ -54,13 +54,18 @@ SECTION_PARSERS = {
 }
 
 
-def from_path(config_path):
+def from_path(config_path, sections=None):
     """parse a config.ini file
 
     Parameters
     ----------
     config_path : str, Path
         path to config.ini file
+    sections : list
+        of str, names of sections from config.ini file to parse.
+        Default is None, in which case function attempts to parse all sections.
+        Used by vak.cli.prep to avoid throwing a bunch of errors if paths in
+        other sections don't exist yet.
 
     Returns
     -------
@@ -103,10 +108,13 @@ def from_path(config_path):
                 "Were you trying to use the 'learncurve' command instead?"
             )
 
+    if sections is None:
+        sections = list(SECTION_PARSERS.keys())
     config_dict = {}
-    for section_name, section_parser in SECTION_PARSERS.items():
+    for section_name in sections:
         if config_obj.has_section(section_name):
             are_options_valid(config_obj, section_name, config_path)
+            section_parser = SECTION_PARSERS[section_name]
             config_dict[section_name.lower()] = section_parser(config_obj, config_path)
 
     return Config(**config_dict)
