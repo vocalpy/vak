@@ -2,7 +2,7 @@
 import unittest
 from configparser import ConfigParser
 
-import vak.config.spectrogram
+import vak.config.spect_params
 import vak.utils
 
 
@@ -18,15 +18,15 @@ def _base_config():
     return base_config
 
 
-class TestParseSpectConfig(unittest.TestCase):
+class TestParseSpectParamsConfig(unittest.TestCase):
 
     def setUp(self):
         self.get_config = _base_config()
 
     def test_config_tuple_has_all_attrs(self):
         config_obj = self.get_config
-        spect_config_tup = vak.config.spectrogram.parse_spect_config(config_obj)
-        for field in vak.config.spectrogram.SpectConfig._fields:
+        spect_config_tup = vak.config.spect_params.parse_spect_params_config(config_obj)
+        for field in vak.config.spect_params.SpectParamsConfig._fields:
             self.assertTrue(hasattr(spect_config_tup, field))
 
     def test_thresh_default(self):
@@ -38,7 +38,7 @@ class TestParseSpectConfig(unittest.TestCase):
             'step_size': '64',
             'freq_cutoffs': '500, 10000',
         }
-        spect_config_tup = vak.config.spectrogram.parse_spect_config(config_obj)
+        spect_config_tup = vak.config.spect_params.parse_spect_params_config(config_obj)
         self.assertTrue(spect_config_tup.thresh is None)
 
 

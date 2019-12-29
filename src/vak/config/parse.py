@@ -10,7 +10,7 @@ from .dataloader import parse_dataloader_config, DataLoaderConfig
 from .learncurve import parse_learncurve_config, LearncurveConfig
 from .predict import parse_predict_config, PredictConfig
 from .prep import parse_prep_config, PrepConfig
-from .spectrogram import parse_spect_config, SpectConfig
+from .spect_params import parse_spect_params_config, SpectParamsConfig
 from .train import parse_train_config, TrainConfig
 
 from .validators import are_sections_valid, are_options_valid
@@ -35,7 +35,7 @@ class Config:
     learncurve : vak.config.learncurve.LearncurveConfig
         represents [LEARNCURVE] section of config.ini file
     """
-    spect = attr.ib(validator=instance_of(SpectConfig), default=SpectConfig())
+    spect_params = attr.ib(validator=instance_of(SpectParamsConfig), default=SpectParamsConfig())
     dataloader = attr.ib(validator=instance_of(DataLoaderConfig), default=DataLoaderConfig())
 
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
@@ -45,7 +45,7 @@ class Config:
 
 
 SECTION_PARSERS = {
-    'SPECTROGRAM': parse_spect_config,
+    'SPECT_PARAMS': parse_spect_params_config,
     'DATAlOADER': parse_dataloader_config,
     'PREP': parse_prep_config,
     'TRAIN': parse_train_config,
