@@ -1,4 +1,3 @@
-from configparser import ConfigParser
 from pathlib import Path
 import shutil
 
@@ -22,22 +21,7 @@ def main():
         print(f"\tcopying to {tmp_config_path}")
         shutil.copy(src=config_path, dst=tmp_config_path)
 
-        config = ConfigParser()
-        config.read(tmp_config_path)
-        prep_config = vak.config.parse.parse_prep_config(config, tmp_config_path)
-        spect_params = vak.config.parse.parse_spect_config(config)
-        vak.cli.prep(data_dir=prep_config.data_dir,
-                     labelset=prep_config.labelset,
-                     config_file=tmp_config_path,
-                     annot_format=prep_config.annot_format,
-                     train_dur=prep_config.train_dur,
-                     test_dur=prep_config.test_dur,
-                     val_dur=prep_config.val_dur,
-                     output_dir=prep_config.output_dir,
-                     audio_format=prep_config.audio_format,
-                     spect_format=prep_config.spect_format,
-                     annot_file=prep_config.annot_file,
-                     spect_params=spect_params)
+        vak.cli.prep(config_path=tmp_config_path)
 
 
 if __name__ == '__main__':
