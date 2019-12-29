@@ -101,15 +101,15 @@ def train(config_path):
         json.dump(labelmap, f)
 
     logger.info(f'using training dataset from {cfg.train.csv_path}')
-    train_loader = dataset.keras.WindowDataLoader.from_csv(csv_path=cfg.train.csv_path,
-                                                           split='train',
-                                                           labelmap=labelmap,
-                                                           window_size=cfg.dataloader.window_size,
-                                                           batch_size=cfg.train.batch_size,
-                                                           shuffle=cfg.train.shuffle,
-                                                           spect_key=cfg.spect_params.spect_key,
-                                                           timebins_key=cfg.spect_params.timebins_key,
-                                                           spect_scaler=spect_scaler)
+    train_loader = dataset.dataloaders.WindowDataLoader.from_csv(csv_path=cfg.train.csv_path,
+                                                                 split='train',
+                                                                 labelmap=labelmap,
+                                                                 window_size=cfg.dataloader.window_size,
+                                                                 batch_size=cfg.train.batch_size,
+                                                                 shuffle=cfg.train.shuffle,
+                                                                 spect_key=cfg.spect_params.spect_key,
+                                                                 timebins_key=cfg.spect_params.timebins_key,
+                                                                 spect_scaler=spect_scaler)
 
     train_dur = dataframe.split_dur(dataset_df, 'train')
     logger.info(
@@ -118,15 +118,15 @@ def train(config_path):
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if cfg.train.val_error_step:
-        val_loader = dataset.keras.WindowDataLoader.from_csv(csv_path=cfg.train.csv_path,
-                                                             split='val',
-                                                             labelmap=labelmap,
-                                                             window_size=cfg.dataloader.window_size,
-                                                             batch_size=cfg.train.batch_size,
-                                                             shuffle=False,
-                                                             spect_key=cfg.spect_params.spect_key,
-                                                             timebins_key=cfg.spect_params.timebins_key,
-                                                             spect_scaler=spect_scaler)
+        val_loader = dataset.dataloaders.WindowDataLoader.from_csv(csv_path=cfg.train.csv_path,
+                                                                   split='val',
+                                                                   labelmap=labelmap,
+                                                                   window_size=cfg.dataloader.window_size,
+                                                                   batch_size=cfg.train.batch_size,
+                                                                   shuffle=False,
+                                                                   spect_key=cfg.spect_params.spect_key,
+                                                                   timebins_key=cfg.spect_params.timebins_key,
+                                                                   spect_scaler=spect_scaler)
 
         val_dur = dataframe.split_dur(dataset_df, 'val')
         logger.info(
