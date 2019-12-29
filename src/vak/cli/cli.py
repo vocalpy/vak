@@ -7,8 +7,7 @@ from .predict import predict
 from .learncurve import learning_curve
 from .prep import prep
 from .. import config
-from ..config import parse_learncurve_config, parse_predict_config, parse_prep_config, parse_spect_config, \
-    parse_train_config
+from ..config import parse_learncurve_config, parse_predict_config, parse_prep_config
 
 
 def cli(command, config_file):
@@ -39,21 +38,7 @@ def cli(command, config_file):
         raise
 
     if command == 'prep':
-        prep_config = parse_prep_config(config_obj, config_file)
-        spect_params = parse_spect_config(config_obj)
-
-        prep(labelset=prep_config.labelset,
-             data_dir=prep_config.data_dir,
-             train_dur=prep_config.train_dur,
-             test_dur=prep_config.test_dur,
-             config_file=config_file,
-             annot_format=prep_config.annot_format,
-             val_dur=prep_config.val_dur,
-             output_dir=prep_config.output_dir,
-             audio_format=prep_config.audio_format,
-             spect_format=prep_config.spect_format,
-             annot_file=prep_config.annot_file,
-             spect_params=spect_params)
+        prep(config_path=config_file)
 
     elif command == 'train':
         train(config_path=config_file)
