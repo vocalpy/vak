@@ -127,7 +127,7 @@ def prep(config_path):
                                   annot_file=cfg.prep.annot_file,
                                   audio_format=cfg.prep.audio_format,
                                   spect_format=cfg.prep.spect_format,
-                                  spect_params=cfg.spectrogram)
+                                  spect_params=cfg.spect_params)
 
     if do_split:
         # save before splitting, jic duration args are not valid (we can't know until we make dataset)
