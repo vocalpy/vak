@@ -23,7 +23,7 @@ class Config:
     ----------
     prep : vak.config.prep.PrepConfig
         represents [PREP] section of config.ini file
-    spect_params : vak.config.spectrogram.SpectConfig
+    spect : vak.config.spectrogram.SpectConfig
         represents [SPECTROGRAM] section of config.ini file
     learncurve : vak.config.learncurve.LearncurveConfig
         represents [LEARNCURVE] section of config.ini file
@@ -31,9 +31,9 @@ class Config:
         represents [TRAIN] section of config.ini file
     predict : vak.config.predict.PredictConfig
         represents [PREDICT] section of config.ini file.
-\    """
+    """
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
-    spect_params = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
+    spect = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
     learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
@@ -44,6 +44,7 @@ SECTION_PARSERS = {
     'TRAIN': parse_train_config,
     'LEARNCURVE': parse_learncurve_config,
     'PREDICT': parse_predict_config,
+    'SPECTROGRAM': parse_spect_config,
 }
 
 
@@ -102,10 +103,10 @@ def from_path(config_path):
             are_options_valid(config_obj, section_name, config_path)
             config_dict[section_name.lower()] = section_parser(config_obj, config_path)
 
-    # if **not** using spectrograms from .mat files
-    if config_obj.has_section('SPECTROGRAM'):
-        are_options_valid(config_obj, 'SPECTROGRAM', config_path)
-        # have to special case this one because attribute name is different from section name
-        config_dict['spect_params'] = parse_spect_config(config_obj)
+    # special case SPECTROGRAM because we want it always to be there,
+    # for default spect_key, timebin_key, freqbins_key used by other functions
+    if 'SPECTROGRAM' not in config_obj:
+        # calling with no SPECTROGRAM section gives us the defaults
+        config_dict['spect'] = parse_spect_config(config_obj, config_path)
 
     return Config(**config_dict)
