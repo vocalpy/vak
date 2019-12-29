@@ -7,7 +7,7 @@ import unittest
 import pandas as pd
 
 import vak.io.dataframe
-from vak.config.spectrogram import SpectConfig
+from vak.config.spect_params import SpectParamsConfig
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
@@ -22,8 +22,8 @@ class TestFromFiles(unittest.TestCase):
 
     def test_from_files_with_audio_cbin(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         annot_format = 'notmat'
         labelset = list('iabcdefghjk')
 
@@ -40,8 +40,8 @@ class TestFromFiles(unittest.TestCase):
 
     def test_from_files_with_audio_cbin_no_annot(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         annot_format = None
         labelset = None
 
@@ -58,8 +58,8 @@ class TestFromFiles(unittest.TestCase):
 
     def test_from_files_with_audio_cbin_no_labelset(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         annot_format = 'notmat'
         labelset = None
 
@@ -139,8 +139,8 @@ class TestAddSplitCol(unittest.TestCase):
     def test_add_split_col(self):
         # make a df to test on
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         annot_format = 'notmat'
         labelset = list('iabcdefghjk')
 
