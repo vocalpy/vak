@@ -41,7 +41,7 @@ def prep(config_path):
     dataset. If the duration of either the training or test set is provided,
     then the function attempts to split the dataset into training and test sets.
     """
-    cfg = config.parse.from_path(config_path)
+    cfg = config.parse.from_path(config_path, sections=['PREP', 'SPECTROGRAM', 'DATALOADER'])
 
     if cfg.prep is None:
         raise ValueError(
