@@ -6,6 +6,7 @@ from pathlib import Path
 import attr
 from attr.validators import instance_of, optional
 
+from .dataloader import parse_dataloader_config, DataLoaderConfig
 from .learncurve import parse_learncurve_config, LearncurveConfig
 from .predict import parse_predict_config, PredictConfig
 from .prep import parse_prep_config, PrepConfig
@@ -25,26 +26,32 @@ class Config:
         represents [PREP] section of config.ini file
     spect : vak.config.spectrogram.SpectConfig
         represents [SPECTROGRAM] section of config.ini file
-    learncurve : vak.config.learncurve.LearncurveConfig
-        represents [LEARNCURVE] section of config.ini file
+    dataloader : vak.config.dataloader.DataLoaderConfig
+        represents [DATALOADER] section of config.ini file
     train : vak.config.train.TrainConfig
         represents [TRAIN] section of config.ini file
     predict : vak.config.predict.PredictConfig
         represents [PREDICT] section of config.ini file.
+    learncurve : vak.config.learncurve.LearncurveConfig
+        represents [LEARNCURVE] section of config.ini file
     """
+    spect = attr.ib(validator=instance_of(SpectConfig), default=SpectConfig())
+    dataloader = attr.ib(validator=instance_of(DataLoaderConfig), default=DataLoaderConfig())
+
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
-    spect = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
-    learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
+    learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
 
 
 SECTION_PARSERS = {
+    'SPECTROGRAM': parse_spect_config,
+    'DATAlOADER': parse_dataloader_config,
     'PREP': parse_prep_config,
     'TRAIN': parse_train_config,
     'LEARNCURVE': parse_learncurve_config,
     'PREDICT': parse_predict_config,
-    'SPECTROGRAM': parse_spect_config,
+
 }
 
 
@@ -102,11 +109,5 @@ def from_path(config_path):
         if config_obj.has_section(section_name):
             are_options_valid(config_obj, section_name, config_path)
             config_dict[section_name.lower()] = section_parser(config_obj, config_path)
-
-    # special case SPECTROGRAM because we want it always to be there,
-    # for default spect_key, timebin_key, freqbins_key used by other functions
-    if 'SPECTROGRAM' not in config_obj:
-        # calling with no SPECTROGRAM section gives us the defaults
-        config_dict['spect'] = parse_spect_config(config_obj, config_path)
 
     return Config(**config_dict)
