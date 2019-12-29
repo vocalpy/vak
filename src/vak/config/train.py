@@ -64,7 +64,6 @@ class TrainConfig:
     # required
     models = attr.ib(converter=comma_separated_list,
                      validator=[instance_of(list), is_valid_model_name])
-    csv_path = attr.ib(converter=expanded_user_path, validator=is_a_file)
     num_epochs = attr.ib(converter=int, validator=instance_of(int))
     batch_size = attr.ib(converter=int, validator=instance_of(int))
     root_results_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
@@ -74,6 +73,12 @@ class TrainConfig:
     metrics = attr.ib(converter=comma_separated_list)
 
     # optional
+    # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
+    # what sections are defined to figure out where to add csv_path after it creates the csv
+    csv_path = attr.ib(converter=converters.optional(expanded_user_path),
+                       validator=validators.optional(is_a_file),
+                       default=None
+                       )
     results_dirname = attr.ib(converter=converters.optional(expanded_user_path),
                               validator=validators.optional(is_a_directory), default=None)
     normalize_spectrograms = attr.ib(converter=bool_from_str,
@@ -91,7 +96,6 @@ class TrainConfig:
 
 REQUIRED_TRAIN_OPTIONS = [
     'models',
-    'csv_path',
     'root_results_dir',
 ]
 
