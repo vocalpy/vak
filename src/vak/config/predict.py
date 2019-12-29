@@ -1,13 +1,12 @@
 """parses [PREDICT] section of config"""
 from configparser import NoOptionError
-import os
 
 import attr
+from attr import converters, validators
 from attr.validators import instance_of, optional
 
 from .converters import comma_separated_list, expanded_user_path
 from .validators import is_a_directory, is_a_file, is_valid_model_name
-from .. import models
 
 
 @attr.s
@@ -27,17 +26,25 @@ class PredictConfig:
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     """
-    csv_path = attr.ib(converter=expanded_user_path, validator=is_a_file)
+    # required
     checkpoint_path = attr.ib(converter=expanded_user_path,
                               validator=is_a_directory)
     models = attr.ib(converter=comma_separated_list,
                      validator=[instance_of(list), is_valid_model_name])
+
+    # optional
+    # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
+    # what sections are defined to figure out where to add csv_path after it creates the csv
+    csv_path = attr.ib(converter=converters.optional(expanded_user_path),
+                       validator=validators.optional(is_a_file),
+                       default=None
+                       )
+
     spect_scaler_path = attr.ib(validator=optional([instance_of(str), is_a_file]),
                                 default=None)
 
 
 REQUIRED_PREDICT_OPTIONS = [
-    'csv_path',
     'checkpoint_path',
     'models',
 ]
