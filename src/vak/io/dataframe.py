@@ -50,8 +50,8 @@ def from_files(data_dir,
     annot_file : str
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
-    spect_params : dict
-        Dictionary of parameters for creating spectrograms.
+    spect_params : dict, vak.config.spect.SpectParamsConfig.
+        Parameters for creating spectrograms.
         Default is None (implying that spectrograms are already made).
     spect_output_dir : str
         path to location where spectrogram files should be saved. Default is None,
