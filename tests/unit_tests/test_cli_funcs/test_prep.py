@@ -9,7 +9,7 @@ from math import isclose
 import crowsetta
 
 import vak.cli.prep
-from vak.config.spectrogram import SpectConfig
+from vak.config.spect_params import SpectParamsConfig
 from vak.io import Dataset
 import vak.io
 
@@ -111,8 +111,8 @@ class TestPrep(unittest.TestCase):
 
     def test_prep_with_audio_cbin_no_split(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         labelset = set(list('iabcdefghjk'))
 
         annot_format = 'notmat'
@@ -152,8 +152,8 @@ class TestPrep(unittest.TestCase):
 
     def test_prep_with_audio_cbin_split_with_train(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         labelset = list('iabcdefghjk')
 
         annot_format = 'notmat'
@@ -195,8 +195,8 @@ class TestPrep(unittest.TestCase):
 
     def test_prep_with_audio_cbin_split_with_test(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         labelset = list('iabcdefghjk')
 
         annot_format = 'notmat'
@@ -237,8 +237,8 @@ class TestPrep(unittest.TestCase):
 
     def test_prep_with_audio_cbin_train_test_val_split(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         labelset = list('iabcdefghjk')
 
         annot_format = 'notmat'
@@ -437,8 +437,8 @@ class TestPrep(unittest.TestCase):
 
     def test_prep_with_just_val_dur_raises(self):
         data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                   transform_type='log_spect')
+        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
+                                         transform_type='log_spect')
         labelset = list('iabcdefghjk')
 
         train_dur = None

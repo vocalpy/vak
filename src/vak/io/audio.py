@@ -8,7 +8,7 @@ from dask.diagnostics import ProgressBar
 
 from .annotation import source_annot_map
 from ..config import validators
-from ..config.spectrogram import SpectConfig
+from ..config.spect_params import SpectParamsConfig
 from ..utils.general import _files_from_dir
 from ..utils.spect import spectrogram
 
@@ -135,7 +135,7 @@ def to_spect(audio_format,
                 f'type of labelset must be set, but was: {type(labelset)}'
             )
 
-    if type(spect_params) == SpectConfig:
+    if type(spect_params) == SpectParamsConfig:
         spect_params = attr.asdict(spect_params)
 
     # validate audio files if supplied by user
