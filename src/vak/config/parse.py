@@ -51,7 +51,6 @@ SECTION_PARSERS = {
     'TRAIN': parse_train_config,
     'LEARNCURVE': parse_learncurve_config,
     'PREDICT': parse_predict_config,
-
 }
 
 
