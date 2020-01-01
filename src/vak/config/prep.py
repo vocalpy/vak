@@ -9,6 +9,17 @@ from .converters import expanded_user_path
 from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_format, is_spect_format
 
 
+def to_set(value):
+    tmp_set = set(value)
+    if len(tmp_set) == len(value):
+        return tmp_set
+    elif len(tmp_set) < len(value):
+        raise ValueError(
+            'Labelset should be set of unique labels for classes applied to segments in annotation, but '
+            f'found repeated elements: the input was {value} but the unique set is {tmp_set}'
+        )
+
+
 @attr.s
 class PrepConfig:
     """class to represent [PREP] section of config.ini file
@@ -31,10 +42,10 @@ class PrepConfig:
     annot_file : str
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
-    labelset : list
+    labelset : set
         of str or int, the set of labels that correspond to annotated segments
-        that a network should learn to segment and classify. Note that
-        segments that are not annotated, e.g. silent gaps between songbird
+        that a network should learn to segment and classify. Note that if there
+        are segments that are not annotated, e.g. silent gaps between songbird
         syllables, then `vak` will assign a dummy label to those segments
         -- you don't have to give them a label here.
     train_dur : float
@@ -55,8 +66,8 @@ class PrepConfig:
                          validator=validators.optional(is_a_file), default=None)
     annot_format = attr.ib(validator=validators.optional(is_annot_format), default=None)
 
-    labelset = attr.ib(converter=converters.optional(list),
-                       validator=validators.optional(instance_of(list)),
+    labelset = attr.ib(converter=converters.optional(to_set),
+                       validator=validators.optional(instance_of(set)),
                        default=None)
 
     train_dur = attr.ib(converter=converters.optional(float),
