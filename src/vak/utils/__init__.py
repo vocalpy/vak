@@ -1,4 +1,5 @@
 from . import data
+from . import dataset
 from . import general
 from . import labels
 from . import splitalgos
