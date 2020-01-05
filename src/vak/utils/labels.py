@@ -81,7 +81,7 @@ def label_timebins(labels_int,
             (type(labels_int) == np.ndarray and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64])):
         raise TypeError('labels_int must be a list or numpy.ndarray of integers')
 
-    label_vec = np.ones((time_bins.shape[-1], 1), dtype='int8') * unlabeled_label
+    label_vec = np.ones((time_bins.shape[-1],), dtype='int8') * unlabeled_label
     onset_inds = [np.argmin(np.abs(time_bins - onset))
                   for onset in onsets_s]
     offset_inds = [np.argmin(np.abs(time_bins - offset))
