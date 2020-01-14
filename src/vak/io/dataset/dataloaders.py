@@ -1,80 +1,21 @@
-from functools import partial
-
 from crowsetta import Transcriber
 import numpy as np
 import pandas as pd
-import tensorflow as tf
+import torch
+from torchvision.datasets.vision import VisionDataset
 
 from ... import utils
 from ... import io
 
 
-class BaseDataLoader(tf.keras.utils.Sequence):
-    """base DataLoader class used when training neural networks with Keras"""
-    def __init__(self, x, y,
-                 batch_size,
-                 shuffle=True,
-                 transform=None,
-                 target_transform=None):
-        if len(x) != len(y):
-            raise ValueError(
-                'length of x does not equal length of y'
-            )
-        self.x = x
-        self.y = y
-        self.batch_size = batch_size
+class SpectrogramWindowDataset(VisionDataset):
+    """Dataset class that represents a set of spectrograms of vocalizations
+    and annotations for those vocalizations.
 
-        self.indices = np.arange(len(x))
-
-        self.shuffle = shuffle
-        self.transform = transform
-        self.target_transform = target_transform
-
-        if shuffle:
-            np.random.shuffle(self.indices)
-
-    def __len__(self):
-        """number of batches"""
-        return int(np.ceil(len(self.x) / float(self.batch_size)))
-
-    def __getitem__(self, index):
-        """gets one batch"""
-        inds = self.indices[index * self.batch_size: (index+1) * self.batch_size]
-
-        # Generate data
-        x, y = self.x[inds], self.y[inds]
-        if self.transform:
-            x = self.transform(x)
-        if self.target_transform:
-            y = self.target_transform(y)
-
-        return x, y
-
-    def on_epoch_end(self):
-        """updates indexes after each epoch"""
-        if self.shuffle:
-            np.random.shuffle(self.indices)
-
-    @classmethod
-    def from_csv(cls, csv_path, split, batch_size, shuffle=True, transform=None, target_transform=None):
-        df = pd.read_csv(csv_path)
-        if not df['split'].str.contains(split).any():
-            raise ValueError(
-                f'split {split} not found in dataset in csv: {csv_path}'
-            )
-        else:
-            df = df[df['split'] == split]
-
-        x = df['spect_files'].values
-        y = df['annot_files'].values
-        return cls(x, y, batch_size, shuffle, transform, target_transform)
-
-
-class WindowDataLoader(tf.keras.utils.Sequence):
-    """DataLoader class that produces batches of windows from
-
-     used when training neural networks with Keras"""
+    Returns windows from the spectrograms, along with labels for each
+    time bin in the window, derived from the annotations."""
     def __init__(self,
+                 root,
                  x_inds,
                  spect_id_vector,
                  spect_inds_vector,
@@ -83,17 +24,22 @@ class WindowDataLoader(tf.keras.utils.Sequence):
                  annot_formats,
                  scribes,
                  labelmap,
-                 batch_size,
                  window_size,
                  spect_key='s',
                  timebins_key='t',
-                 shuffle=True,
-                 spect_scaler=None):
-        """
+                 transform=None,
+                 target_transform=None,
+                 ):
+        """initialize a SpectrogramWindowDataset instance
 
         Parameters
         ----------
+        root : str, Path
+            for SpectrogramWindowDataset, this should be a path
+            to a .csv file that represents the dataset.
+            Name 'root' is used for consistency with torchvision.datasets
         x_inds : numpy.ndarray
+            indices of each window in the dataset
         spect_id_vector : numpy.ndarray
             represents the 'id' of any spectrogram,
             i.e., the index into spect_paths that will let us load it
@@ -114,19 +60,21 @@ class WindowDataLoader(tf.keras.utils.Sequence):
         labelmap : dict
             that maps labels from dataset to a series of consecutive integer.
             To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
-        batch_size : int
-            number of samples in a batch
         window_size : int
             number of time bins in windows that will be taken from spectrograms
         spect_key : str
             key to access spectograms in array files. Default is 's'.
         timebins_key : str
             key to access time bin vector in array files. Default is 't'.
-        shuffle : bool
-            if True, shuffle dataset. Default is True.
-        spect_scaler : vak.utils.spect.SpectScaler
-            used to normalize. Default is None.
+        transform : callable
+            A function/transform that takes in a numpy array
+            and returns a transformed version. E.g, a SpectScaler instance.
+            Default is None.
+        target_transform : callable
+            A function/transform that takes in the target and transforms it.
         """
+        super(SpectrogramWindowDataset, self).__init__(root, transform=transform,
+                                                       target_transform=target_transform)
         self.x_inds = x_inds
         self.spect_id_vector = spect_id_vector
         self.spect_inds_vector = spect_inds_vector
@@ -143,113 +91,82 @@ class WindowDataLoader(tf.keras.utils.Sequence):
             # if there is no "unlabeled label" (e.g., because all segments have labels)
             # just assign dummy value that will end up getting replaced by actual labels by label_timebins()
             self.unlabeled_label = 0
-
-        self.batch_size = batch_size
         self.window_size = window_size
 
-        self.shuffle = shuffle
-        if shuffle:
-            np.random.shuffle(self.x_inds)
-
-        self.spect_scaler = spect_scaler
-
-        self.to_categorical = partial(tf.keras.utils.to_categorical, num_classes=len(labelmap))
-
         tmp_x_ind = 0
-        one_x, _ = self.__get_x_y(tmp_x_ind)
+        one_x, _ = self.__get_window_labelvec(tmp_x_ind)
+        # used by vak functions that need to determine size of window,
+        # e.g. when initializing a neural network model
         self.shape = one_x.shape[1:]
 
-    def __get_x_y(self, x_inds):
+    def __get_window_labelvec(self, idx):
         """helper function that gets batches of training pairs,
         given indices into dataset
 
         Parameters
         ----------
-        x_inds : numpy.ndarray
-            of indices into dataset
+        idx : integer
+            index into dataset
 
         Returns
         -------
-        x : numpy.ndarray
-            of windows from spectrograms
-        y : numpy.ndarray
-            of labels for windows of each timebin
+        window : numpy.ndarray
+            window from spectrograms
+        labelvec : numpy.ndarray
+            vector of labels for each timebin in window from spectrogram
         """
-        spect_ids = self.spect_id_vector[x_inds]
-        window_start_inds = self.spect_inds_vector[x_inds]
+        x_ind = self.x_inds[idx]
+        spect_id = self.spect_id_vector[x_ind]
+        window_start_ind = self.spect_inds_vector[x_ind]
 
-        if np.isscalar(spect_ids) and np.isscalar(window_start_inds):
-            # if both are scalar, e.g. as happens when x_inds is scalar,
-            # put in a list so we can zip and iterate over them below
-            spect_ids = [spect_ids]
-            window_start_inds = [window_start_inds]
+        spect_path = self.spect_paths[spect_id]
+        spect_dict = io.spect.array_dict_from_path(spect_path)
+        spect = spect_dict[self.spect_key]
+        timebins = spect_dict[self.timebins_key]
 
-        x = []
-        y = []
-        uniq_spect_ids = np.unique(spect_ids)
+        annot_path = self.annot_paths[spect_id]
+        annot_format = self.annot_formats[spect_id]
+        annot = self.scribes[annot_format].from_file(annot_path)
 
-        for current_spect_id in uniq_spect_ids:
-            spect_path = self.spect_paths[current_spect_id]
-            spect_dict = io.spect.array_dict_from_path(spect_path)
-            spect = spect_dict[self.spect_key]
-            timebins = spect_dict[self.timebins_key]
+        lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
+        lbl_tb = utils.labels.label_timebins(lbls_int,
+                                             annot.seq.onsets_s,
+                                             annot.seq.offsets_s,
+                                             timebins,
+                                             unlabeled_label=self.unlabeled_label)
 
-            annot_path = self.annot_paths[current_spect_id]
-            annot_format = self.annot_formats[current_spect_id]
-            annot = self.scribes[annot_format].from_file(annot_path)
+        window = spect[:, window_start_ind:window_start_ind + self.window_size]
+        labelvec = lbl_tb[window_start_ind:window_start_ind + self.window_size]
 
-            lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
-            lbl_tb = utils.labels.label_timebins(lbls_int,
-                                                 annot.seq.onsets_s,
-                                                 annot.seq.offsets_s,
-                                                 timebins,
-                                                 unlabeled_label=self.unlabeled_label)
+        return window, labelvec
 
-            these_window_inds = [
-                window_ind
-                for window_ind, spect_id in zip(window_start_inds, spect_ids)
-                if spect_id == current_spect_id
-            ]
-            for window_ind in these_window_inds:
-                x.append(spect[:, window_ind:window_ind + self.window_size])
-                y_onehot = self.to_categorical(lbl_tb[window_ind:window_ind + self.window_size])
-                y.append(y_onehot)
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        window, labelvec = self.__get_window_labelvec(idx)
 
-        if self.spect_scaler:
-            x = [self.spect_scaler.transform(window) for window in x]
+        if self.transform is not None:
+            window = self.transform(window)
 
-        x = np.stack(x)
-        if x.ndim == 3:  # need to add a "channels" axis
-            x = x[:, :, :, np.newaxis]
+        if self.target_transform is not None:
+            labelvec = self.target_transform(labelvec)
 
-        y = np.stack(y)
-
-        return x, y
+        return window, labelvec
 
     def __len__(self):
         """number of batches"""
-        return int(np.ceil(len(self.x_inds) / float(self.batch_size)))
-
-    def __getitem__(self, index):
-        """gets one batch"""
-        x_inds = self.x_inds[index * self.batch_size: (index+1) * self.batch_size]
-        x, y = self.__get_x_y(x_inds)
-        return x, y
-
-    def on_epoch_end(self):
-        """updates indexes after each epoch"""
-        if self.shuffle:
-            np.random.shuffle(self.x_inds)
+        return len(self.x_inds)
 
     @classmethod
-    def from_csv(cls, csv_path, split, labelmap, window_size, batch_size, shuffle=True,
-                 spect_key='s', timebins_key='t', spect_scaler=None):
-        """given a csv representing a dataset, returns an initialized WindowDataLoader
+    def from_csv(cls, csv_path, split, labelmap, window_size,
+                 spect_key='s', timebins_key='t', transform=None, target_transform=None):
+        """given a path to a csv representing a dataset,
+        returns an initialized SpectrogramWindowDataset.
 
         Parameters
         ----------
         csv_path : str, Path
-            path to csv that represents dataset
+            path to csv that represents dataset.
         split : str
             name of split from dataset to use
         labelmap : dict
@@ -257,21 +174,20 @@ class WindowDataLoader(tf.keras.utils.Sequence):
             To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
         window_size : int
             number of time bins in windows that will be taken from spectrograms
-        batch_size : int
-            number of samples in a batch
-        shuffle : bool
-            if True, shuffle dataset. Default is True.
         spect_key : str
             key to access spectograms in array files. Default is 's'.
         timebins_key : str
             key to access time bin vector in array files. Default is 't'.
-        spect_scaler : vak.utils.spect.SpectScaler
-            used to normalize. Default is None.
+        transform : callable
+            A function/transform that takes in a numpy array
+            and returns a transformed version. E.g, a SpectScaler instance.
+            Default is None.
+        target_transform : callable
+            A function/transform that takes in the target and transforms it.
 
         Returns
         -------
-        window_data_loader : WindowDataLoader
-            initialized instance of WindowDataLoader
+        initialized instance of SpectrogramWindowDataset
         """
         df = pd.read_csv(csv_path)
         if not df['split'].str.contains(split).any():
@@ -321,7 +237,11 @@ class WindowDataLoader(tf.keras.utils.Sequence):
         for annot_format in uniq_formats:
             scribes[annot_format] = Transcriber(annot_format=annot_format)
 
-        return cls(x_inds,
+        # note that we set "root" to csv path
+        return cls(csv_path,
+                   transform,
+                   target_transform,
+                   x_inds,
                    spect_id_vector,
                    spect_inds_vector,
                    spect_paths,
@@ -332,7 +252,5 @@ class WindowDataLoader(tf.keras.utils.Sequence):
                    batch_size,
                    window_size,
                    spect_key=spect_key,
-                   timebins_key=timebins_key,
-                   shuffle=shuffle,
-                   spect_scaler=spect_scaler
+                   timebins_key=timebins_key
                    )
