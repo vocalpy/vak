@@ -8,12 +8,15 @@ from datetime import datetime
 
 import joblib
 import pandas as pd
+import torch
+from torchvision import transforms
 
 from .. import config
 from .. import core
 from .. import models
 from .. import utils
-from ..io import dataset, dataframe
+from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
+from ..io import datasets, dataframe
 from ..utils.spect import SpectScaler
 
 
@@ -101,15 +104,23 @@ def train(config_path):
         json.dump(labelmap, f)
 
     logger.info(f'using training dataset from {cfg.train.csv_path}')
-    train_loader = dataset.dataloaders.WindowDataLoader.from_csv(csv_path=cfg.train.csv_path,
-                                                                 split='train',
-                                                                 labelmap=labelmap,
-                                                                 window_size=cfg.dataloader.window_size,
-                                                                 batch_size=cfg.train.batch_size,
-                                                                 shuffle=cfg.train.shuffle,
-                                                                 spect_key=cfg.spect_params.spect_key,
-                                                                 timebins_key=cfg.spect_params.timebins_key,
-                                                                 spect_scaler=spect_scaler)
+    transform = transforms.Compose(
+        [transforms.Lambda(spect_scaler),
+         transforms.Lambda(torch.from_numpy)]
+    )
+    target_transform = transforms.Compose(
+        [transforms.Lambda(torch.from_numpy)]
+    )
+
+    train_dataset = SpectrogramWindowDataset.from_csv(csv_path=cfg.train.csv_path,
+                                                      split='train',
+                                                      labelmap=labelmap,
+                                                      window_size=cfg.dataloader.window_size,
+                                                      spect_key=cfg.spect_params.spect_key,
+                                                      timebins_key=cfg.spect_params.timebins_key,
+                                                      transform=transform,
+                                                      target_transform=target_transform
+                                                      )
 
     train_dur = dataframe.split_dur(dataset_df, 'train')
     logger.info(
@@ -118,15 +129,15 @@ def train(config_path):
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if cfg.train.val_error_step:
-        val_loader = dataset.dataloaders.WindowDataLoader.from_csv(csv_path=cfg.train.csv_path,
-                                                                   split='val',
-                                                                   labelmap=labelmap,
-                                                                   window_size=cfg.dataloader.window_size,
-                                                                   batch_size=cfg.train.batch_size,
-                                                                   shuffle=False,
-                                                                   spect_key=cfg.spect_params.spect_key,
-                                                                   timebins_key=cfg.spect_params.timebins_key,
-                                                                   spect_scaler=spect_scaler)
+        val_dataset = SpectrogramWindowDataset.from_csv(csv_path=cfg.train.csv_path,
+                                                        split='val',
+                                                        labelmap=labelmap,
+                                                        window_size=cfg.dataloader.window_size,
+                                                        spect_key=cfg.spect_params.spect_key,
+                                                        timebins_key=cfg.spect_params.timebins_key,
+                                                        transform=transform,
+                                                        target_transform=target_transform
+                                                        )
 
         val_dur = dataframe.split_dur(dataset_df, 'val')
         logger.info(
@@ -137,13 +148,13 @@ def train(config_path):
             f'will measure error on validation set every {cfg.train.val_error_step} steps of training'
         )
     else:
-        val_loader = None
+        val_dataset = None
 
     model_config_map = config.models.map_from_path(config_path, cfg.train.models)
     models_map = models.from_model_config_map(
         model_config_map,
         num_classes=len(labelmap),
-        input_shape=train_loader.shape
+        input_shape=train_dataset.shape
     )
 
     core.train(models=models_map,
