@@ -16,6 +16,7 @@ from . import cli
 from . import config
 from . import core
 from . import curvefit
+from . import datasets
 from . import io
 from . import evfuncs
 from . import koumura_utils

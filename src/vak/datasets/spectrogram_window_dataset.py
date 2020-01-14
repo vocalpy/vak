@@ -4,8 +4,8 @@ import pandas as pd
 import torch
 from torchvision.datasets.vision import VisionDataset
 
-from ... import utils
-from ... import io
+from .. import utils
+from .. import io
 
 
 class SpectrogramWindowDataset(VisionDataset):
