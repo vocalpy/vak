@@ -4,6 +4,7 @@ from glob import glob
 from math import isclose
 
 import numpy as np
+import pandas as pd
 import crowsetta
 from scipy.io import loadmat
 
@@ -13,10 +14,9 @@ import vak.utils.split
 from vak.evfuncs import load_cbin
 from vak.io.annotation import files_from_dir
 from vak.utils.general import timebin_dur_from_vec
-from vak.io.dataset import Dataset
 from vak.utils.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 
-HERE = os.path.dirname(__file__)
+HERE = os.path.dirname(__file__)f
 TEST_DATA_DIR = os.path.join(HERE,
                              '..',
                              '..',
@@ -437,7 +437,7 @@ class TestSplit(unittest.TestCase):
                                                                    train_dur=train_dur,
                                                                    test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
-            self.assertTrue(type(vds_out) == Dataset)
+            self.assertTrue(type(vds_out) == pd.DataFrame)
 
         train_dur_out = sum([voc.duration for voc in train_vds.voc_list])
         self.assertTrue(train_dur_out >= train_dur)
@@ -456,7 +456,7 @@ class TestSplit(unittest.TestCase):
                                                                    labelset=self.labelset_mat,
                                                                    train_dur=train_dur)
         for vds_out in (train_vds, test_vds):
-            self.assertTrue(type(vds_out) == Dataset)
+            self.assertTrue(type(vds_out) == pd.DataFrame)
 
         train_dur_out = sum([voc.duration for voc in train_vds.voc_list])
         test_dur_out = sum([voc.duration for voc in test_vds.voc_list])
@@ -479,7 +479,7 @@ class TestSplit(unittest.TestCase):
                                                                    labelset=self.labelset_mat,
                                                                    test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
-            self.assertTrue(type(vds_out) == Dataset)
+            self.assertTrue(type(vds_out) == pd.DataFrame)
 
         train_dur_out = sum([voc.duration for voc in train_vds.voc_list])
         test_dur_out = sum([voc.duration for voc in test_vds.voc_list])
