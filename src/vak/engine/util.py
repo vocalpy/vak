@@ -1,5 +1,5 @@
 """utility functions specific to engine sub-package"""
-
+BUILTIN_TYPES = [dict, list, str, set, tuple]
 
 # define this outside Model class, so sub-classes can use it too
 def _check_required_attribs(self, cls):
@@ -26,8 +26,16 @@ def _check_required_attribs(self, cls):
             )
 
         attr = getattr(cls, required_subclass_attr)
-        if not isinstance(attr, subclass_attr_type):
-            raise TypeError(
-                f'{required_subclass_attr} must be an instance or subclass of {subclass_attr_type}, but '
-                f'type was: {type(attr)}'
-            )
+        if subclass_attr_type in BUILTIN_TYPES:
+            # if it's required attr has a built-in data type, not a custom Python code class,
+            # check if the attr is an instance of that built-in data type
+            if type(attr) != subclass_attr_type:
+                raise TypeError(
+                    f'type of {attr} should be {subclass_attr_type} but was {type(attr)}'
+                )
+        else:
+            if not issubclass(attr, subclass_attr_type):
+                raise TypeError(
+                    f'{required_subclass_attr} must be a subclass of {subclass_attr_type}, but '
+                    f'type was: {type(attr)}'
+                )
