@@ -16,7 +16,10 @@ from . import cli
 from . import config
 from . import core
 from . import datasets
+from . import engine
 from . import io
 from . import metrics
 from . import models
 from . import util
+
+from .engine.model import Model
