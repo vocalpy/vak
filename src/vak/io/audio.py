@@ -8,8 +8,8 @@ from dask.diagnostics import ProgressBar
 from .annotation import source_annot_map
 from ..config import validators
 from ..config.spect_params import SpectParamsConfig
-from ..utils.general import _files_from_dir
-from ..utils.spect import spectrogram
+from ..util.general import _files_from_dir
+from ..util.spect import spectrogram
 
 
 AUDIO_FORMAT_FUNC_MAP = validators.AUDIO_FORMAT_FUNC_MAP

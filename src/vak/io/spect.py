@@ -13,7 +13,7 @@ from scipy.io import loadmat
 
 from .annotation import source_annot_map
 from ..config import validators
-from ..utils.general import find_fname, timebin_dur_from_vec
+from ..util.general import find_fname, timebin_dur_from_vec
 
 
 def find_audio_fname(spect_path, audio_ext=None):

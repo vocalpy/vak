@@ -46,7 +46,7 @@ class TestPrep(unittest.TestCase):
         if audio_format:
             data_files_from_dir = vak.io.audio.files_from_dir(data_dir, audio_format)
         elif spect_format:
-            data_files_from_dir = vak.utils.general._files_from_dir(data_dir, spect_format)
+            data_files_from_dir = vak.util.general._files_from_dir(data_dir, spect_format)
 
         if num_expected_paths == 1:
             vds = Dataset.from_json(json_fname=vds_paths[0])

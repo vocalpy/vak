@@ -14,10 +14,10 @@ from torchvision import transforms
 from .. import config
 from .. import core
 from .. import models
-from .. import utils
+from .. import util
 from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
 from ..io import datasets, dataframe
-from ..utils.spect import SpectScaler
+from ..util.spect import SpectScaler
 
 
 def train(config_path):
@@ -90,12 +90,12 @@ def train(config_path):
     # we need to include a class for those unlabeled segments in labelmap,
     # the mapping from labelset provided by user to a set of consecutive
     # integers that the network learns to predict
-    has_unlabeled = utils.dataset.has_unlabeled(cfg.train.csv_path, cfg.prep.labelset, cfg.spect_params.timebins_key)
+    has_unlabeled = util.dataset.has_unlabeled(cfg.train.csv_path, cfg.prep.labelset, cfg.spect_params.timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:
         map_unlabeled = False
-    labelmap = utils.labels.to_map(cfg.prep.labelset, map_unlabeled=map_unlabeled)
+    labelmap = util.labels.to_map(cfg.prep.labelset, map_unlabeled=map_unlabeled)
     logger.debug(
         f'number of classes in labelmap: {len(labelmap)}'
     )

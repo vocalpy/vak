@@ -3,7 +3,7 @@ import unittest
 from configparser import ConfigParser
 
 import vak.config.spect_params
-import vak.utils
+import vak.util
 
 
 def _base_config():
