@@ -17,7 +17,6 @@ from . import config
 from . import core
 from . import datasets
 from . import io
-from . import evfuncs
 from . import koumura_utils
 from . import metrics
 from . import models

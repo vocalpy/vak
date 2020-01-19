@@ -2,9 +2,9 @@
 from configparser import ConfigParser
 from pathlib import Path
 
-from scipy.io import wavfile
 import crowsetta.formats
-from ..evfuncs import load_cbin
+from evfuncs import load_cbin
+from scipy.io import wavfile
 
 from .. import models
 

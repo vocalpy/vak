@@ -6,12 +6,12 @@ from math import isclose
 import numpy as np
 import pandas as pd
 import crowsetta
+from evfuncs import load_cbin
 from scipy.io import loadmat
 
 import vak.io.spect
 import vak.io.annotation
 import vak.util.split
-from vak.evfuncs import load_cbin
 from vak.io.annotation import files_from_dir
 from vak.util.general import timebin_dur_from_vec
 from vak.util.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError

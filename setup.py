@@ -31,7 +31,7 @@ VERSION = about['__version__']
 LICENSE = about['__license__']
 
 REQUIRED = [
-    'torch', 'torchvision', 'dask', 'numpy', 'scipy', 'matplotlib', 'pandas', 'joblib',
+    'torch', 'torchvision', 'dask', 'evfuncs', 'numpy', 'scipy', 'matplotlib', 'pandas', 'joblib',
     'tqdm', 'attrs', 'crowsetta>=2.1.0',
 ]
 
