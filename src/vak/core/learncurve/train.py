@@ -9,10 +9,10 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from ...utils.general import safe_truncate
-from ...utils.spect import SpectScaler
+from ...util.general import safe_truncate
+from ...util.spect import SpectScaler
 from ... import models
-from ... import utils
+from ... import util
 from ...io.dataset import Dataset
 
 
@@ -244,11 +244,11 @@ def train(train_vds_path,
                     if not os.path.isdir(training_records_path):
                         os.makedirs(training_records_path)
 
-                    train_inds = utils.data.get_inds_for_dur(X_train_spect_ID_vector,
-                                                             Y_train,
-                                                             train_vds.labelmap,
-                                                             train_set_dur,
-                                                             timebin_dur)
+                    train_inds = util.data.get_inds_for_dur(X_train_spect_ID_vector,
+                                                            Y_train,
+                                                            train_vds.labelmap,
+                                                            train_set_dur,
+                                                            timebin_dur)
                     with open(os.path.join(training_records_path, 'train_inds'),
                               'wb') as train_inds_file:
                         pickle.dump(train_inds, train_inds_file)
@@ -410,10 +410,10 @@ def train(train_vds_path,
                 if X_val is not None:
                     (X_val_batch,
                      Y_val_batch,
-                     num_batches_val) = utils.data.reshape_data_for_batching(X_val,
-                                                                             net_config.batch_size,
-                                                                             net_config.time_bins,
-                                                                             Y_val)
+                     num_batches_val) = util.data.reshape_data_for_batching(X_val,
+                                                                            net_config.batch_size,
+                                                                            net_config.time_bins,
+                                                                            Y_val)
 
                 if save_transformed_data:
                     scaled_reshaped_data_filename = os.path.join(training_records_path,
@@ -490,9 +490,9 @@ def train(train_vds_path,
                         if measure_train_err is True:
                             (X_tr_batch,
                              Y_tr_batch,
-                             num_batches_tr) = utils.data.reshape_data_for_batching(X_train_subset,
-                                                                                    net_config.batch_size,
-                                                                                    net_config.time_bins,
+                             num_batches_tr) = util.data.reshape_data_for_batching(X_train_subset,
+                                                                                   net_config.batch_size,
+                                                                                   net_config.time_bins,
                                                                                     Y_train_subset[:, np.newaxis])
                             Y_pred_tr = []
                             for b in range(num_batches_tr):  # "b" is "batch number"

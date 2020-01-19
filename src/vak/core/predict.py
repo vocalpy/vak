@@ -10,8 +10,8 @@ from tqdm import tqdm
 
 from ..io import Dataset
 from .. import models
-from ..utils.data import reshape_data_for_batching
-from ..utils.labels import lbl_tb2segments
+from ..util.data import reshape_data_for_batching
+from ..util.labels import lbl_tb2segments
 
 
 def predict(predict_vds_path,

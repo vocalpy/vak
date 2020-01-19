@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 from torchvision.datasets.vision import VisionDataset
 
-from .. import utils
+from .. import util
 from .. import io
 
 
@@ -129,11 +129,11 @@ class SpectrogramWindowDataset(VisionDataset):
         annot = self.scribes[annot_format].from_file(annot_path)
 
         lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
-        lbl_tb = utils.labels.label_timebins(lbls_int,
-                                             annot.seq.onsets_s,
-                                             annot.seq.offsets_s,
-                                             timebins,
-                                             unlabeled_label=self.unlabeled_label)
+        lbl_tb = util.labels.label_timebins(lbls_int,
+                                            annot.seq.onsets_s,
+                                            annot.seq.offsets_s,
+                                            timebins,
+                                            unlabeled_label=self.unlabeled_label)
 
         window = spect[:, window_start_ind:window_start_ind + self.window_size]
         labelvec = lbl_tb[window_start_ind:window_start_ind + self.window_size]

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .. import config
 from ..io import dataframe
-from ..utils import train_test_dur_split
+from ..util import train_test_dur_split
 
 
 def prep(config_path):

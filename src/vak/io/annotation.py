@@ -4,7 +4,7 @@ from pathlib import Path
 import crowsetta
 
 from ..config import validators
-from ..utils.general import _files_from_dir
+from ..util.general import _files_from_dir
 
 
 def files_from_dir(annot_dir, annot_format):

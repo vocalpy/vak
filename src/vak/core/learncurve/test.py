@@ -8,8 +8,8 @@ import joblib
 import numpy as np
 import tensorflow as tf
 
-from ... import metrics, utils
-from ... utils.labels import lbl_tb2labels
+from ... import metrics, util
+from ... util.labels import lbl_tb2labels
 from ... import models
 from ...io import Dataset
 
@@ -436,7 +436,7 @@ def test(results_dirname,
                 # Notice we don't reshape Y_train
                 (X_train_subset,
                  _,
-                 num_batches_train) = utils.data.reshape_data_for_batching(
+                 num_batches_train) = util.data.reshape_data_for_batching(
                     X_train_subset,
                     net_config.batch_size,
                     net_config.time_bins,
@@ -445,7 +445,7 @@ def test(results_dirname,
                 # Notice we don't reshape Y_test
                 (X_test,
                  _,
-                 num_batches_test) = utils.data.reshape_data_for_batching(
+                 num_batches_test) = util.data.reshape_data_for_batching(
                     X_test,
                     net_config.batch_size,
                     net_config.time_bins,
