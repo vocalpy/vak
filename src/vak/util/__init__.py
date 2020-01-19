@@ -1,3 +1,4 @@
+from . import curvefit
 from . import data
 from . import dataset
 from . import general
