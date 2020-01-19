@@ -4,9 +4,9 @@ import unittest
 from math import isclose
 
 import crowsetta
+from evfuncs import load_cbin
 from scipy.io import loadmat
 
-from vak.evfuncs import load_cbin
 from vak.util.splitalgos import brute_force
 from vak.io.annotation import files_from_dir
 from vak.util.general import timebin_dur_from_vec
