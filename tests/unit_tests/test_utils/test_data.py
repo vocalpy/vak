@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 from vak.io import Dataset
-import vak.utils.data
+import vak.util.data
 
 
 HERE = Path(__file__).parent
@@ -38,13 +38,13 @@ class TestData(unittest.TestCase):
                            for voc in train_vds.voc_list])
         timebin_dur = timebin_dur.pop()
 
-        inds_to_use = vak.utils.data.get_inds_for_dur(spect_ID_vector=spect_ID_vec,
-                                                      labeled_timebins_vector=lt,
-                                                      labels_mapping=lm,
-                                                      target_duration=target_dur,
-                                                      timebin_dur_in_s=timebin_dur,
-                                                      max_iter=1000,
-                                                      method='incfreq')
+        inds_to_use = vak.util.data.get_inds_for_dur(spect_ID_vector=spect_ID_vec,
+                                                     labeled_timebins_vector=lt,
+                                                     labels_mapping=lm,
+                                                     target_duration=target_dur,
+                                                     timebin_dur_in_s=timebin_dur,
+                                                     max_iter=1000,
+                                                     method='incfreq')
         self.assertTrue(timebin_dur * inds_to_use.shape[0] == target_dur)
 
     def test_reshape_data_for_batching(self):
@@ -60,10 +60,10 @@ class TestData(unittest.TestCase):
         # where each batch has one dimension of size `time_steps`
         (X_out,
          Y_out,
-         num_batches) = vak.utils.data.reshape_data_for_batching(X_in,
-                                                                 batch_size,
-                                                                 time_steps,
-                                                                 Y_in)
+         num_batches) = vak.util.data.reshape_data_for_batching(X_in,
+                                                                batch_size,
+                                                                time_steps,
+                                                                Y_in)
 
         self.assertEqual(Y_out.shape[0], batch_size)
 

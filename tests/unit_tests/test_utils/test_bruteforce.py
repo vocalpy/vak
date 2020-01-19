@@ -7,9 +7,9 @@ import crowsetta
 from scipy.io import loadmat
 
 from vak.evfuncs import load_cbin
-from vak.utils.splitalgos import brute_force
+from vak.util.splitalgos import brute_force
 from vak.io.annotation import files_from_dir
-from vak.utils.general import timebin_dur_from_vec
+from vak.util.general import timebin_dur_from_vec
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
