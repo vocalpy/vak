@@ -5,7 +5,6 @@ import torch
 from torchvision.datasets.vision import VisionDataset
 
 from .. import util
-from .. import io
 
 
 class SpectrogramWindowDataset(VisionDataset):
@@ -120,7 +119,7 @@ class SpectrogramWindowDataset(VisionDataset):
         window_start_ind = self.spect_inds_vector[x_ind]
 
         spect_path = self.spect_paths[spect_id]
-        spect_dict = io.spect.array_dict_from_path(spect_path)
+        spect_dict = util.path.array_dict_from_path(spect_path)
         spect = spect_dict[self.spect_key]
         timebins = spect_dict[self.timebins_key]
 
@@ -200,7 +199,7 @@ class SpectrogramWindowDataset(VisionDataset):
         spect_paths = df['spect_path'].values
 
         def n_time_bins_spect(spect_path, spect_key=spect_key):
-            spect = io.spect.array_dict_from_path(spect_path)[spect_key]
+            spect = util.path.array_dict_from_path(spect_path)[spect_key]
             return spect.shape[-1]
 
         # to represent a dataset of windows from spectrograms without actually loading
