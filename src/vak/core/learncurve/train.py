@@ -10,7 +10,7 @@ import tensorflow as tf
 from tqdm import tqdm
 
 from ...util.general import safe_truncate
-from ...util.spect import SpectScaler
+from ...transforms import SpectScaler
 from ... import models
 from ... import util
 from ...io.dataset import Dataset
