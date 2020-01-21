@@ -11,6 +11,7 @@ import numpy as np
 import joblib
 
 import vak.config
+import vak.transforms.transforms
 import vak.util
 import vak.models
 import vak.util.data
@@ -40,7 +41,7 @@ class TestParseConfig(unittest.TestCase):
         # for predict section of config
         self.tmp_checkpoint_dir = tempfile.mkdtemp()
         self.tmp_dir_to_predict = tempfile.mkdtemp()
-        a_spect_scaler = vak.util.spect.SpectScaler()
+        a_spect_scaler = vak.transforms.transforms.SpectScaler()
         a_spect_scaler.fit(np.random.normal(size=(1000, 513)))
         tmp_spect_scaler_path = os.path.join(self.tmp_results_dir, 'spect_scaler')
         joblib.dump(value=a_spect_scaler, filename=tmp_spect_scaler_path)

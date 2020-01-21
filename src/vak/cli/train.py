@@ -17,7 +17,7 @@ from .. import models
 from .. import util
 from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
 from ..io import datasets, dataframe
-from ..util.spect import SpectScaler
+from ..transforms.transforms import SpectScaler
 
 
 def train(config_path):
