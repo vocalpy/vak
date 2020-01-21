@@ -2,7 +2,7 @@ import crowsetta
 import pandas as pd
 
 from . import labels
-from ..io.spect import array_dict_from_path
+from .path import array_dict_from_path
 
 
 def has_unlabeled(csv_path, labelset, timebins_key='t'):
