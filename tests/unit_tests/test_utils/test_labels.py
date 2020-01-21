@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 import vak
+import vak.util.path
 
 HERE = Path(__file__).parent
 
@@ -232,7 +233,7 @@ class TestLabels(unittest.TestCase):
         lbl_tb_list = []
         for spect_file, annot in spect_annot_map.items():
             lbls_int = [LABELMAP[lbl] for lbl in annot.seq.labels]
-            time_bins = vak.io.spect.array_dict_from_path(spect_file)[TIMEBINS_KEY]
+            time_bins = vak.util.path.array_dict_from_path(spect_file)[TIMEBINS_KEY]
             lbl_tb_list.append(
                 vak.util.labels.label_timebins(lbls_int,
                                                annot.seq.onsets_s,

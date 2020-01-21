@@ -1,7 +1,7 @@
 import numpy as np
 
-from vak.io.spect import array_dict_from_path
-from vak.util.validation import column_or_1d
+from ..util.path import array_dict_from_path
+from ..util.validation import column_or_1d
 
 __all__ = [
     'SpectScaler',

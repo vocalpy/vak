@@ -3,6 +3,7 @@ from . import data
 from . import dataset
 from . import general
 from . import labels
+from . import path
 from . import splitalgos
 from . import spect
 from . import validation
