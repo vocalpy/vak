@@ -64,6 +64,16 @@ def train(config_path):
     # copy config file into results dir now that we've made the dir
     shutil.copy(config_path, results_path)
 
+    # rewrite config file,
+    # so that paths where results were saved are automatically in config
+    config_obj = ConfigParser()
+    config_obj.read(config_path)
+    config_obj.set(section='TRAIN',
+                   option='results_dir_made_by_main_script',
+                   value=results_dirname)
+    with open(config_path, 'w') as fp:
+        config_obj.write(fp)
+
     # ---- set up logging ----------------------------------------------------------------------------------------------
     logfile_name = results_path.joinpath('logfile_from_train_' + timenow + '.log')
     logger = logging.getLogger(__name__)
@@ -170,13 +180,3 @@ def train(config_path):
                save_only_single_checkpoint_file=cfg.train.save_only_single_checkpoint_file,
                results_path=results_path,
                )
-
-    # lastly rewrite config file,
-    # so that paths where results were saved are automatically in config
-    config_obj = ConfigParser()
-    config_obj.read(config_path)
-    config_obj.set(section='TRAIN',
-                   option='results_dir_made_by_main_script',
-                   value=results_dirname)
-    with open(config_path, 'w') as fp:
-        config_obj.write(fp)
