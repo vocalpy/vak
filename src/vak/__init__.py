@@ -13,7 +13,6 @@ from .__about__ import (
 from . import __main__
 from . import cli
 from . import config
-from . import core
 from . import datasets
 from . import engine
 from . import io
@@ -29,7 +28,6 @@ __all__ = [
     '__main__',
     'cli',
     'config',
-    'core',
     'datasets',
     'engine',
     'io',
