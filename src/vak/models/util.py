@@ -26,6 +26,7 @@ MODEL_CONFIG_PARSERS_ENTRY_POINT = 'vak.model_config_parsers'
 
 
 def iter_entry_points(group_name):
+    """helper function that iterates through entry points, given name of entry point group"""
     try:
         import pkg_resources
     except (ImportError, IOError):
@@ -35,11 +36,19 @@ def iter_entry_points(group_name):
 
 
 def find():
+    """find installed vak.models
+
+    returns generator that yields model name and function for loading
+    """
     for entrypoint in iter_entry_points(MODELS_ENTRY_POINT):
         yield entrypoint.name, entrypoint.load()
 
 
 def find_config_parsers():
+    """find installed vak.model config parsers
+
+    returns generator that yields model name and function for loading
+    """
     for entrypoint in iter_entry_points(MODEL_CONFIG_PARSERS_ENTRY_POINT):
         yield entrypoint.name, entrypoint.load()
 
