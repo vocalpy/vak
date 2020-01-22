@@ -31,8 +31,19 @@ VERSION = about['__version__']
 LICENSE = about['__license__']
 
 REQUIRED = [
-    'torch', 'torchvision', 'dask', 'evfuncs', 'numpy', 'scipy', 'matplotlib', 'pandas', 'joblib',
-    'tqdm', 'attrs', 'crowsetta>=2.1.0',
+    'attrs',
+    'crowsetta>=2.1.0',
+    'dask',
+    'evfuncs',
+    'joblib',
+    'matplotlib',
+    'numpy',
+    'scipy',
+    'pandas',
+    'toml',
+    'torch',
+    'torchvision',
+    'tqdm',
 ]
 
 dev_deps = [
@@ -40,7 +51,8 @@ dev_deps = [
 ]
 
 test_deps = [
-    'vak_test_net', 'tweetynet>=0.1.1a4',
+    'vak_test_net',
+    'tweetynet>=0.1.1a4',
 ]
 
 doc_deps = [
