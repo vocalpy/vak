@@ -1,6 +1,4 @@
 """parses [PREP] section of config"""
-from configparser import NoOptionError
-
 import attr
 from attr import converters, validators
 from attr.validators import instance_of
@@ -86,37 +84,37 @@ REQUIRED_PREP_OPTIONS = [
 ]
 
 
-def parse_prep_config(config, config_path):
-    """parse [PREP] section of config.ini file
+def parse_prep_config(config_toml, config_path):
+    """parse [PREP] section of config.toml file
 
     Parameters
     ----------
-    config : ConfigParser
-        containing config.ini file already loaded by parse function
-    config_path : str
-        path to config.ini file (used for error messages)
+    config_toml : dict
+        containing configuration file in TOML format, already loaded by parse function
+    toml_path : Path
+        path to a configuration file in TOML format (used for error messages)
 
     Returns
     -------
     prep_config : vak.config.prep.PrepConfig
         instance of class that represents [PREP] section of config.ini file
     """
-    if config.has_option('PREP', 'spect_format') and config.has_option('PREP', 'audio_format'):
+    prep_section = config_toml['PREP']
+
+    if 'spect_format' in prep_section and 'audio_format' in prep_section:
         raise ValueError("[PREP] section of config.ini file cannot specify both audio_format and "
                          "spect_format, unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms")
 
-    if not(config.has_option('PREP', 'spect_format')) and not(config.has_option('PREP', 'audio_format')):
+    if 'spect_format' not in prep_section and 'audio_format' not in prep_section:
         raise ValueError("[PREP] section of config.ini file must specify either audio_format or "
                          "spect_format")
 
-    prep_section = config['PREP']
-    prep_section = dict(prep_section.items())
     for required_option in REQUIRED_PREP_OPTIONS:
         if required_option not in prep_section:
-            raise NoOptionError(
+            raise KeyError(
                 f"the '{required_option}' option is required but was not found in the "
-                f"PREP section of the config.ini file: {config_path}"
+                f"PREP section of the config.toml file: {config_path}"
             )
 
     return PrepConfig(**prep_section)
