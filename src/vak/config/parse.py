@@ -1,10 +1,8 @@
-from configparser import ConfigParser
-from configparser import MissingSectionHeaderError, ParsingError,\
-    DuplicateOptionError, DuplicateSectionError
 from pathlib import Path
 
 import attr
 from attr.validators import instance_of, optional
+import toml
 
 from .dataloader import parse_dataloader_config, DataLoaderConfig
 from .learncurve import parse_learncurve_config, LearncurveConfig
@@ -54,13 +52,13 @@ SECTION_PARSERS = {
 }
 
 
-def from_path(config_path, sections=None):
-    """parse a config.ini file
+def from_toml(toml_path, sections=None):
+    """parse a TOML configuration file
 
     Parameters
     ----------
-    config_path : str, Path
-        path to config.ini file
+    toml_path : str, Path
+        path to a configuration file in TOML format
     sections : list
         of str, names of sections from config.ini file to parse.
         Default is None, in which case function attempts to parse all sections.
@@ -75,46 +73,38 @@ def from_path(config_path, sections=None):
     """
     # check config_path is a file,
     # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
-    config_path = Path(config_path)
-    if not config_path.is_file():
-        raise FileNotFoundError(f'path not recognized as a file: {config_path}')
+    toml_path = Path(toml_path)
+    if not toml_path.is_file():
+        raise FileNotFoundError(f'path not recognized as a file: {toml_path}')
 
-    try:
-        config_obj = ConfigParser()
-        config_obj.read(config_path)
-    except (MissingSectionHeaderError, ParsingError, DuplicateOptionError, DuplicateSectionError):
-        # try to add some context for users that do not spend their lives thinking about ConfigParser objects
-        print(f"Error when opening the following config_path: {config_path}")
-        raise
-    except:
-        # say something different if we can't add very good context
-        print(f"Unexpected error when opening the following config_path: {config_path}")
-        raise
+    with toml_path.open('r') as fp:
+        config_toml = toml.load(fp)
 
-    are_sections_valid(config_obj, config_path)
+    are_sections_valid(config_toml, toml_path)
 
-    if config_obj.has_section('TRAIN') and config_obj.has_section('LEARNCURVE'):
-        raise ValueError(
-            'a single config.ini file cannot contain both TRAIN and LEARNCURVE sections, '
-            'because it is unclear which of those two sections to add paths to when running '
-            'the "prep" command to prepare datasets'
-        )
-
-    if config_obj.has_section('TRAIN'):
-        if config_obj.has_option('PREP', 'test_set_duration'):
+    if 'TRAIN' in config_toml:
+        if 'LEARNCURVE' in config_toml:
             raise ValueError(
-                "cannot define 'test_set_duration' option for PREP section when using with vak 'train' command, "
-                "'test_set_duration' is not a valid option for the TRAIN section. "
-                "Were you trying to use the 'learncurve' command instead?"
+                'a single config.toml file cannot contain both TRAIN and LEARNCURVE sections, '
+                'because it is unclear which of those two sections to add paths to when running '
+                'the "prep" command to prepare datasets'
             )
+
+        if 'PREP' in config_toml:
+            if 'test_set_duration' in config_toml['PREP']:
+                raise ValueError(
+                    "cannot define 'test_set_duration' option for PREP section when using with vak 'train' command, "
+                    "'test_set_duration' is not a valid option for the TRAIN section. "
+                    "Were you trying to use the 'learncurve' command instead?"
+                )
 
     if sections is None:
         sections = list(SECTION_PARSERS.keys())
     config_dict = {}
     for section_name in sections:
-        if config_obj.has_section(section_name):
-            are_options_valid(config_obj, section_name, config_path)
+        if section_name in config_toml:
+            are_options_valid(config_toml, section_name, toml_path)
             section_parser = SECTION_PARSERS[section_name]
-            config_dict[section_name.lower()] = section_parser(config_obj, config_path)
+            config_dict[section_name.lower()] = section_parser(config_toml, toml_path)
 
     return Config(**config_dict)
