@@ -1,22 +1,24 @@
-import os
 import logging
-from configparser import ConfigParser
+import os
+from pathlib import Path
 from datetime import datetime
+
+import toml
 
 from .. import config
 from ..io import dataframe
 from ..util import train_test_dur_split
 
 
-def prep(config_path):
+def prep(toml_path):
     """prepare datasets from vocalizations.
     Function called by command-line interface.
 
     Parameters
     ----------
-    config_path : str, Path
-        path to config.ini file. Used to rewrite file with options determined by
-        this function and needed for other functions
+    toml_path : str, Path
+        path to a configuration file in TOML format.
+        Used to rewrite file with options determined by this function and needed for other functions
 
     Returns
     -------
@@ -41,11 +43,12 @@ def prep(config_path):
     dataset. If the duration of either the training or test set is provided,
     then the function attempts to split the dataset into training and test sets.
     """
-    cfg = config.parse.from_path(config_path, sections=['PREP', 'SPECTROGRAM', 'DATALOADER'])
+    toml_path = Path(toml_path)
+    cfg = config.parse.from_toml(toml_path, sections=['PREP', 'SPECTROGRAM', 'DATALOADER'])
 
     if cfg.prep is None:
         raise ValueError(
-            f'prep called with a config.ini file that does not have a PREP section: {config_path}'
+            f'prep called with a config.ini file that does not have a PREP section: {toml_path}'
         )
 
     # pre-conditions ---------------------------------------------------------------------------------------------------
@@ -87,13 +90,13 @@ def prep(config_path):
 
     # ---- figure out what section we will be saving path in, and prefix of option name in that section ----------------
     # (e.g., if it's PREDICT section then the prefix will be 'predict' for 'predict_vds_path' option
-    config_obj = ConfigParser()
-    config_obj.read(config_path)
-    if config_obj.has_section('TRAIN'):
+    with toml_path.open('r') as fp:
+        config_toml = toml.load(fp)
+    if 'TRAIN' in config_toml:
         section = 'TRAIN'
-    elif config_obj.has_section('LEARNCURVE'):
+    elif 'LEARNCURVE' in config_toml:
         section = 'LEARNCURVE'
-    elif config_obj.has_section('PREDICT'):
+    elif 'PREDICT' in config_toml:
         section = 'PREDICT'
     else:
         raise ValueError(
@@ -145,9 +148,7 @@ def prep(config_path):
     vak_df.to_csv(csv_path)
 
     # use config and section from above to add csv_path to config.ini file
-    config_obj.set(section=section,
-                   option=f'csv_path',
-                   value=csv_path)
+    config_toml[section]['csv_path'] = csv_path
 
-    with open(config_path, 'w') as fp:
-        config_obj.write(fp)
+    with toml_path.open('w') as fp:
+        toml.dump(config_toml, fp)
