@@ -68,9 +68,9 @@ EXTRAS = {
     'doc': doc_deps,
 }
 
-# need to make sure the valid.ini file in vak/config/ gets included
+# need to make sure the valid.toml file in vak/config/ gets included
 PACKAGE_DATA = {
-                   'vak': ['*.ini',],
+                   'vak': ['*.toml', ],
                }
 
 # The rest you shouldn't have to touch too much :)
