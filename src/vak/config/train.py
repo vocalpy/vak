@@ -31,14 +31,6 @@ class TrainConfig:
         name of subdirectory created by vak.cli.train.
         This option is added programatically by that function
         when it runs.
-    optimizer : str
-        name of numerical optimizer used to fit model, e.g. 'SGD' for stochastic gradient descent.
-    learning rate : float
-        value used
-    loss : str
-        name of loss function used to fit model, e.g. 'categorical_crossentropy'
-    metrics : str, list, dict
-        metrics evaluated by model during training and testing, e.g. ['accuracy', 'mse']
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
@@ -65,10 +57,6 @@ class TrainConfig:
     num_epochs = attr.ib(converter=int, validator=instance_of(int))
     batch_size = attr.ib(converter=int, validator=instance_of(int))
     root_results_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
-    optimizer = attr.ib(validator=instance_of(str))
-    learning_rate = attr.ib(converter=float, validator=instance_of(float))
-    loss = attr.ib(validator=instance_of(str))
-    metrics = attr.ib(converter=comma_separated_list)
 
     # optional
     # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
