@@ -1,10 +1,10 @@
 """validators used by attrs-based classes and by vak.parse.parse_config"""
-from configparser import ConfigParser
 from pathlib import Path
 
 import crowsetta.formats
 from evfuncs import load_cbin
 from scipy.io import wavfile
+import toml
 
 from .. import models
 
@@ -70,34 +70,34 @@ def is_spect_format(instance, attribute, value):
 
 
 CONFIG_DIR = Path(__file__).parent
-VALID_INI_PATH = CONFIG_DIR.joinpath('valid.ini')
-VALID_INI = ConfigParser()
-VALID_INI.read(VALID_INI_PATH)
-VALID_SECTIONS = VALID_INI.sections()
+VALID_TOML_PATH = CONFIG_DIR.joinpath('valid.toml')
+with VALID_TOML_PATH.open('r') as fp:
+    VALID_DICT = toml.load(fp)
+VALID_SECTIONS = list(VALID_DICT.keys())
 VALID_OPTIONS = {
-    section: VALID_INI.options(section)
-    for section in VALID_SECTIONS
+    section: list(options.keys())
+    for section, options in VALID_DICT.items()
 }
 
 
-def are_sections_valid(user_config_parser, user_config_path):
-    user_sections = user_config_parser.sections()
+def are_sections_valid(config_dict, toml_path):
+    sections = list(config_dict.keys())
     MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
     # add model names to valid sections so users can define model config in sections
     valid_sections = VALID_SECTIONS + MODEL_NAMES
-    for section in user_sections:
+    for section in sections:
         if section not in valid_sections:
             raise ValueError(
-                f'section defined in {user_config_path} is not valid: {section}'
+                f'section defined in {toml_path} is not valid: {section}'
             )
 
 
-def are_options_valid(user_config_parser, section, user_config_path):
-    user_options = set(user_config_parser.options(section))
+def are_options_valid(config_dict, section, toml_path):
+    user_options = set(config_dict[section].keys())
     valid_options = set(VALID_OPTIONS[section])
     if not user_options.issubset(valid_options):
         invalid_options = user_options - valid_options
         raise ValueError(
             f"the following options from {section} section in "
-            f"{user_config_path} are not valid: {invalid_options}"
+            f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
         )
