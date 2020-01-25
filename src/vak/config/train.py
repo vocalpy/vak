@@ -1,6 +1,4 @@
 """parses [TRAIN] section of config"""
-from configparser import NoOptionError
-
 import attr
 from attr import converters, validators
 from attr.validators import instance_of
@@ -100,27 +98,27 @@ REQUIRED_TRAIN_OPTIONS = [
 ]
 
 
-def parse_train_config(config, config_path):
-    """parse [TRAIN] section of config.ini file
+def parse_train_config(config_toml, toml_path):
+    """parse [TRAIN] section of config.toml file
 
     Parameters
     ----------
-    config : ConfigParser
-        containing config.ini file already loaded by parse function
-    config_path : str
-        path to config.ini file (used for error messages)
+    config_toml : dict
+        containing configuration file in TOML format, already loaded by parse function
+    toml_path : Path
+        path to a configuration file in TOML format (used for error messages)
 
     Returns
     -------
     train_config : vak.config.train.TrainConfig
         instance of TrainConfig class
     """
-    train_section = config['TRAIN']
+    train_section = config_toml['TRAIN']
     train_section = dict(train_section.items())
     for required_option in REQUIRED_TRAIN_OPTIONS:
         if required_option not in train_section:
-            raise NoOptionError(
+            raise KeyError(
                 f"the '{required_option}' option is required but was not found in the "
-                f"TRAIN section of the config.ini file: {config_path}"
+                f"TRAIN section of the config.ini file: {toml_path}"
             )
     return TrainConfig(**train_section)
