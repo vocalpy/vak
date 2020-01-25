@@ -5,9 +5,9 @@ import vak
 
 HERE = Path(__file__).parent
 # convention is that all the config.ini files in setup_scripts/ that should be
-# run when setting up for development have filenames of the form `prep_*_config.ini'
-# e.g., 'prep_learncurve_config.ini'
-PREP_CONFIGS_TO_RUN = HERE.glob('prep_*_config.ini')
+# run when setting up for development have filenames of the form `setup_*_config.ini'
+# e.g., 'setup_learncurve_config.ini'
+PREP_CONFIGS_TO_RUN = HERE.glob('setup_*_config.toml')
 
 
 def main():
