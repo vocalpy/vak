@@ -11,17 +11,17 @@ PREP_CONFIGS_TO_RUN = HERE.glob('setup_*_config.toml')
 
 
 def main():
-    for config_path in PREP_CONFIGS_TO_RUN:
-        if not config_path.exists():
+    for toml_path in PREP_CONFIGS_TO_RUN:
+        if not toml_path.exists():
             raise FileNotFoundError(
-                f'{config_path} not found')
+                f'{toml_path} not found')
 
-        print(f"preparing datasets for tests using config: {config_path}")
-        tmp_config_path = Path(config_path.parent).joinpath(f'tmp_{config_path.name}')
-        print(f"\tcopying to {tmp_config_path}")
-        shutil.copy(src=config_path, dst=tmp_config_path)
+        print(f"preparing datasets for tests using config: {toml_path}")
+        tmp_toml_path = Path(toml_path.parent).joinpath(f'tmp_{toml_path.name}')
+        print(f"\tcopying to {tmp_toml_path}")
+        shutil.copy(src=toml_path, dst=tmp_toml_path)
 
-        vak.cli.prep(config_path=tmp_config_path)
+        vak.cli.prep(toml_path=tmp_toml_path)
 
 
 if __name__ == '__main__':
