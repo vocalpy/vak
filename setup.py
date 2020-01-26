@@ -138,7 +138,6 @@ class UploadCommand(Command):
 ENTRY_POINTS = {
     'console_scripts': ['vak=vak.__main__:main'],
     'vak.models': [],
-    'vak.model_config_parsers': [],
 }
 
 
