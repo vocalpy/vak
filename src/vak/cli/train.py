@@ -12,11 +12,10 @@ import torch
 from torchvision import transforms
 
 from .. import config
-from .. import core
 from .. import models
 from .. import util
 from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
-from ..io import datasets, dataframe
+from ..io import dataframe
 from ..transforms.transforms import SpectScaler
 
 
@@ -166,17 +165,3 @@ def train(config_path):
         num_classes=len(labelmap),
         input_shape=train_dataset.shape
     )
-
-    core.train(models=models_map,
-               optimizer=cfg.train.optimizer,
-               loss=cfg.train.loss,
-               metrics=cfg.train.metrics,
-               num_epochs=cfg.train.num_epochs,
-               train_loader=train_loader,
-               val_loader=val_loader,
-               val_error_step=cfg.train.val_error_step,
-               checkpoint_step=cfg.train.checkpoint_step,
-               patience=cfg.train.patience,
-               save_only_single_checkpoint_file=cfg.train.save_only_single_checkpoint_file,
-               results_path=results_path,
-               )
