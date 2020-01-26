@@ -4,10 +4,6 @@ from attr import converters, validators
 from attr.validators import instance_of
 
 
-def freq_cutoffs_converter(value):
-    return [float(element) for element in value.split(',')]
-
-
 def freq_cutoffs_validator(instance, attribute, value):
     if len(value) != 2:
         raise ValueError(
@@ -63,8 +59,7 @@ class SpectParamsConfig:
     """
     fft_size = attr.ib(converter=int, validator=instance_of(int), default=512)
     step_size = attr.ib(converter=int, validator=instance_of(int), default=64)
-    freq_cutoffs = attr.ib(converter=converters.optional(freq_cutoffs_converter),
-                           validator=validators.optional(freq_cutoffs_validator),
+    freq_cutoffs = attr.ib(validator=validators.optional(freq_cutoffs_validator),
                            default=None)
     thresh = attr.ib(converter=converters.optional(float),
                      validator=validators.optional(instance_of(float)),
@@ -77,26 +72,26 @@ class SpectParamsConfig:
     audio_path_key = attr.ib(validator=instance_of(str), default='audio_path')
 
 
-def parse_spect_params_config(config, config_path):
-    """parse [SPECT_PARAMS] section of config.ini file
+def parse_spect_params_config(config_toml, toml_path):
+    """parse [SPECT_PARAMS] section of config.toml file
 
     Parameters
     ----------
-    config : ConfigParser
-        containing config.ini file already loaded by parse function
-    config_path : str
-        path to config.ini file (used for error messages)
+    config_toml : dict
+        containing configuration file in TOML format, already loaded by parse function
+    toml_path : Path
+        path to a configuration file in TOML format (used for error messages)
 
     Returns
     -------
     spect_params_config : vak.config.spect_params.SpectParamsConfig
-        instance with attributes set to values specified by config.ini section
+        instance with attributes set to values specified by config.toml section
         or to defaults.
     """
     # return defaults if config doesn't have SPECT_PARAMS section
     spect_params_section = {}
-    if 'SPECT_PARAMS' in config:
+    if 'SPECT_PARAMS' in config_toml:
         spect_params_section.update(
-            config['SPECT_PARAMS'].items()
+            config_toml['SPECT_PARAMS'].items()
         )
     return SpectParamsConfig(**spect_params_section)
