@@ -1,4 +1,4 @@
-from configparser import ConfigParser
+from functools import partial
 import json
 import logging
 from pathlib import Path
@@ -8,7 +8,7 @@ from datetime import datetime
 
 import joblib
 import pandas as pd
-import torch
+import torch.utils.data
 from torchvision import transforms
 
 from .. import config
@@ -16,18 +16,17 @@ from .. import models
 from .. import util
 from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
 from ..io import dataframe
-from ..transforms.transforms import SpectScaler
+from ..transforms import StandardizeSpect
 
 
-def train(config_path):
-    """train models using training set specified in config.ini file.
+def train(toml_path):
+    """train models using training set specified in config.toml file.
     Function called by command-line interface.
 
     Parameters
     ----------
-    config_path : str, Path
-        path to config.ini file. Used to rewrite file with options determined by
-        this function and needed for other functions
+    toml_path : str, Path
+        path to a configuration file in TOML format.
 
     Returns
     -------
@@ -36,11 +35,12 @@ def train(config_path):
     Trains models, saves results in new directory within root_results_dir specified
     in config.ini file, and adds path to that new directory to config.ini file.
     """
-    cfg = config.parse.from_path(config_path)
+    toml_path = Path(toml_path)
+    cfg = config.parse.from_toml(toml_path)
 
     if cfg.train is None:
         raise ValueError(
-            f'train called with a config.ini file that does not have a TRAIN section: {config_path}'
+            f'train called with a config.toml file that does not have a TRAIN section: {toml_path}'
         )
 
     dataset_df = pd.read_csv(cfg.train.csv_path)
@@ -61,17 +61,7 @@ def train(config_path):
     results_path = results_path.joinpath(results_dirname)
     results_path.mkdir(parents=True)
     # copy config file into results dir now that we've made the dir
-    shutil.copy(config_path, results_path)
-
-    # rewrite config file,
-    # so that paths where results were saved are automatically in config
-    config_obj = ConfigParser()
-    config_obj.read(config_path)
-    config_obj.set(section='TRAIN',
-                   option='results_dir_made_by_main_script',
-                   value=results_dirname)
-    with open(config_path, 'w') as fp:
-        config_obj.write(fp)
+    shutil.copy(toml_path, results_path)
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
     logfile_name = results_path.joinpath('logfile_from_train_' + timenow + '.log')
@@ -89,11 +79,11 @@ def train(config_path):
     # ---------------- load training data  -----------------------------------------------------------------------------
     if cfg.train.normalize_spectrograms:
         logger.info('will normalize spectrograms')
-        spect_scaler = SpectScaler.fit_df(dataset_df, spect_key=cfg.spect_params.spect_key)
-        joblib.dump(spect_scaler,
-                    results_path.joinpath('spect_scaler'))
+        standardize = StandardizeSpect.fit_df(dataset_df, spect_key=cfg.spect_params.spect_key)
+        joblib.dump(standardize,
+                    results_path.joinpath('StandardizeSpect'))
     else:
-        spect_scaler = None
+        standardize = None
 
     # below, if we're going to train network to predict unlabeled segments, then
     # we need to include a class for those unlabeled segments in labelmap,
@@ -113,12 +103,24 @@ def train(config_path):
         json.dump(labelmap, f)
 
     logger.info(f'using training dataset from {cfg.train.csv_path}')
+
+    # make an "add channel" transform to use with Lambda
+    # this way a spectrogram 'image' has a "channel" dimension (of size 1)
+    # that convolutional layers can work on
+    def to_floattensor(ndarray):
+        return torch.from_numpy(ndarray).float()
+
+    add_channel = partial(torch.unsqueeze, dim=0)
     transform = transforms.Compose(
-        [transforms.Lambda(spect_scaler),
-         transforms.Lambda(torch.from_numpy)]
+        [transforms.Lambda(standardize),
+         transforms.Lambda(to_floattensor),
+         transforms.Lambda(add_channel)]
     )
+
+    def to_longtensor(ndarray):
+        return torch.from_numpy(ndarray).long()
     target_transform = transforms.Compose(
-        [transforms.Lambda(torch.from_numpy)]
+        [transforms.Lambda(to_longtensor)]
     )
 
     train_dataset = SpectrogramWindowDataset.from_csv(csv_path=cfg.train.csv_path,
@@ -130,7 +132,9 @@ def train(config_path):
                                                       transform=transform,
                                                       target_transform=target_transform
                                                       )
-
+    train_data = torch.utils.data.DataLoader(dataset=train_dataset,
+                                             shuffle=True,
+                                             batch_size=cfg.train.batch_size)
     train_dur = dataframe.split_dur(dataset_df, 'train')
     logger.info(
         f'Total duration of training set (in s): {train_dur}'
@@ -147,7 +151,9 @@ def train(config_path):
                                                         transform=transform,
                                                         target_transform=target_transform
                                                         )
-
+        val_data = torch.utils.data.DataLoader(dataset=val_dataset,
+                                               shuffle=False,
+                                               batch_size=cfg.train.batch_size)
         val_dur = dataframe.split_dur(dataset_df, 'val')
         logger.info(
             f'Total duration of validation set (in s): {val_dur}'
@@ -157,11 +163,27 @@ def train(config_path):
             f'will measure error on validation set every {cfg.train.val_error_step} steps of training'
         )
     else:
-        val_dataset = None
+        val_data = None
 
-    model_config_map = config.models.map_from_path(config_path, cfg.train.models)
+    model_config_map = config.models.map_from_path(toml_path, cfg.train.models)
     models_map = models.from_model_config_map(
         model_config_map,
         num_classes=len(labelmap),
         input_shape=train_dataset.shape
     )
+    for model_name, model in models_map.items():
+        results_model_root = results_path.joinpath(model_name)
+        results_model_root.mkdir()
+        ckpt_root = results_model_root.joinpath('checkpoints')
+        logger.info(
+            f'training {model_name}'
+        )
+        model.fit(train_data=train_data,
+                  num_epochs=cfg.train.num_epochs,
+                  ckpt_root=ckpt_root,
+                  val_data=val_data,
+                  val_step=cfg.train.val_error_step,
+                  checkpoint_step=cfg.train.checkpoint_step,
+                  patience=cfg.train.patience,
+                  single_ckpt=cfg.train.save_only_single_checkpoint_file,
+                  device=None)
