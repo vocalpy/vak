@@ -2,11 +2,10 @@
 from pathlib import Path
 
 import crowsetta.formats
-from evfuncs import load_cbin
-from scipy.io import wavfile
 import toml
 
 from .. import models
+from ..util.audio import AUDIO_FORMAT_FUNC_MAP
 
 
 def is_a_directory(instance, attribute, value):
@@ -36,10 +35,6 @@ def is_valid_model_name(instance, attribute, value):
             )
 
 
-AUDIO_FORMAT_FUNC_MAP = {
-    'cbin': load_cbin,
-    'wav': wavfile.read
-}
 VALID_AUDIO_FORMATS = list(AUDIO_FORMAT_FUNC_MAP.keys())
 def is_audio_format(instance, attribute, value):
     """check if valid audio format"""
