@@ -8,34 +8,8 @@ from dask.diagnostics import ProgressBar
 from .annotation import source_annot_map
 from ..config import validators
 from ..config.spect_params import SpectParamsConfig
-from ..util.general import _files_from_dir
+from ..util.audio import AUDIO_FORMAT_FUNC_MAP, files_from_dir
 from ..util.spect import spectrogram
-
-
-AUDIO_FORMAT_FUNC_MAP = validators.AUDIO_FORMAT_FUNC_MAP
-
-
-def files_from_dir(audio_dir, audio_format):
-    """get all audio files of a given format
-    from a directory or its sub-directories,
-    using the file extension associated with that annotation format.
-
-    Parameters
-    ----------
-    audio_dir : str
-        path to directory containing audio files.
-    audio_format : str
-        valid audio file format. One of {'wav', 'cbin'}.
-
-    Returns
-    -------
-    audio_files : list
-        of paths to audio files
-    """
-    if audio_format not in validators.VALID_AUDIO_FORMATS:
-        raise ValueError(f"'{audio_format}' is not a valid audio format")
-    audio_files = _files_from_dir(audio_dir, audio_format)
-    return audio_files
 
 
 def to_spect(audio_format,
