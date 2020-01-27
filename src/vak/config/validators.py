@@ -29,7 +29,7 @@ def is_a_file(instance, attribute, value):
 def is_valid_model_name(instance, attribute, value):
     MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
     for model_name in value:
-        if model_name not in MODEL_NAMES:
+        if model_name not in MODEL_NAMES and f'{model_name}Model' not in MODEL_NAMES:
             raise ValueError(
                 f'Model {model_name} not found when importing installed models.'
             )
@@ -81,7 +81,7 @@ def are_sections_valid(config_dict, toml_path):
     # add model names to valid sections so users can define model config in sections
     valid_sections = VALID_SECTIONS + MODEL_NAMES
     for section in sections:
-        if section not in valid_sections:
+        if section not in valid_sections and f'{section}Model' not in valid_sections:
             raise ValueError(
                 f'section defined in {toml_path} is not valid: {section}'
             )
