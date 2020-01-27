@@ -24,13 +24,9 @@ class TrainConfig:
     batch_size : int
         number of samples per batch presented to models during training.
     root_results_dir : str
-        directory in which results *will* be created.
+        directory in which results will be created.
         The vak.cli.train function will create
         a subdirectory in this directory each time it runs.
-    results_dirname : str
-        name of subdirectory created by vak.cli.train.
-        This option is added programatically by that function
-        when it runs.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
