@@ -238,8 +238,6 @@ class SpectrogramWindowDataset(VisionDataset):
 
         # note that we set "root" to csv path
         return cls(csv_path,
-                   transform,
-                   target_transform,
                    x_inds,
                    spect_id_vector,
                    spect_inds_vector,
@@ -248,8 +246,9 @@ class SpectrogramWindowDataset(VisionDataset):
                    annot_formats,
                    scribes,
                    labelmap,
-                   batch_size,
                    window_size,
-                   spect_key=spect_key,
-                   timebins_key=timebins_key
+                   spect_key,
+                   timebins_key,
+                   transform,
+                   target_transform
                    )
