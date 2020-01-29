@@ -3,6 +3,7 @@ from pathlib import Path
 import toml
 
 from .. import models
+from ..engine.model import Model
 
 
 def map_from_config_dict(config_dict, model_names):
@@ -57,7 +58,7 @@ def map_from_config_dict(config_dict, model_names):
     model_config_map = {}
     for model_name in model_names:
         if model_name in sections:
-            model_config_map[model_name] = config_dict[model_name]
+            model_config_dict = config_dict[model_name]
         else:
             # try appending 'Model' to name
             tmp_model_name = f'{model_name}Model'
@@ -66,7 +67,16 @@ def map_from_config_dict(config_dict, model_names):
                     f'did not find section named {model_name} or {tmp_model_name} '
                     f'in config'
                 )
-            model_config_map[tmp_model_name] = config_dict[tmp_model_name]
+            model_config_dict = config_dict[tmp_model_name]
+
+        # check if config declares parameters for required attributes;
+        # if not, just put an empty dict that will get passed as the "kwargs"
+        for attr in Model.REQUIRED_SUBCLASS_ATTRIBUTES:
+            if attr not in model_config_dict:
+                model_config_dict[attr] = {}
+
+        model_config_map[model_name] = config_dict[model_name]
+
     return model_config_map
 
 
