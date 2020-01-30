@@ -93,10 +93,10 @@ class SpectrogramWindowDataset(VisionDataset):
         self.window_size = window_size
 
         tmp_x_ind = 0
-        one_x, _ = self.__get_window_labelvec(tmp_x_ind)
+        one_x, _ = self.__getitem__(tmp_x_ind)
         # used by vak functions that need to determine size of window,
         # e.g. when initializing a neural network model
-        self.shape = one_x.shape[1:]
+        self.shape = one_x.shape
 
     def __get_window_labelvec(self, idx):
         """helper function that gets batches of training pairs,
