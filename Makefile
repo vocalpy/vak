@@ -14,7 +14,7 @@ clean :
 	rm -rf ./tests/test_data/results/learncurve/*/*
 	rm -rf ./tests/test_data/results/predict/*/*
 
-results : config $(RESULTS_SCRIPT) $(SPECTS_SCRIPT)
+results : $(RESULTS_SCRIPT) $(SPECTS_SCRIPT)
 	python $(SPECTS_SCRIPT)
 	python $(RESULTS_SCRIPT)
 
