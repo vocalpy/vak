@@ -135,9 +135,16 @@ class UploadCommand(Command):
         sys.exit()
 
 
+METRICS = [
+    'Accuracy=vak.metrics.Accuracy',
+    'Levenshtein=vak.metrics.Levenshtein',
+    'SegmentErrorRate=vak.metrics.SegmentErrorRate',
+]
+
 ENTRY_POINTS = {
     'console_scripts': ['vak=vak.__main__:main'],
     'vak.models': [],
+    'vak.metrics': METRICS,
 }
 
 
