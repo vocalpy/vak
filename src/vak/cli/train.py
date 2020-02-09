@@ -177,6 +177,7 @@ def train(toml_path):
         results_model_root = results_path.joinpath(model_name)
         results_model_root.mkdir()
         ckpt_root = results_model_root.joinpath('checkpoints')
+        ckpt_root.mkdir()
         logger.info(
             f'training {model_name}'
         )
