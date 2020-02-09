@@ -7,9 +7,6 @@ from configparser import ConfigParser
 
 import numpy as np
 
-from .. import core
-from ..core.learncurve import LEARN_CURVE_DIR_STEM
-
 
 def learning_curve(train_vds_path,
                    test_vds_path,
@@ -118,7 +115,7 @@ def learning_curve(train_vds_path,
 
     # need to set up a results dir so we have some place to put the log file
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    results_dirname = f'{LEARN_CURVE_DIR_STEM}{timenow}'
+    results_dirname = f'{timenow}'
     if root_results_dir:
         results_dirname = os.path.join(root_results_dir,
                                        results_dirname)
@@ -138,25 +135,8 @@ def learning_curve(train_vds_path,
     logger.info('Using config file: {}'.format(config_file))
 
     # --------------- let core.learncurve do all the work --------------------------------------------------------------
-    results_dirname = core.learning_curve(train_vds_path,
-                                          val_vds_path,
-                                          test_vds_path,
-                                          total_train_set_duration,
-                                          train_set_durs,
-                                          num_replicates,
-                                          networks,
-                                          num_epochs,
-                                          val_error_step,
-                                          checkpoint_step,
-                                          patience,
-                                          save_only_single_checkpoint_file,
-                                          normalize_spectrograms,
-                                          use_train_subsets_from_previous_run,
-                                          previous_run_path,
-                                          output_dir=results_dirname,
-                                          save_transformed_data=save_transformed_data)
 
-    # lastly rewrite config file,
+    # rewrite config file,
     # so that paths where results were saved are automatically in config
     config = ConfigParser()
     config.read(config_file)

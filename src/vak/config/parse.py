@@ -1,80 +1,17 @@
-import os
-from configparser import ConfigParser
-from configparser import NoSectionError, MissingSectionHeaderError, ParsingError,\
-    DuplicateOptionError, DuplicateSectionError
+from pathlib import Path
 
 import attr
 from attr.validators import instance_of, optional
+import toml
 
+from .dataloader import parse_dataloader_config, DataLoaderConfig
 from .learncurve import parse_learncurve_config, LearncurveConfig
 from .predict import parse_predict_config, PredictConfig
 from .prep import parse_prep_config, PrepConfig
-from .spectrogram import parse_spect_config, SpectConfig
+from .spect_params import parse_spect_params_config, SpectParamsConfig
 from .train import parse_train_config, TrainConfig
 
-from .. import network
 from .validators import are_sections_valid, are_options_valid
-
-
-def _get_nets_config(config_obj, networks):
-    """helper function to get configuration for only networks that user specified
-    in a specific section of config.ini file, e.g. in the TRAIN section
-
-    Parameters
-    ----------
-    config_obj : configparser.ConfigParser
-        instance of ConfigParser with config.ini file already read into it
-        that has sections representing configurations for networks
-    networks : list
-        of str, i.e. names of networks specified by a section
-        (such as TRAIN or PREDICT) that should each have corresponding sections
-        specifying their configuration: hyperparameters such as learning
-        rate, number of time steps, etc.
-
-    Returns
-    -------
-    networks_dict : dict
-        where each key is the name of a network and the corresponding value is
-        another dict containing key-value pairs of configuration options and the
-        value specified for that option
-    """
-    # load entry points within function, not at module level,
-    # to avoid circular dependencies
-    # (user would be unable to import networks in other packages
-    # that subclass vak.network.AbstractVakNetwork
-    # since the module in the other package would need to `import vak`)
-    NETWORKS = network._load()
-    sections = config_obj.sections()
-    networks_dict = {}
-    for network_name in networks:
-        if network_name not in sections:
-            raise NoSectionError('No section found specifying parameters for network {}'
-                                 .format(network_name))
-        network_option_names = set(config_obj[network_name].keys())
-        config_field_names = set(NETWORKS[network_name].Config._fields)
-        # if some options in this network's section are not found in the Config tuple
-        # that is a class attribute for that network, raise an error because we don't
-        # know what to do with that option
-        if not network_option_names.issubset(config_field_names):
-            unknown_options = network_option_names - config_field_names
-            raise ValueError('The following option(s) in section for network {} are '
-                             'not found in the Config for that network: {}.\n'
-                             'Valid options are: {}'
-                             .format(network_name, unknown_options, config_field_names))
-
-        options = {}
-        # do type conversion using the networks' Config typed namedtuple
-        # for the rest of the options
-        for option, value in config_obj[network_name].items():
-            option_type = NETWORKS[network_name].Config._field_types[option]
-            try:
-                options[option] = option_type(value)
-            except ValueError:
-                raise ValueError('Could not cast value {} for option {} in {} section '
-                                 ' to specified type {}.'
-                                 .format(value, option, network_name, option_type))
-        networks_dict[network_name] = NETWORKS[network_name].Config(**options)
-        return networks_dict
 
 
 @attr.s
@@ -85,33 +22,48 @@ class Config:
     ----------
     prep : vak.config.prep.PrepConfig
         represents [PREP] section of config.ini file
-    spect_params : vak.config.spectrogram.SpectConfig
+    spect : vak.config.spectrogram.SpectConfig
         represents [SPECTROGRAM] section of config.ini file
-    learncurve : vak.config.learncurve.LearncurveConfig
-        represents [LEARNCURVE] section of config.ini file
+    dataloader : vak.config.dataloader.DataLoaderConfig
+        represents [DATALOADER] section of config.ini file
     train : vak.config.train.TrainConfig
         represents [TRAIN] section of config.ini file
     predict : vak.config.predict.PredictConfig
         represents [PREDICT] section of config.ini file.
-    networks : dict
-        contains neural network configuration sections of config.ini file.
-        These will vary depending on which networks the user specifies.
+    learncurve : vak.config.learncurve.LearncurveConfig
+        represents [LEARNCURVE] section of config.ini file
     """
+    spect_params = attr.ib(validator=instance_of(SpectParamsConfig), default=SpectParamsConfig())
+    dataloader = attr.ib(validator=instance_of(DataLoaderConfig), default=DataLoaderConfig())
+
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
-    spect_params = attr.ib(validator=optional(instance_of(SpectConfig)), default=None)
-    learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
-    networks = attr.ib(validator=optional(instance_of(dict)), default=None)
+    learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
 
 
-def parse_config(config_file):
-    """parse a config.ini file
+SECTION_PARSERS = {
+    'SPECT_PARAMS': parse_spect_params_config,
+    'DATAlOADER': parse_dataloader_config,
+    'PREP': parse_prep_config,
+    'TRAIN': parse_train_config,
+    'LEARNCURVE': parse_learncurve_config,
+    'PREDICT': parse_predict_config,
+}
+
+
+def from_toml(toml_path, sections=None):
+    """parse a TOML configuration file
 
     Parameters
     ----------
-    config_file : str
-        path to config.ini file
+    toml_path : str, Path
+        path to a configuration file in TOML format
+    sections : list
+        of str, names of sections from config.ini file to parse.
+        Default is None, in which case function attempts to parse all sections.
+        Used by vak.cli.prep to avoid throwing a bunch of errors if paths in
+        other sections don't exist yet.
 
     Returns
     -------
@@ -119,67 +71,40 @@ def parse_config(config_file):
         instance of Config class, whose attributes correspond to
         sections in a config.ini file.
     """
-    # check config_file exists,
+    # check config_path is a file,
     # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
-    if not os.path.isfile(config_file):
-        raise FileNotFoundError('config file {} is not found'
-                                .format(config_file))
+    toml_path = Path(toml_path)
+    if not toml_path.is_file():
+        raise FileNotFoundError(f'path not recognized as a file: {toml_path}')
 
-    try:
-        config_obj = ConfigParser()
-        config_obj.read(config_file)
-    except (MissingSectionHeaderError, ParsingError, DuplicateOptionError, DuplicateSectionError):
-        # try to add some context for users that do not spend their lives thinking about ConfigParser objects
-        print(f"Error when opening the following config_file: {config_file}")
-        raise
-    except:
-        # say something different if we can't add very good context
-        print(f"Unexpected error when opening the following config_file: {config_file}")
-        raise
+    with toml_path.open('r') as fp:
+        config_toml = toml.load(fp)
 
-    are_sections_valid(config_obj, config_file)
+    are_sections_valid(config_toml, toml_path)
 
-    if config_obj.has_section('TRAIN') and config_obj.has_section('LEARNCURVE'):
-        raise ValueError(
-            'a single config.ini file cannot contain both TRAIN and LEARNCURVE sections, '
-            'because it is unclear which of those two sections to add paths to when running '
-            'the "prep" command to prepare datasets'
-        )
-
-    if config_obj.has_section('TRAIN'):
-        if config_obj.has_option('PREP', 'test_set_duration'):
+    if 'TRAIN' in config_toml:
+        if 'LEARNCURVE' in config_toml:
             raise ValueError(
-                "cannot define 'test_set_duration' option for PREP section when using with vak 'train' command, "
-                "'test_set_duration' is not a valid option for the TRAIN section. "
-                "Were you trying to use the 'learncurve' command instead?"
+                'a single config.toml file cannot contain both TRAIN and LEARNCURVE sections, '
+                'because it is unclear which of those two sections to add paths to when running '
+                'the "prep" command to prepare datasets'
             )
 
+        if 'PREP' in config_toml:
+            if 'test_set_duration' in config_toml['PREP']:
+                raise ValueError(
+                    "cannot define 'test_set_duration' option for PREP section when using with vak 'train' command, "
+                    "'test_set_duration' is not a valid option for the TRAIN section. "
+                    "Were you trying to use the 'learncurve' command instead?"
+                )
+
+    if sections is None:
+        sections = list(SECTION_PARSERS.keys())
     config_dict = {}
-    if config_obj.has_section('PREP'):
-        config_dict['prep'] = parse_prep_config(config_obj, config_file)
-
-    ### if **not** using spectrograms from .mat files ###
-    if config_obj.has_section('SPECTROGRAM'):
-        are_options_valid(config_obj, 'SPECTROGRAM', config_file)
-        config_dict['spect_params'] = parse_spect_config(config_obj)
-
-    networks = []
-    if config_obj.has_section('LEARNCURVE'):
-        are_options_valid(config_obj, 'LEARNCURVE', config_file)
-        config_dict['learncurve'] = parse_learncurve_config(config_obj, config_file)
-        networks += config_dict['learncurve'].networks
-
-    if config_obj.has_section('TRAIN'):
-        are_options_valid(config_obj, 'TRAIN', config_file)
-        config_dict['train'] = parse_train_config(config_obj, config_file)
-        networks += config_dict['train'].networks
-
-    if config_obj.has_section('PREDICT'):
-        are_options_valid(config_obj, 'PREDICT', config_file)
-        config_dict['predict'] = parse_predict_config(config_obj)
-        networks += config_dict['predict'].networks
-
-    if networks:
-        config_dict['networks'] = _get_nets_config(config_obj, networks)
+    for section_name in sections:
+        if section_name in config_toml:
+            are_options_valid(config_toml, section_name, toml_path)
+            section_parser = SECTION_PARSERS[section_name]
+            config_dict[section_name.lower()] = section_parser(config_toml, toml_path)
 
     return Config(**config_dict)

@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import unittest
 
-import vak.utils
+import vak.util
 import vak.cli.cli
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
