@@ -5,6 +5,7 @@ from attr.validators import instance_of
 
 from .converters import bool_from_str, comma_separated_list, expanded_user_path
 from .validators import is_a_directory, is_a_file, is_valid_model_name
+from ..util.general import get_default_device
 
 
 @attr.s
@@ -61,11 +62,18 @@ class TrainConfig:
                        validator=validators.optional(is_a_file),
                        default=None
                        )
+
     results_dirname = attr.ib(converter=converters.optional(expanded_user_path),
                               validator=validators.optional(is_a_directory), default=None)
+
     normalize_spectrograms = attr.ib(converter=bool_from_str,
                                      validator=validators.optional(instance_of(bool)), default=False)
+
+    num_workers = attr.ib(validator=instance_of(int), default=2)
+    device = attr.ib(validator=instance_of(str), default=get_default_device())
     shuffle = attr.ib(converter=bool_from_str, validator=instance_of(bool), default=True)
+
+
     val_error_step = attr.ib(converter=converters.optional(int),
                              validator=validators.optional(instance_of(int)), default=None)
     checkpoint_step = attr.ib(converter=converters.optional(int),
