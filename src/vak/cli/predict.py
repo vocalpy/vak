@@ -1,62 +1,86 @@
-import os
+from functools import partial
+import json
+from pathlib import Path
+
+import joblib
+import torch.utils.data
+from torchvision import transforms
+
+from .. import config
+from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
+from .. import models
 
 
-def predict(predict_vds_path,
-            train_vds_path,
-            checkpoint_path,
-            networks,
-            spect_scaler_path=None,
-            ):
-    """make predictions with one trained model
+def predict(toml_path):
+    """make predictions on dataset with trained model specified in config.toml file.
+    Function called by command-line interface.
 
     Parameters
     ----------
-    predict_vds_path : str
-        path to saved Dataset that contains data for which annotations
-        should be predicted.
-    train_vds_path : str
-        path to Dataset that represents training data.
-        To fetch labelmap used during training, to map labels used
-        in annotation to a series of consecutive integers that become
-        outputs of the neural network. Used here to convert
-        back to labels used in annotation.
-    checkpoint_path : str
-        path to directory with checkpoint files saved by Tensorflow, to reload model
-    networks : namedtuple
-        where each field is the Config tuple for a neural network and the name
-        of that field is the name of the class that represents the network.
-    spect_scaler_path : str
-        path to a saved SpectScaler object used to normalize spectrograms.
-        If spectrograms were normalized and this is not provided, will give
-        incorrect results.
+    toml_path : str, Path
+        path to a configuration file in TOML format.
 
     Returns
     -------
     None
     """
-    if not os.path.isdir(checkpoint_path):
-        raise FileNotFoundError('directory {}, specified as '
-                                'checkpoint_path, is not found.'
-                                .format(checkpoint_path))
+    toml_path = Path(toml_path)
+    cfg = config.parse.from_toml(toml_path)
 
-    if spect_scaler_path:
-        if not os.path.isfile(spect_scaler_path):
-            raise FileNotFoundError(
-                f'file for spect_scaler not found at path:\n{spect_scaler_path}'
-            )
-
-    if type(predict_vds_path) is str:
-        predict_vds_path = [predict_vds_path]
-    elif type(predict_vds_path) is list:
-        pass
-    else:
-        raise TypeError(
-            'predict_vds_path should be a string path or list '
-            f'of string paths, but type was {type(predict_vds_path)}'
+    if cfg.predict is None:
+        raise ValueError(
+            f'predict called with a config.toml file that does not have a PREDICT section: {toml_path}'
         )
 
-    train_vds = Dataset.load(json_fname=train_vds_path)
-    if train_vds.are_spects_loaded() is False:
-        train_vds = train_vds.load_spects()
-    labelmap = train_vds.labelmap
-    del train_vds
+    # ---------------- load data for prediction ------------------------------------------------------------------------
+    if cfg.predict.spect_scaler_path:
+        standardize = joblib.load(cfg.predict.spect_scaler_path)
+    else:
+        standardize = None
+
+    with cfg.predict.labelmap_path.open('r') as f:
+        labelmap = json.load(f)
+
+    def to_floattensor(ndarray):
+        return torch.from_numpy(ndarray).float()
+
+    # make an "add channel" transform to use with Lambda
+    # this way a spectrogram 'image' has a "channel" dimension (of size 1)
+    # that convolutional layers can work on
+    add_channel = partial(torch.unsqueeze, dim=1)  # add channel at first dimension because windows become batch
+    transform = transforms.Compose(
+        [transforms.Lambda(standardize),
+         transforms.Lambda(to_floattensor),
+         transforms.Lambda(add_channel)]
+    )
+
+    def to_longtensor(ndarray):
+        return torch.from_numpy(ndarray).long()
+    target_transform = transforms.Compose(
+        [transforms.Lambda(to_longtensor)]
+    )
+
+    pred_dataset = SpectrogramWindowDataset.from_csv(csv_path=cfg.predict.csv_path,
+                                                     split='predict',
+                                                     labelmap=labelmap,
+                                                     window_size=cfg.dataloader.window_size,
+                                                     spect_key=cfg.spect_params.spect_key,
+                                                     timebins_key=cfg.spect_params.timebins_key,
+                                                     transform=transform,
+                                                     target_transform=target_transform
+                                                     )
+
+    pred_data = torch.utils.data.DataLoader(dataset=pred_dataset,
+                                            shuffle=False,
+                                            batch_size=1,
+                                            num_workers=cfg.predict.num_workers)
+
+    model_config_map = config.models.map_from_path(toml_path, cfg.train.models)
+    models_map = models.from_model_config_map(
+        model_config_map,
+        num_classes=len(labelmap),
+        input_shape=pred_dataset.shape
+    )
+    for model_name, model in models_map.items():
+        model.predict(pred_data=pred_data,
+                      device=cfg.predict.device)
