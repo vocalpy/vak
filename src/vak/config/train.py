@@ -28,6 +28,12 @@ class TrainConfig:
         directory in which results will be created.
         The vak.cli.train function will create
         a subdirectory in this directory each time it runs.
+    num_workers : int
+        Number of processes to use for parallel loading of data.
+        Argument to torch.DataLoader.
+    device : str
+        Device on which to work with model + data.
+        Defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
@@ -72,7 +78,6 @@ class TrainConfig:
     num_workers = attr.ib(validator=instance_of(int), default=2)
     device = attr.ib(validator=instance_of(str), default=get_default_device())
     shuffle = attr.ib(converter=bool_from_str, validator=instance_of(bool), default=True)
-
 
     val_error_step = attr.ib(converter=converters.optional(int),
                              validator=validators.optional(instance_of(int)), default=None)
