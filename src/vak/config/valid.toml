@@ -1,0 +1,63 @@
+# This .ini file has all valid options for each section.
+# The values for those options are not used, they are just dummy values.
+# The file is used by parse.py to determine whether a .ini file
+# provided by the user has valid sections + options.
+# Options should be in the same order they are defined for the
+# attrs-based class that represents the config, for easy comparison
+# when changing that class + this file.
+[PREP]
+data_dir = './tests/test_data/cbins/gy6or6/032312'
+output_dir = './tests/test_data/prep/learncurve'
+audio_format = 'cbin'
+spect_format = 'npz'
+annot_format = 'notmat'
+annot_file = './some/annot/file'
+labelset = 'iabcdefghjk'
+train_dur = 50
+val_dur = 15
+test_dur = 30
+
+[SPECT_PARAMS]
+fft_size = 512
+step_size = 64
+freq_cutoffs = [ 500, 10000 ]
+thresh = 6.25
+transform_type = 'log_spect'
+spect_key = 's'
+freqbins_key = 'f'
+timebins_key = 't'
+audio_path_key = 'audio_path'
+
+[TRAIN]
+models = 'TweetyNet'
+root_results_dir = './tests/test_data/results/train'
+csv_path = 'tests/test_data/prep/train/032312_prep_191224_225912.csv'
+num_workers = 4
+device = 'cuda'
+batch_size = 11
+num_epochs = 2
+normalize_spectrograms = true
+val_error_step = 1
+checkpoint_step = 1
+save_only_single_checkpoint_file = true
+results_dir_made_by_main_script = '/some/path/to/learncurve/'
+
+[LEARNCURVE]
+models = 'TweetyNet'
+root_results_dir = './tests/test_data/results/learncurve'
+batch_size = 11
+num_epochs = 2
+normalize_spectrograms = true
+val_error_step = 1
+checkpoint_step = 1
+save_only_single_checkpoint_file = true
+train_set_durs = [ 4, 6 ]
+replicates = 2
+csv_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
+results_dir_made_by_main_script = '/some/path/to/learncurve/'
+
+[PREDICT]
+csv_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
+checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
+models = 'TweetyNet'
+spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'

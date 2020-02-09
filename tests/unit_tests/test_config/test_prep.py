@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 import vak.config.prep
-import vak.utils
+import vak.util
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
@@ -74,7 +74,7 @@ class TestParsePrepConfig(unittest.TestCase):
         self.config_obj['PREP']['labelset'] = a_rangestr
         prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
         self.assertEqual(
-            prep_config_obj.labelset, vak.utils.data.range_str(a_rangestr)
+            prep_config_obj.labelset, vak.util.data.range_str(a_rangestr)
         )
 
     def test_int_labelset(self):

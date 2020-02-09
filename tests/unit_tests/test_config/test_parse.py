@@ -11,10 +11,11 @@ import numpy as np
 import joblib
 
 import vak.config
-import vak.utils
-import vak.network
-import vak.utils.data
-import vak.utils.spect
+import vak.transforms.transforms
+import vak.util
+import vak.models
+import vak.util.data
+import vak.util.spect
 
 HERE = os.path.dirname(__file__)
 TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')
@@ -40,7 +41,7 @@ class TestParseConfig(unittest.TestCase):
         # for predict section of config
         self.tmp_checkpoint_dir = tempfile.mkdtemp()
         self.tmp_dir_to_predict = tempfile.mkdtemp()
-        a_spect_scaler = vak.utils.spect.SpectScaler()
+        a_spect_scaler = vak.transforms.transforms.SpectScaler()
         a_spect_scaler.fit(np.random.normal(size=(1000, 513)))
         tmp_spect_scaler_path = os.path.join(self.tmp_results_dir, 'spect_scaler')
         joblib.dump(value=a_spect_scaler, filename=tmp_spect_scaler_path)
@@ -128,7 +129,7 @@ class TestParseConfig(unittest.TestCase):
     def test_network_sections_match_config(self):
         test_configs = glob(os.path.join(TEST_CONFIGS_PATH,
                                          'test_*_config.ini'))
-        NETWORKS = vak.network._load()
+        NETWORKS = vak.models._load()
         available_net_names = [net_name for net_name in NETWORKS.keys()]
         for test_config in test_configs:
             tmp_config_file = self._add_dirs_to_config_and_save_as_tmp(test_config)

@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-import vak.utils.general
+import vak.util.general
 
 
 HERE = Path(__file__).parent
@@ -18,7 +18,7 @@ class TestGeneral(unittest.TestCase):
     def test_find_fname(self):
         fname = 'llb3_0003_2018_04_23_14_18_54.wav.mat'
         ext = 'wav'
-        out = vak.utils.general.find_fname(fname, ext)
+        out = vak.util.general.find_fname(fname, ext)
         self.assertTrue(
             out == 'llb3_0003_2018_04_23_14_18_54.wav'
         )
@@ -27,7 +27,7 @@ class TestGeneral(unittest.TestCase):
         # check works for .mat files
         mat_files = self.mat_spect_path.glob('*.mat')
         mat_files = [str(path) for path in mat_files]
-        files = vak.utils.general._files_from_dir(self.mat_spect_path, 'mat')
+        files = vak.util.general._files_from_dir(self.mat_spect_path, 'mat')
         self.assertTrue(
             sorted(mat_files) == sorted(files)
         )
@@ -36,7 +36,7 @@ class TestGeneral(unittest.TestCase):
         # but just in case ... we check for an audio file type too
         cbin_files = self.cbin_path.glob('*.cbin')
         cbin_files = [str(path) for path in cbin_files]
-        files = vak.utils.general._files_from_dir(self.cbin_path, 'cbin')
+        files = vak.util.general._files_from_dir(self.cbin_path, 'cbin')
         self.assertTrue(
             sorted(cbin_files) == sorted(files)
         )
@@ -44,7 +44,7 @@ class TestGeneral(unittest.TestCase):
     def test_timebin_dur_from_vecs(self):
         timebin_dur = 0.001
         time_bins = np.linspace(0., 5., num=int(5 / timebin_dur))
-        computed = vak.utils.general.timebin_dur_from_vec(time_bins=time_bins, n_decimals_trunc=3)
+        computed = vak.util.general.timebin_dur_from_vec(time_bins=time_bins, n_decimals_trunc=3)
         self.assertTrue(timebin_dur == computed)
 
 

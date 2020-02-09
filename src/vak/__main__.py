@@ -3,6 +3,7 @@ Invokes __main__ when the module is run as a script.
 Example: python -m vak --help
 """
 import argparse
+from pathlib import Path
 
 from .cli import cli
 
@@ -24,9 +25,9 @@ def get_parser():
                         help="Command to run, valid options are:\n"
                              f"{CHOICES}\n"
                              "$ vak train ./configs/config_2018-12-17.ini")
-    parser.add_argument('configfile', type=str,
-                        help='name of config.ini file to use \n'
-                             '$ vak train ./configs/config_2018-12-17.ini')
+    parser.add_argument('configfile', type=Path,
+                        help='name of config.toml file to use \n'
+                             '$ vak train ./configs/config_2018-12-17.toml')
     return parser
 
 

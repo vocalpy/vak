@@ -31,8 +31,20 @@ VERSION = about['__version__']
 LICENSE = about['__license__']
 
 REQUIRED = [
-    'tensorflow', 'numpy', 'scipy', 'matplotlib', 'dask[bag]', 'joblib',
-    'tqdm', 'attrs', 'crowsetta==1.1.1',
+    'attrs',
+    'crowsetta>=2.1.0',
+    'dask',
+    'evfuncs',
+    'joblib',
+    'matplotlib',
+    'numpy',
+    'scipy',
+    'pandas',
+    'toml',
+    'torch',
+    'torchvision',
+    'tqdm',
+    'tweetynet>=0.3.0'
 ]
 
 dev_deps = [
@@ -40,7 +52,8 @@ dev_deps = [
 ]
 
 test_deps = [
-    'vak_test_net', 'tweetynet>=0.1.1a4',
+    'vak_test_net',
+    'tweetynet>=0.1.1a4',
 ]
 
 doc_deps = [
@@ -56,9 +69,9 @@ EXTRAS = {
     'doc': doc_deps,
 }
 
-# need to make sure the valid.ini file in vak/config/ gets included
+# need to make sure the valid.toml file in vak/config/ gets included
 PACKAGE_DATA = {
-                   'vak': ['*.ini',],
+                   'vak': ['*.toml', ],
                }
 
 # The rest you shouldn't have to touch too much :)
@@ -122,6 +135,20 @@ class UploadCommand(Command):
 
         sys.exit()
 
+
+METRICS = [
+    'Accuracy=vak.metrics.Accuracy',
+    'Levenshtein=vak.metrics.Levenshtein',
+    'SegmentErrorRate=vak.metrics.SegmentErrorRate',
+]
+
+ENTRY_POINTS = {
+    'console_scripts': ['vak=vak.__main__:main'],
+    'vak.models': [],
+    'vak.metrics': METRICS,
+}
+
+
 # Where the magic happens:
 setup(
     name=NAME,
@@ -136,9 +163,7 @@ setup(
     packages=find_packages(where="src", exclude=('tests',)),
     package_dir={"": "src"},
     # scripts=['src/bin/vak-cli.py'],
-    entry_points={
-        'console_scripts': ['vak=vak.__main__:main'],
-    },
+    entry_points=ENTRY_POINTS,
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     package_data=PACKAGE_DATA,
