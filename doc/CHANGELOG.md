@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0a]
+## [0.3.0a1]
+### Fixed
+- path in `PACKAGE_DATA` that captures 'valid.toml'
+
+## [0.3.0a0]
 ### Removed
 - `Dataset` class and related classes that were in `vak.dataset` sub-package
   + see `dataframe` module added below that replaces this abstraction
