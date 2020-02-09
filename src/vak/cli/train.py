@@ -104,12 +104,11 @@ def train(toml_path):
 
     logger.info(f'using training dataset from {cfg.train.csv_path}')
 
+    def to_floattensor(ndarray):
+        return torch.from_numpy(ndarray).float()
     # make an "add channel" transform to use with Lambda
     # this way a spectrogram 'image' has a "channel" dimension (of size 1)
     # that convolutional layers can work on
-    def to_floattensor(ndarray):
-        return torch.from_numpy(ndarray).float()
-
     add_channel = partial(torch.unsqueeze, dim=0)
     transform = transforms.Compose(
         [transforms.Lambda(standardize),
