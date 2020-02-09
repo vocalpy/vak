@@ -18,17 +18,9 @@ https://packaging.python.org/guides/creating-and-discovering-plugins/#using-pack
 https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins
 https://amir.rachum.com/blog/2017/07/28/python-entry-points/
 """
+from ..util import entry_points
+
 MODELS_ENTRY_POINT = 'vak.models'
-
-
-def iter_entry_points(group_name):
-    """helper function that iterates through entry points, given name of entry point group"""
-    try:
-        import pkg_resources
-    except (ImportError, IOError):
-        return []
-
-    return pkg_resources.iter_entry_points(group_name)
 
 
 def find():
@@ -36,7 +28,7 @@ def find():
 
     returns generator that yields model name and function for loading
     """
-    for entrypoint in iter_entry_points(MODELS_ENTRY_POINT):
+    for entrypoint in entry_points._iter(MODELS_ENTRY_POINT):
         yield entrypoint.name, entrypoint.load()
 
 
