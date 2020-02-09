@@ -2,16 +2,13 @@ import numpy as np
 
 
 def levenshtein(source, target):
-    """levenshtein distance
-    returns number of deletions, insertions, or substitutions
-    required to convert source string into target string.
+    """Levenshtein distance: number of deletions, insertions,
+    or substitutions required to convert source string
+    into target string.
 
     Parameters
     ----------
-    source : str
-        in this context, predicted labels for songbird syllables
-    target : str
-        in this context, ground truth labels for songbird syllables
+    source, target : str
 
     Returns
     -------
@@ -21,7 +18,6 @@ def levenshtein(source, target):
 
     from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
     """
-
     if len(source) < len(target):
         return levenshtein(target, source)
 
@@ -59,23 +55,23 @@ def levenshtein(source, target):
     return previous_row[-1]
 
 
-def syllable_error_rate(true, pred):
-    """syllable error rate: word error rate, but with songbird syllables
-    Levenshtein/edit distance normalized by length of true sequence
+def segment_error_rate(y_pred, y_true):
+    """Levenshtein edit distance normalized by length of true sequence.
+    Also known as word error distance; here applied to other vocalizations
+    in addition to speech.
 
     Parameters
     ----------
-    true : str
-        ground truth labels for a series of songbird syllables
-    pred : str
+    y_pred : str
         predicted labels for a series of songbird syllables
+    y_true : str
+        ground truth labels for a series of songbird syllables
 
     Returns
     -------
-    Levenshtein distance / len(true)
+    Levenshtein distance / len(y_true)
     """
+    if type(y_true) != str or type(y_pred) != str:
+        raise TypeError('Both `y_true` and `y_pred` must be of type `str')
 
-    if type(true) != str or type(pred) != str:
-        raise TypeError('Both `true` and `pred` must be of type `str')
-
-    return levenshtein(pred, true) / len(true)
+    return levenshtein(y_pred, y_true) / len(y_true)
