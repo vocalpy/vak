@@ -71,7 +71,7 @@ EXTRAS = {
 
 # need to make sure the valid.toml file in vak/config/ gets included
 PACKAGE_DATA = {
-                   'vak': ['*.toml', ],
+                   'vak': ['**/*.toml', ],
                }
 
 # The rest you shouldn't have to touch too much :)
