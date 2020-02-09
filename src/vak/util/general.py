@@ -3,6 +3,7 @@ import os
 import re
 
 import numpy as np
+import torch
 
 
 def find_fname(fname, ext):
@@ -149,3 +150,18 @@ def safe_truncate(X, Y, spect_ID_vector, labelmap, target_dur, timebin_dur):
             f"arrays have length {X.shape[-1]} that is shorter than correct length, {correct_length}, "
             f"(= target duration {target_dur} / duration of timebins, {timebin_dur})."
         )
+
+
+def get_default_device():
+    """get default device for torch.
+
+    Returns
+    -------
+    device : str
+        'cuda' if torch.cuda.is_available() is True,
+        and returns 'cpu' otherwise.
+    """
+    if torch.cuda.is_available():
+        return "cuda"
+    else:
+        return "cpu"
