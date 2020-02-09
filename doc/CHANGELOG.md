@@ -4,6 +4,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0a]
+### Removed
+- `Dataset` class and related classes that were in `vak.dataset` sub-package
+  + see `dataframe` module added below that replaces this abstraction
+- dependency on `Tensorflow`
+  + switch to `torch` because of consistent API, need to work with "mid-level" 
+    abstractions, and preference for Python-first framework
+- `core` sub-package
+  + the idea is that the `cli` package should just implement all the logic that lets
+    people who don't want to program use the main functionality
+  + and if you do want to program, the rest of the library should facilitate that 
+    *instead of* trying to do all the work for you
+    - e.g. give someone w/basic coding skills friendly Python classes to work with
+      when writing a torch-vernacular training script, instead of 
+      giving them a giant `train` function with 3k arguments that no one will ever use
+ - `AbstractVakModel` class -- gets replaced with `vak.Model` in `engine` sub-package, 
+   see below
+ 
+### Changed
+- `dataset` sub-package becomes `io` sub-package ("input-output", like in `astropy`)
+- use `torch` and `torchvision` in place of `tensorflow`  
+- use `crowsetta` version 2.0
+- switch to `toml` format for config files
+  + more flexible than `ini` files, less code to maintain for parsing things that 
+    don't fit into the `ini` format very well / not at all
+- clean up `vak` package structure wherever possible: move many modules into 
+  `util` sub-package
+
+### Added
+- `dataframe` module in `vak.io`
+  + essentially, data path is audio --> spect --> dataframe --> .csv file that represents 
+    a dataset
+  + choose to use external libraries that are already well-maintained and established to 
+    handle as much of the data processing as possible, i.e. `pandas` + `dask`, instead of
+    trying to maintain a `Dataset` class that does all this work and deals with its own
+    filetype
+- `datasets` sub-package
+  + uses `torch` and `torchvision` abstractions to represent datasets + dataloaders
+- `transforms` sub-package
+  + uses `torchvision` transform abstraction to deal with things like "normalizing" 
+    spectrograms
+- `engine` sub-package
+  + with `Model` class that models should sub-class; helps encourage consistent API for models
+- `metrics` sub-package
+  + to compute things like accuracy
+  + lays groundwork for an `ignite.metrics` / Keras-like functionality
+
 ## [0.2.2]
 ### Fixed
 - add missing line break in `installation.rst`
