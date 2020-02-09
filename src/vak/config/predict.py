@@ -3,10 +3,11 @@ from configparser import NoOptionError
 
 import attr
 from attr import converters, validators
-from attr.validators import instance_of, optional
+from attr.validators import instance_of
 
 from .converters import comma_separated_list, expanded_user_path
-from .validators import is_a_directory, is_a_file, is_valid_model_name
+from .validators import is_a_file, is_valid_model_name
+from ..util.general import get_default_device
 
 
 @attr.s
@@ -18,19 +19,34 @@ class PredictConfig:
     csv_path : str
         path to where dataset was saved as a csv.
     checkpoint_path : str
-        path to directory with checkpoint files saved by Tensorflow, to reload model
+        path to directory with checkpoint files saved by Torch, to reload model
+    labelmap_path : str
+        path to 'labelmap.json' file.
     models : list
         of model names. e.g., 'models = TweetyNet, GRUNet, ConvNet'
+    batch_size : int
+        number of samples per batch presented to models during training.
+    num_workers : int
+        Number of processes to use for parallel loading of data.
+        Argument to torch.DataLoader. Default is 2.
+    device : str
+        Device on which to work with model + data.
+        Defaults to 'cuda' if torch.cuda.is_available is True.
     spect_scaler_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     """
-    # required
+    # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path,
-                              validator=is_a_directory)
+                              validator=is_a_file)
+    labelmap_path = attr.ib(converter=expanded_user_path,
+                            validator=is_a_file)
+
+    # required, model / dataloader
     models = attr.ib(converter=comma_separated_list,
                      validator=[instance_of(list), is_valid_model_name])
+    batch_size = attr.ib(converter=int, validator=instance_of(int))
 
     # optional
     # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
@@ -40,12 +56,16 @@ class PredictConfig:
                        default=None
                        )
 
-    spect_scaler_path = attr.ib(validator=optional([instance_of(str), is_a_file]),
+    spect_scaler_path = attr.ib(converter=converters.optional(expanded_user_path),
+                                validator=validators.optional(is_a_file),
                                 default=None)
+    num_workers = attr.ib(validator=instance_of(int), default=2)
+    device = attr.ib(validator=instance_of(str), default=get_default_device())
 
 
 REQUIRED_PREDICT_OPTIONS = [
     'checkpoint_path',
+    'labelmap_path',
     'models',
 ]
 
