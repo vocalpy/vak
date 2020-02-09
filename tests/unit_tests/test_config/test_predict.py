@@ -4,7 +4,7 @@ from pathlib import Path
 import unittest
 
 import vak.config.predict
-import vak.utils
+import vak.util
 from vak.core.learncurve import LEARN_CURVE_DIR_STEM
 
 HERE = Path(__file__).parent

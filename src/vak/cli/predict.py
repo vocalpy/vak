@@ -1,8 +1,5 @@
 import os
 
-from .. import core
-from ..dataset import Dataset
-
 
 def predict(predict_vds_path,
             train_vds_path,
@@ -63,10 +60,3 @@ def predict(predict_vds_path,
         train_vds = train_vds.load_spects()
     labelmap = train_vds.labelmap
     del train_vds
-
-    core.predict(predict_vds_path,
-                 checkpoint_path,
-                 networks,
-                 labelmap,
-                 spect_scaler_path,
-                 )
