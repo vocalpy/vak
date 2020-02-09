@@ -133,8 +133,9 @@ def train(toml_path):
                                                       target_transform=target_transform
                                                       )
     train_data = torch.utils.data.DataLoader(dataset=train_dataset,
-                                             shuffle=True,
-                                             batch_size=cfg.train.batch_size)
+                                             shuffle=cfg.train.shuffle,
+                                             batch_size=cfg.train.batch_size,
+                                             num_workers=cfg.train.num_workers)
     train_dur = dataframe.split_dur(dataset_df, 'train')
     logger.info(
         f'Total duration of training set (in s): {train_dur}'
@@ -153,7 +154,8 @@ def train(toml_path):
                                                         )
         val_data = torch.utils.data.DataLoader(dataset=val_dataset,
                                                shuffle=False,
-                                               batch_size=cfg.train.batch_size)
+                                               batch_size=cfg.train.batch_size,
+                                               num_workers=cfg.train.num_workers)
         val_dur = dataframe.split_dur(dataset_df, 'val')
         logger.info(
             f'Total duration of validation set (in s): {val_dur}'
@@ -186,4 +188,4 @@ def train(toml_path):
                   checkpoint_step=cfg.train.checkpoint_step,
                   patience=cfg.train.patience,
                   single_ckpt=cfg.train.save_only_single_checkpoint_file,
-                  device=None)
+                  device=cfg.train.device)
