@@ -6,6 +6,8 @@ import crowsetta
 from ..config import validators
 from .general import _files_from_dir
 
+NO_ANNOTATION_FORMAT = 'none'
+
 
 def files_from_dir(annot_dir, annot_format):
     """get all annotation files of a given format
