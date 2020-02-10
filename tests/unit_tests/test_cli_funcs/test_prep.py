@@ -62,7 +62,7 @@ class TestPrep(unittest.TestCase):
                 if annot_file:
                     annot_list = scribe.to_seq(file=annot_file)
                 else:
-                    annot_files = vak.io.annotation.files_from_dir(annot_dir=data_dir, annot_format=annot_format)
+                    annot_files = vak.util.annotation.files_from_dir(annot_dir=data_dir, annot_format=annot_format)
                     annot_list = scribe.to_seq(file=annot_files)
                 for data_file, annot in zip(data_files_from_dir, annot_list):
                     if set(annot.labels).issubset(labelset):
