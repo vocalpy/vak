@@ -1,16 +1,4 @@
-class OnlyValDurError(Exception):
-    pass
-
-
-class InvalidDurationError(Exception):
-    pass
-
-
-class SplitsDurationGreaterThanDatasetDurationError(Exception):
-    pass
-
-
-def _validate_durs(train_dur, val_dur, test_dur, vds_dur):
+def durs(train_dur, val_dur, test_dur, vds_dur):
     """helper function to validate durations specified for splits
 
     If train_dur, val_dur, and test_dur are all None, a ValueError is raised.
@@ -50,11 +38,13 @@ def _validate_durs(train_dur, val_dur, test_dur, vds_dur):
 
     else:
         if not all([dur >= 0 or dur == -1 for dur in (train_dur, val_dur, test_dur) if dur is not None]):
-            raise InvalidDurationError("all durations for split must be real non-negative number or "
-                                       "set to -1 (meaning 'use the remaining dataset)")
+            raise ValueError(
+                "all durations for split must be real non-negative number or "
+                "set to -1 (meaning 'use the remaining dataset)"
+            )
 
         if val_dur and train_dur is None and test_dur is None:
-            raise OnlyValDurError(
+            raise ValueError(
                 'cannot specify only val_dur, unclear how to split dataset into training and test sets'
             )
 
@@ -69,7 +59,7 @@ def _validate_durs(train_dur, val_dur, test_dur, vds_dur):
         if -1 not in (train_dur, val_dur, test_dur):
             total_splits_dur = sum([dur for dur in (train_dur, val_dur, test_dur) if dur is not None])
             if total_splits_dur > vds_dur:
-                raise SplitsDurationGreaterThanDatasetDurationError(
+                raise ValueError(
                     f'total of durations specified for dataset split, {total_splits_dur} s, '
                     f'is greater than total duration of Dataset, {vds_dur}.'
                 )
