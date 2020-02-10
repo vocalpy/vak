@@ -45,6 +45,8 @@ class PredictConfig:
                               validator=is_a_file)
     labelmap_path = attr.ib(converter=expanded_user_path,
                             validator=is_a_file)
+
+    # required, for annotation
     annot_format = attr.ib(validator=is_annot_format)
 
     # required, model / dataloader
@@ -52,7 +54,6 @@ class PredictConfig:
                      validator=[instance_of(list), is_valid_model_name])
     batch_size = attr.ib(converter=int, validator=instance_of(int))
 
-    # optional
     # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
     # what sections are defined to figure out where to add csv_path after it creates the csv
     csv_path = attr.ib(converter=converters.optional(expanded_user_path),
@@ -60,9 +61,16 @@ class PredictConfig:
                        default=None
                        )
 
+    # optional
+    to_format_kwargs = attr.ib(validator=validators.optional(instance_of(dict)),
+                               default=None)
+
+    # optional, transform
     spect_scaler_path = attr.ib(converter=converters.optional(expanded_user_path),
                                 validator=validators.optional(is_a_file),
                                 default=None)
+
+    # optional, data loader
     num_workers = attr.ib(validator=instance_of(int), default=2)
     device = attr.ib(validator=instance_of(str), default=get_default_device())
 
