@@ -1,3 +1,4 @@
+from . import annotation
 from . import audio
 from . import curvefit
 from . import dataset
