@@ -6,7 +6,7 @@ from attr import converters, validators
 from attr.validators import instance_of
 
 from .converters import comma_separated_list, expanded_user_path
-from .validators import is_a_file, is_valid_model_name
+from .validators import is_a_file, is_valid_model_name, is_annot_format
 from ..util.general import get_default_device
 
 
@@ -22,6 +22,9 @@ class PredictConfig:
         path to directory with checkpoint files saved by Torch, to reload model
     labelmap_path : str
         path to 'labelmap.json' file.
+    annot_format : str
+        format of annotations. Any format that can be used with the
+        crowsetta library is valid.
     models : list
         of model names. e.g., 'models = TweetyNet, GRUNet, ConvNet'
     batch_size : int
@@ -42,6 +45,7 @@ class PredictConfig:
                               validator=is_a_file)
     labelmap_path = attr.ib(converter=expanded_user_path,
                             validator=is_a_file)
+    annot_format = attr.ib(validator=is_annot_format)
 
     # required, model / dataloader
     models = attr.ib(converter=comma_separated_list,
