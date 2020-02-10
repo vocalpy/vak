@@ -7,8 +7,9 @@ import torch.utils.data
 from torchvision import transforms
 
 from .. import config
-from ..datasets.window_dataset import WindowDataset
+from ..datasets.unannotated_dataset import UnannotatedDataset
 from .. import models
+from ..transforms import PadToWindow, ReshapeToWindow
 
 
 def predict(toml_path):
@@ -50,25 +51,19 @@ def predict(toml_path):
     add_channel = partial(torch.unsqueeze, dim=1)  # add channel at first dimension because windows become batch
     transform = transforms.Compose(
         [transforms.Lambda(standardize),
+         PadToWindow(cfg.dataloader.window_size),
+         ReshapeToWindow(cfg.dataloader.window_size),
          transforms.Lambda(to_floattensor),
          transforms.Lambda(add_channel)]
     )
 
-    def to_longtensor(ndarray):
-        return torch.from_numpy(ndarray).long()
-    target_transform = transforms.Compose(
-        [transforms.Lambda(to_longtensor)]
-    )
-
-    pred_dataset = WindowDataset.from_csv(csv_path=cfg.predict.csv_path,
-                                          split='predict',
-                                          labelmap=labelmap,
-                                          window_size=cfg.dataloader.window_size,
-                                          spect_key=cfg.spect_params.spect_key,
-                                          timebins_key=cfg.spect_params.timebins_key,
-                                          transform=transform,
-                                          target_transform=target_transform
-                                          )
+    pred_dataset = UnannotatedDataset.from_csv(csv_path=cfg.predict.csv_path,
+                                               split='predict',
+                                               window_size=cfg.dataloader.window_size,
+                                               spect_key=cfg.spect_params.spect_key,
+                                               timebins_key=cfg.spect_params.timebins_key,
+                                               transform=transform,
+                                               )
 
     pred_data = torch.utils.data.DataLoader(dataset=pred_dataset,
                                             shuffle=False,
