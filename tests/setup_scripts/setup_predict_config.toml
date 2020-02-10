@@ -10,7 +10,13 @@ freq_cutoffs = [ 500, 10000 ]
 thresh = 6.25
 transform_type = 'log_spect'
 
+[TweetyNet]
+optimizer.lr = 0.001
+
 [PREDICT]
 checkpoint_path = './tests/test_data/results/train/checkpoints'
 models = 'TweetyNet'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
+batch_size = 11
+num_workers = 4
+device = 'cuda'
