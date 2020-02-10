@@ -2,14 +2,19 @@ from functools import partial
 import json
 from pathlib import Path
 
+import crowsetta
 import joblib
+import pandas as pd
+from tqdm import tqdm
 import torch.utils.data
 from torchvision import transforms
 
 from .. import config
 from ..datasets.unannotated_dataset import UnannotatedDataset
+from .. import io
 from .. import models
 from ..transforms import PadToWindow, ReshapeToWindow
+from .. import util
 
 
 def predict(toml_path):
@@ -39,9 +44,6 @@ def predict(toml_path):
     else:
         standardize = None
 
-    with cfg.predict.labelmap_path.open('r') as f:
-        labelmap = json.load(f)
-
     def to_floattensor(ndarray):
         return torch.from_numpy(ndarray).float()
 
@@ -51,7 +53,7 @@ def predict(toml_path):
     add_channel = partial(torch.unsqueeze, dim=1)  # add channel at first dimension because windows become batch
     transform = transforms.Compose(
         [transforms.Lambda(standardize),
-         PadToWindow(cfg.dataloader.window_size),
+         PadToWindow(cfg.dataloader.window_size, return_crop_vec=False),
          ReshapeToWindow(cfg.dataloader.window_size),
          transforms.Lambda(to_floattensor),
          transforms.Lambda(add_channel)]
@@ -67,15 +69,65 @@ def predict(toml_path):
 
     pred_data = torch.utils.data.DataLoader(dataset=pred_dataset,
                                             shuffle=False,
-                                            batch_size=1,
+                                            batch_size=1,  # hard coding to make this work for now
                                             num_workers=cfg.predict.num_workers)
 
-    model_config_map = config.models.map_from_path(toml_path, cfg.train.models)
+    # ---------------- set up to convert predictions to annotation files -----------------------------------------------
+    scribe = crowsetta.Transcriber(annot_format=cfg.predict.annot_format)
+    with cfg.predict.labelmap_path.open('r') as f:
+        labelmap = json.load(f)
+
+    dataset_df = pd.read_csv(cfg.predict.csv_path)
+    timebin_dur = io.dataframe.validate_and_get_timebin_dur(dataset_df)
+
+    # ---------------- do the actual predicting + converting to annotations --------------------------------------------
+    model_config_map = config.models.map_from_path(toml_path, cfg.predict.models)
+
+    input_shape = pred_dataset.shape
+    # if dataset returns spectrogram reshaped into windows,
+    # throw out the window dimension; just want to tell network (channels, height, width) shape
+    if len(input_shape) == 4:
+        input_shape = input_shape[1:]
+
     models_map = models.from_model_config_map(
         model_config_map,
         num_classes=len(labelmap),
-        input_shape=pred_dataset.shape
+        input_shape=input_shape
     )
     for model_name, model in models_map.items():
-        model.predict(pred_data=pred_data,
-                      device=cfg.predict.device)
+        pred_dict = model.predict(pred_data=pred_data,
+                                  device=cfg.predict.device)
+
+        transform_for_annot = transforms.Compose(
+            [
+                PadToWindow(cfg.dataloader.window_size, return_crop_vec=True),
+            ]
+        )
+
+        dataset_for_annot = UnannotatedDataset.from_csv(csv_path=cfg.predict.csv_path,
+                                                        split='predict',
+                                                        window_size=cfg.dataloader.window_size,
+                                                        spect_key=cfg.spect_params.spect_key,
+                                                        timebins_key=cfg.spect_params.timebins_key,
+                                                        transform=transform_for_annot,
+                                                        )
+
+        data_for_annot = torch.utils.data.DataLoader(dataset=dataset_for_annot,
+                                                     shuffle=False,
+                                                     batch_size=1,
+                                                     num_workers=cfg.predict.num_workers)
+
+        progress_bar = tqdm(data_for_annot)
+
+        print('converting predictions to annotation files')
+        for ind, batch in enumerate(progress_bar):
+            x, y = batch[0], batch[1]  # here we don't care about putting on some device outside cpu
+            spect_padded, crop_vec = x[0], x[1]
+            y_pred_ind = pred_dict['y'].index(y)
+            y_pred = pred_dict['y_pred'][y_pred_ind]
+            y_pred = torch.flatten(y_pred).numpy()[crop_vec]
+            labels, onsets_s, offsets_s = util.labels.lbl_tb2segments(y_pred,
+                                                                      labelmap=labelmap,
+                                                                      timebin_dur=timebin_dur)
+            scribe.to_format(labels=labels, onsets_s=onsets_s,offsets_s=offsets_s)
+    
