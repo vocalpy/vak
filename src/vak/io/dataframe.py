@@ -5,8 +5,9 @@ import os
 from crowsetta import Transcriber
 import numpy as np
 
-from . import annotation, audio, spect
-from .annotation import source_annot_map
+from . import audio, spect
+from ..util import annotation
+from ..util.annotation import source_annot_map
 
 
 def from_files(data_dir,

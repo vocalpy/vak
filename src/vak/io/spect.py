@@ -9,8 +9,8 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
-from .annotation import source_annot_map
 from ..config import validators
+from ..util.annotation import source_annot_map
 from ..util.general import timebin_dur_from_vec
 from ..util.path import find_audio_fname, array_dict_from_path
 
