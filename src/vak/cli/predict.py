@@ -98,18 +98,12 @@ def predict(toml_path):
         pred_dict = model.predict(pred_data=pred_data,
                                   device=cfg.predict.device)
 
-        transform_for_annot = transforms.Compose(
-            [
-                PadToWindow(cfg.dataloader.window_size, return_crop_vec=True),
-            ]
-        )
-
+        # note use no transforms
         dataset_for_annot = UnannotatedDataset.from_csv(csv_path=cfg.predict.csv_path,
                                                         split='predict',
                                                         window_size=cfg.dataloader.window_size,
                                                         spect_key=cfg.spect_params.spect_key,
                                                         timebins_key=cfg.spect_params.timebins_key,
-                                                        transform=transform_for_annot,
                                                         )
 
         data_for_annot = torch.utils.data.DataLoader(dataset=dataset_for_annot,
@@ -117,15 +111,20 @@ def predict(toml_path):
                                                      batch_size=1,
                                                      num_workers=cfg.predict.num_workers)
 
+        # use transform "outside" of Dataset so we can get back crop vec
+        pad_to_window = PadToWindow(cfg.dataloader.window_size, return_crop_vec=True)
+
         progress_bar = tqdm(data_for_annot)
 
         print('converting predictions to annotation files')
         for ind, batch in enumerate(progress_bar):
             x, y = batch[0], batch[1]  # here we don't care about putting on some device outside cpu
-            spect_padded, crop_vec = x[0], x[1]
+            if len(x.shape) == 3:  # ("batch", freq_bins, time_bins)
+                x = x.cpu().numpy().squeeze()
+            x_pad, crop_vec = pad_to_window(x)
             y_pred_ind = pred_dict['y'].index(y)
             y_pred = pred_dict['y_pred'][y_pred_ind]
-            y_pred = torch.flatten(y_pred).numpy()[crop_vec]
+            y_pred = torch.flatten(y_pred).cpu().numpy()[crop_vec]
             labels, onsets_s, offsets_s = util.labels.lbl_tb2segments(y_pred,
                                                                       labelmap=labelmap,
                                                                       timebin_dur=timebin_dur)
