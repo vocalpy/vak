@@ -1,6 +1,5 @@
 from . import audio
 from . import curvefit
-from . import data
 from . import dataset
 from . import entry_points
 from . import general
