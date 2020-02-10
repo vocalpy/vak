@@ -10,9 +10,9 @@ variables:
 clean :
 	rm -rf ./tests/setup_scripts/tmp_setup_*_config.ini
 	rm -rf ./tests/test_data/prep/*/*
-	rm -rf ./tests/test_data/results/train/*/*
-	rm -rf ./tests/test_data/results/learncurve/*/*
-	rm -rf ./tests/test_data/results/predict/*/*
+	rm -rf ./tests/test_data/results/train/*/
+	rm -rf ./tests/test_data/results/learncurve/*/
+	rm -rf ./tests/test_data/results/predict/*/
 
 results : $(RESULTS_SCRIPT) $(SPECTS_SCRIPT)
 	python $(SPECTS_SCRIPT)
