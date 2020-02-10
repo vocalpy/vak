@@ -6,7 +6,7 @@ from ..util.validation import column_or_1d
 from . import functional as F
 
 __all__ = [
-    'StandardizeSpect',
+    'StandardizeSpect', 'PadToWindow', 'ReshapeToWindow'
 ]
 
 
@@ -146,3 +146,66 @@ class StandardizeSpect:
                              'to which the scaler was fit originally')
 
         return F.standardize_spect(spect, self.mean_freqs, self.std_freqs, self.non_zero_std)
+
+
+class PadToWindow:
+    """pad a spectrogram so that it can be reshaped
+    into consecutive windows of specified size
+
+    Parameters
+    ----------
+    spect : numpy.ndarray
+        with shape (frequencies, time bins)
+    window_size : int
+        number of time bins, i.e. columns in each window
+        into which spectrogram will be divided.
+    padval : float
+        value to pad with. Added to "right side"
+        of spectrogram.
+    return_crop_vec : bool
+        if True, return a boolean vector to use for cropping
+        back down to size before padding. crop_vec has size
+        equal to width of padded spectrogram, i.e. time bins
+        plus padding on right side, and has values of 1 where
+        columns in spect_padded are from the original spectrogram
+        and values of 0 where columns were added for padding.
+
+    Returns
+    -------
+    spect_padded : numpy.ndarray
+        padded with padval
+    crop_vec : bool
+        has size equal to width of padded spectrogram, i.e. time bins
+        plus padding on right side. Has values of 1 where
+        columns in spect_padded are from the original spectrogram,
+        and values of 0 where columns were added for padding.
+        Only returned if return_crop_vec is True.
+    """
+    def __init__(self, window_size, padval=0., return_crop_vec=True):
+        self.window_size = window_size
+        self.padval = padval
+        self.return_crop_vec = return_crop_vec
+
+    def __call__(self, spect):
+        return F.pad_to_window(spect, self.window_size, self.padval, self.return_crop_vec)
+
+
+class ReshapeToWindow:
+    """resize a spectrogram into consecutive
+    windows of specified size.
+
+    Parameters
+    ----------
+    spect : numpy.ndarray
+        with shape (frequencies, time bins)
+    window_size
+
+    Returns
+    -------
+    spect_windows
+    """
+    def __init__(self, window_size):
+        self.window_size = window_size
+
+    def __call__(self, spect):
+        return F.reshape_to_window(spect, self.window_size)
