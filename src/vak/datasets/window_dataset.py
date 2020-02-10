@@ -7,12 +7,15 @@ from torchvision.datasets.vision import VisionDataset
 from .. import util
 
 
-class SpectrogramWindowDataset(VisionDataset):
-    """Dataset class that represents a set of spectrograms of vocalizations
-    and annotations for those vocalizations.
+class WindowDataset(VisionDataset):
+    """Dataset class that represents all possible windows
+     of a fixed width from a set of spectrograms.
+     The underlying dataset consists of spectrograms
+     of vocalizations and annotations for those vocalizations are return.
 
     Returns windows from the spectrograms, along with labels for each
-    time bin in the window, derived from the annotations."""
+    time bin in the window, derived from the annotations.
+    """
     def __init__(self,
                  root,
                  x_inds,
@@ -29,13 +32,12 @@ class SpectrogramWindowDataset(VisionDataset):
                  transform=None,
                  target_transform=None,
                  ):
-        """initialize a SpectrogramWindowDataset instance
+        """initialize a WindowDataset instance
 
         Parameters
         ----------
         root : str, Path
-            for SpectrogramWindowDataset, this should be a path
-            to a .csv file that represents the dataset.
+            path to a .csv file that represents the dataset.
             Name 'root' is used for consistency with torchvision.datasets
         x_inds : numpy.ndarray
             indices of each window in the dataset
@@ -72,8 +74,8 @@ class SpectrogramWindowDataset(VisionDataset):
         target_transform : callable
             A function/transform that takes in the target and transforms it.
         """
-        super(SpectrogramWindowDataset, self).__init__(root, transform=transform,
-                                                       target_transform=target_transform)
+        super(WindowDataset, self).__init__(root, transform=transform,
+                                            target_transform=target_transform)
         self.x_inds = x_inds
         self.spect_id_vector = spect_id_vector
         self.spect_inds_vector = spect_inds_vector
@@ -160,7 +162,7 @@ class SpectrogramWindowDataset(VisionDataset):
     def from_csv(cls, csv_path, split, labelmap, window_size,
                  spect_key='s', timebins_key='t', transform=None, target_transform=None):
         """given a path to a csv representing a dataset,
-        returns an initialized SpectrogramWindowDataset.
+        returns an initialized WindowDataset.
 
         Parameters
         ----------
@@ -186,7 +188,7 @@ class SpectrogramWindowDataset(VisionDataset):
 
         Returns
         -------
-        initialized instance of SpectrogramWindowDataset
+        initialized instance of WindowDataset
         """
         df = pd.read_csv(csv_path)
         if not df['split'].str.contains(split).any():

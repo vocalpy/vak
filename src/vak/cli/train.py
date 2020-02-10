@@ -14,7 +14,7 @@ from torchvision import transforms
 from .. import config
 from .. import models
 from .. import util
-from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
+from ..datasets.window_dataset import WindowDataset
 from ..io import dataframe
 from ..transforms import StandardizeSpect
 
@@ -122,15 +122,15 @@ def train(toml_path):
         [transforms.Lambda(to_longtensor)]
     )
 
-    train_dataset = SpectrogramWindowDataset.from_csv(csv_path=cfg.train.csv_path,
-                                                      split='train',
-                                                      labelmap=labelmap,
-                                                      window_size=cfg.dataloader.window_size,
-                                                      spect_key=cfg.spect_params.spect_key,
-                                                      timebins_key=cfg.spect_params.timebins_key,
-                                                      transform=transform,
-                                                      target_transform=target_transform
-                                                      )
+    train_dataset = WindowDataset.from_csv(csv_path=cfg.train.csv_path,
+                                           split='train',
+                                           labelmap=labelmap,
+                                           window_size=cfg.dataloader.window_size,
+                                           spect_key=cfg.spect_params.spect_key,
+                                           timebins_key=cfg.spect_params.timebins_key,
+                                           transform=transform,
+                                           target_transform=target_transform
+                                           )
     train_data = torch.utils.data.DataLoader(dataset=train_dataset,
                                              shuffle=cfg.train.shuffle,
                                              batch_size=cfg.train.batch_size,
@@ -142,15 +142,15 @@ def train(toml_path):
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if cfg.train.val_error_step:
-        val_dataset = SpectrogramWindowDataset.from_csv(csv_path=cfg.train.csv_path,
-                                                        split='val',
-                                                        labelmap=labelmap,
-                                                        window_size=cfg.dataloader.window_size,
-                                                        spect_key=cfg.spect_params.spect_key,
-                                                        timebins_key=cfg.spect_params.timebins_key,
-                                                        transform=transform,
-                                                        target_transform=target_transform
-                                                        )
+        val_dataset = WindowDataset.from_csv(csv_path=cfg.train.csv_path,
+                                             split='val',
+                                             labelmap=labelmap,
+                                             window_size=cfg.dataloader.window_size,
+                                             spect_key=cfg.spect_params.spect_key,
+                                             timebins_key=cfg.spect_params.timebins_key,
+                                             transform=transform,
+                                             target_transform=target_transform
+                                             )
         val_data = torch.utils.data.DataLoader(dataset=val_dataset,
                                                shuffle=False,
                                                batch_size=cfg.train.batch_size,
