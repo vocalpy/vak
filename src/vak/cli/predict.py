@@ -7,7 +7,7 @@ import torch.utils.data
 from torchvision import transforms
 
 from .. import config
-from ..datasets.spectrogram_window_dataset import SpectrogramWindowDataset
+from ..datasets.window_dataset import WindowDataset
 from .. import models
 
 
@@ -60,15 +60,15 @@ def predict(toml_path):
         [transforms.Lambda(to_longtensor)]
     )
 
-    pred_dataset = SpectrogramWindowDataset.from_csv(csv_path=cfg.predict.csv_path,
-                                                     split='predict',
-                                                     labelmap=labelmap,
-                                                     window_size=cfg.dataloader.window_size,
-                                                     spect_key=cfg.spect_params.spect_key,
-                                                     timebins_key=cfg.spect_params.timebins_key,
-                                                     transform=transform,
-                                                     target_transform=target_transform
-                                                     )
+    pred_dataset = WindowDataset.from_csv(csv_path=cfg.predict.csv_path,
+                                          split='predict',
+                                          labelmap=labelmap,
+                                          window_size=cfg.dataloader.window_size,
+                                          spect_key=cfg.spect_params.spect_key,
+                                          timebins_key=cfg.spect_params.timebins_key,
+                                          transform=transform,
+                                          target_transform=target_transform
+                                          )
 
     pred_data = torch.utils.data.DataLoader(dataset=pred_dataset,
                                             shuffle=False,
