@@ -119,14 +119,29 @@ def predict(toml_path):
         print('converting predictions to annotation files')
         for ind, batch in enumerate(progress_bar):
             x, y = batch[0], batch[1]  # here we don't care about putting on some device outside cpu
+            if type(y) == tuple and len(y) == 1:
+                y = y[0]
             if len(x.shape) == 3:  # ("batch", freq_bins, time_bins)
                 x = x.cpu().numpy().squeeze()
             x_pad, crop_vec = pad_to_window(x)
             y_pred_ind = pred_dict['y'].index(y)
             y_pred = pred_dict['y_pred'][y_pred_ind]
+            y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
             y_pred = torch.flatten(y_pred).cpu().numpy()[crop_vec]
             labels, onsets_s, offsets_s = util.labels.lbl_tb2segments(y_pred,
                                                                       labelmap=labelmap,
                                                                       timebin_dur=timebin_dur)
-            scribe.to_format(labels=labels, onsets_s=onsets_s,offsets_s=offsets_s)
-    
+            audio_fname = util.path.find_audio_fname(y)
+            annot_ext = util.general.stripchars(
+                scribe.config.ext, chars='.'
+            )
+            annot_filename = y.parent.joinpath(
+                f'{audio_fname}.{annot_ext}'
+            )
+
+            scribe.to_format(labels=labels,
+                             onsets_s=onsets_s,
+                             offsets_s=offsets_s,
+                             filename=annot_filename,
+                             **cfg.predict.to_format_kwargs)
+
