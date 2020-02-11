@@ -137,9 +137,8 @@ def predict(toml_path):
                 y = y[0]
             audio_fname = util.path.find_audio_fname(y)
 
-            annot_ext = util.general.stripchars(
-                scribe.config.ext, chars='.'
-            )
+            annot_ext = getattr(crowsetta.formats, scribe.voc_format).meta.ext
+            annot_ext = annot_ext.strip('.')
             annot_filename = y.parent.joinpath(
                 f'{audio_fname}.{annot_ext}'
             )
