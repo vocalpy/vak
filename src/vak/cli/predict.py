@@ -136,15 +136,10 @@ def predict(toml_path):
             if type(y) == tuple and len(y) == 1:
                 y = y[0]
             audio_fname = util.path.find_audio_fname(y)
-
-            annot_ext = getattr(crowsetta.formats, scribe.voc_format).meta.ext
-            annot_ext = annot_ext.strip('.')
-            annot_filename = y.parent.joinpath(
-                f'{audio_fname}.{annot_ext}'
-            )
-
+            audio_filename = Path(y).parent.joinpath(audio_fname)
+            audio_filename = str(audio_filename)  # in case function doesn't accept Path
             scribe.to_format(labels=labels,
                              onsets_s=onsets_s,
                              offsets_s=offsets_s,
-                             filename=annot_filename,
+                             filename=audio_filename,
                              **cfg.predict.to_format_kwargs)
