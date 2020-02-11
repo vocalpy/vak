@@ -95,9 +95,12 @@ def predict(toml_path):
         input_shape=input_shape
     )
     for model_name, model in models_map.items():
+        # ---------------- do the actual predicting --------------------------------------------------------------------
+        model.load(cfg.predict.checkpoint_path)
         pred_dict = model.predict(pred_data=pred_data,
                                   device=cfg.predict.device)
 
+        # ----------------  converting to annotations ------------------------------------------------------------------
         # note use no transforms
         dataset_for_annot = UnannotatedDataset.from_csv(csv_path=cfg.predict.csv_path,
                                                         split='predict',
@@ -119,8 +122,6 @@ def predict(toml_path):
         print('converting predictions to annotation files')
         for ind, batch in enumerate(progress_bar):
             x, y = batch[0], batch[1]  # here we don't care about putting on some device outside cpu
-            if type(y) == tuple and len(y) == 1:
-                y = y[0]
             if len(x.shape) == 3:  # ("batch", freq_bins, time_bins)
                 x = x.cpu().numpy().squeeze()
             x_pad, crop_vec = pad_to_window(x)
@@ -131,7 +132,11 @@ def predict(toml_path):
             labels, onsets_s, offsets_s = util.labels.lbl_tb2segments(y_pred,
                                                                       labelmap=labelmap,
                                                                       timebin_dur=timebin_dur)
+            # DataLoader wraps strings in a tuple, need to unpack
+            if type(y) == tuple and len(y) == 1:
+                y = y[0]
             audio_fname = util.path.find_audio_fname(y)
+
             annot_ext = util.general.stripchars(
                 scribe.config.ext, chars='.'
             )
@@ -144,4 +149,3 @@ def predict(toml_path):
                              offsets_s=offsets_s,
                              filename=annot_filename,
                              **cfg.predict.to_format_kwargs)
-
