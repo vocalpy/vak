@@ -225,7 +225,7 @@ class TestLabels(unittest.TestCase):
             # need to remove any annotations that have labels not in labelset
             if not any(lbl not in LABELMAP.keys() for lbl in annot.seq.labels)
         ]
-        spect_annot_map = vak.io.annotation.source_annot_map(
+        spect_annot_map = vak.util.annotation.source_annot_map(
             SPECT_PATHS,
             annot_list,
         )

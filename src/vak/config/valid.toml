@@ -59,5 +59,11 @@ results_dir_made_by_main_script = '/some/path/to/learncurve/'
 [PREDICT]
 csv_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
+labelmap_path = '/home/user/results_181014_194418/labelmap.json'
+annot_format = 'notmat'
+to_format_kwargs = {samp_freq = 32000, threshold = 2, min_syl_dur = 10, min_silent_dur = 6}
 models = 'TweetyNet'
+batch_size = 11
+num_workers = 4
+device = 'cuda'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'

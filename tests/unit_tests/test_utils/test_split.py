@@ -10,9 +10,9 @@ from evfuncs import load_cbin
 from scipy.io import loadmat
 
 import vak.io.spect
-import vak.io.annotation
+import vak.util.annotation
 import vak.util.split
-from vak.io.annotation import files_from_dir
+from vak.util.annotation import files_from_dir
 from vak.util.general import timebin_dur_from_vec
 from vak.util.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 

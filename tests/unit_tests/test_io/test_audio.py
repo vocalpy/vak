@@ -1,14 +1,13 @@
 import os
 from pathlib import Path
 import unittest
-from glob import glob
 import tempfile
 import shutil
 
 import numpy as np
 import crowsetta
 
-from vak.io.annotation import files_from_dir
+from vak.util.annotation import files_from_dir
 import vak.io.audio
 
 
