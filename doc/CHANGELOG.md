@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0a2]
+### Fixed
+- `vak predict` command now works for command line
+
+### Added
+- [PREDICT] section now has `annot_format` option -- user can specify
+  whatever format they want, doesn't have to be same as training data
+- [PREDICT] section of config now has `to_format_kwargs` option, 
+  that lets user specify keyword arguments to `crowsetta.Transcriber.to_format` 
+  method for the annotation format of files made from predictions 
+
 ## [0.3.0a1]
 ### Fixed
 - path in `PACKAGE_DATA` that captures 'valid.toml'
