@@ -152,21 +152,30 @@ class Model:
         """
         self.network.eval()
 
+        y_all = []
         y_pred_all = []
 
         progress_bar = tqdm(pred_data)
 
         with torch.no_grad():
             for ind, batch in enumerate(progress_bar):
-                x, y = batch[0].to(self.device), batch[1].to(self.device)
+                x, y = batch[0].to(self.device), batch[1]
+                if type(y) == torch.Tensor:
+                    y = y.to(self.device)
+                if x.ndim == 5:
+                    if x.shape[0] == 1:
+                        x = torch.squeeze(x, dim=0)
                 y_pred = self.network.forward(x)
+                y_all.append(y)
                 y_pred_all.append(y_pred)
-
                 progress_bar.set_description(
                     f'batch {ind} / {len(pred_data)}'
                 )
 
-        return torch.cat(y_pred_all)
+        return {
+            'y_pred': y_pred_all,
+            'y': y_all
+        }
 
     def save(self, ckpt_path, epoch, **kwargs):
         """save model state to a checkpoint file.

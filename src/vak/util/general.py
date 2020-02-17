@@ -212,3 +212,7 @@ def range_str(range_str, sort=True):
         list_range.sort()
 
     return [str(list_int) for list_int in list_range]
+
+
+def stripchars(string, chars):
+    return string.translate(str.maketrans('', '', chars))

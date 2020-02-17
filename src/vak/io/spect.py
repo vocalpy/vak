@@ -9,8 +9,8 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
-from .annotation import source_annot_map
 from ..config import validators
+from ..util.annotation import source_annot_map, NO_ANNOTATION_FORMAT
 from ..util.general import timebin_dur_from_vec
 from ..util.path import find_audio_fname, array_dict_from_path
 
@@ -232,12 +232,11 @@ def to_dataframe(spect_format,
             else:
                 return str(Path(a_path).absolute())
 
-
         record = tuple([
             abspath(audio_path),
             abspath(spect_path),
             abspath(annot_path),
-            annot_format,
+            annot_format if annot_format else NO_ANNOTATION_FORMAT,
             spect_dur,
             timebin_dur,
         ])

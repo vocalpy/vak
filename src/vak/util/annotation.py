@@ -4,7 +4,9 @@ from pathlib import Path
 import crowsetta
 
 from ..config import validators
-from ..util.general import _files_from_dir
+from .general import _files_from_dir
+
+NO_ANNOTATION_FORMAT = 'none'
 
 
 def files_from_dir(annot_dir, annot_format):
@@ -15,7 +17,7 @@ def files_from_dir(annot_dir, annot_format):
     if annot_format not in validators.VALID_ANNOT_FORMATS:
         raise ValueError(
             f'specified annotation format, {annot_format} not valid.\n'
-            f'Valid formats are: {VALID_ANNOT_FORMATS}'
+            f'Valid formats are: {validators.VALID_ANNOT_FORMATS}'
         )
 
     format_module = getattr(crowsetta.formats, annot_format)
