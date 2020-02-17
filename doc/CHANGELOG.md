@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0a3]
+### Fixed
+- add missing sections and options to .toml file that is used to validate 
+  user config.toml files, so that those options don't cause 
+  invalid section / option errors 
+
 ## [0.3.0a2]
 ### Fixed
 - `vak predict` command now works for command line
