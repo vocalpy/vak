@@ -33,23 +33,25 @@ Before going through this tutorial, you'll need to:
    or `notepad++ <https://notepad-plus-plus.org/>`_
 3. download example data (from this dataset: https://figshare.com/articles/Bengalese_Finch_song_repository/4805749 )
 
- - one day of birdsong, for :download:`training data <https://ndownloader.figshare.com/files/9537229>`
- - another day, for :download:`prediction data <https://ndownloader.figshare.com/files/9537232>`
+ - one day of birdsong, for
+   :download:`training data (click to download) <https://ndownloader.figshare.com/files/9537229>`
+ - another day, for
+   :download:`prediction data (click to download) <https://ndownloader.figshare.com/files/9537232>`
  - Be sure to extract the files from these archives!
    On Windows you can use programs like `WinRAR <https://www.rarlab.com/>`_
    or `WinZIP <https://www.winzip.com/win/en/tar-gz-file.html>`_,
    on mac you can double click the ``.tar.gz`` file, and on
    (Ubuntu) linux you can right-click and select the ``Extract to`` option.
 
-4. download the corresponding configuration files for
-   :download:`training <../ini/gy6or6_train.ini>`
-   and :download:`prediction <../ini/gy6or6_predict.ini>`
+4. download the corresponding configuration files (click to download):
+   :download:`gy6or6_train.toml <../toml/gy6or6_train.toml>`
+   and :download:`gy6or6_predict.toml <../toml/gy6or6_predict.toml>`
 
 --------
 Overview
 --------
 
-There are four steps to using ``vak`` to automate vocal annotations with neural networks
+There are four steps to using ``vak`` to automate annotating vocalizations
 
 1. :ref:`prepare a training dataset <prepare-training-dataset>`, from
    a small annotated dataset of vocalizations
@@ -66,49 +68,58 @@ The next section introduces the command line.
 ---------------------------------------
 
 ``vak`` uses a command-line interface, meaning you run it from the terminal,
-also known as the shell. If you don't have experience with the shell, we
-suggest working through this beginner-friendly tutorial from the Carpentries:
-
-https://swcarpentry.github.io/shell-novice/
-
-Although it might seem a bit daunting at first, you can actually work quite
-efficiently in the shell once you get familiar with the cryptic commands.
-There's only a handful you need on a regular basis.
-
-Why command line?
-~~~~~~~~~~~~~~~~~
-
-A strength of the shell is that it lets you write scripts, so that whatever
-you do with data is (more) reproducible. That includes the things you'll do
-with your data when you're telling ``vak`` how to use it to train a neural
-network. In a machine learning context, you need to reproduce the same steps
-when preparing the data you want to apply the trained network to, so you can
-predict its annotation.
-
-The ``vak`` command-line interface
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-With those preliminary comments out of the way, we introduce the command-line
-interface. Basically any time you run ``vak``, what you type at the prompt
+also known as the shell.
+Basically any time you run ``vak``, what you type at the prompt
 will have the following form:
 
 .. code-block:: console
 
-   $ vak command config.ini
+   $ vak command config.toml
 
-where ``command`` will be an actual command, like ``prep``, and ``config.ini``
-will be an actual ``.ini`` file in which you specify the options for the different
-commands. To see a list of available commands when you are at the command line,
+where ``command`` will be an actual command, like ``prep``, and ``config.toml``
+will be the name of an actual configuration file, that let you configure
+how a command will run.
+
+To see a list of available commands when you are at the command line,
 you can say:
 
 .. code-block:: console
 
    $ vak --help
 
-The ``.ini`` files are set up so that each section corresponds to one
+The ``.toml`` files are set up so that each section corresponds to one
 of the commands. For example, there is a section called ``[PREP]`` where you
-specify options for preparing a dataset. In the next section we'll prepare
-a dataset for training a neural network.
+configure how ``vak prep`` will run.
+Each section consists of option-value pairs, i.e. names of option set to the values you assign them.
+
+.. literalinclude:: ../toml/gy6or6_train.toml
+   :language: toml
+   :lines: 1-9
+
+(The files are in ``.toml`` format,
+but for this tutorial and for working with ``vak`` you shouldn't really
+need to know anything about that format.)
+
+.. topic:: Why command line?
+
+    A strength of the shell is that it lets you write scripts, so that whatever
+    you do with data is (more) reproducible. That includes the things you'll do
+    with your data when you're telling ``vak`` how to use it to train a neural
+    network. In a machine learning context, you need to reproduce the same steps
+    when preparing the data you want to apply the trained network to, so you can
+    predict its annotation.
+
+    If you don't have experience with the shell, we
+    suggest working through this beginner-friendly tutorial from the Carpentries:
+
+    https://swcarpentry.github.io/shell-novice/
+
+    Although it might seem a bit daunting at first, you can actually work quite
+    efficiently in the shell once you get familiar with the cryptic commands.
+    There's only a handful you need on a regular basis.
+
+Now that you know how to call ``vak`` from the command line, we'll walk through the first example
+of modifying a configuration file and then using it to ``prep`` a dataset.
 
 .. _prepare-training-dataset:
 
@@ -118,11 +129,11 @@ a dataset for training a neural network.
 
 To train a neural network how to predict annotations,
 you'll need to tell ``vak`` where your dataset is.
-Do this by opening up the `gy6or6_train.ini` file and changing the
+Do this by opening up the ``gy6or6_train.toml`` file and changing the
 value for the ``data_dir`` option in the ``[PREP]`` section to the
 path to wherever you downloaded the training data on your computer.
 
-.. code-block:: ini
+.. code-block:: toml
 
    [PREP]
    data_dir = /home/users/You/Data/vak_tutorial_data/032212
@@ -130,7 +141,7 @@ path to wherever you downloaded the training data on your computer.
 There is one other option you need to change, ``output_dir``
 that tells ``vak`` where to save the file it creates that contains information about the dataset.
 
-.. code-block:: ini
+.. code-block:: toml
 
    output_dir = /home/users/You/Data/vak_tutorial_data/vak_output
 
@@ -142,12 +153,13 @@ you can run the command in the terminal that prepares datasets:
 
 .. code-block:: console
 
-   $ vak prep gy6or6_train.ini
+   $ vak prep gy6or6_train.toml
 
-Notice that the command has the structure we described above, ``vak command config.ini`` \.
+Notice that the command has the structure we described above, ``vak command config.toml`` \.
 
 When you run ``prep``\ , ``vak`` converts the data from ``data_dir`` into a special dataset file, and then
-automatically adds the path to that file to the ``[TRAIN]`` section of the config.ini file.
+automatically adds the path to that file to the ``[TRAIN]`` section of the ``config.toml`` file, as the option
+``csv_path``.
 
 .. _train-neural-network:
 
@@ -158,12 +170,12 @@ automatically adds the path to that file to the ``[TRAIN]`` section of the confi
 Now that you've prepared the dataset, you can train a neural network with it.
 
 Before we start training, there is one option you have to change in the ``[TRAIN]`` section
-of the ``config.ini`` file, ``root_results_dir``,
+of the ``config.toml`` file, ``root_results_dir``,
 which tells ``vak`` where to save the files it creates during training.
 It's important that you specify this option, so you know
 where to find those files when we need them below.
 
-.. code-block:: ini
+.. code-block:: toml
 
    root_results_dir = /home/users/You/Data/vak_tutorial_data/vak_output
 
@@ -176,12 +188,12 @@ To train a neural network, you simply run:
 
 .. code-block:: console
 
-   $ vak train gy6o6_train.ini
+   $ vak train gy6o6_train.toml
 
 In this example we are training ``TweetyNet``\ (https://github.com/yardencsGitHub/tweetynet_),
 the default neural network architecture built into ``vak``.
 You will see output to the console as the network trains. The options in the ``[TRAIN]`` section of
-the ``config.ini`` file tell ``vak`` to train until the error (measured on a separate "validation" set)
+the ``config.toml`` file tell ``vak`` to train until the error (measured on a separate "validation" set)
 has not improved for four epochs (an epoch is one iteration through the entire training data).
 If you let ``vak`` train until then, it will go through roughly ten epochs (~2 hours on an Ubuntu machine with
 an NVIDIA 1080 Ti GPU).
@@ -199,13 +211,36 @@ from that checkpoint later when we predict annotations for new data.
 Next you'll prepare a dataset for predicting. The dataset we downloaded has annotation files with it,
 but for the sake of this tutorial we'll pretend that they're not annotated, and we instead want to
 predict the annotation using our trained network.
-Just like before, you're going to modify the `data_dir` option of the ``[PREP]`` section of the ``config.ini`` file.
-We use a separate ``config.ini`` file
+Here we'll use the other configuration file you downloaded above, ``gy6or6_predict.toml``.
+We use a separate file with a ``[PREDICT]`` section in it instead of a ``[TRAIN]`` section, so that
+``vak`` knows the dataset it's going to prepare will be for prediction--i.e., it figures this out
+from the name of the section present in the file.
 
-.. code-block:: ini
+Just like before, you're going to modify the ``data_dir`` option of the
+``[PREP]`` section of the ``config.toml`` file.
+This time you'll change it to the path to the directory with the other day of data we downloaded.
+
+.. code-block:: toml
 
    [PREP]
-   data_dir = /home/users/You/Data/vak_tutorial_data/032212
+   data_dir = /home/users/You/Data/vak_tutorial_data/032312
+
+And again, you'll need to change the ``output_dir`` option
+to tell ``vak`` where to save the file it creates that contains information about the dataset.
+
+.. code-block:: toml
+
+   output_dir = /home/users/You/Data/vak_tutorial_data/vak_output
+
+This part is the same as before too: after you change these options,
+you'll run the ``prep`` command to prepare the dataset for prediction:
+
+.. code-block:: console
+
+   $ vak prep gy6or6_predict.toml
+
+As you might guess from last time, ``vak`` will make files for the dataset and a .csv file that points to those,
+and then add the path to that file as the option ``csv_path`` in the ``[PREDICT]`` section of the ``config.toml`` file.
 
 .. _use-trained-network:
 
@@ -213,5 +248,32 @@ We use a separate ``config.ini`` file
 4. using a trained network to predict annotations
 -------------------------------------------------
 
-Finally you will use the
-This is the part that
+Finally you will use the trained network to predict annotations.
+This is the part that requires you to find files saved by vak.
+
+There's two you need. The first is the ``checkpoint_path``, the full
+path including filename to the file that contains the weights (AKA parameters) of
+the trained neural network, saved by ``vak``.
+
+.. code-block:: toml
+
+   checkpoint_path = /home/users/You/Data/vak_tutorial_data/vak_output/results_timestamp/TweetyNet/checkpoints/ckpt.pth
+
+The second is the path to the file containing a saved ``spect_scaler``. The ``SpectScaler`` represents a transform
+applied to the data that helps when training the neural network. You need to apply the same transform to the new
+data for which you are predicting labels--otherwise the accuracy will be impaired.
+
+.. code-block:: toml
+
+   spect_scaler = /home/users/You/Data/vak_tutorial_data/vak_output/results_timestamp/TweetyNet/checkpoints/ckpt.pth
+
+
+Finally you can run the ``predict`` command to generate annotation files from the labels predicted by the
+trained neural network.
+
+.. code-block:: console
+
+   $ vak predict gy6or6_predict.toml
+
+That's it! With those four simple steps you can train neural networks and then use the
+trained networks to predict annotations for vocalizations.
