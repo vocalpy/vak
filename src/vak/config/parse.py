@@ -3,6 +3,7 @@ from pathlib import Path
 import attr
 from attr.validators import instance_of, optional
 import toml
+from toml.decoder import TomlDecodeError
 
 from .dataloader import parse_dataloader_config, DataLoaderConfig
 from .learncurve import parse_learncurve_config, LearncurveConfig
@@ -77,8 +78,11 @@ def from_toml(toml_path, sections=None):
     if not toml_path.is_file():
         raise FileNotFoundError(f'path not recognized as a file: {toml_path}')
 
-    with toml_path.open('r') as fp:
-        config_toml = toml.load(fp)
+    try:
+        with toml_path.open('r') as fp:
+            config_toml = toml.load(fp)
+    except TomlDecodeError as e:
+        raise Exception(f'Error when parsing .toml config file: {toml_path}') from e
 
     are_sections_valid(config_toml, toml_path)
 
