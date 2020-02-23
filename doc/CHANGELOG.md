@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0a4]
+### Added
+- warning when user runs `vak prep` with config.toml file that has a `[PREDICT]` 
+  section *and* a `labelset` option in the `[PREP]` section.
+- better error handling when parsing a config.toml file fails
+  + traceback now ends with clear message about error parsing .toml file, but still 
+    includes information from `toml` exception
+
 ## [0.3.0a3]
 ### Fixed
 - add missing sections and options to .toml file that is used to validate 
