@@ -2,6 +2,7 @@ import logging
 import os
 from pathlib import Path
 from datetime import datetime
+import warnings
 
 import toml
 
@@ -98,6 +99,15 @@ def prep(toml_path):
         section = 'LEARNCURVE'
     elif 'PREDICT' in config_toml:
         section = 'PREDICT'
+        if cfg.prep.labelset is not None:
+            warnings.warn(
+                "config has a PREDICT section, but labelset option is specified in PREP section."
+                "This would cause an error because the dataframe.from_files section will attempt to "
+                f"check whether the files in the data_dir ({cfg.prep.data_dir}) have labels in "
+                "labelset, even though those files don't have annotation.\n"
+                "Setting labelset to None."
+            )
+            cfg.prep.labelset = None
     else:
         raise ValueError(
             'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.ini file;'
