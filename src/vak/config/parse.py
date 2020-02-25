@@ -45,7 +45,7 @@ class Config:
 
 SECTION_PARSERS = {
     'SPECT_PARAMS': parse_spect_params_config,
-    'DATAlOADER': parse_dataloader_config,
+    'DATALOADER': parse_dataloader_config,
     'PREP': parse_prep_config,
     'TRAIN': parse_train_config,
     'LEARNCURVE': parse_learncurve_config,
