@@ -1,8 +1,8 @@
 import warnings
 
-from crowsetta import Transcriber
 import numpy as np
 
+from .labels import from_df as labels_from_df
 from .splitalgos import brute_force
 from .splitalgos import validate
 
@@ -121,22 +121,7 @@ def train_test_dur_split(vak_df,
     -----
     uses the function `vak.dataset.split.train_test_dur_split_inds` to find indices for each subset.
     """
-    annot_format = vak_df['annot_format'].unique()
-    if len(annot_format) == 1:
-        annot_format = annot_format.item()
-        # if annot_format is None, throw an error -- otherwise continue on and try to use it
-        if annot_format is None:
-            raise ValueError(
-                'unable to load labels for dataset, the annot_format is None'
-            )
-    elif len(annot_format) > 1:
-        raise ValueError(
-            f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
-        )
-    # TODO: change this keyword argument to annot_format when changing dependency to crowsetta 2.0
-    scribe = Transcriber(annot_format=annot_format)
-    labels = [scribe.from_file(annot_file=annot_file).seq.labels
-              for annot_file in vak_df['annot_path'].values]
+    labels = labels_from_df(vak_df)
 
     durs = vak_df['duration'].values
     total_dataset_dur = durs.sum()
