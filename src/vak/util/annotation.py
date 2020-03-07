@@ -9,6 +9,42 @@ from .general import _files_from_dir
 NO_ANNOTATION_FORMAT = 'none'
 
 
+def format_from_df(vak_df):
+    """determine annotation format of a Vak DataFrame.
+    Returns string name of annotation format.
+
+    Raises an error if there is no annotation format, or multiple formats.
+
+    Parameters
+    ----------
+    vak_df : DataFrame
+        representating a dataset of vocalizations, with column 'annot_format'.
+
+    Returns
+    -------
+    annot_format : str
+        format of annotations for vocalizations.
+    """
+    annot_format = vak_df['annot_format'].unique()
+    if len(annot_format) == 1:
+        annot_format = annot_format.item()
+        # if annot_format is None, throw an error -- otherwise continue on and try to use it
+        if annot_format is None:
+            raise ValueError(
+                'unable to load labels for dataset, the annot_format is None'
+            )
+        elif annot_format is NO_ANNOTATION_FORMAT:
+            raise ValueError(
+                'unable to load labels for dataset, no annotation format is specified'
+            )
+    elif len(annot_format) > 1:
+        raise ValueError(
+            f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
+        )
+
+    return annot_format
+
+
 def files_from_dir(annot_dir, annot_format):
     """get all annotation files of a given format
     from a directory or its sub-directories,
