@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - better error handling when parsing a config.toml file fails
   + traceback now ends with clear message about error parsing .toml file, but still 
     includes information from `toml` exception
+- `vak.util.labels.from_df` function that encapsulates control flow logic for getting all labels
+  from a dataset of annotated vocalizations represented as a Pandas DataFrame; handles case where 
+  each vocalization has a separate annotation file and the case where all vocalizations have 
+  annotations in a single file
 
 ## [0.3.0a3]
 ### Fixed
