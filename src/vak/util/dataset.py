@@ -1,7 +1,6 @@
-import crowsetta
 import pandas as pd
 
-from . import labels
+from . import labels, annotation
 from .path import array_dict_from_path
 
 
@@ -30,21 +29,11 @@ def has_unlabeled(csv_path, labelset, timebins_key='t'):
     tmp_labelmap = labels.to_map(labelset, map_unlabeled=False)
 
     vak_df = pd.read_csv(csv_path)
-    uniq_annot_formats = vak_df['annot_format'].unique()
-    if len(uniq_annot_formats) == 1:
-        has_only_one_annot_format = True
-        annot_format = uniq_annot_formats.item()
-        scribe = crowsetta.Transcriber(annot_format=annot_format)
-    else:
-        has_only_one_annot_format = False
+    annots = annotation.from_df(vak_df)
 
     has_unlabeled_list = []
-    for _, voc in vak_df.iterrows():
-        if not has_only_one_annot_format:
-            scribe = crowsetta.Transcriber(annot_format=voc['annot_format'])
-        annot = scribe.from_file(voc['annot_path'])
-        time_bins = array_dict_from_path(voc['spect_path'])[timebins_key]
-
+    for annot, spect_path in zip(annots, vak_df['spect_path'].values):
+        time_bins = array_dict_from_path(spect_path)[timebins_key]
         lbls_int = [tmp_labelmap[lbl] for lbl in annot.seq.labels]
         has_unlabeled_list.append(
             labels.has_unlabeled(lbls_int,
