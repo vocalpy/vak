@@ -59,16 +59,21 @@ There are four steps to using ``vak`` to automate annotating vocalizations
 3. :ref:`prepare a prediction dataset <prepare-prediction-dataset>` of unannotated data
 4. :ref:`use the trained network <use-trained-network>` to predict annotations for the prediction dataset
 
-Before doing that, you'll need to be at least a little familiar with the command line,
+Before doing that, you'll need to know a little bit about working with the shell,
 since that's the main way to work with ``vak`` without writing any code.
-The next section introduces the command line.
+You will enter commands into the shell to run ``vak``; this is called the
+"command line interface". The next section introduces the command line.
 
 ---------------------------------------
 0. Use of ``vak`` from the command line
 ---------------------------------------
 
-``vak`` uses a command-line interface, meaning you run it from the terminal,
-also known as the shell.
+To use the command-line interface to ``vak`` you will open a program on your computer
+that has a name like "terminal", where you can run programs using the shell.
+It will look something like this:
+
+.. image:: /images/terminalizer/vak-help.gif
+
 Basically any time you run ``vak``, what you type at the prompt
 will have the following form:
 
