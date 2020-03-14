@@ -5,19 +5,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.3.0a4]
-### Fixed
-- tiny capitalization bug that broke configuration parsing
-
 ### Added
 - warning when user runs `vak prep` with config.toml file that has a `[PREDICT]` 
   section *and* a `labelset` option in the `[PREP]` section.
 - better error handling when parsing a config.toml file fails
   + traceback now ends with clear message about error parsing .toml file, but still 
     includes information from `toml` exception
+- `vak.util.annotation.format_from_df` function that returns annotation format associated with a 
+  dataset. Raises an error if more than one annotation format or if format is none.
 - `vak.util.labels.from_df` function that encapsulates control flow logic for getting all labels
   from a dataset of annotated vocalizations represented as a Pandas DataFrame; handles case where 
   each vocalization has a separate annotation file and the case where all vocalizations have 
   annotations in a single file
+  + uses `util.annotation.from_df` instead of duplicating pre-condition logic 
+  (checking if there's a single annotation type or not, etc.)
+- `vak.util.annotation.from_df` function that returns list of annotations 
+  (i.e. `crowsetta.Annotation` instances), one corresponding to each row in the dataframe `df`.
+
+### Changed
+- rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df`
+
+### Fixed
+- tiny capitalization bug that broke configuration parsing
 
 ## [0.3.0a3]
 ### Fixed
