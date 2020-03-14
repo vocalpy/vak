@@ -9,6 +9,90 @@ from .general import _files_from_dir
 NO_ANNOTATION_FORMAT = 'none'
 
 
+def format_from_df(vak_df):
+    """determine annotation format of a Vak DataFrame.
+    Returns string name of annotation format.
+
+    Raises an error if there is no annotation format, or multiple formats.
+
+    Parameters
+    ----------
+    vak_df : DataFrame
+        representating a dataset of vocalizations, with column 'annot_format'.
+
+    Returns
+    -------
+    annot_format : str
+        format of annotations for vocalizations.
+    """
+    annot_format = vak_df['annot_format'].unique()
+    if len(annot_format) == 1:
+        annot_format = annot_format.item()
+        # if annot_format is None, throw an error -- otherwise continue on and try to use it
+        if annot_format is None:
+            raise ValueError(
+                'unable to load labels for dataset, the annot_format is None'
+            )
+        elif annot_format is NO_ANNOTATION_FORMAT:
+            raise ValueError(
+                'unable to load labels for dataset, no annotation format is specified'
+            )
+    elif len(annot_format) > 1:
+        raise ValueError(
+            f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
+        )
+
+    return annot_format
+
+
+def from_df(vak_df):
+    """get list of annotations from a vak DataFrame
+
+    Parameters
+    ----------
+    vak_df : DataFrame
+        representating a dataset of vocalizations, with column 'annot_format'.
+
+    Returns
+    -------
+    annots : list
+        of annotations for each row in the dataframe,
+        represented as crowsetta.Annotation instances.
+    """
+    annot_format = format_from_df(vak_df)
+
+    scribe = crowsetta.Transcriber(annot_format=annot_format)
+
+    if len(vak_df['annot_path'].unique()) == len(vak_df):
+        # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
+        annots = [scribe.from_file(annot_file=annot_path) for annot_path in vak_df['annot_path'].values]
+
+    elif len(vak_df['annot_path'].unique()) == 1:
+        # --> there is a single annotation file associated with all rows
+        annot_path = vak_df['annot_path'].unique().item()
+        annots = scribe.from_file(annot_file=annot_path)
+
+        if type(annots) == list and len(annots) == len(vak_df):
+            audio_annot_map = source_annot_map(vak_df['audio_path'].values, annots)
+            # sort by row of dataframe
+            annots = [audio_annot_map[audio_path] for audio_path in vak_df['audio_path'].values]
+
+        else:
+            raise ValueError(
+                'unable to load labels from dataframe; found a single annotation file associated with all '
+                'rows in dataframe, but loading it did not return a list of annotations for each row.\n'
+                f'Single annotation file: {annot_path}'
+                f'Loading it returned a {type(annots)}.'
+            )
+    else:
+        raise ValueError(
+            'unable to load labels from dataframe; did not find an annotation file for each row or '
+            'a single annotation file associated with all rows.'
+        )
+
+    return annots
+
+
 def files_from_dir(annot_dir, annot_format):
     """get all annotation files of a given format
     from a directory or its sub-directories,
