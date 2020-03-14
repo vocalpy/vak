@@ -121,6 +121,19 @@ def prep(toml_path):
     csv_path = os.path.join(cfg.prep.output_dir, f'{csv_fname_stem}.csv')
 
     # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
+    # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
+    if ((section == 'TRAIN' or section == 'LEARNCURVE') and
+            ((cfg.prep.train_dur is not None and cfg.prep.train_dur > 0) and
+             (cfg.prep.val_dur is None or cfg.prep.val_dur == 0) and
+             (cfg.prep.test_dur is None or cfg.prep.val_dur == 0)
+            )):
+        raise ValueError(
+            'duration specified for just training set, but prep function does not currently support creating a '
+            'single split of a specified duration. Either remove the train_dur option from the prep section and '
+            'rerun, in which case all data will be included in the training set, or specify values greater than '
+            'zero for test_dur (and val_dur, if a validation set will be used)'
+        )
+
     if all([dur is None for dur in (cfg.prep.train_dur,
                                     cfg.prep.val_dur,
                                     cfg.prep.test_dur)]):
