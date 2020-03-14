@@ -458,22 +458,7 @@ def from_df(vak_df):
     If the latter, then the function opens that file and makes sure that
     each annotation can be paired with a row from the dataframe.
     """
-    annot_format = vak_df['annot_format'].unique()
-    if len(annot_format) == 1:
-        annot_format = annot_format.item()
-        # if annot_format is None, throw an error -- otherwise continue on and try to use it
-        if annot_format is None:
-            raise ValueError(
-                'unable to load labels for dataset, the annot_format is None'
-            )
-        elif annot_format is annotation.NO_ANNOTATION_FORMAT:
-            raise ValueError(
-                'unable to load labels for dataset, no annotation format is specified'
-            )
-    elif len(annot_format) > 1:
-        raise ValueError(
-            f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
-        )
+    annot_format = annotation.format_from_df(vak_df)
 
     scribe = Transcriber(annot_format=annot_format)
 
