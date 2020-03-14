@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - tiny capitalization bug that broke configuration parsing
+- add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
 
 ## [0.3.0a3]
 ### Fixed
