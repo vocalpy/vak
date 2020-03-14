@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (checking if there's a single annotation type or not, etc.)
 - `vak.util.annotation.from_df` function that returns list of annotations 
   (i.e. `crowsetta.Annotation` instances), one corresponding to each row in the dataframe `df`.
+- logic in `vak.cli.prep` that raises an informative error message when config.toml file specifies
+  a duration for training set but durations for validation and test sets are zero or None
+  + since there's no functionality for making only one dataset of a specified dataset
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df`
