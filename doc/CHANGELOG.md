@@ -4,13 +4,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0a4]
+## [unreleased]
 ### Added
-- warning when user runs `vak prep` with config.toml file that has a `[PREDICT]` 
-  section *and* a `labelset` option in the `[PREP]` section.
-- better error handling when parsing a config.toml file fails
-  + traceback now ends with clear message about error parsing .toml file, but still 
-    includes information from `toml` exception
 - `vak.util.annotation.format_from_df` function that returns annotation format associated with a 
   dataset. Raises an error if more than one annotation format or if format is none.
 - `vak.util.labels.from_df` function that encapsulates control flow logic for getting all labels
@@ -29,8 +24,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df`
 
 ### Fixed
-- tiny capitalization bug that broke configuration parsing
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
+
+## [0.3.0a4]
+### Added
+- warning when user runs `vak prep` with config.toml file that has a `[PREDICT]` 
+  section *and* a `labelset` option in the `[PREP]` section.
+- better error handling when parsing a config.toml file fails
+  + traceback now ends with clear message about error parsing .toml file, but still 
+    includes information from `toml` exception
+
+### Fixed
+- tiny capitalization bug that broke configuration parsing
 
 ## [0.3.0a3]
 ### Fixed
