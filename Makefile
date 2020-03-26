@@ -8,7 +8,7 @@ variables:
 	@echo RESULTS_SCRIPT: $(RESULTS_SCRIPT)
 
 clean :
-	rm -rf ./tests/setup_scripts/tmp_setup_*_config.ini
+	rm -rf ./tests/test_data/configs/test_*.toml
 	rm -rf ./tests/test_data/prep/*/*
 	rm -rf ./tests/test_data/results/train/*/
 	rm -rf ./tests/test_data/results/learncurve/*/

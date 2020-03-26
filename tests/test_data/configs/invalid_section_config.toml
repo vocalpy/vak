@@ -1,0 +1,35 @@
+# used to test that invalid section 'TRIAN' (instead of 'TRAIN')
+# raises a ValueError when passed to
+# vak.config.validators.are_sections_valid
+[PREP]
+data_dir = '/home/user/data/subdir/'
+output_dir = '/why/do/i/keep/typing/ouput'
+audio_format = 'cbin'
+annot_format = 'notmat'
+labelset = 'iabcdefghjk'
+train_dur = 10
+val_dur = 5
+test_dur = 10
+
+[SPECTROGRAM]
+fft_size=512
+step_size=64
+freq_cutoffs = 500, 10000
+thresh = 6.25
+transform_type = 'log_spect'
+
+[DATALOADER]
+window_size = 88
+
+[TRIAN]  # <-- invalid section 'TRIAN' (instead of 'TRAIN')
+models = ['TweetyNet', ]
+root_results_dir = '/home/user/data/subdir/'
+normalize_spectrograms = true
+num_epochs = 2
+batch_size = 11
+val_error_step = 1
+checkpoint_step = 1
+save_only_single_checkpoint_file = true
+
+[TweetyNet.optimizer]
+learning_rate = 0.001

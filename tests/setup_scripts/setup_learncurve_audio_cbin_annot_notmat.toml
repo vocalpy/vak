@@ -15,17 +15,22 @@ freq_cutoffs = [ 500, 10000 ]
 thresh = 6.25
 transform_type = 'log_spect'
 
+[DATALOADER]
+window_size = 88
+
 [LEARNCURVE]
-models = ['TweetyNet']
-root_results_dir = './tests/test_data/results/train'
+models = 'TweetyNet'
+normalize_spectrograms = true
 batch_size = 11
 num_epochs = 2
-normalize_spectrograms = true
-val_step = 1
-ckpt_step = 1
-save_only_single_checkpoint_file = true
+val_step = 50
+ckpt_step = 200
+patience = 4
+num_workers = 4
 train_set_durs = [ 4, 6 ]
-replicates = 2
+num_replicates = 2
+device = "cuda"
+root_results_dir = './tests/test_data/results/learncurve/audio_cbin_annot_notmat'
 
 [TweetyNet]
 optimizer.lr = 0.001

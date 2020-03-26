@@ -1,0 +1,29 @@
+[PREP]
+labelset = "iabcdefghjk"
+data_dir = "./tests/test_data/cbins/gy6or6/032412"
+output_dir = "./tests/test_data/prep/eval/audio_cbin_annot_notmat"
+audio_format = "cbin"
+annot_format = "notmat"
+
+[SPECT_PARAMS]
+fft_size = 512
+step_size = 64
+freq_cutoffs = [ 500, 10000,]
+thresh = 6.25
+transform_type = "log_spect"
+
+[DATALOADER]
+window_size = 88
+
+[EVAL]
+checkpoint_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+labelmap_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
+models = "TweetyNet"
+batch_size = 11
+num_workers = 4
+device = "cuda"
+spect_scaler_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
+output_dir = "./tests/test_data/results/eval/audio_cbin_annot_notmat"
+
+[TweetyNet.optimizer]
+lr = 0.001
