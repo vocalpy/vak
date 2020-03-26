@@ -1,38 +1,24 @@
-from configparser import ConfigParser
-from pathlib import Path
-import unittest
+import pytest
+import toml
 
 import vak.config.validators
 
-HERE = Path(__file__).parent
-TEST_CONFIGS_PATH = HERE.joinpath('..', '..', 'test_data', 'configs')
+
+def test_are_sections_valid(invalid_section_config_path):
+    """test that invalid section name raises a ValueError"""
+    with invalid_section_config_path.open('r') as fp:
+        config_toml = toml.load(fp)
+    with pytest.raises(ValueError):
+        vak.config.validators.are_sections_valid(config_toml,
+                                                 invalid_section_config_path)
 
 
-class TestValidators(unittest.TestCase):
-    def test_are_sections_valid(self):
-        invalid_section_config = TEST_CONFIGS_PATH.joinpath(
-            'invalid_section_config.ini'
-        )
-        invalid_section_config = str(invalid_section_config)
-        user_config_parser = ConfigParser()
-        user_config_parser.read(invalid_section_config)
-        with self.assertRaises(ValueError):
-            vak.config.validators.are_sections_valid(user_config_parser,
-                                                     invalid_section_config)
-
-    def test_are_options_valid(self):
-        invalid_option_config = TEST_CONFIGS_PATH.joinpath(
-            'invalid_option_config.ini'
-        )
-        invalid_option_config = str(invalid_option_config)
-        section_with_invalid_option = 'PREP'
-        user_config_parser = ConfigParser()
-        user_config_parser.read(invalid_option_config)
-        with self.assertRaises(ValueError):
-            vak.config.validators.are_options_valid(user_config_parser,
-                                                    section_with_invalid_option,
-                                                    invalid_option_config)
-
-
-if __name__ == '__main__':
-    unittest.main()
+def test_are_options_valid(invalid_option_config_path):
+    """test that section with an invalid option name raises a ValueError"""
+    section_with_invalid_option = 'PREP'
+    with invalid_option_config_path.open('r') as fp:
+        config_toml = toml.load(fp)
+    with pytest.raises(ValueError):
+        vak.config.validators.are_options_valid(config_toml,
+                                                section_with_invalid_option,
+                                                invalid_option_config_path)
