@@ -27,7 +27,7 @@ class StandardizeSpect:
     mean_freqs : numpy.ndarray
         mean values for each frequency bin across the fit set of spectrograms
     std_freqs : numpy.ndarray
-        standard deciation for each frequency bin across the fit set of spectrograms
+        standard deviation for each frequency bin across the fit set of spectrograms
     non_zero_std : numpy.ndarray
         boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
     """
