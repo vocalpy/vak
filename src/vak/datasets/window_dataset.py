@@ -68,8 +68,8 @@ class WindowDataset(VisionDataset):
         timebins_key : str
             key to access time bin vector in array files. Default is 't'.
         transform : callable
-            A function/transform that takes in a numpy array
-            and returns a transformed version. E.g, a SpectScaler instance.
+            A function/transform that takes in a numpy array or torch Tensor
+            and returns a transformed version. E.g, vak.transforms.StandardizeSpect
             Default is None.
         target_transform : callable
             A function/transform that takes in the target and transforms it.
