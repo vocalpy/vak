@@ -6,25 +6,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 ### Added
-- `vak.util.annotation.format_from_df` function that returns annotation format associated with a 
+- add functions `format_from_df` and `from_df` to `vak.util.annotation`
+  [#107](https://github.com/NickleDave/vak/pull/107) 
+  + `vak.util.annotation.from_from_df` returns annotation format associated with a 
   dataset. Raises an error if more than one annotation format or if format is none.
-- `vak.util.labels.from_df` function that encapsulates control flow logic for getting all labels
-  from a dataset of annotated vocalizations represented as a Pandas DataFrame; handles case where 
-  each vocalization has a separate annotation file and the case where all vocalizations have 
-  annotations in a single file
-  + uses `util.annotation.from_df` instead of duplicating pre-condition logic 
-  (checking if there's a single annotation type or not, etc.)
-- `vak.util.annotation.from_df` function that returns list of annotations 
+  + `vak.util.annotation.from_df` function returns list of annotations 
   (i.e. `crowsetta.Annotation` instances), one corresponding to each row in the dataframe `df`.
+    - encapsulates control flow logic for getting all labels from a dataset of 
+      annotated vocalizations represented as a Pandas DataFrame
+      + handles case where each vocalization has a separate annotation file 
+      + and the case where all vocalizations have annotations in a single file
+- `vak.util.labels.from_df` function [#103](https://github.com/NickleDave/vak/pull/103)
+  + checks for single annotation type, load all annotations, and then get just labels from those
+  + modified to use `util.annotation.from_df` and `vak.util.annotation.format_from_df` 
+    in [#107](https://github.com/NickleDave/vak/pull/107)
 - logic in `vak.cli.prep` that raises an informative error message when config.toml file specifies
-  a duration for training set but durations for validation and test sets are zero or None
+  a duration for training set, but durations for validation and test sets are zero or None
+  [#108](https://github.com/NickleDave/vak/pull/108)
   + since there's no functionality for making only one dataset of a specified dataset
+- 3 transform classes, and `vak.transforms.util` module [#112](https://github.com/NickleDave/vak/pull/112)
+  + with `get_defaults` function
+    - encapsulates logic for building transforms, to make `train`, `predict` etc. less verbose
+  + obeys DRY, avoid declaring the same utility transforms like to_floattensor and add_channel in 
+    multiple functions 
 
 ### Changed
-- rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df`
+- rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
+  [#107](https://github.com/NickleDave/vak/pull/107)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
+  [#109](https://github.com/NickleDave/vak/pull/109)
 
 ## [0.3.0a4]
 ### Added
