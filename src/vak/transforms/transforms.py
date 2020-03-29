@@ -6,7 +6,12 @@ from ..util.validation import column_or_1d
 from . import functional as F
 
 __all__ = [
-    'StandardizeSpect', 'PadToWindow', 'ReshapeToWindow'
+    'AddChannel',
+    'PadToWindow',
+    'ReshapeToWindow',
+    'StandardizeSpect',
+    'ToFloatTensor',
+    'ToLongTensor'
 ]
 
 
@@ -209,3 +214,62 @@ class ReshapeToWindow:
 
     def __call__(self, spect):
         return F.reshape_to_window(spect, self.window_size)
+
+
+class ToFloatTensor:
+    """convert Numpy array to torch.FloatTensor.
+
+    Parameters
+    ----------
+    arr : numpy.ndarray
+
+    Returns
+    -------
+    float_tensor
+        with dtype 'float32'
+    """
+    def __init__(self):
+        pass
+
+    def __call__(self, arr):
+        return F.to_floattensor(arr)
+
+
+class ToLongTensor:
+    """convert Numpy array to torch.LongTensor.
+
+    Parameters
+    ----------
+    arr : numpy.ndarray
+
+    Returns
+    -------
+    long_tensor : torch.Tensor
+        with dtype 'float64'
+    """
+    def __init__(self):
+        pass
+
+    def __call__(self, arr):
+        return F.to_longtensor(arr)
+
+
+class AddChannel:
+    """add a channel dimension to a 2-dimensional tensor.
+    Transform that makes it easy to treat a spectrogram as an image,
+    by adding a dimension with a single 'channel', analogous to grayscale.
+    In this way the tensor can be fed to e.g. convolutional layers.
+
+    Parameters
+    ----------
+    input : torch.Tensor
+        with two dimensions (height, width).
+    channel_dim : int
+        dimension where "channel" is added.
+        Default is 0, which returns a tensor with dimensions (channel, height, width).
+    """
+    def __init__(self, channel_dim=0):
+        self.channel_dim = channel_dim
+
+    def __call__(self, input):
+        return F.add_channel(input, channel_dim=self.channel_dim)
