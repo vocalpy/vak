@@ -11,7 +11,7 @@ class WindowDataset(VisionDataset):
     """Dataset class that represents all possible windows
      of a fixed width from a set of spectrograms.
      The underlying dataset consists of spectrograms
-     of vocalizations and annotations for those vocalizations are return.
+     of vocalizations and annotations for those vocalizations.
 
     Returns windows from the spectrograms, along with labels for each
     time bin in the window, derived from the annotations.
@@ -22,9 +22,7 @@ class WindowDataset(VisionDataset):
                  spect_id_vector,
                  spect_inds_vector,
                  spect_paths,
-                 annot_paths,
-                 annot_formats,
-                 scribes,
+                 annots,
                  labelmap,
                  window_size,
                  spect_key='s',
@@ -49,15 +47,9 @@ class WindowDataset(VisionDataset):
         spect_paths : numpy.ndarray
             column from DataFrame that represents dataset,
             consisting of paths to files containing spectrograms as arrays
-        annot_paths : numpy.ndarray
-            column from DataFrame that represents dataset,
-            consisting of paths to annotation files
-        annot_formats : numpy.ndarray
-            column from DataFrame that represents dataset,
-            consisting of annotation formats
-        scribes : dict
-            where keys are unique annotation formats from annot_formats,
-            and values are crowsetta.Transcriber instances for those formats
+        annots : list
+            of crowsetta.Annotation instances,
+            loaded from from DataFrame that represents dataset, using vak.annotation.from_df.
         labelmap : dict
             that maps labels from dataset to a series of consecutive integer.
             To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
@@ -82,9 +74,7 @@ class WindowDataset(VisionDataset):
         self.spect_paths = spect_paths
         self.spect_key = spect_key
         self.timebins_key = timebins_key
-        self.annot_paths = annot_paths
-        self.annot_formats = annot_formats
-        self.scribes = scribes
+        self.annots = annots
         self.labelmap = labelmap
         if 'unlabeled' in self.labelmap:
             self.unlabeled_label = self.labelmap['unlabeled']
@@ -125,10 +115,7 @@ class WindowDataset(VisionDataset):
         spect = spect_dict[self.spect_key]
         timebins = spect_dict[self.timebins_key]
 
-        annot_path = self.annot_paths[spect_id]
-        annot_format = self.annot_formats[spect_id]
-        annot = self.scribes[annot_format].from_file(annot_path)
-
+        annot = self.annots[spect_id]  # "annot id" == spect_id if both were taken from rows of DataFrame
         lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
         lbl_tb = util.labels.label_timebins(lbls_int,
                                             annot.seq.onsets_s,
@@ -231,12 +218,7 @@ class WindowDataset(VisionDataset):
 
         x_inds = np.arange(spect_id_vector.shape[0])
 
-        annot_paths = df['annot_path'].values
-        annot_formats = df['annot_format'].values
-        uniq_formats = np.unique(annot_formats)
-        scribes = {}
-        for annot_format in uniq_formats:
-            scribes[annot_format] = Transcriber(annot_format=annot_format)
+        annots = util.annotation.from_df(df)
 
         # note that we set "root" to csv path
         return cls(csv_path,
@@ -244,9 +226,7 @@ class WindowDataset(VisionDataset):
                    spect_id_vector,
                    spect_inds_vector,
                    spect_paths,
-                   annot_paths,
-                   annot_formats,
-                   scribes,
+                   annots,
                    labelmap,
                    window_size,
                    spect_key,
