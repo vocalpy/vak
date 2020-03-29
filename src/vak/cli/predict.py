@@ -1,4 +1,3 @@
-from functools import partial
 import json
 from pathlib import Path
 
@@ -7,14 +6,13 @@ import joblib
 import pandas as pd
 from tqdm import tqdm
 import torch.utils.data
-from torchvision import transforms
 
 from .. import config
-from ..datasets.unannotated_dataset import UnannotatedDataset
 from .. import io
 from .. import models
-from ..transforms import PadToWindow, ReshapeToWindow
+from .. import transforms
 from .. import util
+from ..datasets.unannotated_dataset import UnannotatedDataset
 
 
 def predict(toml_path):
@@ -40,24 +38,15 @@ def predict(toml_path):
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
     if cfg.predict.spect_scaler_path:
-        standardize = joblib.load(cfg.predict.spect_scaler_path)
+        spect_standardizer = joblib.load(cfg.predict.spect_scaler_path)
     else:
-        standardize = None
+        spect_standardizer = None
 
-    def to_floattensor(ndarray):
-        return torch.from_numpy(ndarray).float()
-
-    # make an "add channel" transform to use with Lambda
-    # this way a spectrogram 'image' has a "channel" dimension (of size 1)
-    # that convolutional layers can work on
-    add_channel = partial(torch.unsqueeze, dim=1)  # add channel at first dimension because windows become batch
-    transform = transforms.Compose(
-        [transforms.Lambda(standardize),
-         PadToWindow(cfg.dataloader.window_size, return_crop_vec=False),
-         ReshapeToWindow(cfg.dataloader.window_size),
-         transforms.Lambda(to_floattensor),
-         transforms.Lambda(add_channel)]
-    )
+    transform, target_transform = transforms.get_defaults('predict',
+                                                          spect_standardizer,
+                                                          window_size=cfg.dataloader.window_size,
+                                                          return_crop_vec=False,
+                                                          )
 
     pred_dataset = UnannotatedDataset.from_csv(csv_path=cfg.predict.csv_path,
                                                split='predict',
@@ -115,7 +104,8 @@ def predict(toml_path):
                                                      num_workers=cfg.predict.num_workers)
 
         # use transform "outside" of Dataset so we can get back crop vec
-        pad_to_window = PadToWindow(cfg.dataloader.window_size, return_crop_vec=True)
+        pad_to_window = transforms.PadToWindow(cfg.dataloader.window_size,
+                                               return_crop_vec=True)
 
         progress_bar = tqdm(data_for_annot)
 
