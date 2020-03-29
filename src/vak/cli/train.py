@@ -1,4 +1,3 @@
-from functools import partial
 import json
 import logging
 from pathlib import Path
@@ -9,14 +8,13 @@ from datetime import datetime
 import joblib
 import pandas as pd
 import torch.utils.data
-from torchvision import transforms
 
 from .. import config
 from .. import models
+from .. import transforms
 from .. import util
 from ..datasets.window_dataset import WindowDataset
 from ..io import dataframe
-from ..transforms import StandardizeSpect
 
 
 def train(toml_path):
@@ -77,14 +75,7 @@ def train(toml_path):
     )
 
     # ---------------- load training data  -----------------------------------------------------------------------------
-    if cfg.train.normalize_spectrograms:
-        logger.info('will normalize spectrograms')
-        standardize = StandardizeSpect.fit_df(dataset_df, spect_key=cfg.spect_params.spect_key)
-        joblib.dump(standardize,
-                    results_path.joinpath('StandardizeSpect'))
-    else:
-        standardize = None
-
+    logger.info(f'using training dataset from {cfg.train.csv_path}')
     # below, if we're going to train network to predict unlabeled segments, then
     # we need to include a class for those unlabeled segments in labelmap,
     # the mapping from labelset provided by user to a set of consecutive
@@ -102,25 +93,21 @@ def train(toml_path):
     with open(results_path.joinpath('labelmap.json'), 'w') as f:
         json.dump(labelmap, f)
 
-    logger.info(f'using training dataset from {cfg.train.csv_path}')
-
-    def to_floattensor(ndarray):
-        return torch.from_numpy(ndarray).float()
-    # make an "add channel" transform to use with Lambda
-    # this way a spectrogram 'image' has a "channel" dimension (of size 1)
-    # that convolutional layers can work on
-    add_channel = partial(torch.unsqueeze, dim=0)
-    transform = transforms.Compose(
-        [transforms.Lambda(standardize),
-         transforms.Lambda(to_floattensor),
-         transforms.Lambda(add_channel)]
-    )
-
-    def to_longtensor(ndarray):
-        return torch.from_numpy(ndarray).long()
-    target_transform = transforms.Compose(
-        [transforms.Lambda(to_longtensor)]
-    )
+    # get transforms just before creating datasets with them
+    if cfg.train.normalize_spectrograms:
+        # we instantiate this transform here because we want to save it
+        # and don't want to add more parameters to `transforms.util.get_defaults` function
+        # and make too tight a coupling between this function and that one.
+        # Trade off is that this is pretty verbose (even ignoring my comments)
+        logger.info('will normalize spectrograms')
+        spect_standardizer = transforms.StandardizeSpect.fit_df(dataset_df,
+                                                                spect_key=cfg.spect_params.spect_key)
+        joblib.dump(spect_standardizer,
+                    results_path.joinpath('StandardizeSpect'))
+    else:
+        spect_standardizer = None
+    transform, target_transform = transforms.get_defaults('train',
+                                                          spect_standardizer)
 
     train_dataset = WindowDataset.from_csv(csv_path=cfg.train.csv_path,
                                            split='train',
