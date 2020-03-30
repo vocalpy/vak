@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - encapsulates logic for building transforms, to make `train`, `predict` etc. less verbose
   + obeys DRY, avoid declaring the same utility transforms like to_floattensor and add_channel in 
     multiple functions 
+- add `labelset_from_toml_value` to converters [#115](https://github.com/NickleDave/vak/pull/115)
+  + makes it possible to specify set of labels with a "range string", e.g. `range: 1-27, 29`
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
