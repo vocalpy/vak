@@ -3,7 +3,7 @@ import attr
 from attr import converters, validators
 from attr.validators import instance_of
 
-from .converters import expanded_user_path
+from .converters import expanded_user_path, labelset_from_toml_value
 from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_format, is_spect_format
 
 
@@ -64,7 +64,7 @@ class PrepConfig:
                          validator=validators.optional(is_a_file), default=None)
     annot_format = attr.ib(validator=validators.optional(is_annot_format), default=None)
 
-    labelset = attr.ib(converter=converters.optional(to_set),
+    labelset = attr.ib(converter=converters.optional(labelset_from_toml_value),
                        validator=validators.optional(instance_of(set)),
                        default=None)
 
