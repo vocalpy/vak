@@ -18,7 +18,7 @@ build/
 doc/_build/
 
 # test data
-tests/test_data/prep/*/
-tests/test_data/results/*/
+tests/test_data/prep/**
+tests/test_data/results/**
 tests/test_data/*.tar.gz
-tests/setup_scripts/tmp_setup_*_config.toml
+tests/test_data/configs/test_*.toml
