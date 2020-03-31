@@ -44,7 +44,7 @@ REQUIRED = [
     'torch',
     'torchvision',
     'tqdm',
-    'tweetynet>=0.3.0'
+    'tweetynet>=0.3.1'
 ]
 
 dev_deps = [
