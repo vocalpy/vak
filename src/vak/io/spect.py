@@ -144,8 +144,9 @@ def to_dataframe(spect_format,
 
     # ---- validate spect_annot_map ------------------------------------------------------------------------------------
     # regardless of whether we just made it or user supplied it
-    for spect_path, annot in spect_annot_map.items():
+    for spect_path in list(spect_annot_map.keys()):  # iterate over keys so we can pop from dict without RuntimeError
         if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
+            annot = spect_annot_map[spect_path]
             labels_set = set(annot.seq.labels)
             # below, set(labels_mapping) is a set of that dict's keys
             if not labels_set.issubset(set(labelset)):
@@ -153,7 +154,7 @@ def to_dataframe(spect_format,
                 # because there's some label in labels
                 # that's not in labels_mapping
                 logger.info(
-                    f'Found labels, {extra_labels}, in {spect_path.name}, '
+                    f'Found labels, {extra_labels}, in {Path(spect_path).name}, '
                     'that are not in labels_mapping. Skipping file.'
                 )
                 spect_annot_map.pop(spect_path)
