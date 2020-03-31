@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
   [#109](https://github.com/NickleDave/vak/pull/109)
+- bug that prevented filtering out vocalizations from a dataset when labels are present 
+  in that vocalization that are not in the specified labelset [#118](https://github.com/NickleDave/vak/pull/118)
 
 ## [0.3.0a4]
 ### Added
