@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
   [#107](https://github.com/NickleDave/vak/pull/107)
+- use `TweetyNet` version 0.3.1 [#120](https://github.com/NickleDave/vak/pull/120)
+  + so that `yarden2annot` function from `TweetyNet` will return annotation labels as string, not int
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
