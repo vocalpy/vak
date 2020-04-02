@@ -1,7 +1,9 @@
+from collections import Counter
 import os
 from pathlib import Path
 
 import crowsetta
+import numpy as np
 
 from ..config import validators
 from .general import _files_from_dir
@@ -155,64 +157,64 @@ def recursive_stem(path):
 
 
 def source_annot_map(source_files, annot_list):
-    """map annotations to their source files, i.e. audio or spectrogram files
+    """map source files to annotations, i.e. audio or spectrogram files
 
     Parameters
     ----------
     source_files : list
-        of audio or spectrogram files. The names of the files must match the
-        file attribute of the annotations. E.g., if an audio file is
+        of audio or spectrogram files. The names of the files must begin with the
+        audio_file attribute of the corresponding annotations. E.g., if an audio file is
         'bird0-2016-05-04-133027.wav', then there must be an annotation whose
         file attribute equals that filename. Spectrogram files should include
         the audio file name, e.g. 'bird0-2016-05-04-133027.wav.mat' or
-        'bird0-2016-05-04-133027.spect.npz'
+        'bird0-2016-05-04-133027.spect.npz' would match an annotation with the
+        audio_file attribute 'bird0-2016-05-04-133027.wav'.
     annot_list : list
         of Annotations corresponding to files in source_files
     """
+    if type(source_files) == np.ndarray:  # e.g., vak DataFrame['spect_path'].values
+        source_files = source_files.tolist()
+
     # to pair audio files with annotations, make list of tuples
-    source_annot_map = []  # that we convert a dict before returning
-    # we copy source files so we can convert to stem, and so we can
-    # pop items off copy without losing original list.
-    # We pop to validate that function worked, by making sure there are
-    # no items left in this list after the loop
-    source_files_stem = source_files.copy()
-    source_files_stem = [recursive_stem(sf) for sf in source_files_stem]
-    source_file_inds = list(range(len(source_files)))
-    for annot in annot_list:
+    source_annot_map = {}
+
+    # ----> make a dict with audio stems as keys,
+    #       so we can look up annotations by stemming source files and using as keys.
+    # First check that we don't have duplicate keys that would cause this to fail silently
+    keys = [recursive_stem(annot.audio_file) for annot in annot_list]
+    keys_set = set(keys)
+    if len(keys_set) < len(keys):
+        duplicates = [item for item, count in Counter(keys).items() if count > 1]
+        raise ValueError(
+            f'found multiple annotations with the same audio filename(s): {duplicates}'
+        )
+    del keys, keys_set
+    audio_stem_annot_map = {recursive_stem(annot.audio_file): annot for annot in annot_list}
+
+    for source_file in list(source_files):  # list() to copy, so we can pop off items while iterating
+        # We pop to validate that function worked, by making sure there are
+        # no items left in this list after the loop
+
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
-        annot_file_stem = recursive_stem(annot.audio_file)
+        source_file_stem = recursive_stem(source_file)
 
-        ind_in_stem = [ind
-                       for ind, source_file_stem in enumerate(source_files_stem)
-                       if annot_file_stem == source_file_stem]
-        if len(ind_in_stem) > 1:
-            more_than_one = [source_file_inds[ind] for ind in ind_in_stem]
-            more_than_one = [source_files[ind] for ind in more_than_one]
+        try:
+            annot = audio_stem_annot_map[source_file_stem]
+        except KeyError:
             raise ValueError(
-                "Found more than one source file that matches an annotation."
-                f"\nSource files are: {more_than_one}."
-                f"\nAnnotation has file set to '{annot.audio_file}' and is: {annot}"
+                f'could not find annotation for source file: {source_file}.\n'
+                f'No annotation had an audio file whose stem matched the source file stem: {source_file_stem}'
             )
-        elif len(ind_in_stem) == 0:
-            raise ValueError(
-                "Did not find a source file matching the following annotation: "
-                f"\n{annot}. Annotation has file set to '{annot.audio_file}'."
-            )
-        else:
-            ind_in_stem = ind_in_stem[0]
-            ind = source_file_inds[ind_in_stem]
-            source_annot_map.append(
-                (source_files[ind], annot)
-            )
-            source_files_stem.pop(ind_in_stem)
-            source_file_inds.pop(ind_in_stem)
 
-    if len(source_files_stem) > 0:
+        source_annot_map[source_file] = annot
+        source_files.remove(source_file)
+
+    if len(source_files) > 0:
         raise ValueError(
             'could not map the following source files to annotations: '
-            f'{source_files_stem}'
+            f'{source_files}'
         )
 
-    return dict(source_annot_map)
+    return source_annot_map
