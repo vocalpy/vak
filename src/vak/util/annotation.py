@@ -110,8 +110,36 @@ def files_from_dir(annot_dir, annot_format):
     return annot_files
 
 
-def _recursive_stem(path_str):
-    name = Path(path_str).name
+def recursive_stem(path):
+    """removes extensions from a filename recursively,
+    by calling `os.path.splitext`,
+    until the extension is an audio file format handled by vak.
+    Then return the stem, that is, the part that precedes the extension.
+    Used to match audio, spectrogram, and annotation files by their stems.
+
+    Stops after finding audio extensions so that it does not remove "extensions"
+    that are actually other parts of a filename, e.g. a time or data separated by periods.
+
+    Examples
+    --------
+    >>> recursive_stem('gy6or6_baseline_230312_0808.138.cbin.not.mat')
+    'gy6or6_baseline_230312_0808.138'
+    >>> recursive_stem('Bird0/spectrograms/0.wav.npz')
+    '0.wav'
+    >>> recursive_stem('Bird0/Wave/0.wav')
+    '0.wav'
+
+    Parameters
+    ----------
+    path : str, Path
+        from which stem should be extracted
+
+    Returns
+    -------
+    stem : str
+        filename that precedes audio extension
+    """
+    name = Path(path).name
     stem, ext = os.path.splitext(name)
     ext = ext.replace('.', '')
     while ext not in validators.VALID_AUDIO_FORMATS:
@@ -119,7 +147,7 @@ def _recursive_stem(path_str):
         ext = ext.replace('.', '')
         if new_stem == stem:
             raise ValueError(
-                f'unable to compute stem of {path_str}'
+                f'unable to compute stem of {path}'
             )
         else:
             stem = new_stem
@@ -148,13 +176,13 @@ def source_annot_map(source_files, annot_list):
     # We pop to validate that function worked, by making sure there are
     # no items left in this list after the loop
     source_files_stem = source_files.copy()
-    source_files_stem = [_recursive_stem(sf) for sf in source_files_stem]
+    source_files_stem = [recursive_stem(sf) for sf in source_files_stem]
     source_file_inds = list(range(len(source_files)))
     for annot in annot_list:
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
-        annot_file_stem = _recursive_stem(annot.audio_file)
+        annot_file_stem = recursive_stem(annot.audio_file)
 
         ind_in_stem = [ind
                        for ind, source_file_stem in enumerate(source_files_stem)
