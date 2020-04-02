@@ -171,9 +171,10 @@ def range_str(range_str, sort=True):
     """Generate range of ints from a formatted string,
     then convert range from int to str
 
-    Example:
-        >>> range_str('1-4,6,9-11')
-        ['1','2','3','4','6','9','10','11']
+    Examples
+    --------
+    >>> range_str('1-4,6,9-11')
+    ['1','2','3','4','6','9','10','11']
 
     Takes a range in form of "a-b" and returns
     a list of numbers between a and b inclusive.
@@ -183,8 +184,7 @@ def range_str(range_str, sort=True):
     Parameters
     ----------
     range_str : str
-        of form 'a-b,c'
-        where a hyphen indicates a range
+        of form 'a-b,c', where a hyphen indicates a range
         and a comma separates ranges or single numbers
     sort : bool
         If True, sort output before returning. Default is True.
@@ -192,7 +192,7 @@ def range_str(range_str, sort=True):
     Returns
     -------
     list_range : list
-        of int, produced by parsing range_str
+        of integer values converted to single-character strings, produced by parsing range_str
     """
     # adapted from
     # http://code.activestate.com/recipes/577279-generate-list-of-numbers-from-hyphenated-and-comma/
