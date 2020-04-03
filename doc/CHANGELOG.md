@@ -40,6 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#107](https://github.com/NickleDave/vak/pull/107)
 - use `TweetyNet` version 0.3.1 [#120](https://github.com/NickleDave/vak/pull/120)
   + so that `yarden2annot` function from `TweetyNet` will return annotation labels as string, not int
+- rewrite `vak.util.annotation.source_annot_map` so that it maps annotations *to* source files, not 
+  vice versa [#130](https://github.com/NickleDave/vak/pull/130)
+  + more specifically, it no longer crashes if it can't map every annotation to a source file
+  + instead it crashes if it can't map every source file to an annotation
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
