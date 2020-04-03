@@ -44,6 +44,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   vice versa [#130](https://github.com/NickleDave/vak/pull/130)
   + more specifically, it no longer crashes if it can't map every annotation to a source file
   + instead it crashes if it can't map every source file to an annotation
+- change `vak.annotation.from_df` to better handle single annotation files 
+  [#131](https://github.com/NickleDave/vak/pull/131)
+  + no longer crashes if the number of annotations from the file does not exactly match the number of source files
+  + instead only requires there at least as many annotations as there are source files
+- rewrite `vak.util.labels.from_df` to use `vak.util.annotation.from_df`
+  [#131](https://github.com/NickleDave/vak/pull/131)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
