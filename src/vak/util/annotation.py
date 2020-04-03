@@ -85,7 +85,7 @@ def from_df(vak_df):
             raise ValueError(
                 'unable to load labels from dataframe; found a single annotation file associated with all '
                 'rows in dataframe, but loading it did not return a list of annotations for each row.\n'
-                f'Single annotation file: {annot_path}'
+                f'Single annotation file: {annot_path}\n'
                 f'Loading it returned a {type(annots)}.'
             )
     else:
