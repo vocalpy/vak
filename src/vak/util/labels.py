@@ -449,45 +449,6 @@ def from_df(vak_df):
     -------
     labels : list
         of array-like, labels for each vocalization in the dataset.
-
-    Notes
-    -----
-    This function encapsulates logic for handling different types of
-    annotations; it determines whether each row has a separate annotation file,
-    or if instead there is a single annotation file associated with all rows.
-    If the latter, then the function opens that file and makes sure that
-    each annotation can be paired with a row from the dataframe.
     """
-    annot_format = annotation.format_from_df(vak_df)
-
-    scribe = Transcriber(annot_format=annot_format)
-
-    if len(vak_df['annot_path'].unique()) == len(vak_df):
-        # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
-        labels = [scribe.from_file(annot_file=annot_path).seq.labels
-                  for annot_path in vak_df['annot_path'].values]
-
-    elif len(vak_df['annot_path'].unique()) == 1:
-        # --> there is a single annotation file associated with all rows
-        annot_path = vak_df['annot_path'].unique().item()
-        annots = scribe.from_file(annot_file=annot_path)
-
-        if type(annots) == list and len(annots) == len(vak_df):
-            source_annot_map = annotation.source_annot_map(vak_df['audio_path'].values, annots)
-            # need to organize by row here
-            labels = [source_annot_map[audio_path].seq.labels
-                      for audio_path in vak_df['audio_path'].values]
-        else:
-            raise ValueError(
-                'unable to load labels from dataframe; found a single annotation file associated with all '
-                'rows in dataframe, but loading it did not return a list of annotations for each row.\n'
-                f'Single annotation file: {annot_path}'
-                f'Loading it returned a {type(annots)}.'
-            )
-    else:
-        raise ValueError(
-            'unable to load labels from dataframe; did not find an annotation file for each row or '
-            'a single annotation file associated with all rows.'
-        )
-
-    return labels
+    annots = annotation.from_df(vak_df)
+    return [annot.seq.labels for annot in annots]
