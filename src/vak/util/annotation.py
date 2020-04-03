@@ -60,6 +60,14 @@ def from_df(vak_df):
     annots : list
         of annotations for each row in the dataframe,
         represented as crowsetta.Annotation instances.
+
+    Notes
+    -----
+    This function encapsulates logic for handling different types of
+    annotations; it determines whether each row has a separate annotation file,
+    or if instead there is a single annotation file associated with all rows.
+    If the latter, then the function opens that file and makes sure that
+    each row from the dataframe can be paired with an annotation (using `source_annot_map`).
     """
     annot_format = format_from_df(vak_df)
 
@@ -74,7 +82,9 @@ def from_df(vak_df):
         annot_path = vak_df['annot_path'].unique().item()
         annots = scribe.from_file(annot_file=annot_path)
 
-        if type(annots) == list and len(annots) == len(vak_df):
+        # as long as we have at least as many annotations as there are rows in the dataframe
+        if type(annots) == list and len(annots) >= len(vak_df):
+            # then we can try and map those annotations to the rows
             audio_annot_map = source_annot_map(vak_df['audio_path'].values, annots)
             # sort by row of dataframe
             annots = [audio_annot_map[audio_path] for audio_path in vak_df['audio_path'].values]
@@ -83,7 +93,7 @@ def from_df(vak_df):
             raise ValueError(
                 'unable to load labels from dataframe; found a single annotation file associated with all '
                 'rows in dataframe, but loading it did not return a list of annotations for each row.\n'
-                f'Single annotation file: {annot_path}'
+                f'Single annotation file: {annot_path}\n'
                 f'Loading it returned a {type(annots)}.'
             )
     else:
