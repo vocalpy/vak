@@ -60,6 +60,14 @@ def from_df(vak_df):
     annots : list
         of annotations for each row in the dataframe,
         represented as crowsetta.Annotation instances.
+
+    Notes
+    -----
+    This function encapsulates logic for handling different types of
+    annotations; it determines whether each row has a separate annotation file,
+    or if instead there is a single annotation file associated with all rows.
+    If the latter, then the function opens that file and makes sure that
+    each row from the dataframe can be paired with an annotation (using `source_annot_map`).
     """
     annot_format = format_from_df(vak_df)
 
