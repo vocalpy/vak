@@ -74,7 +74,9 @@ def from_df(vak_df):
         annot_path = vak_df['annot_path'].unique().item()
         annots = scribe.from_file(annot_file=annot_path)
 
-        if type(annots) == list and len(annots) == len(vak_df):
+        # as long as we have at least as many annotations as there are rows in the dataframe
+        if type(annots) == list and len(annots) >= len(vak_df):
+            # then we can try and map those annotations to the rows
             audio_annot_map = source_annot_map(vak_df['audio_path'].values, annots)
             # sort by row of dataframe
             annots = [audio_annot_map[audio_path] for audio_path in vak_df['audio_path'].values]
