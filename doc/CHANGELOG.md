@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add converters and validators for dataset split durations [#143](https://github.com/NickleDave/vak/pull/143)
 - add `logger` parameters to `io` sub-package functions, so they can use logger created by `cli` functions
   [#145](https://github.com/NickleDave/vak/pull/145)
+- add `log_or_print` function to `util.logging` that either writes message to logger, 
+  or simply prints the message if there is no logger [#147](https://github.com/NickleDave/vak/pull/147)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
