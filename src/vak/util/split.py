@@ -126,13 +126,6 @@ def train_test_dur_split(vak_df,
     """
     labels = labels_from_df(vak_df)
 
-    durs = vak_df['duration'].values
-    total_dataset_dur = durs.sum()
-    train_dur, val_dur, test_dur = validate_durations_convert_nonnegative(train_dur,
-                                                                          val_dur,
-                                                                          test_dur,
-                                                                          total_dataset_dur)
-
     train_inds, val_inds, test_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
                                                                 labelset=labelset,
