@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - change default value for util.general.timebin_dur_from_vec parameter n_decimals_trunc from 3 to 5
   [#136](https://github.com/NickleDave/vak/pull/136)
 - rewrite + rename `splitalgos.validate.durs` [#143](https://github.com/NickleDave/vak/pull/143)
+- parallelize validation of spectrogram files, so it's faster on large datasets 
+  [#144](https://github.com/NickleDave/vak/pull/144)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
@@ -65,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix logging for `vak.prep` command [#132](https://github.com/NickleDave/vak/pull/132)
 - fix how dataset duration splits are validated [#143](https://github.com/NickleDave/vak/pull/143), 
   see issue [#140](https://github.com/NickleDave/vak/issues/140) for details.
+- fix error due to calling a Path attribute on a string [#144](https://github.com/NickleDave/vak/pull/144)
+  as identified in issue [#123](https://github.com/NickleDave/vak/issues/123)
 
 ### Removed
 - remove `vak.util.general.safe_truncate` function, no longer used 
