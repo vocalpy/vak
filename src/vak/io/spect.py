@@ -36,7 +36,8 @@ def to_dataframe(spect_format,
                  freqbins_key='f',
                  timebins_key='t',
                  spect_key='s',
-                 audio_path_key='audio_path'
+                 audio_path_key='audio_path',
+                 logger=None,
                  ):
     """convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
     Spectrogram files are array in .npz files created by numpy or in .mat files created by Matlab.
@@ -77,6 +78,12 @@ def to_dataframe(spect_format,
     audio_path_key : str
         key for accessing path to source audio file for spectogram in files.
         Default is 'audio_path'.
+
+    Other Parameters
+    ----------------
+    logger : logging.Logger
+        instance created by vak.util.logging.get_logger.
+        Default is None, in which case no logging occurs.
 
     Returns
     -------
@@ -125,10 +132,6 @@ def to_dataframe(spect_format,
                 f'type of labelset must be set, but was: {type(labelset)}'
             )
 
-    # ---- logging -----------------------------------------------------------------------------------------------------
-    logger = logging.getLogger(__name__)
-    logger.setLevel('INFO')
-
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
         # note we already validated format above
@@ -153,10 +156,11 @@ def to_dataframe(spect_format,
                 extra_labels = labels_set - set(labelset)
                 # because there's some label in labels
                 # that's not in labels_mapping
-                logger.info(
-                    f'Found labels, {extra_labels}, in {Path(spect_path).name}, '
-                    'that are not in labels_mapping. Skipping file.'
-                )
+                if logger is not None:
+                    logger.info(
+                        f'Found labels, {extra_labels}, in {Path(spect_path).name}, '
+                        'that are not in labels_mapping. Skipping file.'
+                    )
                 spect_annot_map.pop(spect_path)
                 continue
 
@@ -224,7 +228,8 @@ def to_dataframe(spect_format,
         return record
 
     spect_path_annot_tuples = db.from_sequence(spect_annot_map.items())
-    logger.info('creating dataset')
+    if logger is not None:
+        logger.info('creating pandas.DataFrame representing dataset from spectrogram files')
     with ProgressBar():
         records = list(spect_path_annot_tuples.map(_to_record))
 
