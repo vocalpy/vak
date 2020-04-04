@@ -49,3 +49,26 @@ def get_logger(log_dst,
     logger.addHandler(logging.FileHandler(logfile_name))
     logger.addHandler(logging.StreamHandler(sys.stdout))
     return logger
+
+
+def log_or_print(msg,
+                 logger=None,
+                 level=None):
+    """helper function to either send a message to the logger,
+    or print the message if no logger is being used
+
+    Parameters
+    ----------
+    msg : str
+        message to either log or print
+    logger : logging.Logger
+        default is None, in which case the message is printed with print function.
+    level : str
+        name of logging level. If logger is not None, the corresponding
+        method of the logger will be used to log the message
+    """
+    if logger is None:
+        print(msg)
+    else:
+        log_method = getattr(logger, level)
+        log_method(msg)
