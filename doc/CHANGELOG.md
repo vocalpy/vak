@@ -62,6 +62,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in that vocalization that are not in the specified labelset [#118](https://github.com/NickleDave/vak/pull/118)
 - fix logging for `vak.prep` command [#132](https://github.com/NickleDave/vak/pull/132)
 
+### Removed
+- remove `vak.util.general.safe_truncate` function, no longer used 
+  [#137](https://github.com/NickleDave/vak/issues/137)
+
 ## [0.3.0a4]
 ### Added
 - warning when user runs `vak prep` with config.toml file that has a `[PREDICT]` 
