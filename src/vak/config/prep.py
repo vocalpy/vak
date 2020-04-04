@@ -7,17 +7,6 @@ from .converters import expanded_user_path, labelset_from_toml_value
 from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_format, is_spect_format
 
 
-def to_set(value):
-    tmp_set = set(value)
-    if len(tmp_set) == len(value):
-        return tmp_set
-    elif len(tmp_set) < len(value):
-        raise ValueError(
-            'Labelset should be set of unique labels for classes applied to segments in annotation, but '
-            f'found repeated elements: the input was {value} but the unique set is {tmp_set}'
-        )
-
-
 @attr.s
 class PrepConfig:
     """class to represent [PREP] section of config.ini file
