@@ -4,7 +4,7 @@ import numpy as np
 
 from .labels import from_df as labels_from_df
 from .splitalgos import brute_force
-from .splitalgos import validate
+from .splitalgos.validate import validate_durations_convert_nonnegative
 
 
 def train_test_dur_split_inds(durs,
@@ -54,7 +54,10 @@ def train_test_dur_split_inds(durs,
         )
 
     total_dur = sum(durs)
-    train_dur, val_dur, test_dur = validate.durs(train_dur, val_dur, test_dur, total_dur)
+    train_dur, val_dur, test_dur = validate_durations_convert_nonnegative(train_dur,
+                                                                          val_dur,
+                                                                          test_dur,
+                                                                          total_dur)
 
     if -1 not in (train_dur, val_dur, test_dur):
         total_target_dur = sum([dur for dur in (train_dur, test_dur, val_dur) if dur is not None])
@@ -125,7 +128,10 @@ def train_test_dur_split(vak_df,
 
     durs = vak_df['duration'].values
     total_dataset_dur = durs.sum()
-    train_dur, val_dur, test_dur = validate.durs(train_dur, val_dur, test_dur, total_dataset_dur)
+    train_dur, val_dur, test_dur = validate_durations_convert_nonnegative(train_dur,
+                                                                          val_dur,
+                                                                          test_dur,
+                                                                          total_dataset_dur)
 
     train_inds, val_inds, test_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
