@@ -41,8 +41,12 @@ def is_valid_set_of_spect_files(spect_paths,
         number of decimal places to keep when truncating the timebin duration calculated from
         the vector of time bins.
         Default is 3, i.e. assumes milliseconds is the last significant digit.
+
+    Other Parameters
+    ----------------
     logger : logging.Logger
-        that will be used to log validation. Default is None, in which case no logging is done.
+        instance created by vak.util.logging.get_logger.
+        Default is None, in which case no logging occurs.
 
     Returns
     -------
@@ -83,7 +87,7 @@ def is_valid_set_of_spect_files(spect_paths,
     spect_paths_bag = db.from_sequence(spect_paths)
 
     if logger is not None:
-        logger.info('validating spectrogram files')
+        logger.info('validating set of spectrogram files')
 
     with ProgressBar():
         path_freqbins_timebin_dur_tups = list(spect_paths_bag.map(_validate))
