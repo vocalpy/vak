@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     set of labels with a "range string", e.g. `range: 1-27, 29` [#115](https://github.com/NickleDave/vak/pull/115)
 - add logging module in `vak.util` [#132](https://github.com/NickleDave/vak/pull/132)
 - add converters and validators for dataset split durations [#143](https://github.com/NickleDave/vak/pull/143)
+- add `logger` parameters to `io` sub-package functions, so they can use logger created by `cli` functions
+  [#145](https://github.com/NickleDave/vak/pull/145)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
