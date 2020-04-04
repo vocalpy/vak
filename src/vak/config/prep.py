@@ -7,6 +7,33 @@ from .converters import expanded_user_path, labelset_from_toml_value
 from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_format, is_spect_format
 
 
+def duration_from_toml_value(value):
+    """converter for dataset split durations.
+    If value is -1, that value is returned -- specifies "use the remainder of the dataset".
+    Other values are converted to float when possible."""
+    if value == -1:
+        return value
+    else:
+        return float(value)
+
+
+def is_valid_duration(instance, attribute, value):
+    """validator for dataset split durations"""
+    if type(value) not in {int, float}:
+        raise TypeError(
+            f'invalid type for {attribute} of {instance}: {type(value)}. Type should be float or int.'
+        )
+
+    if value == -1:  # specifies "use the remainder of the dataset"
+        # so it is valid, but other negative values are not
+        return
+
+    if not value >= 0:
+        raise ValueError(
+            f'value specified for {attribute} of {instance} must be greater than or equal to zero, was {value}'
+        )
+
+
 @attr.s
 class PrepConfig:
     """class to represent [PREP] section of config.ini file
@@ -57,14 +84,14 @@ class PrepConfig:
                        validator=validators.optional(instance_of(set)),
                        default=None)
 
-    train_dur = attr.ib(converter=converters.optional(float),
-                        validator=validators.optional(instance_of(float)),
+    train_dur = attr.ib(converter=converters.optional(duration_from_toml_value),
+                        validator=validators.optional(is_valid_duration),
                         default=None)
-    val_dur = attr.ib(converter=converters.optional(float),
-                      validator=validators.optional(instance_of(float)),
+    val_dur = attr.ib(converter=converters.optional(duration_from_toml_value),
+                      validator=validators.optional(is_valid_duration),
                       default=None)
-    test_dur = attr.ib(converter=converters.optional(float),
-                       validator=validators.optional(instance_of(float)),
+    test_dur = attr.ib(converter=converters.optional(duration_from_toml_value),
+                       validator=validators.optional(is_valid_duration),
                        default=None)
 
 
