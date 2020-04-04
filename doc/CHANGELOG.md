@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#127](https://github.com/NickleDave/vak/pull/127)
   + uses `vak.util.general.range_str` so that user can specify 
     set of labels with a "range string", e.g. `range: 1-27, 29` [#115](https://github.com/NickleDave/vak/pull/115)
+- add logging module in `vak.util` [#132](https://github.com/NickleDave/vak/pull/132)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
@@ -57,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#109](https://github.com/NickleDave/vak/pull/109)
 - bug that prevented filtering out vocalizations from a dataset when labels are present 
   in that vocalization that are not in the specified labelset [#118](https://github.com/NickleDave/vak/pull/118)
+- fix logging for `vak.prep` command [#132](https://github.com/NickleDave/vak/pull/132)
 
 ## [0.3.0a4]
 ### Added
