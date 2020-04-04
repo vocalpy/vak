@@ -1,4 +1,3 @@
-import logging
 import os
 from pathlib import Path
 from datetime import datetime
@@ -7,6 +6,7 @@ import warnings
 import toml
 
 from .. import config
+from .. import util
 from ..io import dataframe
 from ..util import train_test_dur_split
 
@@ -85,9 +85,12 @@ def prep(toml_path):
     elif cfg.prep.output_dir is None:
         cfg.prep.output_dir = cfg.prep.data_dir
 
-    # ---- logging -----------------------------------------------------------------------------------------------------
-    logger = logging.getLogger(__name__)
-    logger.setLevel('INFO')
+    # ---- set up logging ----------------------------------------------------------------------------------------------
+    timenow = datetime.now().strftime('%y%m%d_%H%M%S')  # also used below for csv filename
+    logger = util.logging.get_logger(log_dst=cfg.prep.output_dir,
+                                     caller='prep',
+                                     timestamp=timenow,
+                                     logger_name=__name__)
 
     # ---- figure out what section we will be saving path in, and prefix of option name in that section ----------------
     # (e.g., if it's PREDICT section then the prefix will be 'predict' for 'predict_vds_path' option
@@ -113,9 +116,9 @@ def prep(toml_path):
             'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.ini file;'
             ' unable to determine which section to add paths to prepared datasets to'
         )
+    logger.info(f'determined that config file has section: {section}\nWill add csv_path option to that section')
 
     # ---- figure out file name ----------------------------------------------------------------------------------------
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     _, tail = os.path.split(cfg.prep.data_dir)
     csv_fname_stem = f'{tail}_prep_{timenow}'
     csv_path = os.path.join(cfg.prep.output_dir, f'{csv_fname_stem}.csv')
@@ -138,11 +141,13 @@ def prep(toml_path):
                                     cfg.prep.val_dur,
                                     cfg.prep.test_dur)]):
         # then we're not going to split
+        logger.info('will not split dataset')
         do_split = False
     else:
         if cfg.prep.val_dur is not None and cfg.prep.train_dur is None and cfg.prep.test_dur is None:
             raise ValueError('cannot specify only val_dur, unclear how to split dataset into training and test sets')
         else:
+            logger.info('will split dataset')
             do_split = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
@@ -168,6 +173,7 @@ def prep(toml_path):
         # add a split column, but assign everything to the same 'split'
         vak_df = dataframe.add_split_col(vak_df, split=section.lower())
 
+    logger.info(f'saving dataset as a .csv file: {csv_path}')
     vak_df.to_csv(csv_path)
 
     # use config and section from above to add csv_path to config.ini file
