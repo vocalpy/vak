@@ -6,6 +6,7 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 
 from ..util.general import timebin_dur_from_vec
+from ..util.logging import log_or_print
 from ..util.path import array_dict_from_path
 
 
@@ -45,8 +46,7 @@ def is_valid_set_of_spect_files(spect_paths,
     Other Parameters
     ----------------
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger.
-        Default is None, in which case no logging occurs.
+        instance created by vak.util.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -86,8 +86,7 @@ def is_valid_set_of_spect_files(spect_paths,
 
     spect_paths_bag = db.from_sequence(spect_paths)
 
-    if logger is not None:
-        logger.info('validating set of spectrogram files')
+    log_or_print('validating set of spectrogram files', logger=logger, level='info')
 
     with ProgressBar():
         path_freqbins_timebin_dur_tups = list(spect_paths_bag.map(_validate))

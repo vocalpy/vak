@@ -1,6 +1,5 @@
 """functions for dealing with vocalization datasets as pandas DataFrames"""
 from glob import glob
-import logging
 import os
 from pathlib import Path
 
@@ -12,6 +11,7 @@ import pandas as pd
 from .util import is_valid_set_of_spect_files, timebin_dur_from_spect_path
 from ..config import validators
 from ..util.annotation import source_annot_map, NO_ANNOTATION_FORMAT
+from ..util.logging import log_or_print
 from ..util.path import find_audio_fname, array_dict_from_path
 
 # constant, used for names of columns in DataFrame below
@@ -82,8 +82,7 @@ def to_dataframe(spect_format,
     Other Parameters
     ----------------
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger.
-        Default is None, in which case no logging occurs.
+        instance created by vak.util.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -156,11 +155,9 @@ def to_dataframe(spect_format,
                 extra_labels = labels_set - set(labelset)
                 # because there's some label in labels
                 # that's not in labels_mapping
-                if logger is not None:
-                    logger.info(
-                        f'Found labels, {extra_labels}, in {Path(spect_path).name}, '
-                        'that are not in labels_mapping. Skipping file.'
-                    )
+                log_or_print(f'Found labels, {extra_labels}, in {Path(spect_path).name}, '
+                             'that are not in labels_mapping. Skipping file.',
+                             logger=logger, level='info')
                 spect_annot_map.pop(spect_path)
                 continue
 
@@ -228,8 +225,7 @@ def to_dataframe(spect_format,
         return record
 
     spect_path_annot_tuples = db.from_sequence(spect_annot_map.items())
-    if logger is not None:
-        logger.info('creating pandas.DataFrame representing dataset from spectrogram files')
+    log_or_print('creating pandas.DataFrame representing dataset from spectrogram files', logger=logger, level='info')
     with ProgressBar():
         records = list(spect_path_annot_tuples.map(_to_record))
 
