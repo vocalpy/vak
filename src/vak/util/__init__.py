@@ -5,6 +5,7 @@ from . import dataset
 from . import entry_points
 from . import general
 from . import labels
+from . import logging
 from . import path
 from . import splitalgos
 from . import spect
