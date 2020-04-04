@@ -1,5 +1,4 @@
 from datetime import datetime
-import logging
 import os
 
 from crowsetta import Transcriber
@@ -8,6 +7,7 @@ import numpy as np
 from . import audio, spect
 from ..util import annotation
 from ..util.annotation import source_annot_map
+from ..util.logging import log_or_print
 
 
 def from_files(data_dir,
@@ -62,8 +62,7 @@ def from_files(data_dir,
     Other Parameters
     ----------------
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger.
-        Default is None, in which case no logging occurs.
+        instance created by vak.util.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -128,10 +127,8 @@ def from_files(data_dir,
 
     # ------ if making dataset from audio files, need to make into array files first! ----------------------------------
     if audio_format:
-        if logger is not None:
-            logger.info(
-                f'making array files containing spectrograms from audio files in: {data_dir}'
-        )
+        log_or_print(f'making array files containing spectrograms from audio files in: {data_dir}',
+                     logger=logger, level='info')
         audio_files = audio.files_from_dir(data_dir, audio_format)
         if annot_list:
             audio_annot_map = source_annot_map(audio_files, annot_list)
@@ -147,11 +144,10 @@ def from_files(data_dir,
                     if not annot_labelset.issubset(set(labelset)):
                         # because there's some label in labels that's not in labelset
                         audio_annot_map.pop(audio_file)
-                        if logger is not None:
-                            logger.info(
-                                f'found labels in {annot.annot_file} for {audio_file} not in labels_mapping, '
-                                f'skipping audio file: {audio_file}'
-                        )
+                        log_or_print(
+                            f'found labels in {annot.annot_file} for {audio_file} not in labels_mapping, '
+                             f'skipping audio file: {audio_file}',
+                            logger=logger, level='info')
                 audio_files = []
                 annot_list = []
                 for k,v in audio_annot_map.items():
@@ -182,16 +178,10 @@ def from_files(data_dir,
 
     if spect_files:
         from_files_kwargs['spect_files'] = spect_files
-        if logger is not None:
-            logger.info(
-                f'creating datasetfrom spectrogram files in: {output_dir}'
-            )
+        log_or_print(f'creating datasetfrom spectrogram files in: {output_dir}', logger=logger, level='info')
     else:
         from_files_kwargs['spect_dir'] = data_dir
-        if logger is not None:
-            logger.info(
-                f'creating dataset from spectrogram files in: {data_dir}'
-            )
+        log_or_print(f'creating dataset from spectrogram files in: {data_dir}', logger=logger, level='info')
 
     vak_df = spect.to_dataframe(**from_files_kwargs, logger=logger)
     return vak_df
