@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   + uses `vak.util.general.range_str` so that user can specify 
     set of labels with a "range string", e.g. `range: 1-27, 29` [#115](https://github.com/NickleDave/vak/pull/115)
 - add logging module in `vak.util` [#132](https://github.com/NickleDave/vak/pull/132)
+- add converters and validators for dataset split durations [#143](https://github.com/NickleDave/vak/pull/143)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
@@ -54,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rewrite `WindowDataset` to use `annotation.from_df` function [#113](https://github.com/NickleDave/vak/pull/113)
 - change default value for util.general.timebin_dur_from_vec parameter n_decimals_trunc from 3 to 5
   [#136](https://github.com/NickleDave/vak/pull/136)
+- rewrite + rename `splitalgos.validate.durs` [#143](https://github.com/NickleDave/vak/pull/143)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
@@ -61,10 +63,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - bug that prevented filtering out vocalizations from a dataset when labels are present 
   in that vocalization that are not in the specified labelset [#118](https://github.com/NickleDave/vak/pull/118)
 - fix logging for `vak.prep` command [#132](https://github.com/NickleDave/vak/pull/132)
+- fix how dataset duration splits are validated [#143](https://github.com/NickleDave/vak/pull/143), 
+  see issue [#140](https://github.com/NickleDave/vak/issues/140) for details.
 
 ### Removed
 - remove `vak.util.general.safe_truncate` function, no longer used 
   [#137](https://github.com/NickleDave/vak/issues/137)
+- remove redundant validation of split durations in `util.split` 
+  [#143](https://github.com/NickleDave/vak/pull/143)
 
 ## [0.3.0a4]
 ### Added
