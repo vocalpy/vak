@@ -62,11 +62,10 @@ def train(toml_path):
     shutil.copy(toml_path, results_path)
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
-    logfile_name = results_path.joinpath('logfile_from_train_' + timenow + '.log')
-    logger = logging.getLogger(__name__)
-    logger.setLevel('INFO')
-    logger.addHandler(logging.FileHandler(logfile_name))
-    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger = util.logging.get_logger(log_dst=results_path,
+                                     caller='train',
+                                     timestamp=timenow,
+                                     logger_name=__name__)
     logger.info('Logging results to {}'.format(results_path))
 
     timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
