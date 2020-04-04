@@ -9,9 +9,9 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
+from .util import is_valid_set_of_spect_files, timebin_dur_from_spect_path
 from ..config import validators
 from ..util.annotation import source_annot_map, NO_ANNOTATION_FORMAT
-from ..util.general import timebin_dur_from_vec
 from ..util.path import find_audio_fname, array_dict_from_path
 
 # constant, used for names of columns in DataFrame below
@@ -160,47 +160,24 @@ def to_dataframe(spect_format,
                 spect_annot_map.pop(spect_path)
                 continue
 
-    # ---- validate spect_annot_map ------------------------------------------------------------------------------------
+    # ---- validate set of spectrogram files ---------------------------------------------------------------------------
     # regardless of whether we just made it or user supplied it
-    for spect_path in list(spect_annot_map.keys()):  # iterate over keys so we can pop from dict without RuntimeError
-        spect_dict = array_dict_from_path(spect_path, spect_format)
+    spect_paths = list(spect_annot_map.keys())
+    is_valid_set_of_spect_files(spect_paths,
+                                spect_format,
+                                freqbins_key,
+                                timebins_key,
+                                spect_key,
+                                n_decimals_trunc,
+                                logger=logger)
 
-        if spect_key not in spect_dict:
-            raise KeyError(
-                f"Did not find a spectrogram in file '{spect_path.name}' "
-                f"using spect_key '{spect_key}'."
-            )
-
-        if 'freq_bins' not in locals() and 'time_bins' not in locals():
-            freq_bins = spect_dict[freqbins_key]
-            time_bins = spect_dict[timebins_key]
-            timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
-        else:
-            if not np.array_equal(spect_dict[freqbins_key], freq_bins):
-                raise ValueError(
-                    f'freq_bins in {spect_path.name} does not match '
-                    'freq_bins from other spectrogram files'
-                )
-            curr_file_timebin_dur = timebin_dur_from_vec(time_bins,
-                                                         n_decimals_trunc)
-            if not np.allclose(curr_file_timebin_dur, timebin_dur):
-                raise ValueError(
-                    f'duration of timebin in file {spect_path.name} did not match '
-                    'duration of timebin from other array files.'
-                )
-
-        # number of freq. bins should equal number of rows
-        if spect_dict[freqbins_key].shape[-1] != spect_dict[spect_key].shape[0]:
-            raise ValueError(
-                f'length of frequency bins in {spect_path.name} '
-                'does not match number of rows in spectrogram'
-            )
-        # number of time bins should equal number of columns
-        if spect_dict[timebins_key].shape[-1] != spect_dict[spect_key].shape[1]:
-            raise ValueError(
-                f'length of time_bins in {spect_path.name} '
-                f'does not match number of columns in spectrogram'
-            )
+    # now that we have validated that duration of time bins is consistent across files, we can just open one file
+    # to get that time bin duration. This way validation function has no side effects, like returning time bin, and
+    # this is still relatively fast compared to looping through all files again
+    timebin_dur = timebin_dur_from_spect_path(spect_paths[0],
+                                              spect_format,
+                                              timebins_key,
+                                              n_decimals_trunc)
 
     # ---- actually make the dataframe ---------------------------------------------------------------------------------
     # this is defined here so all other arguments to 'to_dataframe' are in scope
