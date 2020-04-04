@@ -126,6 +126,7 @@ def train_test_dur_split(vak_df,
     """
     labels = labels_from_df(vak_df)
 
+    durs = vak_df['duration'].values
     train_inds, val_inds, test_inds = train_test_dur_split_inds(durs=durs,
                                                                 labels=labels,
                                                                 labelset=labelset,
