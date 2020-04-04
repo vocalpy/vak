@@ -2,7 +2,7 @@ import random
 import itertools
 import logging
 
-from . import validate
+from .validate import validate_durations_convert_nonnegative
 
 
 def brute_force(durs,
@@ -55,7 +55,7 @@ def brute_force(durs,
     logger.setLevel('INFO')
 
     sum_durs = sum(durs)
-    train_dur, val_dur, test_dur = validate.durs(train_dur, val_dur, test_dur, sum_durs)
+    train_dur, val_dur, test_dur = validate_durations_convert_nonnegative(train_dur, val_dur, test_dur, sum_durs)
 
     if -1 not in (train_dur, test_dur):
         total_target_dur = sum([dur for dur in (train_dur, val_dur, test_dur) if dur is not None])
