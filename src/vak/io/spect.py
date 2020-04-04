@@ -142,10 +142,10 @@ def to_dataframe(spect_format,
             spect_annot_map = dict((spect_path, None)
                                    for spect_path in spect_files)
 
-    # ---- validate spect_annot_map ------------------------------------------------------------------------------------
-    # regardless of whether we just made it or user supplied it
-    for spect_path in list(spect_annot_map.keys()):  # iterate over keys so we can pop from dict without RuntimeError
-        if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
+    # --- filter by labelset -------------------------------------------------------------------------------------------
+    if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
+        for spect_path in list(
+                spect_annot_map.keys()):  # iterate over keys so we can pop from dict without RuntimeError
             annot = spect_annot_map[spect_path]
             labels_set = set(annot.seq.labels)
             # below, set(labels_mapping) is a set of that dict's keys
@@ -160,6 +160,9 @@ def to_dataframe(spect_format,
                 spect_annot_map.pop(spect_path)
                 continue
 
+    # ---- validate spect_annot_map ------------------------------------------------------------------------------------
+    # regardless of whether we just made it or user supplied it
+    for spect_path in list(spect_annot_map.keys()):  # iterate over keys so we can pop from dict without RuntimeError
         spect_dict = array_dict_from_path(spect_path, spect_format)
 
         if spect_key not in spect_dict:
