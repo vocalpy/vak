@@ -81,7 +81,7 @@ def _files_from_dir(dir_path, ext):
     return files
 
 
-def timebin_dur_from_vec(time_bins, n_decimals_trunc=3):
+def timebin_dur_from_vec(time_bins, n_decimals_trunc=5):
     """compute duration of a time bin, given the
     vector of time bin centers associated with a spectrogram
 
@@ -91,8 +91,7 @@ def timebin_dur_from_vec(time_bins, n_decimals_trunc=3):
         vector of times in spectrogram, where each value is a bin center.
     n_decimals_trunc : int
         number of decimal places to keep when truncating the timebin duration calculated from
-        the spectrogram arrays.
-        Default is 3, i.e. assumes milliseconds is the last significant digit.
+        the spectrogram arrays. Default is 5.
 
     Returns
     -------
