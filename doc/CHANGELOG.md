@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rewrite `vak.util.labels.from_df` to use `vak.util.annotation.from_df`
   [#131](https://github.com/NickleDave/vak/pull/131)
 - rewrite `WindowDataset` to use `annotation.from_df` function [#113](https://github.com/NickleDave/vak/pull/113)
+- change default value for util.general.timebin_dur_from_vec parameter n_decimals_trunc from 3 to 5
+  [#136](https://github.com/NickleDave/vak/pull/136)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
