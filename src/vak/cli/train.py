@@ -165,6 +165,9 @@ def train(toml_path):
         logger.info(
             f'training {model_name}'
         )
+        summary_writer = util.summary_writer.get_summary_writer(log_dir=results_model_root,
+                                                                filename_suffix=model_name)
+        model.summary_writer = summary_writer
         model.fit(train_data=train_data,
                   num_epochs=cfg.train.num_epochs,
                   ckpt_root=ckpt_root,
