@@ -42,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or simply prints the message if there is no logger [#147](https://github.com/NickleDave/vak/pull/147)
 - add `logger` attribute to `vak.Model` class, used to log if not None 
   [#148](https://github.com/NickleDave/vak/pull/148)
+- add Tensorboard `SummaryWriter` to `vak.Model` class so there is an `events` file recording each 
+  model's training history [#149](https://github.com/NickleDave/vak/pull/149)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
