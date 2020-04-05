@@ -32,7 +32,7 @@ def find():
         yield entrypoint.name, entrypoint.load()
 
 
-def from_model_config_map(model_config_map, num_classes, input_shape):
+def from_model_config_map(model_config_map, num_classes, input_shape, logger=None):
     """get models that are ready to train, given their names and configurations.
 
     Given a dictionary that maps model names to configurations,
@@ -48,6 +48,8 @@ def from_model_config_map(model_config_map, num_classes, input_shape):
     input_shape : tuple, list
         e.g. (channels, height, width).
         Batch size is not required for input shape.
+    logger : logging.Logger
+        instance created by vak.util.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -66,6 +68,6 @@ def from_model_config_map(model_config_map, num_classes, input_shape):
         try:
             model = MODELS[model_name].from_config(config=model_config)
         except KeyError:
-            model = MODELS[f'{model_name}Model'].from_config(config=model_config)
+            model = MODELS[f'{model_name}Model'].from_config(config=model_config, logger=logger)
         models_map[model_name] = model
     return models_map
