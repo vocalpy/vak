@@ -66,13 +66,17 @@ class Model:
                  loss,
                  optimizer,
                  metrics,
-                 logger=None):
+                 logger=None,
+                 summary_writer=None,
+                 global_step=0):
         self.network = network
         self.optimizer = optimizer
         self.loss = loss
         self.metrics = metrics
         self.device = None
         self.logger = logger
+        self.summary_writer = summary_writer
+        self.global_step = global_step  # used for summary writer
 
     def _train(self, train_data):
         """helper method, called by the fit method on each epoch.
@@ -97,6 +101,10 @@ class Model:
             progress_bar.set_description(
                 f'batch {ind}, loss: {loss.item():.4f}'
             )
+
+            if self.summary_writer is not None:
+                self.summary_writer.add_scalar('loss/train', loss.item(), self.global_step)
+            self.global_step += 1
 
     def _eval(self, eval_data):
         """helper method, called by the evaluate method, and called by the fit
@@ -267,8 +275,12 @@ class Model:
                 if epoch % val_step == 0:
                     log_or_print('computing metrics on validation set', logger=self.logger, level='info')
                     metric_vals = self._eval(val_data)
-                    log_or_print(msg=', '.join([f'{k}: {v:.4f}' for k, v in metric_vals.items()]),
+                    log_or_print(msg=', '.join([f'{metric_name}: {metric_value:.4f}'
+                                                for metric_name, metric_value in metric_vals.items()]),
                                  logger=self.logger, level='info')
+                    if self.summary_writer is not None:
+                        for metric_name, metric_value in metric_vals.items():
+                            self.summary_writer.add_scalar(f'{metric_name}/val', metric_value, self.global_step)
 
                     if patience or epoch % checkpoint_step == 0:
                         epoch_acc = metric_vals['acc']
