@@ -6,6 +6,7 @@ import torch.optim
 from tqdm import tqdm
 
 from ..util.general import get_default_device
+from ..util.logging import log_or_print
 
 
 class Model:
@@ -64,12 +65,14 @@ class Model:
                  network,
                  loss,
                  optimizer,
-                 metrics):
+                 metrics,
+                 logger=None):
         self.network = network
         self.optimizer = optimizer
         self.loss = loss
         self.metrics = metrics
         self.device = None
+        self.logger = logger
 
     def _train(self, train_data):
         """helper method, called by the fit method on each epoch.
@@ -252,7 +255,7 @@ class Model:
         self.network.to(self.device)
 
         for epoch in range(1, num_epochs + 1):
-            print(f'epoch {epoch} / {num_epochs}')
+            log_or_print(f'epoch {epoch} / {num_epochs}', logger=self.logger, level='info')
             self._train(train_data)
 
             if single_ckpt:
@@ -262,11 +265,10 @@ class Model:
 
             if val_data is not None:
                 if epoch % val_step == 0:
-                    print('computing metrics on validation set')
+                    log_or_print('computing metrics on validation set', logger=self.logger, level='info')
                     metric_vals = self._eval(val_data)
-                    print(
-                        ', '.join([f'{k}: {v:.4f}' for k, v in metric_vals.items()])
-                    )
+                    log_or_print(msg=', '.join([f'{k}: {v:.4f}' for k, v in metric_vals.items()]),
+                                 logger=self.logger, level='info')
 
                     if patience or epoch % checkpoint_step == 0:
                         epoch_acc = metric_vals['acc']
@@ -274,15 +276,14 @@ class Model:
                             if epoch_acc > max_val_acc:
                                 max_val_acc = metric_vals['acc']
                                 patience_counter = 0
-                                print(
-                                    f'accuracy improved, saving checkpoint'
-                                )
+                                log_or_print('accuracy improved, saving checkpoint', logger=self.logger, level='info')
                                 self.save(ckpt_path, epoch)
                             else:
                                 patience_counter += 1
                                 if patience_counter > patience:
-                                    print(
-                                        f'early stopping, validation accuracy has not improved in {patience} epochs')
+                                    log_or_print(
+                                        f'early stopping, validation accuracy has not improved in {patience} epochs',
+                                        logger=self.logger, level='info')
                                     if not save_best_only:
                                         self.save(ckpt_path, epoch)
                                 break
@@ -314,7 +315,7 @@ class Model:
         return self._predict(pred_data)
 
     @classmethod
-    def from_config(cls, config):
+    def from_config(cls, config, logger=None):
         """any model that inherits from this class should do whatever it needs to
         in this factory method to create the network, optimizer, and loss, and
         then pass those to the init function
@@ -325,6 +326,9 @@ class Model:
             presumably mapping 'network', 'optimizer' and 'loss' to kwargs that
             determine parameters for each of those, e.g. dropout rate for the
             network, learning rate for the optimizer, etc.
+        logger : logging.Logger
+            instance returned by vak.util.logging.get_logger.
+            Default is None, in which case messages are just sent to print function.
 
         Returns
         -------

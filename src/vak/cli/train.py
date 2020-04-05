@@ -1,8 +1,6 @@
 import json
-import logging
 from pathlib import Path
 import shutil
-import sys
 from datetime import datetime
 
 import joblib
@@ -156,7 +154,8 @@ def train(toml_path):
     models_map = models.from_model_config_map(
         model_config_map,
         num_classes=len(labelmap),
-        input_shape=train_dataset.shape
+        input_shape=train_dataset.shape,
+        logger=logger,
     )
     for model_name, model in models_map.items():
         results_model_root = results_path.joinpath(model_name)
