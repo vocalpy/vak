@@ -294,11 +294,21 @@ class Model:
                                 patience_counter += 1
                                 if patience_counter > patience:
                                     log_or_print(
-                                        f'early stopping, validation accuracy has not improved in {patience} epochs',
+                                        'stopping training early, '
+                                        f'validation accuracy has not improved in {patience} epochs',
                                         logger=self.logger, level='info')
                                     if not save_best_only:
+                                        log_or_print(
+                                            'save_best_only is False, will save model from this epoch',
+                                            logger=self.logger, level='info')
                                         self.save(ckpt_path, epoch)
-                                break
+                                    break
+                                else:
+                                    log_or_print(
+                                        f'validation accuracy has not improved in {patience_counter} epochs. '
+                                        f'Not saving model for this epoch.',
+                                        logger=self.logger, level='info')
+
                         elif epoch % checkpoint_step == 0:
                             if save_best_only:
                                 if epoch_acc < max_val_acc:
