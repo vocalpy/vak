@@ -208,6 +208,9 @@ class Model:
             'optimizer_state_dict': self.optimizer.state_dict(),
         }
         ckpt.update(**kwargs)
+        log_or_print(
+            f'saving checkpoint for epoch {epoch} at:\n{ckpt_path} ',
+            logger=self.logger, level='info')
         torch.save(ckpt, ckpt_path)
 
     def load(self, ckpt_path):
@@ -222,6 +225,9 @@ class Model:
         ckpt_path : str, Path
             path including filename from which to load checkpoint
         """
+        log_or_print(
+            f'Loading checkpoint from:\n{ckpt_path} ',
+            logger=self.logger, level='info')
         ckpt = torch.load(ckpt_path)
         self.network.load_state_dict(ckpt['network_state_dict'])
         self.optimizer.load_state_dict(ckpt['optimizer_state_dict'])
@@ -288,24 +294,45 @@ class Model:
                             if epoch_acc > max_val_acc:
                                 max_val_acc = metric_vals['acc']
                                 patience_counter = 0
-                                log_or_print('accuracy improved, saving checkpoint', logger=self.logger, level='info')
+                                log_or_print('accuracy improved', logger=self.logger, level='info')
                                 self.save(ckpt_path, epoch)
                             else:
                                 patience_counter += 1
                                 if patience_counter > patience:
                                     log_or_print(
-                                        f'early stopping, validation accuracy has not improved in {patience} epochs',
+                                        'stopping training early, '
+                                        f'validation accuracy has not improved in {patience} epochs',
                                         logger=self.logger, level='info')
                                     if not save_best_only:
+                                        log_or_print(
+                                            'save_best_only is False, will save model from this epoch',
+                                            logger=self.logger, level='info')
                                         self.save(ckpt_path, epoch)
-                                break
+                                    break
+                                else:
+                                    log_or_print(
+                                        f'validation accuracy has not improved in {patience_counter} epochs. '
+                                        f'Not saving model for this epoch.',
+                                        logger=self.logger, level='info')
+
                         elif epoch % checkpoint_step == 0:
+                            log_or_print(
+                                f'this epoch {epoch} is a checkpoint epoch.',
+                                logger=self.logger, level='info')
                             if save_best_only:
+                                log_or_print('save_best_only is True.', logger=self.logger, level='info')
                                 if epoch_acc < max_val_acc:
+                                    log_or_print(
+                                        f'accuracy on this epoch, {epoch}, is less than maximum validation accuracy '
+                                        f'so far, {max_val_acc}. Not saving checkpoint.',
+                                        logger=self.logger, level='info')
                                     continue
                             self.save(ckpt_path, epoch)
 
             elif epoch % checkpoint_step == 0:  # but we don't have validation data
+                log_or_print(
+                    f'this epoch, {epoch}, is a checkpoint epoch.',
+                    logger=self.logger, level='info')
                 self.save(ckpt_path, epoch)
 
     def evaluate(self,
