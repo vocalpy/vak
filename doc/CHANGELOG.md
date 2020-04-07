@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#148](https://github.com/NickleDave/vak/pull/148)
 - add Tensorboard `SummaryWriter` to `vak.Model` class so there is an `events` file recording each 
   model's training history [#149](https://github.com/NickleDave/vak/pull/149)
+- add additional logging to `Model` class [#153](https://github.com/NickleDave/vak/pull/153)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
@@ -77,6 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   see issue [#140](https://github.com/NickleDave/vak/issues/140) for details.
 - fix error due to calling a Path attribute on a string [#144](https://github.com/NickleDave/vak/pull/144)
   as identified in issue [#123](https://github.com/NickleDave/vak/issues/123)
+- fix indent error in `Model.fit` method (see issue [#151](https://github.com/NickleDave/vak/issues/151)) 
+  that stopped training early [#153](https://github.com/NickleDave/vak/pull/153) 
 
 ### Removed
 - remove `vak.util.general.safe_truncate` function, no longer used 
