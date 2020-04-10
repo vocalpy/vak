@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
   [#107](https://github.com/NickleDave/vak/pull/107)
-- use `TweetyNet` version 0.3.1 [#120](https://github.com/NickleDave/vak/pull/120)
+- bump minimum version of `TweetyNet` to 0.3.1 in [#120](https://github.com/NickleDave/vak/pull/120)
   + so that `yarden2annot` function from `TweetyNet` will return annotation labels as string, not int
 - rewrite `vak.util.annotation.source_annot_map` so that it maps annotations *to* source files, not 
   vice versa [#130](https://github.com/NickleDave/vak/pull/130)
@@ -67,7 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rewrite + rename `splitalgos.validate.durs` [#143](https://github.com/NickleDave/vak/pull/143)
 - parallelize validation of spectrogram files, so it's faster on large datasets 
   [#144](https://github.com/NickleDave/vak/pull/144)
-
+- bump minimum version of `TweetyNet` to 0.4.0 in [#155](https://github.com/NickleDave/vak/pull/155)
+  + so `TweetyNetModel.from_class` method accepts `logger` argument
+  
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
   [#109](https://github.com/NickleDave/vak/pull/109)
