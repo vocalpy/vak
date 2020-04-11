@@ -175,5 +175,4 @@ def train(toml_path):
                   val_step=cfg.train.val_step,
                   ckpt_step=cfg.train.ckpt_step,
                   patience=cfg.train.patience,
-                  single_ckpt=cfg.train.save_only_single_checkpoint_file,
                   device=cfg.train.device)

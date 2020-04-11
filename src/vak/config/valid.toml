@@ -44,7 +44,6 @@ shuffle = true
 val_step = 1
 ckpt_step = 1
 patience = 4
-save_only_single_checkpoint_file = true
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 
 [LEARNCURVE]
@@ -56,7 +55,6 @@ normalize_spectrograms = true
 shuffle = true
 val_step = 1
 ckpt_step = 1
-save_only_single_checkpoint_file = true
 train_set_durs = [ 4, 6 ]
 replicates = 2
 csv_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
