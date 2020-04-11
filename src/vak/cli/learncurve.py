@@ -17,8 +17,8 @@ def learning_curve(train_vds_path,
                    num_epochs,
                    config_file,
                    val_vds_path=None,
-                   val_error_step=None,
-                   checkpoint_step=None,
+                   val_step=None,
+                   ckpt_step=None,
                    patience=None,
                    save_only_single_checkpoint_file=True,
                    normalize_spectrograms=False,
@@ -59,11 +59,11 @@ def learning_curve(train_vds_path,
         path to Dataset that represents validation data.
         Default is None, in which case accuracy is not measured on validation set
         during training.
-    val_error_step : int
+    val_step : int
         step/epoch at which to estimate accuracy using validation set.
         Default is None, in which case accuracy is not measured on validation set
         during training.
-    checkpoint_step : int
+    ckpt_step : int
         step/epoch at which to save to checkpoint file.
         Default is None, in which case checkpoint is only saved at the last epoch.
     patience : int
@@ -96,15 +96,15 @@ def learning_curve(train_vds_path,
     Saves results in root_results_dir and adds some options to config_file.
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    if val_error_step and val_vds_path is None:
+    if val_step and val_vds_path is None:
         raise ValueError(
-            f"val_error_step set to {val_error_step} but val_vds_path is None; please provide a path to "
-            f"a validation data set that can be used to check error rate very {val_error_step} steps"
+            f"val_step set to {val_step} but val_vds_path is None; please provide a path to "
+            f"a validation data set that can be used to check error rate very {val_step} steps"
         )
 
-    if val_vds_path and val_error_step is None:
+    if val_vds_path and val_step is None:
         raise ValueError(
-            "val_vds_path was provided but val_error_step is None; please provide a value for val_error_step"
+            "val_vds_path was provided but val_step is None; please provide a value for val_step"
         )
 
     max_train_set_dur = np.max(train_set_durs)

@@ -41,9 +41,9 @@ def train(toml_path):
 
     dataset_df = pd.read_csv(cfg.train.csv_path)
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    if cfg.train.val_error_step and not dataset_df['split'].str.contains('val').any():
+    if cfg.train.val_step and not dataset_df['split'].str.contains('val').any():
         raise ValueError(
-            f"val_error_step set to {cfg.train.val_error_step} but dataset does not contain a validation set; "
+            f"val_step set to {cfg.train.val_step} but dataset does not contain a validation set; "
             f"please run `vak prep` with a config.ini file that specifies a duration for the validation set."
         )
 
@@ -125,7 +125,7 @@ def train(toml_path):
     )
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
-    if cfg.train.val_error_step:
+    if cfg.train.val_step:
         val_dataset = WindowDataset.from_csv(csv_path=cfg.train.csv_path,
                                              split='val',
                                              labelmap=labelmap,
@@ -145,7 +145,7 @@ def train(toml_path):
         )
 
         logger.info(
-            f'will measure error on validation set every {cfg.train.val_error_step} steps of training'
+            f'will measure error on validation set every {cfg.train.val_step} steps of training'
         )
     else:
         val_data = None
@@ -172,8 +172,8 @@ def train(toml_path):
                   num_epochs=cfg.train.num_epochs,
                   ckpt_root=ckpt_root,
                   val_data=val_data,
-                  val_step=cfg.train.val_error_step,
-                  checkpoint_step=cfg.train.checkpoint_step,
+                  val_step=cfg.train.val_step,
+                  ckpt_step=cfg.train.ckpt_step,
                   patience=cfg.train.patience,
                   single_ckpt=cfg.train.save_only_single_checkpoint_file,
                   device=cfg.train.device)

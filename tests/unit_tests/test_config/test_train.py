@@ -58,20 +58,20 @@ class TestParseTrainConfig(unittest.TestCase):
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
         self.assertTrue(train_config_obj.val_vds_path is None)
 
-    def test_val_error_step_default(self):
-        self.config_obj.remove_option('TRAIN', 'val_error_step')
+    def test_val_step_default(self):
+        self.config_obj.remove_option('TRAIN', 'val_step')
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_obj.val_error_step is None)
+        self.assertTrue(train_config_obj.val_step is None)
 
     def test_save_only_single_checkpoint_default(self):
         self.config_obj.remove_option('TRAIN', 'save_only_single_checkpoint_file')
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
         self.assertTrue(train_config_obj.save_only_single_checkpoint_file is True)
 
-    def test_checkpoint_step_default(self):
-        self.config_obj.remove_option('TRAIN', 'checkpoint_step')
+    def test_ckpt_step_default(self):
+        self.config_obj.remove_option('TRAIN', 'ckpt_step')
         train_config_obj = vak.config.train.parse_train_config(self.config_obj, self.config_file)
-        self.assertTrue(train_config_obj.checkpoint_step is None)
+        self.assertTrue(train_config_obj.ckpt_step is None)
 
     def test_patience_default(self):
         self.config_obj.remove_option('TRAIN', 'patience')

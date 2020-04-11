@@ -24,8 +24,8 @@ root_results_dir = "./tests/test_data/results/train"
 batch_size = 11
 num_epochs = 2
 normalize_spectrograms = true
-val_error_step = 1
-checkpoint_step = 1
+val_step = 1
+ckpt_step = 1
 save_only_single_checkpoint_file = true
 csv_path = "tests/test_data/prep/train/032312_prep_200209_123939.csv"
 
