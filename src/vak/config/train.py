@@ -55,9 +55,6 @@ class TrainConfig:
         number of validation steps to wait without performance on the
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
-    save_only_single_checkpoint_file : bool
-        if True, save only one checkpoint file instead of separate files every time
-        we save. Default is True.
     """
     # required
     models = attr.ib(converter=comma_separated_list,
@@ -90,8 +87,6 @@ class TrainConfig:
                               validator=validators.optional(instance_of(int)), default=None)
     patience = attr.ib(converter=converters.optional(int),
                        validator=validators.optional(instance_of(int)), default=None)
-    save_only_single_checkpoint_file = attr.ib(converter=bool_from_str,
-                                               validator=instance_of(bool), default=True)
 
 
 REQUIRED_TRAIN_OPTIONS = [
