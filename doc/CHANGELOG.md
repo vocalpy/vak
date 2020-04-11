@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add Tensorboard `SummaryWriter` to `vak.Model` class so there is an `events` file recording each 
   model's training history [#149](https://github.com/NickleDave/vak/pull/149)
 - add additional logging to `Model` class [#153](https://github.com/NickleDave/vak/pull/153)
+- add initial tutorial on using `vak` for automated annotation of vocalizations 
+  [#156](https://github.com/NickleDave/vak/pull/156)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
