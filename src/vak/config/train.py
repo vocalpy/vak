@@ -42,14 +42,19 @@ class TrainConfig:
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     val_step : int
-        step/epoch at which to estimate accuracy using validation set.
+        Step on which to estimate accuracy using validation set.
+        If val_step is n, then validation is carried out every time
+        the global step / n is a whole number, i.e., when val_step modulo the global step is 0.
         Default is None, in which case no validation is done.
     ckpt_step : int
-        step/epoch at which to save to checkpoint file.
+        Step on which to save to checkpoint file.
+        If ckpt_step is n, then a checkpoint is saved every time
+        the global step / n is a whole number, i.e., when ckpt_step modulo the global step is 0.
         Default is None, in which case checkpoint is only saved at the last epoch.
     patience : int
-        number of epochs to wait without the error dropping before stopping the
-        training. Default is None, in which case training continues for num_epochs
+        number of validation steps to wait without performance on the
+        validation set improving before stopping the training.
+        Default is None, in which case training only stops after the specified number of epochs.
     save_only_single_checkpoint_file : bool
         if True, save only one checkpoint file instead of separate files every time
         we save. Default is True.
