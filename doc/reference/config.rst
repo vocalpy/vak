@@ -122,15 +122,15 @@ Duration of subsets of training data used for learning curve
 
     num_epochs = 2
 
-7. val_error_step
+7. val_step
 step/epoch at which to estimate accuracy using validation set.
 Default is None, in which case no validation is done.
 
 .. code-block:: console
 
-    val_error_step = 1
+    val_step = 1
 
-8. checkpoint_step = 1
+8. ckpt_step = 1
 step/epoch at which to save to checkpoint file.
 Default is None, in which case checkpoint is only saved at the last epoch.
 

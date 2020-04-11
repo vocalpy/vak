@@ -144,8 +144,8 @@ use_train_subsets_from_previous_run = No
 previous_run_path = /home/user/data/subdir/results_
 normalize_spectrograms = Yes
 n_max_iter = 18000
-val_error_step = 150
-checkpoint_step = 600
+val_step = 150
+ckpt_step = 600
 save_only_single_checkpoint_file = True
 patience = None
 replicates = 5
@@ -178,13 +178,13 @@ replicates = 5
     when estimating accuracy.
 `n_max_iter` : int  
     Number of iterations (AKA epochs) to train.  
-`val_error_step` : int  
+`val_step` : int  
     step at which to calculate validation error.  
-    Every time iter modulo val_error_step is zero, the validation error
+    Every time iter modulo val_step is zero, the validation error
     will be calculated.
-`checkpoint_step` : int  
+`ckpt_step` : int  
     step at which to save checkpoint.  
-    Every time iter modulo checkpoint_step is zero, a checkpoint will be
+    Every time iter modulo ckpt_step is zero, a checkpoint will be
     saved.
 `save_only_single_checkpoint_file` : bool
     if 'Yes' or 'True', overwrite checkpoint file at each checkpoint step 

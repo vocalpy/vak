@@ -41,10 +41,10 @@ class TrainConfig:
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    val_error_step : int
+    val_step : int
         step/epoch at which to estimate accuracy using validation set.
         Default is None, in which case no validation is done.
-    checkpoint_step : int
+    ckpt_step : int
         step/epoch at which to save to checkpoint file.
         Default is None, in which case checkpoint is only saved at the last epoch.
     patience : int
@@ -79,9 +79,9 @@ class TrainConfig:
     device = attr.ib(validator=instance_of(str), default=get_default_device())
     shuffle = attr.ib(converter=bool_from_str, validator=instance_of(bool), default=True)
 
-    val_error_step = attr.ib(converter=converters.optional(int),
+    val_step = attr.ib(converter=converters.optional(int),
                              validator=validators.optional(instance_of(int)), default=None)
-    checkpoint_step = attr.ib(converter=converters.optional(int),
+    ckpt_step = attr.ib(converter=converters.optional(int),
                               validator=validators.optional(instance_of(int)), default=None)
     patience = attr.ib(converter=converters.optional(int),
                        validator=validators.optional(instance_of(int)), default=None)

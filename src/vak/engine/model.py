@@ -238,7 +238,7 @@ class Model:
             ckpt_root,
             val_data=None,
             val_step=1,
-            checkpoint_step=1,
+            ckpt_step=1,
             save_best_only=True,
             patience=None,
             single_ckpt=True,
@@ -288,7 +288,7 @@ class Model:
                         for metric_name, metric_value in metric_vals.items():
                             self.summary_writer.add_scalar(f'{metric_name}/val', metric_value, self.global_step)
 
-                    if patience or epoch % checkpoint_step == 0:
+                    if patience or epoch % ckpt_step == 0:
                         epoch_acc = metric_vals['acc']
                         if patience:
                             if epoch_acc > max_val_acc:
@@ -315,7 +315,7 @@ class Model:
                                         f'Not saving model for this epoch.',
                                         logger=self.logger, level='info')
 
-                        elif epoch % checkpoint_step == 0:
+                        elif epoch % ckpt_step == 0:
                             log_or_print(
                                 f'this epoch {epoch} is a checkpoint epoch.',
                                 logger=self.logger, level='info')
@@ -329,7 +329,7 @@ class Model:
                                     continue
                             self.save(ckpt_path, epoch)
 
-            elif epoch % checkpoint_step == 0:  # but we don't have validation data
+            elif epoch % ckpt_step == 0:  # but we don't have validation data
                 log_or_print(
                     f'this epoch, {epoch}, is a checkpoint epoch.',
                     logger=self.logger, level='info')
