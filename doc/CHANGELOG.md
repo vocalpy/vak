@@ -71,7 +71,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#144](https://github.com/NickleDave/vak/pull/144)
 - bump minimum version of `TweetyNet` to 0.4.0 in [#155](https://github.com/NickleDave/vak/pull/155)
   + so `TweetyNetModel.from_class` method accepts `logger` argument
-  
+- change checkpointing and validation so that they occur on specific steps, not epochs.
+  [#161](https://github.com/NickleDave/vak/pull/161)
+  This way models with very large training sets that may run for only 1-2 epochs still intermittently save 
+  checkpoints as backups and measure performance on the validation set.
+- change names of `TrainConfig` attributes `val_error_step` and `checkpoint_step` to `val_step` and `ckpt_step` 
+  for brevity + clarity. [#161](https://github.com/NickleDave/vak/pull/161) Also changed the names of the 
+  corresponding `vak.Model.fit` method parameters to match.
+
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
   [#109](https://github.com/NickleDave/vak/pull/109)
@@ -90,6 +97,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#137](https://github.com/NickleDave/vak/issues/137)
 - remove redundant validation of split durations in `util.split` 
   [#143](https://github.com/NickleDave/vak/pull/143)
+- removed `save_only_single_checkpoint_file` option and functionality
+  [#161](https://github.com/NickleDave/vak/pull/161). 
+  Now save only one checkpoint as backup, and another for best performance on validation set if provided.
+  See discussion in pull request and the issues it fixes for more detail.
 
 ## [0.3.0a4]
 ### Added
