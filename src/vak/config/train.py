@@ -41,18 +41,20 @@ class TrainConfig:
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    val_error_step : int
-        step/epoch at which to estimate accuracy using validation set.
+    val_step : int
+        Step on which to estimate accuracy using validation set.
+        If val_step is n, then validation is carried out every time
+        the global step / n is a whole number, i.e., when val_step modulo the global step is 0.
         Default is None, in which case no validation is done.
-    checkpoint_step : int
-        step/epoch at which to save to checkpoint file.
+    ckpt_step : int
+        Step on which to save to checkpoint file.
+        If ckpt_step is n, then a checkpoint is saved every time
+        the global step / n is a whole number, i.e., when ckpt_step modulo the global step is 0.
         Default is None, in which case checkpoint is only saved at the last epoch.
     patience : int
-        number of epochs to wait without the error dropping before stopping the
-        training. Default is None, in which case training continues for num_epochs
-    save_only_single_checkpoint_file : bool
-        if True, save only one checkpoint file instead of separate files every time
-        we save. Default is True.
+        number of validation steps to wait without performance on the
+        validation set improving before stopping the training.
+        Default is None, in which case training only stops after the specified number of epochs.
     """
     # required
     models = attr.ib(converter=comma_separated_list,
@@ -79,14 +81,12 @@ class TrainConfig:
     device = attr.ib(validator=instance_of(str), default=get_default_device())
     shuffle = attr.ib(converter=bool_from_str, validator=instance_of(bool), default=True)
 
-    val_error_step = attr.ib(converter=converters.optional(int),
+    val_step = attr.ib(converter=converters.optional(int),
                              validator=validators.optional(instance_of(int)), default=None)
-    checkpoint_step = attr.ib(converter=converters.optional(int),
+    ckpt_step = attr.ib(converter=converters.optional(int),
                               validator=validators.optional(instance_of(int)), default=None)
     patience = attr.ib(converter=converters.optional(int),
                        validator=validators.optional(instance_of(int)), default=None)
-    save_only_single_checkpoint_file = attr.ib(converter=bool_from_str,
-                                               validator=instance_of(bool), default=True)
 
 
 REQUIRED_TRAIN_OPTIONS = [
