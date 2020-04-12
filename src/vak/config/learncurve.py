@@ -27,7 +27,7 @@ class LearncurveConfig(TrainConfig):
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    checkpoint_step : int
+    ckpt_step : int
         step/epoch at which to save to checkpoint file.
         Default is None, in which case checkpoint is only saved at the last epoch.
     patience : int
@@ -126,11 +126,11 @@ def parse_learncurve_config(config, config_path):
     if config.has_option('LEARNCURVE', 'test_vds_path'):
         config_dict['test_vds_path'] = os.path.expanduser(config['LEARNCURVE']['test_vds_path'])
 
-    if config.has_option('LEARNCURVE', 'val_error_step'):
-        config_dict['val_error_step'] = int(config['LEARNCURVE']['val_error_step'])
+    if config.has_option('LEARNCURVE', 'val_step'):
+        config_dict['val_step'] = int(config['LEARNCURVE']['val_step'])
 
-    if config.has_option('LEARNCURVE', 'checkpoint_step'):
-        config_dict['checkpoint_step'] = int(config['LEARNCURVE']['checkpoint_step'])
+    if config.has_option('LEARNCURVE', 'ckpt_step'):
+        config_dict['ckpt_step'] = int(config['LEARNCURVE']['ckpt_step'])
 
     if config.has_option('LEARNCURVE', 'save_only_single_checkpoint_file'):
         config_dict['save_only_single_checkpoint_file'] = config.getboolean(

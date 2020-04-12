@@ -77,20 +77,20 @@ class TestParseLearncurveConfig(unittest.TestCase):
         with self.assertRaises(TypeError):
             learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
 
-    def test_val_error_step_default(self):
-        self.config_obj.remove_option('LEARNCURVE', 'val_error_step')
+    def test_val_step_default(self):
+        self.config_obj.remove_option('LEARNCURVE', 'val_step')
         learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
-        self.assertTrue(learncurve_config_obj.val_error_step is None)
+        self.assertTrue(learncurve_config_obj.val_step is None)
 
     def test_save_only_single_checkpoint_default(self):
         self.config_obj.remove_option('LEARNCURVE', 'save_only_single_checkpoint_file')
         learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
         self.assertTrue(learncurve_config_obj.save_only_single_checkpoint_file is True)
 
-    def test_checkpoint_step_default(self):
-        self.config_obj.remove_option('LEARNCURVE', 'checkpoint_step')
+    def test_ckpt_step_default(self):
+        self.config_obj.remove_option('LEARNCURVE', 'ckpt_step')
         learncurve_config_obj = vak.config.learncurve.parse_learncurve_config(self.config_obj, self.config_file)
-        self.assertTrue(learncurve_config_obj.checkpoint_step is None)
+        self.assertTrue(learncurve_config_obj.ckpt_step is None)
 
     def test_patience_default(self):
         self.config_obj.remove_option('LEARNCURVE', 'patience')

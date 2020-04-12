@@ -73,12 +73,26 @@ class Model:
         self.optimizer = optimizer
         self.loss = loss
         self.metrics = metrics
-        self.device = None
+
         self.logger = logger
         self.summary_writer = summary_writer
         self.global_step = global_step  # used for summary writer
 
-    def _train(self, train_data):
+        # attributes set by fit / _train methods
+        self.device = None
+        self.ckpt_path = None
+        self.max_val_acc = 0
+        self.max_val_acc_ckpt_path = None
+        self.patience = None
+        self.patience_counter = 0
+
+    def _train(self,
+               train_data,
+               epoch,
+               val_data=None,
+               val_step=None,
+               ckpt_step=None,
+               ):
         """helper method, called by the fit method on each epoch.
         Iterates once through train_data, using it to update model parameters.
         Override this method if you need to implement your own training method.
@@ -99,12 +113,62 @@ class Model:
             loss.backward()
             self.optimizer.step()
             progress_bar.set_description(
-                f'batch {ind}, loss: {loss.item():.4f}'
+                f'Epoch {epoch}, batch {ind}. Loss: {loss.item():.4f}. Global step: {self.global_step}'
             )
 
             if self.summary_writer is not None:
                 self.summary_writer.add_scalar('loss/train', loss.item(), self.global_step)
             self.global_step += 1
+
+            if val_data is not None:
+                if self.global_step % val_step == 0:
+                    log_or_print(f'Step {self.global_step} is a validation step; computing metrics on validation set',
+                                 logger=self.logger, level='info')
+                    metric_vals = self._eval(val_data)
+                    self.network.train()  # because _eval calls network.eval()
+                    log_or_print(msg=', '.join([f'{metric_name}: {metric_value:.4f}'
+                                                for metric_name, metric_value in metric_vals.items()]),
+                                 logger=self.logger, level='info')
+
+                    if self.summary_writer is not None:
+                        for metric_name, metric_value in metric_vals.items():
+                            self.summary_writer.add_scalar(f'{metric_name}/val', metric_value, self.global_step)
+
+                    current_val_acc = metric_vals['acc']
+                    if current_val_acc > self.max_val_acc:
+                        self.max_val_acc = current_val_acc
+                        log_or_print(msg=f'Accuracy on validation set improved. Saving max-val-acc checkpoint.',
+                                     logger=self.logger, level='info')
+                        self.save(self.max_val_acc_ckpt_path, epoch=epoch, global_step=self.global_step)
+                        if self.patience:
+                            self.patience_counter = 0
+                    else:  # if accuracy did not improve
+                        if self.patience:
+                            self.patience_counter += 1
+                            if self.patience_counter > self.patience:
+                                log_or_print(
+                                    'Stopping training early, '
+                                    f'validation accuracy has not improved in {self.patience} epochs',
+                                    logger=self.logger, level='info')
+                                # save "backup" checkpoint upon stopping; don't save over "max-val-acc" checkpoint
+                                self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
+                                break
+                            else:
+                                log_or_print(
+                                    f'Validation accuracy has not improved in {self.patience_counter} epochs. '
+                                    f'Not saving max-val-acc checkpoint for this epoch.',
+                                    logger=self.logger, level='info')
+                        else:  # patience is None. We still log that we are not saving checkpoint.
+                            log_or_print(
+                                'Accuracy is less than maximum validation accuracy so far. '
+                                'Not saving max-val-acc checkpoint.',
+                                logger=self.logger, level='info')
+
+            # below can be true regardless of whether we have val_data and/or current epoch is a val_epoch
+            if self.global_step % ckpt_step == 0:
+                log_or_print(f'Step {self.global_step} is a checkpoint step.',
+                             logger=self.logger, level='info')
+                self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
 
     def _eval(self, eval_data):
         """helper method, called by the evaluate method, and called by the fit
@@ -188,10 +252,10 @@ class Model:
             'y': y_all
         }
 
-    def save(self, ckpt_path, epoch, **kwargs):
+    def save(self, ckpt_path, **kwargs):
         """save model state to a checkpoint file.
 
-        Saves epoch, network state_dict, optimizer state_dict, and
+        Saves network state_dict, optimizer state_dict, and
         any keyword arguments to a checkpoint file with the name
         specified by ckpt_path.
 
@@ -199,17 +263,16 @@ class Model:
         ----------
         ckpt_path : str, Path
             path including filename that should be used to save checkpoint
-        epoch : int
-            epoch on which this checkpoint was saved
+        kwargs :
+            keyword arguments; if there are any, they will be added to checkpoint
         """
         ckpt = {
-            'epoch': epoch,
             'network_state_dict': self.network.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
         }
         ckpt.update(**kwargs)
         log_or_print(
-            f'saving checkpoint for epoch {epoch} at:\n{ckpt_path} ',
+            f'Saving checkpoint at:\n{ckpt_path} ',
             logger=self.logger, level='info')
         torch.save(ckpt, ckpt_path)
 
@@ -237,103 +300,54 @@ class Model:
             num_epochs,
             ckpt_root,
             val_data=None,
-            val_step=1,
-            checkpoint_step=1,
-            save_best_only=True,
+            val_step=None,
+            ckpt_step=None,
             patience=None,
-            single_ckpt=True,
             device=None
             ):
-        if save_best_only:
-            if val_data is None:
+        # ---- pre-conditions ----------
+        if val_data is None:
+            if patience is not None:
+                    raise ValueError(
+                        f'patience set to {patience}, but no validation dataset was provided to measure accuracy'
+                    )
+            if val_step is not None:
                 raise ValueError(
-                    'save_best_only is True but no validation dataset was provided to measure accuracy'
+                    f'val_step set to {val_step}, but no validation dataset was provided to measure accuracy'
                 )
 
-        if patience is not None:
-            if val_data is None:
-                raise ValueError(
-                    f'patience set to {patience}, but no validation dataset was provided to measure accuracy'
-                )
-
+        # ---- set attributes ----------
         if device is None:
             device = get_default_device()
         self.device = device
 
-        if save_best_only or patience:
-            max_val_acc = 0
+        # note there can be up to two checkpoint paths.
+        # this first one is the "backup" checkpoint, saved intermittently (with frequency determined by ckpt_step)
+        # and also saved at the end of training
+        self.ckpt_path = ckpt_root.joinpath('checkpoint.pt')
 
-        if patience:
-            patience_counter = 0
+        if val_data is not None:
+            # this is the second checkpoint path, saved when accuracy improves on the validation set
+            self.max_val_acc_ckpt_path = ckpt_root.joinpath('max-val-acc-checkpoint.pt')
+            self.max_val_acc = 0
+
+        if patience is not None:
+            self.patience = patience
+            self.patience_counter = 0
 
         self.network.to(self.device)
 
+        # ---- actually do fitting ----------
         for epoch in range(1, num_epochs + 1):
             log_or_print(f'epoch {epoch} / {num_epochs}', logger=self.logger, level='info')
-            self._train(train_data)
+            self._train(train_data,
+                        epoch,
+                        val_data,
+                        val_step,
+                        ckpt_step)
 
-            if single_ckpt:
-                ckpt_path = ckpt_root.joinpath('checkpoint.pt')
-            else:
-                ckpt_path = ckpt_root.joinpath(f'checkpoint_epoch{epoch}.pt')
-
-            if val_data is not None:
-                if epoch % val_step == 0:
-                    log_or_print('computing metrics on validation set', logger=self.logger, level='info')
-                    metric_vals = self._eval(val_data)
-                    log_or_print(msg=', '.join([f'{metric_name}: {metric_value:.4f}'
-                                                for metric_name, metric_value in metric_vals.items()]),
-                                 logger=self.logger, level='info')
-                    if self.summary_writer is not None:
-                        for metric_name, metric_value in metric_vals.items():
-                            self.summary_writer.add_scalar(f'{metric_name}/val', metric_value, self.global_step)
-
-                    if patience or epoch % checkpoint_step == 0:
-                        epoch_acc = metric_vals['acc']
-                        if patience:
-                            if epoch_acc > max_val_acc:
-                                max_val_acc = metric_vals['acc']
-                                patience_counter = 0
-                                log_or_print('accuracy improved', logger=self.logger, level='info')
-                                self.save(ckpt_path, epoch)
-                            else:
-                                patience_counter += 1
-                                if patience_counter > patience:
-                                    log_or_print(
-                                        'stopping training early, '
-                                        f'validation accuracy has not improved in {patience} epochs',
-                                        logger=self.logger, level='info')
-                                    if not save_best_only:
-                                        log_or_print(
-                                            'save_best_only is False, will save model from this epoch',
-                                            logger=self.logger, level='info')
-                                        self.save(ckpt_path, epoch)
-                                    break
-                                else:
-                                    log_or_print(
-                                        f'validation accuracy has not improved in {patience_counter} epochs. '
-                                        f'Not saving model for this epoch.',
-                                        logger=self.logger, level='info')
-
-                        elif epoch % checkpoint_step == 0:
-                            log_or_print(
-                                f'this epoch {epoch} is a checkpoint epoch.',
-                                logger=self.logger, level='info')
-                            if save_best_only:
-                                log_or_print('save_best_only is True.', logger=self.logger, level='info')
-                                if epoch_acc < max_val_acc:
-                                    log_or_print(
-                                        f'accuracy on this epoch, {epoch}, is less than maximum validation accuracy '
-                                        f'so far, {max_val_acc}. Not saving checkpoint.',
-                                        logger=self.logger, level='info')
-                                    continue
-                            self.save(ckpt_path, epoch)
-
-            elif epoch % checkpoint_step == 0:  # but we don't have validation data
-                log_or_print(
-                    f'this epoch, {epoch}, is a checkpoint epoch.',
-                    logger=self.logger, level='info')
-                self.save(ckpt_path, epoch)
+        log_or_print('Completed last epoch.', logger=self.logger, level='info')
+        self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
 
     def evaluate(self,
                  eval_data,
