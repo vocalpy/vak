@@ -40,6 +40,7 @@ REQUIRED = [
     'numpy',
     'scipy',
     'pandas',
+    'tensorboard>=2.2.0',
     'toml',
     'torch',
     'torchvision',
