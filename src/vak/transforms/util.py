@@ -6,7 +6,7 @@ from . import transforms as vak_transforms
 def get_defaults(mode,
                  spect_standardizer=None,
                  window_size=None,
-                 return_crop_vec=False,
+                 return_padding_mask=False,
                  ):
     """get default transforms
 
@@ -49,7 +49,7 @@ def get_defaults(mode,
     elif mode == 'predict':
         transform.extend(
             [
-                vak_transforms.PadToWindow(window_size, return_crop_vec),
+                vak_transforms.PadToWindow(window_size, return_padding_mask),
                 vak_transforms.ReshapeToWindow(window_size),
                 vak_transforms.ToFloatTensor(),
                 vak_transforms.AddChannel(channel_dim=1),  # add channel at first dimension because windows become batch

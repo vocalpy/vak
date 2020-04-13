@@ -36,7 +36,7 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     return tfm
 
 
-def pad_to_window(spect, window_size, padval=0., return_crop_vec=True):
+def pad_to_window(spect, window_size, padval=0., return_padding_mask=True):
     """pad a spectrogram so that it can be reshaped
     into consecutive windows of specified size
 
@@ -50,9 +50,9 @@ def pad_to_window(spect, window_size, padval=0., return_crop_vec=True):
     padval : float
         value to pad with. Added to "right side"
         of spectrogram.
-    return_crop_vec : bool
+    return_padding_mask : bool
         if True, return a boolean vector to use for cropping
-        back down to size before padding. crop_vec has size
+        back down to size before padding. padding_mask has size
         equal to width of padded spectrogram, i.e. time bins
         plus padding on right side, and has values of 1 where
         columns in spect_padded are from the original spectrogram
@@ -62,12 +62,12 @@ def pad_to_window(spect, window_size, padval=0., return_crop_vec=True):
     -------
     spect_padded : numpy.ndarray
         padded with padval
-    crop_vec : np.bool
+    padding_mask : np.bool
         has size equal to width of padded spectrogram, i.e. time bins
         plus padding on right side. Has values of 1 where
         columns in spect_padded are from the original spectrogram,
         and values of 0 where columns were added for padding.
-        Only returned if return_crop_vec is True.
+        Only returned if return_padding_mask is True.
     """
     spect_height, spect_width = spect.shape
     target_width = int(
@@ -76,10 +76,10 @@ def pad_to_window(spect, window_size, padval=0., return_crop_vec=True):
     spect_padded = np.ones((spect_height, target_width)) * padval
     spect_padded[:, :spect_width] = spect
 
-    if return_crop_vec:
-        crop_vec = np.zeros((target_width,), dtype=np.bool)
-        crop_vec[:spect_width] = True
-        return spect_padded, crop_vec
+    if return_padding_mask:
+        padding_mask = np.zeros((target_width,), dtype=np.bool)
+        padding_mask[:spect_width] = True
+        return spect_padded, padding_mask
     else:
         return spect_padded
 

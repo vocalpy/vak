@@ -167,9 +167,9 @@ class PadToWindow:
     padval : float
         value to pad with. Added to "right side"
         of spectrogram.
-    return_crop_vec : bool
+    return_padding_mask : bool
         if True, return a boolean vector to use for cropping
-        back down to size before padding. crop_vec has size
+        back down to size before padding. padding_mask has size
         equal to width of padded spectrogram, i.e. time bins
         plus padding on right side, and has values of 1 where
         columns in spect_padded are from the original spectrogram
@@ -179,20 +179,20 @@ class PadToWindow:
     -------
     spect_padded : numpy.ndarray
         padded with padval
-    crop_vec : bool
+    padding_mask : bool
         has size equal to width of padded spectrogram, i.e. time bins
         plus padding on right side. Has values of 1 where
         columns in spect_padded are from the original spectrogram,
         and values of 0 where columns were added for padding.
-        Only returned if return_crop_vec is True.
+        Only returned if return_padding_mask is True.
     """
-    def __init__(self, window_size, padval=0., return_crop_vec=True):
+    def __init__(self, window_size, padval=0., return_padding_mask=True):
         self.window_size = window_size
         self.padval = padval
-        self.return_crop_vec = return_crop_vec
+        self.return_padding_mask = return_padding_mask
 
     def __call__(self, spect):
-        return F.pad_to_window(spect, self.window_size, self.padval, self.return_crop_vec)
+        return F.pad_to_window(spect, self.window_size, self.padval, self.return_padding_mask)
 
 
 class ReshapeToWindow:
