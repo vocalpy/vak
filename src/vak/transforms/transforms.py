@@ -154,35 +154,35 @@ class StandardizeSpect:
 
 
 class PadToWindow:
-    """pad a spectrogram so that it can be reshaped
+    """pad a 1d or 2d array so that it can be reshaped
     into consecutive windows of specified size
 
     Parameters
     ----------
-    spect : numpy.ndarray
-        with shape (frequencies, time bins)
+    arr : numpy.ndarray
+        with 1 or 2 dimensions, e.g. a vector of labeled timebins
+        or a spectrogram.
     window_size : int
-        number of time bins, i.e. columns in each window
-        into which spectrogram will be divided.
+        width of window in number of elements.
     padval : float
-        value to pad with. Added to "right side"
-        of spectrogram.
+        value to pad with. Added to end of array, the
+        "right side" if 2-dimensional.
     return_padding_mask : bool
         if True, return a boolean vector to use for cropping
         back down to size before padding. padding_mask has size
-        equal to width of padded spectrogram, i.e. time bins
-        plus padding on right side, and has values of 1 where
-        columns in spect_padded are from the original spectrogram
+        equal to width of padded array, i.e. original size
+        plus padding at the end, and has values of 1 where
+        columns in padded are from the original array,
         and values of 0 where columns were added for padding.
 
     Returns
     -------
-    spect_padded : numpy.ndarray
+    padded : numpy.ndarray
         padded with padval
-    padding_mask : bool
-        has size equal to width of padded spectrogram, i.e. time bins
-        plus padding on right side. Has values of 1 where
-        columns in spect_padded are from the original spectrogram,
+    padding_mask : np.bool
+        has size equal to width of padded, i.e. original size
+        plus padding at the end. Has values of 1 where
+        columns in padded are from the original array,
         and values of 0 where columns were added for padding.
         Only returned if return_padding_mask is True.
     """
@@ -191,29 +191,33 @@ class PadToWindow:
         self.padval = padval
         self.return_padding_mask = return_padding_mask
 
-    def __call__(self, spect):
-        return F.pad_to_window(spect, self.window_size, self.padval, self.return_padding_mask)
+    def __call__(self, arr):
+        return F.pad_to_window(arr, self.window_size, self.padval, self.return_padding_mask)
 
 
 class ReshapeToWindow:
-    """resize a spectrogram into consecutive
+    """reshape a 1d or 2d array into consecutive
     windows of specified size.
 
     Parameters
     ----------
-    spect : numpy.ndarray
-        with shape (frequencies, time bins)
-    window_size
+    arr : numpy.ndarray
+        with 1 or 2 dimensions, e.g. a vector of labeled timebins
+        or a spectrogram.
+    window_size : int
+        width of window in number of elements.
 
     Returns
     -------
-    spect_windows
+    windows : numpy.ndarray
+        with shape (-1, window_size) if array is 1d,
+        or with shape (-1, height, window_size) if array is 2d
     """
     def __init__(self, window_size):
         self.window_size = window_size
 
-    def __call__(self, spect):
-        return F.reshape_to_window(spect, self.window_size)
+    def __call__(self, arr):
+        return F.reshape_to_window(arr, self.window_size)
 
 
 class ToFloatTensor:

@@ -36,70 +36,94 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     return tfm
 
 
-def pad_to_window(spect, window_size, padval=0., return_padding_mask=True):
-    """pad a spectrogram so that it can be reshaped
+def pad_to_window(arr, window_size, padval=0., return_padding_mask=True):
+    """pad a 1d or 2d array so that it can be reshaped
     into consecutive windows of specified size
 
     Parameters
     ----------
-    spect : numpy.ndarray
-        with shape (frequencies, time bins)
+    arr : numpy.ndarray
+        with 1 or 2 dimensions, e.g. a vector of labeled timebins
+        or a spectrogram.
     window_size : int
-        number of time bins, i.e. columns in each window
-        into which spectrogram will be divided.
+        width of window in number of elements.
     padval : float
-        value to pad with. Added to "right side"
-        of spectrogram.
+        value to pad with. Added to end of array, the
+        "right side" if 2-dimensional.
     return_padding_mask : bool
         if True, return a boolean vector to use for cropping
         back down to size before padding. padding_mask has size
-        equal to width of padded spectrogram, i.e. time bins
-        plus padding on right side, and has values of 1 where
-        columns in spect_padded are from the original spectrogram
+        equal to width of padded array, i.e. original size
+        plus padding at the end, and has values of 1 where
+        columns in padded are from the original array,
         and values of 0 where columns were added for padding.
 
     Returns
     -------
-    spect_padded : numpy.ndarray
+    padded : numpy.ndarray
         padded with padval
     padding_mask : np.bool
-        has size equal to width of padded spectrogram, i.e. time bins
-        plus padding on right side. Has values of 1 where
-        columns in spect_padded are from the original spectrogram,
+        has size equal to width of padded, i.e. original size
+        plus padding at the end. Has values of 1 where
+        columns in padded are from the original array,
         and values of 0 where columns were added for padding.
         Only returned if return_padding_mask is True.
     """
-    spect_height, spect_width = spect.shape
+    if arr.ndim == 1:
+        width = arr.shape[0]
+    elif arr.ndim == 2:
+        height, width = arr.shape
+    else:
+        raise ValueError(
+            f'input array must be 1d or 2d but number of dimensions was: {arr.ndim}'
+        )
+
     target_width = int(
-        np.ceil(spect_width / window_size) * window_size
+        np.ceil(width / window_size) * window_size
     )
-    spect_padded = np.ones((spect_height, target_width)) * padval
-    spect_padded[:, :spect_width] = spect
+
+    if arr.ndim == 1:
+        padded = np.ones((target_width,)) * padval
+        padded[:width] = arr
+    elif arr.ndim == 2:
+        padded = np.ones((height, target_width)) * padval
+        padded[:, :width] = arr
 
     if return_padding_mask:
         padding_mask = np.zeros((target_width,), dtype=np.bool)
-        padding_mask[:spect_width] = True
-        return spect_padded, padding_mask
+        padding_mask[:width] = True
+        return padded, padding_mask
     else:
-        return spect_padded
+        return padded
 
 
-def reshape_to_window(spect, window_size):
-    """resize a spectrogram into consecutive
+def reshape_to_window(arr, window_size):
+    """reshape a 1d or 2d array into consecutive
     windows of specified size.
 
     Parameters
     ----------
-    spect : numpy.ndarray
-        with shape (frequencies, time bins)
-    window_size
+    arr : numpy.ndarray
+        with 1 or 2 dimensions, e.g. a vector of labeled timebins
+        or a spectrogram.
+    window_size : int
+        width of window in number of elements.
 
     Returns
     -------
-    spect_windows
+    windows : numpy.ndarray
+        with shape (-1, window_size) if array is 1d,
+        or with shape (-1, height, window_size) if array is 2d
     """
-    spect_height, spect_width = spect.shape
-    return spect.reshape((-1, spect_height, window_size))
+    if arr.ndim == 1:
+        return arr.reshape((-1, window_size))
+    elif arr.ndim == 2:
+        height, _ = arr.shape
+        return arr.reshape((-1, height, window_size))
+    else:
+        raise ValueError(
+            f'input array must be 1d or 2d but number of dimensions was: {arr.ndim}'
+        )
 
 
 def to_floattensor(arr):
