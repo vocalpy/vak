@@ -187,6 +187,22 @@ class PadToWindow:
         Only returned if return_padding_mask is True.
     """
     def __init__(self, window_size, padval=0., return_padding_mask=True):
+        if not (type(window_size) == int) or (type(window_size) == float and window_size.is_integer() is False):
+            raise ValueError(
+                f'window size must be an int or a whole number float;'
+                f' type was {type(window_size)} and value was {window_size}'
+            )
+
+        if type(padval) not in (int, float):
+            raise TypeError(
+                f'type for padval must be int or float but was: {type(padval)}'
+            )
+        if not type(return_padding_mask) == bool:
+            raise TypeError(
+                'return_padding_mask must be boolean (True or False), '
+                f'but was type {type(return_padding_mask)} with value {return_padding_mask}'
+            )
+
         self.window_size = window_size
         self.padval = padval
         self.return_padding_mask = return_padding_mask
