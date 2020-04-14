@@ -16,6 +16,5 @@ def accuracy(y_pred, y_true):
         between 0 and 1. Sum of predicted labels that equal true labels,
         divided by number of true labels.
     """
-    indices = torch.argmax(y_pred, dim=1)
-    correct = torch.eq(indices, y_true).view(-1)
+    correct = torch.eq(y_pred, y_true).view(-1)
     return correct.sum().item() / correct.shape[0]
