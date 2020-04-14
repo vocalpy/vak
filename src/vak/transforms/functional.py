@@ -157,7 +157,7 @@ def to_longtensor(arr):
 
 
 def add_channel(input, channel_dim=0):
-    """add a channel dimension to a 2-dimensional tensor.
+    """add a channel dimension to a tensor.
     Transform that makes it easy to treat a spectrogram as an image,
     by adding a dimension with a single 'channel', analogous to grayscale.
     In this way the tensor can be fed to e.g. convolutional layers.
@@ -165,13 +165,7 @@ def add_channel(input, channel_dim=0):
     Parameters
     ----------
     input : torch.Tensor
-        with two dimensions (height, width).
     channel_dim : int
-        dimension where "channel" is added.
-        Default is 0, which returns a tensor with dimensions (channel, height, width).
+        dimension where "channel" is added. Default is 0.
     """
-    if input.dim() != 2:
-        raise ValueError(
-            f'input tensor should have two dimensions but input.dim() is {input.dim()}'
-        )
     return torch.unsqueeze(input, dim=channel_dim)
