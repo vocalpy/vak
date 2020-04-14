@@ -152,6 +152,10 @@ class StandardizeSpect:
 
         return F.standardize_spect(spect, self.mean_freqs, self.std_freqs, self.non_zero_std)
 
+    def __repr__(self):
+        args = f'(mean_freqs={self.mean_freqs}, std_freqs={self.std_freqs}, non_zero_std={self.non_zero_std})'
+        return self.__class__.__name__ + args
+
 
 class PadToWindow:
     """pad a 1d or 2d array so that it can be reshaped
@@ -210,6 +214,10 @@ class PadToWindow:
     def __call__(self, arr):
         return F.pad_to_window(arr, self.window_size, self.padval, self.return_padding_mask)
 
+    def __repr__(self):
+        args = f'(window_size={self.window_size}, padval={self.padval}, return_padding_mask={self.return_padding_mask})'
+        return self.__class__.__name__ + args
+
 
 class ReshapeToWindow:
     """reshape a 1d or 2d array into consecutive
@@ -235,6 +243,10 @@ class ReshapeToWindow:
     def __call__(self, arr):
         return F.reshape_to_window(arr, self.window_size)
 
+    def __repr__(self):
+        args = f'(window_size={self.window_size})'
+        return self.__class__.__name__ + args
+
 
 class ToFloatTensor:
     """convert Numpy array to torch.FloatTensor.
@@ -254,6 +266,9 @@ class ToFloatTensor:
     def __call__(self, arr):
         return F.to_floattensor(arr)
 
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class ToLongTensor:
     """convert Numpy array to torch.LongTensor.
@@ -272,6 +287,9 @@ class ToLongTensor:
 
     def __call__(self, arr):
         return F.to_longtensor(arr)
+
+    def __repr__(self):
+        return self.__class__.__name__
 
 
 class AddChannel:
@@ -293,3 +311,7 @@ class AddChannel:
 
     def __call__(self, input):
         return F.add_channel(input, channel_dim=self.channel_dim)
+
+    def __repr__(self):
+        args = f'(channel_dim={self.channel_dim})'
+        return self.__class__.__name__ + args
