@@ -238,6 +238,12 @@ class ReshapeToWindow:
         or with shape (-1, height, window_size) if array is 2d
     """
     def __init__(self, window_size):
+        if not (type(window_size) == int) or (type(window_size) == float and window_size.is_integer() is False):
+            raise ValueError(
+                f'window size must be an int or a whole number float;'
+                f' type was {type(window_size)} and value was {window_size}'
+            )
+
         self.window_size = window_size
 
     def __call__(self, arr):
@@ -307,6 +313,20 @@ class AddChannel:
         Default is 0, which returns a tensor with dimensions (channel, height, width).
     """
     def __init__(self, channel_dim=0):
+        if not (type(channel_dim) == int) or (type(channel_dim) == float and channel_dim.is_integer() is False):
+            raise ValueError(
+                f'window size must be an int or a whole number float;'
+                f' type was {type(channel_dim)} and value was {channel_dim}'
+            )
+
+        channel_dim = int(channel_dim)
+
+        if channel_dim < 0 and channel_dim != -1:
+            raise ValueError(
+                'value of channel_dim should be a non-negative integer, or -1 (for last dimension). '
+                f'Value was: {channel_dim}'
+            )
+
         self.channel_dim = channel_dim
 
     def __call__(self, input):
