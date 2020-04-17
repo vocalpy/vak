@@ -75,7 +75,7 @@ class EvalItemTransform:
                                                         return_padding_mask=return_padding_mask)
 
         self.source_transform_after_pad = torchvision.transforms.Compose([
-            vak_transforms.ReshapeToWindow(window_size),
+            vak_transforms.ViewAsWindowBatch(window_size),
             vak_transforms.ToFloatTensor(),
             # below, add channel at first dimension because windows become batch
             vak_transforms.AddChannel(channel_dim=channel_dim),
@@ -134,7 +134,7 @@ class PredictItemTransform:
                                                         return_padding_mask=return_padding_mask)
 
         self.source_transform_after_pad = torchvision.transforms.Compose([
-            vak_transforms.ReshapeToWindow(window_size),
+            vak_transforms.ViewAsWindowBatch(window_size),
             vak_transforms.ToFloatTensor(),
             # below, add channel at first dimension because windows become batch
             vak_transforms.AddChannel(channel_dim=channel_dim),
