@@ -8,10 +8,10 @@ from . import functional as F
 __all__ = [
     'AddChannel',
     'PadToWindow',
-    'ReshapeToWindow',
     'StandardizeSpect',
     'ToFloatTensor',
-    'ToLongTensor'
+    'ToLongTensor',
+    'ViewAsWindowBatch',
 ]
 
 
@@ -219,38 +219,48 @@ class PadToWindow:
         return self.__class__.__name__ + args
 
 
-class ReshapeToWindow:
-    """reshape a 1d or 2d array into consecutive
-    windows of specified size.
+class ViewAsWindowBatch:
+    """return view of a 1d or 2d array as a batch of non-overlapping windows
 
     Parameters
     ----------
     arr : numpy.ndarray
         with 1 or 2 dimensions, e.g. a vector of labeled timebins
-        or a spectrogram.
-    window_size : int
+        or a 2-d array representing a spectrogram.
+        If the array has 2-d dimensions, the returned array will
+        have dimensions (batch, height of array, window width)
+    window_width : int
         width of window in number of elements.
 
     Returns
     -------
-    windows : numpy.ndarray
-        with shape (-1, window_size) if array is 1d,
-        or with shape (-1, height, window_size) if array is 2d
+    batch_windows : numpy.ndarray
+        with shape (batch size, window_width) if array is 1d,
+        or with shape (batch size, height, window_width) if array is 2d.
+        Batch size will be arr.shape[-1] // window_width.
+        Window width must divide arr.shape[-1] evenly.
+        To pad the array so it can be divided into windows of the specified
+        width, use the `pad_to_window` transform
+
+    Notes
+    -----
+    adapted from skimage.util.view_as_blocks
+    https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
-    def __init__(self, window_size):
-        if not (type(window_size) == int) or (type(window_size) == float and window_size.is_integer() is False):
+    def __init__(self, window_width):
+        if not (type(window_width) == int) or (type(window_width) == float and window_width.is_integer() is False):
             raise ValueError(
                 f'window size must be an int or a whole number float;'
-                f' type was {type(window_size)} and value was {window_size}'
+                f' type was {type(window_width)} and value was {window_width}'
             )
 
-        self.window_size = window_size
+        self.window_width = window_width
 
     def __call__(self, arr):
-        return F.reshape_to_window(arr, self.window_size)
+        return F.view_as_window_batch(arr, self.window_width)
 
     def __repr__(self):
-        args = f'(window_size={self.window_size})'
+        args = f'(window_width={self.window_width})'
         return self.__class__.__name__ + args
 
 
