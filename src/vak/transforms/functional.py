@@ -3,10 +3,10 @@ import torch
 
 __all__ = [
     'pad_to_window',
-    'reshape_to_window',
     'standardize_spect',
     'to_floattensor',
     'to_longtensor',
+    'view_as_window_batch'
 ]
 
 
@@ -97,33 +97,63 @@ def pad_to_window(arr, window_size, padval=0., return_padding_mask=True):
         return padded
 
 
-def reshape_to_window(arr, window_size):
-    """reshape a 1d or 2d array into consecutive
-    windows of specified size.
+def view_as_window_batch(arr, window_width):
+    """return view of a 1d or 2d array as a batch of non-overlapping windows
 
     Parameters
     ----------
     arr : numpy.ndarray
         with 1 or 2 dimensions, e.g. a vector of labeled timebins
-        or a spectrogram.
-    window_size : int
+        or a 2-d array representing a spectrogram.
+        If the array has 2-d dimensions, the returned array will
+        have dimensions (batch, height of array, window width)
+    window_width : int
         width of window in number of elements.
 
     Returns
     -------
-    windows : numpy.ndarray
-        with shape (-1, window_size) if array is 1d,
-        or with shape (-1, height, window_size) if array is 2d
+    batch_windows : numpy.ndarray
+        with shape (batch size, window_size) if array is 1d,
+        or with shape (batch size, height, window_size) if array is 2d.
+        Batch size will be arr.shape[-1] // window_width.
+        Window width must divide arr.shape[-1] evenly.
+        To pad the array so it can be divided into windows of the specified
+        width, use the `pad_to_window` transform
+
+    Notes
+    -----
+    adapted from skimage.util.view_as_blocks
+    https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
+    if not(type(window_width) == int and window_width > 0):
+        raise ValueError(
+            f'window width must be a positive integer'
+        )
+
     if arr.ndim == 1:
-        return arr.reshape((-1, window_size))
+        window_shape = (window_width,)
     elif arr.ndim == 2:
         height, _ = arr.shape
-        return arr.reshape((-1, height, window_size))
+        window_shape = (height, window_width)
     else:
         raise ValueError(
             f'input array must be 1d or 2d but number of dimensions was: {arr.ndim}'
         )
+
+    window_shape = np.array(window_shape)
+    arr_shape = np.array(arr.shape)
+    if (arr_shape % window_shape).sum() != 0:
+        raise ValueError("'window_width' does not divide evenly into with 'arr' shape. "
+                         "Use 'pad_to_window' transform to pad array so it can be windowed.")
+
+    new_shape = tuple(arr_shape // window_shape) + tuple(window_shape)
+    new_strides = tuple(arr.strides * window_shape) + arr.strides
+    batch_windows = np.lib.stride_tricks.as_strided(arr, shape=new_shape, strides=new_strides)
+    # when 2d, first dim 1 because new shape has height equal to original arr
+    if batch_windows.ndim == 4 and batch_windows.shape[0] == 1:
+        # we don't want that extra dim of size 1, we want first dim to be "batch"
+        batch_windows = np.squeeze(batch_windows)
+    return batch_windows
 
 
 def to_floattensor(arr):
