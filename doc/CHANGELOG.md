@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add additional logging to `Model` class [#153](https://github.com/NickleDave/vak/pull/153)
 - add initial tutorial on using `vak` for automated annotation of vocalizations 
   [#156](https://github.com/NickleDave/vak/pull/156)
+- add `VocalDataset`, more generalized form of a dataset where the input to a network is contained in a source 
+  file, e.g. a .npz array file with a spectrogram, and the optional target is the annotation 
+  [#165](https://github.com/NickleDave/vak/pull/165)
+- add `transforms.defaults` with `ItemTransforms` that return dictionaries. Decouples logic for 
+  what will be in returned "items" from the different dataset classes [#165](https://github.com/NickleDave/vak/pull/165)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
@@ -79,6 +84,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - change names of `TrainConfig` attributes `val_error_step` and `checkpoint_step` to `val_step` and `ckpt_step` 
   for brevity + clarity. [#161](https://github.com/NickleDave/vak/pull/161) Also changed the names of the 
   corresponding `vak.Model.fit` method parameters to match.
+- change `vak.Model._eval` method to work like `vak.cli.predict` does, feeding models non-overlapping 
+  windows from spectrograms [#165](https://github.com/NickleDave/vak/pull/165)
+- change `reshape_to_window` transform to `view_as_window_batch` because it was not working as intended 
+  [#165](https://github.com/NickleDave/vak/pull/165)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
