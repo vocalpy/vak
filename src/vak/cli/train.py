@@ -12,6 +12,7 @@ from .. import models
 from .. import transforms
 from .. import util
 from ..datasets.window_dataset import WindowDataset
+from ..datasets.vocal_dataset import VocalDataset
 from ..io import dataframe
 
 
@@ -126,18 +127,22 @@ def train(toml_path):
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if cfg.train.val_step:
-        val_dataset = WindowDataset.from_csv(csv_path=cfg.train.csv_path,
-                                             split='val',
-                                             labelmap=labelmap,
-                                             window_size=cfg.dataloader.window_size,
-                                             spect_key=cfg.spect_params.spect_key,
-                                             timebins_key=cfg.spect_params.timebins_key,
-                                             transform=transform,
-                                             target_transform=target_transform
-                                             )
+        item_transform = transforms.get_defaults('eval',
+                                                 spect_standardizer,
+                                                 window_size=cfg.dataloader.window_size,
+                                                 return_padding_mask=True,
+                                                 )
+        val_dataset = VocalDataset.from_csv(csv_path=cfg.train.csv_path,
+                                            split='val',
+                                            labelmap=labelmap,
+                                            spect_key=cfg.spect_params.spect_key,
+                                            timebins_key=cfg.spect_params.timebins_key,
+                                            item_transform=item_transform,
+                                            )
         val_data = torch.utils.data.DataLoader(dataset=val_dataset,
                                                shuffle=False,
-                                               batch_size=cfg.train.batch_size,
+                                               # batch size 1 because each spectrogram reshaped into a batch of windows
+                                               batch_size=1,
                                                num_workers=cfg.train.num_workers)
         val_dur = dataframe.split_dur(dataset_df, 'val')
         logger.info(

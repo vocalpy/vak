@@ -190,12 +190,56 @@ class Model:
         progress_bar = tqdm(eval_data)
         with torch.no_grad():
             for ind, batch in enumerate(progress_bar):
-                x, y = batch[0].to(self.device), batch[1].to(self.device)
-                y_pred = self.network.forward(x)
-                for metric_name, metric_callable in self.metrics.items():
-                    metric_vals[metric_name].append(
-                        metric_callable(y_pred, y)
+                x, y = batch['source'].to(self.device), batch['annot'].to(self.device)
+                # remove "batch" dimension added by collate_fn to x
+                # we keep for y because loss still expects the first dimension to be batch
+                if x.ndim == 5:
+                    if x.shape[0] == 1:
+                        x = torch.squeeze(x, dim=0)
+                else:
+                    raise ValueError(
+                        f'invalid shape for x: {x.shape}'
                     )
+
+                out = self.network.forward(x)
+                # permute and flatten out
+                # so that it has shape (1, number classes, number of time bins)
+                # ** NOTICE ** just calling out.reshape(1, out.shape(1), -1) does not work, it will change the data
+                out = out.permute(1, 0, 2)
+                out = torch.flatten(out, start_dim=1)
+                out = torch.unsqueeze(out, dim=0)
+                # reduce to predictions, assuming class dimension is 1
+                y_pred = torch.argmax(out, dim=1)  # y_pred has dims (batch size 1, predicted label per time bin)
+
+                if 'padding_mask' in batch:
+                    padding_mask = batch['padding_mask']  # boolean: 1 where valid, 0 where padding
+                    # remove "batch" dimension added by collate_fn
+                    # because this extra dimension just makes it confusing to use the mask as indices
+                    if padding_mask.ndim == 2:
+                        if padding_mask.shape[0] == 1:
+                            padding_mask = torch.squeeze(padding_mask, dim=0)
+                    else:
+                        raise ValueError(
+                            f'invalid shape for padding mask: {padding_mask.shape}'
+                        )
+
+                    out = out[:, :, padding_mask]
+                    y_pred = y_pred[:, padding_mask]
+
+                for metric_name, metric_callable in self.metrics.items():
+                    if metric_name == 'loss':
+                        metric_vals[metric_name].append(
+                            metric_callable(out, y)
+                        )
+                    elif metric_name == 'acc':
+                        metric_vals[metric_name].append(
+                            metric_callable(y_pred, y)
+                        )
+                    else:
+                        raise NotImplementedError(
+                            f'calculation of metric not yet implemented for {metric_name}'
+                        )
+
                 n_batches += 1
                 progress_bar.set_description(
                     f'batch {ind} / {len(eval_data)}'

@@ -14,8 +14,8 @@ NO_ANNOTATION_FORMAT = 'none'
 def format_from_df(vak_df):
     """determine annotation format of a Vak DataFrame.
     Returns string name of annotation format.
-
-    Raises an error if there is no annotation format, or multiple formats.
+    If no annotation format is specified, returns None.
+    Raises an error if there are multiple formats.
 
     Parameters
     ----------
@@ -30,15 +30,8 @@ def format_from_df(vak_df):
     annot_format = vak_df['annot_format'].unique()
     if len(annot_format) == 1:
         annot_format = annot_format.item()
-        # if annot_format is None, throw an error -- otherwise continue on and try to use it
-        if annot_format is None:
-            raise ValueError(
-                'unable to load labels for dataset, the annot_format is None'
-            )
-        elif annot_format is NO_ANNOTATION_FORMAT:
-            raise ValueError(
-                'unable to load labels for dataset, no annotation format is specified'
-            )
+        if annot_format is None or annot_format is NO_ANNOTATION_FORMAT:
+            return None
     elif len(annot_format) > 1:
         raise ValueError(
             f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
@@ -48,7 +41,9 @@ def format_from_df(vak_df):
 
 
 def from_df(vak_df):
-    """get list of annotations from a vak DataFrame
+    """get list of annotations from a vak DataFrame.
+    If no annotation format is specified for the DataFrame
+    (in the 'annot_format' column), returns None.
 
     Parameters
     ----------
@@ -70,6 +65,8 @@ def from_df(vak_df):
     each row from the dataframe can be paired with an annotation (using `source_annot_map`).
     """
     annot_format = format_from_df(vak_df)
+    if annot_format is None:
+        return None
 
     scribe = crowsetta.Transcriber(annot_format=annot_format)
 

@@ -8,10 +8,10 @@ from . import functional as F
 __all__ = [
     'AddChannel',
     'PadToWindow',
-    'ReshapeToWindow',
     'StandardizeSpect',
     'ToFloatTensor',
-    'ToLongTensor'
+    'ToLongTensor',
+    'ViewAsWindowBatch',
 ]
 
 
@@ -152,68 +152,116 @@ class StandardizeSpect:
 
         return F.standardize_spect(spect, self.mean_freqs, self.std_freqs, self.non_zero_std)
 
+    def __repr__(self):
+        args = f'(mean_freqs={self.mean_freqs}, std_freqs={self.std_freqs}, non_zero_std={self.non_zero_std})'
+        return self.__class__.__name__ + args
+
 
 class PadToWindow:
-    """pad a spectrogram so that it can be reshaped
+    """pad a 1d or 2d array so that it can be reshaped
     into consecutive windows of specified size
 
     Parameters
     ----------
-    spect : numpy.ndarray
-        with shape (frequencies, time bins)
+    arr : numpy.ndarray
+        with 1 or 2 dimensions, e.g. a vector of labeled timebins
+        or a spectrogram.
     window_size : int
-        number of time bins, i.e. columns in each window
-        into which spectrogram will be divided.
+        width of window in number of elements.
     padval : float
-        value to pad with. Added to "right side"
-        of spectrogram.
-    return_crop_vec : bool
+        value to pad with. Added to end of array, the
+        "right side" if 2-dimensional.
+    return_padding_mask : bool
         if True, return a boolean vector to use for cropping
-        back down to size before padding. crop_vec has size
-        equal to width of padded spectrogram, i.e. time bins
-        plus padding on right side, and has values of 1 where
-        columns in spect_padded are from the original spectrogram
+        back down to size before padding. padding_mask has size
+        equal to width of padded array, i.e. original size
+        plus padding at the end, and has values of 1 where
+        columns in padded are from the original array,
         and values of 0 where columns were added for padding.
 
     Returns
     -------
-    spect_padded : numpy.ndarray
+    padded : numpy.ndarray
         padded with padval
-    crop_vec : bool
-        has size equal to width of padded spectrogram, i.e. time bins
-        plus padding on right side. Has values of 1 where
-        columns in spect_padded are from the original spectrogram,
+    padding_mask : np.bool
+        has size equal to width of padded, i.e. original size
+        plus padding at the end. Has values of 1 where
+        columns in padded are from the original array,
         and values of 0 where columns were added for padding.
-        Only returned if return_crop_vec is True.
+        Only returned if return_padding_mask is True.
     """
-    def __init__(self, window_size, padval=0., return_crop_vec=True):
+    def __init__(self, window_size, padval=0., return_padding_mask=True):
+        if not (type(window_size) == int) or (type(window_size) == float and window_size.is_integer() is False):
+            raise ValueError(
+                f'window size must be an int or a whole number float;'
+                f' type was {type(window_size)} and value was {window_size}'
+            )
+
+        if type(padval) not in (int, float):
+            raise TypeError(
+                f'type for padval must be int or float but was: {type(padval)}'
+            )
+        if not type(return_padding_mask) == bool:
+            raise TypeError(
+                'return_padding_mask must be boolean (True or False), '
+                f'but was type {type(return_padding_mask)} with value {return_padding_mask}'
+            )
+
         self.window_size = window_size
         self.padval = padval
-        self.return_crop_vec = return_crop_vec
+        self.return_padding_mask = return_padding_mask
 
-    def __call__(self, spect):
-        return F.pad_to_window(spect, self.window_size, self.padval, self.return_crop_vec)
+    def __call__(self, arr):
+        return F.pad_to_window(arr, self.window_size, self.padval, self.return_padding_mask)
+
+    def __repr__(self):
+        args = f'(window_size={self.window_size}, padval={self.padval}, return_padding_mask={self.return_padding_mask})'
+        return self.__class__.__name__ + args
 
 
-class ReshapeToWindow:
-    """resize a spectrogram into consecutive
-    windows of specified size.
+class ViewAsWindowBatch:
+    """return view of a 1d or 2d array as a batch of non-overlapping windows
 
     Parameters
     ----------
-    spect : numpy.ndarray
-        with shape (frequencies, time bins)
-    window_size
+    arr : numpy.ndarray
+        with 1 or 2 dimensions, e.g. a vector of labeled timebins
+        or a 2-d array representing a spectrogram.
+        If the array has 2-d dimensions, the returned array will
+        have dimensions (batch, height of array, window width)
+    window_width : int
+        width of window in number of elements.
 
     Returns
     -------
-    spect_windows
-    """
-    def __init__(self, window_size):
-        self.window_size = window_size
+    batch_windows : numpy.ndarray
+        with shape (batch size, window_width) if array is 1d,
+        or with shape (batch size, height, window_width) if array is 2d.
+        Batch size will be arr.shape[-1] // window_width.
+        Window width must divide arr.shape[-1] evenly.
+        To pad the array so it can be divided into windows of the specified
+        width, use the `pad_to_window` transform
 
-    def __call__(self, spect):
-        return F.reshape_to_window(spect, self.window_size)
+    Notes
+    -----
+    adapted from skimage.util.view_as_blocks
+    https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
+    """
+    def __init__(self, window_width):
+        if not (type(window_width) == int) or (type(window_width) == float and window_width.is_integer() is False):
+            raise ValueError(
+                f'window size must be an int or a whole number float;'
+                f' type was {type(window_width)} and value was {window_width}'
+            )
+
+        self.window_width = window_width
+
+    def __call__(self, arr):
+        return F.view_as_window_batch(arr, self.window_width)
+
+    def __repr__(self):
+        args = f'(window_width={self.window_width})'
+        return self.__class__.__name__ + args
 
 
 class ToFloatTensor:
@@ -234,6 +282,9 @@ class ToFloatTensor:
     def __call__(self, arr):
         return F.to_floattensor(arr)
 
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class ToLongTensor:
     """convert Numpy array to torch.LongTensor.
@@ -253,6 +304,9 @@ class ToLongTensor:
     def __call__(self, arr):
         return F.to_longtensor(arr)
 
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class AddChannel:
     """add a channel dimension to a 2-dimensional tensor.
@@ -269,7 +323,25 @@ class AddChannel:
         Default is 0, which returns a tensor with dimensions (channel, height, width).
     """
     def __init__(self, channel_dim=0):
+        if not (type(channel_dim) == int) or (type(channel_dim) == float and channel_dim.is_integer() is False):
+            raise ValueError(
+                f'window size must be an int or a whole number float;'
+                f' type was {type(channel_dim)} and value was {channel_dim}'
+            )
+
+        channel_dim = int(channel_dim)
+
+        if channel_dim < 0 and channel_dim != -1:
+            raise ValueError(
+                'value of channel_dim should be a non-negative integer, or -1 (for last dimension). '
+                f'Value was: {channel_dim}'
+            )
+
         self.channel_dim = channel_dim
 
     def __call__(self, input):
         return F.add_channel(input, channel_dim=self.channel_dim)
+
+    def __repr__(self):
+        args = f'(channel_dim={self.channel_dim})'
+        return self.__class__.__name__ + args

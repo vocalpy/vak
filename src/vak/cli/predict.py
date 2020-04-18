@@ -45,7 +45,7 @@ def predict(toml_path):
     transform, target_transform = transforms.get_defaults('predict',
                                                           spect_standardizer,
                                                           window_size=cfg.dataloader.window_size,
-                                                          return_crop_vec=False,
+                                                          return_padding_mask=False,
                                                           )
 
     pred_dataset = UnannotatedDataset.from_csv(csv_path=cfg.predict.csv_path,
@@ -105,7 +105,7 @@ def predict(toml_path):
 
         # use transform "outside" of Dataset so we can get back crop vec
         pad_to_window = transforms.PadToWindow(cfg.dataloader.window_size,
-                                               return_crop_vec=True)
+                                               return_padding_mask=True)
 
         progress_bar = tqdm(data_for_annot)
 
@@ -114,11 +114,11 @@ def predict(toml_path):
             x, y = batch[0], batch[1]  # here we don't care about putting on some device outside cpu
             if len(x.shape) == 3:  # ("batch", freq_bins, time_bins)
                 x = x.cpu().numpy().squeeze()
-            x_pad, crop_vec = pad_to_window(x)
+            x_pad, padding_mask = pad_to_window(x)
             y_pred_ind = pred_dict['y'].index(y)
             y_pred = pred_dict['y_pred'][y_pred_ind]
             y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
-            y_pred = torch.flatten(y_pred).cpu().numpy()[crop_vec]
+            y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
             labels, onsets_s, offsets_s = util.labels.lbl_tb2segments(y_pred,
                                                                       labelmap=labelmap,
                                                                       timebin_dur=timebin_dur)
