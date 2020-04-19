@@ -101,6 +101,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as identified in issue [#123](https://github.com/NickleDave/vak/issues/123)
 - fix indent error in `Model.fit` method (see issue [#151](https://github.com/NickleDave/vak/issues/151)) 
   that stopped training early [#153](https://github.com/NickleDave/vak/pull/153) 
+- fix bug [#166](https://github.com/NickleDave/vak/issues/166) 
+  that let training continue even after `patience` number of validation steps had elapsed 
+  without an increase in accuracy [#168](https://github.com/NickleDave/vak/pull/168) 
 
 ### Removed
 - remove `vak.util.general.safe_truncate` function, no longer used 
