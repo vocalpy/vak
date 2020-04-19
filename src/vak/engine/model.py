@@ -389,9 +389,14 @@ class Model:
                         val_data,
                         val_step,
                         ckpt_step)
+            if patience is not None:
+                if self.patience_counter > self.patience:
+                    # need to break here too, not just inside _train function
+                    break
 
-        log_or_print('Completed last epoch.', logger=self.logger, level='info')
-        self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
+        if epoch == num_epochs:  # save at end, if we complete all epochs (not if we stopped because of patience)
+            log_or_print('Completed last epoch.', logger=self.logger, level='info')
+            self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
 
     def evaluate(self,
                  eval_data,
