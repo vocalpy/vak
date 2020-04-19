@@ -88,6 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   windows from spectrograms [#165](https://github.com/NickleDave/vak/pull/165)
 - change `reshape_to_window` transform to `view_as_window_batch` because it was not working as intended 
   [#165](https://github.com/NickleDave/vak/pull/165)
+- bump minimum version of `TweetyNet` to 0.4.1 in [#172](https://github.com/NickleDave/vak/pull/172)
+  + version that changes optimizer back to `Adam`
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
