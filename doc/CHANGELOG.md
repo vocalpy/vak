@@ -90,6 +90,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#165](https://github.com/NickleDave/vak/pull/165)
 - bump minimum version of `TweetyNet` to 0.4.1 in [#172](https://github.com/NickleDave/vak/pull/172)
   + version that changes optimizer back to `Adam`
+- raise lower bound on `crowsetta` version to 2.2.0, to get fixes for `koumura2annot`
+  and avoid errors when `annot_file` is provided as a `pathlib.Path` instead of a `str`
+  [#175](https://github.com/NickleDave/vak/pull/175)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
