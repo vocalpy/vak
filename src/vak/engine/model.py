@@ -148,15 +148,15 @@ class Model:
                             if self.patience_counter > self.patience:
                                 log_or_print(
                                     'Stopping training early, '
-                                    f'validation accuracy has not improved in {self.patience} epochs',
+                                    f'accuracy has not improved in {self.patience} validation steps.',
                                     logger=self.logger, level='info')
                                 # save "backup" checkpoint upon stopping; don't save over "max-val-acc" checkpoint
                                 self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
                                 break
                             else:
                                 log_or_print(
-                                    f'Validation accuracy has not improved in {self.patience_counter} epochs. '
-                                    f'Not saving max-val-acc checkpoint for this epoch.',
+                                    f'Accuracy has not improved in {self.patience_counter} validation steps. '
+                                    f'Not saving max-val-acc checkpoint for this validation step.',
                                     logger=self.logger, level='info')
                         else:  # patience is None. We still log that we are not saving checkpoint.
                             log_or_print(
