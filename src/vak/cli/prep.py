@@ -178,7 +178,7 @@ def prep(toml_path):
     vak_df.to_csv(csv_path)
 
     # use config and section from above to add csv_path to config.ini file
-    config_toml[section]['csv_path'] = csv_path
+    config_toml[section]['csv_path'] = str(csv_path)
 
     with toml_path.open('w') as fp:
         toml.dump(config_toml, fp)
