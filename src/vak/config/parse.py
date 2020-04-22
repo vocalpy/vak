@@ -6,6 +6,7 @@ import toml
 from toml.decoder import TomlDecodeError
 
 from .dataloader import parse_dataloader_config, DataLoaderConfig
+from .eval import parse_eval_config, EvalConfig
 from .learncurve import parse_learncurve_config, LearncurveConfig
 from .predict import parse_predict_config, PredictConfig
 from .prep import parse_prep_config, PrepConfig
@@ -29,6 +30,8 @@ class Config:
         represents [DATALOADER] section of config.ini file
     train : vak.config.train.TrainConfig
         represents [TRAIN] section of config.ini file
+    eval : vak.config.eval.EvalConfig
+        represents [EVAL] section of config.ini file
     predict : vak.config.predict.PredictConfig
         represents [PREDICT] section of config.ini file.
     learncurve : vak.config.learncurve.LearncurveConfig
@@ -39,6 +42,7 @@ class Config:
 
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
+    eval = attr.ib(validator=optional(instance_of(EvalConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
     learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
 
@@ -47,6 +51,7 @@ SECTION_PARSERS = {
     'SPECT_PARAMS': parse_spect_params_config,
     'DATALOADER': parse_dataloader_config,
     'PREP': parse_prep_config,
+    'EVAL': parse_eval_config,
     'TRAIN': parse_train_config,
     'LEARNCURVE': parse_learncurve_config,
     'PREDICT': parse_predict_config,
