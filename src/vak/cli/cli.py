@@ -1,3 +1,4 @@
+from .eval import eval
 from .train import train
 from .learncurve import learning_curve
 from .predict import predict
@@ -10,7 +11,7 @@ def cli(command, config_file):
     Parameters
     ----------
     command : string
-        One of {'prep', 'train', 'predict', 'finetune', 'learncurve'}
+        One of {'prep', 'train', 'eval', 'predict', 'finetune', 'learncurve'}
     config_file : str, Path
         path to a config.toml file
     """
@@ -20,11 +21,14 @@ def cli(command, config_file):
     elif command == 'train':
         train(toml_path=config_file)
 
-    elif command == 'finetune':
-        raise NotImplementedError
+    elif command == 'eval':
+        eval(toml_path=config_file)
 
     elif command == 'predict':
         predict(toml_path=config_file)
+
+    elif command == 'finetune':
+        raise NotImplementedError
 
     # elif command == 'learncurve':
     #     if config_obj.has_option('TRAIN', 'results_dir_made_by_main_script'):

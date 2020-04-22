@@ -13,6 +13,7 @@ def get_parser():
     CHOICES = [
         'prep',
         'train',
+        'eval',
         'predict',
         'finetune',
         'learncurve',
