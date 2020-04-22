@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#165](https://github.com/NickleDave/vak/pull/165)
 - add `transforms.defaults` with `ItemTransforms` that return dictionaries. Decouples logic for 
   what will be in returned "items" from the different dataset classes [#165](https://github.com/NickleDave/vak/pull/165)
+- add `eval` command to command-line interface [#179](https://github.com/NickleDave/vak/pull/179)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
