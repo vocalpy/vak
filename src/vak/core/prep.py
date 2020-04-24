@@ -214,6 +214,6 @@ def prep(data_dir,
         vak_df = dataframe.add_split_col(vak_df, split=purpose)
 
     log_or_print(msg=f'saving dataset as a .csv file: {csv_path}', logger=logger, level='info')
-    vak_df.to_csv(csv_path)
+    vak_df.to_csv(csv_path, index=False)  # index is False to avoid having "Unnamed: 0" column when loading
 
     return vak_df, csv_path
