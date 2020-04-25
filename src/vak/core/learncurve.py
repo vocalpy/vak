@@ -294,7 +294,7 @@ def learning_curve(model_config_map,
     # ---- make a csv for analysis -------------------------------------------------------------------------------------
     reg_exp_num = re.compile(r"[-+]?\d*\.\d+|\d+")  # to extract train set dur and replicate num from paths
 
-    eval_csv_paths = sorted(Path('.').glob('**/eval*.csv'))
+    eval_csv_paths = sorted(results_path.glob('**/eval*.csv'))
     eval_df_0 = pd.read_csv(eval_csv_paths[0])  # use to just get columns
     eval_columns = eval_df_0.columns.tolist()  # will use below to re-order
     eval_dfs = []
