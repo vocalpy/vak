@@ -151,7 +151,9 @@ def eval(csv_path,
             ]
         )
         # order metrics by name to be extra sure they will be consistent across runs
-        row.update(sorted(metric_vals.items()))
+        row.update(
+            sorted([(k, v) for k, v in metric_vals.items() if k.startswith('avg_')])
+        )
 
         # pass index into dataframe, needed when using all scalar values (a single row)
         # throw away index below when saving to avoid extra column
