@@ -62,11 +62,10 @@ def validate_durations_convert_nonnegative(train_dur, val_dur, test_dur, vds_dur
             'cannot specify duration of more than one split as -1, unclear how to calculate durations of splits.'
         )
 
-    if split_durs['train'] is None:
-        split_durs['train'] = 0
-
-    if split_durs['test'] is None:
-        split_durs['test'] = 0
+    # set any None values for durations to 0; no part of dataset will go to that split
+    for split_name in split_durs.keys():
+        if split_durs[split_name] is None:
+            split_durs[split_name] = 0
 
     if -1 in split_durs.values():
         total_other_splits_dur = sum([dur for dur in split_durs.values() if dur is not -1])

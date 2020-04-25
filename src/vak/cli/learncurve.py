@@ -1,147 +1,75 @@
-import logging
-import os
+from pathlib import Path
 import shutil
-import sys
 from datetime import datetime
-from configparser import ConfigParser
 
-import numpy as np
+from .. import config
+from .. import core
+from .. import util
 
 
-def learning_curve(train_vds_path,
-                   test_vds_path,
-                   total_train_set_duration,
-                   train_set_durs,
-                   num_replicates,
-                   networks,
-                   num_epochs,
-                   config_file,
-                   val_vds_path=None,
-                   val_step=None,
-                   ckpt_step=None,
-                   patience=None,
-                   save_only_single_checkpoint_file=True,
-                   normalize_spectrograms=False,
-                   use_train_subsets_from_previous_run=False,
-                   previous_run_path=None,
-                   root_results_dir=None,
-                   save_transformed_data=False,
-                   ):
+def learning_curve(toml_path):
     """generate learning curve, by training models on training sets across a
-    range of sizes and then measure accuracy of those models on a test set
+    range of sizes and then measure accuracy of those models on a test set.
+    Function called by command-line interface.
 
     Parameters
     ----------
-    train_vds_path : str
-        path to Dataset that represents training data
-    test_vds_path : str
-        path to Dataset that represents test data
-    total_train_set_duration : int
-        total duration of training set, in seconds
-    train_set_durs : list
-        of int, durations in seconds of subsets taken from training data
-        to create a learning curve, e.g. [5, 10, 15, 20]
-    num_replicates : int
-        number of times to replicate training for each training set duration
-        to better estimate mean accuracy for a training set of that size.
-        Each replicate uses a different randomly drawn subset of the training
-        data (but of the same duration).
-    networks : dict
-        where each key is the name of a neural network and the corresponding
-        value is the configuration for that network (in a namedtuple or a dict)
-    num_epochs : int
-        number of training epochs. One epoch = one iteration through the entire
-        training set.
-    config_file : str
-        path to config.ini file. Used to rewrite file with options determined by
-        this function and needed for other functions (e.g. cli.summary)
-    val_vds_path : str
-        path to Dataset that represents validation data.
-        Default is None, in which case accuracy is not measured on validation set
-        during training.
-    val_step : int
-        step/epoch at which to estimate accuracy using validation set.
-        Default is None, in which case accuracy is not measured on validation set
-        during training.
-    ckpt_step : int
-        step/epoch at which to save to checkpoint file.
-        Default is None, in which case checkpoint is only saved at the last epoch.
-    patience : int
-        number of epochs to wait without the error dropping before stopping the
-        training. Default is None, in which case training continues for num_epochs
-    save_only_single_checkpoint_file : bool
-        if True, save only one checkpoint file instead of separate files every time
-        we save. Default is True.
-    normalize_spectrograms : bool
-        if True, use utils.spect.SpectScaler to normalize the spectrograms.
-        Normalization is done by subtracting off the mean for each frequency bin
-        of the training set and then dividing by the std for that frequency bin.
-        This same normalization is then applied to validation + test data.
-    use_train_subsets_from_previous_run : bool
-        if True, use training subsets saved in a previous run
-    previous_run_path : str
-        path to results directory from a previous run
-    root_results_dir : str
-        path in which to create results directory for this run of cli.learncurve
-    save_transformed_data : bool
-        if True, save transformed data (i.e. scaled, reshaped). The data can then
-        be used on a subsequent run of learncurve (e.g. if you want to compare results
-        from different hyperparameters across the exact same training set).
-        Also useful if you need to check what the data looks like when fed to networks.
+    toml_path : str, Path
+        path to a configuration file in TOML format.
 
     Returns
     -------
     None
 
-    Saves results in root_results_dir and adds some options to config_file.
+    Trains models, saves results in new directory within root_results_dir specified
+    in config.ini file, and adds path to that new directory to config.ini file.
     """
-    # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    if val_step and val_vds_path is None:
+    toml_path = Path(toml_path)
+    cfg = config.parse.from_toml(toml_path)
+
+    if cfg.learncurve is None:
         raise ValueError(
-            f"val_step set to {val_step} but val_vds_path is None; please provide a path to "
-            f"a validation data set that can be used to check error rate very {val_step} steps"
+            f'train called with a config.toml file that does not have a TRAIN section: {toml_path}'
         )
 
-    if val_vds_path and val_step is None:
-        raise ValueError(
-            "val_vds_path was provided but val_step is None; please provide a value for val_step"
-        )
-
-    max_train_set_dur = np.max(train_set_durs)
-    if max_train_set_dur > total_train_set_duration:
-        raise ValueError('Largest duration for a training set of {} '
-                         'is greater than total duration of training set, {}'
-                         .format(max_train_set_dur, total_train_set_duration))
-
-    # need to set up a results dir so we have some place to put the log file
+    # ---- set up directory to save output -----------------------------------------------------------------------------
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    results_dirname = f'{timenow}'
-    if root_results_dir:
-        results_dirname = os.path.join(root_results_dir,
-                                       results_dirname)
-    os.makedirs(results_dirname)
-    shutil.copy(config_file, results_dirname)
+    results_dirname = f'results_{timenow}'
+    if cfg.learncurve.root_results_dir:
+        results_path = Path(cfg.learncurve.root_results_dir)
+    else:
+        results_path = Path('.')
+    results_path = results_path.joinpath(results_dirname)
+    results_path.mkdir(parents=True)
+    # copy config file into results dir now that we've made the dir
+    shutil.copy(toml_path, results_path)
 
-    # ---------------- logging -----------------------------------------------------------------------------------------
-    logfile_name = os.path.join(results_dirname,
-                                'logfile_from_running_learncurve_' + timenow + '.log')
-    # give logger same name that core.learncurve will use, so it will have the same level and handlers
-    # as what's declared here
-    logger = logging.getLogger('learncurve')
-    logger.setLevel('INFO')
-    logger.addHandler(logging.FileHandler(logfile_name))
-    logger.addHandler(logging.StreamHandler(sys.stdout))
-    logger.info('Logging results to {}'.format(results_dirname))
-    logger.info('Using config file: {}'.format(config_file))
+    # ---- set up logging ----------------------------------------------------------------------------------------------
+    logger = util.logging.get_logger(log_dst=results_path,
+                                     caller='train',
+                                     timestamp=timenow,
+                                     logger_name=__name__)
+    logger.info('Logging results to {}'.format(results_path))
 
-    # --------------- let core.learncurve do all the work --------------------------------------------------------------
+    model_config_map = config.models.map_from_path(toml_path, cfg.learncurve.models)
 
-    # rewrite config file,
-    # so that paths where results were saved are automatically in config
-    config = ConfigParser()
-    config.read(config_file)
-    config.set(section='LEARNCURVE',
-               option='results_dir_made_by_main_script',
-               value=results_dirname)
-    with open(config_file, 'w') as config_file_rewrite:
-        config.write(config_file_rewrite)
+    core.learning_curve(model_config_map,
+                        cfg.learncurve.train_set_durs,
+                        cfg.learncurve.num_replicates,
+                        cfg.learncurve.csv_path,
+                        cfg.prep.labelset,
+                        cfg.dataloader.window_size,
+                        cfg.learncurve.batch_size,
+                        cfg.learncurve.num_epochs,
+                        cfg.learncurve.num_workers,
+                        results_path=results_path,
+                        spect_key=cfg.spect_params.spect_key,
+                        timebins_key=cfg.spect_params.timebins_key,
+                        normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
+                        shuffle=cfg.learncurve.shuffle,
+                        val_step=cfg.learncurve.val_step,
+                        ckpt_step=cfg.learncurve.ckpt_step,
+                        patience=cfg.learncurve.patience,
+                        device=cfg.learncurve.device,
+                        logger=logger,
+                        )

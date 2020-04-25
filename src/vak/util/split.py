@@ -117,13 +117,17 @@ def train_test_dur_split(vak_df,
     Returns
     -------
     vak_df : pandas.Dataframe
-        with 'split' column added, that assigns each vocalization (row) to a subset, i.e., train, validation, or test.
-        If the vocalization was not added to one of the subsets, its value for 'split' will be 'None'.
+        a copy of the input dataset with a 'split' column added,
+        that assigns each vocalization (row) to a subset,
+        i.e., train, validation, or test.
+        If the vocalization was not added to one of the subsets,
+        its value for 'split' will be 'None'.
 
     Notes
     -----
     uses the function `vak.dataset.split.train_test_dur_split_inds` to find indices for each subset.
     """
+    vak_df = vak_df.copy()  # don't want this function to have unexpected side effects, so return a copy
     labels = labels_from_df(vak_df)
 
     durs = vak_df['duration'].values
