@@ -1,0 +1,219 @@
+from datetime import datetime
+from pathlib import Path
+import warnings
+
+from ..util.logging import log_or_print
+from ..io import dataframe
+from ..util import train_test_dur_split
+
+
+VALID_PURPOSES = frozenset(['train', 'predict', 'learncurve'])
+
+
+def prep(data_dir,
+         purpose,
+         output_dir=None,
+         audio_format=None,
+         spect_format=None,
+         spect_params=None,
+         annot_format=None,
+         annot_file=None,
+         labelset=None,
+         train_dur=None,
+         val_dur=None,
+         test_dur=None,
+         logger=None,
+         ):
+    """prepare datasets from vocalizations.
+    High-level function that prepares datasets to be used by other
+    high-level functions like vak.train, vak.predict, and vak.learncurve
+
+    Parameters
+    ----------
+    data_dir : str, Path
+        path to directory with files from which to make dataset
+    purpose : str
+        one of {'train', 'predict', 'learncurve'}
+    output_dir : str
+        Path to location where data sets should be saved.
+        Default is None, in which case data sets to `data_dir`.
+    audio_format : str
+        format of audio files. One of {'wav', 'cbin'}.
+        Default is None, but either audio_format or spect_format must be specified.
+    spect_format : str
+        format of files containg spectrograms as 2-d matrices. One of {'mat', 'npz'}.
+        Default is None, but either audio_format or spect_format must be specified.
+    spect_params : dict, vak.config.SpectParams
+        parameters for creating spectrograms. Default is None.
+    annot_format : str
+        format of annotations. Any format that can be used with the
+        crowsetta library is valid. Default is None.
+    annot_file : str
+        Path to a single annotation file. Default is None.
+        Used when a single file contains annotations for multiple audio files.
+    labelset : set
+        of str or int, the set of labels that correspond to annotated segments
+        that a network should learn to segment and classify. Note that if there
+        are segments that are not annotated, e.g. silent gaps between songbird
+        syllables, then a dummy label will be assigned to those segments.
+        Default is None.
+    train_dur : float
+        total duration of training set, in seconds. When creating a learning curve,
+        training subsets of shorter duration will be drawn from this set. Default is None.
+    val_dur : float
+        total duration of validation set, in seconds. Default is None.
+    test_dur : float
+        total duration of test set, in seconds. Default is None.
+
+    Other Parameters
+    ----------------
+    logger : logging.Logger
+        instance created by vak.util.logging.get_logger. Default is None.
+
+    Returns
+    -------
+    vak_df : pandas.DataFrame
+        that represents a dataset of vocalizations
+    csv_path : Path
+        to csv saved from vak_df
+
+    Notes
+    -----
+    Saves a .csv file representing the dataset generated from data_dir.
+    If durations were specified for validation and test sets, then the .csv
+    has a column representing which files belong to the training, test, and
+    validation sets created from that Dataset.
+
+    Datasets are used to train neural networks that segment audio files into
+    vocalizations, and then predict labels for those segments.
+    The function also prepares datasets so neural networks can predict the
+    segmentation and annotation of vocalizations in them.
+    It can also split a dataset into training, validation, and test sets,
+    e.g. for benchmarking different neural network architectures.
+
+    If no durations for any of the training sets are specified, then the
+    function assumes all the vocalizations constitute a single training
+    dataset. If the duration of either the training or test set is provided,
+    then the function attempts to split the dataset into training and test sets.
+    """
+    # pre-conditions ---------------------------------------------------------------------------------------------------
+    if purpose not in VALID_PURPOSES:
+        raise ValueError(
+            f'purpose must be one of: {VALID_PURPOSES}\nValue for purpose was: {purpose}'
+        )
+
+    if audio_format is None and spect_format is None:
+        raise ValueError("Must specify either audio_format or spect_format")
+
+    if audio_format and spect_format:
+        raise ValueError("Cannot specify both audio_format and spect_format, "
+                         "unclear whether to create spectrograms from audio files or "
+                         "use already-generated spectrograms from array files")
+
+    if labelset is not None:
+        if type(labelset) not in (set, list):
+            raise TypeError(
+                f"type of labelset must be set or list, but type was: {type(labelset)}"
+            )
+
+        if type(labelset) == list:
+            labelset_set = set(labelset)
+            if len(labelset) != len(labelset_set):
+                raise ValueError(
+                    'labelset contains repeated elements, should be a set (i.e. all members unique.\n'
+                    f'Labelset was: {labelset}'
+                )
+            else:
+                labelset = labelset_set
+
+    data_dir = Path(data_dir).expanduser().resolve()
+    if not data_dir.is_dir():
+        raise NotADirectoryError(
+            f'data_dir not found: {data_dir}'
+        )
+
+    if output_dir:
+        output_dir = Path(output_dir).expanduser().resolve()
+    else:
+        output_dir = data_dir
+
+    if not output_dir.is_dir():
+        raise NotADirectoryError(
+            f'output_dir not found: {output_dir}'
+        )
+
+    if purpose == 'predict':
+        if labelset is not None:
+            warnings.warn(
+                "purpose set to 'predict', but a labelset was provided."
+                "This would cause an error because the dataframe.from_files section will attempt to "
+                f"check whether the files in the data_dir ({data_dir}) have labels in "
+                "labelset, even though those files don't have annotation.\n"
+                "Setting labelset to None."
+            )
+            labelset = None
+    log_or_print(
+        msg=f'purpose for dataset: {purpose}',
+        logger=logger, level='info'
+    )
+    # ---- figure out file name ----------------------------------------------------------------------------------------
+    data_dir_name = data_dir.name
+    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+    csv_fname_stem = f'{data_dir_name}_prep_{timenow}'
+    csv_path = output_dir.joinpath(f'{csv_fname_stem}.csv')
+
+    # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
+    # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
+    if ((purpose == 'train' or purpose == 'learncurve') and
+            ((train_dur is not None and train_dur > 0) and
+             (val_dur is None or val_dur == 0) and
+             (test_dur is None or val_dur == 0)
+             )):
+        raise ValueError(
+            'duration specified for just training set, but prep function does not currently support creating a '
+            'single split of a specified duration. Either remove the train_dur option from the prep section and '
+            'rerun, in which case all data will be included in the training set, or specify values greater than '
+            'zero for test_dur (and val_dur, if a validation set will be used)'
+        )
+
+    if all([dur is None for dur in (train_dur,
+                                    val_dur,
+                                    test_dur)]):
+        # then we're not going to split
+        log_or_print(msg='will not split dataset', logger=logger, level='info')
+        do_split = False
+    else:
+        if val_dur is not None and train_dur is None and test_dur is None:
+            raise ValueError('cannot specify only val_dur, unclear how to split dataset into training and test sets')
+        else:
+            log_or_print(msg='will split dataset', logger=logger, level='info')
+            do_split = True
+
+    # ---- actually make the dataset -----------------------------------------------------------------------------------
+    vak_df = dataframe.from_files(labelset=labelset,
+                                  data_dir=data_dir,
+                                  annot_format=annot_format,
+                                  output_dir=output_dir,
+                                  annot_file=annot_file,
+                                  audio_format=audio_format,
+                                  spect_format=spect_format,
+                                  spect_params=spect_params,
+                                  logger=logger)
+
+    if do_split:
+        # save before splitting, jic duration args are not valid (we can't know until we make dataset)
+        vak_df.to_csv(csv_path)
+        vak_df = train_test_dur_split(vak_df,
+                                      labelset=labelset,
+                                      train_dur=train_dur,
+                                      val_dur=val_dur,
+                                      test_dur=test_dur)
+
+    elif do_split is False:
+        # add a split column, but assign everything to the same 'split'
+        vak_df = dataframe.add_split_col(vak_df, split=purpose)
+
+    log_or_print(msg=f'saving dataset as a .csv file: {csv_path}', logger=logger, level='info')
+    vak_df.to_csv(csv_path, index=False)  # index is False to avoid having "Unnamed: 0" column when loading
+
+    return vak_df, csv_path

@@ -56,11 +56,7 @@ def brute_force(durs,
 
     sum_durs = sum(durs)
     train_dur, val_dur, test_dur = validate_durations_convert_nonnegative(train_dur, val_dur, test_dur, sum_durs)
-
-    if -1 not in (train_dur, test_dur):
-        total_target_dur = sum([dur for dur in (train_dur, val_dur, test_dur) if dur is not None])
-    else:
-        total_target_dur = sum_durs
+    total_target_dur = sum([dur for dur in (train_dur, val_dur, test_dur) if dur is not None])
 
     durs_labels_list = list(zip(durs, labels))
     iter = 1
@@ -69,10 +65,11 @@ def brute_force(durs,
                       f'after {max_iter} iterations.'
                       ' Try increasing the total size of the data set.')
 
+    # ---- outer loop that repeats until we successfully split our reach max number of iters ---------------------------
     while 1:
         train_inds = []
         test_inds = []
-        if val_dur:
+        if val_dur > 0:
             val_inds = []
         else:
             val_inds = None
@@ -86,138 +83,92 @@ def brute_force(durs,
 
         finished = False
 
-        if -1 in (train_dur, test_dur):
-            if train_dur == -1:
-                choice = ['test', 'train']
-            elif test_dur == -1:
-                choice = ['train', 'test']
+        choice = []
+        if train_dur > 0:
+            choice.append('train')
+        if test_dur > 0:
+            choice.append('test')
+        if val_dur:
+            choice.append('val')
 
-            while finished is False:
-                try:
-                    ind = durs_labels_inds.pop()
-                except IndexError:
-                    if len(durs_labels_inds) == 0:
-                        logger.debug(
-                            'Ran out of elements while dividing dataset into subsets of specified durations.'
-                            f'Iteration {iter}'
-                        )
-                        iter += 1
-                        break  # do next iteration
-                    else:
-                        # something else happened, re-raise error
-                        raise
-                which_set = choice[0]
-                if which_set == 'train':
-                    train_inds.append(ind)
-                    total_train_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                    if train_dur != -1 and total_train_dur >= train_dur:
-                        choice.pop(choice.index('train'))
-                elif which_set == 'test':
-                    test_inds.append(ind)
-                    total_test_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                    if test_dur != -1 and total_test_dur >= test_dur:
-                        choice.pop(choice.index('test'))
-
+        # ---- inner loop that actually does split -----------------
+        while finished is False:
+            # pop durations off list and append to randomly-chosen
+            # list, either train, val, or test set.
+            # Do this until the total duration for each data set is equal
+            # to or greater than the target duration for each set.
+            try:
+                ind = durs_labels_inds.pop()
+            except IndexError:
                 if len(durs_labels_inds) == 0:
+                    logger.debug(
+                        'Ran out of elements while dividing dataset into subsets of specified durations.'
+                        f'Iteration {iter}'
+                    )
+                    iter += 1
+                    break  # do next iteration
+                else:
+                    # something else happened, re-raise error
+                    raise
+
+            which_set = random.randint(0, len(choice) - 1)
+            which_set = choice[which_set]
+            if which_set == 'train':
+                train_inds.append(ind)
+                total_train_dur += durs_labels_list[ind][0]  # ind 0 is duration
+                if total_train_dur >= train_dur:
+                    choice.pop(choice.index('train'))
+            elif which_set == 'val':
+                val_inds.append(ind)
+                total_val_dur += durs_labels_list[ind][0]  # ind 0 is duration
+                if total_val_dur >= val_dur:
+                    choice.pop(choice.index('val'))
+            elif which_set == 'test':
+                test_inds.append(ind)
+                total_test_dur += durs_labels_list[ind][0]  # ind 0 is duration
+                if total_test_dur >= test_dur:
+                    choice.pop(choice.index('test'))
+
+            if len(choice) < 1:
+                total_all_durs = sum([dur for dur in (total_train_dur, total_val_dur, total_test_dur)
+                                      if dur is not None])
+                if total_all_durs < total_target_dur:
+                    raise ValueError(
+                        f'Loop to find subsets completed but total duration of subsets, {total_all_durs} seconds, '
+                        f'is less than total duration specified: {total_target_dur} seconds.')
+                else:
                     finished = True
                     break
 
-        else:
-            choice = []
-            if train_dur > 0:
-                choice.append('train')
-            if test_dur > 0:
-                choice.append('test')
-            if val_dur:
-                choice.append('val')
-
-            while finished is False:
-                # pop durations off list and append to randomly-chosen
-                # list, either train, val, or test set.
-                # Do this until the total duration for each data set is equal
-                # to or greater than the target duration for each set.
-                try:
-                    ind = durs_labels_inds.pop()
-                except IndexError:
-                    if len(durs_labels_inds) == 0:
-                        logger.debug(
-                            'Ran out of elements while dividing dataset into subsets of specified durations.'
-                            f'Iteration {iter}'
-                        )
-                        iter += 1
-                        break  # do next iteration
-                    else:
-                        # something else happened, re-raise error
-                        raise
-
-                which_set = random.randint(0, len(choice) - 1)
-                which_set = choice[which_set]
-                if which_set == 'train':
-                    train_inds.append(ind)
-                    total_train_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                    if total_train_dur >= train_dur:
-                        choice.pop(choice.index('train'))
-                elif which_set == 'val':
-                    val_inds.append(ind)
-                    total_val_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                    if total_val_dur >= val_dur:
-                        choice.pop(choice.index('val'))
-                elif which_set == 'test':
-                    test_inds.append(ind)
-                    total_test_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                    if total_test_dur >= test_dur:
-                        choice.pop(choice.index('test'))
-
-                if len(choice) < 1:
-                    total_all_durs = sum([dur for dur in (total_train_dur, total_val_dur, total_test_dur)
-                                          if dur is not None])
-                    if total_all_durs < total_target_dur:
-                        raise ValueError(
-                            f'Loop to find subsets completed but total duration of subsets, {total_all_durs} seconds, '
-                            f'is less than total duration specified: {total_target_dur} seconds.')
-                    else:
-                        finished = True
-                        break
-
-            if iter > max_iter:
-                raise ValueError('Could not find subsets of sufficient duration in '
-                                 f'less than {max_iter} iterations.')
+        if iter > max_iter:
+            raise ValueError('Could not find subsets of sufficient duration in '
+                             f'less than {max_iter} iterations.')
 
         if finished is True:
             # make sure that each set contains all classes we
             # want the network to learn
-            train_tups = [durs_labels_list[ind] for ind in train_inds]  # tup = a tuple
-            test_tups = [durs_labels_list[ind] for ind in test_inds]
-            if val_dur:
-                val_tups = [durs_labels_list[ind] for ind in val_inds]
+            if train_dur > 0:
+                train_tups = [durs_labels_list[ind] for ind in train_inds]  # tup = a tuple
+                train_labels = itertools.chain.from_iterable(
+                    [tup[1] for tup in train_tups])
+                train_labelset = set(train_labels)  # make set to get unique values
+                if train_labelset != set(labelset):
+                    iter += 1
+                    if iter > max_iter:
+                        raise ValueError(all_labels_err)
+                    else:
+                        logger.debug(
+                            'Train labels did not contain all labels in labelset. '
+                            f'Getting new training set. Iteration {iter}'
+                        )
+                        continue
 
-            train_labels = itertools.chain.from_iterable(
-                [tup[1] for tup in train_tups])
-            train_labels = set(train_labels)  # make set to get unique values
-
-            if test_dur > 0 or test_dur == -1:
+            if test_dur > 0:
+                test_tups = [durs_labels_list[ind] for ind in test_inds]
                 test_labels = itertools.chain.from_iterable(
                     [tup[1] for tup in test_tups])
-                test_labels = set(test_labels)
-
-            if val_dur:
-                val_labels = itertools.chain.from_iterable(
-                    [tup[1] for tup in val_tups])
-                val_labels = set(val_labels)
-
-            if train_labels != set(labelset):
-                iter += 1
-                if iter > max_iter:
-                    raise ValueError(all_labels_err)
-                else:
-                    logger.debug(
-                        'Train labels did not contain all labels in labelset. '
-                        f'Getting new training set. Iteration {iter}'
-                    )
-                    continue
-
-            if test_dur > 0 or test_dur == -1:
-                if test_labels != set(labelset):
+                test_labelset = set(test_labels)
+                if test_labelset != set(labelset):
                     iter += 1
                     if iter > max_iter:
                         raise ValueError(all_labels_err)
@@ -228,18 +179,25 @@ def brute_force(durs,
                         )
                         continue
 
-            if val_dur is not None and val_labels != set(labelset):
-                iter += 1
-                if iter > max_iter:
-                    raise ValueError(all_labels_err)
-                else:
-                    logger.debug(
-                        'Validation labels did not contain all labels in labelset. '
-                        f'Getting new validation set. Iteration {iter}'
-                    )
-                    continue
-            else:
-                break
+            if val_dur > 0:
+                val_tups = [durs_labels_list[ind] for ind in val_inds]
+                val_labels = itertools.chain.from_iterable(
+                    [tup[1] for tup in val_tups])
+                val_labelset = set(val_labels)
+                if val_labelset != set(labelset):
+                    iter += 1
+                    if iter > max_iter:
+                        raise ValueError(all_labels_err)
+                    else:
+                        logger.debug(
+                            'Validation labels did not contain all labels in labelset. '
+                            f'Getting new validation set. Iteration {iter}'
+                        )
+                        continue
+
+            # successfully split
+            break
+
         elif finished is False:
             continue
 
