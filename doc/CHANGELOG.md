@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   command-line interface, and makes it possible for one high-level function to call another, i.e., 
   `vak.core.learncurve` calls `vak.core.train` and `vak.core.eval`
   [#183](https://github.com/NickleDave/vak/pull/183)
+- add computation of distance metrics to `Model._eval` method
+  [#185](https://github.com/NickleDave/vak/pull/185)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
@@ -99,6 +101,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - raise lower bound on `crowsetta` version to 2.2.0, to get fixes for `koumura2annot`
   and avoid errors when `annot_file` is provided as a `pathlib.Path` instead of a `str`
   [#175](https://github.com/NickleDave/vak/pull/175)
+- change `Model._eval` method so it returns metrics average across batches, in addition to 
+  the value for each batch
+  [#185](https://github.com/NickleDave/vak/pull/185)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
