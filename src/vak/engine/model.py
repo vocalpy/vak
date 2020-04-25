@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from ..util.general import get_default_device
 from ..util.logging import log_or_print
+from ..util.labels import lbl_tb2labels
 
 
 class Model:
@@ -226,6 +227,14 @@ class Model:
                     out = out[:, :, padding_mask]
                     y_pred = y_pred[:, padding_mask]
 
+                if (any(['levenshtein' in metric_name for metric_name in self.metrics.keys()]) or
+                        any(['segment_error_rate' in metric_name for metric_name in self.metrics.keys()])):
+                    y_labels = lbl_tb2labels(y.cpu().numpy(), eval_data.dataset.labelmap)
+                    y_pred_labels = lbl_tb2labels(y_pred.cpu().numpy(), eval_data.dataset.labelmap)
+                else:
+                    y_labels = None
+                    y_pred_labels = None
+
                 for metric_name, metric_callable in self.metrics.items():
                     if metric_name == 'loss':
                         metric_vals[metric_name].append(
@@ -234,6 +243,14 @@ class Model:
                     elif metric_name == 'acc':
                         metric_vals[metric_name].append(
                             metric_callable(y_pred, y)
+                        )
+                    elif metric_name == 'levenshtein':
+                        metric_vals[metric_name].append(
+                            metric_callable(y_pred_labels, y_labels)
+                        )
+                    elif metric_name == 'segment_error_rate':
+                        metric_vals[metric_name].append(
+                            metric_callable(y_pred_labels, y_labels)
                         )
                     else:
                         raise NotImplementedError(
