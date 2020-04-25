@@ -54,6 +54,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add `transforms.defaults` with `ItemTransforms` that return dictionaries. Decouples logic for 
   what will be in returned "items" from the different dataset classes [#165](https://github.com/NickleDave/vak/pull/165)
 - add `eval` command to command-line interface [#179](https://github.com/NickleDave/vak/pull/179)
+- add `vak.core` sub-package with "core" functions that are called by corresponding functions in 
+  `vak.cli`, e.g. `vak.cli.train` calls `vak.core.train`; de-couples high-level functionality from 
+  command-line interface, and makes it possible for one high-level function to call another, i.e., 
+  `vak.core.learncurve` calls `vak.core.train` and `vak.core.eval`
+  [#183](https://github.com/NickleDave/vak/pull/183)
 
 ### Changed
 - rewrite `vak.util.dataset.has_unlabeled` to use `annotation.from_df` 
@@ -110,6 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix bug [#166](https://github.com/NickleDave/vak/issues/166) 
   that let training continue even after `patience` number of validation steps had elapsed 
   without an increase in accuracy [#168](https://github.com/NickleDave/vak/pull/168) 
+- fix `learncurve` functionality so it will work in version `0.3.0` 
+  [#183](https://github.com/NickleDave/vak/pull/183)
 
 ### Removed
 - remove `vak.util.general.safe_truncate` function, no longer used 
