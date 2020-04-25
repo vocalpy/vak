@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from ..util.general import get_default_device
 from ..util.logging import log_or_print
+from ..util.labels import lbl_tb2labels
 
 
 class Model:
@@ -127,14 +128,18 @@ class Model:
                     metric_vals = self._eval(val_data)
                     self.network.train()  # because _eval calls network.eval()
                     log_or_print(msg=', '.join([f'{metric_name}: {metric_value:.4f}'
-                                                for metric_name, metric_value in metric_vals.items()]),
+                                                for metric_name, metric_value in metric_vals.items()
+                                                if metric_name.startswith('avg_')]),
                                  logger=self.logger, level='info')
 
                     if self.summary_writer is not None:
                         for metric_name, metric_value in metric_vals.items():
-                            self.summary_writer.add_scalar(f'{metric_name}/val', metric_value, self.global_step)
+                            if metric_name.startswith('avg_'):
+                                self.summary_writer.add_scalar(f'{metric_name}/val',
+                                                               metric_value,
+                                                               self.global_step)
 
-                    current_val_acc = metric_vals['acc']
+                    current_val_acc = metric_vals['avg_acc']
                     if current_val_acc > self.max_val_acc:
                         self.max_val_acc = current_val_acc
                         log_or_print(msg=f'Accuracy on validation set improved. Saving max-val-acc checkpoint.',
@@ -226,6 +231,14 @@ class Model:
                     out = out[:, :, padding_mask]
                     y_pred = y_pred[:, padding_mask]
 
+                if (any(['levenshtein' in metric_name for metric_name in self.metrics.keys()]) or
+                        any(['segment_error_rate' in metric_name for metric_name in self.metrics.keys()])):
+                    y_labels = lbl_tb2labels(y.cpu().numpy(), eval_data.dataset.labelmap)
+                    y_pred_labels = lbl_tb2labels(y_pred.cpu().numpy(), eval_data.dataset.labelmap)
+                else:
+                    y_labels = None
+                    y_pred_labels = None
+
                 for metric_name, metric_callable in self.metrics.items():
                     if metric_name == 'loss':
                         metric_vals[metric_name].append(
@@ -234,6 +247,14 @@ class Model:
                     elif metric_name == 'acc':
                         metric_vals[metric_name].append(
                             metric_callable(y_pred, y)
+                        )
+                    elif metric_name == 'levenshtein':
+                        metric_vals[metric_name].append(
+                            metric_callable(y_pred_labels, y_labels)
+                        )
+                    elif metric_name == 'segment_error_rate':
+                        metric_vals[metric_name].append(
+                            metric_callable(y_pred_labels, y_labels)
                         )
                     else:
                         raise NotImplementedError(
@@ -245,12 +266,14 @@ class Model:
                     f'batch {ind} / {len(eval_data)}'
                 )
 
-        for metric_name in metric_vals.keys():
-            if metric_name in ['loss', 'acc']:
+        # ---- compute metrics averaged across batches -----------------------------------------------------------------
+        # iterate over list of keys, to avoid "dictionary changed size" error when adding average metrics
+        for metric_name in list(metric_vals):
+            if metric_name in ['loss', 'acc', 'levenshtein', 'segment_error_rate']:
                 avg_metric_val = (
                         torch.tensor(metric_vals[metric_name]).sum() / n_batches
                 ).item()
-                metric_vals[metric_name] = avg_metric_val
+                metric_vals[f'avg_{metric_name}'] = avg_metric_val
             else:
                 raise NotImplementedError(
                     f'calculation of metric across batches not yet implemented for {metric_name}'
