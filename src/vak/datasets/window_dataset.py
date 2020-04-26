@@ -199,9 +199,39 @@ class WindowDataset(VisionDataset):
         """number of batches"""
         return len(self.x_inds)
 
+    @staticmethod
+    def n_time_bins_spect(spect_path, spect_key='s'):
+        """get number of time bins in a spectrogram,
+        given a path to the array file containing that spectrogram
+
+        Parameters
+        ----------
+        spect_path : str, pathlib.Path
+            path to an array file containing a spectrogram and associated arrays.
+        spect_key : str
+            key to access spectograms in array files. Default is 's'.
+
+        Returns
+        -------
+        spect.shape[-1], the number of time bins in the spectrogram.
+        Assumes spectrogram is a 2-d matrix where rows are frequency bins,
+        and columns are time bins.
+        """
+        spect = util.path.array_dict_from_path(spect_path)[spect_key]
+        return spect.shape[-1]
+
     @classmethod
-    def from_csv(cls, csv_path, split, labelmap, window_size,
-                 spect_key='s', timebins_key='t', transform=None, target_transform=None):
+    def from_csv(cls,
+                 csv_path,
+                 split,
+                 labelmap,
+                 window_size,
+                 spect_key='s',
+                 timebins_key='t',
+                 spect_id_vector=None,
+                 spect_inds_vector=None,
+                 transform=None,
+                 target_transform=None):
         """given a path to a csv representing a dataset,
         returns an initialized WindowDataset.
 
@@ -220,6 +250,11 @@ class WindowDataset(VisionDataset):
             key to access spectograms in array files. Default is 's'.
         timebins_key : str
             key to access time bin vector in array files. Default is 't'.
+        spect_id_vector : numpy.ndarray
+            represents the 'id' of any spectrogram,
+            i.e., the index into spect_paths that will let us load it
+        spect_inds_vector : numpy.ndarray
+            valid indices of windows we can grab from each spectrogram
         transform : callable
             A function/transform that takes in a numpy array
             and returns a transformed version. E.g, a SpectScaler instance.
@@ -231,6 +266,37 @@ class WindowDataset(VisionDataset):
         -------
         initialized instance of WindowDataset
         """
+        if spect_id_vector is None and spect_inds_vector is not None:
+            raise ValueError(
+                'must provide spect_id_vector when specifying spect_inds_vector'
+            )
+
+        if spect_id_vector is not None and spect_inds_vector is None:
+            raise ValueError(
+                'must provide spect_inds_vector when specifying spect_id_vector'
+            )
+
+        if spect_id_vector is not None and spect_inds_vector is not None:
+            if not type(spect_id_vector) is np.ndarray:
+                raise TypeError(
+                    f'spect_id_vector must be a numpy.ndarray but type was: {type(spect_id_vector)}'
+                )
+
+            if not type(spect_inds_vector) is np.ndarray:
+                raise TypeError(
+                    f'spect_inds_vector must be a numpy.ndarray but type was: {type(spect_inds_vector)}'
+                )
+
+            spect_id_vector = util.validation.column_or_1d(spect_id_vector)
+            spect_inds_vector = util.validation.column_or_1d(spect_inds_vector)
+
+            if spect_id_vector.shape[-1] != spect_inds_vector.shape[-1]:
+                raise ValueError(
+                    'spect_id_vector and spect_inds_vector should be same length, but '
+                    f'spect_id_vector.shape[-1] is {spect_id_vector.shape[-1]} and '
+                    f'spect_inds_vector.shape[-1] is {spect_inds_vector.shape[-1]}.'
+                )
+
         df = pd.read_csv(csv_path)
         if not df['split'].str.contains(split).any():
             raise ValueError(
@@ -241,21 +307,18 @@ class WindowDataset(VisionDataset):
 
         spect_paths = df['spect_path'].values
 
-        def n_time_bins_spect(spect_path, spect_key=spect_key):
-            spect = util.path.array_dict_from_path(spect_path)[spect_key]
-            return spect.shape[-1]
-
-        # see Notes in class docstring to understand what these vectors do
-        spect_id_vector = []
-        spect_inds_vector = []
-        for ind, spect_path in enumerate(spect_paths):
-            n_tb_spect = n_time_bins_spect(spect_path)
-            # calculate number of windows we can extract from spectrogram of width time_bins
-            n_windows = n_tb_spect - window_size
-            spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
-            spect_inds_vector.append(np.arange(n_windows))
-        spect_id_vector = np.concatenate(spect_id_vector)
-        spect_inds_vector = np.concatenate(spect_inds_vector)
+        if spect_id_vector is None and spect_inds_vector is None:
+            # see Notes in class docstring to understand what these vectors do
+            spect_id_vector = []
+            spect_inds_vector = []
+            for ind, spect_path in enumerate(spect_paths):
+                n_tb_spect = cls.n_time_bins_spect(spect_path, spect_key)
+                # calculate number of windows we can extract from spectrogram of width time_bins
+                n_windows = n_tb_spect - window_size
+                spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
+                spect_inds_vector.append(np.arange(n_windows))
+            spect_id_vector = np.concatenate(spect_id_vector)
+            spect_inds_vector = np.concatenate(spect_inds_vector)
 
         x_inds = np.arange(spect_id_vector.shape[0])
 
