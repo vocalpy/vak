@@ -220,6 +220,84 @@ class WindowDataset(VisionDataset):
         spect = util.path.array_dict_from_path(spect_path)[spect_key]
         return spect.shape[-1]
 
+    @staticmethod
+    def spect_vectors_from_df(df,
+                              window_size,
+                              spect_key='s'):
+        """get spect_id_vector and spect_ind_vector from a dataframe
+        that represents a dataset of vocalizations.
+        See WindowDataset class docstring for
+        detailed explanation of these vectors.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            that represents a dataset of vocalizations.
+        window_size : int
+            number of time bins in windows that will be taken from spectrograms
+        spect_key : str
+            key to access spectograms in array files. Default is 's'.
+
+        Returns
+        -------
+        spect_id_vector : numpy.ndarray
+            represents the 'id' of any spectrogram,
+            i.e., the index into spect_paths that will let us load it
+        spect_inds_vector : numpy.ndarray
+            valid indices of windows we can grab from each spectrogram
+        """
+        spect_paths = df['spect_path'].values
+
+        spect_id_vector = []
+        spect_inds_vector = []
+        for ind, spect_path in enumerate(spect_paths):
+            n_tb_spect = WindowDataset.n_time_bins_spect(spect_path, spect_key)
+            # calculate number of windows we can extract from spectrogram of width time_bins
+            n_windows = n_tb_spect - window_size
+            spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
+            spect_inds_vector.append(np.arange(n_windows))
+        spect_id_vector = np.concatenate(spect_id_vector)
+        spect_inds_vector = np.concatenate(spect_inds_vector)
+        return spect_id_vector, spect_inds_vector
+
+    @staticmethod
+    def spect_vectors_from_csv(csv_path,
+                               split,
+                               window_size,
+                               spect_key='s'):
+        """get spect_id_vector and spect_ind_vector from a
+        .csv file that represents a dataset of vocalizations.
+        See WindowDataset class docstring for
+        detailed explanation of these vectors.
+
+        Parameters
+        ----------
+        csv_path : str, Path
+            path to csv that represents dataset.
+        split : str
+            name of split from dataset to use
+        window_size : int
+            number of time bins in windows that will be taken from spectrograms
+        spect_key : str
+            key to access spectograms in array files. Default is 's'.
+
+        Returns
+        -------
+        spect_id_vector : numpy.ndarray
+            represents the 'id' of any spectrogram,
+            i.e., the index into spect_paths that will let us load it
+        spect_inds_vector : numpy.ndarray
+            valid indices of windows we can grab from each spectrogram
+        """
+        df = pd.read_csv(csv_path)
+        if not df['split'].str.contains(split).any():
+            raise ValueError(
+                f'split {split} not found in dataset in csv: {csv_path}'
+            )
+        else:
+            df = df[df['split'] == split]
+        return WindowDataset.spect_vectors_from_df(df, window_size, spect_key)
+
     @classmethod
     def from_csv(cls,
                  csv_path,
@@ -304,21 +382,11 @@ class WindowDataset(VisionDataset):
             )
         else:
             df = df[df['split'] == split]
-
         spect_paths = df['spect_path'].values
 
         if spect_id_vector is None and spect_inds_vector is None:
             # see Notes in class docstring to understand what these vectors do
-            spect_id_vector = []
-            spect_inds_vector = []
-            for ind, spect_path in enumerate(spect_paths):
-                n_tb_spect = cls.n_time_bins_spect(spect_path, spect_key)
-                # calculate number of windows we can extract from spectrogram of width time_bins
-                n_windows = n_tb_spect - window_size
-                spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
-                spect_inds_vector.append(np.arange(n_windows))
-            spect_id_vector = np.concatenate(spect_id_vector)
-            spect_inds_vector = np.concatenate(spect_inds_vector)
+            spect_id_vector, spect_inds_vector = cls.spect_vectors_from_df(df, window_size)
 
         x_inds = np.arange(spect_id_vector.shape[0])
 
