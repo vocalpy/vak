@@ -200,6 +200,94 @@ class WindowDataset(VisionDataset):
         return len(self.x_inds)
 
     @staticmethod
+    def crop_spect_vectors_keep_classes(lbl_tb,
+                                        spect_id_vector,
+                                        spect_inds_vector,
+                                        crop_dur,
+                                        timebin_dur,
+                                        labelmap,
+                                        window_size):
+        """crop spect_id_vector and spect_ind_vector to a target duration
+        while making sure that all classes are present in the cropped
+        vectors
+
+        Parameters
+        ----------
+        lbl_tb : numpy.ndarray
+            labeled timebins, where labels are from the set of values in labelmap.
+        spect_id_vector : numpy.ndarray
+            represents the 'id' of any spectrogram,
+            i.e., the index into spect_paths that will let us load it
+        spect_inds_vector : numpy.ndarray
+            valid indices of windows we can grab from each spectrogram
+        crop_dur : float
+            duration to which dataset should be "cropped". Default is None,
+            in which case entire duration of specified split will be used.
+        timebin_dur : float
+            duration of a single time bin in spectrograms. Default is None.
+        labelmap : dict
+            that maps labels from dataset to a series of consecutive integers.
+            To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
+        window_size : int
+            number of time bins in windows that will be taken from spectrograms
+
+        Returns
+        -------
+        spect_id_cropped : numpy.ndarray
+            represents the 'id' of any spectrogram,
+            i.e., the index into spect_paths that will let us load it
+        spect_inds_cropped : numpy.ndarray
+            valid indices of windows we can grab from each spectrogram
+        """
+        lbl_tb = util.validation.column_or_1d(lbl_tb)
+        spect_id_vector = util.validation.column_or_1d(spect_id_vector)
+        spect_inds_vector = util.validation.column_or_1d(spect_inds_vector)
+
+        lens = (lbl_tb.shape[-1],
+                spect_id_vector.shape[-1],
+                spect_inds_vector.shape[-1])
+        uniq_lens = set(lens)
+        if len(uniq_lens) != 1:
+            raise ValueError(
+                'lbl_tb, spect_id_vector, and spect_inds_vector should all '
+                'have the same length, but did not find one unique length. '
+                'Lengths of lbl_tb, spect_id_vector, and spect_inds_vector '
+                f'were: {lens}'
+            )
+
+        cropped_length = np.round(crop_dur / timebin_dur).astype(int) - window_size
+        if spect_id_vector.shape[-1] == cropped_length:
+            return spect_id_vector, spect_inds_vector
+
+        elif spect_id_vector.shape[-1] > cropped_length:
+            classes = np.asarray(
+                sorted(list(labelmap.values()))
+            )
+
+            # try cropping off the end first
+            lbl_tb_cropped = lbl_tb[:cropped_length]
+
+            if np.array_equal(np.unique(lbl_tb_cropped), classes):
+                return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length]
+            else:
+                # try truncating from the back instead
+                lbl_tb_cropped = lbl_tb_cropped[-cropped_length:]
+                if np.array_equal(np.unique(lbl_tb_cropped), classes):
+                    return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length]
+                else:
+                    raise ValueError(
+                        "was not able to crop spect vectors to specified duration "
+                        "in a way that maintained all classes in dataset"
+                    )
+
+        elif spect_id_vector.shape[-1] < cropped_length:
+            raise ValueError(
+                f"arrays have length {spect_id_vector.shape[-1]} "
+                f"that is shorter than correct length, {cropped_length}, "
+                f"(= target duration {crop_dur} / duration of timebins, {timebin_dur})."
+            )
+
+    @staticmethod
     def n_time_bins_spect(spect_path, spect_key='s'):
         """get number of time bins in a spectrogram,
         given a path to the array file containing that spectrogram
@@ -223,7 +311,12 @@ class WindowDataset(VisionDataset):
     @staticmethod
     def spect_vectors_from_df(df,
                               window_size,
-                              spect_key='s'):
+                              spect_key='s',
+                              timebins_key='t',
+                              crop_dur=None,
+                              timebin_dur=None,
+                              labelmap=None,
+                              ):
         """get spect_id_vector and spect_ind_vector from a dataframe
         that represents a dataset of vocalizations.
         See WindowDataset class docstring for
@@ -237,6 +330,20 @@ class WindowDataset(VisionDataset):
             number of time bins in windows that will be taken from spectrograms
         spect_key : str
             key to access spectograms in array files. Default is 's'.
+        timebins_key : str
+            key to access time bin vector in array files. Default is 't'.
+        crop_dur : float
+            duration to which dataset should be "cropped". Default is None,
+            in which case entire duration of specified split will be used.
+        timebin_dur : float
+            duration of a single time bin in spectrograms. Default is None.
+            Used when "cropping" dataset with crop_dur and required if a
+            value is specified for that parameter.
+        labelmap : dict
+            that maps labels from dataset to a series of consecutive integers.
+            To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
+            Used when "cropping" dataset with crop_dur and required if a
+            value is specified for that parameter.
 
         Returns
         -------
@@ -246,25 +353,89 @@ class WindowDataset(VisionDataset):
         spect_inds_vector : numpy.ndarray
             valid indices of windows we can grab from each spectrogram
         """
+        if crop_dur is not None and timebin_dur is None:
+            raise ValueError(
+                'must provide timebin_dur when specifying crop_dur'
+            )
+
+        if crop_dur is not None and labelmap is None:
+            raise ValueError(
+                'must provide labelmap when specifying crop_dur'
+            )
+
+        if crop_dur is not None and timebin_dur is not None:
+            crop_to_dur = True
+            crop_dur = float(crop_dur)
+            timebin_dur = float(timebin_dur)
+            annots = util.annotation.from_df(df)
+            if 'unlabeled' in labelmap:
+                unlabeled_label = labelmap['unlabeled']
+            else:
+                # if there is no "unlabeled label" (e.g., because all segments have labels)
+                # just assign dummy value that will end up getting replaced by actual labels by label_timebins()
+                unlabeled_label = 0
+        else:
+            crop_to_dur = False
+
         spect_paths = df['spect_path'].values
 
         spect_id_vector = []
         spect_inds_vector = []
-        for ind, spect_path in enumerate(spect_paths):
-            n_tb_spect = WindowDataset.n_time_bins_spect(spect_path, spect_key)
-            # calculate number of windows we can extract from spectrogram of width time_bins
-            n_windows = n_tb_spect - window_size
-            spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
-            spect_inds_vector.append(np.arange(n_windows))
-        spect_id_vector = np.concatenate(spect_id_vector)
-        spect_inds_vector = np.concatenate(spect_inds_vector)
+
+        if crop_to_dur:
+            lbl_tb = []
+            spect_annot_map = util.annotation.source_annot_map(spect_paths, annots)
+            for ind, (spect_path, annot) in enumerate(spect_annot_map.items()):
+                spect_dict = util.path.array_dict_from_path(spect_path)
+                n_tb_spect = spect_dict[spect_key].shape[-1]
+
+                # calculate number of windows we can extract from spectrogram of width time_bins
+                n_windows = n_tb_spect - window_size
+                spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
+                spect_inds_vector.append(np.arange(n_windows))
+
+                lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
+                timebins = spect_dict[timebins_key]
+                lbl_tb.append(util.labels.label_timebins(lbls_int,
+                                                         annot.seq.onsets_s,
+                                                         annot.seq.offsets_s,
+                                                         timebins,
+                                                         unlabeled_label=unlabeled_label))
+
+            spect_id_vector = np.concatenate(spect_id_vector)
+            spect_inds_vector = np.concatenate(spect_inds_vector)
+            lbl_tb = np.concatenate(lbl_tb)
+
+            (spect_id_vector,
+             spect_inds_vector) = WindowDataset.crop_spect_vectors_keep_classes(lbl_tb,
+                                                                                spect_id_vector,
+                                                                                spect_inds_vector,
+                                                                                crop_dur,
+                                                                                timebin_dur,
+                                                                                labelmap,
+                                                                                window_size)
+
+        else:  # crop_to_dur is False
+            for ind, spect_path in enumerate(spect_paths):
+                n_tb_spect = WindowDataset.n_time_bins_spect(spect_path, spect_key)
+                # calculate number of windows we can extract from spectrogram of width time_bins
+                n_windows = n_tb_spect - window_size
+                spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
+                spect_inds_vector.append(np.arange(n_windows))
+            spect_id_vector = np.concatenate(spect_id_vector)
+            spect_inds_vector = np.concatenate(spect_inds_vector)
+
         return spect_id_vector, spect_inds_vector
 
     @staticmethod
     def spect_vectors_from_csv(csv_path,
                                split,
                                window_size,
-                               spect_key='s'):
+                               spect_key='s',
+                               timebins_key='t',
+                               crop_dur=None,
+                               timebin_dur=None,
+                               labelmap=None):
         """get spect_id_vector and spect_ind_vector from a
         .csv file that represents a dataset of vocalizations.
         See WindowDataset class docstring for
@@ -280,6 +451,18 @@ class WindowDataset(VisionDataset):
             number of time bins in windows that will be taken from spectrograms
         spect_key : str
             key to access spectograms in array files. Default is 's'.
+        timebins_key : str
+            key to access time bin vector in array files. Default is 't'.
+        labelmap : dict
+            that maps labels from dataset to a series of consecutive integers.
+            To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
+        crop_dur : float
+            duration to which dataset should be "cropped". Default is None,
+            in which case entire duration of specified split will be used.
+        timebin_dur : float
+            duration of a single time bin in spectrograms. Default is None.
+            Used when "cropping" dataset with crop_dur and required if a
+            value is specified for that parameter.
 
         Returns
         -------
@@ -290,13 +473,21 @@ class WindowDataset(VisionDataset):
             valid indices of windows we can grab from each spectrogram
         """
         df = pd.read_csv(csv_path)
+
         if not df['split'].str.contains(split).any():
             raise ValueError(
                 f'split {split} not found in dataset in csv: {csv_path}'
             )
         else:
             df = df[df['split'] == split]
-        return WindowDataset.spect_vectors_from_df(df, window_size, spect_key)
+
+        return WindowDataset.spect_vectors_from_df(df,
+                                                   window_size,
+                                                   spect_key,
+                                                   timebins_key,
+                                                   crop_dur,
+                                                   timebin_dur,
+                                                   labelmap)
 
     @classmethod
     def from_csv(cls,
@@ -320,7 +511,7 @@ class WindowDataset(VisionDataset):
         split : str
             name of split from dataset to use
         labelmap : dict
-            that maps labels from dataset to a series of consecutive integer.
+            that maps labels from dataset to a series of consecutive integers.
             To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
         window_size : int
             number of time bins in windows that will be taken from spectrograms
