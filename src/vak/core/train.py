@@ -185,6 +185,10 @@ def train(model_config_map,
                                            transform=transform,
                                            target_transform=target_transform
                                            )
+    log_or_print(
+        f'Duration of WindowDataset used for training, in seconds: {train_dataset.duration()}',
+        logger=logger, level='info'
+    )
     train_data = torch.utils.data.DataLoader(dataset=train_dataset,
                                              shuffle=shuffle,
                                              batch_size=batch_size,
