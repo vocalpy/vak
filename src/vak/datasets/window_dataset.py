@@ -15,6 +15,60 @@ class WindowDataset(VisionDataset):
 
     Returns windows from the spectrograms, along with labels for each
     time bin in the window, derived from the annotations.
+
+    Attributes
+    ----------
+    root : str, Path
+        path to a .csv file that represents the dataset.
+        Name 'root' is used for consistency with torchvision.datasets
+    x_inds : numpy.ndarray
+        indices of each window in the dataset
+    spect_id_vector : numpy.ndarray
+        represents the 'id' of any spectrogram,
+        i.e., the index into spect_paths that will let us load it
+    spect_inds_vector : numpy.ndarray
+        valid indices of windows we can grab from each spectrogram
+    spect_paths : numpy.ndarray
+        column from DataFrame that represents dataset,
+        consisting of paths to files containing spectrograms as arrays
+    annots : list
+        of crowsetta.Annotation instances,
+        loaded from from DataFrame that represents dataset, using vak.annotation.from_df.
+    labelmap : dict
+        that maps labels from dataset to a series of consecutive integer.
+        To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
+    window_size : int
+        number of time bins in windows that will be taken from spectrograms
+    spect_key : str
+        key to access spectograms in array files. Default is 's'.
+    timebins_key : str
+        key to access time bin vector in array files. Default is 't'.
+    transform : callable
+        A function/transform that takes in a numpy array or torch Tensor
+        and returns a transformed version. E.g, vak.transforms.StandardizeSpect
+        Default is None.
+    target_transform : callable
+        A function/transform that takes in the target and transforms it.
+
+    Notes
+    -----
+    This class uses three vectors to represent
+    a dataset of windows from spectrograms, without actually loading
+    all the spectrograms and concatenating them into one big matrix.
+    The three vectors correspond to this imaginary, unloaded big matrix:
+    (1) `spect_id_vector` that represents the 'id' of any spectrogram in this matrix,
+    i.e., the index into spect_paths that will let us load it, and
+    (2) `spect_inds_vector` where the elements represents valid indices of windows
+    we can grab from each spectrogram. Valid indices are any up to the index n, where
+    n = number of time bins in this spectrogram - number of time bins in our window
+    (because if we tried to go past that the window would go past the edge of the
+    spectrogram).
+    (3) `x_inds` is our 'training set' vector, just a set
+    of indices (0, 1, ..., m) where m is the length of vectors (1) and (2).
+
+    When we want to grab a batch of size b of windows, we get b indices from x,
+    and then index into vectors (1) and (2) so we know which spectrogram files to
+    load, and which windows to grab from each spectrogram
     """
     def __init__(self,
                  root,
@@ -191,22 +245,9 @@ class WindowDataset(VisionDataset):
             spect = util.path.array_dict_from_path(spect_path)[spect_key]
             return spect.shape[-1]
 
-        # to represent a dataset of windows from spectrograms without actually loading
-        # all the spectrograms and concatenating them into one big matrix,
-        # we will make three vectors that correspond to this imaginary, unloaded big matrix:
-        # (1) `spect_id_vector` that represents the 'id' of any spectrogram in this matrix,
-        # i.e., the index into spect_paths that will let us load it, and
-        # (2) `spect_inds_vector` where the elements represents valid indices of windows
-        # we can grab from each spectrogram. Valid indices are any up to the index n, where
-        # n = number of time bins in this spectrogram - number of time bins in our window
-        # (because if we tried to go past that the window would go past the edge of the
-        # spectrogram). Lastly we make our 'training set' vector x, which is just a set
-        # of indices (0, 1, ..., m) where m is the length of vectors (1) and (2).
-        # When we want to grab a batch of size b of windows, we get b indices from x,
-        # and then index into vectors (1) and (2) so we know which spectrogram files to
-        # load, and which windows to grab from each spectrogram
-        spect_id_vector = []  # tells us the index of spect_path
-        spect_inds_vector = []  # tells us the index of valid windows in spect loaded from spect_path
+        # see Notes in class docstring to understand what these vectors do
+        spect_id_vector = []
+        spect_inds_vector = []
         for ind, spect_path in enumerate(spect_paths):
             n_tb_spect = n_time_bins_spect(spect_path)
             # calculate number of windows we can extract from spectrogram of width time_bins
