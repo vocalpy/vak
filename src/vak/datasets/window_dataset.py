@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 from torchvision.datasets.vision import VisionDataset
 
+from .. import io
 from .. import util
 
 
@@ -36,6 +37,8 @@ class WindowDataset(VisionDataset):
     labelmap : dict
         that maps labels from dataset to a series of consecutive integer.
         To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
+    timebin_dur : float
+        duration of a single time bin in spectrograms.
     window_size : int
         number of time bins in windows that will be taken from spectrograms
     spect_key : str
@@ -77,6 +80,7 @@ class WindowDataset(VisionDataset):
                  spect_paths,
                  annots,
                  labelmap,
+                 timebin_dur,
                  window_size,
                  spect_key='s',
                  timebins_key='t',
@@ -106,6 +110,8 @@ class WindowDataset(VisionDataset):
         labelmap : dict
             that maps labels from dataset to a series of consecutive integer.
             To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
+        timebin_dur : float
+            duration of a single time bin in spectrograms.
         window_size : int
             number of time bins in windows that will be taken from spectrograms
         spect_key : str
@@ -129,6 +135,7 @@ class WindowDataset(VisionDataset):
         self.timebins_key = timebins_key
         self.annots = annots
         self.labelmap = labelmap
+        self.timebin_dur = timebin_dur
         if 'unlabeled' in self.labelmap:
             self.unlabeled_label = self.labelmap['unlabeled']
         else:
@@ -197,6 +204,10 @@ class WindowDataset(VisionDataset):
     def __len__(self):
         """number of batches"""
         return len(self.x_inds)
+
+    def duration(self):
+        """duration of WindowDataset, in seconds"""
+        return (self.x_inds.shape[-1] + self.window_size - 1) * self.timebin_dur
 
     @staticmethod
     def crop_spect_vectors_keep_classes(lbl_tb,
@@ -581,6 +592,7 @@ class WindowDataset(VisionDataset):
         x_inds = np.arange(spect_id_vector.shape[0])
 
         annots = util.annotation.from_df(df)
+        timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
 
         # note that we set "root" to csv path
         return cls(csv_path,
@@ -590,6 +602,7 @@ class WindowDataset(VisionDataset):
                    spect_paths,
                    annots,
                    labelmap,
+                   timebin_dur,
                    window_size,
                    spect_key,
                    timebins_key,
