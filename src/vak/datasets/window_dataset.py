@@ -16,6 +16,8 @@ class WindowDataset(VisionDataset):
     Returns windows from the spectrograms, along with labels for each
     time bin in the window, derived from the annotations.
 
+    Abstraction that enables training on a dataset of a specified duraiton.
+
     Attributes
     ----------
     root : str, Path
@@ -72,6 +74,11 @@ class WindowDataset(VisionDataset):
     and then index into vectors (1) and (2) so we know which spectrogram files to
     load, and which windows to grab from each spectrogram
     """
+
+    # class attribute, constant used by several methods
+    # with x_inds, to mark invalid starting indices for windows
+    INVALID_WINDOW_VAL = -1
+
     def __init__(self,
                  root,
                  x_inds,
@@ -95,12 +102,18 @@ class WindowDataset(VisionDataset):
             path to a .csv file that represents the dataset.
             Name 'root' is used for consistency with torchvision.datasets
         x_inds : numpy.ndarray
-            indices of each window in the dataset
+            indices of each window in the dataset. The value at x[0]
+            represents the start index of the first window; using that
+            value, we can index into spect_id_vector to get the path
+            of the spectrogram file to load, and we can index into
+            spect_inds_vector to index into the spectrogram itself
+            and get the window.
         spect_id_vector : numpy.ndarray
             represents the 'id' of any spectrogram,
             i.e., the index into spect_paths that will let us load it
         spect_inds_vector : numpy.ndarray
-            valid indices of windows we can grab from each spectrogram
+            same length as spect_id_vector but values represent
+            indices within each spectrogram.
         spect_paths : numpy.ndarray
             column from DataFrame that represents dataset,
             consisting of paths to files containing spectrograms as arrays
@@ -207,16 +220,16 @@ class WindowDataset(VisionDataset):
 
     def duration(self):
         """duration of WindowDataset, in seconds"""
-        return (self.x_inds.shape[-1] + self.window_size - 1) * self.timebin_dur
+        return self.spect_inds_vector.shape[-1] * self.timebin_dur
 
     @staticmethod
     def crop_spect_vectors_keep_classes(lbl_tb,
                                         spect_id_vector,
                                         spect_inds_vector,
+                                        x_inds,
                                         crop_dur,
                                         timebin_dur,
-                                        labelmap,
-                                        window_size):
+                                        labelmap):
         """crop spect_id_vector and spect_ind_vector to a target duration
         while making sure that all classes are present in the cropped
         vectors
@@ -229,7 +242,15 @@ class WindowDataset(VisionDataset):
             represents the 'id' of any spectrogram,
             i.e., the index into spect_paths that will let us load it
         spect_inds_vector : numpy.ndarray
-            valid indices of windows we can grab from each spectrogram
+            same length as spect_id_vector but values represent
+            indices within each spectrogram.
+        x_inds : numpy.ndarray
+            indices of each window in the dataset. The value at x[0]
+            represents the start index of the first window; using that
+            value, we can index into spect_id_vector to get the path
+            of the spectrogram file to load, and we can index into
+            spect_inds_vector to index into the spectrogram itself
+            and get the window.
         crop_dur : float
             duration to which dataset should be "cropped". Default is None,
             in which case entire duration of specified split will be used.
@@ -238,36 +259,39 @@ class WindowDataset(VisionDataset):
         labelmap : dict
             that maps labels from dataset to a series of consecutive integers.
             To create a label map, pass a set of labels to the `vak.utils.labels.to_map` function.
-        window_size : int
-            number of time bins in windows that will be taken from spectrograms
 
         Returns
         -------
         spect_id_cropped : numpy.ndarray
-            represents the 'id' of any spectrogram,
-            i.e., the index into spect_paths that will let us load it
+            spect_id_vector after cropping
         spect_inds_cropped : numpy.ndarray
-            valid indices of windows we can grab from each spectrogram
+            spect_inds_vector after cropping
+        x_inds_updated : numpy.ndarray
+            x_inds_vector with starting indices of windows that are invalid
+            after the cropping now set to WindowDataset.INVALID_WINDOW_VAL
+            so they will be removed
         """
         lbl_tb = util.validation.column_or_1d(lbl_tb)
         spect_id_vector = util.validation.column_or_1d(spect_id_vector)
         spect_inds_vector = util.validation.column_or_1d(spect_inds_vector)
+        x_inds = util.validation.column_or_1d(x_inds)
 
         lens = (lbl_tb.shape[-1],
                 spect_id_vector.shape[-1],
-                spect_inds_vector.shape[-1])
+                spect_inds_vector.shape[-1],
+                x_inds.shape[-1])
         uniq_lens = set(lens)
         if len(uniq_lens) != 1:
             raise ValueError(
-                'lbl_tb, spect_id_vector, and spect_inds_vector should all '
+                'lbl_tb, spect_id_vector, spect_inds_vector, and x_inds should all '
                 'have the same length, but did not find one unique length. '
-                'Lengths of lbl_tb, spect_id_vector, and spect_inds_vector '
+                'Lengths of lbl_tb, spect_id_vector, spect_inds_vector, and x_inds_vector '
                 f'were: {lens}'
             )
 
-        cropped_length = np.round(crop_dur / timebin_dur).astype(int) - window_size
+        cropped_length = np.round(crop_dur / timebin_dur).astype(int)
         if spect_id_vector.shape[-1] == cropped_length:
-            return spect_id_vector, spect_inds_vector
+            return spect_id_vector, spect_inds_vector, x_inds
 
         elif spect_id_vector.shape[-1] > cropped_length:
             classes = np.asarray(
@@ -278,12 +302,14 @@ class WindowDataset(VisionDataset):
             lbl_tb_cropped = lbl_tb[:cropped_length]
 
             if np.array_equal(np.unique(lbl_tb_cropped), classes):
-                return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length]
+                x_inds[cropped_length:] = WindowDataset.INVALID_WINDOW_VAL
+                return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length], x_inds
             else:
                 # try truncating from the back instead
                 lbl_tb_cropped = lbl_tb_cropped[-cropped_length:]
                 if np.array_equal(np.unique(lbl_tb_cropped), classes):
-                    return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length]
+                    x_inds[:-cropped_length] = WindowDataset.INVALID_WINDOW_VAL
+                    return spect_id_vector[-cropped_length:], spect_inds_vector[-cropped_length:], x_inds
                 else:
                     raise ValueError(
                         "was not able to crop spect vectors to specified duration "
@@ -362,6 +388,10 @@ class WindowDataset(VisionDataset):
             i.e., the index into spect_paths that will let us load it
         spect_inds_vector : numpy.ndarray
             valid indices of windows we can grab from each spectrogram
+        x_inds_updated : numpy.ndarray
+            x_inds_vector with starting indices of windows that are invalid
+            after the cropping now set to WindowDataset.INVALID_WINDOW_VAL
+            so they will be removed
         """
         if crop_dur is not None and timebin_dur is None:
             raise ValueError(
@@ -391,6 +421,8 @@ class WindowDataset(VisionDataset):
 
         spect_id_vector = []
         spect_inds_vector = []
+        x_inds = []
+        total_tb = 0
 
         if crop_to_dur:
             lbl_tb = []
@@ -399,10 +431,15 @@ class WindowDataset(VisionDataset):
                 spect_dict = util.path.array_dict_from_path(spect_path)
                 n_tb_spect = spect_dict[spect_key].shape[-1]
 
-                # calculate number of windows we can extract from spectrogram of width time_bins
-                n_windows = n_tb_spect - window_size
-                spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
-                spect_inds_vector.append(np.arange(n_windows))
+                spect_id_vector.append(np.ones((n_tb_spect,), dtype=np.int64) * ind)
+                spect_inds_vector.append(np.arange(n_tb_spect))
+
+                valid_x_inds = np.arange(total_tb, total_tb + n_tb_spect)
+                last_valid_window_ind = total_tb + n_tb_spect - window_size
+                valid_x_inds[valid_x_inds > last_valid_window_ind] = WindowDataset.INVALID_WINDOW_VAL
+                x_inds.append(valid_x_inds)
+
+                total_tb += n_tb_spect
 
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
                 timebins = spect_dict[timebins_key]
@@ -415,27 +452,38 @@ class WindowDataset(VisionDataset):
             spect_id_vector = np.concatenate(spect_id_vector)
             spect_inds_vector = np.concatenate(spect_inds_vector)
             lbl_tb = np.concatenate(lbl_tb)
+            x_inds = np.concatenate(x_inds)
 
             (spect_id_vector,
-             spect_inds_vector) = WindowDataset.crop_spect_vectors_keep_classes(lbl_tb,
-                                                                                spect_id_vector,
-                                                                                spect_inds_vector,
-                                                                                crop_dur,
-                                                                                timebin_dur,
-                                                                                labelmap,
-                                                                                window_size)
+             spect_inds_vector,
+             x_inds) = WindowDataset.crop_spect_vectors_keep_classes(lbl_tb,
+                                                                     spect_id_vector,
+                                                                     spect_inds_vector,
+                                                                     x_inds,
+                                                                     crop_dur,
+                                                                     timebin_dur,
+                                                                     labelmap)
 
         else:  # crop_to_dur is False
             for ind, spect_path in enumerate(spect_paths):
                 n_tb_spect = WindowDataset.n_time_bins_spect(spect_path, spect_key)
-                # calculate number of windows we can extract from spectrogram of width time_bins
-                n_windows = n_tb_spect - window_size
-                spect_id_vector.append(np.ones((n_windows,), dtype=np.int64) * ind)
-                spect_inds_vector.append(np.arange(n_windows))
+
+                spect_id_vector.append(np.ones((n_tb_spect,), dtype=np.int64) * ind)
+                spect_inds_vector.append(np.arange(n_tb_spect))
+
+                valid_x_inds = np.arange(total_tb, total_tb + n_tb_spect)
+                last_valid_window_ind = total_tb + n_tb_spect - window_size
+                valid_x_inds[valid_x_inds > last_valid_window_ind] = WindowDataset.INVALID_WINDOW_VAL
+                x_inds.append(valid_x_inds)
+
+                total_tb += n_tb_spect
+
             spect_id_vector = np.concatenate(spect_id_vector)
             spect_inds_vector = np.concatenate(spect_inds_vector)
+            x_inds = np.concatenate(x_inds)
 
-        return spect_id_vector, spect_inds_vector
+        x_inds = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL]
+        return spect_id_vector, spect_inds_vector, x_inds
 
     @staticmethod
     def spect_vectors_from_csv(csv_path,
@@ -481,6 +529,10 @@ class WindowDataset(VisionDataset):
             i.e., the index into spect_paths that will let us load it
         spect_inds_vector : numpy.ndarray
             valid indices of windows we can grab from each spectrogram
+        x_inds_updated : numpy.ndarray
+            x_inds_vector with starting indices of windows that are invalid
+            after the cropping now set to WindowDataset.INVALID_WINDOW_VAL
+            so they will be removed
         """
         df = pd.read_csv(csv_path)
 
@@ -509,6 +561,7 @@ class WindowDataset(VisionDataset):
                  timebins_key='t',
                  spect_id_vector=None,
                  spect_inds_vector=None,
+                 x_inds=None,
                  transform=None,
                  target_transform=None):
         """given a path to a csv representing a dataset,
@@ -534,6 +587,13 @@ class WindowDataset(VisionDataset):
             i.e., the index into spect_paths that will let us load it
         spect_inds_vector : numpy.ndarray
             valid indices of windows we can grab from each spectrogram
+        x_inds : numpy.ndarray
+            indices of each window in the dataset. The value at x[0]
+            represents the start index of the first window; using that
+            value, we can index into spect_id_vector to get the path
+            of the spectrogram file to load, and we can index into
+            spect_inds_vector to index into the spectrogram itself
+            and get the window.
         transform : callable
             A function/transform that takes in a numpy array
             and returns a transformed version. E.g, a SpectScaler instance.
@@ -545,29 +605,25 @@ class WindowDataset(VisionDataset):
         -------
         initialized instance of WindowDataset
         """
-        if spect_id_vector is None and spect_inds_vector is not None:
-            raise ValueError(
-                'must provide spect_id_vector when specifying spect_inds_vector'
-            )
+        if any([vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
+            if not all([vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
 
-        if spect_id_vector is not None and spect_inds_vector is None:
-            raise ValueError(
-                'must provide spect_inds_vector when specifying spect_id_vector'
-            )
-
-        if spect_id_vector is not None and spect_inds_vector is not None:
-            if not type(spect_id_vector) is np.ndarray:
-                raise TypeError(
-                    f'spect_id_vector must be a numpy.ndarray but type was: {type(spect_id_vector)}'
+                raise ValueError(
+                    'if any of the following parameters are specified, they all must be specified: '
+                    'spect_id_vector, spect_inds_vector, x_inds'
                 )
 
-            if not type(spect_inds_vector) is np.ndarray:
-                raise TypeError(
-                    f'spect_inds_vector must be a numpy.ndarray but type was: {type(spect_inds_vector)}'
-                )
+        if all([vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
+            for vec_name, vec in zip(['spect_id_vector', 'spect_inds_vector', 'x_inds'],
+                                     [spect_id_vector, spect_inds_vector, x_inds]):
+                if not type(vec) is np.ndarray:
+                    raise TypeError(
+                        f'{vec_name} must be a numpy.ndarray but type was: {type(spect_id_vector)}'
+                    )
 
             spect_id_vector = util.validation.column_or_1d(spect_id_vector)
             spect_inds_vector = util.validation.column_or_1d(spect_inds_vector)
+            x_inds = util.validation.column_or_1d(x_inds)
 
             if spect_id_vector.shape[-1] != spect_inds_vector.shape[-1]:
                 raise ValueError(
@@ -585,11 +641,9 @@ class WindowDataset(VisionDataset):
             df = df[df['split'] == split]
         spect_paths = df['spect_path'].values
 
-        if spect_id_vector is None and spect_inds_vector is None:
+        if all([vec is None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
             # see Notes in class docstring to understand what these vectors do
-            spect_id_vector, spect_inds_vector = cls.spect_vectors_from_df(df, window_size)
-
-        x_inds = np.arange(spect_id_vector.shape[0])
+            spect_id_vector, spect_inds_vector, x_inds = cls.spect_vectors_from_df(df, window_size)
 
         annots = util.annotation.from_df(df)
         timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
