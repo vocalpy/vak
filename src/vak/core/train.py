@@ -125,6 +125,10 @@ def train(model_config_map,
 
     Trains models, saves results in new directory within root_results_dir
     """
+    log_or_print(
+        f'Loading dataset from .csv path: {csv_path}',
+        logger=logger, level='info'
+    )
     dataset_df = pd.read_csv(csv_path)
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
     if val_step and not dataset_df['split'].str.contains('val').any():
@@ -156,7 +160,7 @@ def train(model_config_map,
 
     timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
     log_or_print(
-        f'Size of each timebin in spectrogram, in seconds: {timebin_dur}',
+        f'Size of timebin in spectrograms from dataset, in seconds: {timebin_dur}',
         logger=logger, level='info'
     )
 
@@ -166,6 +170,12 @@ def train(model_config_map,
     # we need to include a class for those unlabeled segments in labelmap,
     # the mapping from labelset provided by user to a set of consecutive
     # integers that the network learns to predict
+    train_dur = dataframe.split_dur(dataset_df, 'train')
+    log_or_print(
+        f'Total duration of training split from dataset (in s): {train_dur}',
+        logger=logger, level='info'
+    )
+
     has_unlabeled = util.dataset.has_unlabeled(csv_path, labelset, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
@@ -186,7 +196,7 @@ def train(model_config_map,
         # and don't want to add more parameters to `transforms.util.get_defaults` function
         # and make too tight a coupling between this function and that one.
         # Trade off is that this is pretty verbose (even ignoring my comments)
-        logger.info('will normalize spectrograms')
+        log_or_print('will normalize spectrograms', logger=logger, level='info')
         spect_standardizer = transforms.StandardizeSpect.fit_df(dataset_df,
                                                                 spect_key=spect_key)
         joblib.dump(spect_standardizer,
@@ -216,10 +226,6 @@ def train(model_config_map,
                                              shuffle=shuffle,
                                              batch_size=batch_size,
                                              num_workers=num_workers)
-    train_dur = dataframe.split_dur(dataset_df, 'train')
-    logger.info(
-        f'Total duration of training set (in s): {train_dur}'
-    )
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if val_step:
@@ -241,12 +247,14 @@ def train(model_config_map,
                                                batch_size=1,
                                                num_workers=num_workers)
         val_dur = dataframe.split_dur(dataset_df, 'val')
-        logger.info(
-            f'Total duration of validation set (in s): {val_dur}'
+        log_or_print(
+            f'Total duration of validation split from dataset (in s): {val_dur}',
+            logger=logger, level='info'
         )
 
-        logger.info(
-            f'will measure error on validation set every {val_step} steps of training'
+        log_or_print(
+            f'will measure error on validation set every {val_step} steps of training',
+            logger=logger, level='info'
         )
     else:
         val_data = None
@@ -265,9 +273,7 @@ def train(model_config_map,
         results_model_root.mkdir()
         ckpt_root = results_model_root.joinpath('checkpoints')
         ckpt_root.mkdir()
-        logger.info(
-            f'training {model_name}'
-        )
+        log_or_print(f'training {model_name}', logger=logger, level='info')
         summary_writer = util.summary_writer.get_summary_writer(log_dir=results_model_root,
                                                                 filename_suffix=model_name)
         model.summary_writer = summary_writer
