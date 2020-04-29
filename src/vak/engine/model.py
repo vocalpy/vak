@@ -157,6 +157,7 @@ class Model:
                                     logger=self.logger, level='info')
                                 # save "backup" checkpoint upon stopping; don't save over "max-val-acc" checkpoint
                                 self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
+                                progress_bar.close()
                                 break
                             else:
                                 log_or_print(
