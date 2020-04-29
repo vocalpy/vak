@@ -70,12 +70,11 @@ def from_df(vak_df):
 
     scribe = crowsetta.Transcriber(annot_format=annot_format)
 
-    if len(vak_df['annot_path'].unique()) == len(vak_df):
-        # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
-        annots = [scribe.from_file(annot_file=annot_path) for annot_path in vak_df['annot_path'].values]
-
-    elif len(vak_df['annot_path'].unique()) == 1:
+    if len(vak_df['annot_path'].unique()) == 1:
         # --> there is a single annotation file associated with all rows
+        # this can be true in two different cases:
+        # (1) many rows, all have the same file
+        # (2) only one row, so there's only one annotation file (which may contain annotation for multiple source files)
         annot_path = vak_df['annot_path'].unique().item()
         annots = scribe.from_file(annot_file=annot_path)
 
@@ -93,6 +92,11 @@ def from_df(vak_df):
                 f'Single annotation file: {annot_path}\n'
                 f'Loading it returned a {type(annots)}.'
             )
+
+    elif len(vak_df['annot_path'].unique()) == len(vak_df):
+        # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
+        annots = [scribe.from_file(annot_file=annot_path) for annot_path in vak_df['annot_path'].values]
+
     else:
         raise ValueError(
             'unable to load labels from dataframe; did not find an annotation file for each row or '
