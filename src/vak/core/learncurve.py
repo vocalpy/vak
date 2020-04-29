@@ -3,12 +3,15 @@ from datetime import datetime
 from pathlib import Path
 import re
 
+import numpy as np
 import pandas as pd
 
 from .eval import eval
 from .train import train
 from ..io import dataframe
+from .. import util
 from ..util import train_test_dur_split
+from ..datasets.window_dataset import WindowDataset
 from ..util.logging import log_or_print
 
 
@@ -168,6 +171,14 @@ def learning_curve(model_config_map,
         f'Creating data sets of specified durations: {train_set_durs}',
         logger=logger, level='info'
     )
+
+    has_unlabeled = util.dataset.has_unlabeled(csv_path, labelset, timebins_key)
+    if has_unlabeled:
+        map_unlabeled = True
+    else:
+        map_unlabeled = False
+    labelmap = util.labels.to_map(labelset, map_unlabeled=map_unlabeled)
+
     train_dur_csv_paths = defaultdict(list)
     for train_dur in train_set_durs:
         log_or_print(f'subsetting training set for training set of duration: {train_dur}',
@@ -181,13 +192,29 @@ def learning_curve(model_config_map,
             # so we don't end up with other splits in the training set
             train_df = dataset_df[dataset_df['split'] == 'train']
             subset_df = train_test_dur_split(train_df, train_dur=train_dur, labelset=labelset)
+            subset_df = subset_df[subset_df['split'] == 'train']  # remove rows where split was set to 'None'
+            # ---- use *just* train subset to get spect vectors for WindowDataset
+            (spect_id_vector,
+             spect_inds_vector,
+             x_inds) = WindowDataset.spect_vectors_from_df(subset_df,
+                                                           window_size,
+                                                           spect_key,
+                                                           timebins_key,
+                                                           crop_dur=train_dur,
+                                                           timebin_dur=timebin_dur,
+                                                           labelmap=labelmap)
+            for vec_name, vec in zip(['spect_id_vector', 'spect_inds_vector', 'x_inds'],
+                                     [spect_id_vector, spect_inds_vector, x_inds]):
+                np.save(results_path_this_replicate.joinpath(f'{vec_name}.npy'),
+                        vec)
             # keep the same validation and test set by concatenating them with the train subset
             subset_df = pd.concat(
-                (subset_df[subset_df['split'] == 'train'],  # remove rows where split was set to 'None'
+                (subset_df,
                  dataset_df[dataset_df['split'] == 'val'],
                  dataset_df[dataset_df['split'] == 'test'],
                  )
             )
+
             subset_csv_name = f'{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv'
             subset_csv_path = results_path_this_replicate.joinpath(subset_csv_name)
             subset_df.to_csv(subset_csv_path)
@@ -214,6 +241,12 @@ def learning_curve(model_config_map,
                 f'Saving results to: {this_train_dur_this_replicate_results_path}',
                 logger=logger, level='info'
             )
+
+            window_dataset_kwargs = {}
+            for window_dataset_kwarg in ['spect_id_vector', 'spect_inds_vector', 'x_inds']:
+                window_dataset_kwargs[window_dataset_kwarg] = np.load(
+                    this_train_dur_this_replicate_results_path.joinpath(f'{window_dataset_kwarg}.npy'))
+
             train(model_config_map,
                   this_train_dur_this_replicate_csv_path,
                   labelset,
@@ -231,6 +264,7 @@ def learning_curve(model_config_map,
                   patience=patience,
                   device=device,
                   logger=logger,
+                  **window_dataset_kwargs
                   )
 
             log_or_print(

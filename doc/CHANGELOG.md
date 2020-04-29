@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
+
+## [0.3.0a5]
 ### Added
 - add functions `format_from_df` and `from_df` to `vak.util.annotation`
   [#107](https://github.com/NickleDave/vak/pull/107) 
@@ -104,6 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - change `Model._eval` method so it returns metrics average across batches, in addition to 
   the value for each batch
   [#185](https://github.com/NickleDave/vak/pull/185)
+- raise minimum version of `TweetyNet` to 0.4.2, adds distance metrics to `TweetyNetModel`
+  [9626385](https://github.com/NickleDave/vak/commit/96263858efe880f94dc782cd8a66ec1c051f2ea1)
 
 ### Fixed
 - add missing `shuffle` option to [TRAIN] and [LEARNCURVE] sections in `valid.toml`
