@@ -1,6 +1,6 @@
-# This .ini file has all valid options for each section.
+# This .toml file has all valid options for each section.
 # The values for those options are not used, they are just dummy values.
-# The file is used by parse.py to determine whether a .ini file
+# The file is used by parse.py to determine whether a .toml file
 # provided by the user has valid sections + options.
 # Options should be in the same order they are defined for the
 # attrs-based class that represents the config, for easy comparison

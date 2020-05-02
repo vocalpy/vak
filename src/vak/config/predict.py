@@ -12,7 +12,7 @@ from ..util.general import get_default_device
 
 @attr.s
 class PredictConfig:
-    """class that represents [PREDICT] section of config.ini file
+    """class that represents [PREDICT] section of config.toml file
 
     Attributes
     ----------
@@ -83,20 +83,20 @@ REQUIRED_PREDICT_OPTIONS = [
 
 
 def parse_predict_config(config_obj, config_path):
-    """parse [PREDICT] section of config.ini file
+    """parse [PREDICT] section of config.toml file
 
     Parameters
     ----------
     config_obj : ConfigParser
-        containing config.ini file already loaded by parse function
+        containing config.toml file already loaded by parse function
     config_path : str
-        path to config.ini file (used for error messages)
+        path to config.toml file (used for error messages)
 
     Returns
     -------
     predict_config : vak.config.predict.PredictConfig
         instance of PredictConfig class that represents [PREDICT] section
-        of config.ini file
+        of config.toml file
     """
     predict_section = dict(
         config_obj['PREDICT'].items()
@@ -106,6 +106,6 @@ def parse_predict_config(config_obj, config_path):
         if required_option not in predict_section:
             raise NoOptionError(
                 f"the '{required_option}' option is required but was not found in the "
-                f"PREDICT section of the config.ini file: {config_path}"
+                f"PREDICT section of the config.toml file: {config_path}"
             )
     return PredictConfig(**predict_section)

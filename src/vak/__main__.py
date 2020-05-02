@@ -25,7 +25,7 @@ def get_parser():
                         choices=CHOICES,
                         help="Command to run, valid options are:\n"
                              f"{CHOICES}\n"
-                             "$ vak train ./configs/config_2018-12-17.ini")
+                             "$ vak train ./configs/config_2018-12-17.toml")
     parser.add_argument('configfile', type=Path,
                         help='name of config.toml file to use \n'
                              '$ vak train ./configs/config_2018-12-17.toml')
