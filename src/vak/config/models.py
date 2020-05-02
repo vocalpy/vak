@@ -97,7 +97,7 @@ def map_from_path(toml_path, model_names):
     -------
     model_config_map : dict
         where each key is the name of a model and the corresponding value is
-        a section from a config.ini file.
+        a section from a config.toml file.
     """
     # check config_path is a file,
     # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options

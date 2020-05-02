@@ -1,4 +1,4 @@
-"""sub-package that parses config.ini files and returns config object"""
+"""sub-package that parses config.toml files and returns config object"""
 from . import models
 from . import parse
 from . import validators

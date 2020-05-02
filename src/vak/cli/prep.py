@@ -77,7 +77,7 @@ def prep(toml_path):
             cfg.prep.labelset = None
     else:
         raise ValueError(
-            'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.ini file;'
+            'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.toml file;'
             ' unable to determine which section to add paths to prepared datasets to'
         )
     logger.info(f'determined that config file has section: {section}\nWill add csv_path option to that section')
@@ -98,7 +98,7 @@ def prep(toml_path):
                                  logger=logger,
                                  )
 
-    # use config and section from above to add csv_path to config.ini file
+    # use config and section from above to add csv_path to config.toml file
     config_toml[section]['csv_path'] = str(csv_path)
 
     with toml_path.open('w') as fp:

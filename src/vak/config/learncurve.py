@@ -7,7 +7,7 @@ from .train import TrainConfig
 
 @attr.s
 class LearncurveConfig(TrainConfig):
-    """class that represents [LEARNCURVE] section of config.ini file
+    """class that represents [LEARNCURVE] section of config.toml file
 
     Attributes
     ----------
@@ -43,7 +43,7 @@ class LearncurveConfig(TrainConfig):
         we save. Default is True.
     use_train_subsets_from_previous_run : bool
         if True, use training subsets saved in a previous run. Default is False.
-        Requires setting previous_run_path option in config.ini file.
+        Requires setting previous_run_path option in config.toml file.
     previous_run_path : str
         path to results directory from a previous run.
         Used for training if use_train_subsets_from_previous_run is True.
@@ -61,7 +61,7 @@ REQUIRED_LEARNCURVE_OPTIONS = [
 
 
 def parse_learncurve_config(config_toml, toml_path):
-    """parse [LEARNCURVE] section of config.ini file
+    """parse [LEARNCURVE] section of config.toml file
 
     Parameters
     ----------

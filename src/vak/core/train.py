@@ -134,7 +134,7 @@ def train(model_config_map,
     if val_step and not dataset_df['split'].str.contains('val').any():
         raise ValueError(
             f"val_step set to {val_step} but dataset does not contain a validation set; "
-            f"please run `vak prep` with a config.ini file that specifies a duration for the validation set."
+            f"please run `vak prep` with a config.toml file that specifies a duration for the validation set."
         )
 
     # ---- set up directory to save output -----------------------------------------------------------------------------

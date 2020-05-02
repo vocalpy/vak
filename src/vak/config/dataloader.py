@@ -4,7 +4,7 @@ from attr.validators import instance_of
 
 @attr.s
 class DataLoaderConfig:
-    """represents options for DataLoaders specified in config.ini file
+    """represents options for DataLoaders specified in config.toml file
 
     Attributes
     ----------
