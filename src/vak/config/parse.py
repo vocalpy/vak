@@ -18,24 +18,24 @@ from .validators import are_sections_valid, are_options_valid
 
 @attr.s
 class Config:
-    """class to represent config.ini file
+    """class to represent config.toml file
 
     Attributes
     ----------
     prep : vak.config.prep.PrepConfig
-        represents [PREP] section of config.ini file
+        represents [PREP] section of config.toml file
     spect : vak.config.spectrogram.SpectConfig
-        represents [SPECTROGRAM] section of config.ini file
+        represents [SPECTROGRAM] section of config.toml file
     dataloader : vak.config.dataloader.DataLoaderConfig
-        represents [DATALOADER] section of config.ini file
+        represents [DATALOADER] section of config.toml file
     train : vak.config.train.TrainConfig
-        represents [TRAIN] section of config.ini file
+        represents [TRAIN] section of config.toml file
     eval : vak.config.eval.EvalConfig
-        represents [EVAL] section of config.ini file
+        represents [EVAL] section of config.toml file
     predict : vak.config.predict.PredictConfig
-        represents [PREDICT] section of config.ini file.
+        represents [PREDICT] section of config.toml file.
     learncurve : vak.config.learncurve.LearncurveConfig
-        represents [LEARNCURVE] section of config.ini file
+        represents [LEARNCURVE] section of config.toml file
     """
     spect_params = attr.ib(validator=instance_of(SpectParamsConfig), default=SpectParamsConfig())
     dataloader = attr.ib(validator=instance_of(DataLoaderConfig), default=DataLoaderConfig())
@@ -66,7 +66,7 @@ def from_toml(toml_path, sections=None):
     toml_path : str, Path
         path to a configuration file in TOML format
     sections : list
-        of str, names of sections from config.ini file to parse.
+        of str, names of sections from config.toml file to parse.
         Default is None, in which case function attempts to parse all sections.
         Used by vak.cli.prep to avoid throwing a bunch of errors if paths in
         other sections don't exist yet.
@@ -75,7 +75,7 @@ def from_toml(toml_path, sections=None):
     -------
     config : vak.config.parse.Config
         instance of Config class, whose attributes correspond to
-        sections in a config.ini file.
+        sections in a config.toml file.
     """
     # check config_path is a file,
     # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options

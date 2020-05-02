@@ -27,7 +27,7 @@ def to_spect(audio_format,
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}
     spect_params : dict or vak.config.spectrogram.SpectConfig
-        parameters for computing spectrogram, from .ini file.
+        parameters for computing spectrogram, from .toml file.
         To see all related parameters, run:
         >>> help(vak.config.spect_params.SpectParamConfig)
         To get a default configuration, create a SpectParamConfig

@@ -21,7 +21,7 @@ def train(toml_path):
     None
 
     Trains models, saves results in new directory within root_results_dir specified
-    in config.ini file, and adds path to that new directory to config.ini file.
+    in config.toml file, and adds path to that new directory to config.toml file.
     """
     toml_path = Path(toml_path)
     cfg = config.parse.from_toml(toml_path)
