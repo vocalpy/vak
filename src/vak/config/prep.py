@@ -36,7 +36,7 @@ def is_valid_duration(instance, attribute, value):
 
 @attr.s
 class PrepConfig:
-    """class to represent [PREP] section of config.ini file
+    """class to represent [PREP] section of config.toml file
 
     Attributes
     ----------
@@ -65,7 +65,7 @@ class PrepConfig:
     train_dur : float
         total duration of training set, in seconds. When creating a learning curve,
         training subsets of shorter duration (specified by the 'train_set_durs' option
-        in the LEARNCURVE section of a config.ini file) will be drawn from this set.
+        in the LEARNCURVE section of a config.toml file) will be drawn from this set.
     val_dur : float
         total duration of validation set, in seconds.
     test_dur : float
@@ -113,17 +113,17 @@ def parse_prep_config(config_toml, config_path):
     Returns
     -------
     prep_config : vak.config.prep.PrepConfig
-        instance of class that represents [PREP] section of config.ini file
+        instance of class that represents [PREP] section of config.toml file
     """
     prep_section = config_toml['PREP']
 
     if 'spect_format' in prep_section and 'audio_format' in prep_section:
-        raise ValueError("[PREP] section of config.ini file cannot specify both audio_format and "
+        raise ValueError("[PREP] section of config.toml file cannot specify both audio_format and "
                          "spect_format, unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms")
 
     if 'spect_format' not in prep_section and 'audio_format' not in prep_section:
-        raise ValueError("[PREP] section of config.ini file must specify either audio_format or "
+        raise ValueError("[PREP] section of config.toml file must specify either audio_format or "
                          "spect_format")
 
     for required_option in REQUIRED_PREP_OPTIONS:

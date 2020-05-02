@@ -10,7 +10,7 @@ from ..util.general import get_default_device
 
 @attr.s
 class TrainConfig:
-    """class that represents [TRAIN] section of config.ini file
+    """class that represents [TRAIN] section of config.toml file
 
     Attributes
     ----------
@@ -116,6 +116,6 @@ def parse_train_config(config_toml, toml_path):
         if required_option not in train_section:
             raise KeyError(
                 f"the '{required_option}' option is required but was not found in the "
-                f"TRAIN section of the config.ini file: {toml_path}"
+                f"TRAIN section of the config.toml file: {toml_path}"
             )
     return TrainConfig(**train_section)

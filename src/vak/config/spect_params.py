@@ -21,7 +21,7 @@ def is_valid_transform_type(instance, attribute, value):
     if value not in VALID_TRANSFORM_TYPES:
         raise ValueError(
             f'Value for `transform_type`, {value}, in [SPECTROGRAM] '
-            'section of .ini file is not recognized. Must be one '
+            'section of .toml file is not recognized. Must be one '
             f'of the following: {VALID_TRANSFORM_TYPES}'
         )
 
