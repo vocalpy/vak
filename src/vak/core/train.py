@@ -6,6 +6,7 @@ import joblib
 import pandas as pd
 import torch.utils.data
 
+from .. import csv
 from .. import models
 from .. import transforms
 from .. import util
@@ -176,7 +177,7 @@ def train(model_config_map,
         logger=logger, level='info'
     )
 
-    has_unlabeled = util.dataset.has_unlabeled(csv_path, labelset, timebins_key)
+    has_unlabeled = csv.has_unlabeled(csv_path, labelset, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:
