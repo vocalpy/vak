@@ -1,4 +1,3 @@
-from . import entry_points
 from . import general
 from . import labels
 from . import logging
