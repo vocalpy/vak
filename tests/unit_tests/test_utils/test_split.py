@@ -13,7 +13,7 @@ import vak.io.spect
 import vak.annotation
 import vak.util.split
 from vak.annotation import files_from_dir
-from vak.util.general import timebin_dur_from_vec
+from vak.files.spect import timebin_dur_from_vec
 from vak.util.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 
 HERE = os.path.dirname(__file__)f
