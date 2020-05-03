@@ -9,6 +9,7 @@ import pandas as pd
 from .eval import eval
 from .train import train
 from ..io import dataframe
+from .. import csv
 from .. import util
 from ..util import train_test_dur_split
 from ..datasets.window_dataset import WindowDataset
@@ -172,7 +173,7 @@ def learning_curve(model_config_map,
         logger=logger, level='info'
     )
 
-    has_unlabeled = util.dataset.has_unlabeled(csv_path, labelset, timebins_key)
+    has_unlabeled = csv.has_unlabeled(csv_path, labelset, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:

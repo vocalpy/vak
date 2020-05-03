@@ -14,6 +14,7 @@ from . import __main__
 from . import annotation
 from . import cli
 from . import config
+from . import csv
 from . import datasets
 from . import engine
 from . import io
@@ -30,6 +31,7 @@ __all__ = [
     'annotation',
     'cli',
     'config',
+    'csv',
     'datasets',
     'engine',
     'io',

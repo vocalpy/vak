@@ -1,8 +1,8 @@
 import pandas as pd
 
-from . import labels
-from .. import annotation
-from .path import array_dict_from_path
+from vak.util import labels
+from vak import annotation
+from vak.util.path import array_dict_from_path
 
 
 def has_unlabeled(csv_path, labelset, timebins_key='t'):
