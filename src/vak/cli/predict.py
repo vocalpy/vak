@@ -9,6 +9,7 @@ import torch.utils.data
 
 from .. import config
 from .. import io
+from .. import labels
 from .. import models
 from .. import transforms
 from .. import util
@@ -119,9 +120,9 @@ def predict(toml_path):
             y_pred = pred_dict['y_pred'][y_pred_ind]
             y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
             y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
-            labels, onsets_s, offsets_s = util.labels.lbl_tb2segments(y_pred,
-                                                                      labelmap=labelmap,
-                                                                      timebin_dur=timebin_dur)
+            labels, onsets_s, offsets_s = labels.lbl_tb2segments(y_pred,
+                                                                 labelmap=labelmap,
+                                                                 timebin_dur=timebin_dur)
             # DataLoader wraps strings in a tuple, need to unpack
             if type(y) == tuple and len(y) == 1:
                 y = y[0]

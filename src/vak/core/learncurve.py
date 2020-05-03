@@ -10,7 +10,7 @@ from .eval import eval
 from .train import train
 from ..io import dataframe
 from .. import csv
-from .. import util
+from .. import labels
 from ..util import train_test_dur_split
 from ..datasets.window_dataset import WindowDataset
 from ..util.logging import log_or_print
@@ -178,7 +178,7 @@ def learning_curve(model_config_map,
         map_unlabeled = True
     else:
         map_unlabeled = False
-    labelmap = util.labels.to_map(labelset, map_unlabeled=map_unlabeled)
+    labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
 
     train_dur_csv_paths = defaultdict(list)
     for train_dur in train_set_durs:

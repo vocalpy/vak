@@ -1,7 +1,7 @@
 import numpy as np
 
-from .. import annotation
-from .validation import column_or_1d
+from . import annotation
+from .util.validation import column_or_1d
 
 
 def has_unlabeled(labels_int,

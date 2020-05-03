@@ -7,6 +7,7 @@ import pandas as pd
 import torch.utils.data
 
 from .. import csv
+from .. import labels
 from .. import models
 from .. import transforms
 from .. import util
@@ -182,7 +183,7 @@ def train(model_config_map,
         map_unlabeled = True
     else:
         map_unlabeled = False
-    labelmap = util.labels.to_map(labelset, map_unlabeled=map_unlabeled)
+    labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
     log_or_print(
         f'number of classes in labelmap: {len(labelmap)}',
         logger=logger, level='info'

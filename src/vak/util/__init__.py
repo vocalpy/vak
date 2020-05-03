@@ -1,5 +1,4 @@
 from . import general
-from . import labels
 from . import logging
 from . import path
 from . import splitalgos
