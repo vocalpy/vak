@@ -3,6 +3,7 @@ import unittest
 
 import numpy as np
 
+import vak.files.files
 import vak.util.general
 
 
@@ -18,7 +19,7 @@ class TestGeneral(unittest.TestCase):
     def test_find_fname(self):
         fname = 'llb3_0003_2018_04_23_14_18_54.wav.mat'
         ext = 'wav'
-        out = vak.util.general.find_fname(fname, ext)
+        out = vak.files.files.find_fname(fname, ext)
         self.assertTrue(
             out == 'llb3_0003_2018_04_23_14_18_54.wav'
         )
@@ -27,7 +28,7 @@ class TestGeneral(unittest.TestCase):
         # check works for .mat files
         mat_files = self.mat_spect_path.glob('*.mat')
         mat_files = [str(path) for path in mat_files]
-        files = vak.util.general._files_from_dir(self.mat_spect_path, 'mat')
+        files = vak.files.files.from_dir(self.mat_spect_path, 'mat')
         self.assertTrue(
             sorted(mat_files) == sorted(files)
         )
@@ -36,7 +37,7 @@ class TestGeneral(unittest.TestCase):
         # but just in case ... we check for an audio file type too
         cbin_files = self.cbin_path.glob('*.cbin')
         cbin_files = [str(path) for path in cbin_files]
-        files = vak.util.general._files_from_dir(self.cbin_path, 'cbin')
+        files = vak.files.files.from_dir(self.cbin_path, 'cbin')
         self.assertTrue(
             sorted(cbin_files) == sorted(files)
         )

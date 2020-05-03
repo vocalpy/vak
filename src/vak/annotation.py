@@ -5,8 +5,8 @@ from pathlib import Path
 import crowsetta
 import numpy as np
 
+from . import files
 from .config import validators
-from .util.general import _files_from_dir
 
 NO_ANNOTATION_FORMAT = 'none'
 
@@ -119,7 +119,7 @@ def files_from_dir(annot_dir, annot_format):
 
     format_module = getattr(crowsetta.formats, annot_format)
     ext = format_module.meta.ext
-    annot_files = _files_from_dir(annot_dir, ext)
+    annot_files = files.from_dir(annot_dir, ext)
     return annot_files
 
 
