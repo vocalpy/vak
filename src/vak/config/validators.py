@@ -5,7 +5,7 @@ import crowsetta.formats
 import toml
 
 from .. import models
-from ..util.audio import AUDIO_FORMAT_FUNC_MAP
+from ..io.audio import AUDIO_FORMAT_FUNC_MAP
 
 
 def is_a_directory(instance, attribute, value):

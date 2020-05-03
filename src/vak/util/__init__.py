@@ -1,4 +1,3 @@
-from . import audio
 from . import curvefit
 from . import dataset
 from . import entry_points

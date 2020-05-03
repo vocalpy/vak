@@ -9,6 +9,7 @@ from math import isclose
 import crowsetta
 
 import vak.cli.prep
+import vak.io.audio
 from vak.config.spect_params import SpectParamsConfig
 from vak.io import Dataset
 import vak.io
