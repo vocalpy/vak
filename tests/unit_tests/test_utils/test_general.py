@@ -5,7 +5,6 @@ import numpy as np
 
 import vak.files.files
 import vak.files.spect
-import vak.util.general
 
 
 HERE = Path(__file__).parent
