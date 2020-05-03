@@ -7,7 +7,7 @@ import numpy as np
 from . import audio, spect
 from .. import annotation
 from ..annotation import source_annot_map
-from ..util.logging import log_or_print
+from ..logging import log_or_print
 
 
 def from_files(data_dir,

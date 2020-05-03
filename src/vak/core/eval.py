@@ -9,7 +9,7 @@ import torch.utils.data
 from .. import models
 from .. import transforms
 from ..datasets.vocal_dataset import VocalDataset
-from ..util.logging import log_or_print
+from ..logging import log_or_print
 
 
 def eval(csv_path,

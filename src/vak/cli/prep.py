@@ -6,7 +6,7 @@ import toml
 
 from .. import config
 from .. import core
-from .. import util
+from .. import logging
 
 
 def prep(toml_path):
@@ -52,10 +52,10 @@ def prep(toml_path):
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    logger = util.logging.get_logger(log_dst=cfg.prep.output_dir,
-                                     caller='prep',
-                                     timestamp=timenow,
-                                     logger_name=__name__)
+    logger = logging.get_logger(log_dst=cfg.prep.output_dir,
+                                caller='prep',
+                                timestamp=timenow,
+                                logger_name=__name__)
 
     # ---- figure out purpose of config file from sections; will save csv path in that section -------------------------
     with toml_path.open('r') as fp:

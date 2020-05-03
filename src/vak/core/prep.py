@@ -2,8 +2,8 @@ from datetime import datetime
 from pathlib import Path
 import warnings
 
-from ..util.logging import log_or_print
 from ..io import dataframe
+from ..logging import log_or_print
 from ..util import train_test_dur_split
 
 

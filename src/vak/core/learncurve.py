@@ -13,7 +13,7 @@ from .. import csv
 from .. import labels
 from ..util import train_test_dur_split
 from ..datasets.window_dataset import WindowDataset
-from ..util.logging import log_or_print
+from ..logging import log_or_print
 
 
 def learning_curve(model_config_map,
