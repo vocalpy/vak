@@ -10,7 +10,7 @@ import pandas as pd
 
 from .util import is_valid_set_of_spect_files, timebin_dur_from_spect_path
 from ..config import validators
-from ..util.annotation import source_annot_map, NO_ANNOTATION_FORMAT
+from ..annotation import source_annot_map, NO_ANNOTATION_FORMAT
 from ..util.logging import log_or_print
 from ..util.path import find_audio_fname, array_dict_from_path
 

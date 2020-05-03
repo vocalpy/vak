@@ -5,8 +5,8 @@ from crowsetta import Transcriber
 import numpy as np
 
 from . import audio, spect
-from ..util import annotation
-from ..util.annotation import source_annot_map
+from .. import annotation
+from ..annotation import source_annot_map
 from ..util.logging import log_or_print
 
 

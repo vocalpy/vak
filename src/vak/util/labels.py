@@ -1,7 +1,6 @@
-from crowsetta import Transcriber
 import numpy as np
 
-from . import annotation
+from .. import annotation
 from .validation import column_or_1d
 
 

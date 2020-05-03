@@ -1,6 +1,7 @@
 import pandas as pd
 
-from . import labels, annotation
+from . import labels
+from .. import annotation
 from .path import array_dict_from_path
 
 

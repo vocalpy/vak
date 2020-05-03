@@ -5,8 +5,8 @@ from pathlib import Path
 import crowsetta
 import numpy as np
 
-from ..config import validators
-from .general import _files_from_dir
+from .config import validators
+from .util.general import _files_from_dir
 
 NO_ANNOTATION_FORMAT = 'none'
 
