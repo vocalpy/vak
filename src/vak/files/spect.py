@@ -1,12 +1,10 @@
-from functools import partial
 from pathlib import Path
 
 import numpy as np
 from dask import bag as db
 from dask.diagnostics import ProgressBar
-from scipy.io import loadmat
 
-from ..config import validators
+from .. import constants
 from ..logging import log_or_print
 from .files import find_fname
 
@@ -27,7 +25,7 @@ def find_audio_fname(spect_path, audio_ext=None):
         extension associated with an audio file format, used to
         find audio file name in spect_path.
         Default is None. If None, search for any valid audio format
-        (as defined by vak.config.validators.VALID_AUDIO_FORMATS)
+        (as defined by vak.config.constants.VALID_AUDIO_FORMATS)
 
     Returns
     -------
@@ -35,7 +33,7 @@ def find_audio_fname(spect_path, audio_ext=None):
         name of audio file found in spect_path
     """
     if audio_ext is None:
-        audio_ext = validators.VALID_AUDIO_FORMATS
+        audio_ext = constants.VALID_AUDIO_FORMATS
     elif type(audio_ext) is str:
         audio_ext = [audio_ext]
     else:
@@ -59,12 +57,6 @@ def find_audio_fname(spect_path, audio_ext=None):
         raise ValueError(
             f'unable to determine filename of audio file from: {spect_path}'
         )
-
-
-SPECT_FORMAT_LOAD_FUNCTION_MAP = {
-    'mat': partial(loadmat, squeeze_me=True),
-    'npz': np.load,
-}
 
 
 def load(spect_path, spect_format=None):
@@ -92,7 +84,7 @@ def load(spect_path, spect_format=None):
     if spect_format is None:
         # "replace('.', '')", because suffix returns file extension with period included
         spect_format = spect_path.suffix.replace('.', '')
-    spect_dict = SPECT_FORMAT_LOAD_FUNCTION_MAP[spect_format](spect_path)
+    spect_dict = constants.SPECT_FORMAT_LOAD_FUNCTION_MAP[spect_format](spect_path)
     return spect_dict
 
 

@@ -1,11 +1,10 @@
 """validators used by attrs-based classes and by vak.parse.parse_config"""
 from pathlib import Path
 
-import crowsetta.formats
 import toml
 
+from .. import constants
 from .. import models
-from ..io.audio import AUDIO_FORMAT_FUNC_MAP
 
 
 def is_a_directory(instance, attribute, value):
@@ -35,32 +34,29 @@ def is_valid_model_name(instance, attribute, value):
             )
 
 
-VALID_AUDIO_FORMATS = list(AUDIO_FORMAT_FUNC_MAP.keys())
 def is_audio_format(instance, attribute, value):
     """check if valid audio format"""
-    if value not in VALID_AUDIO_FORMATS:
+    if value not in constants.VALID_AUDIO_FORMATS:
         raise ValueError(
             f'{value} is not a valid format for audio files'
         )
 
 
-VALID_ANNOT_FORMATS = crowsetta.formats._INSTALLED
 def is_annot_format(instance, attribute, value):
     """check if valid annotation format"""
-    if value not in VALID_ANNOT_FORMATS:
+    if value not in constants.VALID_ANNOT_FORMATS:
         raise ValueError(
             f'{value} is not a valid format for annotation files.\n'
-            f'Valid formats are: {VALID_ANNOT_FORMATS}'
+            f'Valid formats are: {constants.VALID_ANNOT_FORMATS}'
         )
 
 
-VALID_SPECT_FORMATS = {'mat', 'npz'}
 def is_spect_format(instance, attribute, value):
     """check if valid format for spectrograms"""
-    if value not in VALID_SPECT_FORMATS:
+    if value not in constants.VALID_SPECT_FORMATS:
         raise ValueError(
             f'{value} is not a valid format for spectrogram files.\n'
-            f'Valid formats are: {VALID_SPECT_FORMATS}'
+            f'Valid formats are: {constants.VALID_SPECT_FORMATS}'
         )
 
 
