@@ -75,7 +75,7 @@ def train(model_config_map,
         key for accessing vector of time bins in files. Default is 't'.
     device : str
         Device on which to work with model + data.
-        Default is None. If None, then a device will be selected with vak.util.get_default.
+        Default is None. If None, then a device will be selected with vak.split.get_default.
         That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
@@ -119,7 +119,7 @@ def train(model_config_map,
     Other Parameters
     ----------------
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger. Default is None.
+        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -195,7 +195,7 @@ def train(model_config_map,
     # get transforms just before creating datasets with them
     if normalize_spectrograms:
         # we instantiate this transform here because we want to save it
-        # and don't want to add more parameters to `transforms.util.get_defaults` function
+        # and don't want to add more parameters to `transforms.split.get_defaults` function
         # and make too tight a coupling between this function and that one.
         # Trade off is that this is pretty verbose (even ignoring my comments)
         log_or_print('will normalize spectrograms', logger=logger, level='info')

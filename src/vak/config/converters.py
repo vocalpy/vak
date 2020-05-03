@@ -87,15 +87,13 @@ def labelset_from_toml_value(value):
     Notes
     -----
     If value is a str, and it starts with "range:", then everything after range is converted to
-    some range of integers, by passing the string to vak.util.general.range_str,
+    some range of integers, by passing the string to vak.config.converters.range_str,
     and the returned list is converted to a set. E.g. "range: 1-5" becomes {'1', '2', '3', '4', '5'}.
     Other strings that do not start with "range:" are just converted to a set. E.g. "abc" becomes {'a', 'b', 'c'}.
 
     If value is a list, returns set(value). If all values in list are int,
     they will be converted to strings, e.g. [1, 2, 3, 4, 5] becomes {'1', '2', '3', '4', '5'}.
-    If all values are string, any that begin with "range:" will be passed to vak.util.general.range_str.
-    Any other strings will be
-
+    If all values are string, any that begin with "range:" will be passed to vak.config.converters.range_str.
 
     Examples
     --------

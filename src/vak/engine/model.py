@@ -453,7 +453,7 @@ class Model:
             determine parameters for each of those, e.g. dropout rate for the
             network, learning rate for the optimizer, etc.
         logger : logging.Logger
-            instance returned by vak.util.logging.get_logger.
+            instance returned by vak.logging.get_logger.
             Default is None, in which case messages are just sent to print function.
 
         Returns
