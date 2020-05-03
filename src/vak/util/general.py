@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 
 
 def timebin_dur_from_vec(time_bins, n_decimals_trunc=5):
@@ -33,21 +32,6 @@ def timebin_dur_from_vec(time_bins, n_decimals_trunc=5):
     decade = 10 ** n_decimals_trunc
     timebin_dur = np.trunc(timebin_dur * decade) / decade
     return timebin_dur
-
-
-def get_default_device():
-    """get default device for torch.
-
-    Returns
-    -------
-    device : str
-        'cuda' if torch.cuda.is_available() is True,
-        and returns 'cpu' otherwise.
-    """
-    if torch.cuda.is_available():
-        return "cuda"
-    else:
-        return "cpu"
 
 
 def range_str(range_str, sort=True):

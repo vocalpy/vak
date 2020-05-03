@@ -81,7 +81,7 @@ def learning_curve(model_config_map,
         key for accessing vector of time bins in files. Default is 't'.
     device : str
         Device on which to work with model + data.
-        Default is None. If None, then a device will be selected with vak.util.get_default_device.
+        Default is None. If None, then a device will be selected with vak.device.get_default.
         That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.

@@ -16,6 +16,7 @@ from . import cli
 from . import config
 from . import csv
 from . import datasets
+from . import device
 from . import engine
 from . import entry_points
 from . import files
@@ -40,6 +41,7 @@ __all__ = [
     'config',
     'csv',
     'datasets',
+    'device',
     'engine',
     'entry_points',
     'files',
