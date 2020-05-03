@@ -11,7 +11,7 @@ from .train import train
 from ..io import dataframe
 from .. import csv
 from .. import labels
-from ..util import train_test_dur_split
+from .. import split
 from ..datasets.window_dataset import WindowDataset
 from ..logging import log_or_print
 
@@ -189,10 +189,10 @@ def learning_curve(model_config_map,
         for replicate_num in range(1, num_replicates + 1):
             results_path_this_replicate = results_path_this_train_dur.joinpath(f'replicate_{replicate_num}')
             results_path_this_replicate.mkdir()
-            # get just train split, to pass to train_test_dur_split
+            # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
             train_df = dataset_df[dataset_df['split'] == 'train']
-            subset_df = train_test_dur_split(train_df, train_dur=train_dur, labelset=labelset)
+            subset_df = split.dataframe(train_df, train_dur=train_dur, labelset=labelset)
             subset_df = subset_df[subset_df['split'] == 'train']  # remove rows where split was set to 'None'
             # ---- use *just* train subset to get spect vectors for WindowDataset
             (spect_id_vector,

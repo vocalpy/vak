@@ -11,10 +11,10 @@ from scipy.io import loadmat
 
 import vak.io.spect
 import vak.annotation
-import vak.util.split
+import vak.split.split
 from vak.annotation import files_from_dir
 from vak.files.spect import timebin_dur_from_vec
-from vak.util.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
+from vak.split.utils import OnlyValDurError, InvalidDurationError, SplitsDurationGreaterThanDatasetDurationError
 
 HERE = os.path.dirname(__file__)f
 TEST_DATA_DIR = os.path.join(HERE,
@@ -113,7 +113,7 @@ class TestSplit(unittest.TestCase):
 
         return True
 
-    def test_train_test_dur_split_inds_mock_easy(self):
+    def test_dataframe_inds_mock_easy(self):
         durs = (5, 5, 5, 5, 5)
         labelset = set(list('abcde'))
         train_dur = 20
@@ -121,11 +121,11 @@ class TestSplit(unittest.TestCase):
         test_dur = 5
         labels = ([np.asarray(list(labelset)) for _ in range(5)])
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(durs,
-                                                                                       labels,
-                                                                                       labelset,
-                                                                                       train_dur,
-                                                                                       test_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(durs,
+                                                                                        labels,
+                                                                                        labelset,
+                                                                                        train_dur,
+                                                                                        test_dur)
 
         self.assertTrue(
             self._check_output(train_dur,
@@ -138,7 +138,7 @@ class TestSplit(unittest.TestCase):
                                val_inds,
                                test_inds))
 
-    def test_train_test_dur_split_inds_mock_not_as_easy(self):
+    def test_dataframe_inds_mock_not_as_easy(self):
         durs = (3, 2, 1, 3, 2, 3, 2, 1, 3, 2)
         labelset = set(list('abcde'))
         labels = ['abc', 'ab', 'c', 'cde', 'de', 'abc', 'ab', 'c', 'cde', 'de']
@@ -148,11 +148,11 @@ class TestSplit(unittest.TestCase):
         labels = ([np.asarray(list(lbl)) for lbl in labels])
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(durs,
-                                                                                       labels,
-                                                                                       labelset,
-                                                                                       train_dur,
-                                                                                       test_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(durs,
+                                                                                        labels,
+                                                                                        labelset,
+                                                                                        train_dur,
+                                                                                        test_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -165,7 +165,7 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_inds_mock_hard(self):
+    def test_dataframe_inds_mock_hard(self):
         durs = (3, 2, 1, 3, 2, 3, 2, 1, 3, 2)
         labelset = set(list('abcde'))
         labels = ['abc', 'ab', 'c', 'cde', 'de', 'abc', 'ab', 'c', 'cde', 'de']
@@ -175,12 +175,12 @@ class TestSplit(unittest.TestCase):
         test_dur = 7
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(durs,
-                                                                                       labels,
-                                                                                       labelset,
-                                                                                       train_dur,
-                                                                                       test_dur,
-                                                                                       val_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(durs,
+                                                                                        labels,
+                                                                                        labelset,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -193,7 +193,7 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_inds_mock_impossible(self):
+    def test_dataframe_inds_mock_impossible(self):
         durs = (3, 2, 1, 3, 2, 3, 2, 1, 3, 2)
         labelset = set(list('abcde'))
         labels = ['abc', 'ab', 'c', 'cde', 'de', 'abc', 'ab', 'c', 'cde', 'de']
@@ -202,25 +202,25 @@ class TestSplit(unittest.TestCase):
         val_dur = 2
         test_dur = 4
         with self.assertRaises(ValueError):
-            vak.util.split.train_test_dur_split_inds(durs,
-                                                     labels,
-                                                     labelset,
-                                                     train_dur,
-                                                     test_dur,
-                                                     val_dur)
+            vak.split.split.dataframe_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
-    def test_train_test_dur_split_inds_cbin_train_test_val(self):
+    def test_dataframe_inds_cbin_train_test_val(self):
         train_dur = 35
         val_dur = 20
         test_dur = 35
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(self.durs_cbin,
-                                                                                       self.labels_cbin,
-                                                                                       self.labelset_cbin,
-                                                                                       train_dur,
-                                                                                       test_dur,
-                                                                                       val_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(self.durs_cbin,
+                                                                                        self.labels_cbin,
+                                                                                        self.labelset_cbin,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -233,18 +233,18 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_inds_cbin_train(self):
+    def test_dataframe_inds_cbin_train(self):
         train_dur = 35
         val_dur = None
         test_dur = -1
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(self.durs_cbin,
-                                                                                       self.labels_cbin,
-                                                                                       self.labelset_cbin,
-                                                                                       train_dur,
-                                                                                       test_dur,
-                                                                                       val_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(self.durs_cbin,
+                                                                                        self.labels_cbin,
+                                                                                        self.labelset_cbin,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -257,18 +257,18 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_inds_cbin_test(self):
+    def test_dataframe_inds_cbin_test(self):
         train_dur = -1
         val_dur = None
         test_dur = 35
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(self.durs_cbin,
-                                                                                       self.labels_cbin,
-                                                                                       self.labelset_cbin,
-                                                                                       train_dur,
-                                                                                       test_dur,
-                                                                                       val_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(self.durs_cbin,
+                                                                                        self.labels_cbin,
+                                                                                        self.labelset_cbin,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -281,18 +281,18 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_inds_mat_train_test_val(self):
+    def test_dataframe_inds_mat_train_test_val(self):
         train_dur = 200
         val_dur = 100
         test_dur = 200
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(self.durs_mat,
-                                                                                       self.labels_mat,
-                                                                                       self.labelset_mat,
-                                                                                       train_dur,
-                                                                                       test_dur,
-                                                                                       val_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(self.durs_mat,
+                                                                                        self.labels_mat,
+                                                                                        self.labelset_mat,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -305,18 +305,18 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_inds_mat_train(self):
+    def test_dataframe_inds_mat_train(self):
         train_dur = 200
         val_dur = None
         test_dur = -1
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(self.durs_mat,
-                                                                                       self.labels_mat,
-                                                                                       self.labelset_mat,
-                                                                                       train_dur,
-                                                                                       test_dur,
-                                                                                       val_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(self.durs_mat,
+                                                                                        self.labels_mat,
+                                                                                        self.labelset_mat,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -329,18 +329,18 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_inds_mat_test(self):
+    def test_dataframe_inds_mat_test(self):
         train_dur = -1
         val_dur = None
         test_dur = 200
 
         for _ in range(NUM_SAMPLES):
-            train_inds, val_inds, test_inds = vak.util.split.train_test_dur_split_inds(self.durs_mat,
-                                                                                       self.labels_mat,
-                                                                                       self.labelset_mat,
-                                                                                       train_dur,
-                                                                                       test_dur,
-                                                                                       val_dur)
+            train_inds, val_inds, test_inds = vak.split.split.dataframe_inds(self.durs_mat,
+                                                                                        self.labels_mat,
+                                                                                        self.labelset_mat,
+                                                                                        train_dur,
+                                                                                        test_dur,
+                                                                                        val_dur)
 
             self.assertTrue(
                 self._check_output(train_dur,
@@ -353,7 +353,7 @@ class TestSplit(unittest.TestCase):
                                    val_inds,
                                    test_inds))
 
-    def test_train_test_dur_split_None_raises(self):
+    def test_dataframe_None_raises(self):
         durs = (5, 5, 5, 5, 5)
         labelset = set(list('abcde'))
         labels = ([np.asarray(list(labelset)) for _ in range(5)])
@@ -363,14 +363,14 @@ class TestSplit(unittest.TestCase):
         test_dur = None
 
         with self.assertRaises(ValueError):
-            vak.util.split.train_test_dur_split_inds(durs,
-                                                     labels,
-                                                     labelset,
-                                                     train_dur,
-                                                     test_dur,
-                                                     val_dur)
+            vak.split.split.dataframe_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
-    def test_train_test_dur_split_only_val_raises(self):
+    def test_dataframe_only_val_raises(self):
         durs = (5, 5, 5, 5, 5)
         labelset = set(list('abcde'))
         labels = ([np.asarray(list(labelset)) for _ in range(5)])
@@ -381,14 +381,14 @@ class TestSplit(unittest.TestCase):
 
         # because we only specified duration for validation set
         with self.assertRaises(OnlyValDurError):
-            vak.util.split.train_test_dur_split_inds(durs,
-                                                     labels,
-                                                     labelset,
-                                                     train_dur,
-                                                     test_dur,
-                                                     val_dur)
+            vak.split.split.dataframe_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
-    def test_train_test_dur_split_negative_dur_raises(self):
+    def test_dataframe_negative_dur_raises(self):
         durs = (5, 5, 5, 5, 5)
         labelset = set(list('abcde'))
         labels = ([np.asarray(list(labelset)) for _ in range(5)])
@@ -399,14 +399,14 @@ class TestSplit(unittest.TestCase):
 
         # because negative duration is invalid
         with self.assertRaises(InvalidDurationError):
-            vak.util.split.train_test_dur_split_inds(durs,
-                                                     labels,
-                                                     labelset,
-                                                     train_dur,
-                                                     test_dur,
-                                                     val_dur)
+            vak.split.split.dataframe_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
-    def test_train_test_dur_split_specd_dur_gt_raises(self):
+    def test_dataframe_specd_dur_gt_raises(self):
         durs = (5, 5, 5, 5, 5)
         labelset = set(list('abcde'))
         labels = ([np.asarray(list(labelset)) for _ in range(5)])
@@ -416,14 +416,14 @@ class TestSplit(unittest.TestCase):
         val_dur = 100
         # because total splits duration is greater than dataset duration
         with self.assertRaises(SplitsDurationGreaterThanDatasetDurationError):
-            vak.util.split.train_test_dur_split_inds(durs,
-                                                     labels,
-                                                     labelset,
-                                                     train_dur,
-                                                     test_dur,
-                                                     val_dur)
+            vak.split.split.dataframe_inds(durs,
+                                                      labels,
+                                                      labelset,
+                                                      train_dur,
+                                                      test_dur,
+                                                      val_dur)
 
-    def test_train_test_dur_split_mat_train_test(self):
+    def test_dataframe_mat_train_test(self):
         vds = vak.io.spect.to_dataframe(spect_format='mat',
                                         spect_dir=spect_dir_mat,
                                         annot_list=annot_list_mat,
@@ -432,10 +432,10 @@ class TestSplit(unittest.TestCase):
         train_dur = 200
         test_dur = 200
 
-        train_vds, test_vds = vak.util.split.train_test_dur_split(vds,
-                                                                  labelset=self.labelset_mat,
-                                                                  train_dur=train_dur,
-                                                                  test_dur=test_dur)
+        train_vds, test_vds = vak.split.split.dataframe(vds,
+                                                        labelset=self.labelset_mat,
+                                                        train_dur=train_dur,
+                                                        test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
             self.assertTrue(type(vds_out) == pd.DataFrame)
 
@@ -444,7 +444,7 @@ class TestSplit(unittest.TestCase):
         test_dur_out = sum([voc.duration for voc in test_vds.voc_list])
         self.assertTrue(test_dur_out >= test_dur)
 
-    def test_train_test_dur_split_mat_train(self):
+    def test_dataframe_mat_train(self):
         vds = vak.io.spect.to_dataframe(spect_format='mat',
                                         spect_dir=spect_dir_mat,
                                         annot_list=annot_list_mat,
@@ -452,9 +452,9 @@ class TestSplit(unittest.TestCase):
 
         train_dur = 200
 
-        train_vds, test_vds = vak.util.split.train_test_dur_split(vds,
-                                                                  labelset=self.labelset_mat,
-                                                                  train_dur=train_dur)
+        train_vds, test_vds = vak.split.split.dataframe(vds,
+                                                        labelset=self.labelset_mat,
+                                                        train_dur=train_dur)
         for vds_out in (train_vds, test_vds):
             self.assertTrue(type(vds_out) == pd.DataFrame)
 
@@ -467,7 +467,7 @@ class TestSplit(unittest.TestCase):
             isclose(test_dur_out, vds_dur - train_dur_out)
         )
 
-    def test_train_test_dur_split_mat_test(self):
+    def test_dataframe_mat_test(self):
         vds = vak.io.spect.to_dataframe(spect_format='mat',
                                         spect_dir=spect_dir_mat,
                                         annot_list=annot_list_mat,
@@ -475,9 +475,9 @@ class TestSplit(unittest.TestCase):
 
         test_dur = 200
 
-        train_vds, test_vds = vak.util.split.train_test_dur_split(vds,
-                                                                  labelset=self.labelset_mat,
-                                                                  test_dur=test_dur)
+        train_vds, test_vds = vak.split.split.dataframe(vds,
+                                                        labelset=self.labelset_mat,
+                                                        test_dur=test_dur)
         for vds_out in (train_vds, test_vds):
             self.assertTrue(type(vds_out) == pd.DataFrame)
 

@@ -11,9 +11,9 @@ import joblib
 
 import vak.config
 import vak.transforms.transforms
-import vak.util
+import vak.split
 import vak.models
-import vak.util.data
+import vak.split.data
 import vak.spect
 
 HERE = os.path.dirname(__file__)
