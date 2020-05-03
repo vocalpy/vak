@@ -1,7 +1,7 @@
 import numpy as np
 
 from ..util.path import array_dict_from_path
-from ..util.validation import column_or_1d
+from ..validation import column_or_1d
 
 from . import functional as F
 

@@ -27,6 +27,7 @@ from . import spect
 from . import summary_writer
 from . import transforms
 from . import util
+from . import validation
 
 from .engine.model import Model
 
@@ -49,5 +50,6 @@ __all__ = [
     'spect',
     'summary_writer',
     'transforms',
-    'util'
+    'util',
+    'validation',
 ]
