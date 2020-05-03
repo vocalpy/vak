@@ -3,6 +3,7 @@ import pandas as pd
 import torch
 from torchvision.datasets.vision import VisionDataset
 
+from .. import annotation
 from .. import io
 from .. import util
 
@@ -407,7 +408,7 @@ class WindowDataset(VisionDataset):
             crop_to_dur = True
             crop_dur = float(crop_dur)
             timebin_dur = float(timebin_dur)
-            annots = util.annotation.from_df(df)
+            annots = annotation.from_df(df)
             if 'unlabeled' in labelmap:
                 unlabeled_label = labelmap['unlabeled']
             else:
@@ -426,7 +427,7 @@ class WindowDataset(VisionDataset):
 
         if crop_to_dur:
             lbl_tb = []
-            spect_annot_map = util.annotation.source_annot_map(spect_paths, annots)
+            spect_annot_map = annotation.source_annot_map(spect_paths, annots)
             for ind, (spect_path, annot) in enumerate(spect_annot_map.items()):
                 spect_dict = util.path.array_dict_from_path(spect_path)
                 n_tb_spect = spect_dict[spect_key].shape[-1]
@@ -645,7 +646,7 @@ class WindowDataset(VisionDataset):
             # see Notes in class docstring to understand what these vectors do
             spect_id_vector, spect_inds_vector, x_inds = cls.spect_vectors_from_df(df, window_size)
 
-        annots = util.annotation.from_df(df)
+        annots = annotation.from_df(df)
         timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
 
         # note that we set "root" to csv path

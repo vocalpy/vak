@@ -11,6 +11,7 @@ from .__about__ import (
 )
 
 from . import __main__
+from . import annotation
 from . import cli
 from . import config
 from . import datasets
@@ -26,6 +27,7 @@ from .engine.model import Model
 
 __all__ = [
     '__main__',
+    'annotation',
     'cli',
     'config',
     'datasets',

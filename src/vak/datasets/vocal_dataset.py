@@ -1,6 +1,9 @@
 import pandas as pd
 
 from .. import util
+from .. import annotation
+from .. import files
+from .. import labels
 
 
 class VocalDataset:
@@ -138,7 +141,7 @@ class VocalDataset:
 
         # below, annots will be None if no format is specified in the `annot_format` column of the dataframe.
         # this is intended behavior; makes it possible to use same dataset class for prediction
-        annots = util.annotation.from_df(df)
+        annots = annotation.from_df(df)
 
         return cls(csv_path,
                    spect_paths,
