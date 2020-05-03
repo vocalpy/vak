@@ -11,7 +11,7 @@ from vak.util.general import _files_from_dir
 from ..config import validators
 from ..config.spect_params import SpectParamsConfig
 from ..annotation import source_annot_map
-from ..util.spect import spectrogram
+from ..spect import spectrogram
 
 
 def swap_return_tuple_elements(func):
