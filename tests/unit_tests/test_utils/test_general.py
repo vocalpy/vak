@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 
 import vak.files.files
+import vak.files.spect
 import vak.util.general
 
 
@@ -45,7 +46,7 @@ class TestGeneral(unittest.TestCase):
     def test_timebin_dur_from_vecs(self):
         timebin_dur = 0.001
         time_bins = np.linspace(0., 5., num=int(5 / timebin_dur))
-        computed = vak.util.general.timebin_dur_from_vec(time_bins=time_bins, n_decimals_trunc=3)
+        computed = vak.files.spect.timebin_dur_from_vec(time_bins=time_bins, n_decimals_trunc=3)
         self.assertTrue(timebin_dur == computed)
 
 

@@ -8,7 +8,6 @@ from scipy.io import loadmat
 
 from ..config import validators
 from ..logging import log_or_print
-from ..util.general import timebin_dur_from_vec
 from .files import find_fname
 
 
@@ -95,6 +94,67 @@ def load(spect_path, spect_format=None):
         spect_format = spect_path.suffix.replace('.', '')
     spect_dict = SPECT_FORMAT_LOAD_FUNCTION_MAP[spect_format](spect_path)
     return spect_dict
+
+
+def timebin_dur_from_vec(time_bins, n_decimals_trunc=5):
+    """compute duration of a time bin, given the
+    vector of time bin centers associated with a spectrogram
+
+    Parameters
+    ----------
+    time_bins : numpy.ndarray
+        vector of times in spectrogram, where each value is a bin center.
+    n_decimals_trunc : int
+        number of decimal places to keep when truncating the timebin duration calculated from
+        the spectrogram arrays. Default is 5.
+
+    Returns
+    -------
+    timebin_dur : float
+        duration of a timebin, estimated from vector of times
+
+    Notes
+    -----
+    takes mean of pairwise difference between neighboring time bins,
+    to deal with floating point error, then rounds and truncates to specified decimal place
+    """
+    # first we round to the given number of decimals
+    timebin_dur = np.around(
+        np.mean(np.diff(time_bins)),
+        decimals=n_decimals_trunc
+    )
+    # only after rounding do we truncate any decimal place past decade
+    decade = 10 ** n_decimals_trunc
+    timebin_dur = np.trunc(timebin_dur * decade) / decade
+    return timebin_dur
+
+
+def timebin_dur(spect_path, spect_format, timebins_key, n_decimals_trunc=5):
+    """get duration of time bins from a spectrogram file
+
+    Parameters
+    ----------
+    spect_path: str, Path
+        path to spectrogram file.
+    spect_format : str
+        format of file containing spectrogram. One of {'mat', 'npz'}
+    timebins_key : str
+        key for accessing vector of time bins in files. Default is 't'.
+    n_decimals_trunc : int
+        number of decimal places to keep when truncating the timebin duration calculated from
+        the vector of time bins.
+        Default is 3, i.e. assumes milliseconds is the last significant digit.
+
+    Returns
+    -------
+    timebin_dur : float
+
+    """
+    spect_path = Path(spect_path)
+    spect_dict = load(spect_path, spect_format)
+    time_bins = spect_dict[timebins_key]
+    timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
+    return timebin_dur
 
 
 def is_valid_set_of_spect_files(spect_paths,
@@ -197,31 +257,3 @@ def is_valid_set_of_spect_files(spect_paths,
         )
 
     return True
-
-
-def timebin_dur(spect_path, spect_format, timebins_key, n_decimals_trunc=5):
-    """get duration of time bins from a spectrogram file
-
-    Parameters
-    ----------
-    spect_path: str, Path
-        path to spectrogram file.
-    spect_format : str
-        format of file containing spectrogram. One of {'mat', 'npz'}
-    timebins_key : str
-        key for accessing vector of time bins in files. Default is 't'.
-    n_decimals_trunc : int
-        number of decimal places to keep when truncating the timebin duration calculated from
-        the vector of time bins.
-        Default is 3, i.e. assumes milliseconds is the last significant digit.
-
-    Returns
-    -------
-    timebin_dur : float
-
-    """
-    spect_path = Path(spect_path)
-    spect_dict = load(spect_path, spect_format)
-    time_bins = spect_dict[timebins_key]
-    timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
-    return timebin_dur
