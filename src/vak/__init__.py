@@ -17,6 +17,7 @@ from . import config
 from . import csv
 from . import datasets
 from . import engine
+from . import entry_points
 from . import io
 from . import metrics
 from . import models
@@ -34,6 +35,7 @@ __all__ = [
     'csv',
     'datasets',
     'engine',
+    'entry_points',
     'io',
     'metrics',
     'Model',
