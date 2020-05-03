@@ -1,7 +1,6 @@
 from . import general
 from . import path
 from . import splitalgos
-from . import spect
 from . import summary_writer
 from . import validation
 
