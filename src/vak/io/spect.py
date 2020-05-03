@@ -8,9 +8,9 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
+from .. import constants
 from .. import files
-from ..annotation import source_annot_map, NO_ANNOTATION_FORMAT
-from ..config import validators
+from ..annotation import source_annot_map
 from ..logging import log_or_print
 
 
@@ -102,9 +102,9 @@ def to_dataframe(spect_format,
     the appropriate arguments: spect_key, freqbins_key, timebins_key
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
-    if spect_format not in validators.VALID_SPECT_FORMATS:
+    if spect_format not in constants.VALID_SPECT_FORMATS:
         raise ValueError(
-            f"spect_format must be one of '{validators.VALID_SPECT_FORMATS}'; "
+            f"spect_format must be one of '{constants.VALID_SPECT_FORMATS}'; "
             f"format '{spect_format}' not recognized."
         )
 
@@ -218,7 +218,7 @@ def to_dataframe(spect_format,
             abspath(audio_path),
             abspath(spect_path),
             abspath(annot_path),
-            annot_format if annot_format else NO_ANNOTATION_FORMAT,
+            annot_format if annot_format else constants.NO_ANNOTATION_FORMAT,
             spect_dur,
             timebin_dur,
         ])
