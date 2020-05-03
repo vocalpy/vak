@@ -7,7 +7,7 @@ import unittest
 from configparser import ConfigParser
 
 import vak.config.learncurve
-import vak.util
+import vak.split
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')

@@ -8,7 +8,7 @@ import unittest
 
 import vak.config.converters
 import vak.config.prep
-import vak.util
+import vak.split
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')

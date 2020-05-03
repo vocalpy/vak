@@ -3,8 +3,8 @@ import warnings
 import numpy as np
 
 from ..labels import from_df as labels_from_df
-from .splitalgos import brute_force
-from .splitalgos.validate import validate_durations_convert_nonnegative
+from .algorithms import brute_force
+from .algorithms.validate import validate_durations_convert_nonnegative
 
 
 def train_test_dur_split_inds(durs,
@@ -41,7 +41,7 @@ def train_test_dur_split_inds(durs,
         If None, no indices are returned for validation set.
     algo : str
         algorithm to use. One of {'brute_force', 'inc_freq'}. Default is 'brute_force'. For more information
-        on the algorithms, see the docstrings, e.g., vak.io.splitalgos.brute_force
+        on the algorithms, see the docstrings, e.g., vak.io.algorithms.brute_force
 .
     Returns
     -------
@@ -90,11 +90,11 @@ def train_test_dur_split_inds(durs,
     return train_inds, val_inds, test_inds
 
 
-def train_test_dur_split(vak_df,
-                         labelset,
-                         train_dur=None,
-                         test_dur=None,
-                         val_dur=None):
+def dataframe(vak_df,
+              labelset,
+              train_dur=None,
+              test_dur=None,
+              val_dur=None):
     """split a dataset of vocalizations into training, test, and (optionally) validation subsets,
     specified by their duration.
 

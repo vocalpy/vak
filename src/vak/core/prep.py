@@ -2,9 +2,9 @@ from datetime import datetime
 from pathlib import Path
 import warnings
 
+from .. import split
 from ..io import dataframe
 from ..logging import log_or_print
-from ..util import train_test_dur_split
 
 
 VALID_PURPOSES = frozenset(['train', 'predict', 'learncurve'])
@@ -203,11 +203,11 @@ def prep(data_dir,
     if do_split:
         # save before splitting, jic duration args are not valid (we can't know until we make dataset)
         vak_df.to_csv(csv_path)
-        vak_df = train_test_dur_split(vak_df,
-                                      labelset=labelset,
-                                      train_dur=train_dur,
-                                      val_dur=val_dur,
-                                      test_dur=test_dur)
+        vak_df = split.dataframe(vak_df,
+                                 labelset=labelset,
+                                 train_dur=train_dur,
+                                 val_dur=val_dur,
+                                 test_dur=test_dur)
 
     elif do_split is False:
         # add a split column, but assign everything to the same 'split'
