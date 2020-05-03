@@ -1,4 +1,3 @@
-"""utility functions that deal with paths"""
 from functools import partial
 from pathlib import Path
 
@@ -7,10 +6,10 @@ from dask import bag as db
 from dask.diagnostics import ProgressBar
 from scipy.io import loadmat
 
-from vak import files
-from vak.config import validators
-from vak.logging import log_or_print
-from vak.util.general import find_fname, timebin_dur_from_vec
+from ..config import validators
+from ..logging import log_or_print
+from ..util.general import timebin_dur_from_vec
+from .files import find_fname
 
 
 def find_audio_fname(spect_path, audio_ext=None):
@@ -145,7 +144,7 @@ def is_valid_set_of_spect_files(spect_paths,
     def _validate(spect_path):
         """validates each spectrogram file, then returns frequency bin array
         and duration of time bins, so that those can be validated across all files"""
-        spect_dict = files.spect.load(spect_path, spect_format)
+        spect_dict = load(spect_path, spect_format)
 
         if spect_key not in spect_dict:
             raise KeyError(
@@ -222,7 +221,7 @@ def timebin_dur(spect_path, spect_format, timebins_key, n_decimals_trunc=5):
 
     """
     spect_path = Path(spect_path)
-    spect_dict = files.spect.load(spect_path, spect_format)
+    spect_dict = load(spect_path, spect_format)
     time_bins = spect_dict[timebins_key]
     timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
     return timebin_dur

@@ -7,7 +7,7 @@ from dask.diagnostics import ProgressBar
 from evfuncs import load_cbin
 from scipy.io import wavfile
 
-from vak.util.general import _files_from_dir
+from .. import files
 from ..config import validators
 from ..config.spect_params import SpectParamsConfig
 from ..annotation import source_annot_map
@@ -47,7 +47,7 @@ def files_from_dir(audio_dir, audio_format):
     """
     if audio_format not in AUDIO_FORMAT_FUNC_MAP:
         raise ValueError(f"'{audio_format}' is not a valid audio format")
-    audio_files = _files_from_dir(audio_dir, audio_format)
+    audio_files = files.from_dir(audio_dir, audio_format)
     return audio_files
 
 
