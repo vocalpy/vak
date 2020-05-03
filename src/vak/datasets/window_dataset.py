@@ -5,6 +5,7 @@ from torchvision.datasets.vision import VisionDataset
 
 from .. import annotation
 from .. import io
+from .. import labels
 from .. import util
 
 
@@ -191,11 +192,11 @@ class WindowDataset(VisionDataset):
 
         annot = self.annots[spect_id]  # "annot id" == spect_id if both were taken from rows of DataFrame
         lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
-        lbl_tb = util.labels.label_timebins(lbls_int,
-                                            annot.seq.onsets_s,
-                                            annot.seq.offsets_s,
-                                            timebins,
-                                            unlabeled_label=self.unlabeled_label)
+        lbl_tb = labels.label_timebins(lbls_int,
+                                       annot.seq.onsets_s,
+                                       annot.seq.offsets_s,
+                                       timebins,
+                                       unlabeled_label=self.unlabeled_label)
 
         window = spect[:, window_start_ind:window_start_ind + self.window_size]
         labelvec = lbl_tb[window_start_ind:window_start_ind + self.window_size]
@@ -444,11 +445,11 @@ class WindowDataset(VisionDataset):
 
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
                 timebins = spect_dict[timebins_key]
-                lbl_tb.append(util.labels.label_timebins(lbls_int,
-                                                         annot.seq.onsets_s,
-                                                         annot.seq.offsets_s,
-                                                         timebins,
-                                                         unlabeled_label=unlabeled_label))
+                lbl_tb.append(labels.label_timebins(lbls_int,
+                                                    annot.seq.onsets_s,
+                                                    annot.seq.offsets_s,
+                                                    timebins,
+                                                    unlabeled_label=unlabeled_label))
 
             spect_id_vector = np.concatenate(spect_id_vector)
             spect_inds_vector = np.concatenate(spect_inds_vector)

@@ -19,6 +19,8 @@ from . import datasets
 from . import engine
 from . import entry_points
 from . import io
+from . import labels
+from . import logging
 from . import metrics
 from . import models
 from . import transforms
@@ -37,6 +39,8 @@ __all__ = [
     'engine',
     'entry_points',
     'io',
+    'labels',
+    'logging',
     'metrics',
     'Model',
     'models',

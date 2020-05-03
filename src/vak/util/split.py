@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-from .labels import from_df as labels_from_df
+from ..labels import from_df as labels_from_df
 from .splitalgos import brute_force
 from .splitalgos.validate import validate_durations_convert_nonnegative
 

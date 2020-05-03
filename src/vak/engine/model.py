@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from ..util.general import get_default_device
 from ..util.logging import log_or_print
-from ..util.labels import lbl_tb2labels
+from ..labels import lbl_tb2labels
 
 
 class Model:
