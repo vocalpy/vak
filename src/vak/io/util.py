@@ -5,8 +5,8 @@ import dask.bag as db
 from dask.diagnostics import ProgressBar
 import numpy as np
 
+from ..logging import log_or_print
 from ..util.general import timebin_dur_from_vec
-from ..util.logging import log_or_print
 from ..util.path import array_dict_from_path
 
 

@@ -1,5 +1,4 @@
 from . import general
-from . import logging
 from . import path
 from . import splitalgos
 from . import spect

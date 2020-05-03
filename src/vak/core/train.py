@@ -14,8 +14,8 @@ from .. import util
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
 from ..io import dataframe
+from ..logging import log_or_print
 from ..util.general import get_default_device
-from ..util.logging import log_or_print
 
 
 def train(model_config_map,
