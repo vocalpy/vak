@@ -18,6 +18,7 @@ from . import csv
 from . import datasets
 from . import engine
 from . import entry_points
+from . import files
 from . import io
 from . import labels
 from . import logging
@@ -41,6 +42,7 @@ __all__ = [
     'datasets',
     'engine',
     'entry_points',
+    'files',
     'io',
     'labels',
     'logging',

@@ -8,11 +8,10 @@ from tqdm import tqdm
 import torch.utils.data
 
 from .. import config
+from .. import files
 from .. import io
-from .. import labels
 from .. import models
 from .. import transforms
-from .. import util
 from ..datasets.unannotated_dataset import UnannotatedDataset
 
 
@@ -126,7 +125,7 @@ def predict(toml_path):
             # DataLoader wraps strings in a tuple, need to unpack
             if type(y) == tuple and len(y) == 1:
                 y = y[0]
-            audio_fname = util.path.find_audio_fname(y)
+            audio_fname = files.spect.find_audio_fname(y)
             audio_filename = Path(y).parent.joinpath(audio_fname)
             audio_filename = str(audio_filename)  # in case function doesn't accept Path
             scribe.to_format(labels=labels,

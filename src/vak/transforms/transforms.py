@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..util.path import array_dict_from_path
+from .. import files
 from ..validation import column_or_1d
 
 from . import functional as F
@@ -77,14 +77,14 @@ class StandardizeSpect:
             instance fit to spectrograms in df
         """
         spect_paths = df['spect_path']
-        spect = array_dict_from_path(spect_paths[0])[spect_key]
+        spect = files.spect.load(spect_paths[0])[spect_key]
         # in files, spectrograms are in orientation (freq bins, time bins)
         # so we take mean and std across columns, i.e. time bins, i.e. axis 1
         mean_freqs = np.mean(spect, axis=1)
         std_freqs = np.std(spect, axis=1)
 
         for spect_path in spect_paths[1:]:
-            spect = array_dict_from_path(spect_path)[spect_key]
+            spect = files.spect.load(spect_path)[spect_key]
             mean_freqs += np.mean(spect, axis=1)
             std_freqs += np.std(spect, axis=1)
         mean_freqs = mean_freqs / len(spect_paths)

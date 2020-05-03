@@ -5,8 +5,8 @@ from pathlib import Path
 import numpy as np
 from scipy.io import loadmat
 
-from ..config import validators
-from .general import find_fname
+from vak.config import validators
+from vak.util.general import find_fname
 
 
 def find_audio_fname(spect_path, audio_ext=None):
@@ -65,7 +65,7 @@ SPECT_FORMAT_LOAD_FUNCTION_MAP = {
 }
 
 
-def array_dict_from_path(spect_path, spect_format=None):
+def load(spect_path, spect_format=None):
     """load spectrogram and related arrays from a file,
     return as an object that provides Python dictionary-like
     access

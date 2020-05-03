@@ -4,9 +4,9 @@ import torch
 from torchvision.datasets.vision import VisionDataset
 
 from .. import annotation
+from .. import files
 from .. import io
 from .. import labels
-from .. import util
 from .. import validation
 
 
@@ -187,7 +187,7 @@ class WindowDataset(VisionDataset):
         window_start_ind = self.spect_inds_vector[x_ind]
 
         spect_path = self.spect_paths[spect_id]
-        spect_dict = util.path.array_dict_from_path(spect_path)
+        spect_dict = files.spect.load(spect_path)
         spect = spect_dict[self.spect_key]
         timebins = spect_dict[self.timebins_key]
 
@@ -344,7 +344,7 @@ class WindowDataset(VisionDataset):
         Assumes spectrogram is a 2-d matrix where rows are frequency bins,
         and columns are time bins.
         """
-        spect = util.path.array_dict_from_path(spect_path)[spect_key]
+        spect = files.spect.load(spect_path)[spect_key]
         return spect.shape[-1]
 
     @staticmethod
@@ -431,7 +431,7 @@ class WindowDataset(VisionDataset):
             lbl_tb = []
             spect_annot_map = annotation.source_annot_map(spect_paths, annots)
             for ind, (spect_path, annot) in enumerate(spect_annot_map.items()):
-                spect_dict = util.path.array_dict_from_path(spect_path)
+                spect_dict = files.spect.load(spect_path)
                 n_tb_spect = spect_dict[spect_key].shape[-1]
 
                 spect_id_vector.append(np.ones((n_tb_spect,), dtype=np.int64) * ind)
