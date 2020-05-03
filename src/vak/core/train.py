@@ -9,8 +9,8 @@ import torch.utils.data
 from .. import csv
 from .. import labels
 from .. import models
+from .. import summary_writer
 from .. import transforms
-from .. import util
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
 from ..io import dataframe
@@ -276,9 +276,9 @@ def train(model_config_map,
         ckpt_root = results_model_root.joinpath('checkpoints')
         ckpt_root.mkdir()
         log_or_print(f'training {model_name}', logger=logger, level='info')
-        summary_writer = util.summary_writer.get_summary_writer(log_dir=results_model_root,
-                                                                filename_suffix=model_name)
-        model.summary_writer = summary_writer
+        writer = summary_writer.get_summary_writer(log_dir=results_model_root,
+                                                   filename_suffix=model_name)
+        model.summary_writer = writer
         model.fit(train_data=train_data,
                   num_epochs=num_epochs,
                   ckpt_root=ckpt_root,
