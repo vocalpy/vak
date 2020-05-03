@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from .. import files
-from .util import is_valid_set_of_spect_files, timebin_dur_from_spect_path
 from ..annotation import source_annot_map, NO_ANNOTATION_FORMAT
 from ..config import validators
 from ..logging import log_or_print
@@ -165,21 +164,21 @@ def to_dataframe(spect_format,
     # ---- validate set of spectrogram files ---------------------------------------------------------------------------
     # regardless of whether we just made it or user supplied it
     spect_paths = list(spect_annot_map.keys())
-    is_valid_set_of_spect_files(spect_paths,
-                                spect_format,
-                                freqbins_key,
-                                timebins_key,
-                                spect_key,
-                                n_decimals_trunc,
-                                logger=logger)
+    files.spect.is_valid_set_of_spect_files(spect_paths,
+                                            spect_format,
+                                            freqbins_key,
+                                            timebins_key,
+                                            spect_key,
+                                            n_decimals_trunc,
+                                            logger=logger)
 
     # now that we have validated that duration of time bins is consistent across files, we can just open one file
     # to get that time bin duration. This way validation function has no side effects, like returning time bin, and
     # this is still relatively fast compared to looping through all files again
-    timebin_dur = timebin_dur_from_spect_path(spect_paths[0],
-                                              spect_format,
-                                              timebins_key,
-                                              n_decimals_trunc)
+    timebin_dur = files.spect.timebin_dur(spect_paths[0],
+                                          spect_format,
+                                          timebins_key,
+                                          n_decimals_trunc)
 
     # ---- actually make the dataframe ---------------------------------------------------------------------------------
     # this is defined here so all other arguments to 'to_dataframe' are in scope
