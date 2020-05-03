@@ -5,9 +5,9 @@ import dask.bag as db
 from dask.diagnostics import ProgressBar
 import numpy as np
 
+from .. import files
 from ..logging import log_or_print
 from ..util.general import timebin_dur_from_vec
-from ..util.path import array_dict_from_path
 
 
 def is_valid_set_of_spect_files(spect_paths,
@@ -57,7 +57,7 @@ def is_valid_set_of_spect_files(spect_paths,
     def _validate(spect_path):
         """validates each spectrogram file, then returns frequency bin array
         and duration of time bins, so that those can be validated across all files"""
-        spect_dict = array_dict_from_path(spect_path, spect_format)
+        spect_dict = files.spect.load(spect_path, spect_format)
 
         if spect_key not in spect_dict:
             raise KeyError(
@@ -134,7 +134,7 @@ def timebin_dur_from_spect_path(spect_path, spect_format, timebins_key, n_decima
 
     """
     spect_path = Path(spect_path)
-    spect_dict = array_dict_from_path(spect_path, spect_format)
+    spect_dict = files.spect.load(spect_path, spect_format)
     time_bins = spect_dict[timebins_key]
     timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
     return timebin_dur

@@ -1,7 +1,5 @@
 import pandas as pd
 
-from .. import labels
-from .. import util
 from .. import annotation
 from .. import files
 from .. import labels
@@ -71,7 +69,7 @@ class VocalDataset:
 
     def __getitem__(self, idx):
         spect_path = self.spect_paths[idx]
-        spect_dict = util.path.array_dict_from_path(spect_path)
+        spect_dict = files.spect.load(spect_path)
         spect = spect_dict[self.spect_key]
 
         if self.annots is not None:

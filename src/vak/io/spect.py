@@ -8,11 +8,12 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
+from .. import files
 from .util import is_valid_set_of_spect_files, timebin_dur_from_spect_path
 from ..annotation import source_annot_map, NO_ANNOTATION_FORMAT
 from ..config import validators
 from ..logging import log_or_print
-from ..util.path import find_audio_fname, array_dict_from_path
+
 
 # constant, used for names of columns in DataFrame below
 DF_COLUMNS = [
@@ -188,7 +189,7 @@ def to_dataframe(spect_format,
         Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
         and (2) annotation for that file"""
         spect_path, annot = spect_annot_tuple
-        spect_dict = array_dict_from_path(spect_path, spect_format)
+        spect_dict = files.spect.load(spect_path, spect_format)
 
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
         if audio_path_key in spect_dict:
@@ -200,7 +201,7 @@ def to_dataframe(spect_format,
             # try to figure out audio filename programmatically
             # if we can't, then we'll get back a None
             # (or an error)
-            audio_path = find_audio_fname(spect_path)
+            audio_path = files.spect.find_audio_fname(spect_path)
 
         if annot is not None:
             # TODO: change to annot.annot_path when changing dependency to crowsetta>=2.0
