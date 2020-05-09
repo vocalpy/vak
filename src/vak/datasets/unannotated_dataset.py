@@ -2,7 +2,7 @@ import pandas as pd
 import torch
 from torchvision.datasets.vision import VisionDataset
 
-from .. import util
+from .. import files
 
 
 class UnannotatedDataset(VisionDataset):
@@ -62,7 +62,7 @@ class UnannotatedDataset(VisionDataset):
             idx = idx.tolist()
 
         spect_path = self.spect_paths[idx]
-        spect_dict = util.path.array_dict_from_path(spect_path)
+        spect_dict = files.spect.load(spect_path)
         spect = spect_dict[self.spect_key]
 
         if self.transform is not None:

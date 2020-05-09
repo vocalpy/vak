@@ -5,10 +5,8 @@ from pathlib import Path
 import crowsetta
 import numpy as np
 
-from ..config import validators
-from .general import _files_from_dir
-
-NO_ANNOTATION_FORMAT = 'none'
+from . import files
+from . import constants
 
 
 def format_from_df(vak_df):
@@ -30,7 +28,7 @@ def format_from_df(vak_df):
     annot_format = vak_df['annot_format'].unique()
     if len(annot_format) == 1:
         annot_format = annot_format.item()
-        if annot_format is None or annot_format is NO_ANNOTATION_FORMAT:
+        if annot_format is None or annot_format is constants.NO_ANNOTATION_FORMAT:
             return None
     elif len(annot_format) > 1:
         raise ValueError(
@@ -79,7 +77,10 @@ def from_df(vak_df):
         annots = scribe.from_file(annot_file=annot_path)
 
         # as long as we have at least as many annotations as there are rows in the dataframe
-        if type(annots) == list and len(annots) >= len(vak_df):
+        if ((isinstance(annots, list) and len(annots) >= len(vak_df)) or  # case 1
+                (isinstance(annots, crowsetta.Annotation) and len(vak_df) == 1)):  # case 2
+            if isinstance(annots, crowsetta.Annotation):
+                annots = [annots]  # wrap in list for source_annot_map to iterate over it
             # then we can try and map those annotations to the rows
             audio_annot_map = source_annot_map(vak_df['audio_path'].values, annots)
             # sort by row of dataframe
@@ -111,15 +112,15 @@ def files_from_dir(annot_dir, annot_format):
     from a directory or its sub-directories,
     using the file extension associated with that annotation format.
     """
-    if annot_format not in validators.VALID_ANNOT_FORMATS:
+    if annot_format not in constants.VALID_ANNOT_FORMATS:
         raise ValueError(
             f'specified annotation format, {annot_format} not valid.\n'
-            f'Valid formats are: {validators.VALID_ANNOT_FORMATS}'
+            f'Valid formats are: {constants.VALID_ANNOT_FORMATS}'
         )
 
     format_module = getattr(crowsetta.formats, annot_format)
     ext = format_module.meta.ext
-    annot_files = _files_from_dir(annot_dir, ext)
+    annot_files = files.from_dir(annot_dir, ext)
     return annot_files
 
 
@@ -155,7 +156,7 @@ def recursive_stem(path):
     name = Path(path).name
     stem, ext = os.path.splitext(name)
     ext = ext.replace('.', '')
-    while ext not in validators.VALID_AUDIO_FORMATS:
+    while ext not in constants.VALID_AUDIO_FORMATS:
         new_stem, ext = os.path.splitext(stem)
         ext = ext.replace('.', '')
         if new_stem == stem:

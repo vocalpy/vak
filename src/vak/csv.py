@@ -1,7 +1,6 @@
 import pandas as pd
 
-from . import labels, annotation
-from .path import array_dict_from_path
+from . import annotation, files, labels
 
 
 def has_unlabeled(csv_path, labelset, timebins_key='t'):
@@ -33,7 +32,7 @@ def has_unlabeled(csv_path, labelset, timebins_key='t'):
 
     has_unlabeled_list = []
     for annot, spect_path in zip(annots, vak_df['spect_path'].values):
-        time_bins = array_dict_from_path(spect_path)[timebins_key]
+        time_bins = files.spect.load(spect_path)[timebins_key]
         lbls_int = [tmp_labelmap[lbl] for lbl in annot.seq.labels]
         has_unlabeled_list.append(
             labels.has_unlabeled(lbls_int,

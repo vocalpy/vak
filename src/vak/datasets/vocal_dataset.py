@@ -1,6 +1,8 @@
 import pandas as pd
 
-from .. import util
+from .. import annotation
+from .. import files
+from .. import labels
 
 
 class VocalDataset:
@@ -67,7 +69,7 @@ class VocalDataset:
 
     def __getitem__(self, idx):
         spect_path = self.spect_paths[idx]
-        spect_dict = util.path.array_dict_from_path(spect_path)
+        spect_dict = files.spect.load(spect_path)
         spect = spect_dict[self.spect_key]
 
         if self.annots is not None:
@@ -76,11 +78,11 @@ class VocalDataset:
             annot = self.annots[idx]
             lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
             # "lbl_tb": labeled timebins. Target for output of network
-            lbl_tb = util.labels.label_timebins(lbls_int,
-                                                annot.seq.onsets_s,
-                                                annot.seq.offsets_s,
-                                                timebins,
-                                                unlabeled_label=self.unlabeled_label)
+            lbl_tb = labels.label_timebins(lbls_int,
+                                           annot.seq.onsets_s,
+                                           annot.seq.offsets_s,
+                                           timebins,
+                                           unlabeled_label=self.unlabeled_label)
         else:
             lbl_tb = None
 
@@ -138,7 +140,7 @@ class VocalDataset:
 
         # below, annots will be None if no format is specified in the `annot_format` column of the dataframe.
         # this is intended behavior; makes it possible to use same dataset class for prediction
-        annots = util.annotation.from_df(df)
+        annots = annotation.from_df(df)
 
         return cls(csv_path,
                    spect_paths,

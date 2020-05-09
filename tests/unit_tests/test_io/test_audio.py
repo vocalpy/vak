@@ -7,7 +7,7 @@ import shutil
 import numpy as np
 import crowsetta
 
-from vak.util.annotation import files_from_dir
+from vak.annotation import files_from_dir
 import vak.io.audio
 
 

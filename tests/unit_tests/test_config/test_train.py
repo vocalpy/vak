@@ -6,7 +6,7 @@ import tempfile
 from configparser import ConfigParser
 
 import vak.config.train
-import vak.util
+import vak.split
 
 
 HERE = os.path.dirname(__file__)

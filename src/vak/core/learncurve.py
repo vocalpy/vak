@@ -9,10 +9,11 @@ import pandas as pd
 from .eval import eval
 from .train import train
 from ..io import dataframe
-from .. import util
-from ..util import train_test_dur_split
+from .. import csv
+from .. import labels
+from .. import split
 from ..datasets.window_dataset import WindowDataset
-from ..util.logging import log_or_print
+from ..logging import log_or_print
 
 
 def learning_curve(model_config_map,
@@ -80,7 +81,7 @@ def learning_curve(model_config_map,
         key for accessing vector of time bins in files. Default is 't'.
     device : str
         Device on which to work with model + data.
-        Default is None. If None, then a device will be selected with vak.util.get_default_device.
+        Default is None. If None, then a device will be selected with vak.device.get_default.
         That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
@@ -107,7 +108,7 @@ def learning_curve(model_config_map,
     Other Parameters
     ----------------
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger. Default is None.
+        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -172,12 +173,12 @@ def learning_curve(model_config_map,
         logger=logger, level='info'
     )
 
-    has_unlabeled = util.dataset.has_unlabeled(csv_path, labelset, timebins_key)
+    has_unlabeled = csv.has_unlabeled(csv_path, labelset, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:
         map_unlabeled = False
-    labelmap = util.labels.to_map(labelset, map_unlabeled=map_unlabeled)
+    labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
 
     train_dur_csv_paths = defaultdict(list)
     for train_dur in train_set_durs:
@@ -188,10 +189,10 @@ def learning_curve(model_config_map,
         for replicate_num in range(1, num_replicates + 1):
             results_path_this_replicate = results_path_this_train_dur.joinpath(f'replicate_{replicate_num}')
             results_path_this_replicate.mkdir()
-            # get just train split, to pass to train_test_dur_split
+            # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
             train_df = dataset_df[dataset_df['split'] == 'train']
-            subset_df = train_test_dur_split(train_df, train_dur=train_dur, labelset=labelset)
+            subset_df = split.dataframe(train_df, train_dur=train_dur, labelset=labelset)
             subset_df = subset_df[subset_df['split'] == 'train']  # remove rows where split was set to 'None'
             # ---- use *just* train subset to get spect vectors for WindowDataset
             (spect_id_vector,

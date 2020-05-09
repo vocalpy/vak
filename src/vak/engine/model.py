@@ -5,9 +5,9 @@ import torch.nn.modules.loss
 import torch.optim
 from tqdm import tqdm
 
-from ..util.general import get_default_device
-from ..util.logging import log_or_print
-from ..util.labels import lbl_tb2labels
+from ..device import get_default as get_default_device
+from ..labels import lbl_tb2labels
+from ..logging import log_or_print
 
 
 class Model:
@@ -453,7 +453,7 @@ class Model:
             determine parameters for each of those, e.g. dropout rate for the
             network, learning rate for the optimizer, etc.
         logger : logging.Logger
-            instance returned by vak.util.logging.get_logger.
+            instance returned by vak.logging.get_logger.
             Default is None, in which case messages are just sent to print function.
 
         Returns

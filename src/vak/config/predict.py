@@ -7,7 +7,7 @@ from attr.validators import instance_of
 
 from .converters import comma_separated_list, expanded_user_path
 from .validators import is_a_file, is_valid_model_name, is_annot_format
-from ..util.general import get_default_device
+from .. import device
 
 
 @attr.s
@@ -72,7 +72,7 @@ class PredictConfig:
 
     # optional, data loader
     num_workers = attr.ib(validator=instance_of(int), default=2)
-    device = attr.ib(validator=instance_of(str), default=get_default_device())
+    device = attr.ib(validator=instance_of(str), default=device.get_default())
 
 
 REQUIRED_PREDICT_OPTIONS = [

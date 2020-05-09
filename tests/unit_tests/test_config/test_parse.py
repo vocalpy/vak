@@ -5,17 +5,16 @@ import tempfile
 import shutil
 import unittest
 from configparser import ConfigParser
-import pickle
 
 import numpy as np
 import joblib
 
 import vak.config
 import vak.transforms.transforms
-import vak.util
+import vak.split
 import vak.models
-import vak.util.data
-import vak.util.spect
+import vak.split.data
+import vak.spect
 
 HERE = os.path.dirname(__file__)
 TEST_CONFIGS_PATH = os.path.join(HERE, '..', '..', 'test_data', 'configs')

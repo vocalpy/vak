@@ -1,4 +1,5 @@
-"""spectrogram utilities
+"""functions for making spectrogram
+
 filters adapted from SciPy cookbook
 https://scipy-cookbook.readthedocs.io/items/ButterworthBandpass.html
 spectrogram adapted from code by Kyle Kastner and Tim Sainburg

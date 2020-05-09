@@ -1,2 +1,2 @@
 from .transforms import *
-from .util import get_defaults
+from vak.transforms.defaults import get_defaults

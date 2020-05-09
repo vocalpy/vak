@@ -8,11 +8,11 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
-from .util import is_valid_set_of_spect_files, timebin_dur_from_spect_path
-from ..config import validators
-from ..util.annotation import source_annot_map, NO_ANNOTATION_FORMAT
-from ..util.logging import log_or_print
-from ..util.path import find_audio_fname, array_dict_from_path
+from .. import constants
+from .. import files
+from ..annotation import source_annot_map
+from ..logging import log_or_print
+
 
 # constant, used for names of columns in DataFrame below
 DF_COLUMNS = [
@@ -82,7 +82,7 @@ def to_dataframe(spect_format,
     Other Parameters
     ----------------
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger. Default is None.
+        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -102,9 +102,9 @@ def to_dataframe(spect_format,
     the appropriate arguments: spect_key, freqbins_key, timebins_key
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
-    if spect_format not in validators.VALID_SPECT_FORMATS:
+    if spect_format not in constants.VALID_SPECT_FORMATS:
         raise ValueError(
-            f"spect_format must be one of '{validators.VALID_SPECT_FORMATS}'; "
+            f"spect_format must be one of '{constants.VALID_SPECT_FORMATS}'; "
             f"format '{spect_format}' not recognized."
         )
 
@@ -164,21 +164,21 @@ def to_dataframe(spect_format,
     # ---- validate set of spectrogram files ---------------------------------------------------------------------------
     # regardless of whether we just made it or user supplied it
     spect_paths = list(spect_annot_map.keys())
-    is_valid_set_of_spect_files(spect_paths,
-                                spect_format,
-                                freqbins_key,
-                                timebins_key,
-                                spect_key,
-                                n_decimals_trunc,
-                                logger=logger)
+    files.spect.is_valid_set_of_spect_files(spect_paths,
+                                            spect_format,
+                                            freqbins_key,
+                                            timebins_key,
+                                            spect_key,
+                                            n_decimals_trunc,
+                                            logger=logger)
 
     # now that we have validated that duration of time bins is consistent across files, we can just open one file
     # to get that time bin duration. This way validation function has no side effects, like returning time bin, and
     # this is still relatively fast compared to looping through all files again
-    timebin_dur = timebin_dur_from_spect_path(spect_paths[0],
-                                              spect_format,
-                                              timebins_key,
-                                              n_decimals_trunc)
+    timebin_dur = files.spect.timebin_dur(spect_paths[0],
+                                          spect_format,
+                                          timebins_key,
+                                          n_decimals_trunc)
 
     # ---- actually make the dataframe ---------------------------------------------------------------------------------
     # this is defined here so all other arguments to 'to_dataframe' are in scope
@@ -188,7 +188,7 @@ def to_dataframe(spect_format,
         Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
         and (2) annotation for that file"""
         spect_path, annot = spect_annot_tuple
-        spect_dict = array_dict_from_path(spect_path, spect_format)
+        spect_dict = files.spect.load(spect_path, spect_format)
 
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
         if audio_path_key in spect_dict:
@@ -200,7 +200,7 @@ def to_dataframe(spect_format,
             # try to figure out audio filename programmatically
             # if we can't, then we'll get back a None
             # (or an error)
-            audio_path = find_audio_fname(spect_path)
+            audio_path = files.spect.find_audio_fname(spect_path)
 
         if annot is not None:
             # TODO: change to annot.annot_path when changing dependency to crowsetta>=2.0
@@ -218,7 +218,7 @@ def to_dataframe(spect_format,
             abspath(audio_path),
             abspath(spect_path),
             abspath(annot_path),
-            annot_format if annot_format else NO_ANNOTATION_FORMAT,
+            annot_format if annot_format else constants.NO_ANNOTATION_FORMAT,
             spect_dur,
             timebin_dur,
         ])
