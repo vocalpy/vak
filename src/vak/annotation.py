@@ -77,7 +77,10 @@ def from_df(vak_df):
         annots = scribe.from_file(annot_file=annot_path)
 
         # as long as we have at least as many annotations as there are rows in the dataframe
-        if type(annots) == list and len(annots) >= len(vak_df):
+        if ((isinstance(annots, list) and len(annots) >= len(vak_df)) or  # case 1
+                (isinstance(annots, crowsetta.Annotation) and len(vak_df) == 1)):  # case 2
+            if isinstance(annots, crowsetta.Annotation):
+                annots = [annots]  # wrap in list for source_annot_map to iterate over it
             # then we can try and map those annotations to the rows
             audio_annot_map = source_annot_map(vak_df['audio_path'].values, annots)
             # sort by row of dataframe
