@@ -104,7 +104,7 @@ def parse_predict_config(config_obj, config_path):
 
     for required_option in REQUIRED_PREDICT_OPTIONS:
         if required_option not in predict_section:
-            raise NoOptionError(
+            raise KeyError(
                 f"the '{required_option}' option is required but was not found in the "
                 f"PREDICT section of the config.toml file: {config_path}"
             )
