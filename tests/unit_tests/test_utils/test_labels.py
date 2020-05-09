@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 import vak
-import vak.util.path
+import vak.files.spect
 
 HERE = Path(__file__).parent
 
@@ -26,7 +26,7 @@ CSV_FNAME = CONFIG['TRAIN']['csv_fname']
 VAK_DF = pd.read_csv(CSV_FNAME)
 ANNOT_PATHS = VAK_DF['annot_path'].values
 SPECT_PATHS = VAK_DF['spect_path'].values
-LABELMAP = vak.util.labels.to_map(
+LABELMAP = vak.labels.to_map(
     set(list(CONFIG['PREP']['labelset']))
 )
 TIMEBIN_DUR = vak.io.dataframe.validate_and_get_timebin_dur(VAK_DF)
@@ -34,79 +34,9 @@ TIMEBINS_KEY = 't'
 
 
 class TestLabels(unittest.TestCase):
-    def test_where(self):
-        labels_arr_0 = np.zeros(shape=(10,), dtype=np.int64)
-        labels_arr_1 = np.ones(shape=(10,), dtype=np.int64)
-        label_arrs = [labels_arr_0, labels_arr_1]
-        where_in_labels = vak.util.labels.where(label_arrs)
-
-        self.assertTrue(list(where_in_labels.keys()) == [0, 1])
-        self.assertTrue(where_in_labels[0] == np.asarray(0))
-        self.assertTrue(where_in_labels[1] == np.asarray(1))
-
-    def test_where_find_in_arr(self):
-        labels_arr_0 = np.zeros(shape=(10,), dtype=np.int64)
-        labels_arr_1 = np.ones(shape=(10,), dtype=np.int64)
-        labels_arr_2 = np.zeros(shape=(10,), dtype=np.int64)
-        labels_arr_3 = np.ones(shape=(10,), dtype=np.int64)
-        label_arrs = [labels_arr_0, labels_arr_1, labels_arr_2, labels_arr_3]
-        where_in_labels, where_in_arr = vak.util.labels.where(label_arrs, find_in_arr=True)
-
-        self.assertTrue(list(where_in_labels.keys()) == [0, 1])
-        self.assertTrue(
-            np.array_equal(where_in_labels[0], np.asarray([0, 2]))
-        )
-        self.assertTrue(
-            np.array_equal(where_in_labels[1], np.asarray([1, 3]))
-        )
-
-        self.assertTrue(all([type(v) == dict] for v in where_in_arr.values()))
-
-        self.assertTrue(
-            list(where_in_arr[0].keys()) == [0, 2]
-        )
-        self.assertTrue(
-            all(
-                [
-                    np.array_equal(arr, np.arange(10)) for arr in list(where_in_arr[0].values())
-                ]
-            )
-        )
-        self.assertTrue(
-            list(where_in_arr[1].keys()) == [1, 3]
-        )
-        self.assertTrue(
-            all(
-                [
-                    np.array_equal(arr, np.arange(10)) for arr in list(where_in_arr[1].values())
-                ]
-            )
-        )
-
-    def test_sort(self):
-        uniq_labels = list('abc')
-        occurrences = [
-            np.arange(4),
-            np.arange(2),
-            np.arange(10),
-        ]
-
-        uniq_sorted, occur_sorted = vak.util.labels.sort(uniq_labels, occurrences)
-        occur_sorted_expected = [
-            np.arange(2),
-            np.arange(4),
-            np.arange(10),
-        ]
-        self.assertTrue(uniq_sorted == ['b', 'a', 'c'])
-        self.assertTrue(
-            all(
-                [np.array_equal(arr1, arr2) for arr1, arr2 in zip(occur_sorted, occur_sorted_expected)]
-            )
-        )
-
     def test_to_map(self):
         labelset = set(list('abcde'))
-        labelmap = vak.util.labels.to_map(labelset, map_unlabeled=False)
+        labelmap = vak.labels.to_map(labelset, map_unlabeled=False)
         self.assertTrue(
             type(labelmap) == dict
         )
@@ -115,7 +45,7 @@ class TestLabels(unittest.TestCase):
         )
 
         labelset = set(list('abcde'))
-        labelmap = vak.util.labels.to_map(labelset, map_unlabeled=True)
+        labelmap = vak.labels.to_map(labelset, map_unlabeled=True)
         self.assertTrue(
             type(labelmap) == dict
         )
@@ -124,7 +54,7 @@ class TestLabels(unittest.TestCase):
         )
 
         labelset = {1, 2, 3, 4, 5, 6}
-        labelmap = vak.util.labels.to_map(labelset, map_unlabeled=False)
+        labelmap = vak.labels.to_map(labelset, map_unlabeled=False)
         self.assertTrue(
             type(labelmap) == dict
         )
@@ -133,7 +63,7 @@ class TestLabels(unittest.TestCase):
         )
 
         labelset = {1, 2, 3, 4, 5, 6}
-        labelmap = vak.util.labels.to_map(labelset, map_unlabeled=True)
+        labelmap = vak.labels.to_map(labelset, map_unlabeled=True)
         self.assertTrue(
             type(labelmap) == dict
         )
@@ -145,7 +75,7 @@ class TestLabels(unittest.TestCase):
         labels1 = [1, 1, 1, 1, 2, 2, 3, 3, 3]
         labels2 = [1, 1, 1, 2, 2, 3, 3, 3, 3, 3]
         labels_list = [labels1, labels2]
-        labelset = vak.util.labels.to_set(labels_list)
+        labelset = vak.labels.to_set(labels_list)
         self.assertTrue(
             type(labelset) == set
         )
@@ -158,19 +88,19 @@ class TestLabels(unittest.TestCase):
         onsets_s1 = np.asarray([0, 2, 4, 6, 8, 10, 12, 14, 16])
         offsets_s1 = np.asarray([1, 3, 5, 7, 9, 11, 13, 15, 17])
         time_bins = np.arange(0, 18, 0.001)
-        has_ = vak.util.labels.has_unlabeled(labels_1, onsets_s1, offsets_s1, time_bins)
+        has_ = vak.labels.has_unlabeled(labels_1, onsets_s1, offsets_s1, time_bins)
         self.assertTrue(has_ is True)
 
         labels_1 = [1, 1, 1, 1, 2, 2, 3, 3, 3]
         onsets_s1 = np.asarray([0, 2, 4, 6, 8, 10, 12, 14, 16])
         offsets_s1 = np.asarray([1.999, 3.999, 5.999, 7.999, 9.999, 11.999, 13.999, 15.999, 17.999])
         time_bins = np.arange(0, 18, 0.001)
-        has_ = vak.util.labels.has_unlabeled(labels_1, onsets_s1, offsets_s1, time_bins)
+        has_ = vak.labels.has_unlabeled(labels_1, onsets_s1, offsets_s1, time_bins)
         self.assertTrue(has_ is False)
 
     def test_segment_lbl_tb(self):
         lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
-        labels, onset_inds, offset_inds = vak.util.labels._segment_lbl_tb(lbl_tb)
+        labels, onset_inds, offset_inds = vak.labels._segment_lbl_tb(lbl_tb)
         self.assertTrue(
             np.array_equal(labels, np.asarray([0, 1, 0]))
         )
@@ -189,7 +119,7 @@ class TestLabels(unittest.TestCase):
             [2., 4., 6., 8.]
         )
         labelset = set(list('abcd'))
-        labelmap = vak.util.labels.to_map(labelset)
+        labelmap = vak.labels.to_map(labelset)
 
         labels = np.asarray(['a', 'b', 'c', 'd'])
         timebin_dur = 0.001
@@ -201,9 +131,9 @@ class TestLabels(unittest.TestCase):
         for on, off, lbl in zip(onsets_s, offsets_s, labels):
             lbl_tb[int(on/timebin_dur):int(off/timebin_dur)] = labelmap[lbl]
 
-        labels_out, onsets_s_out, offsets_s_out = vak.util.labels.lbl_tb2segments(lbl_tb,
-                                                                                  labelmap,
-                                                                                  timebin_dur)
+        labels_out, onsets_s_out, offsets_s_out = vak.labels.lbl_tb2segments(lbl_tb,
+                                                                             labelmap,
+                                                                             timebin_dur)
 
         self.assertTrue(
             np.array_equal(labels, labels_out)
@@ -225,7 +155,7 @@ class TestLabels(unittest.TestCase):
             # need to remove any annotations that have labels not in labelset
             if not any(lbl not in LABELMAP.keys() for lbl in annot.seq.labels)
         ]
-        spect_annot_map = vak.util.annotation.source_annot_map(
+        spect_annot_map = vak.annotation.source_annot_map(
             SPECT_PATHS,
             annot_list,
         )
@@ -233,19 +163,19 @@ class TestLabels(unittest.TestCase):
         lbl_tb_list = []
         for spect_file, annot in spect_annot_map.items():
             lbls_int = [LABELMAP[lbl] for lbl in annot.seq.labels]
-            time_bins = vak.util.path.array_dict_from_path(spect_file)[TIMEBINS_KEY]
+            time_bins = vak.files.spect.load(spect_file)[TIMEBINS_KEY]
             lbl_tb_list.append(
-                vak.util.labels.label_timebins(lbls_int,
-                                               annot.seq.onsets_s,
-                                               annot.seq.offsets_s,
-                                               time_bins,
-                                               unlabeled_label=LABELMAP['unlabeled'])
+                vak.labels.label_timebins(lbls_int,
+                                          annot.seq.onsets_s,
+                                          annot.seq.offsets_s,
+                                          time_bins,
+                                          unlabeled_label=LABELMAP['unlabeled'])
             )
 
         for lbl_tb, annot in zip(lbl_tb_list, spect_annot_map.values()):
-            labels, onsets_s, offsets_s = vak.util.labels.lbl_tb2segments(lbl_tb,
-                                                                          LABELMAP,
-                                                                          TIMEBIN_DUR)
+            labels, onsets_s, offsets_s = vak.labels.lbl_tb2segments(lbl_tb,
+                                                                     LABELMAP,
+                                                                     TIMEBIN_DUR)
 
             self.assertTrue(
                 np.array_equal(labels, annot.seq.labels)

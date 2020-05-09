@@ -3,8 +3,11 @@ import pandas as pd
 import torch
 from torchvision.datasets.vision import VisionDataset
 
+from .. import annotation
+from .. import files
 from .. import io
-from .. import util
+from .. import labels
+from .. import validation
 
 
 class WindowDataset(VisionDataset):
@@ -184,17 +187,17 @@ class WindowDataset(VisionDataset):
         window_start_ind = self.spect_inds_vector[x_ind]
 
         spect_path = self.spect_paths[spect_id]
-        spect_dict = util.path.array_dict_from_path(spect_path)
+        spect_dict = files.spect.load(spect_path)
         spect = spect_dict[self.spect_key]
         timebins = spect_dict[self.timebins_key]
 
         annot = self.annots[spect_id]  # "annot id" == spect_id if both were taken from rows of DataFrame
         lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
-        lbl_tb = util.labels.label_timebins(lbls_int,
-                                            annot.seq.onsets_s,
-                                            annot.seq.offsets_s,
-                                            timebins,
-                                            unlabeled_label=self.unlabeled_label)
+        lbl_tb = labels.label_timebins(lbls_int,
+                                       annot.seq.onsets_s,
+                                       annot.seq.offsets_s,
+                                       timebins,
+                                       unlabeled_label=self.unlabeled_label)
 
         window = spect[:, window_start_ind:window_start_ind + self.window_size]
         labelvec = lbl_tb[window_start_ind:window_start_ind + self.window_size]
@@ -271,10 +274,10 @@ class WindowDataset(VisionDataset):
             after the cropping now set to WindowDataset.INVALID_WINDOW_VAL
             so they will be removed
         """
-        lbl_tb = util.validation.column_or_1d(lbl_tb)
-        spect_id_vector = util.validation.column_or_1d(spect_id_vector)
-        spect_inds_vector = util.validation.column_or_1d(spect_inds_vector)
-        x_inds = util.validation.column_or_1d(x_inds)
+        lbl_tb = validation.column_or_1d(lbl_tb)
+        spect_id_vector = validation.column_or_1d(spect_id_vector)
+        spect_inds_vector = validation.column_or_1d(spect_inds_vector)
+        x_inds = validation.column_or_1d(x_inds)
 
         lens = (lbl_tb.shape[-1],
                 spect_id_vector.shape[-1],
@@ -341,7 +344,7 @@ class WindowDataset(VisionDataset):
         Assumes spectrogram is a 2-d matrix where rows are frequency bins,
         and columns are time bins.
         """
-        spect = util.path.array_dict_from_path(spect_path)[spect_key]
+        spect = files.spect.load(spect_path)[spect_key]
         return spect.shape[-1]
 
     @staticmethod
@@ -407,7 +410,7 @@ class WindowDataset(VisionDataset):
             crop_to_dur = True
             crop_dur = float(crop_dur)
             timebin_dur = float(timebin_dur)
-            annots = util.annotation.from_df(df)
+            annots = annotation.from_df(df)
             if 'unlabeled' in labelmap:
                 unlabeled_label = labelmap['unlabeled']
             else:
@@ -426,9 +429,9 @@ class WindowDataset(VisionDataset):
 
         if crop_to_dur:
             lbl_tb = []
-            spect_annot_map = util.annotation.source_annot_map(spect_paths, annots)
+            spect_annot_map = annotation.source_annot_map(spect_paths, annots)
             for ind, (spect_path, annot) in enumerate(spect_annot_map.items()):
-                spect_dict = util.path.array_dict_from_path(spect_path)
+                spect_dict = files.spect.load(spect_path)
                 n_tb_spect = spect_dict[spect_key].shape[-1]
 
                 spect_id_vector.append(np.ones((n_tb_spect,), dtype=np.int64) * ind)
@@ -443,11 +446,11 @@ class WindowDataset(VisionDataset):
 
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
                 timebins = spect_dict[timebins_key]
-                lbl_tb.append(util.labels.label_timebins(lbls_int,
-                                                         annot.seq.onsets_s,
-                                                         annot.seq.offsets_s,
-                                                         timebins,
-                                                         unlabeled_label=unlabeled_label))
+                lbl_tb.append(labels.label_timebins(lbls_int,
+                                                    annot.seq.onsets_s,
+                                                    annot.seq.offsets_s,
+                                                    timebins,
+                                                    unlabeled_label=unlabeled_label))
 
             spect_id_vector = np.concatenate(spect_id_vector)
             spect_inds_vector = np.concatenate(spect_inds_vector)
@@ -621,9 +624,9 @@ class WindowDataset(VisionDataset):
                         f'{vec_name} must be a numpy.ndarray but type was: {type(spect_id_vector)}'
                     )
 
-            spect_id_vector = util.validation.column_or_1d(spect_id_vector)
-            spect_inds_vector = util.validation.column_or_1d(spect_inds_vector)
-            x_inds = util.validation.column_or_1d(x_inds)
+            spect_id_vector = validation.column_or_1d(spect_id_vector)
+            spect_inds_vector = validation.column_or_1d(spect_inds_vector)
+            x_inds = validation.column_or_1d(x_inds)
 
             if spect_id_vector.shape[-1] != spect_inds_vector.shape[-1]:
                 raise ValueError(
@@ -645,7 +648,7 @@ class WindowDataset(VisionDataset):
             # see Notes in class docstring to understand what these vectors do
             spect_id_vector, spect_inds_vector, x_inds = cls.spect_vectors_from_df(df, window_size)
 
-        annots = util.annotation.from_df(df)
+        annots = annotation.from_df(df)
         timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
 
         # note that we set "root" to csv path

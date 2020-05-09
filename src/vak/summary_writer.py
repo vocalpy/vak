@@ -19,7 +19,7 @@ def get_summary_writer(log_dir, filename_suffix):
 
     Examples
     --------
-    >>> summary_writer = vak.util.summary_writer.get_summary_writer(log_dir='./experiments')
+    >>> summary_writer = vak.summary_writer.get_summary_writer(log_dir='./experiments')
     >>> tweety_net_model.summary_writer = summary_writer  # set attribute equal to instance we just made
     >>> tweety_net_model.train()  # now events during training will be logged with that summary writer
     """

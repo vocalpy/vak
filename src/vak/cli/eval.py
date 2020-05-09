@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .. import config
 from .. import core
-from .. import util
+from .. import logging
 
 
 def eval(toml_path):
@@ -29,10 +29,10 @@ def eval(toml_path):
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    logger = util.logging.get_logger(log_dst=cfg.eval.output_dir,
-                                     caller='eval',
-                                     timestamp=timenow,
-                                     logger_name=__name__)
+    logger = logging.get_logger(log_dst=cfg.eval.output_dir,
+                                caller='eval',
+                                timestamp=timenow,
+                                logger_name=__name__)
     logger.info('Logging results to {}'.format(cfg.eval.output_dir))
 
     model_config_map = config.models.map_from_path(toml_path, cfg.eval.models)

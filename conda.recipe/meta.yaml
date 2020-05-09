@@ -53,7 +53,7 @@ test:
     - vak.core.learncurve
     - vak.io
     - vak.io.dataset
-    - vak.io.splitalgos
+    - vak.io.algorithms
     - vak.plot
     - vak.utils
   commands:

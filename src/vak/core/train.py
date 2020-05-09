@@ -6,14 +6,16 @@ import joblib
 import pandas as pd
 import torch.utils.data
 
+from .. import csv
+from .. import labels
 from .. import models
+from .. import summary_writer
 from .. import transforms
-from .. import util
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
+from ..device import get_default as get_default_device
 from ..io import dataframe
-from ..util.general import get_default_device
-from ..util.logging import log_or_print
+from ..logging import log_or_print
 
 
 def train(model_config_map,
@@ -73,7 +75,7 @@ def train(model_config_map,
         key for accessing vector of time bins in files. Default is 't'.
     device : str
         Device on which to work with model + data.
-        Default is None. If None, then a device will be selected with vak.util.get_default_device.
+        Default is None. If None, then a device will be selected with vak.split.get_default.
         That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
@@ -117,7 +119,7 @@ def train(model_config_map,
     Other Parameters
     ----------------
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger. Default is None.
+        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -176,12 +178,12 @@ def train(model_config_map,
         logger=logger, level='info'
     )
 
-    has_unlabeled = util.dataset.has_unlabeled(csv_path, labelset, timebins_key)
+    has_unlabeled = csv.has_unlabeled(csv_path, labelset, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:
         map_unlabeled = False
-    labelmap = util.labels.to_map(labelset, map_unlabeled=map_unlabeled)
+    labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
     log_or_print(
         f'number of classes in labelmap: {len(labelmap)}',
         logger=logger, level='info'
@@ -193,7 +195,7 @@ def train(model_config_map,
     # get transforms just before creating datasets with them
     if normalize_spectrograms:
         # we instantiate this transform here because we want to save it
-        # and don't want to add more parameters to `transforms.util.get_defaults` function
+        # and don't want to add more parameters to `transforms.split.get_defaults` function
         # and make too tight a coupling between this function and that one.
         # Trade off is that this is pretty verbose (even ignoring my comments)
         log_or_print('will normalize spectrograms', logger=logger, level='info')
@@ -274,9 +276,9 @@ def train(model_config_map,
         ckpt_root = results_model_root.joinpath('checkpoints')
         ckpt_root.mkdir()
         log_or_print(f'training {model_name}', logger=logger, level='info')
-        summary_writer = util.summary_writer.get_summary_writer(log_dir=results_model_root,
-                                                                filename_suffix=model_name)
-        model.summary_writer = summary_writer
+        writer = summary_writer.get_summary_writer(log_dir=results_model_root,
+                                                   filename_suffix=model_name)
+        model.summary_writer = writer
         model.fit(train_data=train_data,
                   num_epochs=num_epochs,
                   ckpt_root=ckpt_root,

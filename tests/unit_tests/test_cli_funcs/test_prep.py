@@ -9,6 +9,8 @@ from math import isclose
 import crowsetta
 
 import vak.cli.prep
+import vak.files.files
+import vak.io.audio
 from vak.config.spect_params import SpectParamsConfig
 from vak.io import Dataset
 import vak.io
@@ -46,7 +48,7 @@ class TestPrep(unittest.TestCase):
         if audio_format:
             data_files_from_dir = vak.io.audio.files_from_dir(data_dir, audio_format)
         elif spect_format:
-            data_files_from_dir = vak.util.general._files_from_dir(data_dir, spect_format)
+            data_files_from_dir = vak.files.files.from_dir(data_dir, spect_format)
 
         if num_expected_paths == 1:
             vds = Dataset.from_json(json_fname=vds_paths[0])
@@ -62,7 +64,7 @@ class TestPrep(unittest.TestCase):
                 if annot_file:
                     annot_list = scribe.to_seq(file=annot_file)
                 else:
-                    annot_files = vak.util.annotation.files_from_dir(annot_dir=data_dir, annot_format=annot_format)
+                    annot_files = vak.annotation.files_from_dir(annot_dir=data_dir, annot_format=annot_format)
                     annot_list = scribe.to_seq(file=annot_files)
                 for data_file, annot in zip(data_files_from_dir, annot_list):
                     if set(annot.labels).issubset(labelset):

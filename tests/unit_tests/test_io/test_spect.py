@@ -6,7 +6,7 @@ import crowsetta
 import pandas as pd
 
 import vak.io.spect
-import vak.util.path
+import vak.files.spect
 from vak.config.validators import VALID_AUDIO_FORMATS
 
 HERE = Path(__file__).parent
@@ -31,7 +31,7 @@ class TestFindAudioFname(unittest.TestCase):
         self.spect_list_npz = [str(path) for path in self.spect_list_npz]
 
     def test_with_mat(self):
-        audio_fnames = [vak.util.path.find_audio_fname(spect_path)
+        audio_fnames = [vak.files.spect.find_audio_fname(spect_path)
                         for spect_path in self.spect_list_mat]
         for mat_spect_path, audio_fname in zip(self.spect_list_mat, audio_fnames):
             # make sure we gout out a filename that was actually in spect_path
@@ -42,7 +42,7 @@ class TestFindAudioFname(unittest.TestCase):
             )
 
     def test_with_npz(self):
-        audio_fnames = [vak.util.path.find_audio_fname(spect_path)
+        audio_fnames = [vak.files.spect.find_audio_fname(spect_path)
                         for spect_path in self.spect_list_npz]
         for npz_spect_path, audio_fname in zip(self.spect_list_npz, audio_fnames):
             # make sure we gout out a filename that was actually in spect_path

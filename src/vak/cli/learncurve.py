@@ -4,7 +4,7 @@ from datetime import datetime
 
 from .. import config
 from .. import core
-from .. import util
+from .. import logging
 
 
 def learning_curve(toml_path):
@@ -45,10 +45,10 @@ def learning_curve(toml_path):
     shutil.copy(toml_path, results_path)
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
-    logger = util.logging.get_logger(log_dst=results_path,
-                                     caller='train',
-                                     timestamp=timenow,
-                                     logger_name=__name__)
+    logger = logging.get_logger(log_dst=results_path,
+                                caller='train',
+                                timestamp=timenow,
+                                logger_name=__name__)
     logger.info('Logging results to {}'.format(results_path))
 
     model_config_map = config.models.map_from_path(toml_path, cfg.learncurve.models)

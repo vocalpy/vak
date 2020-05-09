@@ -18,7 +18,7 @@ https://packaging.python.org/guides/creating-and-discovering-plugins/#using-pack
 https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins
 https://amir.rachum.com/blog/2017/07/28/python-entry-points/
 """
-from ..util import entry_points
+from .. import entry_points
 
 MODELS_ENTRY_POINT = 'vak.models'
 
@@ -49,7 +49,7 @@ def from_model_config_map(model_config_map, num_classes, input_shape, logger=Non
         e.g. (channels, height, width).
         Batch size is not required for input shape.
     logger : logging.Logger
-        instance created by vak.util.logging.get_logger. Default is None.
+        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------

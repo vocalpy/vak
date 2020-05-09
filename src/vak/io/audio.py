@@ -5,11 +5,34 @@ import numpy as np
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from ..config import validators
+from .. import constants
+from .. import files
+from ..annotation import source_annot_map
 from ..config.spect_params import SpectParamsConfig
-from ..util.annotation import source_annot_map
-from ..util.audio import AUDIO_FORMAT_FUNC_MAP, files_from_dir
-from ..util.spect import spectrogram
+from ..spect import spectrogram
+
+
+def files_from_dir(audio_dir, audio_format):
+    """get all audio files of a given format
+    from a directory or its sub-directories,
+    using the file extension associated with that annotation format.
+
+    Parameters
+    ----------
+    audio_dir : str
+        path to directory containing audio files.
+    audio_format : str
+        valid audio file format. One of {'wav', 'cbin'}.
+
+    Returns
+    -------
+    audio_files : list
+        of paths to audio files
+    """
+    if audio_format not in constants.AUDIO_FORMAT_FUNC_MAP:
+        raise ValueError(f"'{audio_format}' is not a valid audio format")
+    audio_files = files.from_dir(audio_dir, audio_format)
+    return audio_files
 
 
 def to_spect(audio_format,
@@ -72,9 +95,9 @@ def to_spect(audio_format,
     The names of the arrays are defaults, and will change if different values are specified
     in spect_params for 'spect_key', 'freqbins_key', 'timebins_key', or 'audio_path_key'.
     """
-    if audio_format not in validators.VALID_AUDIO_FORMATS:
+    if audio_format not in constants.VALID_AUDIO_FORMATS:
         raise ValueError(
-            f"audio format must be one of '{validators.VALID_AUDIO_FORMATS}'; "
+            f"audio format must be one of '{constants.VALID_AUDIO_FORMATS}'; "
             f"format '{audio_format}' not recognized."
         )
 
@@ -98,6 +121,7 @@ def to_spect(audio_format,
     if labelset is not None:
         if type(labelset) != set:
             raise TypeError(
+                f'type of labelset must be set, but was: {type(labelset)}'
                 f'type of labelset must be set, but was: {type(labelset)}'
             )
 
@@ -167,7 +191,7 @@ def to_spect(audio_format,
         """helper function that enables parallelized creation of array
         files containing spectrograms.
         Accepts path to audio file, saves .npz file with spectrogram"""
-        fs, dat = AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
+        fs, dat = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
         s, f, t = spectrogram(dat, fs,
                               spect_params.fft_size,
                               spect_params.step_size,
