@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add functionality to `WindowDataset` that enables training with datasets 
   of specified durations [#188](https://github.com/NickleDave/vak/pull/186)
 
+### Changed
+- refactor to remove `util`s modules [#196](https://github.com/NickleDave/vak/pull/196)
+
 ### Fixed
 - changes references to `config.ini` in docstrings to `config.toml`
   [#190](https://github.com/NickleDave/vak/pull/190)
