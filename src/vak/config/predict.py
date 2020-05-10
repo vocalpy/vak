@@ -1,6 +1,4 @@
 """parses [PREDICT] section of config"""
-from configparser import NoOptionError
-
 import attr
 from attr import converters, validators
 from attr.validators import instance_of
