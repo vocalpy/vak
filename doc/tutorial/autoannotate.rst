@@ -96,14 +96,17 @@ The ``.toml`` files are set up so that each section corresponds to one
 of the commands. For example, there is a section called ``[PREP]`` where you
 configure how ``vak prep`` will run.
 Each section consists of option-value pairs, i.e. names of option set to the values you assign them.
+For example, here is the ``[PREP]`` section from the configuration file
+downloaded for training.
 
 .. literalinclude:: ../toml/gy6or6_train.toml
    :language: toml
    :lines: 1-9
 
-(The files are in ``.toml`` format,
-but for this tutorial and for working with ``vak`` you shouldn't really
-need to know anything about that format.)
+(The files are in ``.toml`` format;
+for this tutorial we will explain
+anything specific about that format
+you might need to know.)
 
 .. topic:: Why command line?
 
@@ -138,6 +141,17 @@ Do this by opening up the ``gy6or6_train.toml`` file and changing the
 value for the ``data_dir`` option in the ``[PREP]`` section to the
 path to wherever you downloaded the training data on your computer.
 
+The options you need to change in the configuration files
+have a dummy value in capital letters
+to help you pick them out, like so:
+
+.. literalinclude:: ../toml/gy6or6_train.toml
+   :language: toml
+   :lines: 1-3
+
+Change the part of the path in capital letters to the actual location
+on your computer:
+
 .. code-block:: toml
 
    [PREP]
@@ -148,7 +162,7 @@ that tells ``vak`` where to save the file it creates that contains information a
 
 .. code-block:: toml
 
-   output_dir = /home/users/You/Data/vak_tutorial_data/vak_output
+   output_dir = /home/users/You/Data/vak_tutorial_data/vak/prep/train
 
 Make sure that this a directory that already exists on your computer,
 or create the directory using the File Explorer or the ``mkdir`` command from the command-line.
@@ -182,7 +196,7 @@ where to find those files when we need them below.
 
 .. code-block:: toml
 
-   root_results_dir = /home/users/You/Data/vak_tutorial_data/vak_output
+   root_results_dir = /home/users/You/Data/vak_tutorial_data/vak/train/results
 
 Here it's fine to use the same directory you created before, or make a new one if you prepare to keep the
 training data and the files from training the neural network separate.
@@ -254,27 +268,65 @@ and then add the path to that file as the option ``csv_path`` in the ``[PREDICT]
 -------------------------------------------------
 
 Finally you will use the trained network to predict annotations.
-This is the part that requires you to find files saved by vak.
+This is the part that requires you to find paths to files saved by ``vak``.
 
-There's two you need. The first is the ``checkpoint_path``, the full
-path including filename to the file that contains the weights (AKA parameters) of
-the trained neural network, saved by ``vak``.
+There's three you need. All three will be in the ``results`` directory
+created by ``vak`` when you ran ``train``. If you replaced the dummy path in
+capital letters in the config file, but kept the rest of the path,
+then this will be a location with a name like
+``/PATH/TO/DATA/vak/train/results/results_{timestamp}``,
+where ``PATH/TO/DATA/`` will be replaced with a path on your machine,
+and where ``{timestamp}`` is an actual time in the format ``yymmdd_HHMMSS``
+(year-month-day hour-minute-second).
+
+The first path you need is the ``checkpoint_path``. This is the full
+path, including filename, to the file that contains the weights (also known as parameters)
+of the trained neural network, saved by ``vak``.
+There will be a directory inside the ``results_{timestamp}`` directory
+with the name of the trained model, ``TweetyNet``,
+and inside that sits a ``checkpoints`` directory that has the actual file you want.
+Typically there will be two checkpoint files, one named just ``checkpoint.pt`` that is
+saved intermittently as a backup,
+and another that is saved only when accuracy on the
+validation set improves, named ``max-val-acc-checkpoint.pt``.
+If you were to use the ``max-val-acc-checkpoint.pt`` then the path would end
+with ``TweetyNet/checkpoints/max-val-acc-checkpoint.pt``.
 
 .. code-block:: toml
 
-   checkpoint_path = /home/users/You/Data/vak_tutorial_data/vak_output/results_timestamp/TweetyNet/checkpoints/ckpt.pth
+   checkpoint_path = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 
-The second is the path to the file containing a saved ``spect_scaler``. The ``SpectScaler`` represents a transform
-applied to the data that helps when training the neural network. You need to apply the same transform to the new
+In some cases, a ``max-val-acc-checkpoint.pt`` may not get saved;
+this depends on the options for training and non-deterministic factors like
+the randomly initialized weights of the network.
+For the purposes of completing this tutorial, using either checkpoint is fine.
+
+The second path you want is the one to the file containing the ``labelmap``.
+The ``labelmap`` is a Python
+dictionary that maps the labels from your annotation to a set of consecutive integers, which
+are the outputs the neural network learns to predict during training. It is saved in a ``.json``
+file in the root ``results_{timestamp}`` directory.
+
+.. code-block:: toml
+
+   spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/labelmap.json"
+
+The third and last path you need is the path to the file containing a saved ``spect_scaler``.
+The ``SpectScaler`` represents a transform
+applied to the data that helps when training the neural network.
+You need to apply the same transform to the new
 data for which you are predicting labels--otherwise the accuracy will be impaired.
+Note that the file does not have an extension. (In case you are curious,
+it's a pickled Python object saved by the ``joblib`` library.)
+This file will also be found in the root ``results_{timestamp}`` directory.
 
 .. code-block:: toml
 
-   spect_scaler = /home/users/You/Data/vak_tutorial_data/vak_output/results_timestamp/TweetyNet/checkpoints/ckpt.pth
+   spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/SpectScaler"
 
-
-Finally you can run the ``predict`` command to generate annotation files from the labels predicted by the
-trained neural network.
+Finally, after adding these three paths,
+you can run the ``predict`` command to generate annotation files from the labels
+predicted by the trained neural network.
 
 .. code-block:: console
 

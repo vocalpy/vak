@@ -37,6 +37,11 @@ class PredictConfig:
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
+    to_format_kwargs : dict
+        keyword arguments for crowsetta `to_format` function.
+        Defined in .toml config file as a table.
+        An example for the notmat annotation format (as a dictionary) is:
+        {'min_syl_dur': 10., 'min_silent_dur', 6., 'threshold': 1500}.
     """
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path,
