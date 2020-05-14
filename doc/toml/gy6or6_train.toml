@@ -1,5 +1,5 @@
 [PREP]
-data_dir = "/PATH/TO/DATA/032312"
+data_dir = "/PATH/TO/DATA/032212"
 output_dir = "/PATH/TO/DATA/vak/prep/train"
 audio_format = "cbin"
 annot_format = "notmat"
