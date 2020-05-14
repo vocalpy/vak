@@ -11,11 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - refactor to remove `util`s modules [#196](https://github.com/NickleDave/vak/pull/196)
+- add `core.predict` module and rewrite `cli.predict` to use it
+  [#210](https://github.com/NickleDave/vak/pull/210)
 
 ### Fixed
 - changes references to `config.ini` in docstrings to `config.toml`
   [#190](https://github.com/NickleDave/vak/pull/190)
 - fix error type in 'config.predict' [#197](https://github.com/NickleDave/vak/pull/197)
+- add missing `to_format_kwargs` attribute to `PredictConfig` docstring
+  [#210](https://github.com/NickleDave/vak/pull/210)
+- add missing parameter in `transforms.default.get_defaults`
+  [#210](https://github.com/NickleDave/vak/pull/210)
+- add missing import in `cli.predict`
+  [#210](https://github.com/NickleDave/vak/pull/210)
+- revise `autoannotate` tutorial to include missing steps in `predict`
+  [#210](https://github.com/NickleDave/vak/pull/210)
+- fix up `config.toml` files that are used with `autoannotate` tutorial
+  [#210](https://github.com/NickleDave/vak/pull/210)
 
 ## [0.3.0a5]
 ### Added
