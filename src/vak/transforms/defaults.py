@@ -212,7 +212,7 @@ def get_defaults(mode,
         elif mode == 'predict':
             transform.extend([
                 spect_standardizer,
-                vak_transforms.PadToWindow(window_size, return_padding_mask),
+                vak_transforms.PadToWindow(window_size, padval, return_padding_mask),
                 vak_transforms.ViewAsWindowBatch(window_size),
                 vak_transforms.ToFloatTensor(),
                 vak_transforms.AddChannel(channel_dim=1),  # add channel at first dimension because windows become batch

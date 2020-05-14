@@ -1,6 +1,6 @@
 [PREP]
-data_dir = "./tests/test_data/cbins/gy6or6/032312"
-output_dir = "./tests/test_data/prep/train"
+data_dir = "/PATH/TO/DATA/032212"
+output_dir = "/PATH/TO/DATA/vak/prep/train"
 audio_format = "cbin"
 annot_format = "notmat"
 labelset = "iabcdefghjk"
@@ -20,13 +20,14 @@ window_size = 88
 
 [TRAIN]
 models = [ "TweetyNet",]
-root_results_dir = "./tests/test_data/results/train"
-batch_size = 11
+root_results_dir = "/PATH/TO/DATA/vak/train/results"
+batch_size = 8
 num_epochs = 2
 normalize_spectrograms = true
-val_step = 1
-ckpt_step = 1
-csv_path = "tests/test_data/prep/train/032312_prep_200209_123939.csv"
+val_step = 50
+ckpt_step = 200
+patience = 4
+csv_path = "/PATH/TO/DATA/prep/train/032312_prep_200209_123939.csv"
 
 [TweetyNet.optimizer]
 lr = 0.001

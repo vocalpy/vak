@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - changes references to `config.ini` in docstrings to `config.toml`
   [#190](https://github.com/NickleDave/vak/pull/190)
+- fix error type in 'config.predict' [#197](https://github.com/NickleDave/vak/pull/197)
 
 ## [0.3.0a5]
 ### Added
