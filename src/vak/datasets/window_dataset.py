@@ -309,7 +309,7 @@ class WindowDataset(VisionDataset):
                 return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length], x_inds
             else:
                 # try truncating from the back instead
-                lbl_tb_cropped = lbl_tb_cropped[-cropped_length:]
+                lbl_tb_cropped = lbl_tb[-cropped_length:]
                 if np.array_equal(np.unique(lbl_tb_cropped), classes):
                     x_inds[:-cropped_length] = WindowDataset.INVALID_WINDOW_VAL
                     return spect_id_vector[-cropped_length:], spect_inds_vector[-cropped_length:], x_inds
