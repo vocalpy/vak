@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#210](https://github.com/NickleDave/vak/pull/210)
 - fix up `config.toml` files that are used with `autoannotate` tutorial
   [#210](https://github.com/NickleDave/vak/pull/210)
+- fix variable name error in `WindowDataset.crop_spect_vectors_keep_classes` method
+  [#215](https://github.com/NickleDave/vak/pull/215)
 
 ## [0.3.0a5]
 ### Added
