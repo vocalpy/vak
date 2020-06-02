@@ -16,8 +16,8 @@ def brute_force(durs,
     test, and validation sets of specified durations, with the set of unique labels
     in each dataset equal to the specified labelset.
 
-    The durations of the datasets created using the returned indices will be *greater than* or equal to
-    the durations specified.
+    The durations of the datasets created using the returned indices will be
+    *greater than* or equal to the durations specified.
 
     Must specify a positive value for one of {train_dur, test_dur}.
     The other value can be specified as '-1' which is interpreted as "use the
@@ -50,6 +50,8 @@ def brute_force(durs,
     -----
     A 'brute force' algorithm that just randomly assigns indices to a set,
     and iterates until it finds some partition where each set has instances of all classes of label.
+    Starts by ensuring that each label is represented in each set and then adds files to reach the required
+    durations.
     """
     logger = logging.getLogger(__name__)
     logger.setLevel('INFO')
@@ -79,17 +81,106 @@ def brute_force(durs,
         total_test_dur = 0
 
         durs_labels_inds = list(range(len(durs_labels_list)))
-        random.shuffle(durs_labels_inds)
-
-        finished = False
 
         choice = []
         if train_dur > 0:
             choice.append('train')
+            lset_train = set()
+        else:
+            lset_train = None
         if test_dur > 0:
             choice.append('test')
+            lset_test = set()
+        else:
+            lset_test = None
         if val_dur:
             choice.append('val')
+            lset_val = set()
+        else:
+            lset_val = None
+
+        # ---- make sure each split has at least one instance of each label
+        for label in sorted(labelset):
+            label_inds = [ind for ind, labels in enumerate(labels)
+                          if label in labels
+                          and ind in durs_labels_inds]
+            if len(label_inds) < len(choice):
+                raise ValueError(
+                    f'unable to split dataset so that each split has an instance of label: {label}.'
+                    f'There were only {len(label_inds)} files with that label, '
+                    f'but there are {len(choice)} splits.'
+                )
+
+            random.shuffle(label_inds)
+            if train_dur > 0 and label not in lset_train:
+                try:
+                    ind = label_inds.pop()
+                    train_inds.append(ind)
+                    total_train_dur += durs[ind]
+                    lset_train = lset_train.union(set(labels[ind]))
+                    durs_labels_inds.remove(ind)
+                except IndexError:
+                    if len(label_inds) == 0:
+                        logger.debug(
+                            'Ran out of elements while dividing dataset into subsets of specified durations.'
+                            f'Iteration {iter}'
+                        )
+                        iter += 1
+                        break  # do next iteration
+                    else:
+                        # something else happened, re-raise error
+                        raise
+
+            if test_dur > 0 and label not in lset_test:
+                try:
+                    ind = label_inds.pop()
+                    test_inds.append(ind)
+                    total_test_dur += durs[ind]
+                    lset_test = lset_test.union(set(labels[ind]))
+                    durs_labels_inds.remove(ind)
+                except IndexError:
+                    if len(label_inds) == 0:
+                        logger.debug(
+                            'Ran out of elements while dividing dataset into subsets of specified durations.'
+                            f'Iteration {iter}'
+                        )
+                        iter += 1
+                        break  # do next iteration
+                    else:
+                        # something else happened, re-raise error
+                        raise
+
+            if val_dur > 0 and label not in lset_val:
+                try:
+                    ind = label_inds.pop()
+                    val_inds.append(ind)
+                    total_val_dur += durs[ind]
+                    lset_val = lset_val.union(set(labels[ind]))
+                    durs_labels_inds.remove(ind)
+                except IndexError:
+                    if len(label_inds) == 0:
+                        logger.debug(
+                            'Ran out of elements while dividing dataset into subsets of specified durations.'
+                            f'Iteration {iter}'
+                        )
+                        iter += 1
+                        break  # do next iteration
+                    else:
+                        # something else happened, re-raise error
+                        raise
+
+        random.shuffle(durs_labels_inds)
+        if train_dur > 0 and total_train_dur >= train_dur:
+            choice.remove('train')
+        if test_dur > 0 and total_test_dur >= test_dur:
+            choice.remove('test')
+        if val_dur > 0 and total_val_dur >= val_dur:
+            choice.remove('val')
+
+        if len(choice) == 0:
+            finished = True
+        else:
+            finished = False
 
         # ---- inner loop that actually does split -----------------
         while finished is False:
