@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor to remove `util`s modules [#196](https://github.com/NickleDave/vak/pull/196)
 - add `core.predict` module and rewrite `cli.predict` to use it
   [#210](https://github.com/NickleDave/vak/pull/210)
+- modify `vak.split.algorithms.brute_force` so that it 
+  starts by seeding each split with one instance of each 
+  label in the label set. Quick tests found that this 
+  improves success rate of splits on one dataset 
+  with many (30) classes.
+  [#218](https://github.com/NickleDave/vak/pull/218) 
 
 ### Fixed
 - changes references to `config.ini` in docstrings to `config.toml`
