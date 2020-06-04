@@ -311,7 +311,13 @@ class WindowDataset(VisionDataset):
                 # try truncating from the back instead
                 lbl_tb_cropped = lbl_tb[-cropped_length:]
                 if np.array_equal(np.unique(lbl_tb_cropped), classes):
+                    # set every index *up to but not including* the first valid window start to "invalid"
                     x_inds[:-cropped_length] = WindowDataset.INVALID_WINDOW_VAL
+                    # also need to 'reset' the indexing so it starts at 0. First find current minimum index value
+                    min_x_ind = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL].min()
+                    # Then set min x ind to 0, min x ind + 1 to 1, min ind + 2 to 2, ...
+                    x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] = \
+                        x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] - min_x_ind
                     return spect_id_vector[-cropped_length:], spect_inds_vector[-cropped_length:], x_inds
                 else:
                     raise ValueError(
