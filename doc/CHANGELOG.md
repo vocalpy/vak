@@ -36,6 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#210](https://github.com/NickleDave/vak/pull/210)
 - fix variable name error in `WindowDataset.crop_spect_vectors_keep_classes` method
   [#215](https://github.com/NickleDave/vak/pull/215)
+- fix bug in `WindowDataset.crop_spect_vectors_keep_classes`
+  [#217](https://github.com/NickleDave/vak/issues/217)
+  that caused `x_inds` to have invalid values when the 
+  `WindowDataset.crop_spect_vectors_keep_classes` function 
+  cropped the vectors to a specified duration "from the front"
+  [#219](https://github.com/NickleDave/vak/pull/219)
 
 ## [0.3.0a5]
 ### Added
