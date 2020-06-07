@@ -1,10 +1,13 @@
 """parses [PREDICT] section of config"""
+import os
+from pathlib import Path
+
 import attr
 from attr import converters, validators
 from attr.validators import instance_of
 
 from .converters import comma_separated_list, expanded_user_path
-from .validators import is_a_file, is_valid_model_name, is_annot_format
+from .validators import is_a_directory, is_a_file, is_valid_model_name
 from .. import device
 
 
@@ -20,9 +23,6 @@ class PredictConfig:
         path to directory with checkpoint files saved by Torch, to reload model
     labelmap_path : str
         path to 'labelmap.json' file.
-    annot_format : str
-        format of annotations. Any format that can be used with the
-        crowsetta library is valid.
     models : list
         of model names. e.g., 'models = TweetyNet, GRUNet, ConvNet'
     batch_size : int
@@ -37,20 +37,15 @@ class PredictConfig:
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
-    to_format_kwargs : dict
-        keyword arguments for crowsetta `to_format` function.
-        Defined in .toml config file as a table.
-        An example for the notmat annotation format (as a dictionary) is:
-        {'min_syl_dur': 10., 'min_silent_dur', 6., 'threshold': 1500}.
+    output_dir : str
+        path to location where .csv containing predicted annotation
+        should be saved. Defaults to current working directory.
     """
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path,
                               validator=is_a_file)
     labelmap_path = attr.ib(converter=expanded_user_path,
                             validator=is_a_file)
-
-    # required, for annotation
-    annot_format = attr.ib(validator=is_annot_format)
 
     # required, model / dataloader
     models = attr.ib(converter=comma_separated_list,
@@ -64,10 +59,6 @@ class PredictConfig:
                        default=None
                        )
 
-    # optional
-    to_format_kwargs = attr.ib(validator=validators.optional(instance_of(dict)),
-                               default=None)
-
     # optional, transform
     spect_scaler_path = attr.ib(converter=converters.optional(expanded_user_path),
                                 validator=validators.optional(is_a_file),
@@ -76,6 +67,8 @@ class PredictConfig:
     # optional, data loader
     num_workers = attr.ib(validator=instance_of(int), default=2)
     device = attr.ib(validator=instance_of(str), default=device.get_default())
+
+    output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory, default=Path(os.getcwd()))
 
 
 REQUIRED_PREDICT_OPTIONS = [
