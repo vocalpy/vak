@@ -211,7 +211,6 @@ def get_defaults(mode,
 
         elif mode == 'predict':
             transform.extend([
-                spect_standardizer,
                 vak_transforms.PadToWindow(window_size, padval, return_padding_mask),
                 vak_transforms.ViewAsWindowBatch(window_size),
                 vak_transforms.ToFloatTensor(),
