@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `WindowDataset.crop_spect_vectors_keep_classes` function 
   cropped the vectors to a specified duration "from the front"
   [#219](https://github.com/NickleDave/vak/pull/219)
+- remove line that caused `vak predict` to crash
+  [#211](https://github.com/NickleDave/vak/issues/211)
+  when model was trained without a `SpectStandardizer` transform
+  [#221](https://github.com/NickleDave/vak/pull/221)
 
 ## [0.3.0a5]
 ### Added
