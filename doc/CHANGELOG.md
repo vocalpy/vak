@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   improves success rate of splits on one dataset 
   with many (30) classes.
   [#218](https://github.com/NickleDave/vak/pull/218) 
+- change `core.predict` so that it always saves 
+  predicted annotations as a .csv file 
+  [#222](https://github.com/NickleDave/vak/pull/222).
+  Removed functionality for converting to other formats.
+  See discussion in [#212](https://github.com/NickleDave/vak/issues/211)
 
 ### Fixed
 - changes references to `config.ini` in docstrings to `config.toml`
