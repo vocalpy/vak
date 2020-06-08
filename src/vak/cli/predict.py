@@ -37,16 +37,15 @@ def predict(toml_path):
 
     model_config_map = config.models.map_from_path(toml_path, cfg.predict.models)
 
-    core.predict(cfg.predict.csv_path,
-                 cfg.predict.checkpoint_path,
-                 cfg.predict.labelmap_path,
-                 cfg.predict.annot_format,
-                 cfg.predict.to_format_kwargs,
-                 model_config_map,
-                 cfg.dataloader.window_size,
-                 cfg.predict.num_workers,
-                 cfg.spect_params.spect_key,
-                 cfg.spect_params.timebins_key,
-                 cfg.predict.spect_scaler_path,
-                 cfg.predict.device,
-                 logger)
+    core.predict(csv_path=cfg.predict.csv_path,
+                 checkpoint_path=cfg.predict.checkpoint_path,
+                 labelmap_path=cfg.predict.labelmap_path,
+                 model_config_map=model_config_map,
+                 window_size=cfg.dataloader.window_size,
+                 num_workers=cfg.predict.num_workers,
+                 spect_key=cfg.spect_params.spect_key,
+                 timebins_key=cfg.spect_params.timebins_key,
+                 spect_scaler_path=cfg.predict.spect_scaler_path,
+                 device=cfg.predict.device,
+                 output_dir=cfg.predict.output_dir,
+                 logger=logger)

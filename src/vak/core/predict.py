@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import crowsetta
@@ -20,8 +21,6 @@ from ..device import get_default as get_default_device
 def predict(csv_path,
             checkpoint_path,
             labelmap_path,
-            annot_format,
-            to_format_kwargs,
             model_config_map,
             window_size,
             num_workers=2,
@@ -29,6 +28,7 @@ def predict(csv_path,
             timebins_key='t',
             spect_scaler_path=None,
             device=None,
+            output_dir=None,
             logger=None,
             ):
     """make predictions on dataset with trained model specified in config.toml file.
@@ -42,14 +42,6 @@ def predict(csv_path,
         path to directory with checkpoint files saved by Torch, to reload model
     labelmap_path : str
         path to 'labelmap.json' file.
-    annot_format : str
-        format of annotations. Any format that can be used with the
-        crowsetta library is valid.
-    to_format_kwargs : dict
-        keyword arguments for crowsetta `to_format` function.
-        Defined in .toml config file as a table.
-        An example for the notmat annotation format (as a dictionary) is:
-        {'min_syl_dur': 10., 'min_silent_dur', 6., 'threshold': 1500}.
     model_config_map : dict
         where each key-value pair is model name : dict of config parameters
     window_size : int
@@ -69,6 +61,9 @@ def predict(csv_path,
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
+    output_dir : str, Path
+        path to location where .csv containing predicted annotation
+        should be saved. Defaults to current working directory.
 
     Other Parameters
     ----------------
@@ -79,6 +74,16 @@ def predict(csv_path,
     -------
     None
     """
+    if output_dir is None:
+        output_dir = Path(os.getcwd())
+    else:
+        output_dir = Path(output_dir)
+
+    if not output_dir.is_dir():
+        raise NotADirectoryError(
+            f'value specified for output_dir is not recognized as a directory: {output_dir}'
+        )
+
     if device is None:
         device = get_default_device()
 
@@ -111,11 +116,10 @@ def predict(csv_path,
                                             num_workers=num_workers)
 
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
-    log_or_print(f'will convert predictions to specified annotation format: {annot_format}',
+    annot_csv_path = Path(output_dir).joinpath(Path(csv_path).stem + '.annot.csv')
+    log_or_print(f'will save annotations in .csv file: {annot_csv_path}',
                  logger=logger, level='info')
-    log_or_print(f'will use following settings for converting to annotation format: {to_format_kwargs}',
-                 logger=logger, level='info')
-    scribe = crowsetta.Transcriber(annot_format=annot_format)
+
     log_or_print(f'loading labelmap from path: {labelmap_path}',
                  logger=logger, level='info')
     with labelmap_path.open('r') as f:
@@ -171,7 +175,8 @@ def predict(csv_path,
 
         progress_bar = tqdm(data_for_annot)
 
-        log_or_print('converting predictions to annotation files',
+        annots = []
+        log_or_print('converting predictions to annotations',
                      logger=logger, level='info')
         for ind, batch in enumerate(progress_bar):
             x, y = batch[0], batch[1]  # here we don't care about putting on some device outside cpu
@@ -182,17 +187,20 @@ def predict(csv_path,
             y_pred = pred_dict['y_pred'][y_pred_ind]
             y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
             y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
+
             labels, onsets_s, offsets_s = labelfuncs.lbl_tb2segments(y_pred,
                                                                      labelmap=labelmap,
                                                                      timebin_dur=timebin_dur)
+            seq = crowsetta.Sequence.from_keyword(labels=labels,
+                                                  onsets_s=onsets_s,
+                                                  offsets_s=offsets_s)
+
             # DataLoader wraps strings in a tuple, need to unpack
             if type(y) == tuple and len(y) == 1:
                 y = y[0]
             audio_fname = files.spect.find_audio_fname(y)
-            audio_filename = Path(y).parent.joinpath(audio_fname)
-            audio_filename = str(audio_filename)  # in case function doesn't accept Path
-            scribe.to_format(labels=labels,
-                             onsets_s=onsets_s,
-                             offsets_s=offsets_s,
-                             filename=audio_filename,
-                             **to_format_kwargs)
+            annot = crowsetta.Annotation(seq=seq, audio_file=audio_fname, annot_file=annot_csv_path.name)
+            annots.append(annot)
+
+        crowsetta.csv.annot2csv(annot=annots,
+                                csv_filename=annot_csv_path)
