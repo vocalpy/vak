@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats
 
 from . import annotation
 from .validation import column_or_1d
@@ -262,9 +263,68 @@ def _segment_lbl_tb(lbl_tb):
     return labels, onset_inds, offset_inds
 
 
+def _contiguous(condition):
+    """Finds contiguous True regions of the boolean array "condition". Returns
+    a 2D array where the first column is the start index of the region and the
+    second column is the end index.
+
+    From:
+    https://stackoverflow.com/questions/4494404/find-large-number-of-consecutive-values-fulfilling-condition-in-a-numpy-array/4495197#4495197
+    """
+    # Find the indicies of changes in "condition"
+    d = np.diff(condition)
+    idx, = d.nonzero()
+
+    # We need to start things after the change in "condition". Therefore,
+    # we'll shift the index by 1 to the right.
+    idx += 1
+
+    if condition[0]:
+        # If the start of condition is True prepend a 0
+        idx = np.r_[0, idx]
+
+    if condition[-1]:
+        # If the end of condition is True, append the length of the array
+        idx = np.r_[idx, condition.size]  # Edit
+
+    # Reshape the result into two columns
+    idx.shape = (-1, 2)
+    return idx
+
+
+class MajorityVote:
+    """transform that converts a segment with multiple labels
+    into a segment with a single label, whichever one is in
+    the majority
+
+    finds contiguous labeled segments
+    within a vector of labeled timebins.
+    Transform only works if vector also has
+    unlabeled segments.
+
+    Attributes
+    ----------
+    unlabeled : int
+        integer value that represents unlabeled segments
+        within a vector of labeled timebins. Default is 0.
+    """
+    def __init__(self, unlabeled=0):
+        unlabeled = int(unlabeled)
+        self.unlabeled = unlabeled
+
+    def __call__(self, lbl_tb):
+        condition = lbl_tb != self.unlabeled
+        idx = _contiguous(condition)
+        for row in idx:
+            onset, offset = row[0], row[1]
+            lbl_tb[onset:offset] = scipy.stats.mode(lbl_tb[onset:offset])[0].item()
+        return lbl_tb
+
+
 def lbl_tb2segments(lbl_tb,
                     labelmap,
-                    timebin_dur):
+                    timebin_dur,
+                    majority_vote=False):
     """convert vector of labeled timebins into segments,
     by finding where continuous runs of a single label start
     and stop. Returns vectors of labels and onsets and offsets
@@ -282,6 +342,14 @@ def lbl_tb2segments(lbl_tb,
     timebin_dur : float
         Duration of a single timebin in the spectrogram, in seconds.
         Used to convert onset and offset indices in lbl_tb to seconds.
+    majority_vote : bool
+        if True, transform segments containing multiple labels
+        into segments with a single label by taking a "majority vote",
+        i.e. assign all time bins in the segment the most frequently
+        occurring label in the segment. This transform can only be
+        applied if the labelmap contains an 'unlabeled' label,
+        because unlabeled segments makes it possible to identify
+        the labeled segments. Default is False.
 
     Returns
     -------
@@ -297,6 +365,18 @@ def lbl_tb2segments(lbl_tb,
         Each offset corresponds to the value at the same index in labels.
     """
     lbl_tb = column_or_1d(lbl_tb)
+
+    if majority_vote:
+        if 'unlabeled' in labelmap:
+            transform = MajorityVote(unlabeled=labelmap['unlabeled'])
+            lbl_tb = transform(lbl_tb)
+        else:
+            raise ValueError(
+                "majority_vote set to True, but labelmap does not contain 'unlabeled'; "
+                "unclear how to determine onset and offset of segments for which the "
+                "labels should be converted to whichever is in the majority"
+            )
+
     labels, onset_inds, offset_inds = _segment_lbl_tb(lbl_tb)
 
     # remove 'unlabeled' label
