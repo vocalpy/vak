@@ -111,6 +111,77 @@ class TestLabels(unittest.TestCase):
             np.array_equal(offset_inds, np.asarray([3, 7, 11]))
         )
 
+    def test_contiguous(self):
+        UNLABELED = 0
+
+        lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+        condition = lbl_tb != UNLABELED
+        self.assertTrue(
+            np.array_equal(vak.labels._contiguous(condition), np.array([[4, 8]]))
+        )
+
+        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0])
+        condition = lbl_tb != UNLABELED
+        self.assertTrue(
+            np.array_equal(vak.labels._contiguous(condition), np.array([[3, 6], [9, 12]]))
+        )
+
+        # test _contiguous works when there is no 'unlabeled' segment at start of vector
+        lbl_tb = np.asarray([1, 1, 1, 1, 0, 0, 0, 0])
+        condition = lbl_tb != UNLABELED
+        self.assertTrue(
+            np.array_equal(vak.labels._contiguous(condition), np.array([[0, 4]]))
+        )
+
+        # test _contiguous works when there is no 'unlabeled' segment at end of vector
+        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1])
+        condition = lbl_tb != UNLABELED
+        self.assertTrue(
+            np.array_equal(vak.labels._contiguous(condition), np.array([[3, 6], [9, 12]]))
+        )
+
+    def test_MajorityVote(self):
+        UNLABELED = 0
+        transform = vak.labels.MajorityVote(unlabeled=UNLABELED)
+
+        # should do nothing when a labeled segment has all the same labels
+        lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+        lbl_tb_tfm = transform(lbl_tb)
+        self.assertTrue(
+            np.array_equal(lbl_tb, lbl_tb_tfm)
+        )
+
+        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0])
+        lbl_tb_tfm_expected = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0])
+        lbl_tb_tfm = transform(lbl_tb)
+        self.assertTrue(
+            np.array_equal(lbl_tb_tfm, lbl_tb_tfm_expected)
+        )
+
+        # test MajorityVote works when there is no 'unlabeled' segment at start of vector
+        lbl_tb = np.asarray([1, 1, 2, 1, 0, 0, 0, 0])
+        lbl_tb_tfm_expected = np.asarray([1, 1, 1, 1, 0, 0, 0, 0])
+        lbl_tb_tfm = transform(lbl_tb)
+        self.assertTrue(
+            np.array_equal(lbl_tb_tfm, lbl_tb_tfm_expected)
+        )
+
+        # test MajorityVote works when there is no 'unlabeled' segment at end of vector
+        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1])
+        lbl_tb_tfm_expected = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1])
+        lbl_tb_tfm = transform(lbl_tb)
+        self.assertTrue(
+            np.array_equal(lbl_tb_tfm, lbl_tb_tfm_expected)
+        )
+
+        # test that a tie results in lowest value class winning, default behavior of scipy.stats.mode
+        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 2, 2])
+        lbl_tb_tfm_expected = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1])
+        lbl_tb_tfm = transform(lbl_tb)
+        self.assertTrue(
+            np.array_equal(lbl_tb_tfm, lbl_tb_tfm_expected)
+        )
+
     def test_lbl_tb2segments_recovers_onsets_offsets_labels(self):
         onsets_s = np.asarray(
             [1., 3., 5., 7.]
@@ -186,6 +257,21 @@ class TestLabels(unittest.TestCase):
             self.assertTrue(
                 np.allclose(offsets_s, annot.seq.offsets_s, atol=0.001, rtol=0.03)
             )
+
+    def test_lbl_tb2segments_majority_vote(self):
+        labelmap = {
+            0: 'unlabeled',
+            1: 'a',
+            2: 'b',
+        }
+        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 2, 2, 1, 0, 0])
+        labels_out, onsets_s_out, offsets_s_out = vak.labels.lbl_tb2segments(lbl_tb,
+                                                                             labelmap,
+                                                                             timebin_dur=0.001,
+                                                                             majority_vote=True)
+        self.assertTrue(
+            labels_out == ['a', 'b']
+        )
 
 
 if __name__ == '__main__':
