@@ -52,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when model was trained without a `SpectStandardizer` transform
   [#221](https://github.com/NickleDave/vak/pull/221)
 
+### Removed
+- remove `bin/` that contained scripts used with previous version of `vak`
+  [#226](https://github.com/NickleDave/vak/pull/226)
+
 ## [0.3.0a5]
 ### Added
 - add functions `format_from_df` and `from_df` to `vak.util.annotation`
