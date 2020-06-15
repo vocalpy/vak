@@ -48,4 +48,5 @@ def predict(toml_path):
                  spect_scaler_path=cfg.predict.spect_scaler_path,
                  device=cfg.predict.device,
                  output_dir=cfg.predict.output_dir,
+                 majority_vote=cfg.predict.majority_vote,
                  logger=logger)

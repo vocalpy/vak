@@ -29,6 +29,7 @@ def predict(csv_path,
             spect_scaler_path=None,
             device=None,
             output_dir=None,
+            majority_vote=False,
             logger=None,
             ):
     """make predictions on dataset with trained model specified in config.toml file.
@@ -64,6 +65,14 @@ def predict(csv_path,
     output_dir : str, Path
         path to location where .csv containing predicted annotation
         should be saved. Defaults to current working directory.
+    majority_vote : bool
+        if True, transform segments containing multiple labels
+        into segments with a single label by taking a "majority vote",
+        i.e. assign all time bins in the segment the most frequently
+        occurring label in the segment. This transform can only be
+        applied if the labelmap contains an 'unlabeled' label,
+        because unlabeled segments makes it possible to identify
+        the labeled segments. Default is False.
 
     Other Parameters
     ----------------
@@ -190,7 +199,8 @@ def predict(csv_path,
 
             labels, onsets_s, offsets_s = labelfuncs.lbl_tb2segments(y_pred,
                                                                      labelmap=labelmap,
-                                                                     timebin_dur=timebin_dur)
+                                                                     timebin_dur=timebin_dur,
+                                                                     majority_vote=majority_vote)
             seq = crowsetta.Sequence.from_keyword(labels=labels,
                                                   onsets_s=onsets_s,
                                                   offsets_s=offsets_s)
