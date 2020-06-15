@@ -86,3 +86,4 @@ batch_size = 11
 num_workers = 4
 device = 'cuda'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
+majority_vote = false
