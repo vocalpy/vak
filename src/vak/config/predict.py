@@ -40,6 +40,14 @@ class PredictConfig:
     output_dir : str
         path to location where .csv containing predicted annotation
         should be saved. Defaults to current working directory.
+    majority_vote : bool
+        if True, transform segments containing multiple labels
+        into segments with a single label by taking a "majority vote",
+        i.e. assign all time bins in the segment the most frequently
+        occurring label in the segment. This transform can only be
+        applied if the labelmap contains an 'unlabeled' label,
+        because unlabeled segments makes it possible to identify
+        the labeled segments. Default is False.
     """
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path,
@@ -69,6 +77,7 @@ class PredictConfig:
     device = attr.ib(validator=instance_of(str), default=device.get_default())
 
     output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory, default=Path(os.getcwd()))
+    majority_vote = attr.ib(validator=instance_of(bool), default=True)
 
 
 REQUIRED_PREDICT_OPTIONS = [
