@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - add functionality to `WindowDataset` that enables training with datasets 
   of specified durations [#188](https://github.com/NickleDave/vak/pull/186)
+- add transforms for post-hoc clean up of predicted labels for time bins, 
+  that are applied before converting into segments with labels, onsets, and offsets
+  + `majority_vote_transform` that find the most frequently occurring label in a segment 
+    and assigns it to the entire segment [#227](https://github.com/NickleDave/vak/pull/227)
+  + `remove_short_segments` that removes any segments shorter than a specified duration
+    [#229](https://github.com/NickleDave/vak/pull/229)
 
 ### Changed
 - refactor to remove `util`s modules [#196](https://github.com/NickleDave/vak/pull/196)
