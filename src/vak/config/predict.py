@@ -40,6 +40,11 @@ class PredictConfig:
     output_dir : str
         path to location where .csv containing predicted annotation
         should be saved. Defaults to current working directory.
+    min_segment_dur : float
+        minimum duration of segment, in seconds. If specified, then
+        any segment with a duration less than min_segment_dur is
+        removed from lbl_tb. Default is None, in which case no
+        segments are removed.
     majority_vote : bool
         if True, transform segments containing multiple labels
         into segments with a single label by taking a "majority vote",
@@ -77,6 +82,7 @@ class PredictConfig:
     device = attr.ib(validator=instance_of(str), default=device.get_default())
 
     output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory, default=Path(os.getcwd()))
+    min_segment_dur = attr.ib(validator=validators.optional(instance_of(float)), default=None)
     majority_vote = attr.ib(validator=instance_of(bool), default=True)
 
 

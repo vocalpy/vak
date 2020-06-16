@@ -111,71 +111,104 @@ class TestLabels(unittest.TestCase):
             np.array_equal(offset_inds, np.asarray([3, 7, 11]))
         )
 
-    def test_contiguous(self):
+    def test_lbl_tb_segment_inds_list(self):
         UNLABELED = 0
 
         lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
-        condition = lbl_tb != UNLABELED
+        seg_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb=lbl_tb, unlabeled_label=UNLABELED)
+        expected_seg_inds_list = [np.array([4, 5, 6, 7])]
         self.assertTrue(
-            np.array_equal(vak.labels._contiguous(condition), np.array([[4, 8]]))
+            np.array_equal(seg_inds_list, expected_seg_inds_list)
         )
 
-        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0])
-        condition = lbl_tb != UNLABELED
-        self.assertTrue(
-            np.array_equal(vak.labels._contiguous(condition), np.array([[3, 6], [9, 12]]))
-        )
-
-        # test _contiguous works when there is no 'unlabeled' segment at start of vector
+        # assert works when segment is at start of lbl_tb
         lbl_tb = np.asarray([1, 1, 1, 1, 0, 0, 0, 0])
-        condition = lbl_tb != UNLABELED
+        seg_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb=lbl_tb, unlabeled_label=UNLABELED)
+        expected_seg_inds_list = [np.array([0, 1, 2, 3])]
         self.assertTrue(
-            np.array_equal(vak.labels._contiguous(condition), np.array([[0, 4]]))
+            np.array_equal(seg_inds_list, expected_seg_inds_list)
         )
 
-        # test _contiguous works when there is no 'unlabeled' segment at end of vector
+        # assert works with multiple segments
+        lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0])
+        seg_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb=lbl_tb, unlabeled_label=UNLABELED)
+        expected_seg_inds_list = [np.array([3, 4, 5]), np.array([9, 10, 11])]
+        self.assertTrue(
+            np.array_equal(seg_inds_list, expected_seg_inds_list)
+        )
+
+        # assert works when a segment is at end of lbl_tb
         lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1])
-        condition = lbl_tb != UNLABELED
+        seg_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb=lbl_tb, unlabeled_label=UNLABELED)
+        expected_seg_inds_list = [np.array([3, 4, 5]), np.array([9, 10, 11])]
         self.assertTrue(
-            np.array_equal(vak.labels._contiguous(condition), np.array([[3, 6], [9, 12]]))
+            np.array_equal(seg_inds_list, expected_seg_inds_list)
         )
 
-    def test_MajorityVote(self):
+    def test_remove_short_segments(self):
         UNLABELED = 0
-        transform = vak.labels.MajorityVote(unlabeled=UNLABELED)
+
+        # should do nothing when a labeled segment has all the same labels
+        lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0])
+        segment_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=UNLABELED)
+        TIMEBIN_DUR = 0.001
+        MIN_SEGMENT_DUR = 0.002
+        lbl_tb_tfm, segment_inds_list_out = vak.labels.remove_short_segments(lbl_tb,
+                                                                             segment_inds_list,
+                                                                             timebin_dur=TIMEBIN_DUR,
+                                                                             min_segment_dur=MIN_SEGMENT_DUR,
+                                                                             unlabeled_label=UNLABELED)
+
+        lbl_tb_expected = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
+        self.assertTrue(
+            np.array_equal(lbl_tb_tfm, lbl_tb_expected)
+        )
+
+    def test_majority_vote(self):
+        UNLABELED = 0
 
         # should do nothing when a labeled segment has all the same labels
         lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
-        lbl_tb_tfm = transform(lbl_tb)
+        segment_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=UNLABELED)
+        lbl_tb_tfm = vak.labels.majority_vote_transform(lbl_tb, segment_inds_list)
         self.assertTrue(
             np.array_equal(lbl_tb, lbl_tb_tfm)
         )
 
         lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0])
+        segment_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=UNLABELED)
+        lbl_tb_tfm = vak.labels.majority_vote_transform(lbl_tb, segment_inds_list)
+
         lbl_tb_tfm_expected = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0])
-        lbl_tb_tfm = transform(lbl_tb)
         self.assertTrue(
             np.array_equal(lbl_tb_tfm, lbl_tb_tfm_expected)
         )
 
         # test MajorityVote works when there is no 'unlabeled' segment at start of vector
         lbl_tb = np.asarray([1, 1, 2, 1, 0, 0, 0, 0])
+        segment_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=UNLABELED)
+        lbl_tb_tfm = vak.labels.majority_vote_transform(lbl_tb, segment_inds_list)
+
         lbl_tb_tfm_expected = np.asarray([1, 1, 1, 1, 0, 0, 0, 0])
-        lbl_tb_tfm = transform(lbl_tb)
         self.assertTrue(
             np.array_equal(lbl_tb_tfm, lbl_tb_tfm_expected)
         )
 
         # test MajorityVote works when there is no 'unlabeled' segment at end of vector
         lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1])
+        segment_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=UNLABELED)
+        lbl_tb_tfm = vak.labels.majority_vote_transform(lbl_tb, segment_inds_list)
+
         lbl_tb_tfm_expected = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1])
-        lbl_tb_tfm = transform(lbl_tb)
         self.assertTrue(
             np.array_equal(lbl_tb_tfm, lbl_tb_tfm_expected)
         )
 
         # test that a tie results in lowest value class winning, default behavior of scipy.stats.mode
         lbl_tb = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 2, 2])
+        segment_inds_list = vak.labels.lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=UNLABELED)
+        lbl_tb_tfm = vak.labels.majority_vote_transform(lbl_tb, segment_inds_list)
+
         lbl_tb_tfm_expected = np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1])
         lbl_tb_tfm = transform(lbl_tb)
         self.assertTrue(
