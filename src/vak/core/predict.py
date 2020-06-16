@@ -29,6 +29,7 @@ def predict(csv_path,
             spect_scaler_path=None,
             device=None,
             output_dir=None,
+            min_segment_dur=None,
             majority_vote=False,
             logger=None,
             ):
@@ -65,6 +66,11 @@ def predict(csv_path,
     output_dir : str, Path
         path to location where .csv containing predicted annotation
         should be saved. Defaults to current working directory.
+    min_segment_dur : float
+        minimum duration of segment, in seconds. If specified, then
+        any segment with a duration less than min_segment_dur is
+        removed from lbl_tb. Default is None, in which case no
+        segments are removed.
     majority_vote : bool
         if True, transform segments containing multiple labels
         into segments with a single label by taking a "majority vote",
@@ -200,6 +206,7 @@ def predict(csv_path,
             labels, onsets_s, offsets_s = labelfuncs.lbl_tb2segments(y_pred,
                                                                      labelmap=labelmap,
                                                                      timebin_dur=timebin_dur,
+                                                                     min_segment_dur=min_segment_dur,
                                                                      majority_vote=majority_vote)
             seq = crowsetta.Sequence.from_keyword(labels=labels,
                                                   onsets_s=onsets_s,
