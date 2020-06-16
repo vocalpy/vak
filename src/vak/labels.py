@@ -263,67 +263,115 @@ def _segment_lbl_tb(lbl_tb):
     return labels, onset_inds, offset_inds
 
 
-def _contiguous(condition):
-    """Finds contiguous True regions of the boolean array "condition". Returns
-    a 2D array where the first column is the start index of the region and the
-    second column is the end index.
+def lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=0):
+    """given a vector of labeled timebins,
+    returns a list of indexing vectors,
+    one for each labeled segment in the vector.
 
-    From:
-    https://stackoverflow.com/questions/4494404/find-large-number-of-consecutive-values-fulfilling-condition-in-a-numpy-array/4495197#4495197
-    """
-    # Find the indicies of changes in "condition"
-    d = np.diff(condition)
-    idx, = d.nonzero()
-
-    # We need to start things after the change in "condition". Therefore,
-    # we'll shift the index by 1 to the right.
-    idx += 1
-
-    if condition[0]:
-        # If the start of condition is True prepend a 0
-        idx = np.r_[0, idx]
-
-    if condition[-1]:
-        # If the end of condition is True, append the length of the array
-        idx = np.r_[idx, condition.size]  # Edit
-
-    # Reshape the result into two columns
-    idx.shape = (-1, 2)
-    return idx
-
-
-class MajorityVote:
-    """transform that converts a segment with multiple labels
-    into a segment with a single label, whichever one is in
-    the majority
-
-    finds contiguous labeled segments
-    within a vector of labeled timebins.
-    Transform only works if vector also has
-    unlabeled segments.
-
-    Attributes
+    Parameters
     ----------
-    unlabeled : int
-        integer value that represents unlabeled segments
-        within a vector of labeled timebins. Default is 0.
-    """
-    def __init__(self, unlabeled=0):
-        unlabeled = int(unlabeled)
-        self.unlabeled = unlabeled
+    lbl_tb : numpy.ndarray
+        vector of labeled timebins from spectrogram
+    unlabeled_label : int
+        label that was given to segments that were not labeled in annotation,
+        e.g. silent periods between annotated segments. Default is 0.
+    return_inds : bool
+        if True, return list of indices for segments in lbl_tb, in addition to the segments themselves.
+        if False, just return list of numpy.ndarrays that are the segments from lbl_tb.
 
-    def __call__(self, lbl_tb):
-        condition = lbl_tb != self.unlabeled
-        idx = _contiguous(condition)
-        for row in idx:
-            onset, offset = row[0], row[1]
-            lbl_tb[onset:offset] = scipy.stats.mode(lbl_tb[onset:offset])[0].item()
-        return lbl_tb
+    Returns
+    -------
+    segment_inds_list : list
+        of numpy.ndarray, indices that will recover segments list from lbl_tb.
+    """
+    segment_inds = np.nonzero(lbl_tb != unlabeled_label)[0]
+    return np.split(segment_inds, np.where(np.diff(segment_inds) != 1)[0] + 1)
+
+
+def remove_short_segments(lbl_tb,
+                          segment_inds_list,
+                          timebin_dur,
+                          min_segment_dur,
+                          unlabeled_label=0):
+    """remove segments from vector of labeled timebins
+    that are shorter than specified duration
+
+    Parameters
+    ----------
+    lbl_tb : numpy.ndarray
+        vector of labeled spectrogram time bins, i.e.,
+        where each element is a label for a time bin.
+        Output of a neural network.
+    segment_inds_list : list
+        of numpy.ndarray, indices that will recover segments list from lbl_tb.
+        Returned by funciton ``vak.labels.lbl_tb_segment_inds_list``.
+    timebin_dur : float
+        Duration of a single timebin in the spectrogram, in seconds.
+        Used to convert onset and offset indices in lbl_tb to seconds.
+    min_segment_dur : float
+        minimum duration of segment, in seconds. If specified, then
+        any segment with a duration less than min_segment_dur is
+        removed from lbl_tb. Default is None, in which case no
+        segments are removed.
+    unlabeled_label : int
+        label that was given to segments that were not labeled in annotation,
+        e.g. silent periods between annotated segments. Default is 0.
+
+    Returns
+    -------
+    lbl_tb : numpy.ndarray
+        with segments removed whose duration is shorter than min_segment_dur
+    segment_inds_list : list
+        of numpy.ndarray, with arrays popped off that correspond
+        to segments removed from lbl_tb
+    """
+    to_pop = []
+
+    for segment_inds in segment_inds_list:
+        if segment_inds.shape[-1] * timebin_dur < min_segment_dur:
+            lbl_tb[segment_inds] = unlabeled_label
+
+    if to_pop:
+        for seg_inds in to_pop:
+            segment_inds_list.remove(seg_inds)
+
+    return lbl_tb, segment_inds_list
+
+
+def majority_vote_transform(lbl_tb,
+                            segment_inds_list):
+    """transform segments containing multiple labels
+        into segments with a single label by taking a "majority vote",
+        i.e. assign all time bins in the segment the most frequently
+        occurring label in the segment.
+
+    Parameters
+    ----------
+    lbl_tb : numpy.ndarray
+        vector of labeled spectrogram time bins, i.e.,
+        where each element is a label for a time bin.
+        Output of a neural network.
+    segment_inds_list : list
+        of numpy.ndarray, indices that will recover segments list from lbl_tb.
+        Returned by funciton ``vak.labels.lbl_tb_segment_inds_list``.
+
+    Returns
+    -------
+    lbl_tb : numpy.ndarray
+        after the majority vote transform has been applied
+    """
+    for segment_inds in segment_inds_list:
+        segment = lbl_tb[segment_inds]
+        majority = scipy.stats.mode(segment)[0].item()
+        lbl_tb[segment_inds] = majority
+
+    return lbl_tb
 
 
 def lbl_tb2segments(lbl_tb,
                     labelmap,
                     timebin_dur,
+                    min_segment_dur=None,
                     majority_vote=False):
     """convert vector of labeled timebins into segments,
     by finding where continuous runs of a single label start
@@ -342,6 +390,11 @@ def lbl_tb2segments(lbl_tb,
     timebin_dur : float
         Duration of a single timebin in the spectrogram, in seconds.
         Used to convert onset and offset indices in lbl_tb to seconds.
+    min_segment_dur : float
+        minimum duration of segment, in seconds. If specified, then
+        any segment with a duration less than min_segment_dur is
+        removed from lbl_tb. Default is None, in which case no
+        segments are removed.
     majority_vote : bool
         if True, transform segments containing multiple labels
         into segments with a single label by taking a "majority vote",
@@ -366,16 +419,26 @@ def lbl_tb2segments(lbl_tb,
     """
     lbl_tb = column_or_1d(lbl_tb)
 
-    if majority_vote:
-        if 'unlabeled' in labelmap:
-            transform = MajorityVote(unlabeled=labelmap['unlabeled'])
-            lbl_tb = transform(lbl_tb)
-        else:
+    if min_segment_dur is not None or majority_vote:
+        if 'unlabeled' not in labelmap:
             raise ValueError(
-                "majority_vote set to True, but labelmap does not contain 'unlabeled'; "
-                "unclear how to determine onset and offset of segments for which the "
-                "labels should be converted to whichever is in the majority"
+                "min_segment_dur or majority_vote specified,"
+                " but 'unlabeled' not in labelmap.\n"
+                "Without 'unlabeled' segments these transforms cannot be applied."
             )
+        segment_inds_list = lbl_tb_segment_inds_list(lbl_tb,
+                                                     unlabeled_label=labelmap['unlabeled'])
+
+    if min_segment_dur is not None:
+        lbl_tb, segment_inds_list = remove_short_segments(lbl_tb,
+                                                          segment_inds_list,
+                                                          timebin_dur,
+                                                          min_segment_dur,
+                                                          labelmap['unlabeled'],
+                                                          )
+
+    if majority_vote:
+        lbl_tb = majority_vote_transform(lbl_tb, segment_inds_list)
 
     labels, onset_inds, offset_inds = _segment_lbl_tb(lbl_tb)
 
