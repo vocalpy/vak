@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     and assigns it to the entire segment [#227](https://github.com/NickleDave/vak/pull/227)
   + `remove_short_segments` that removes any segments shorter than a specified duration
     [#229](https://github.com/NickleDave/vak/pull/229)
+- add logic to `WindowDataset.crop_spect_vectors_keep_classes` method so that it tries 
+  to crop a third way, by removing unlabeled segments within vocalizations, if cropping 
+  the specified duration from the end or beginning fails
+  [#224](https://github.com/NickleDave/vak/pull/224)
 
 ### Changed
 - refactor to remove `util`s modules [#196](https://github.com/NickleDave/vak/pull/196)
