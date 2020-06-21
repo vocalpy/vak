@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import random
 import torch
 from torchvision.datasets.vision import VisionDataset
 
@@ -232,7 +233,8 @@ class WindowDataset(VisionDataset):
                                         x_inds,
                                         crop_dur,
                                         timebin_dur,
-                                        labelmap):
+                                        labelmap,
+                                        window_size):
         """crop spect_id_vector and spect_ind_vector to a target duration
         while making sure that all classes are present in the cropped
         vectors
@@ -293,8 +295,16 @@ class WindowDataset(VisionDataset):
             )
 
         cropped_length = np.round(crop_dur / timebin_dur).astype(int)
+
         if spect_id_vector.shape[-1] == cropped_length:
             return spect_id_vector, spect_inds_vector, x_inds
+
+        elif spect_id_vector.shape[-1] < cropped_length:
+            raise ValueError(
+                f"arrays have length {spect_id_vector.shape[-1]} "
+                f"that is shorter than correct length, {cropped_length}, "
+                f"(= target duration {crop_dur} / duration of timebins, {timebin_dur})."
+            )
 
         elif spect_id_vector.shape[-1] > cropped_length:
             classes = np.asarray(
@@ -307,29 +317,135 @@ class WindowDataset(VisionDataset):
             if np.array_equal(np.unique(lbl_tb_cropped), classes):
                 x_inds[cropped_length:] = WindowDataset.INVALID_WINDOW_VAL
                 return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length], x_inds
+
+            # try truncating off the front instead
+            lbl_tb_cropped = lbl_tb[-cropped_length:]
+            if np.array_equal(np.unique(lbl_tb_cropped), classes):
+                # set every index *up to but not including* the first valid window start to "invalid"
+                x_inds[:-cropped_length] = WindowDataset.INVALID_WINDOW_VAL
+                # also need to 'reset' the indexing so it starts at 0. First find current minimum index value
+                min_x_ind = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL].min()
+                # Then set min x ind to 0, min x ind + 1 to 1, min ind + 2 to 2, ...
+                x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] = \
+                    x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] - min_x_ind
+                return spect_id_vector[-cropped_length:], spect_inds_vector[-cropped_length:], x_inds
+
+            # try cropping silences
+            # This is done by seeking segments > window_size + 2 bins and removing from them
+            # When using this option we do not crop the spect vector sizes
+
+            # Ignored data is defined as data that does not appear in any training window.
+            # This means that there are 3 distinct cases:
+            # 1. Silence in the beginning of a file
+            # 2. Silence in the middle of a file
+            # 3. Silence at the end of the file
+            # (here 'end' means the segment prior to the last window_size bins in the file because
+            # Those are not used as startpoints of a training window)
+
+            # assigining WindowDataset.INVALID_WINDOW_VAL to x_inds segments
+            # in these 3 cases will cause data to be ignored with
+            # durations that depend on wether the segments touch the ends of files
+            # because we do not ignore non-silence segments.
+
+            # first identify all silence segments larger than the window duration + 2
+            if 'unlabeled' in labelmap:
+                unlabeled = labelmap['unlabeled']
             else:
-                # try truncating from the back instead
-                lbl_tb_cropped = lbl_tb[-cropped_length:]
-                if np.array_equal(np.unique(lbl_tb_cropped), classes):
-                    # set every index *up to but not including* the first valid window start to "invalid"
-                    x_inds[:-cropped_length] = WindowDataset.INVALID_WINDOW_VAL
-                    # also need to 'reset' the indexing so it starts at 0. First find current minimum index value
-                    min_x_ind = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL].min()
-                    # Then set min x ind to 0, min x ind + 1 to 1, min ind + 2 to 2, ...
-                    x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] = \
-                        x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] - min_x_ind
-                    return spect_id_vector[-cropped_length:], spect_inds_vector[-cropped_length:], x_inds
+                raise ValueError(
+                    "was not able to crop spect vectors to specified duration; "
+                    "could not crop from start or end, and there are no unlabeled segments "
+                    "that could be used to further crop"
+                )
+            valid_unlabeled = np.logical_and(lbl_tb == unlabeled, x_inds != WindowDataset.INVALID_WINDOW_VAL)
+            unlabeled_diff = np.diff(np.concatenate([[0], valid_unlabeled, [0]]))
+            unlabeled_onsets = np.where(unlabeled_diff == 1)[0]
+            unlabeled_offsets = np.where(unlabeled_diff == -1)[0]
+            unlabeled_durations = unlabeled_offsets - unlabeled_onsets
+            N_PAD_BINS = 2
+            unlabeled_onsets = unlabeled_onsets[unlabeled_durations >= window_size + N_PAD_BINS]
+            unlabeled_offsets = unlabeled_offsets[unlabeled_durations >= window_size + N_PAD_BINS]
+            unlabeled_durations = unlabeled_durations[unlabeled_durations >= window_size + N_PAD_BINS]
+            # indicate silences in the beginning of files
+            border_onsets = np.concatenate([[WindowDataset.INVALID_WINDOW_VAL],
+                                            x_inds])[unlabeled_onsets] == WindowDataset.INVALID_WINDOW_VAL
+            # indicate silences at the end of files
+            border_offsets = np.concatenate([x_inds, [WindowDataset.INVALID_WINDOW_VAL]]
+                                            )[unlabeled_offsets + 1] == WindowDataset.INVALID_WINDOW_VAL
+
+            # This is how much data can be ignored from each silence segment without ignoring the end of file windows
+            num_potential_ignored_data_bins = unlabeled_durations - (window_size + N_PAD_BINS) + \
+                                              window_size * border_onsets
+
+            num_bins_to_crop = len(lbl_tb) - cropped_length
+            if sum(num_potential_ignored_data_bins) < num_bins_to_crop:
+                # This is how much data can be ignored from each silence segment including the end of file windows
+                num_potential_ignored_data_bins = unlabeled_durations - (window_size - N_PAD_BINS) + \
+                                                  window_size * (border_onsets + border_offsets)
+            else:
+                border_offsets[:] = False
+
+            # Second we find a ~random combination to remove
+            crop_more = 0
+            if sum(num_potential_ignored_data_bins) < num_bins_to_crop:
+                # if we will still need to crop more we will do so from non-silence segments
+                crop_more = num_bins_to_crop - sum(num_potential_ignored_data_bins) + 1
+                num_bins_to_crop = sum(num_potential_ignored_data_bins) - 1
+
+            segment_ind = np.arange(len(num_potential_ignored_data_bins))
+            random.shuffle(segment_ind)
+            last_ind = np.where(np.cumsum(num_potential_ignored_data_bins[segment_ind]) >= num_bins_to_crop)[0][0]
+            bins_to_ignore = np.array([], dtype=int)
+            for cnt in range(last_ind):
+                if border_onsets[segment_ind[cnt]]:  # remove silences at file onsets
+                    bins_to_ignore = np.concatenate([bins_to_ignore,
+                                                     np.arange(unlabeled_onsets[segment_ind[cnt]],
+                                                               unlabeled_offsets[segment_ind[cnt]] - 1)])
+                elif border_offsets[segment_ind[cnt]]:  # remove silences at file offsets
+                    bins_to_ignore = np.concatenate([bins_to_ignore,
+                                                     np.arange(unlabeled_onsets[segment_ind[cnt]] + 1,
+                                                               unlabeled_offsets[segment_ind[cnt]])])
+                else:  # remove silences within the files
+                    bins_to_ignore = np.concatenate([bins_to_ignore,
+                                                     np.arange(unlabeled_onsets[segment_ind[cnt]] + 1,
+                                                               unlabeled_offsets[segment_ind[cnt]] - 1)])
+            left_to_crop = num_bins_to_crop - sum(num_potential_ignored_data_bins[segment_ind[:last_ind]])-border_onsets[segment_ind[last_ind]]*window_size
+            if border_onsets[segment_ind[last_ind]]:
+                bins_to_ignore = np.concatenate([bins_to_ignore,
+                                             np.arange(unlabeled_onsets[segment_ind[last_ind]],
+                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop)])
+            elif border_offsets[segment_ind[last_ind]]:
+                if left_to_crop < num_potential_ignored_data_bins[segment_ind[last_ind]] - window_size:
+                    bins_to_ignore = np.concatenate([bins_to_ignore,
+                                             np.arange(unlabeled_onsets[segment_ind[last_ind]] + 1,
+                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop)])
                 else:
-                    raise ValueError(
+                    bins_to_ignore = np.concatenate([bins_to_ignore,
+                                             np.arange(unlabeled_onsets[segment_ind[last_ind]] + 1,
+                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop - window_size)])
+            else:
+                bins_to_ignore = np.concatenate([bins_to_ignore,
+                                             np.arange(unlabeled_onsets[segment_ind[last_ind]] + 1,
+                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop)])
+            
+            x_inds[bins_to_ignore] = WindowDataset.INVALID_WINDOW_VAL
+        
+            # we may still need to crop. Try doing it from the beginning of the dataset
+            if crop_more > 0:  # This addition can lead to imprecision but only in cases where we ask for very small datasets
+                if crop_more > sum(x_inds != WindowDataset.INVALID_WINDOW_VAL):
+                     raise ValueError(
                         "was not able to crop spect vectors to specified duration "
                         "in a way that maintained all classes in dataset"
-                    )
+                        )
+                extra_bins = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL][:crop_more]
+                bins_to_ignore = np.concatenate([bins_to_ignore, extra_bins])
+                x_inds[bins_to_ignore] = WindowDataset.INVALID_WINDOW_VAL
 
-        elif spect_id_vector.shape[-1] < cropped_length:
-            raise ValueError(
-                f"arrays have length {spect_id_vector.shape[-1]} "
-                f"that is shorter than correct length, {cropped_length}, "
-                f"(= target duration {crop_dur} / duration of timebins, {timebin_dur})."
+            if np.array_equal(np.unique(lbl_tb[np.setdiff1d(np.arange(len(lbl_tb)), bins_to_ignore)]), classes):
+                return spect_id_vector, spect_inds_vector, x_inds
+
+        raise ValueError(
+                "was not able to crop spect vectors to specified duration "
+                "in a way that maintained all classes in dataset"
             )
 
     @staticmethod
@@ -471,7 +587,8 @@ class WindowDataset(VisionDataset):
                                                                      x_inds,
                                                                      crop_dur,
                                                                      timebin_dur,
-                                                                     labelmap)
+                                                                     labelmap,
+                                                                     window_size)
 
         else:  # crop_to_dur is False
             for ind, spect_path in enumerate(spect_paths):
