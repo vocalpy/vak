@@ -37,6 +37,10 @@ class PredictConfig:
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
+    annot_csv_filename : str
+        name of .csv file containing predicted annotations.
+        Default is None, in which case the name of the dataset .csv
+        is used, with '.annot.csv' appended to it.
     output_dir : str
         path to location where .csv containing predicted annotation
         should be saved. Defaults to current working directory.
@@ -81,6 +85,7 @@ class PredictConfig:
     num_workers = attr.ib(validator=instance_of(int), default=2)
     device = attr.ib(validator=instance_of(str), default=device.get_default())
 
+    annot_csv_filename = attr.ib(validator=validators.optional(instance_of(str)), default=None)
     output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory, default=Path(os.getcwd()))
     min_segment_dur = attr.ib(validator=validators.optional(instance_of(float)), default=None)
     majority_vote = attr.ib(validator=instance_of(bool), default=True)
