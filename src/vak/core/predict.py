@@ -28,6 +28,7 @@ def predict(csv_path,
             timebins_key='t',
             spect_scaler_path=None,
             device=None,
+            annot_csv_filename=None,
             output_dir=None,
             min_segment_dur=None,
             majority_vote=False,
@@ -63,6 +64,10 @@ def predict(csv_path,
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
+    annot_csv_filename : str
+        name of .csv file containing predicted annotations.
+        Default is None, in which case the name of the dataset .csv
+        is used, with '.annot.csv' appended to it.
     output_dir : str, Path
         path to location where .csv containing predicted annotation
         should be saved. Defaults to current working directory.
@@ -131,7 +136,9 @@ def predict(csv_path,
                                             num_workers=num_workers)
 
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
-    annot_csv_path = Path(output_dir).joinpath(Path(csv_path).stem + '.annot.csv')
+    if annot_csv_filename is None:
+        annot_csv_filename = Path(csv_path).stem + '.annot.csv'
+    annot_csv_path = Path(output_dir).joinpath(annot_csv_filename)
     log_or_print(f'will save annotations in .csv file: {annot_csv_path}',
                  logger=logger, level='info')
 
