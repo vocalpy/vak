@@ -1,10 +1,9 @@
-import warnings
-
 import numpy as np
 
-from ..labels import from_df as labels_from_df
 from .algorithms import brute_force
 from .algorithms.validate import validate_durations_convert_nonnegative
+from ..labels import from_df as labels_from_df
+from ..logging import log_or_print
 
 
 def train_test_dur_split_inds(durs,
@@ -13,7 +12,8 @@ def train_test_dur_split_inds(durs,
                               train_dur,
                               test_dur,
                               val_dur=None,
-                              algo='brute_force'):
+                              algo='brute_force',
+                              logger=None):
     """return indices to split a dataset into training, test, and validation sets of specified durations.
 
     Given the durations of a set of vocalizations, and labels from the annotations for those vocalizations,
@@ -43,6 +43,11 @@ def train_test_dur_split_inds(durs,
         algorithm to use. One of {'brute_force', 'inc_freq'}. Default is 'brute_force'. For more information
         on the algorithms, see the docstrings, e.g., vak.io.algorithms.brute_force
 .
+    Other Parameters
+    ----------------
+    logger : logging.Logger
+        instance created by vak.logging.get_logger. Default is None.
+
     Returns
     -------
     train_inds, test_inds, val_inds : numpy.ndarray
@@ -59,21 +64,19 @@ def train_test_dur_split_inds(durs,
                                                                           test_dur,
                                                                           total_dur)
 
-    if -1 not in (train_dur, val_dur, test_dur):
-        total_target_dur = sum([dur for dur in (train_dur, test_dur, val_dur) if dur is not None])
+    total_target_dur = sum([dur for dur in (train_dur, test_dur, val_dur) if dur is not None])
 
-        if total_target_dur < total_dur:
-            warnings.warn(
-                'Total target duration of training, test, and (if specified) validation sets, '
-                f'{total_target_dur} seconds, is less than total duration of dataset: {total_dur:.3f}. '
-                'Not all of dataset will be used.'
-            )
+    if total_target_dur > total_dur:
+        raise ValueError(
+            f'Total duration of dataset, {total_dur} seconds, is less than total target duration of '
+            f'training, test, and (if specified) validation sets: {total_target_dur}'
+        )
 
-        if total_target_dur > total_dur:
-            raise ValueError(
-                f'Total duration of dataset, {total_dur} seconds, is less than total target duration of '
-                f'training, test, and (if specified) validation sets: {total_target_dur}'
-            )
+    log_or_print(
+        f'Total target duration of splits: {total_target_dur} seconds'
+        f'Will be drawn from dataset with total duration: {total_dur:.3f}. ',
+        logger=logger, level='info'
+    )
 
     if algo == 'brute_force':
         train_inds,  val_inds, test_inds = brute_force(durs,
@@ -94,7 +97,8 @@ def dataframe(vak_df,
               labelset,
               train_dur=None,
               test_dur=None,
-              val_dur=None):
+              val_dur=None,
+              logger=None):
     """split a dataset of vocalizations into training, test, and (optionally) validation subsets,
     specified by their duration.
 
@@ -113,6 +117,11 @@ def dataframe(vak_df,
         total duration of test set, in seconds. Default is None.
     val_dur : float
         total duration of validation set, in seconds. Default is None.
+
+    Other Parameters
+    ----------------
+    logger : logging.Logger
+        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -136,7 +145,8 @@ def dataframe(vak_df,
                                                                 labelset=labelset,
                                                                 train_dur=train_dur,
                                                                 test_dur=test_dur,
-                                                                val_dur=val_dur)
+                                                                val_dur=val_dur,
+                                                                logger=logger)
 
     # start off with all elements set to 'None'
     # so we don't have to change any that are not assigned to one of the subsets to 'None' after
