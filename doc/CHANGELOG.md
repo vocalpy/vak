@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to crop a third way, by removing unlabeled segments within vocalizations, if cropping 
   the specified duration from the end or beginning fails
   [#224](https://github.com/NickleDave/vak/pull/224)
+- add ability to specify name of .csv file containing annotations produced by 
+  `vak.core.predict` [#232](https://github.com/NickleDave/vak/pull/232)
 
 ### Changed
 - refactor to remove `util`s modules [#196](https://github.com/NickleDave/vak/pull/196)
