@@ -30,7 +30,7 @@ def predict(toml_path):
     # ---- set up logging ----------------------------------------------------------------------------------------------
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
     logger = logging.get_logger(log_dst=cfg.prep.output_dir,
-                                caller='eval',
+                                caller='predict',
                                 timestamp=timenow,
                                 logger_name=__name__)
     logger.info('Logging results to {}'.format(cfg.prep.output_dir))
