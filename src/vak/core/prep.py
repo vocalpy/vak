@@ -207,7 +207,8 @@ def prep(data_dir,
                                  labelset=labelset,
                                  train_dur=train_dur,
                                  val_dur=val_dur,
-                                 test_dur=test_dur)
+                                 test_dur=test_dur,
+                                 logger=logger)
 
     elif do_split is False:
         # add a split column, but assign everything to the same 'split'
