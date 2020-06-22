@@ -1,6 +1,4 @@
 """parses [EVAL] section of config"""
-from configparser import NoOptionError
-
 import attr
 from attr import converters, validators
 from attr.validators import instance_of
@@ -98,7 +96,7 @@ def parse_eval_config(config_obj, config_path):
 
     for required_option in REQUIRED_EVAL_OPTIONS:
         if required_option not in eval_section:
-            raise NoOptionError(
+            raise KeyError(
                 f"the '{required_option}' option is required but was not found in the "
                 f"EVAL section of the config.toml file: {config_path}"
             )

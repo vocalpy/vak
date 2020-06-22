@@ -86,7 +86,7 @@ class VocalDataset:
         else:
             lbl_tb = None
 
-        item = self.item_transform(spect, lbl_tb)
+        item = self.item_transform(spect, lbl_tb, spect_path)
         return item
 
     def __len__(self):
