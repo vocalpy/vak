@@ -37,13 +37,17 @@ class TrainItemTransform:
         self.source_transform = torchvision.transforms.Compose(source_transform)
         self.annot_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, source, annot):
+    def __call__(self, source, annot, spect_path=None):
         source = self.source_transform(source)
         annot = self.annot_transform(annot)
         item = {
             'source': source,
             'annot': annot,
         }
+
+        if spect_path is not None:
+            item['spect_path'] = spect_path
+
         return item
 
 
@@ -83,7 +87,7 @@ class EvalItemTransform:
 
         self.annot_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, source, annot):
+    def __call__(self, source, annot, spect_path=None):
         if self.spect_standardizer:
             source = self.spect_standardizer(source)
 
@@ -103,6 +107,9 @@ class EvalItemTransform:
 
         if padding_mask is not None:
             item['padding_mask'] = padding_mask
+
+        if spect_path is not None:
+            item['spect_path'] = spect_path
 
         return item
 
@@ -140,7 +147,7 @@ class PredictItemTransform:
             vak_transforms.AddChannel(channel_dim=channel_dim),
         ])
 
-    def __call__(self, source):
+    def __call__(self, source, spect_path=None):
         if self.spect_standardizer:
             source = self.spect_standardizer(source)
 
@@ -158,6 +165,9 @@ class PredictItemTransform:
 
         if padding_mask is not None:
             item['padding_mask'] = padding_mask
+
+        if spect_path is not None:
+            item['spect_path'] = spect_path
 
         return item
 
