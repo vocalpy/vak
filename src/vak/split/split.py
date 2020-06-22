@@ -73,8 +73,8 @@ def train_test_dur_split_inds(durs,
         )
 
     log_or_print(
-        f'Total target duration of splits: {total_target_dur} seconds'
-        f'Will be drawn from dataset with total duration: {total_dur:.3f}. ',
+        f'Total target duration of splits: {total_target_dur} seconds. '
+        f'Will be drawn from dataset with total duration: {total_dur:.3f}.',
         logger=logger, level='info'
     )
 
