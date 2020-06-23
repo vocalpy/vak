@@ -69,6 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#211](https://github.com/NickleDave/vak/issues/211)
   when model was trained without a `SpectStandardizer` transform
   [#221](https://github.com/NickleDave/vak/pull/221)
+- fix bugs that prevented `vak eval` cli command from working
+  [#238](https://github.com/NickleDave/vak/pull/238) 
 
 ### Removed
 - remove `bin/` that contained scripts used with previous version of `vak`
