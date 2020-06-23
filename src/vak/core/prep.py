@@ -7,7 +7,11 @@ from ..io import dataframe
 from ..logging import log_or_print
 
 
-VALID_PURPOSES = frozenset(['train', 'predict', 'learncurve'])
+VALID_PURPOSES = frozenset(['eval',
+                            'learncurve',
+                            'predict',
+                            'train',
+                            ])
 
 
 def prep(data_dir,
@@ -176,9 +180,7 @@ def prep(data_dir,
             'zero for test_dur (and val_dur, if a validation set will be used)'
         )
 
-    if all([dur is None for dur in (train_dur,
-                                    val_dur,
-                                    test_dur)]):
+    if all([dur is None for dur in (train_dur, val_dur, test_dur)]) or purpose in ('eval', 'predict'):
         # then we're not going to split
         log_or_print(msg='will not split dataset', logger=logger, level='info')
         do_split = False
@@ -210,9 +212,15 @@ def prep(data_dir,
                                  test_dur=test_dur,
                                  logger=logger)
 
-    elif do_split is False:
-        # add a split column, but assign everything to the same 'split'
-        vak_df = dataframe.add_split_col(vak_df, split=purpose)
+    elif do_split is False:  # add a split column, but assign everything to the same 'split'
+        # ideally we would just say split=purpose in call to add_split_col, but
+        # we have to special case, because "eval" looks for a 'test' split (not an "eval" split)
+        if purpose == 'eval':
+            split_name = 'test'  # 'split_name' to avoid name clash with split package
+        elif purpose == 'predict':
+            split_name = 'predict'
+
+        vak_df = dataframe.add_split_col(vak_df, split=split_name)
 
     log_or_print(msg=f'saving dataset as a .csv file: {csv_path}', logger=logger, level='info')
     vak_df.to_csv(csv_path, index=False)  # index is False to avoid having "Unnamed: 0" column when loading
