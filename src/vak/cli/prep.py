@@ -26,9 +26,6 @@ def prep(toml_path):
     Notes
     -----
     Saves a .csv file representing the dataset generated from data_dir.
-    If durations were specified for validation and test sets, then the .csv
-    has a column representing which files belong to the training, test, and
-    validation sets created from that Dataset.
 
     Datasets are used to train neural networks that segment audio files into
     vocalizations, and then predict labels for those segments.
@@ -37,10 +34,20 @@ def prep(toml_path):
     It can also split a dataset into training, validation, and test sets,
     e.g. for benchmarking different neural network architectures.
 
-    If no durations for any of the training sets are specified, then the
-    function assumes all the vocalizations constitute a single training
-    dataset. If the duration of either the training or test set is provided,
+    If the 'purpose' is set to 'train' or 'learncurve', and/or
+    the duration of either the training or test set is provided,
     then the function attempts to split the dataset into training and test sets.
+    A duration can also be specified for a validation set
+    (used to measure performance during training).
+    In these cases, the 'split' column in the .csv
+    identifies which files (rows) belong to the training, test, and
+    validation sets created from that Dataset.
+
+    If the 'purpose' is set to 'predict' or 'eval',
+    or no durations for any of the training sets are specified,
+    then the function assumes all the vocalizations constitute a single
+    dataset, and for all rows the 'split' columns for that dataset
+    will be 'predict' or 'test' (respectively).
     """
     toml_path = Path(toml_path)
     cfg = config.parse.from_toml(toml_path, sections=['PREP', 'SPECTROGRAM', 'DATALOADER'])
@@ -60,8 +67,9 @@ def prep(toml_path):
     # ---- figure out purpose of config file from sections; will save csv path in that section -------------------------
     with toml_path.open('r') as fp:
         config_toml = toml.load(fp)
-    if 'TRAIN' in config_toml:
-        section = 'TRAIN'
+
+    if 'EVAL' in config_toml:
+        section = 'EVAL'
     elif 'LEARNCURVE' in config_toml:
         section = 'LEARNCURVE'
     elif 'PREDICT' in config_toml:
@@ -75,6 +83,8 @@ def prep(toml_path):
                 "Setting labelset to None."
             )
             cfg.prep.labelset = None
+    elif 'TRAIN' in config_toml:
+        section = 'TRAIN'
     else:
         raise ValueError(
             'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.toml file;'

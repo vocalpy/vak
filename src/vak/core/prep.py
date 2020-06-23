@@ -7,7 +7,11 @@ from ..io import dataframe
 from ..logging import log_or_print
 
 
-VALID_PURPOSES = frozenset(['train', 'predict', 'learncurve'])
+VALID_PURPOSES = frozenset(['eval',
+                            'learncurve',
+                            'predict',
+                            'train',
+                            ])
 
 
 def prep(data_dir,
@@ -80,9 +84,6 @@ def prep(data_dir,
     Notes
     -----
     Saves a .csv file representing the dataset generated from data_dir.
-    If durations were specified for validation and test sets, then the .csv
-    has a column representing which files belong to the training, test, and
-    validation sets created from that Dataset.
 
     Datasets are used to train neural networks that segment audio files into
     vocalizations, and then predict labels for those segments.
@@ -91,10 +92,20 @@ def prep(data_dir,
     It can also split a dataset into training, validation, and test sets,
     e.g. for benchmarking different neural network architectures.
 
-    If no durations for any of the training sets are specified, then the
-    function assumes all the vocalizations constitute a single training
-    dataset. If the duration of either the training or test set is provided,
+    If the 'purpose' is set to 'train' or 'learncurve', and/or
+    the duration of either the training or test set is provided,
     then the function attempts to split the dataset into training and test sets.
+    A duration can also be specified for a validation set
+    (used to measure performance during training).
+    In these cases, the 'split' column in the .csv
+    identifies which files (rows) belong to the training, test, and
+    validation sets created from that Dataset.
+
+    If the 'purpose' is set to 'predict' or 'eval',
+    or no durations for any of the training sets are specified,
+    then the function assumes all the vocalizations constitute a single
+    dataset, and for all rows the 'split' columns for that dataset
+    will be 'predict' or 'test' (respectively).
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if purpose not in VALID_PURPOSES:
@@ -176,9 +187,7 @@ def prep(data_dir,
             'zero for test_dur (and val_dur, if a validation set will be used)'
         )
 
-    if all([dur is None for dur in (train_dur,
-                                    val_dur,
-                                    test_dur)]):
+    if all([dur is None for dur in (train_dur, val_dur, test_dur)]) or purpose in ('eval', 'predict'):
         # then we're not going to split
         log_or_print(msg='will not split dataset', logger=logger, level='info')
         do_split = False
@@ -210,9 +219,15 @@ def prep(data_dir,
                                  test_dur=test_dur,
                                  logger=logger)
 
-    elif do_split is False:
-        # add a split column, but assign everything to the same 'split'
-        vak_df = dataframe.add_split_col(vak_df, split=purpose)
+    elif do_split is False:  # add a split column, but assign everything to the same 'split'
+        # ideally we would just say split=purpose in call to add_split_col, but
+        # we have to special case, because "eval" looks for a 'test' split (not an "eval" split)
+        if purpose == 'eval':
+            split_name = 'test'  # 'split_name' to avoid name clash with split package
+        elif purpose == 'predict':
+            split_name = 'predict'
+
+        vak_df = dataframe.add_split_col(vak_df, split=split_name)
 
     log_or_print(msg=f'saving dataset as a .csv file: {csv_path}', logger=logger, level='info')
     vak_df.to_csv(csv_path, index=False)  # index is False to avoid having "Unnamed: 0" column when loading
