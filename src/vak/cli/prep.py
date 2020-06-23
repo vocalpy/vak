@@ -60,8 +60,9 @@ def prep(toml_path):
     # ---- figure out purpose of config file from sections; will save csv path in that section -------------------------
     with toml_path.open('r') as fp:
         config_toml = toml.load(fp)
-    if 'TRAIN' in config_toml:
-        section = 'TRAIN'
+
+    if 'EVAL' in config_toml:
+        section = 'EVAL'
     elif 'LEARNCURVE' in config_toml:
         section = 'LEARNCURVE'
     elif 'PREDICT' in config_toml:
@@ -75,6 +76,8 @@ def prep(toml_path):
                 "Setting labelset to None."
             )
             cfg.prep.labelset = None
+    elif 'TRAIN' in config_toml:
+        section = 'TRAIN'
     else:
         raise ValueError(
             'Did not find a section named TRAIN, LEARNCURVE, or PREDICT in config.toml file;'
