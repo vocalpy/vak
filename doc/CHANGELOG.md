@@ -71,6 +71,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#221](https://github.com/NickleDave/vak/pull/221)
 - fix bugs that prevented `vak eval` cli command from working
   [#238](https://github.com/NickleDave/vak/pull/238) 
+- fix bug in `labels.lbl_tb2labels` (https://github.com/NickleDave/vak/issues/239) 
+  that resulted from lack of input validation and an indentation error
+  [#240](https://github.com/NickleDave/vak/pull/240) 
 
 ### Removed
 - remove `bin/` that contained scripts used with previous version of `vak`
