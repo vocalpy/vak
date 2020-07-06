@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats
 
 from . import annotation
-from .validation import column_or_1d
+from .validation import column_or_1d, row_or_1d
 
 
 def has_unlabeled(labels_int,
@@ -191,6 +191,7 @@ def lbl_tb2labels(labeled_timebins,
         where each str corresponds to predicted labels for each predicted
         segment in each spectrogram as identified by spect_ID_vector.
     """
+    labeled_timebins = row_or_1d(labeled_timebins)
     idx = np.diff(labeled_timebins, axis=0).astype(np.bool)
     idx = np.insert(idx, 0, True)
 
@@ -199,10 +200,10 @@ def lbl_tb2labels(labeled_timebins,
     # remove 'unlabeled' label
     if 'unlabeled' in labels_mapping:
         labels = labels[labels != labels_mapping['unlabeled']]
-        labels = labels.tolist()
 
     inverse_labels_mapping = dict((v, k) for k, v
                                   in labels_mapping.items())
+    labels = labels.tolist()
     labels = [inverse_labels_mapping[label] for label in labels]
 
     if spect_ID_vector:
