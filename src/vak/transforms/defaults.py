@@ -203,33 +203,30 @@ def get_defaults(mode,
                 'Should be an instance of vak.transforms.StandardizeSpect'
             )
 
-    if mode == 'train' or mode == 'predict':
+    if mode == 'train':
         if spect_standardizer is not None:
             transform = [spect_standardizer]
         else:
             transform = []
 
-        if mode == 'train':
-            transform.extend([
-                vak_transforms.ToFloatTensor(),
-                vak_transforms.AddChannel(),
-            ])
-            transform = torchvision.transforms.Compose(transform)
 
-            target_transform = vak_transforms.ToLongTensor()
-            return transform, target_transform
+        transform.extend([
+            vak_transforms.ToFloatTensor(),
+            vak_transforms.AddChannel(),
+        ])
+        transform = torchvision.transforms.Compose(transform)
 
-        elif mode == 'predict':
-            transform.extend([
-                vak_transforms.PadToWindow(window_size, padval, return_padding_mask),
-                vak_transforms.ViewAsWindowBatch(window_size),
-                vak_transforms.ToFloatTensor(),
-                vak_transforms.AddChannel(channel_dim=1),  # add channel at first dimension because windows become batch
-            ])
-            transform = torchvision.transforms.Compose(transform)
+        target_transform = vak_transforms.ToLongTensor()
+        return transform, target_transform
 
-            target_transform = None
-            return transform, target_transform
+    elif mode == 'predict':
+        item_transform = PredictItemTransform(
+            spect_standardizer=spect_standardizer,
+            window_size=window_size,
+            padval=padval,
+            return_padding_mask=return_padding_mask,
+        )
+        return item_transform
 
     elif mode == 'eval':
         item_transform = EvalItemTransform(
