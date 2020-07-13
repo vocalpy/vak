@@ -1,6 +1,6 @@
 import pandas as pd
 
-from . import annotation, files, labels
+from . import annotation, files, labels, labeled_timebins
 
 
 def has_unlabeled(csv_path, labelset, timebins_key='t'):
@@ -35,10 +35,10 @@ def has_unlabeled(csv_path, labelset, timebins_key='t'):
         time_bins = files.spect.load(spect_path)[timebins_key]
         lbls_int = [tmp_labelmap[lbl] for lbl in annot.seq.labels]
         has_unlabeled_list.append(
-            labels.has_unlabeled(lbls_int,
-                                 annot.seq.onsets_s,
-                                 annot.seq.offsets_s,
-                                 time_bins)
+            labeled_timebins.has_unlabeled(lbls_int,
+                                           annot.seq.onsets_s,
+                                           annot.seq.offsets_s,
+                                           time_bins)
         )
 
     return any(has_unlabeled_list)

@@ -2,7 +2,7 @@ import pandas as pd
 
 from .. import annotation
 from .. import files
-from .. import labels
+from .. import labeled_timebins
 
 
 class VocalDataset:
@@ -78,11 +78,11 @@ class VocalDataset:
             annot = self.annots[idx]
             lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
             # "lbl_tb": labeled timebins. Target for output of network
-            lbl_tb = labels.label_timebins(lbls_int,
-                                           annot.seq.onsets_s,
-                                           annot.seq.offsets_s,
-                                           timebins,
-                                           unlabeled_label=self.unlabeled_label)
+            lbl_tb = labeled_timebins.label_timebins(lbls_int,
+                                                     annot.seq.onsets_s,
+                                                     annot.seq.offsets_s,
+                                                     timebins,
+                                                     unlabeled_label=self.unlabeled_label)
             item = self.item_transform(spect, lbl_tb, spect_path)
         else:
             item = self.item_transform(spect, spect_path)

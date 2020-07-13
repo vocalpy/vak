@@ -22,6 +22,7 @@ from . import entry_points
 from . import files
 from . import io
 from . import labels
+from . import labeled_timebins
 from . import logging
 from . import metrics
 from . import models
@@ -48,6 +49,7 @@ __all__ = [
     'files',
     'io',
     'labels',
+    'labeled_timebins',
     'logging',
     'metrics',
     'Model',

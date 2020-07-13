@@ -6,7 +6,7 @@ import torch.optim
 from tqdm import tqdm
 
 from ..device import get_default as get_default_device
-from ..labels import lbl_tb2labels
+from ..labeled_timebins import lbl_tb2labels
 from ..logging import log_or_print
 
 
