@@ -187,6 +187,18 @@ def get_defaults(mode,
     spect_standardizer : vak.transforms.StandardizeSpect
         instance that has already been fit to dataset, using fit_df method.
         Default is None, in which case no standardization transform is applied.
+    window_size : int
+        width of window in number of elements. Argument to PadToWindow transform.
+    padval : float
+        value to pad with. Added to end of array, the "right side" if 2-dimensional.
+        Argument to PadToWindow transform. Default is 0.
+    return_padding_mask : bool
+        if True, the dictionary returned by ItemTransform classes will include
+        a boolean vector to use for cropping back down to size before padding.
+        padding_mask has size equal to width of padded array, i.e. original size
+        plus padding at the end, and has values of 1 where
+        columns in padded are from the original array,
+        and values of 0 where columns were added for padding.
 
     Returns
     -------
@@ -203,33 +215,30 @@ def get_defaults(mode,
                 'Should be an instance of vak.transforms.StandardizeSpect'
             )
 
-    if mode == 'train' or mode == 'predict':
+    if mode == 'train':
         if spect_standardizer is not None:
             transform = [spect_standardizer]
         else:
             transform = []
 
-        if mode == 'train':
-            transform.extend([
-                vak_transforms.ToFloatTensor(),
-                vak_transforms.AddChannel(),
-            ])
-            transform = torchvision.transforms.Compose(transform)
 
-            target_transform = vak_transforms.ToLongTensor()
-            return transform, target_transform
+        transform.extend([
+            vak_transforms.ToFloatTensor(),
+            vak_transforms.AddChannel(),
+        ])
+        transform = torchvision.transforms.Compose(transform)
 
-        elif mode == 'predict':
-            transform.extend([
-                vak_transforms.PadToWindow(window_size, padval, return_padding_mask),
-                vak_transforms.ViewAsWindowBatch(window_size),
-                vak_transforms.ToFloatTensor(),
-                vak_transforms.AddChannel(channel_dim=1),  # add channel at first dimension because windows become batch
-            ])
-            transform = torchvision.transforms.Compose(transform)
+        target_transform = vak_transforms.ToLongTensor()
+        return transform, target_transform
 
-            target_transform = None
-            return transform, target_transform
+    elif mode == 'predict':
+        item_transform = PredictItemTransform(
+            spect_standardizer=spect_standardizer,
+            window_size=window_size,
+            padval=padval,
+            return_padding_mask=return_padding_mask,
+        )
+        return item_transform
 
     elif mode == 'eval':
         item_transform = EvalItemTransform(

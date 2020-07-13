@@ -293,32 +293,26 @@ class Model:
         pred_data : torch.util.Dataloader
             instance that will be iterated over.
         """
+        preds = {}
         self.network.eval()
-
-        y_all = []
-        y_pred_all = []
 
         progress_bar = tqdm(pred_data)
 
         with torch.no_grad():
             for ind, batch in enumerate(progress_bar):
-                x, y = batch[0].to(self.device), batch[1]
-                if type(y) == torch.Tensor:
-                    y = y.to(self.device)
+                x, spect_path = batch['source'].to(self.device), batch['spect_path']
+                if isinstance(spect_path, list) and len(spect_path) == 1:
+                    spect_path = spect_path[0]
                 if x.ndim == 5:
                     if x.shape[0] == 1:
                         x = torch.squeeze(x, dim=0)
                 y_pred = self.network.forward(x)
-                y_all.append(y)
-                y_pred_all.append(y_pred)
+                preds[spect_path] = y_pred
                 progress_bar.set_description(
                     f'batch {ind} / {len(pred_data)}'
                 )
 
-        return {
-            'y_pred': y_pred_all,
-            'y': y_all
-        }
+        return preds
 
     def save(self, ckpt_path, **kwargs):
         """save model state to a checkpoint file.
