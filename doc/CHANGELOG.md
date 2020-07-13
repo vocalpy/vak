@@ -42,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See discussion in [#212](https://github.com/NickleDave/vak/issues/211)
 - change warning issued by `split.train_test_dur_split_inds` to a log 
   statement [#231](https://github.com/NickleDave/vak/pull/231)
+- use `VocalDataset` in `core.predict`,
+  see discussion in issue [#206](https://github.com/NickleDave/vak/issues/206)
+  [#242](https://github.com/NickleDave/vak/pull/242)
 
 ### Fixed
 - changes references to `config.ini` in docstrings to `config.toml`
