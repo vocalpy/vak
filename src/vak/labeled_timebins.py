@@ -2,6 +2,7 @@
 import numpy as np
 import scipy.stats
 
+from .timebins import timebin_dur_from_vec
 from .validation import row_or_1d, column_or_1d
 
 
@@ -304,9 +305,10 @@ def majority_vote_transform(lbl_tb,
 
 def lbl_tb2segments(lbl_tb,
                     labelmap,
-                    timebin_dur,
+                    t,
                     min_segment_dur=None,
-                    majority_vote=False):
+                    majority_vote=False,
+                    n_decimals_trunc=5):
     """convert vector of labeled timebins into segments,
     by finding where continuous runs of a single label start
     and stop. Returns vectors of labels and onsets and offsets
@@ -321,8 +323,9 @@ def lbl_tb2segments(lbl_tb,
     labelmap : dict
         that maps labels to consecutive integers.
         The mapping is inverted to convert back to labels.
-    timebin_dur : float
-        Duration of a single timebin in the spectrogram, in seconds.
+    t : numpy.ndarray
+        Vector of times; the times are bin centers of columns in a spectrogram.
+        Returned by function that generated spectrogram.
         Used to convert onset and offset indices in lbl_tb to seconds.
     min_segment_dur : float
         minimum duration of segment, in seconds. If specified, then
@@ -337,6 +340,9 @@ def lbl_tb2segments(lbl_tb,
         applied if the labelmap contains an 'unlabeled' label,
         because unlabeled segments makes it possible to identify
         the labeled segments. Default is False.
+    n_decimals_trunc : int
+        number of decimal places to keep when truncating the timebin duration
+        calculated from the vector of times t. Default is 5.
 
     Returns
     -------
@@ -352,6 +358,8 @@ def lbl_tb2segments(lbl_tb,
         Each offset corresponds to the value at the same index in labels.
     """
     lbl_tb = column_or_1d(lbl_tb)
+
+    timebin_dur = timebin_dur_from_vec(t, n_decimals_trunc)
 
     if min_segment_dur is not None or majority_vote:
         if 'unlabeled' not in labelmap:
@@ -388,7 +396,18 @@ def lbl_tb2segments(lbl_tb,
     labels = np.asarray(
         [inverse_labelmap[label] for label in labels]
     )
-    onsets_s = onset_inds * timebin_dur
-    offsets_s = offset_inds * timebin_dur
+    # the 'best' estimate we can get of onset and offset times,
+    # given binned times, and labels applied to each time bin,
+    # is "some time" between the last labeled bin for one segment,
+    # i.e. its offset, and the first labeled bin for the next
+    # segment, i.e. its onset. In other words if the whole bin is labeled
+    # as belonging to that segment, and the bin preceding it is labeled as
+    # belonging to the previous section, then the onset of the current
+    # segment must be the time between the two bins. To find those times
+    # we use the bin centers and either subtract (for onsets) or add
+    # (for offsets) half a timebin duration. This half a timebin
+    # duration puts our onsets and offsets at the time "between" bins.
+    onsets_s = t[onset_inds] - (timebin_dur / 2)
+    offsets_s = t[offset_inds] + (timebin_dur / 2)
 
     return labels, onsets_s, offsets_s
