@@ -4,6 +4,7 @@ from pathlib import Path
 
 import crowsetta
 import joblib
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import torch.utils.data
@@ -14,7 +15,7 @@ from .. import labels as labelfuncs
 from ..logging import log_or_print
 from .. import models
 from .. import transforms
-from ..datasets.unannotated_dataset import UnannotatedDataset
+from ..datasets import VocalDataset
 from ..device import get_default as get_default_device
 
 
@@ -115,24 +116,30 @@ def predict(csv_path,
         log_or_print(f'Not loading SpectScaler, no path was specified', logger=logger, level='info')
         spect_standardizer = None
 
-    transform, target_transform = transforms.get_defaults('predict',
-                                                          spect_standardizer,
-                                                          window_size=window_size,
-                                                          return_padding_mask=False,
-                                                          )
+    item_transform = transforms.get_defaults('predict',
+                                             spect_standardizer,
+                                             window_size=window_size,
+                                             return_padding_mask=True,
+                                             )
+
+    log_or_print(f'loading labelmap from path: {labelmap_path}',
+                 logger=logger, level='info')
+    with labelmap_path.open('r') as f:
+        labelmap = json.load(f)
 
     log_or_print(f'loading dataset to predict from csv path: {csv_path}', logger=logger, level='info')
-    pred_dataset = UnannotatedDataset.from_csv(csv_path=csv_path,
-                                               split='predict',
-                                               window_size=window_size,
-                                               spect_key=spect_key,
-                                               timebins_key=timebins_key,
-                                               transform=transform,
-                                               )
+    pred_dataset = VocalDataset.from_csv(csv_path=csv_path,
+                                         split='predict',
+                                         labelmap=labelmap,
+                                         spect_key=spect_key,
+                                         timebins_key=timebins_key,
+                                         item_transform=item_transform,
+                                         )
 
     pred_data = torch.utils.data.DataLoader(dataset=pred_dataset,
                                             shuffle=False,
-                                            batch_size=1,  # hard coding to make this work for now
+                                            # batch size 1 because each spectrogram reshaped into a batch of windows
+                                            batch_size=1,
                                             num_workers=num_workers)
 
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
@@ -142,15 +149,11 @@ def predict(csv_path,
     log_or_print(f'will save annotations in .csv file: {annot_csv_path}',
                  logger=logger, level='info')
 
-    log_or_print(f'loading labelmap from path: {labelmap_path}',
-                 logger=logger, level='info')
-    with labelmap_path.open('r') as f:
-        labelmap = json.load(f)
-
     dataset_df = pd.read_csv(csv_path)
     timebin_dur = io.dataframe.validate_and_get_timebin_dur(dataset_df)
     log_or_print(f'dataset has timebins with duration: {timebin_dur}',
                  logger=logger, level='info')
+
     # ---------------- do the actual predicting + converting to annotations --------------------------------------------
     input_shape = pred_dataset.shape
     # if dataset returns spectrogram reshaped into windows,
@@ -178,35 +181,17 @@ def predict(csv_path,
                                   device=device)
 
         # ----------------  converting to annotations ------------------------------------------------------------------
-        # note use no transforms
-        dataset_for_annot = UnannotatedDataset.from_csv(csv_path=csv_path,
-                                                        split='predict',
-                                                        window_size=window_size,
-                                                        spect_key=spect_key,
-                                                        timebins_key=timebins_key,
-                                                        )
-
-        data_for_annot = torch.utils.data.DataLoader(dataset=dataset_for_annot,
-                                                     shuffle=False,
-                                                     batch_size=1,
-                                                     num_workers=num_workers)
-
-        # use transform "outside" of Dataset so we can get back crop vec
-        pad_to_window = transforms.PadToWindow(window_size,
-                                               return_padding_mask=True)
-
-        progress_bar = tqdm(data_for_annot)
+        progress_bar = tqdm(pred_data)
 
         annots = []
         log_or_print('converting predictions to annotations',
                      logger=logger, level='info')
         for ind, batch in enumerate(progress_bar):
-            x, y = batch[0], batch[1]  # here we don't care about putting on some device outside cpu
-            if len(x.shape) == 3:  # ("batch", freq_bins, time_bins)
-                x = x.cpu().numpy().squeeze()
-            x_pad, padding_mask = pad_to_window(x)
-            y_pred_ind = pred_dict['y'].index(y)
-            y_pred = pred_dict['y_pred'][y_pred_ind]
+            padding_mask, spect_path = batch['padding_mask'], batch['spect_path']
+            padding_mask = np.squeeze(padding_mask)
+            if isinstance(spect_path, list) and len(spect_path) == 1:
+                spect_path = spect_path[0]
+            y_pred = pred_dict[spect_path]
             y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
             y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
 
@@ -219,10 +204,7 @@ def predict(csv_path,
                                                   onsets_s=onsets_s,
                                                   offsets_s=offsets_s)
 
-            # DataLoader wraps strings in a tuple, need to unpack
-            if type(y) == tuple and len(y) == 1:
-                y = y[0]
-            audio_fname = files.spect.find_audio_fname(y)
+            audio_fname = files.spect.find_audio_fname(spect_path)
             annot = crowsetta.Annotation(seq=seq, audio_file=audio_fname, annot_file=annot_csv_path.name)
             annots.append(annot)
 
