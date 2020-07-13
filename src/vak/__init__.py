@@ -29,6 +29,7 @@ from . import models
 from . import plot
 from . import spect
 from . import summary_writer
+from . import timebins
 from . import transforms
 from . import split
 from . import validation
@@ -58,6 +59,7 @@ __all__ = [
     'spect',
     'split',
     'summary_writer',
+    'timebins',
     'transforms',
     'validation',
 ]
