@@ -9,7 +9,7 @@ from scipy.io import loadmat
 
 from vak.split.algorithms import brute_force
 from vak.annotation import files_from_dir
-from vak.files.spect import timebin_dur_from_vec
+from vak.timebins import timebin_dur_from_vec
 
 HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
