@@ -28,7 +28,7 @@ def format_from_df(vak_df):
     annot_format = vak_df['annot_format'].unique()
     if len(annot_format) == 1:
         annot_format = annot_format.item()
-        if annot_format is None or annot_format is constants.NO_ANNOTATION_FORMAT:
+        if annot_format is None or annot_format == constants.NO_ANNOTATION_FORMAT:
             return None
     elif len(annot_format) > 1:
         raise ValueError(
