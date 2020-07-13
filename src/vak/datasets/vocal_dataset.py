@@ -83,10 +83,10 @@ class VocalDataset:
                                            annot.seq.offsets_s,
                                            timebins,
                                            unlabeled_label=self.unlabeled_label)
+            item = self.item_transform(spect, lbl_tb, spect_path)
         else:
-            lbl_tb = None
+            item = self.item_transform(spect, spect_path)
 
-        item = self.item_transform(spect, lbl_tb, spect_path)
         return item
 
     def __len__(self):
