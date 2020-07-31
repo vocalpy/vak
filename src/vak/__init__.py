@@ -57,6 +57,5 @@ __all__ = [
     'split',
     'summary_writer',
     'transforms',
-    'util',
     'validation',
 ]
