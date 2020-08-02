@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   containing spectrograms, so user can easily link train/test/predict data 
   returned by `DataLoader` to the source file
   [#236](https://github.com/NickleDave/vak/pull/236)
+- add functions for plotting spectrograms and annotation to `plot` sub-package
+  [#245](https://github.com/NickleDave/vak/pull/245)
 
 ### Changed
 - refactor to remove `util`s modules [#196](https://github.com/NickleDave/vak/pull/196)
