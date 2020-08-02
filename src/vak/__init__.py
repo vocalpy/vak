@@ -25,6 +25,7 @@ from . import labels
 from . import logging
 from . import metrics
 from . import models
+from . import plot
 from . import spect
 from . import summary_writer
 from . import transforms
@@ -51,10 +52,10 @@ __all__ = [
     'metrics',
     'Model',
     'models',
+    'plot',
     'spect',
     'split',
     'summary_writer',
     'transforms',
-    'util',
     'validation',
 ]
