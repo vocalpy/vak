@@ -22,12 +22,14 @@ from . import entry_points
 from . import files
 from . import io
 from . import labels
+from . import labeled_timebins
 from . import logging
 from . import metrics
 from . import models
 from . import plot
 from . import spect
 from . import summary_writer
+from . import timebins
 from . import transforms
 from . import split
 from . import validation
@@ -48,6 +50,7 @@ __all__ = [
     'files',
     'io',
     'labels',
+    'labeled_timebins',
     'logging',
     'metrics',
     'Model',
@@ -56,6 +59,7 @@ __all__ = [
     'spect',
     'split',
     'summary_writer',
+    'timebins',
     'transforms',
     'validation',
 ]

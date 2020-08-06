@@ -11,7 +11,7 @@ import torch.utils.data
 
 from .. import files
 from .. import io
-from .. import labels as labelfuncs
+from .. import labeled_timebins
 from ..logging import log_or_print
 from .. import models
 from .. import transforms
@@ -195,11 +195,13 @@ def predict(csv_path,
             y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
             y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
 
-            labels, onsets_s, offsets_s = labelfuncs.lbl_tb2segments(y_pred,
-                                                                     labelmap=labelmap,
-                                                                     timebin_dur=timebin_dur,
-                                                                     min_segment_dur=min_segment_dur,
-                                                                     majority_vote=majority_vote)
+            spect_dict = files.spect.load(spect_path)
+            t = spect_dict[timebins_key]
+            labels, onsets_s, offsets_s = labeled_timebins.lbl_tb2segments(y_pred,
+                                                                           labelmap=labelmap,
+                                                                           t=t,
+                                                                           min_segment_dur=min_segment_dur,
+                                                                           majority_vote=majority_vote)
             seq = crowsetta.Sequence.from_keyword(labels=labels,
                                                   onsets_s=onsets_s,
                                                   offsets_s=offsets_s)
