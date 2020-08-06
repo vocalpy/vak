@@ -79,6 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix bug in `labels.lbl_tb2labels` (https://github.com/NickleDave/vak/issues/239) 
   that resulted from lack of input validation and an indentation error
   [#240](https://github.com/NickleDave/vak/pull/240) 
+- fix how segment onsets and offsets are converted from time bin "units" 
+  back to seconds [#246](https://github.com/NickleDave/vak/pull/246).
+  Fixes [#237](https://github.com/NickleDave/vak/issues/237).
 
 ### Removed
 - remove `bin/` that contained scripts used with previous version of `vak`
