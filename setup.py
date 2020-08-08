@@ -70,11 +70,6 @@ EXTRAS = {
     'doc': doc_deps,
 }
 
-# need to make sure the valid.toml file in vak/config/ gets included
-PACKAGE_DATA = {
-                   'vak': ['**/*.toml', ],
-               }
-
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
 # Except, perhaps the License and Trove Classifiers!
@@ -167,7 +162,6 @@ setup(
     entry_points=ENTRY_POINTS,
     install_requires=REQUIRED,
     extras_require=EXTRAS,
-    package_data=PACKAGE_DATA,
     include_package_data=True,
     license=LICENSE,
     classifiers=[
