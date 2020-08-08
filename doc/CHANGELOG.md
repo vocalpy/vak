@@ -82,6 +82,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix how segment onsets and offsets are converted from time bin "units" 
   back to seconds [#246](https://github.com/NickleDave/vak/pull/246).
   Fixes [#237](https://github.com/NickleDave/vak/issues/237).
+- fix .toml config file used with "autoannotate" tutorial, 
+  and revise related section of tutorial on prediction
+  [#247](https://github.com/NickleDave/vak/pull/247).
+  Fixes [#223](https://github.com/NickleDave/vak/issues/223).
 
 ### Removed
 - remove `bin/` that contained scripts used with previous version of `vak`
