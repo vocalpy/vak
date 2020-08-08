@@ -155,14 +155,20 @@ on your computer:
 .. code-block:: toml
 
    [PREP]
-   data_dir = /home/users/You/Data/vak_tutorial_data/032212
+   data_dir = "/home/users/You/Data/vak_tutorial_data/032212"
+
+.. note::
+   Notice that paths are enclosed in quotes; this is required
+   for paths or any other string (text) in a ``toml`` file. If you
+   get an error message about the ``toml`` file, check that
+   you have put quotes around the paths.
 
 There is one other option you need to change, ``output_dir``
 that tells ``vak`` where to save the file it creates that contains information about the dataset.
 
 .. code-block:: toml
 
-   output_dir = /home/users/You/Data/vak_tutorial_data/vak/prep/train
+   output_dir = "/home/users/You/Data/vak_tutorial_data/vak/prep/train"
 
 Make sure that this a directory that already exists on your computer,
 or create the directory using the File Explorer or the ``mkdir`` command from the command-line.
@@ -196,7 +202,7 @@ where to find those files when we need them below.
 
 .. code-block:: toml
 
-   root_results_dir = /home/users/You/Data/vak_tutorial_data/vak/train/results
+   root_results_dir = "/home/users/You/Data/vak_tutorial_data/vak/train/results"
 
 Here it's fine to use the same directory you created before, or make a new one if you prepare to keep the
 training data and the files from training the neural network separate.
@@ -227,7 +233,7 @@ from that checkpoint later when we predict annotations for new data.
 3. preparing a prediction dataset
 ---------------------------------
 
-Next you'll prepare a dataset for predicting. The dataset we downloaded has annotation files with it,
+Next you'll prepare a dataset for prediction. The dataset we downloaded has annotation files with it,
 but for the sake of this tutorial we'll pretend that they're not annotated, and we instead want to
 predict the annotation using our trained network.
 Here we'll use the other configuration file you downloaded above, ``gy6or6_predict.toml``.
@@ -242,14 +248,14 @@ This time you'll change it to the path to the directory with the other day of da
 .. code-block:: toml
 
    [PREP]
-   data_dir = /home/users/You/Data/vak_tutorial_data/032312
+   data_dir = "/home/users/You/Data/vak_tutorial_data/032312"
 
 And again, you'll need to change the ``output_dir`` option
 to tell ``vak`` where to save the file it creates that contains information about the dataset.
 
 .. code-block:: toml
 
-   output_dir = /home/users/You/Data/vak_tutorial_data/vak_output
+   output_dir = "/home/users/You/Data/vak_tutorial_data/vak_output"
 
 This part is the same as before too: after you change these options,
 you'll run the ``prep`` command to prepare the dataset for prediction:
@@ -324,7 +330,20 @@ This file will also be found in the root ``results_{timestamp}`` directory.
 
    spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/SpectScaler"
 
-Finally, after adding these three paths,
+After adding the paths to these files generated during training,
+you can specify an ``output_dir`` where the predicted annotations are saved.
+The annotations are saved as a .csv file created by a separate software tool
+for dealing with annotations, ``crowsetta``. You can also specify the name
+of this .csv file. For this tutorial, you can modify both so that
+they point to the place where ``prep`` put the dataset it created for
+predictions, just to have everything in one place.
+
+.. code-block:: toml
+
+   output_dir = "/home/users/You/Data/vak_tutorial_data/vak/prep/predict"
+   annot_csv_filename = "gy6or6.032312.annot.csv"
+
+Finally, after adding these paths,
 you can run the ``predict`` command to generate annotation files from the labels
 predicted by the trained neural network.
 
