@@ -33,7 +33,7 @@ LICENSE = about['__license__']
 REQUIRED = [
     'attrs',
     'crowsetta>=2.2.0',
-    'dask',
+    'dask[bag]',
     'evfuncs',
     'joblib',
     'matplotlib',
