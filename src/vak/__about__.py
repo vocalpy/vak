@@ -23,7 +23,7 @@ __title__ = "vak"
 __summary__ = "automated annotation of vocalizations for everybody"
 __uri__ = "https://github.com/NickleDave/vak"
 
-__version__ = "0.3.0a5"
+__version__ = "0.3.0"
 
 if base_dir is not None and os.path.exists(os.path.join(base_dir, ".commit")):
     with open(os.path.join(base_dir, ".commit")) as fp:
@@ -32,7 +32,7 @@ else:
     __commit__ = None
 
 __author__ = "David Nicholson, Yarden Cohen"
-__email__ = "dnicho4@emory.edu"
+__email__ = "nickledave@users.noreply.github.com"
 
 __license__ = "BSD"
-__copyright__ = "2019 %s" % __author__
+__copyright__ = "2020 %s" % __author__
