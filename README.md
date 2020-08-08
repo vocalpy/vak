@@ -72,3 +72,13 @@ If you use vak for a publication, please cite its DOI:
 ### License
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)  
 is [here](./LICENSE).
+
+### Misc
+#### "Why this name, vak?"
+It has only three letters, so it is quick to type,
+and it wasn't taken on [pypi](https://pypi.org/) yet.
+Also I guess it has [something to do with speech](https://en.wikipedia.org/wiki/V%C4%81c).
+"vak" rhymes with "squawk" and "talk".
+
+#### Does your library have any poems?
+[Yes.](./doc/poem.md)
