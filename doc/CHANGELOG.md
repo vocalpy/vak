@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - use `VocalDataset` in `core.predict`,
   see discussion in issue [#206](https://github.com/NickleDave/vak/issues/206)
   [#242](https://github.com/NickleDave/vak/pull/242)
+- revise README [#248](https://github.com/NickleDave/vak/pull/248)
 
 ### Fixed
 - changes references to `config.ini` in docstrings to `config.toml`
@@ -90,6 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - remove `bin/` that contained scripts used with previous version of `vak`
   [#226](https://github.com/NickleDave/vak/pull/226)
+- remove mentions of `.ini` config files from documentation
+  [#248](https://github.com/NickleDave/vak/pull/248)
 
 ## [0.3.0a5]
 ### Added
