@@ -10,22 +10,17 @@ freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
 transform_type = "log_spect"
 
+[TweetyNet.optimizer]
+lr = 0.001
+
 [PREDICT]
 checkpoint_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 labelmap_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/labelmap.json"
-annot_format = "notmat"
 models = "TweetyNet"
 batch_size = 11
 num_workers = 4
 device = "cuda"
 spect_scaler_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/StandardizeSpect"
 csv_path = "/PATH/TO/DATA/vak/prep/predict/032412_prep_200209_123936.csv"
-
-[PREDICT.to_format_kwargs]
-min_syl_dur = 10
-min_silent_dur = 6
-threshold = 1500
-samp_freq = 32000
-
-[TweetyNet.optimizer]
-lr = 0.001
+output_dir = "/PATH/TO/DATA/vak/prep/predict"
+annot_csv_filename = "gy6or6.032312.annot.csv"
