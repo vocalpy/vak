@@ -272,7 +272,7 @@ class Model:
         for metric_name in list(metric_vals):
             if metric_name in ['loss', 'acc', 'levenshtein', 'segment_error_rate']:
                 avg_metric_val = (
-                        torch.tensor(metric_vals[metric_name]).sum() / n_batches
+                        torch.tensor(metric_vals[metric_name]).sum().cpu().numpy() / n_batches
                 ).item()
                 metric_vals[f'avg_{metric_name}'] = avg_metric_val
             else:
