@@ -48,7 +48,7 @@ def spect(s,
 
     ax.imshow(s,
               aspect='auto',
-              origin='lowest',
+              origin='lower',
               extent=extent,
               **imshow_kwargs)
 
@@ -122,4 +122,4 @@ def spect_annot(s,
 
     annotation(annot, t, tlim, ax=annot_ax, line_kwargs=line_kwargs, text_kwargs=text_kwargs)
 
-    return fig , spect_ax, annot_ax
+    return fig, spect_ax, annot_ax
