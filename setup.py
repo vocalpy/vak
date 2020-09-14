@@ -45,7 +45,6 @@ REQUIRED = [
     'torch',
     'torchvision',
     'tqdm',
-    'tweetynet>=0.4.2'
 ]
 
 dev_deps = [
@@ -53,8 +52,8 @@ dev_deps = [
 ]
 
 test_deps = [
-    'vak_test_net',
-    'tweetynet>=0.1.1a4',
+    'pytest',
+    'tweetynet>=0.4.2',
 ]
 
 doc_deps = [
