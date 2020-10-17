@@ -1,21 +1,24 @@
-SPECTS_SCRIPT=./tests/setup_scripts/rerun_prep.py
-RESULTS_SCRIPT=./tests/setup_scripts/rerun_learncurve.py
+TEST_DATA_GENERATE_SCRIPT=./tests/setup_scripts/test_data_generate.py
+TEST_DATA_CLEAN_SCRIPT=./tests/setup_scripts/test_data_clean.py
 
-.PHONY: variables clean results all
+
+help:
+	@echo 'Makefile for vak                                                                 '
+	@echo '                                                                                 '
+	@echo 'Usage:                                                                           '
+	@echo '   make test-data-generate                   generate test data used by tests    '
+	@echo '   make test-data-clean                      remove generated test data          '
+	@echo '   make variables                            show variables defined for Makefile '
 
 variables:
-	@echo SPECTS_SCRIPT: $(SPECTS_SCRIPT)
-	@echo RESULTS_SCRIPT: $(RESULTS_SCRIPT)
+	@echo '     TESTS_RESULTS_SCRIPT    : $(TESTS_RESULTS_SCRIPT)       '
+	@echo '     TESTS_CLEAN_SCRIPT      : $(TESTS_CLEAN_SCRIPT)         '
 
-clean :
-	rm -rf ./tests/test_data/configs/test_*.toml
-	rm -rf ./tests/test_data/prep/*/*
-	rm -rf ./tests/test_data/results/train/*/
-	rm -rf ./tests/test_data/results/learncurve/*/
-	rm -rf ./tests/test_data/results/predict/*/
+test-data-generate : $(TEST_DATA_GENERATE_SCRIPT)
+	python $(TEST_DATA_GENERATE_SCRIPT)
 
-results : $(RESULTS_SCRIPT) $(SPECTS_SCRIPT)
-	python $(SPECTS_SCRIPT)
-	python $(RESULTS_SCRIPT)
+test-data-clean :
+	python $(TEST_DATA_CLEAN_SCRIPT)
 
-all : results
+
+.PHONY: help variables test-data-generate test-data-clean
