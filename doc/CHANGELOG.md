@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - fix wrong argument value in call to imshow in `plot.spect_annot` function
+  [648b675](https://github.com/NickleDave/vak/commit/648b675221472f6bcd2750262c57dd8a761099e0)
+- fix bug that caused `vak.config.parse` to silently fail when parsing the 
+  `[SPECT_PARAMS]` section of config.toml files
+  [#266](https://github.com/NickleDave/vak/pull/266)
 
 ## [0.3.1]
 ### Fixed
