@@ -58,18 +58,13 @@ SECTION_PARSERS = {
 }
 
 
-def from_toml(toml_path, sections=None):
+def from_toml(toml_path):
     """parse a TOML configuration file
 
     Parameters
     ----------
     toml_path : str, Path
         path to a configuration file in TOML format
-    sections : list
-        of str, names of sections from config.toml file to parse.
-        Default is None, in which case function attempts to parse all sections.
-        Used by vak.cli.prep to avoid throwing a bunch of errors if paths in
-        other sections don't exist yet.
 
     Returns
     -------
@@ -107,10 +102,8 @@ def from_toml(toml_path, sections=None):
                     "Were you trying to use the 'learncurve' command instead?"
                 )
 
-    if sections is None:
-        sections = list(SECTION_PARSERS.keys())
     config_dict = {}
-    for section_name in sections:
+    for section_name in SECTION_PARSERS.keys():
         if section_name in config_toml:
             are_options_valid(config_toml, section_name, toml_path)
             section_parser = SECTION_PARSERS[section_name]
