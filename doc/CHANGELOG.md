@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.3.3]
 ### Fixed
 - remove out-of-date install instructions that were confusing people 
   [#268](https://github.com/NickleDave/vak/pull/268)
