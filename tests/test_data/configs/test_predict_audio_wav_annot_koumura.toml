@@ -1,0 +1,28 @@
+[PREP]
+data_dir = "./tests/test_data/source/koumura/Bird0"
+output_dir = "./tests/test_data/generated/prep/predict/audio_wav_annot_koumura"
+audio_format = "wav"
+
+[SPECT_PARAMS]
+fft_size = 512
+step_size = 64
+freq_cutoffs = [ 500, 10000 ]
+thresh = 6.25
+transform_type = 'log_spect'
+
+[DATALOADER]
+window_size = 88
+
+[PREDICT]
+spect_scaler_path = "/home/user/results_181014_194418/spect_scaler"
+checkpoint_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+labelmap_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json"
+models = "TweetyNet"
+batch_size = 11
+num_workers = 4
+device = "cuda"
+output_dir = "./tests/test_data/generated/results/predict/audio_wav_annot_koumura"
+annot_csv_filename = "bl26lb16.041912.annot.csv"
+
+[TweetyNet.optimizer]
+lr = 0.001

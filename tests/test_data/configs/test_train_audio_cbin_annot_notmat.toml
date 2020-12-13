@@ -1,0 +1,34 @@
+[PREP]
+data_dir = "./tests/test_data/source/cbins/gy6or6/032312"
+output_dir = "./tests/test_data/generated/prep/train/audio_cbin_annot_notmat"
+audio_format = "cbin"
+annot_format = "notmat"
+labelset = "iabcdefghjk"
+train_dur = 50
+val_dur = 15
+test_dur = 30
+
+[SPECT_PARAMS]
+fft_size=512
+step_size=64
+freq_cutoffs = [500, 10000]
+thresh = 6.25
+transform_type = "log_spect"
+
+[DATALOADER]
+window_size = 88
+
+[TRAIN]
+models = "TweetyNet"
+normalize_spectrograms = true
+batch_size = 11
+num_epochs = 2
+val_step = 50
+ckpt_step = 200
+patience = 4
+num_workers = 4
+device = "cuda"
+root_results_dir = "./tests/test_data/generated/results/train/audio_cbin_annot_notmat"
+
+[TweetyNet.optimizer]
+lr = 0.001
