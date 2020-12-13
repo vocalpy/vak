@@ -1,6 +1,6 @@
 [PREP]
-data_dir = "./tests/test_data/cbins/gy6or6/032412"
-output_dir = "./tests/test_data/prep/predict/audio_cbin_annot_notmat"
+data_dir = "./tests/test_data/source/cbins/gy6or6/032412"
+output_dir = "./tests/test_data/generated/prep/predict/audio_cbin_annot_notmat"
 audio_format = "cbin"
 
 [SPECT_PARAMS]
@@ -21,7 +21,7 @@ models = "TweetyNet"
 batch_size = 11
 num_workers = 4
 device = "cuda"
-output_dir = "./tests/test_data/results/predict/audio_cbin_annot_notmat"
+output_dir = "./tests/test_data/generated/results/predict/audio_cbin_annot_notmat"
 annot_csv_filename = "bl26lb16.041912.annot.csv"
 
 [TweetyNet.optimizer]

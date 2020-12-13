@@ -1,6 +1,6 @@
 [PREP]
-data_dir = "./tests/test_data/cbins/gy6or6/032312"
-output_dir = "./tests/test_data/prep/train/audio_cbin_annot_notmat"
+data_dir = "./tests/test_data/source/cbins/gy6or6/032312"
+output_dir = "./tests/test_data/generated/prep/train/audio_cbin_annot_notmat"
 audio_format = "cbin"
 annot_format = "notmat"
 labelset = "iabcdefghjk"
@@ -28,7 +28,7 @@ ckpt_step = 200
 patience = 4
 num_workers = 4
 device = "cuda"
-root_results_dir = "./tests/test_data/results/train/audio_cbin_annot_notmat"
+root_results_dir = "./tests/test_data/generated/results/train/audio_cbin_annot_notmat"
 
 [TweetyNet.optimizer]
 lr = 0.001
