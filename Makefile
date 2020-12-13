@@ -1,6 +1,4 @@
 TEST_DATA_GENERATE_SCRIPT=./src/scripts/test_data/test_data_generate.py
-TEST_DATA_CLEAN_SCRIPT=./src/scripts/test_data/test_data_clean.py
-
 
 help:
 	@echo 'Makefile for vak                                                                 '
@@ -18,7 +16,7 @@ test-data-generate : $(TEST_DATA_GENERATE_SCRIPT)
 	python $(TEST_DATA_GENERATE_SCRIPT)
 
 test-data-clean :
-	python $(TEST_DATA_CLEAN_SCRIPT)
+	rm -rfv ./tests/test_data/generated/*
 
 
 .PHONY: help variables test-data-generate test-data-clean
