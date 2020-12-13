@@ -1,5 +1,5 @@
-TEST_DATA_GENERATE_SCRIPT=./tests/setup_scripts/test_data_generate.py
-TEST_DATA_CLEAN_SCRIPT=./tests/setup_scripts/test_data_clean.py
+TEST_DATA_GENERATE_SCRIPT=./src/scripts/test_data/test_data_generate.py
+TEST_DATA_CLEAN_SCRIPT=./src/scripts/test_data/test_data_clean.py
 
 
 help:
