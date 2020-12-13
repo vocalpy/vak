@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
   [6341c8d](https://github.com/NickleDave/vak/commit/6341c8d4991a4e51565953f8e15d40f13419e6d5)
 
+### Removed
+- remove `tweetynet` as a core dependency, since this creates a 
+  circular dependency (`tweetynet` definitely depends on `vak`) 
+  that prevents using `conda-forge`. Instead declare `tweetynet` as 
+  a test dependency.
+  [74350a7](https://github.com/NickleDave/vak/commit/c26ad08bfd4057324ba55a1902f7dc2845bc6e40)
+
 ## [0.3.3]
 ### Fixed
 - remove out-of-date install instructions that were confusing people 
