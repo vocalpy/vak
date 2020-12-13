@@ -18,7 +18,5 @@ build/
 doc/_build/
 
 # test data
-tests/test_data/prep/**
-tests/test_data/results/**
-tests/test_data/*.tar.gz
-tests/test_data/configs/test_*.toml
+tests/test_data/generated/
+*.tar.gz
