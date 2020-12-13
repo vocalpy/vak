@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
+  [6341c8d](https://github.com/NickleDave/vak/commit/6341c8d4991a4e51565953f8e15d40f13419e6d5)
 
 ## [0.3.3]
 ### Fixed
