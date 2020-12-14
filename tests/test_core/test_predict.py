@@ -1,7 +1,11 @@
 """tests for vak.core.predict module"""
+from pathlib import Path
+
+import pandas as pd
 import pytest
 
 import vak.config
+import vak.constants
 import vak.core.predict
 
 
@@ -14,15 +18,18 @@ def predict_output_matches_expected(output_dir, annot_csv_filename):
 
 
 @pytest.mark.parametrize(
-    'audio_format, spect_format, annot_format',
+    'audio_format, spect_format, annot_format, save_net_outputs',
     [
-        ('cbin', None, 'notmat'),
-        ('wav', None, 'koumura'),
+        ('cbin', None, 'notmat', False),
+        ('wav', None, 'koumura', False),
+        ('cbin', None, 'notmat', True),
+        ('wav', None, 'koumura', True),
     ]
 )
 def test_predict(audio_format,
                  spect_format,
                  annot_format,
+                 save_net_outputs,
                  specific_config,
                  tmp_path,
                  device):
@@ -35,9 +42,11 @@ def test_predict(audio_format,
          'value': str(output_dir)},
         {'section': 'PREDICT',
          'option': 'device',
-         'value': device}
+         'value': device},
+        {'section': 'PREDICT',
+         'option': 'save_net_outputs',
+         'value': save_net_outputs}
     ]
-
     toml_path = specific_config(config_type='predict',
                                 audio_format=audio_format,
                                 annot_format=annot_format,
@@ -60,7 +69,17 @@ def test_predict(audio_format,
                      output_dir=cfg.predict.output_dir,
                      min_segment_dur=cfg.predict.min_segment_dur,
                      majority_vote=cfg.predict.majority_vote,
+                     save_net_outputs=cfg.predict.save_net_outputs,
                      logger=None
                      )
 
     assert predict_output_matches_expected(output_dir, cfg.predict.annot_csv_filename)
+    if save_net_outputs:
+        net_outputs = sorted(Path(output_dir).glob(f'*{vak.constants.NET_OUTPUT_SUFFIX}'))
+
+        vak_df = pd.read_csv(cfg.predict.csv_path)
+        for spect_path in vak_df.spect_path.values:
+            net_output_spect_path = [net_output
+                                     for net_output in net_outputs
+                                     if net_output.name.startswith(Path(spect_path).stem)]
+            assert len(net_output_spect_path) == 1
