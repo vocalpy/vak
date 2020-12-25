@@ -7,7 +7,7 @@ import pandas as pd
 
 import vak.io.spect
 import vak.files.spect
-from vak.config.validators import VALID_AUDIO_FORMATS
+from vak.constants import VALID_AUDIO_FORMATS
 
 HERE = Path(__file__).parent
 TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
