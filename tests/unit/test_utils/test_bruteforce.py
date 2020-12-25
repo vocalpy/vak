@@ -15,32 +15,29 @@ HERE = os.path.dirname(__file__)
 TEST_DATA_DIR = os.path.join(HERE,
                              '..',
                              '..',
-                             'test_data')
-SETUP_SCRIPTS_DIR = os.path.join(HERE,
-                                 '..',
-                                 '..',
-                                 'setup_scripts')
+                             'test_data',
+                             'source')
 
 NUM_SAMPLES = 10  # number of times to sample behavior of random-number generator
 
-audio_dir_cbin = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
+audio_dir_cbin = os.path.join(TEST_DATA_DIR, 'audio_cbin_annot_notmat', 'gy6or6', '032312')
 audio_files_cbin = glob(os.path.join(audio_dir_cbin, '*.cbin'))
 annot_files_cbin = files_from_dir(annot_dir=audio_dir_cbin, annot_format='notmat')
-scribe_cbin = crowsetta.Transcriber(annot_format='notmat')
-annot_list_cbin = scribe_cbin.from_file(annot_file=annot_files_cbin)
+scribe_cbin = crowsetta.Transcriber(format='notmat')
+annot_list_cbin = scribe_cbin.from_file(annot_path=annot_files_cbin)
 labelset_cbin = set(list('iabcdefghjk'))
 durs_cbin = []
 labels_cbin = []
 for audio_file, annot in zip(audio_files_cbin, annot_list_cbin):
     if set(annot.seq.labels).issubset(labelset_cbin):
         labels_cbin.append(annot.seq.labels)
-        fs, data = load_cbin(audio_file)
+        data, fs = load_cbin(audio_file)
         durs_cbin.append(data.shape[0] / fs)
 
-spect_dir_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
+spect_dir_mat = os.path.join(TEST_DATA_DIR, 'spect_mat_annot_yarden', 'llb3', 'spect')
 spect_files_mat = glob(os.path.join(spect_dir_mat, '*.mat'))
-annot_mat = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
-scribe_yarden = crowsetta.Transcriber(annot_format='yarden')
+annot_mat = os.path.join(TEST_DATA_DIR, 'spect_mat_annot_yarden', 'llb3', 'llb3_annot_subset.mat')
+scribe_yarden = crowsetta.Transcriber(format='yarden')
 annot_list_mat = scribe_yarden.from_file(annot_mat)
 labelset_mat = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
 durs_mat = []
