@@ -72,7 +72,7 @@ def parse_learncurve_config(config_toml, toml_path):
 
     Returns
     -------
-    learncurve_config : vak.config.train.LearncurveConfig
+    learncurve_config : vak.config.learncurve.LearncurveConfig
         instance of LearncurveConfig class
     """
     learncurve_section = config_toml['LEARNCURVE']
