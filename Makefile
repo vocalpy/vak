@@ -1,5 +1,5 @@
 SOURCE_TEST_DATA_TAR=tests/test_data/source/source_test_data.tar.gz
-SOURCE_TEST_DATA_URL=https://osf.io/v4f83/download
+SOURCE_TEST_DATA_URL=https://osf.io/7ru4s/download
 
 TEST_DATA_GENERATE_SCRIPT=./src/scripts/test_data/test_data_generate.py
 GENERATED_TEST_DATA_TAR=tests/test_data/generated/generated_test_data.tar.gz
