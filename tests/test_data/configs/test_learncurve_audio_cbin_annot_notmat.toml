@@ -1,5 +1,5 @@
 [PREP]
-data_dir = './tests/test_data/source/cbins/gy6or6/032312'
+data_dir = './tests/test_data/source/audio_cbin_annot_notmat/gy6or6/032312'
 output_dir = './tests/test_data/generated/prep/train'
 audio_format = 'cbin'
 annot_format = 'notmat'

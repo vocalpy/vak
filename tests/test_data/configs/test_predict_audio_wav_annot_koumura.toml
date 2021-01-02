@@ -1,5 +1,5 @@
 [PREP]
-data_dir = "./tests/test_data/source/koumura/Bird0"
+data_dir = "./tests/test_data/source/audio_wav_annot_koumura/Bird0"
 output_dir = "./tests/test_data/generated/prep/predict/audio_wav_annot_koumura"
 audio_format = "wav"
 

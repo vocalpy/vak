@@ -1,6 +1,6 @@
 [PREP]
 labelset = "iabcdefghjk"
-data_dir = "./tests/test_data/source/cbins/gy6or6/032412"
+data_dir = "./tests/test_data/source/audio_cbin_annot_notmat/gy6or6/032412"
 output_dir = "./tests/test_data/generated/prep/eval/audio_cbin_annot_notmat"
 audio_format = "cbin"
 annot_format = "notmat"
