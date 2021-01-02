@@ -10,10 +10,12 @@ help:
 	@echo 'Makefile for vak                                                           			'
 	@echo '                                                                           			'
 	@echo 'Usage:                                                                     			'
-	@echo '     make test-data-generate     generate test data used by tests    					'
-	@echo '     make test-data-tar          place generated test data in compressed tar file       	'
-	@echo '     make test-data-download     download generated test data .tar and expand        	'
-	@echo '     make test-data-clean        remove generated test data          					'
+	@echo '     make test-data-clean-source          remove source test data                        '
+	@echo '     make test-data-download-source       download source test data                      '
+	@echo '     make test-data-generate              generate vak files used by tests from source data   '
+	@echo '     make test-data-clean-generate        remove generated test data          					'
+	@echo '     make test-data-tar-generate          place generated test data in compressed tar file       	'
+	@echo '     make test-data-download-generate     download generated test data .tar and expand        	'
 	@echo '     make variables              show variables defined for Makefile 					'
 
 variables:
@@ -24,21 +26,24 @@ variables:
 	@echo '     GENERATED_TEST_DATA_URL      		: $(GENERATED_TEST_DATA_URL)				'
 	@echo '     GENERATED_TEST_DATA_TOP_LEVEL_DIRS	: $(GENERATED_TEST_DATA_TOP_LEVEL_DIRS)		'
 
+test-data-clean-source:
+	rm -rfv ./tests/test_data/source/*
+
+test-data-download-source:
+	wget $(SOURCE_TEST_DATA_URL) -O $(SOURCE_TEST_DATA_TAR)
+	tar -xvzf $(SOURCE_TEST_DATA_TAR)
+
 test-data-generate : $(TEST_DATA_GENERATE_SCRIPT)
 	python $(TEST_DATA_GENERATE_SCRIPT)
 
-test-data-tar:
+test-data-clean-generate :
+	rm -rfv ./tests/test_data/generated/*
+
+test-data-tar-generate:
 	tar -czvf $(GENERATED_TEST_DATA_TAR) $(GENERATED_TEST_DATA_TOP_LEVEL_DIRS)
 
-test-data-download:
-	wget $(SOURCE_TEST_DATA_URL) -O $(SOURCE_TEST_DATA_TAR)
-	tar -xvzf $(SOURCE_TEST_DATA_TAR)
+test-data-download-generate:
 	wget $(GENERATED_TEST_DATA_URL) -O $(GENERATED_TEST_DATA_TAR)
 	tar -xvzf $(GENERATED_TEST_DATA_TAR)
 
-test-data-clean :
-	rm -rfv ./tests/test_data/source/*
-	rm -rfv ./tests/test_data/generated/*
-
-
-.PHONY: help variables test-data-generate test-data-tar test-data-download test-data-clean
+.PHONY: help variables test-data-clean-source test-data-download-source test-data-generate test-data-clean-generate test-data-tar-generate test-data-download-generate
