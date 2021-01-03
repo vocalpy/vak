@@ -21,7 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix `vak.files.from_dir` function, that returns list of all files 
   from a directory with specified extension, so that it is case insensitive
   [#276](https://github.com/NickleDave/vak/pull/276)
-
+- fix `vak.annotation.recursive_stem` function so it is case insensitive
+  [c02bd8a](https://github.com/NickleDave/vak/commit/c02bd8a8d33eadeb5ce04725d63f1d2e520de737)
 
 ### Removed
 - remove `tweetynet` as a core dependency, since this creates a 
