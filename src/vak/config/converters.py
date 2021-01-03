@@ -77,36 +77,43 @@ def labelset_from_toml_value(value):
     Parameters
     ----------
     value : str, list
-        value assigned to 'labelset' option in a .toml file
+        value assigned to 'labelset' option in a .toml file.
+        See Notes
 
     Returns
     -------
     labelset : set
-        of single-character strings.
+        of strings, labels used to annotate segments.
 
     Notes
     -----
     If value is a str, and it starts with "range:", then everything after range is converted to
-    some range of integers, by passing the string to vak.config.converters.range_str,
+    some range of integers, by passing the string to ``vak.config.converters.range_str``,
     and the returned list is converted to a set. E.g. "range: 1-5" becomes {'1', '2', '3', '4', '5'}.
     Other strings that do not start with "range:" are just converted to a set. E.g. "abc" becomes {'a', 'b', 'c'}.
 
-    If value is a list, returns set(value). If all values in list are int,
-    they will be converted to strings, e.g. [1, 2, 3, 4, 5] becomes {'1', '2', '3', '4', '5'}.
-    If all values are string, any that begin with "range:" will be passed to vak.config.converters.range_str.
+    If value is a list, then all values in the list must strings or integers.
+    Any that begin with "range:" will be passed to vak.config.converters.range_str.
+    Any other multiple-character strings in a list are **not** split,
+    unlike when the value for the ``labelset`` option is just a single string
+    with multiple characters.
+    If you have segments annotated with multiple characters,
+    you should specify them using a list, e.g., ['en', 'ab', 'cd']
 
     Examples
     --------
+    >>> labelset_from_toml_value('abc')
+    {'a', 'b', 'c'}
     >>> labelset_from_toml_value('1235')
     {'1', '2', '3', '5'}
     >>> labelset_from_toml_value('range: 1-3, 5')
     {'1', '2', '3', '5'}
-    >>> labelset_from_toml_value([1, 2, 3])
+    >>> labelset_from_toml_value([1, 2, 3, 5])
     {'1', '2', '3'}
     >>> labelset_from_toml_value(['a', 'b', 'c'])
     {'a', 'b', 'c'}
-    >>> labelset_from_toml_value(['range: 1-3', 'a-'])
-    {'-', '1', '2', '3', 'a'}
+    >>> labelset_from_toml_value(['range: 1-3', 'noise'])
+    {'1', '2', '3', 'noise'}
     """
     if type(value) is str:
         if value.startswith('range:'):
@@ -115,16 +122,19 @@ def labelset_from_toml_value(value):
         else:
             return set(value)
     elif type(value) is list:
-        if all([type(el) == int for el in value]):
-            return set([str(el) for el in value])
-        elif all([type(el) == str for el in value]):
-            labelset = []
-            for el in value:
-                if el.startswith('range:'):
-                    el = el.replace('range:', '')
-                    labelset.extend(range_str(el))
+        labelset = []
+        for label in value:
+            if isinstance(label, int):
+                labelset.append(str(label))
+            elif isinstance(label, str):
+                if label.startswith('range:'):
+                    label = label.replace('range:', '')
+                    labelset.extend(range_str(label))
                 else:
-                    labelset.extend(
-                        list(el)  # in case element is a string with multiple characters
-                    )
-            return set(labelset)
+                    labelset.append(label)
+            else:
+                raise TypeError(
+                    f"label '{label}' specified in labelset is invalid type: {type(label)}."
+                    "Labels must be strings or integers."
+                )
+        return set(labelset)
