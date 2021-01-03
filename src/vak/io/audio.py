@@ -140,6 +140,7 @@ def to_spect(audio_format,
         exts = []
         for audio_file in audio_files:
             root, ext = os.path.splitext(audio_file)
+            ext = ext.lower()  # make case-insensitive, e.g. treat .wav and .WAV the same
             exts.append(ext)
         uniq_ext = set(exts)
         if len(uniq_ext) > 1:
