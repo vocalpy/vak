@@ -19,10 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
   [6341c8d](https://github.com/NickleDave/vak/commit/6341c8d4991a4e51565953f8e15d40f13419e6d5)
 - fix `vak.files.from_dir` function, that returns list of all files 
-  from a directory with specified extension, so that it is case insensitive
+  from a directory with specified extension, so that it is case-insensitive
   [#276](https://github.com/NickleDave/vak/pull/276)
-- fix `vak.annotation.recursive_stem` function so it is case insensitive
+- fix `vak.annotation.recursive_stem` function so it is case-insensitive
   [c02bd8a](https://github.com/NickleDave/vak/commit/c02bd8a8d33eadeb5ce04725d63f1d2e520de737)
+- fix `vak.io.audio.to_spect` so validation of `audio_files` is case-insensitive
+  [cbd08f6](https://github.com/NickleDave/vak/commit/cbd08f6deab7a26fbbb1814fbe6349c578dae20f )
 
 ### Removed
 - remove `tweetynet` as a core dependency, since this creates a 
