@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   See details in comment on pull request: 
   https://github.com/NickleDave/vak/pull/274#issue-538992350
 
+### Changed
+- make it possible for labels in `labelset` to be multiple characters
+  [##278](https://github.com/NickleDave/vak/pull/278)
+
 ### Fixed
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
   [6341c8d](https://github.com/NickleDave/vak/commit/6341c8d4991a4e51565953f8e15d40f13419e6d5)
