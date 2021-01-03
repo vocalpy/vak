@@ -155,10 +155,10 @@ def recursive_stem(path):
     """
     name = Path(path).name
     stem, ext = os.path.splitext(name)
-    ext = ext.replace('.', '')
+    ext = ext.replace('.', '').lower()
     while ext not in constants.VALID_AUDIO_FORMATS:
         new_stem, ext = os.path.splitext(stem)
-        ext = ext.replace('.', '')
+        ext = ext.replace('.', '').lower()
         if new_stem == stem:
             raise ValueError(
                 f'unable to compute stem of {path}'
