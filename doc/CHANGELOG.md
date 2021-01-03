@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
   [6341c8d](https://github.com/NickleDave/vak/commit/6341c8d4991a4e51565953f8e15d40f13419e6d5)
+- fix `vak.files.from_dir` function, that returns list of all files 
+  from a directory with specified extension, so that it is case insensitive
+  [#276](https://github.com/NickleDave/vak/pull/276)
+
 
 ### Removed
 - remove `tweetynet` as a core dependency, since this creates a 
