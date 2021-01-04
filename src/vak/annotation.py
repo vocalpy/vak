@@ -66,7 +66,7 @@ def from_df(vak_df):
     if annot_format is None:
         return None
 
-    scribe = crowsetta.Transcriber(annot_format=annot_format)
+    scribe = crowsetta.Transcriber(format=annot_format)
 
     if len(vak_df['annot_path'].unique()) == 1:
         # --> there is a single annotation file associated with all rows

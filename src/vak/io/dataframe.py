@@ -117,7 +117,7 @@ def from_files(data_dir,
         if annot_file is None:
             annot_files = annotation.files_from_dir(annot_dir=data_dir,
                                                     annot_format=annot_format)
-            scribe = Transcriber(annot_format=annot_format)
+            scribe = Transcriber(format=annot_format)
             annot_list = scribe.from_file(annot_path=annot_files)
         else:
             scribe = Transcriber(format=annot_format)
