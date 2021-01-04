@@ -74,7 +74,7 @@ def from_df(vak_df):
         # (1) many rows, all have the same file
         # (2) only one row, so there's only one annotation file (which may contain annotation for multiple source files)
         annot_path = vak_df['annot_path'].unique().item()
-        annots = scribe.from_file(annot_path=annot_path)
+        annots = scribe.from_file(annot_path)
 
         # as long as we have at least as many annotations as there are rows in the dataframe
         if ((isinstance(annots, list) and len(annots) >= len(vak_df)) or  # case 1
@@ -96,7 +96,7 @@ def from_df(vak_df):
 
     elif len(vak_df['annot_path'].unique()) == len(vak_df):
         # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
-        annots = [scribe.from_file(annot_path=annot_path) for annot_path in vak_df['annot_path'].values]
+        annots = [scribe.from_file(annot_path) for annot_path in vak_df['annot_path'].values]
 
     else:
         raise ValueError(
