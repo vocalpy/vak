@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - switch to `crowsetta` version 3.0.0, making it possible to specify 
   `csv` as an annotation format
   [#279](https://github.com/NickleDave/vak/pull/279)
+- switch to using `soundfile` to load audio files
+  [#281](https://github.com/NickleDave/vak/pull/281)
 
 ### Fixed
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
