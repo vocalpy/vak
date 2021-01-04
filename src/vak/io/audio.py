@@ -192,7 +192,7 @@ def to_spect(audio_format,
         """helper function that enables parallelized creation of array
         files containing spectrograms.
         Accepts path to audio file, saves .npz file with spectrogram"""
-        fs, dat = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
+        dat, fs = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
         s, f, t = spectrogram(dat, fs,
                               spect_params.fft_size,
                               spect_params.step_size,

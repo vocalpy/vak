@@ -39,6 +39,7 @@ REQUIRED = [
     'matplotlib',
     'numpy',
     'scipy',
+    'soundfile',
     'pandas',
     'tensorboard>=2.2.0',
     'toml',
