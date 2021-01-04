@@ -32,7 +32,7 @@ LICENSE = about['__license__']
 
 REQUIRED = [
     'attrs',
-    'crowsetta>=2.3.0',
+    'crowsetta>=3.0.0',
     'dask[bag]',
     'evfuncs',
     'joblib',
