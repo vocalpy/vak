@@ -175,12 +175,12 @@ def source_annot_map(source_files, annot_list):
     ----------
     source_files : list
         of audio or spectrogram files. The names of the files must begin with the
-        audio_file attribute of the corresponding annotations. E.g., if an audio file is
+        audio_path attribute of the corresponding annotations. E.g., if an audio file is
         'bird0-2016-05-04-133027.wav', then there must be an annotation whose
         file attribute equals that filename. Spectrogram files should include
         the audio file name, e.g. 'bird0-2016-05-04-133027.wav.mat' or
         'bird0-2016-05-04-133027.spect.npz' would match an annotation with the
-        audio_file attribute 'bird0-2016-05-04-133027.wav'.
+        audio_path attribute 'bird0-2016-05-04-133027.wav'.
     annot_list : list
         of Annotations corresponding to files in source_files
     """
@@ -193,7 +193,7 @@ def source_annot_map(source_files, annot_list):
     # ----> make a dict with audio stems as keys,
     #       so we can look up annotations by stemming source files and using as keys.
     # First check that we don't have duplicate keys that would cause this to fail silently
-    keys = [recursive_stem(annot.audio_file) for annot in annot_list]
+    keys = [recursive_stem(annot.audio_path) for annot in annot_list]
     keys_set = set(keys)
     if len(keys_set) < len(keys):
         duplicates = [item for item, count in Counter(keys).items() if count > 1]
@@ -201,7 +201,7 @@ def source_annot_map(source_files, annot_list):
             f'found multiple annotations with the same audio filename(s): {duplicates}'
         )
     del keys, keys_set
-    audio_stem_annot_map = {recursive_stem(annot.audio_file): annot for annot in annot_list}
+    audio_stem_annot_map = {recursive_stem(annot.audio_path): annot for annot in annot_list}
 
     for source_file in list(source_files):  # list() to copy, so we can pop off items while iterating
         # We pop to validate that function worked, by making sure there are
