@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - make it possible for labels in `labelset` to be multiple characters
   [##278](https://github.com/NickleDave/vak/pull/278)
+- switch to `crowsetta` version 3.0.0, making it possible to specify 
+  `csv` as an annotation format
+  [#279](https://github.com/NickleDave/vak/pull/279)
 
 ### Fixed
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
