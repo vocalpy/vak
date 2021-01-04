@@ -204,7 +204,7 @@ def to_dataframe(spect_format,
 
         if annot is not None:
             # TODO: change to annot.annot_path when changing dependency to crowsetta>=2.0
-            annot_path = annot.annot_file
+            annot_path = annot.annot_path
         else:
             annot_path = None
 

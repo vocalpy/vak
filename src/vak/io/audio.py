@@ -182,7 +182,7 @@ def to_spect(audio_format,
                     # because there's some label in labels that's not in labelset
                     audio_annot_map.pop(audio_file)
                     logger.info(
-                        f'found labels in {annot.annot_file} not in labels_mapping, '
+                        f'found labels in {annot.annot_path} not in labels_mapping, '
                         f'skipping audio file: {audio_file}'
                     )
         audio_files = sorted(list(audio_annot_map.keys()))
