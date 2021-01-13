@@ -3,7 +3,7 @@ import pytest
 import vak.converters
 
 
-@pytest.mark.parameterize(
+@pytest.mark.parametrize(
     ('toml_value', 'labelset'),
     [('abc', {'a', 'b', 'c'}),
      ('1235', {'1', '2', '3', '5'}),
