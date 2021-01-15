@@ -20,7 +20,7 @@ VALID_TRANSFORM_TYPES = {'log_spect', 'log_spect_plus_one'}
 def is_valid_transform_type(instance, attribute, value):
     if value not in VALID_TRANSFORM_TYPES:
         raise ValueError(
-            f'Value for `transform_type`, {value}, in [SPECTROGRAM] '
+            f'Value for `transform_type`, {value}, in [SPECT_PARAMS] '
             'section of .toml file is not recognized. Must be one '
             f'of the following: {VALID_TRANSFORM_TYPES}'
         )
