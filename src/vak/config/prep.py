@@ -97,6 +97,7 @@ class PrepConfig:
 
 REQUIRED_PREP_OPTIONS = [
     'data_dir',
+    'output_dir',
 ]
 
 
