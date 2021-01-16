@@ -20,7 +20,7 @@ except NameError:
 
 
 __title__ = "vak"
-__summary__ = "automated annotation of vocalizations for everybody"
+__summary__ = "neural network toolbox for animal communication and bioacoustics"
 __uri__ = "https://github.com/NickleDave/vak"
 
 __version__ = "0.3.3"
