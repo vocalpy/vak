@@ -62,6 +62,9 @@ class PrepConfig:
         are segments that are not annotated, e.g. silent gaps between songbird
         syllables, then `vak` will assign a dummy label to those segments
         -- you don't have to give them a label here.
+        Value for ``labelset`` is converted to a Python ``set``
+        using ``vak.config.converters.labelset_from_toml_value``.
+        See help for that function for details on how to specify labelset.
     train_dur : float
         total duration of training set, in seconds. When creating a learning curve,
         training subsets of shorter duration (specified by the 'train_set_durs' option
