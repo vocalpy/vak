@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#279](https://github.com/NickleDave/vak/pull/279)
 - switch to using `soundfile` to load audio files
   [#281](https://github.com/NickleDave/vak/pull/281)
+- switch to using `poetry` for development
+  [#283](https://github.com/NickleDave/vak/pull/283)
 
 ### Fixed
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
