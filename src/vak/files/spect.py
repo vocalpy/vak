@@ -20,7 +20,7 @@ def find_audio_fname(spect_path, audio_ext=None):
 
     Parameters
     ----------
-    spect_path : str
+    spect_path : str, Path
         path to a spectrogram file
     audio_ext : str
         extension associated with an audio file format, used to
@@ -45,7 +45,7 @@ def find_audio_fname(spect_path, audio_ext=None):
     audio_fnames = []
     for ext in audio_ext:
         audio_fnames.append(
-            find_fname(spect_path, ext)
+            find_fname(str(spect_path), ext)
         )
     # remove Nones
     audio_fnames = [path for path in audio_fnames if path is not None]
