@@ -11,6 +11,7 @@ import pandas as pd
 from .. import constants
 from .. import files
 from ..annotation import source_annot_map
+from ..converters import labelset_to_set
 from ..logging import log_or_print
 
 
@@ -62,9 +63,12 @@ def to_dataframe(spect_format,
         Where keys are paths to files and value corresponding to each key is
         the annotation for that file.
         Default is None.
-    labelset : list
+    labelset : str, list, set
         of str or int, set of unique labels for vocalizations. Default is None.
-        If not None, skip files where the associated annotations contain labels not in labelset.
+        If not None, then files will be skipped where the associated annotation
+        contains labels not found in ``labelset``.
+        ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
+        See help for that function for details on how to specify labelset.
     n_decimals_trunc : int
         number of decimal places to keep when truncating the timebin duration calculated from
         the vector of time bins.
@@ -126,10 +130,7 @@ def to_dataframe(spect_format,
         )
 
     if labelset is not None:
-        if type(labelset) != set:
-            raise TypeError(
-                f'type of labelset must be set, but was: {type(labelset)}'
-            )
+        labelset = labelset_to_set(labelset)
 
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
