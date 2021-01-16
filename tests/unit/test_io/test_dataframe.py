@@ -1,169 +1,301 @@
 """tests for vak.io.dataframe module"""
-import os
-import tempfile
-import shutil
-import unittest
+from pathlib import Path
 
 import pandas as pd
 
+import vak.annotation
+import vak.constants
+import vak.io.audio
 import vak.io.dataframe
-from vak.config.spect_params import SpectParamsConfig
-
-HERE = os.path.dirname(__file__)
-TEST_DATA_DIR = os.path.join(HERE, '..', '..', 'test_data')
+import vak.io.spect
 
 
-class TestFromFiles(unittest.TestCase):
-    def setUp(self):
-        self.tmp_output_dir = tempfile.mkdtemp()
+def returned_dataframe_matches_expected(df_returned,
+                                        data_dir,
+                                        labelset,
+                                        annot_format,
+                                        audio_format,
+                                        spect_format,
+                                        spect_output_dir=None,
+                                        annot_file=None,
+                                        expected_audio_paths=None,
+                                        not_expected_audio_paths=None,
+                                        spect_file_ext='.spect.npz',
+                                        expected_spect_paths=None,
+                                        not_expected_spect_paths=None):
+    """tests that dataframe returned by ``vak.io.dataframe.from_files``
+    matches expected dataframe."""
+    assert isinstance(df_returned, pd.DataFrame)
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp_output_dir)
+    assert df_returned.columns.values.tolist() == vak.io.spect.DF_COLUMNS
 
-    def test_from_files_with_audio_cbin(self):
-        data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                         transform_type='log_spect')
-        annot_format = 'notmat'
-        labelset = list('iabcdefghjk')
+    annot_format_from_df = df_returned.annot_format.unique()
+    assert len(annot_format_from_df) == 1
+    annot_format_from_df = annot_format_from_df[0]
 
-        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
-                                             labelset=labelset,
-                                             annot_format=annot_format,
-                                             output_dir=self.tmp_output_dir,
-                                             audio_format='cbin',
-                                             spect_format=None,
-                                             annot_file=None,
-                                             spect_params=spect_params)
+    if annot_format is not None:
+        # test format from dataframe is specified format
+        assert annot_format_from_df == annot_format
+        annot_list = vak.annotation.from_df(df_returned)
+    else:
+        # if no annotation format specified, check that `annot_format` is `none`
+        assert annot_format_from_df == vak.constants.NO_ANNOTATION_FORMAT
+        annot_list = None
 
-        self.assertTrue(type(vak_df) == pd.DataFrame)
-
-    def test_from_files_with_audio_cbin_no_annot(self):
-        data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                         transform_type='log_spect')
-        annot_format = None
-        labelset = None
-
-        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
-                                             annot_format=annot_format,
-                                             labelset=labelset,
-                                             output_dir=self.tmp_output_dir,
-                                             audio_format='cbin',
-                                             spect_format=None,
-                                             annot_file=None,
-                                             spect_params=spect_params)
-
-        self.assertTrue(type(vak_df) == pd.DataFrame)
-
-    def test_from_files_with_audio_cbin_no_labelset(self):
-        data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                         transform_type='log_spect')
-        annot_format = 'notmat'
-        labelset = None
-
-        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
-                                             annot_format=annot_format,
-                                             labelset=labelset,
-                                             output_dir=self.tmp_output_dir,
-                                             audio_format='cbin',
-                                             spect_format=None,
-                                             annot_file=None,
-                                             spect_params=spect_params)
-
-        self.assertTrue(type(vak_df) == pd.DataFrame)
-
-    def test_from_files_with_spect_mat(self):
-        data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
-        annot_file = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
-
-        labelset = {1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19}
-        annot_format = 'yarden'
-
-        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
-                                             labelset=labelset,
-                                             annot_format=annot_format,
-                                             output_dir=self.tmp_output_dir,
-                                             audio_format=None,
-                                             spect_format='mat',
-                                             annot_file=annot_file,
-                                             spect_params=None)
-
-        self.assertTrue(type(vak_df) == pd.DataFrame)
-
-    def test_from_files_with_spect_mat_no_annot(self):
-        data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
-        annot_file = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
-        labelset = None
-        annot_format = None
-
-        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
-                                             labelset=labelset,
-                                             annot_format=annot_format,
-                                             output_dir=self.tmp_output_dir,
-                                             audio_format=None,
-                                             spect_format='mat',
-                                             annot_file=annot_file,
-                                             spect_params=None)
-
-        self.assertTrue(type(vak_df) == pd.DataFrame)
-
-    def test_from_files_with_spect_mat_no_labelset(self):
-        data_dir = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'spect')
-        annot_file = os.path.join(TEST_DATA_DIR, 'mat', 'llb3', 'llb3_annot_subset.mat')
-
-        labelset = None
-        annot_format = 'yarden'
-
-        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
-                                             labelset=labelset,
-                                             annot_format=annot_format,
-                                             output_dir=self.tmp_output_dir,
-                                             audio_format=None,
-                                             spect_format='mat',
-                                             annot_file=annot_file,
-                                             spect_params=None)
-
-        self.assertTrue(type(vak_df) == pd.DataFrame)
-
-
-class TestAddSplitCol(unittest.TestCase):
-    """class to test vak.io.dataframe.add_split_col function"""
-    def setUp(self):
-        self.tmp_output_dir = tempfile.mkdtemp()
-
-    def tearDown(self):
-        shutil.rmtree(self.tmp_output_dir)
-
-    def test_add_split_col(self):
-        # make a df to test on
-        data_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        spect_params = SpectParamsConfig(fft_size=512, step_size=64, freq_cutoffs=(500, 10000), thresh=6.25,
-                                         transform_type='log_spect')
-        annot_format = 'notmat'
-        labelset = list('iabcdefghjk')
-
-        vak_df = vak.io.dataframe.from_files(data_dir=data_dir,
-                                             labelset=labelset,
-                                             annot_format=annot_format,
-                                             output_dir=self.tmp_output_dir,
-                                             audio_format='cbin',
-                                             spect_format=None,
-                                             annot_file=None,
-                                             spect_params=spect_params)
-
-        self.assertTrue(
-            'split' not in vak_df.columns
-        )
-        vak_df = vak.io.dataframe.add_split_col(vak_df, split='train')
-        self.assertTrue(
-            'split' in vak_df.columns
-        )
-        self.assertTrue(
-            vak_df['split'].unique().item() == 'train'
+    if annot_file:
+        assert all(
+            [Path(annot_path) == annot_file for annot_path in df_returned['annot_path']]
         )
 
+    if labelset:
+        # test that filtering vocalizations by labelset worked
+        assert annot_list is not None, 'labelset specified but annot_list was None'
+        for annot in annot_list:
+            labels = annot.seq.labels
+            labelset_from_labels = set(labels)
+            # should be true that set of labels from each annotation is a subset of labelset
+            assert labelset_from_labels.issubset(set(labelset))
 
-if __name__ == '__main__':
-    unittest.main()
+    audio_files_from_df = [Path(audio_path) for audio_path in df_returned.audio_path]
+    spect_paths_from_df = [Path(spect_path) for spect_path in df_returned.spect_path]
+
+    # --- which assertions to run depends on whether we made the dataframe
+    # from audio files or spect files ----
+    if audio_format:  # implies that --> we made the dataframe from audio files
+
+        # test that all audio files came from data_dir
+        for audio_file_from_df in audio_files_from_df:
+            assert Path(audio_file_from_df).parent == data_dir
+
+        # test that each audio file has a corresponding spect file in `spect_path` column
+        spect_file_names = [spect_path.name for spect_path in spect_paths_from_df]
+        expected_spect_files = [
+            source_audio_file.name + spect_file_ext
+            for source_audio_file in expected_audio_paths
+        ]
+        assert all([expected_spect_file in spect_file_names
+                    for expected_spect_file in expected_spect_files])
+
+        # if there are audio files we expect to **not** be in audio_path
+        # -- because the associated annotations have labels not in labelset --
+        # then test those files are **not** in spect_path
+        if not_expected_audio_paths is not None:
+            not_expected_spect_files = [
+                source_audio_file.name + spect_file_ext
+                for source_audio_file in not_expected_audio_paths
+            ]
+            assert all([not_expected_spect_file not in spect_file_names
+                        for not_expected_spect_file in not_expected_spect_files])
+
+        # test that all the generated spectrogram files are in a
+        # newly-created directory inside spect_output_dir
+        assert all(
+            [spect_path.parents[1] == spect_output_dir for spect_path in spect_paths_from_df]
+        )
+
+    elif spect_format:  # implies that --> we made the dataframe from audio files
+        for expected_spect_path in list(expected_spect_paths):
+            assert expected_spect_path in spect_paths_from_df
+            spect_paths_from_df.remove(expected_spect_path)
+
+        # test that **only** expected paths were in DataFrame
+        if not_expected_spect_paths is not None:
+            for not_expected_spect_path in  not_expected_spect_paths:
+                assert not_expected_spect_path not in spect_paths_from_df
+
+        # test that **only** expected paths were in DataFrame
+        # spect_paths_from_df should be empty after popping off all the expected paths
+        assert len(spect_paths_from_df) == 0  # yes I know this isn't "Pythonic". It's readable, go away.
+
+    return True  # all asserts passed
+
+
+def test_from_files_with_audio_cbin_with_labelset(audio_dir_cbin,
+                                                  default_spect_params,
+                                                  labelset_notmat,
+                                                  audio_list_cbin_all_labels_in_labelset,
+                                                  audio_list_cbin_labels_not_in_labelset,
+                                                  spect_list_npz_all_labels_in_labelset,
+                                                  spect_list_npz_labels_not_in_labelset,
+                                                  tmp_path,
+                                                  ):
+    """test that ``vak.io.dataframe.from_files`` works
+    when we point it at directory of .cbin audio files
+    and specify an annotation format"""
+    vak_df = vak.io.dataframe.from_files(data_dir=audio_dir_cbin,
+                                         labelset=labelset_notmat,
+                                         annot_format='notmat',
+                                         audio_format='cbin',
+                                         spect_output_dir=tmp_path,
+                                         spect_format=None,
+                                         annot_file=None,
+                                         spect_params=default_spect_params)
+
+    assert returned_dataframe_matches_expected(vak_df,
+                                               data_dir=audio_dir_cbin,
+                                               labelset=labelset_notmat,
+                                               annot_format='notmat',
+                                               audio_format='cbin',
+                                               spect_format=None,
+                                               spect_output_dir=tmp_path,
+                                               annot_file=None,
+                                               expected_audio_paths=audio_list_cbin_all_labels_in_labelset,
+                                               not_expected_audio_paths=audio_list_cbin_labels_not_in_labelset,
+                                               expected_spect_paths=spect_list_npz_all_labels_in_labelset,
+                                               not_expected_spect_paths=spect_list_npz_labels_not_in_labelset)
+
+
+def test_from_files_with_audio_cbin_no_annot(audio_dir_cbin,
+                                             default_spect_params,
+                                             labelset_notmat,
+                                             audio_list_cbin,
+                                             tmp_path):
+    """test that ``vak.io.dataframe.from_files`` works
+    when we point it at directory of .cbin audio files
+    and  **do not** specify an annotation format"""
+    vak_df = vak.io.dataframe.from_files(data_dir=audio_dir_cbin,
+                                         annot_format=None,
+                                         labelset=None,
+                                         audio_format='cbin',
+                                         spect_output_dir=tmp_path,
+                                         spect_format=None,
+                                         annot_file=None,
+                                         spect_params=default_spect_params)
+
+    assert returned_dataframe_matches_expected(vak_df,
+                                               data_dir=audio_dir_cbin,
+                                               annot_format=None,
+                                               labelset=None,
+                                               audio_format='cbin',
+                                               spect_format=None,
+                                               spect_output_dir=tmp_path,
+                                               expected_audio_paths=audio_list_cbin,
+                                               annot_file=None)
+
+
+def test_from_files_with_audio_cbin_no_labelset(audio_dir_cbin,
+                                                default_spect_params,
+                                                audio_list_cbin,
+                                                tmp_path):
+    """test that ``vak.io.dataframe.from_files`` works
+    when we point it at directory of .cbin audio files
+    and specify an annotation format"""
+    vak_df = vak.io.dataframe.from_files(data_dir=audio_dir_cbin,
+                                         annot_format='notmat',
+                                         labelset=None,
+                                         audio_format='cbin',
+                                         spect_format=None,
+                                         spect_output_dir=tmp_path,
+                                         annot_file=None,
+                                         spect_params=default_spect_params)
+
+    assert returned_dataframe_matches_expected(vak_df,
+                                               data_dir=audio_dir_cbin,
+                                               annot_format='notmat',
+                                               labelset=None,
+                                               audio_format='cbin',
+                                               spect_format=None,
+                                               spect_output_dir=tmp_path,
+                                               expected_audio_paths=audio_list_cbin,
+                                               annot_file=None)
+
+
+def test_from_files_with_spect_mat(spect_dir_mat,
+                                   labelset_yarden,
+                                   annot_file_yarden,
+                                   spect_list_mat_all_labels_in_labelset,
+                                   spect_list_mat_labels_not_in_labelset,
+                                   ):
+    """test that ``vak.io.dataframe.from_files`` works
+    when we point it at directory of .mat array files
+    and specify an annotation format"""
+    vak_df = vak.io.dataframe.from_files(data_dir=spect_dir_mat,
+                                         labelset=labelset_yarden,
+                                         annot_format='yarden',
+                                         audio_format=None,
+                                         spect_format='mat',
+                                         annot_file=annot_file_yarden,
+                                         spect_params=None)
+
+    assert returned_dataframe_matches_expected(vak_df,
+                                               data_dir=spect_dir_mat,
+                                               labelset=labelset_yarden,
+                                               annot_format='yarden',
+                                               audio_format=None,
+                                               spect_format='mat',
+                                               annot_file=annot_file_yarden,
+                                               expected_spect_paths=spect_list_mat_all_labels_in_labelset,
+                                               not_expected_spect_paths=spect_list_mat_labels_not_in_labelset)
+
+
+def test_from_files_with_spect_mat_no_annot(spect_dir_mat,
+                                            spect_list_mat):
+    """test that ``vak.io.dataframe.from_files`` works
+    when we point it at directory of .mat array files
+    and **do not** specify an annotation format"""
+    vak_df = vak.io.dataframe.from_files(data_dir=spect_dir_mat,
+                                         labelset=None,
+                                         annot_format=None,
+                                         audio_format=None,
+                                         spect_format='mat',
+                                         annot_file=None,
+                                         spect_params=None)
+
+    assert returned_dataframe_matches_expected(vak_df,
+                                               data_dir=spect_dir_mat,
+                                               labelset=None,
+                                               annot_format=None,
+                                               audio_format=None,
+                                               spect_format='mat',
+                                               annot_file=None,
+                                               expected_spect_paths=spect_list_mat)
+
+
+def test_from_files_with_spect_mat_no_labelset(spect_dir_mat,
+                                               labelset_yarden,
+                                               annot_file_yarden,
+                                               annot_list_yarden,
+                                               spect_list_mat):
+    """test that ``vak.io.dataframe.from_files`` works
+    when we point it at directory of .mat array files
+    and specify an annotation format
+    but do not specify a labelset"""
+    vak_df = vak.io.dataframe.from_files(data_dir=spect_dir_mat,
+                                         labelset=None,
+                                         annot_format='yarden',
+                                         audio_format=None,
+                                         spect_format='mat',
+                                         annot_file=annot_file_yarden,
+                                         spect_params=None)
+
+    assert returned_dataframe_matches_expected(vak_df,
+                                               data_dir=spect_dir_mat,
+                                               labelset=None,
+                                               annot_format='yarden',
+                                               audio_format=None,
+                                               spect_format='mat',
+                                               annot_file=annot_file_yarden,
+                                               expected_spect_paths=spect_list_mat)
+
+
+def test_add_split_col(audio_dir_cbin,
+                       default_spect_params,
+                       labelset_notmat,
+                       tmp_path):
+    """test that ``add_split_col`` adds a 'split' column
+    to a DataFrame, where all values in the Series are the
+    specified split (a string)"""
+    vak_df = vak.io.dataframe.from_files(data_dir=audio_dir_cbin,
+                                         labelset=labelset_notmat,
+                                         annot_format='notmat',
+                                         audio_format='cbin',
+                                         spect_format=None,
+                                         annot_file=None,
+                                         spect_params=default_spect_params)
+
+    assert 'split' not in vak_df.columns
+
+    vak_df = vak.io.dataframe.add_split_col(vak_df, split='train')
+    assert 'split' in vak_df.columns
+
+    assert vak_df['split'].unique().item() == 'train'
