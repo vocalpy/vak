@@ -16,7 +16,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.6.2,<4.0"
 attrs = "^20.3.0"
-crowsetta = ">=3.0.0"
+crowsetta = ">=3.1.0"
 dask = {extras = ["bag"], version = "^2021.1.0"}
 evfuncs = "^0.3.1"
 joblib = "^1.0.0"
@@ -34,7 +34,7 @@ tqdm = "^4.55.0"
 [tool.poetry.dev-dependencies]
 twine = "^3.3.0"
 pytest = "^6.2.1"
-tweetynet = ">=0.4.2"
+tweetynet = ">=0.5.0"
 sphinx = "^3.4.1"
 
 [tool.poetry.scripts]
