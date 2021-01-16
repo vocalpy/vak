@@ -5,7 +5,6 @@ language: python
 matrix:
   include:
     - python: "3.6"
-      env: DEPS="numpy scipy matplotlib tensorflow joblib"
 
 before_install:
   - sudo apt-get update
@@ -22,10 +21,11 @@ before_install:
 
 install:
   - conda config --append channels conda-forge
-  - conda create -n testenv --yes $DEPS pip pytest setuptools python=$TRAVIS_PYTHON_VERSION
+  - conda create -n testenv --yes pip pytest setuptools python=$TRAVIS_PYTHON_VERSION
   - source activate testenv
-  - pip install .[tests]
-  - make all  # make data for testing from scratch
+  - pip install .
+  - make test-data-download-source
+  - make test-data-download-generate
 
 script:
-  - python -m unittest
+  - pytest
