@@ -36,6 +36,7 @@ twine = "^3.3.0"
 pytest = "^6.2.1"
 tweetynet = ">=0.5.0"
 sphinx = "^3.4.1"
+ipython = "<7.0"
 
 [tool.poetry.scripts]
 vak = 'vak.__main__:main'
