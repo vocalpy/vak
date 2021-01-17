@@ -1,4 +1,8 @@
-"""functions for dealing with vocalization datasets as pandas DataFrames"""
+"""function that converts a set of array files (.npz, .mat) containing spectrograms
+into a pandas DataFrame that represents a dataset used by ``vak``
+
+the returned DataFrame has columns as specified by vak.io.spect.DF_COLUMNS
+"""
 from glob import glob
 import os
 from pathlib import Path
