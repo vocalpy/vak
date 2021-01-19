@@ -8,6 +8,7 @@ from dask.diagnostics import ProgressBar
 from .. import constants
 from .. import files
 from ..annotation import source_annot_map
+from ..converters import labelset_to_set
 from ..config.spect_params import SpectParamsConfig
 from ..spect import spectrogram
 
@@ -69,10 +70,11 @@ def to_spect(audio_format,
         Default is None.
     output_dir : str
         directory in which to save .spect.npz file generated for each audio file.
-    labelset : set
+    labelset : str, list
         of str or int, set of unique labels for vocalizations. Default is None.
-        If not None, then files will be skipped where the 'labels' array in the
-        corresponding annotation contains labels that are not found in labelset
+        If not None, skip files where the associated annotations contain labels not in ``labelset``.
+        ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
+        See help for that function for details on how to specify labelset.
 
     Returns
     -------
@@ -119,11 +121,7 @@ def to_spect(audio_format,
         )
 
     if labelset is not None:
-        if type(labelset) != set:
-            raise TypeError(
-                f'type of labelset must be set, but was: {type(labelset)}'
-                f'type of labelset must be set, but was: {type(labelset)}'
-            )
+        labelset = labelset_to_set(labelset)
 
     if type(spect_params) not in [dict, SpectParamsConfig]:
         raise TypeError(
