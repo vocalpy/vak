@@ -25,6 +25,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#281](https://github.com/NickleDave/vak/pull/281)
 - switch to using `poetry` for development
   [#283](https://github.com/NickleDave/vak/pull/283)
+- move `converters` module out of `config` sub-package up to top level
+  [4ad9b93](https://github.com/NickleDave/vak/commit/4ad9b9390be6ac97b3dbe2b459e94d12d35ff051)
+- rename `converters.labelset_from_toml_value` to `labelset_to_set` 
+  since it will be used throughout package (not just with .toml config files)
+  [4ad9b93](https://github.com/NickleDave/vak/commit/4ad9b9390be6ac97b3dbe2b459e94d12d35ff051)
+-  make other functions use `converter.labelset_to_set` for `labelset` argument
+  [35a67d8](https://github.com/NickleDave/vak/commit/35a67d87aabe82b8485162573777d06ff5571409)
+  [902d840](https://github.com/NickleDave/vak/commit/902d8405610e54da4645732353118439e2349946)
+  [062902e](https://github.com/NickleDave/vak/commit/062902ed101c8bf5ed6552c2c055a0c15d019396)
+  [d4e673c](https://github.com/NickleDave/vak/commit/d4e673c792532e311dfb44118e513a615377b2fb)
+- rename `vak/validation.py` -> `vak/validators.py`
+  [9df32e2](https://github.com/NickleDave/vak/commit/9df32e24c650057fc34dd7e53c159bae24192f25)
+- raise minimum versions for `crowsetta`, at least 3.1.0, and `tweetynet`, at least 0.5.0
+  [e1a6fbb](https://github.com/NickleDave/vak/commit/e1a6fbb9d3ccdb63167446684a8aecb3e667fd8a)
 
 ### Fixed
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
@@ -35,7 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix `vak.annotation.recursive_stem` function so it is case-insensitive
   [c02bd8a](https://github.com/NickleDave/vak/commit/c02bd8a8d33eadeb5ce04725d63f1d2e520de737)
 - fix `vak.io.audio.to_spect` so validation of `audio_files` is case-insensitive
-  [cbd08f6](https://github.com/NickleDave/vak/commit/cbd08f6deab7a26fbbb1814fbe6349c578dae20f )
+  [cbd08f6](https://github.com/NickleDave/vak/commit/cbd08f6deab7a26fbbb1814fbe6349c578dae20f)
+- fix `find_audio_fname` to work with str and Path
+  [1480b01](https://github.com/NickleDave/vak/commit/1480b01ebc623a64a5c077c26ffdcaa242f29f3e)
 
 ### Removed
 - remove `tweetynet` as a core dependency, since this creates a 
