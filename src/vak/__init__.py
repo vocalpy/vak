@@ -32,7 +32,7 @@ from . import summary_writer
 from . import timebins
 from . import transforms
 from . import split
-from . import validation
+from . import validators
 
 from .engine.model import Model
 
@@ -61,5 +61,5 @@ __all__ = [
     'summary_writer',
     'timebins',
     'transforms',
-    'validation',
+    'validators.py',
 ]

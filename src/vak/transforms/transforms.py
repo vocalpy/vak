@@ -1,7 +1,7 @@
 import numpy as np
 
 from .. import files
-from ..validation import column_or_1d
+from ..validators import column_or_1d
 
 from . import functional as F
 

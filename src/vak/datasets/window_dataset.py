@@ -8,7 +8,7 @@ from .. import annotation
 from .. import files
 from .. import io
 from .. import labeled_timebins
-from .. import validation
+from .. import validators
 
 
 class WindowDataset(VisionDataset):
@@ -276,10 +276,10 @@ class WindowDataset(VisionDataset):
             after the cropping now set to WindowDataset.INVALID_WINDOW_VAL
             so they will be removed
         """
-        lbl_tb = validation.column_or_1d(lbl_tb)
-        spect_id_vector = validation.column_or_1d(spect_id_vector)
-        spect_inds_vector = validation.column_or_1d(spect_inds_vector)
-        x_inds = validation.column_or_1d(x_inds)
+        lbl_tb = validators.column_or_1d(lbl_tb)
+        spect_id_vector = validators.column_or_1d(spect_id_vector)
+        spect_inds_vector = validators.column_or_1d(spect_inds_vector)
+        x_inds = validators.column_or_1d(x_inds)
 
         lens = (lbl_tb.shape[-1],
                 spect_id_vector.shape[-1],
@@ -747,9 +747,9 @@ class WindowDataset(VisionDataset):
                         f'{vec_name} must be a numpy.ndarray but type was: {type(spect_id_vector)}'
                     )
 
-            spect_id_vector = validation.column_or_1d(spect_id_vector)
-            spect_inds_vector = validation.column_or_1d(spect_inds_vector)
-            x_inds = validation.column_or_1d(x_inds)
+            spect_id_vector = validators.column_or_1d(spect_id_vector)
+            spect_inds_vector = validators.column_or_1d(spect_inds_vector)
+            x_inds = validators.column_or_1d(x_inds)
 
             if spect_id_vector.shape[-1] != spect_inds_vector.shape[-1]:
                 raise ValueError(

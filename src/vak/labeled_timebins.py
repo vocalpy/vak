@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats
 
 from .timebins import timebin_dur_from_vec
-from .validation import row_or_1d, column_or_1d
+from .validators import row_or_1d, column_or_1d
 
 
 def has_unlabeled(labels_int,
