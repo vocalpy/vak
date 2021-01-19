@@ -1,12 +1,11 @@
 """tests for vak.config.prep module"""
 from configparser import ConfigParser
-import os
 from pathlib import Path
 import shutil
 import tempfile
 import unittest
 
-import vak.config.converters
+import vak.converters
 import vak.config.prep
 import vak.split
 
@@ -75,7 +74,7 @@ class TestParsePrepConfig(unittest.TestCase):
         self.config_obj['PREP']['labelset'] = a_rangestr
         prep_config_obj = vak.config.prep.parse_prep_config(self.config_obj, self.config_file)
         self.assertEqual(
-            prep_config_obj.labelset, vak.config.converters.range_str(a_rangestr)
+            prep_config_obj.labelset, vak.converters.range_str(a_rangestr)
         )
 
     def test_int_labelset(self):

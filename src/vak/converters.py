@@ -71,14 +71,16 @@ def range_str(range_str, sort=True):
     return [str(list_int) for list_int in list_range]
 
 
-def labelset_from_toml_value(value):
-    """convert value for 'labelset' option from .toml config file into a set
+def labelset_to_set(labelset):
+    """convert value for 'labelset' argument into a Python set.
+    Used by ``vak`` internally to convert
 
     Parameters
     ----------
-    value : str, list
-        value assigned to 'labelset' option in a .toml file.
-        See Notes
+    labelset : str, list
+        string or list specifying a unique set of labels
+        used to annotate a dataset of vocalizations.
+        See Notes for details on valid values.
 
     Returns
     -------
@@ -115,23 +117,23 @@ def labelset_from_toml_value(value):
     >>> labelset_from_toml_value(['range: 1-3', 'noise'])
     {'1', '2', '3', 'noise'}
     """
-    if type(value) is str:
-        if value.startswith('range:'):
-            value = value.replace('range:', '')
-            return set(range_str(value))
+    if type(labelset) is str:
+        if labelset.startswith('range:'):
+            labelset = labelset.replace('range:', '')
+            return set(range_str(labelset))
         else:
-            return set(value)
-    elif type(value) is list:
-        labelset = []
-        for label in value:
+            return set(labelset)
+    elif type(labelset) is list:
+        labelset_out = []
+        for label in labelset:
             if isinstance(label, int):
-                labelset.append(str(label))
+                labelset_out.append(str(label))
             elif isinstance(label, str):
                 if label.startswith('range:'):
                     label = label.replace('range:', '')
-                    labelset.extend(range_str(label))
+                    labelset_out.extend(range_str(label))
                 else:
-                    labelset.append(label)
+                    labelset_out.append(label)
             else:
                 raise TypeError(
                     f"label '{label}' specified in labelset is invalid type: {type(label)}."

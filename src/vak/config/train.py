@@ -3,9 +3,9 @@ import attr
 from attr import converters, validators
 from attr.validators import instance_of
 
-from .converters import bool_from_str, comma_separated_list, expanded_user_path
 from .validators import is_a_directory, is_a_file, is_valid_model_name
 from .. import device
+from ..converters import bool_from_str, comma_separated_list, expanded_user_path
 
 
 @attr.s

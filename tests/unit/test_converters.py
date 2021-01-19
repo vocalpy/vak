@@ -1,6 +1,6 @@
 import pytest
 
-import vak.config.converters
+import vak.converters
 
 
 @pytest.mark.parameterize(
@@ -14,11 +14,11 @@ import vak.config.converters
      ])
 def test_labelset_from_toml_value(toml_value, labelset):
     """test that function behaves as specified in docstring"""
-    assert vak.config.converters.labelset_from_toml_value(toml_value) == labelset
+    assert vak.converters.labelset_to_set(toml_value) == labelset
 
 
 def test_labelset_from_toml_value_raises():
     """test that an invalid value in a labelset list raises a TypeError"""
     labelset_with_float = [1, 'a', 0.3]
     with pytest.raises(TypeError):
-        _ = vak.config.converters.labelset_from_toml_value(labelset_with_float)
+        _ = vak.converters.labelset_to_set(labelset_with_float)
