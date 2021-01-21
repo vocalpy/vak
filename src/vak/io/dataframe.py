@@ -14,18 +14,25 @@ from ..logging import log_or_print
 def from_files(data_dir,
                annot_format=None,
                labelset=None,
-               output_dir=None,
                annot_file=None,
                audio_format=None,
                spect_format=None,
                spect_params=None,
                spect_output_dir=None,
                logger=None):
-    """prepare a dataset of vocalizations from a directory of audio or spectrogram files containing vocalizations,
+    """create a pandas DataFrame representing a dataset for machine learning
+    from a set of files in a directory
+
+    Prepares dataset of vocalizations from a directory of audio or spectrogram files,
     and (optionally) annotation for those files. The dataset is returned as a pandas DataFrame.
 
-    Datasets are used to train neural networks, or for predicting annotations for the dataset itself using a
-    trained neural network.
+    Datasets are used to train neural networks, predicting annotations for
+    the dataset itself using a trained neural network, etc.
+
+    If dataset is created from audio files, then array files containing spectrograms
+    will be generated from the audio files and saved in ``spect_output_dir``
+    with the extension ``.spect.npz``. The ``spect_output_dir`` defaults to ``data_dir``
+    if is not specified.
 
     Parameters
     ----------
@@ -40,9 +47,6 @@ def from_files(data_dir,
         contains labels not found in ``labelset``.
         ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
         See help for that function for details on how to specify labelset.
-    output_dir : str
-        path to location where data sets should be saved. Default is None,
-        in which case data sets is saved in data_dir.
     load_spects : bool
         if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
         Default is True. Set to False when you want to create a VocalDataset for use
@@ -59,8 +63,10 @@ def from_files(data_dir,
         Parameters for creating spectrograms.
         Default is None (implying that spectrograms are already made).
     spect_output_dir : str
-        path to location where spectrogram files should be saved. Default is None,
-        in which case it defaults to 'spectrograms_generated_{time stamp}'.
+        path to location where spectrogram files should be saved.
+        Default is None, in which case it defaults to ``data_dir``,
+        and a new directory will be created in ``data_dir`` with
+        the name 'spectrograms_generated_{time stamp}'.
 
     Other Parameters
     ----------------
@@ -71,23 +77,10 @@ def from_files(data_dir,
     -------
     vak_df : pandas.DataFrame
         the dataset prepared from the directory specified
-
-    Notes
-    -----
-    If dataset is created from audio files, then .spect.npz files will be
-    generated from the audio files and saved in output_dir.
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     if labelset is not None:
         labelset = labelset_to_set(labelset)
-
-    if output_dir:
-        if not os.path.isdir(output_dir):
-            raise NotADirectoryError(
-                f'output_dir not found: {output_dir}'
-            )
-    elif output_dir is None:
-        output_dir = data_dir
 
     if audio_format is None and spect_format is None:
         raise ValueError("Must specify either audio_format or spect_format")
@@ -97,7 +90,7 @@ def from_files(data_dir,
                          "unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms from array files")
 
-    if spect_output_dir:
+    if spect_output_dir is not None:
         if not os.path.isdir(spect_output_dir):
             raise NotADirectoryError(
                 f'spect_output_dir not found: {spect_output_dir}'
@@ -117,8 +110,10 @@ def from_files(data_dir,
 
     # ------ if making dataset from audio files, need to make into array files first! ----------------------------------
     if audio_format:
-        log_or_print(f'making array files containing spectrograms from audio files in: {data_dir}',
-                     logger=logger, level='info')
+        log_or_print(
+            f'making array files containing spectrograms from audio files in: {data_dir}',
+            logger=logger, level='info'
+        )
         audio_files = audio.files_from_dir(data_dir, audio_format)
         if annot_list:
             audio_annot_map = source_annot_map(audio_files, annot_list)
@@ -136,17 +131,17 @@ def from_files(data_dir,
                         audio_annot_map.pop(audio_file)
                         log_or_print(
                             f'found labels in {annot.annot_path} for {audio_file} not in labels_mapping, '
-                             f'skipping audio file: {audio_file}',
+                            f'skipping audio file: {audio_file}',
                             logger=logger, level='info')
                 audio_files = []
                 annot_list = []
-                for k,v in audio_annot_map.items():
+                for k, v in audio_annot_map.items():
                     audio_files.append(k)
                     annot_list.append(v)
 
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
         if spect_output_dir is None:
-            spect_output_dir = os.path.join(output_dir,
+            spect_output_dir = os.path.join(data_dir,
                                             f'spectrograms_generated_{timenow}')
             os.makedirs(spect_output_dir)
         spect_files = audio.to_spect(audio_format=audio_format,
@@ -166,12 +161,16 @@ def from_files(data_dir,
         'annot_format': annot_format,
     }
 
-    if spect_files:
+    if spect_files:  # because we just made them, and put them in spect_output_dir
         from_files_kwargs['spect_files'] = spect_files
-        log_or_print(f'creating datasetfrom spectrogram files in: {output_dir}', logger=logger, level='info')
+        log_or_print(
+            f'creating dataset from spectrogram files in: {spect_output_dir}', logger=logger, level='info'
+        )
     else:
         from_files_kwargs['spect_dir'] = data_dir
-        log_or_print(f'creating dataset from spectrogram files in: {data_dir}', logger=logger, level='info')
+        log_or_print(
+            f'creating dataset from spectrogram files in: {data_dir}', logger=logger, level='info'
+        )
 
     vak_df = spect.to_dataframe(**from_files_kwargs, logger=logger)
     return vak_df
