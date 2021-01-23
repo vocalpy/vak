@@ -7,6 +7,7 @@ import numpy as np
 from . import audio, spect
 from .. import annotation
 from ..annotation import source_annot_map
+from ..converters import labelset_to_set
 from ..logging import log_or_print
 
 
@@ -33,10 +34,12 @@ def from_files(data_dir,
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid. Default is None.
-    labelset : set, list
-        of str or int, set of labels for vocalizations. Default is None.
-        If not None, then files will be skipped where the 'labels' array in the
-        corresponding annotation contains labels that are not found in labelset
+    labelset : str, list, set
+        of str or int, set of unique labels for vocalizations. Default is None.
+        If not None, then files will be skipped where the associated annotation
+        contains labels not found in ``labelset``.
+        ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
+        See help for that function for details on how to specify labelset.
     output_dir : str
         path to location where data sets should be saved. Default is None,
         in which case data sets is saved in data_dir.
@@ -76,20 +79,7 @@ def from_files(data_dir,
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     if labelset is not None:
-        if type(labelset) not in (set, list):
-            raise TypeError(
-                f"type of labelset must be set or list, but type was: {type(labelset)}"
-            )
-
-        if type(labelset) == list:
-            labelset_set = set(labelset)
-            if len(labelset) != len(labelset_set):
-                raise ValueError(
-                    'labelset contains repeated elements, should be a set (i.e. all members unique.\n'
-                    f'Labelset was: {labelset}'
-                )
-            else:
-                labelset = labelset_set
+        labelset = labelset_to_set(labelset)
 
     if output_dir:
         if not os.path.isdir(output_dir):
