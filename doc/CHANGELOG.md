@@ -52,6 +52,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [cbd08f6](https://github.com/NickleDave/vak/commit/cbd08f6deab7a26fbbb1814fbe6349c578dae20f)
 - fix `find_audio_fname` to work with str and Path
   [1480b01](https://github.com/NickleDave/vak/commit/1480b01ebc623a64a5c077c26ffdcaa242f29f3e)
+- fix how `labelset_to_set` handles set, and add type-checking as pre-condition, 
+  sp that the function doesn't just return `None`
+  [6c454cd](https://github.com/NickleDave/vak/commit/6c454cda3aded7c0cf7ac19a6eef6f6831220033)
+- use `poetry` in Makefile to run scripts that generate test data, 
+  so that development version of `vak` is used, 
+  not some other version that might be installed into an environment
+  (e.g. a `conda` environment the developer had activated)
+  [090c205](https://github.com/NickleDave/vak/commit/090c205e227824eda7c1b156f5320129a4809b6b)
 
 ### Removed
 - remove `tweetynet` as a core dependency, since this creates a 
