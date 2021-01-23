@@ -3,6 +3,7 @@ from pathlib import Path
 import warnings
 
 from .. import split
+from ..converters import labelset_to_set
 from ..io import dataframe
 from ..logging import log_or_print
 
@@ -55,12 +56,12 @@ def prep(data_dir,
     annot_file : str
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
-    labelset : set
-        of str or int, the set of labels that correspond to annotated segments
-        that a network should learn to segment and classify. Note that if there
-        are segments that are not annotated, e.g. silent gaps between songbird
-        syllables, then a dummy label will be assigned to those segments.
-        Default is None.
+    labelset : str, list, set
+        of str or int, set of unique labels for vocalizations. Default is None.
+        If not None, then files will be skipped where the associated annotation
+        contains labels not found in ``labelset``.
+        ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
+        See help for that function for details on how to specify labelset.
     train_dur : float
         total duration of training set, in seconds. When creating a learning curve,
         training subsets of shorter duration will be drawn from this set. Default is None.
@@ -122,20 +123,7 @@ def prep(data_dir,
                          "use already-generated spectrograms from array files")
 
     if labelset is not None:
-        if type(labelset) not in (set, list):
-            raise TypeError(
-                f"type of labelset must be set or list, but type was: {type(labelset)}"
-            )
-
-        if type(labelset) == list:
-            labelset_set = set(labelset)
-            if len(labelset) != len(labelset_set):
-                raise ValueError(
-                    'labelset contains repeated elements, should be a set (i.e. all members unique.\n'
-                    f'Labelset was: {labelset}'
-                )
-            else:
-                labelset = labelset_set
+        labelset = labelset_to_set(labelset)
 
     data_dir = Path(data_dir).expanduser().resolve()
     if not data_dir.is_dir():
