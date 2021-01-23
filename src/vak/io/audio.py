@@ -1,5 +1,5 @@
-import logging
 import os
+from pathlib import Path
 
 import numpy as np
 import dask.bag as db
@@ -10,6 +10,7 @@ from .. import files
 from ..annotation import source_annot_map
 from ..converters import labelset_to_set
 from ..config.spect_params import SpectParamsConfig
+from ..logging import log_or_print
 from ..spect import spectrogram
 
 
@@ -43,7 +44,8 @@ def to_spect(audio_format,
              audio_files=None,
              annot_list=None,
              audio_annot_map=None,
-             labelset=None):
+             labelset=None,
+             logger=None):
     """makes spectrograms from audio files and saves in array files
 
     Parameters
@@ -75,6 +77,11 @@ def to_spect(audio_format,
         If not None, skip files where the associated annotations contain labels not in ``labelset``.
         ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
         See help for that function for details on how to specify labelset.
+
+    Other Parameters
+    ----------------
+    logger : logging.Logger
+        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -162,9 +169,8 @@ def to_spect(audio_format,
         if annot_list:
             audio_annot_map = source_annot_map(audio_files, annot_list)
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel('INFO')
-    logger.info('creating array files with spectrograms')
+    log_or_print('creating array files with spectrograms',
+                 logger=logger, level='info')
 
     # use mapping (if generated/supplied) with labelset, if supplied, to filter
     if audio_annot_map:
@@ -179,10 +185,10 @@ def to_spect(audio_format,
                 if not annot_labelset.issubset(set(labelset)):
                     # because there's some label in labels that's not in labelset
                     audio_annot_map.pop(audio_file)
-                    logger.info(
-                        f'found labels in {annot.annot_path} not in labels_mapping, '
-                        f'skipping audio file: {audio_file}'
-                    )
+                    extra_labels = annot_labelset - labelset
+                    log_or_print(f'Found labels, {extra_labels}, in {Path(audio_file).name}, '
+                                 'that are not in labels_mapping. Skipping file.',
+                                 logger=logger, level='info')
         audio_files = sorted(list(audio_annot_map.keys()))
 
     # this is defined here so all other arguments to 'to_spect' are in scope
