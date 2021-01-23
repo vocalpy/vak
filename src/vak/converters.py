@@ -89,18 +89,21 @@ def labelset_to_set(labelset):
 
     Notes
     -----
-    If value is a str, and it starts with "range:", then everything after range is converted to
+    If ``labelset```` is a str, and it starts with "range:", then everything after range is converted to
     some range of integers, by passing the string to ``vak.config.converters.range_str``,
     and the returned list is converted to a set. E.g. "range: 1-5" becomes {'1', '2', '3', '4', '5'}.
     Other strings that do not start with "range:" are just converted to a set. E.g. "abc" becomes {'a', 'b', 'c'}.
 
-    If value is a list, then all values in the list must strings or integers.
+    If ``labelset`` is a list, then all values in the list must strings or integers.
     Any that begin with "range:" will be passed to vak.config.converters.range_str.
     Any other multiple-character strings in a list are **not** split,
     unlike when the value for the ``labelset`` option is just a single string
     with multiple characters.
     If you have segments annotated with multiple characters,
     you should specify them using a list, e.g., ['en', 'ab', 'cd']
+
+    If ``labelset`` is a set, it is returned as is, so that this function does not return ``None``,
+    which would cause other functions to behave as if no ``labelset`` were specified.
 
     Examples
     --------
@@ -117,7 +120,15 @@ def labelset_to_set(labelset):
     >>> labelset_from_toml_value(['range: 1-3', 'noise'])
     {'1', '2', '3', 'noise'}
     """
-    if type(labelset) is str:
+    if type(labelset) not in (str, list, set):
+        raise TypeError(
+            'labelset must be specified as a string, list, or set, '
+            f'but the type of labelset was: {type(labelset)}'
+        )
+
+    if type(labelset) is set:
+        return labelset
+    elif type(labelset) is str:
         if labelset.startswith('range:'):
             labelset = labelset.replace('range:', '')
             return set(range_str(labelset))
