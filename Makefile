@@ -34,7 +34,7 @@ test-data-download-source:
 	tar -xvzf $(SOURCE_TEST_DATA_TAR)
 
 test-data-generate : $(TEST_DATA_GENERATE_SCRIPT)
-	python $(TEST_DATA_GENERATE_SCRIPT)
+	poetry run python $(TEST_DATA_GENERATE_SCRIPT)
 
 test-data-clean-generate :
 	rm -rfv ./tests/test_data/generated/*
