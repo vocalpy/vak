@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that prevents using `conda-forge`. Instead declare `tweetynet` as 
   a test dependency.
   [74350a7](https://github.com/NickleDave/vak/commit/c26ad08bfd4057324ba55a1902f7dc2845bc6e40)
+- remove `output_dir` parameter from `dataframe.from_files` -- not used
+  [#286](https://github.com/NickleDave/vak/pull/286)
 
 ## [0.3.3]
 ### Fixed
