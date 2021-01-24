@@ -39,7 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [9df32e2](https://github.com/NickleDave/vak/commit/9df32e24c650057fc34dd7e53c159bae24192f25)
 - raise minimum versions for `crowsetta`, at least 3.1.0, and `tweetynet`, at least 0.5.0
   [e1a6fbb](https://github.com/NickleDave/vak/commit/e1a6fbb9d3ccdb63167446684a8aecb3e667fd8a)
-
+- make `vak.io.audio.to_spect` use `vak.logging.log_or_print` function 
+  so that logger messages actually appear in terminal and in log files
+  [af719b3](https://github.com/NickleDave/vak/commit/af719b30faa4484f2f27a0e0a236310576e8ecb0) 
+ 
 ### Fixed
 - add missing import of `eval` module to `vak.cli.__init__` and organize import statements 
   [6341c8d](https://github.com/NickleDave/vak/commit/6341c8d4991a4e51565953f8e15d40f13419e6d5)
@@ -60,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   not some other version that might be installed into an environment
   (e.g. a `conda` environment the developer had activated)
   [090c205](https://github.com/NickleDave/vak/commit/090c205e227824eda7c1b156f5320129a4809b6b)
+- make `source_annot_map` have no side effects, fix #287
+  [d1cbe82](https://github.com/NickleDave/vak/commit/d1cbe82132f46f5cc400524dfefdc94de55c430b)
 
 ### Removed
 - remove `tweetynet` as a core dependency, since this creates a 
@@ -69,6 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [74350a7](https://github.com/NickleDave/vak/commit/c26ad08bfd4057324ba55a1902f7dc2845bc6e40)
 - remove `output_dir` parameter from `dataframe.from_files` -- not used
   [#286](https://github.com/NickleDave/vak/pull/286)
+- remove filtering by `labelset` in `dataframe.from_files`
+  [7dbdc23](https://github.com/NickleDave/vak/commit/7dbdc233a0776e6c205a65ee062f2dce9d479af8)
 
 ## [0.3.3]
 ### Fixed
