@@ -1,8 +1,11 @@
 """parses [LEARNCURVE] section of config"""
 import attr
+from attr import converters, validators
 from attr.validators import instance_of
 
+from .validators import is_a_directory
 from .train import TrainConfig
+from ..converters import expanded_user_path
 
 
 @attr.s
@@ -50,6 +53,8 @@ class LearncurveConfig(TrainConfig):
     """
     train_set_durs = attr.ib(validator=instance_of(list), kw_only=True)
     num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
+    previous_run_path = attr.ib(converter=converters.optional(expanded_user_path),
+                                validator=validators.optional(is_a_directory), default=None)
 
 
 REQUIRED_LEARNCURVE_OPTIONS = [
