@@ -6,7 +6,6 @@ import numpy as np
 
 from . import audio, spect
 from .. import annotation
-from ..annotation import source_annot_map
 from ..converters import labelset_to_set
 from ..logging import log_or_print
 
@@ -115,30 +114,6 @@ def from_files(data_dir,
             logger=logger, level='info'
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
-        if annot_list:
-            audio_annot_map = source_annot_map(audio_files, annot_list)
-            if labelset:  # then remove annotations with labels not in labelset
-                # do this here instead of inside function call so that items get removed
-                # from annot_list here and won't cause an error because they're still
-                # in this list when we call spect.from_files
-                for audio_file, annot in list(audio_annot_map.items()):
-                    # loop in a verbose way (i.e. not a comprehension)
-                    # so we can give user warning when we skip files
-                    annot_labelset = set(annot.seq.labels)
-                    # below, set(labels_mapping) is a set of that dict's keys
-                    if not annot_labelset.issubset(set(labelset)):
-                        # because there's some label in labels that's not in labelset
-                        audio_annot_map.pop(audio_file)
-                        log_or_print(
-                            f'found labels in {annot.annot_path} for {audio_file} not in labels_mapping, '
-                            f'skipping audio file: {audio_file}',
-                            logger=logger, level='info')
-                audio_files = []
-                annot_list = []
-                for k, v in audio_annot_map.items():
-                    audio_files.append(k)
-                    annot_list.append(v)
-
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
         if spect_output_dir is None:
             spect_output_dir = os.path.join(data_dir,
