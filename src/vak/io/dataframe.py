@@ -6,7 +6,7 @@ import numpy as np
 
 from . import audio, spect
 from .. import annotation
-from ..converters import labelset_to_set
+from ..converters import expanded_user_path, labelset_to_set
 from ..logging import log_or_print
 
 
@@ -63,8 +63,8 @@ def from_files(data_dir,
         Default is None (implying that spectrograms are already made).
     spect_output_dir : str
         path to location where spectrogram files should be saved.
-        Default is None, in which case it defaults to ``data_dir``,
-        and a new directory will be created in ``data_dir`` with
+        Default is None, in which case it defaults to ``data_dir``.
+        A new directory will be created in ``spect_output_dir`` with
         the name 'spectrograms_generated_{time stamp}'.
 
     Other Parameters
@@ -89,11 +89,20 @@ def from_files(data_dir,
                          "unclear whether to create spectrograms from audio files or "
                          "use already-generated spectrograms from array files")
 
-    if spect_output_dir is not None:
-        if not os.path.isdir(spect_output_dir):
+    data_dir = expanded_user_path(data_dir)
+    if not data_dir.is_dir():
+        raise NotADirectoryError(
+            f'data_dir not found: {data_dir}'
+        )
+
+    if spect_output_dir:
+        spect_output_dir = expanded_user_path(spect_output_dir)
+        if not spect_output_dir.is_dir():
             raise NotADirectoryError(
                 f'spect_output_dir not found: {spect_output_dir}'
             )
+    else:
+        spect_output_dir = data_dir
 
     if annot_format is not None:
         if annot_file is None:
@@ -114,11 +123,12 @@ def from_files(data_dir,
             logger=logger, level='info'
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
+
         timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        if spect_output_dir is None:
-            spect_output_dir = os.path.join(data_dir,
-                                            f'spectrograms_generated_{timenow}')
-            os.makedirs(spect_output_dir)
+        spect_dirname = f'spectrograms_generated_{timenow}'
+        spect_output_dir = spect_output_dir.joinpath(spect_dirname)
+        spect_output_dir.mkdir()
+
         spect_files = audio.to_spect(audio_format=audio_format,
                                      spect_params=spect_params,
                                      output_dir=spect_output_dir,
@@ -129,7 +139,7 @@ def from_files(data_dir,
     else:  # if audio format is None
         spect_files = None
 
-    from_files_kwargs = {
+    to_dataframe_kwargs = {
         'spect_format': spect_format,
         'labelset': labelset,
         'annot_list': annot_list,
@@ -137,17 +147,17 @@ def from_files(data_dir,
     }
 
     if spect_files:  # because we just made them, and put them in spect_output_dir
-        from_files_kwargs['spect_files'] = spect_files
+        to_dataframe_kwargs['spect_files'] = spect_files
         log_or_print(
             f'creating dataset from spectrogram files in: {spect_output_dir}', logger=logger, level='info'
         )
     else:
-        from_files_kwargs['spect_dir'] = data_dir
+        to_dataframe_kwargs['spect_dir'] = data_dir
         log_or_print(
             f'creating dataset from spectrogram files in: {data_dir}', logger=logger, level='info'
         )
 
-    vak_df = spect.to_dataframe(**from_files_kwargs, logger=logger)
+    vak_df = spect.to_dataframe(**to_dataframe_kwargs, logger=logger)
     return vak_df
 
 
