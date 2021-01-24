@@ -1,4 +1,5 @@
 from collections import Counter
+import copy
 import os
 from pathlib import Path
 
@@ -203,10 +204,11 @@ def source_annot_map(source_files, annot_list):
     del keys, keys_set
     audio_stem_annot_map = {recursive_stem(annot.audio_path): annot for annot in annot_list}
 
+    # Make a copy from which we remove source files after mapping them to annotation,
+    # to validate that function worked,
+    # by making sure there are no items left in this copy after the loop
+    source_files_copy = copy.deepcopy(source_files)
     for source_file in list(source_files):  # list() to copy, so we can pop off items while iterating
-        # We pop to validate that function worked, by making sure there are
-        # no items left in this list after the loop
-
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
@@ -221,12 +223,12 @@ def source_annot_map(source_files, annot_list):
             )
 
         source_annot_map[source_file] = annot
-        source_files.remove(source_file)
+        source_files_copy.remove(source_file)
 
-    if len(source_files) > 0:
+    if len(source_files_copy) > 0:
         raise ValueError(
             'could not map the following source files to annotations: '
-            f'{source_files}'
+            f'{source_files_copy}'
         )
 
     return source_annot_map
