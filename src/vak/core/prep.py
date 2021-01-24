@@ -3,7 +3,7 @@ from pathlib import Path
 import warnings
 
 from .. import split
-from ..converters import labelset_to_set
+from ..converters import expanded_user_path, labelset_to_set
 from ..io import dataframe
 from ..logging import log_or_print
 
@@ -21,6 +21,7 @@ def prep(data_dir,
          audio_format=None,
          spect_format=None,
          spect_params=None,
+         spect_output_dir=None,
          annot_format=None,
          annot_file=None,
          labelset=None,
@@ -50,6 +51,11 @@ def prep(data_dir,
         Default is None, but either audio_format or spect_format must be specified.
     spect_params : dict, vak.config.SpectParams
         parameters for creating spectrograms. Default is None.
+    spect_output_dir : str
+        path to location where spectrogram files should be saved.
+        Default is None, in which case it defaults to ``data_dir``.
+        A new directory will be created in ``spect_output_dir`` with
+        the name 'spectrograms_generated_{time stamp}'.
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid. Default is None.
@@ -125,14 +131,14 @@ def prep(data_dir,
     if labelset is not None:
         labelset = labelset_to_set(labelset)
 
-    data_dir = Path(data_dir).expanduser().resolve()
+    data_dir = expanded_user_path(data_dir)
     if not data_dir.is_dir():
         raise NotADirectoryError(
             f'data_dir not found: {data_dir}'
         )
 
     if output_dir:
-        output_dir = Path(output_dir).expanduser().resolve()
+        output_dir = expanded_user_path(output_dir)
     else:
         output_dir = data_dir
 
@@ -140,6 +146,13 @@ def prep(data_dir,
         raise NotADirectoryError(
             f'output_dir not found: {output_dir}'
         )
+
+    if spect_output_dir:
+        spect_output_dir = expanded_user_path(spect_output_dir)
+        if not spect_output_dir.is_dir():
+            raise NotADirectoryError(
+                f'spect_output_dir not found: {spect_output_dir}'
+            )
 
     if purpose == 'predict':
         if labelset is not None:
@@ -193,6 +206,7 @@ def prep(data_dir,
                                   annot_file=annot_file,
                                   audio_format=audio_format,
                                   spect_format=spect_format,
+                                  spect_output_dir=spect_output_dir,
                                   spect_params=spect_params,
                                   logger=logger)
 
