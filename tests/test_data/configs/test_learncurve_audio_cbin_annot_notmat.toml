@@ -1,8 +1,9 @@
 [PREP]
 data_dir = './tests/test_data/source/audio_cbin_annot_notmat/gy6or6/032312'
-output_dir = './tests/test_data/generated/prep/train'
+output_dir = './tests/test_data/generated/prep/learncurve/audio_cbin_annot_notmat'
 audio_format = 'cbin'
 annot_format = 'notmat'
+spect_output_dir = "./tests/test_data/generated/prep/learncurve/audio_cbin_annot_notmat"
 labelset = 'iabcdefghjk'
 train_dur = 50
 val_dur = 15

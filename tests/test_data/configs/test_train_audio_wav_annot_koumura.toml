@@ -3,6 +3,7 @@ labelset = '012345678'
 data_dir = "./tests/test_data/source/audio_wav_annot_koumura/Bird0"
 output_dir = "./tests/test_data/generated/prep/train/audio_wav_annot_koumura"
 audio_format = "wav"
+spect_output_dir = "./tests/test_data/generated/prep/train/audio_wav_annot_koumura"
 annot_format = "koumura"
 annot_file = "./tests/test_data/source/audio_wav_annot_koumura/Bird0/Annotation.xml"
 test_dur = 50
