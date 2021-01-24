@@ -3,7 +3,7 @@ SOURCE_TEST_DATA_URL=https://osf.io/7ru4s/download
 
 TEST_DATA_GENERATE_SCRIPT=./src/scripts/test_data/test_data_generate.py
 GENERATED_TEST_DATA_TAR=tests/test_data/generated/generated_test_data.tar.gz
-GENERATED_TEST_DATA_URL=https://osf.io/2c39a/download
+GENERATED_TEST_DATA_URL=https://osf.io/q76xd/download
 GENERATED_TEST_DATA_TOP_LEVEL_DIRS=tests/test_data/generated/configs tests/test_data/generated/prep tests/test_data/generated/results
 
 help:
