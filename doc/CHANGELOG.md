@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Open Science Framework project.
   See details in comment on pull request: 
   https://github.com/NickleDave/vak/pull/274#issue-538992350
+- make it possible to specify `spect_output_dir` when `prep`ing datasets, 
+  the directory where array files containing spectrograms are saved
+  [#290](https://github.com/NickleDave/vak/pull/290).
+  Addresses issue [#289](https://github.com/NickleDave/vak/issues/289).
 
 ### Changed
 - make it possible for labels in `labelset` to be multiple characters
@@ -63,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   not some other version that might be installed into an environment
   (e.g. a `conda` environment the developer had activated)
   [090c205](https://github.com/NickleDave/vak/commit/090c205e227824eda7c1b156f5320129a4809b6b)
-- make `source_annot_map` have no side effects, fix #287
+- make `source_annot_map` have no side effects, fixes [#287](https://github.com/NickleDave/vak/issues/287)
   [d1cbe82](https://github.com/NickleDave/vak/commit/d1cbe82132f46f5cc400524dfefdc94de55c430b)
 
 ### Removed
