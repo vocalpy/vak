@@ -2,6 +2,7 @@
 data_dir = "./tests/test_data/source/audio_cbin_annot_notmat/gy6or6/032412"
 output_dir = "./tests/test_data/generated/prep/predict/audio_cbin_annot_notmat"
 audio_format = "cbin"
+spect_output_dir = "./tests/test_data/generated/prep/predict/audio_cbin_annot_notmat"
 
 [SPECT_PARAMS]
 fft_size = 512

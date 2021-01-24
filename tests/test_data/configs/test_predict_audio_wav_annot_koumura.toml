@@ -2,6 +2,7 @@
 data_dir = "./tests/test_data/source/audio_wav_annot_koumura/Bird0"
 output_dir = "./tests/test_data/generated/prep/predict/audio_wav_annot_koumura"
 audio_format = "wav"
+spect_output_dir = "./tests/test_data/generated/prep/predict/audio_wav_annot_koumura"
 
 [SPECT_PARAMS]
 fft_size = 512

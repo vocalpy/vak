@@ -97,6 +97,7 @@ def prep(toml_path):
                                  purpose=purpose,
                                  audio_format=cfg.prep.audio_format,
                                  spect_format=cfg.prep.spect_format,
+                                 spect_output_dir=cfg.prep.spect_output_dir,
                                  spect_params=cfg.spect_params,
                                  annot_format=cfg.prep.annot_format,
                                  annot_file=cfg.prep.annot_file,
