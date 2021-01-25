@@ -65,22 +65,16 @@ to avoid dealing with system-wide installs of binaries.
 
 Installation from source, e.g. for development
 ----------------------------------------------
-You can also work with a local copy of the code.
-It's possible to install the local copy with ``pip`` so that you can still edit
-the code, and then have its behavior as an installed library reflect those edits.
+``vak`` is developed with |poetry|_.
 
-When working with ``vak`` this way, you'll most likely still want to isolate
-it within a virtual environment using ``conda``.
+.. |poetry| replace:: ``poetry``
+.. _poetry: https://python-poetry.org/
 
 Here's the steps to set up a development environment:
-  * Create a virtual environment for ``vak`` with the necessary dependencies (if you haven't already):
 
-    .. code-block:: console
+  * Install |poetry| (if you haven't already):
 
-        you@your-computer: ~/Documents $ conda create -n vak-env python=3.6
-        you@your-computer: ~/Documents $ conda activate vak-env
-        (vak-env) you@your-computer: ~/Documents $ conda install pytorch torchvision cudatoolkit -c pytorch
-        (vak-env) you@your-computer: ~/Documents $ conda install attrs dask joblib matplotlib pandas scipy toml tqdm
+     * Please see installation instructions here: https://python-poetry.org/docs/#installation
 
   * Clone the repo from Github using the version control tool ``git``:
 
@@ -91,21 +85,30 @@ Here's the steps to set up a development environment:
     (you can install ``git`` from `Github <https://help.github.com/en/github/getting-started-with-github/set-up-git>`_,
     with your operating system package manager, or using ``conda``.)
 
-  * In the root of the ``vak`` directory cloned by ``git``, use ``pip`` to install the package,
-    making the install ``editable`` with the ``-e`` option.
+  * In the root of the ``vak`` directory cloned by ``git``,
+    use |poetry| to install the ``vak`` source code into a virtual environment,
+    for development (|poetry| creates the environment for you,
+    see `more info here <https://python-poetry.org/docs/managing-environments/>`_).
 
     .. code-block:: console
 
-        (vak-env) you@your-computer: ~/Documents $ cd vak
-        (vak-env) you@your-computer: ~/Documents/vak $ pip install -e .
+        you@your-computer: ~/Documents $ cd vak
+        you@your-computer: ~/Documents/vak $ poetry install
 
-    Note that ``pip`` may install some other dependencies for development -- that's okay.
+  * Use |poetry| during development
 
-Eventually ``vak`` will be available through the conda-forge channel,
-meaning you can install with a single command into a ``conda`` environment.
-Keep an eye on this issue on GitHub:
+    * to run ``vak``
 
-| https://github.com/NickleDave/vak/issues/70
+    .. code-block:: console
+
+        you@your-computer: ~/Documents $ poetry run vak --help
+
+    * or the test suite
+
+    .. code-block:: console
+
+        you@your-computer: ~/Documents $ poetry run pytest
+
 
 .. _why-virtualenv:
 
