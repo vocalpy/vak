@@ -23,7 +23,7 @@ __title__ = "vak"
 __summary__ = "neural network toolbox for animal communication and bioacoustics"
 __uri__ = "https://github.com/NickleDave/vak"
 
-__version__ = "0.3.3"
+__version__ = "0.4.0dev1"
 
 if base_dir is not None and os.path.exists(os.path.join(base_dir, ".commit")):
     with open(os.path.join(base_dir, ".commit")) as fp:
