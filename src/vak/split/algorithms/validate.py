@@ -1,6 +1,10 @@
-def validate_durations_convert_nonnegative(train_dur, val_dur, test_dur, vds_dur):
+
+
+def validate_split_durations(train_dur,
+                             val_dur,
+                             test_dur,
+                             dataset_dur):
     """helper function to validate durations specified for splits,
-    and convert all durations to non-negative numbers,
     so other functions can do the actual splitting.
 
     First the functions checks for invalid conditions:
@@ -13,25 +17,23 @@ def validate_durations_convert_nonnegative(train_dur, val_dur, test_dur, vds_dur
     Then, if either train_dur or test_dur are None, they are set to 0. None means user did not specify a value.
 
     Finally the function validates that the sum of the specified split durations is not greater than
-    the the total duration of the dataset, `vds_dur`.
+    the the total duration of the dataset, `dataset_dur`.
 
     If any split is specified as -1, this value is interpreted as "first get the
     split for the set with a value specified, then use the remainder of the dataset in the split
-    whose duration is set to -1". The duration for the split specified as -1 will be computed by
-    first summing the value of the other two splits, validating that they are not larger than
-    the total duration of the dataset, and finally subtracting off the combined duration of the
-    other two.
+    whose duration is set to -1". Functions that do the splitting have to "know"
+    about this meaning of -1, so this validation function does not modify the value.
 
     Parameters
     ----------
     train_dur : int, float
-        Target duration for training set, in seconds.
+        Target duration for training set split, in seconds.
     val_dur : int, float
         Target duration for validation set, in seconds.
     test_dur : int, float
         Target duration for test set, in seconds.
-    vds_dur : int, float
-        Total duration of Dataset.
+    dataset_dur : int, float
+        Total duration of dataset of vocalizations that will be split.
 
     Returns
     -------
@@ -70,24 +72,18 @@ def validate_durations_convert_nonnegative(train_dur, val_dur, test_dur, vds_dur
     if -1 in split_durs.values():
         total_other_splits_dur = sum([dur for dur in split_durs.values() if dur is not -1])
 
-        if total_other_splits_dur > vds_dur:
+        if total_other_splits_dur > dataset_dur:
             raise ValueError(
                 'One dataset split duration was specified as -1, but the total of the other durations specified, '
-                f'{total_other_splits_dur} s, is greater than total duration of Dataset, {vds_dur}.'
+                f'{total_other_splits_dur} s, is greater than total duration of Dataset, {dataset_dur}.'
             )
-        else:
-            remainder = vds_dur - total_other_splits_dur
-            for split_name in split_durs.keys():
-                if split_durs[split_name] == -1:
-                    split_durs[split_name] = remainder
+    else:  # if none of the target durations are -1
+        total_splits_dur = sum(split_durs.values())
 
-    # validate one last time now that we have real non-negative values for all split durations
-    total_splits_dur = sum(split_durs.values())
-
-    if total_splits_dur > vds_dur:
-        raise ValueError(
-            f'Total of the split durations specified, {total_splits_dur} s, '
-            f'is greater than total duration of dataset, {vds_dur}.'
-        )
+        if total_splits_dur > dataset_dur:
+            raise ValueError(
+                f'Total of the split durations specified, {total_splits_dur} s, '
+                f'is greater than total duration of dataset, {dataset_dur}.'
+            )
 
     return split_durs['train'], split_durs['val'], split_durs['test']
