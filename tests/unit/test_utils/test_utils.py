@@ -1,6 +1,6 @@
 import unittest
 
-from vak.split.algorithms.validate import validate_durations_convert_nonnegative
+from vak.split.algorithms.validate import validate_split_durations
 
 
 class TestUtils(unittest.TestCase):
@@ -9,10 +9,10 @@ class TestUtils(unittest.TestCase):
         val_dur_in = 25
         test_dur_in = 75
         vds_dur = 200
-        train_dur_out, val_dur_out, test_dur_out = validate_durations_convert_nonnegative(train_dur_in,
-                                                                                          val_dur_in,
-                                                                                          test_dur_in,
-                                                                                          vds_dur)
+        train_dur_out, val_dur_out, test_dur_out = validate_split_durations(train_dur_in,
+                                                                            val_dur_in,
+                                                                            test_dur_in,
+                                                                            vds_dur)
         self.assertTrue(
             all([out_ == in_ for out_, in_ in zip((train_dur_in, val_dur_in, test_dur_in),
                                                   (train_dur_out, val_dur_out, test_dur_out))]))
@@ -21,10 +21,10 @@ class TestUtils(unittest.TestCase):
         val_dur_in = None
         test_dur_in = None
         vds_dur = 200
-        train_dur_out, val_dur_out, test_dur_out = validate_durations_convert_nonnegative(train_dur_in,
-                                                                                          val_dur_in,
-                                                                                          test_dur_in,
-                                                                                          vds_dur)
+        train_dur_out, val_dur_out, test_dur_out = validate_split_durations(train_dur_in,
+                                                                            val_dur_in,
+                                                                            test_dur_in,
+                                                                            vds_dur)
         self.assertTrue(
             all([train_dur_out == train_dur_in,
                  test_dur_out == -1,
@@ -34,10 +34,10 @@ class TestUtils(unittest.TestCase):
         val_dur_in = None
         test_dur_in = 100
         vds_dur = 200
-        train_dur_out, val_dur_out, test_dur_out = validate_durations_convert_nonnegative(train_dur_in,
-                                                                                          val_dur_in,
-                                                                                          test_dur_in,
-                                                                                          vds_dur)
+        train_dur_out, val_dur_out, test_dur_out = validate_split_durations(train_dur_in,
+                                                                            val_dur_in,
+                                                                            test_dur_in,
+                                                                            vds_dur)
         self.assertTrue(
             all([train_dur_out == -1,
                  test_dur_out == test_dur_in,
@@ -49,10 +49,10 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         with self.assertRaises(ValueError):
             # because we have to specify at least one of train_dur or test_dur
-            validate_durations_convert_nonnegative(train_dur_in,
-                                                   val_dur_in,
-                                                   test_dur_in,
-                                                   vds_dur)
+            validate_split_durations(train_dur_in,
+                                     val_dur_in,
+                                     test_dur_in,
+                                     vds_dur)
 
         train_dur_in = None
         val_dur_in = 100
@@ -60,7 +60,7 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         # because we only specified duration for validation set
         with self.assertRaises(ValueError):
-            validate_durations_convert_nonnegative(train_dur_in, val_dur_in, test_dur_in, vds_dur)
+            validate_split_durations(train_dur_in, val_dur_in, test_dur_in, vds_dur)
 
         train_dur_in = -2
         test_dur_in = None
@@ -68,7 +68,7 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         # because negative duration is invalid
         with self.assertRaises(ValueError):
-            validate_durations_convert_nonnegative(train_dur_in, val_dur_in, test_dur_in, vds_dur)
+            validate_split_durations(train_dur_in, val_dur_in, test_dur_in, vds_dur)
 
         train_dur_in = 100
         test_dur_in = 100
@@ -76,7 +76,7 @@ class TestUtils(unittest.TestCase):
         vds_dur = 200
         # because total splits duration is greater than dataset duration
         with self.assertRaises(ValueError):
-            validate_durations_convert_nonnegative(train_dur_in, val_dur_in, test_dur_in, vds_dur)
+            validate_split_durations(train_dur_in, val_dur_in, test_dur_in, vds_dur)
 
 
 if __name__ == '__main__':
