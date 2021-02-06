@@ -1,7 +1,7 @@
 import numpy as np
 
 from .algorithms import brute_force
-from .algorithms.validate import validate_durations_convert_nonnegative
+from .algorithms.validate import validate_split_durations
 from ..labels import from_df as labels_from_df
 from ..logging import log_or_print
 
@@ -59,10 +59,10 @@ def train_test_dur_split_inds(durs,
         )
 
     total_dur = sum(durs)
-    train_dur, val_dur, test_dur = validate_durations_convert_nonnegative(train_dur,
-                                                                          val_dur,
-                                                                          test_dur,
-                                                                          total_dur)
+    train_dur, val_dur, test_dur = validate_split_durations(train_dur,
+                                                            val_dur,
+                                                            test_dur,
+                                                            total_dur)
 
     total_target_dur = sum([dur for dur in (train_dur, test_dur, val_dur) if dur is not None])
 

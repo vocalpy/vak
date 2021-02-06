@@ -1,8 +1,7 @@
-import random
-import itertools
 import logging
+import random
 
-from .validate import validate_durations_convert_nonnegative
+from .validate import validate_split_durations
 
 
 def brute_force(durs,
@@ -20,9 +19,9 @@ def brute_force(durs,
     *greater than* or equal to the durations specified.
 
     Must specify a positive value for one of {train_dur, test_dur}.
-    The other value can be specified as '-1' which is interpreted as "use the
-    remainder of the dataset for this split after finding indices for the set with a specified duration".
-    If only one of {train_dur, test_dur} is specified, the other defaults to '-1'.
+    The other value can be specified as '-1' which is interpreted as
+    "use the remainder of the dataset for this split,
+    after finding indices for the set with a specified duration".
 
     Parameters
     ----------
@@ -57,132 +56,82 @@ def brute_force(durs,
     logger.setLevel('INFO')
 
     sum_durs = sum(durs)
-    train_dur, val_dur, test_dur = validate_durations_convert_nonnegative(train_dur, val_dur, test_dur, sum_durs)
-    total_target_dur = sum([dur for dur in (train_dur, val_dur, test_dur) if dur is not None])
+    train_dur, val_dur, test_dur = validate_split_durations(train_dur, val_dur, test_dur, sum_durs)
+    target_split_durs = dict(
+        zip(('train', 'val', 'test'),
+            (train_dur, val_dur, test_dur)
+            ))
 
-    durs_labels_list = list(zip(durs, labels))
+    if not len(durs) == len(labels):
+        raise ValueError(
+            'length of list of durations did not equal length of list of labels; '
+            'should be same length since '
+            'each duration of a vocalization corresponds to the labels from its annotations.\n'
+            f'Length of durations: {len(durs)}. Length of labels: {len(labels)}'
+        )
+
     iter = 1
     all_labels_err = ('Did not successfully divide data into training, '
                       'validation, and test sets of sufficient duration '
-                      f'after {max_iter} iterations.'
-                      ' Try increasing the total size of the data set.')
+                      f'after {max_iter} iterations. '
+                      'Try increasing the total size of the data set.')
 
     # ---- outer loop that repeats until we successfully split our reach max number of iters ---------------------------
     while 1:
-        train_inds = []
-        test_inds = []
-        if val_dur > 0:
-            val_inds = []
-        else:
-            val_inds = None
+        # list of indices we use to index into both `durs` and `labels`
+        durs_labels_inds = list(range(len(labels)))  # we checked len(labels) == len(durs) above
 
-        total_train_dur = 0
-        total_val_dur = 0
-        total_test_dur = 0
+        # when making `split_inds`, "initialize" the dict with all split names, by using target_split_durs
+        # so we don't get an error when indexing into dict in return statement below
+        split_inds = {split_name: [] for split_name in target_split_durs.keys()}
+        total_split_durs = {split_name: 0 for split_name in target_split_durs.keys()}
+        split_labelsets = {split_name: set() for split_name in target_split_durs.keys()}
 
-        durs_labels_inds = list(range(len(durs_labels_list)))
-
+        # list of split 'choices' we use when randomly adding indices to splits
         choice = []
-        if train_dur > 0:
-            choice.append('train')
-            lset_train = set()
-        else:
-            lset_train = None
-        if test_dur > 0:
-            choice.append('test')
-            lset_test = set()
-        else:
-            lset_test = None
-        if val_dur:
-            choice.append('val')
-            lset_val = set()
-        else:
-            lset_val = None
+        for split_name in target_split_durs.keys():
+            if target_split_durs[split_name] > 0 or target_split_durs[split_name] == -1:
+                choice.append(split_name)
 
-        # ---- make sure each split has at least one instance of each label
-        for label in sorted(labelset):
-            label_inds = [ind for ind, labels in enumerate(labels)
-                          if label in labels
-                          and ind in durs_labels_inds]
-            if len(label_inds) < len(choice):
-                raise ValueError(
-                    f'unable to split dataset so that each split has an instance of label: {label}.'
-                    f'There were only {len(label_inds)} files with that label, '
-                    f'but there are {len(choice)} splits.'
-                )
+        # ---- make sure each split has at least one instance of each label --------------------------------------------
+        for label_from_labelset in sorted(labelset):
+            label_inds = [ind
+                          for ind in durs_labels_inds
+                          if label_from_labelset in labels[ind]]
 
             random.shuffle(label_inds)
-            if train_dur > 0 and label not in lset_train:
-                try:
-                    ind = label_inds.pop()
-                    train_inds.append(ind)
-                    total_train_dur += durs[ind]
-                    lset_train = lset_train.union(set(labels[ind]))
-                    durs_labels_inds.remove(ind)
-                except IndexError:
-                    if len(label_inds) == 0:
-                        logger.debug(
-                            'Ran out of elements while dividing dataset into subsets of specified durations.'
-                            f'Iteration {iter}'
-                        )
-                        iter += 1
-                        break  # do next iteration
-                    else:
-                        # something else happened, re-raise error
-                        raise
+            for split_name in target_split_durs.keys():
+                if ((target_split_durs[split_name] > 0 or target_split_durs[split_name] == -1)
+                        and label_from_labelset not in split_labelsets[split_name]):
+                    try:
+                        ind = label_inds.pop()
+                        split_inds[split_name].append(ind)
+                        total_split_durs[split_name] += durs[ind]
+                        split_labelsets[split_name] = split_labelsets[split_name].union(set(labels[ind]))
+                        durs_labels_inds.remove(ind)
+                    except IndexError:
+                        if len(label_inds) == 0:
+                            logger.debug(
+                                'Ran out of elements while dividing dataset into subsets of specified durations.'
+                                f'Iteration {iter}'
+                            )
+                            iter += 1
+                            break  # do next iteration
+                        else:
+                            # something else happened, re-raise error
+                            raise
 
-            if test_dur > 0 and label not in lset_test:
-                try:
-                    ind = label_inds.pop()
-                    test_inds.append(ind)
-                    total_test_dur += durs[ind]
-                    lset_test = lset_test.union(set(labels[ind]))
-                    durs_labels_inds.remove(ind)
-                except IndexError:
-                    if len(label_inds) == 0:
-                        logger.debug(
-                            'Ran out of elements while dividing dataset into subsets of specified durations.'
-                            f'Iteration {iter}'
-                        )
-                        iter += 1
-                        break  # do next iteration
-                    else:
-                        # something else happened, re-raise error
-                        raise
-
-            if val_dur > 0 and label not in lset_val:
-                try:
-                    ind = label_inds.pop()
-                    val_inds.append(ind)
-                    total_val_dur += durs[ind]
-                    lset_val = lset_val.union(set(labels[ind]))
-                    durs_labels_inds.remove(ind)
-                except IndexError:
-                    if len(label_inds) == 0:
-                        logger.debug(
-                            'Ran out of elements while dividing dataset into subsets of specified durations.'
-                            f'Iteration {iter}'
-                        )
-                        iter += 1
-                        break  # do next iteration
-                    else:
-                        # something else happened, re-raise error
-                        raise
-
-        random.shuffle(durs_labels_inds)
-        if train_dur > 0 and total_train_dur >= train_dur:
-            choice.remove('train')
-        if test_dur > 0 and total_test_dur >= test_dur:
-            choice.remove('test')
-        if val_dur > 0 and total_val_dur >= val_dur:
-            choice.remove('val')
+        for split_name in target_split_durs.keys():
+            if target_split_durs[split_name] > 0 and total_split_durs[split_name] >= target_split_durs[split_name]:
+                choice.remove(split_name)
 
         if len(choice) == 0:
             finished = True
         else:
             finished = False
 
-        # ---- inner loop that actually does split -----------------
+        # ---- inner loop that actually does split ---------------------------------------------------------------------
+        random.shuffle(durs_labels_inds)
         while finished is False:
             # pop durations off list and append to randomly-chosen
             # list, either train, val, or test set.
@@ -202,31 +151,31 @@ def brute_force(durs,
                     # something else happened, re-raise error
                     raise
 
-            which_set = random.randint(0, len(choice) - 1)
-            which_set = choice[which_set]
-            if which_set == 'train':
-                train_inds.append(ind)
-                total_train_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                if total_train_dur >= train_dur:
-                    choice.pop(choice.index('train'))
-            elif which_set == 'val':
-                val_inds.append(ind)
-                total_val_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                if total_val_dur >= val_dur:
-                    choice.pop(choice.index('val'))
-            elif which_set == 'test':
-                test_inds.append(ind)
-                total_test_dur += durs_labels_list[ind][0]  # ind 0 is duration
-                if total_test_dur >= test_dur:
-                    choice.pop(choice.index('test'))
 
-            if len(choice) < 1:
-                total_all_durs = sum([dur for dur in (total_train_dur, total_val_dur, total_test_dur)
-                                      if dur is not None])
-                if total_all_durs < total_target_dur:
-                    raise ValueError(
-                        f'Loop to find subsets completed but total duration of subsets, {total_all_durs} seconds, '
-                        f'is less than total duration specified: {total_target_dur} seconds.')
+            which_set = random.randint(0, len(choice) - 1)
+            split_name = choice[which_set]
+            split_inds[split_name].append(ind)
+            total_split_durs[split_name] += durs[ind]
+            if target_split_durs[split_name] > 0 and total_split_durs[split_name] >= target_split_durs[split_name]:
+                choice.remove(split_name)
+            elif target_split_durs[split_name] == -1:
+                # if this split is -1 and other split is already "finished"
+                if ((split_name == 'test' and 'train' not in choice) or
+                        (split_name == 'train' and 'test' not in choice)):
+                    # just add all remaining inds to this split
+                    split_inds[split_name].extend(durs_labels_inds)
+                    choice.remove(split_name)
+
+            if len(choice) < 1:  # list is empty, we popped off all the choices
+                for split_name in target_split_durs.keys():
+                    if target_split_durs[split_name] > 0:
+                        if total_split_durs[split_name] < target_split_durs[split_name]:
+                            raise ValueError(
+                                "Loop to find splits completed, "
+                                f"but total duration of '{split_name}' split, "
+                                f"{total_split_durs[split_name]} seconds, "
+                                f"is less than target duration specified: {target_split_durs[split_name]} seconds."
+                            )
                 else:
                     finished = True
                     break
@@ -235,56 +184,26 @@ def brute_force(durs,
             raise ValueError('Could not find subsets of sufficient duration in '
                              f'less than {max_iter} iterations.')
 
+        # make sure that each split contains all unique labels in labelset
         if finished is True:
-            # make sure that each set contains all classes we
-            # want the network to learn
-            if train_dur > 0:
-                train_tups = [durs_labels_list[ind] for ind in train_inds]  # tup = a tuple
-                train_labels = itertools.chain.from_iterable(
-                    [tup[1] for tup in train_tups])
-                train_labelset = set(train_labels)  # make set to get unique values
-                if train_labelset != set(labelset):
-                    iter += 1
-                    if iter > max_iter:
-                        raise ValueError(all_labels_err)
-                    else:
-                        logger.debug(
-                            'Train labels did not contain all labels in labelset. '
-                            f'Getting new training set. Iteration {iter}'
-                        )
-                        continue
-
-            if test_dur > 0:
-                test_tups = [durs_labels_list[ind] for ind in test_inds]
-                test_labels = itertools.chain.from_iterable(
-                    [tup[1] for tup in test_tups])
-                test_labelset = set(test_labels)
-                if test_labelset != set(labelset):
-                    iter += 1
-                    if iter > max_iter:
-                        raise ValueError(all_labels_err)
-                    else:
-                        logger.debug(
-                            'Test labels did not contain all labels in labelset. '
-                            f'Getting new test set. Iteration {iter}'
-                        )
-                        continue
-
-            if val_dur > 0:
-                val_tups = [durs_labels_list[ind] for ind in val_inds]
-                val_labels = itertools.chain.from_iterable(
-                    [tup[1] for tup in val_tups])
-                val_labelset = set(val_labels)
-                if val_labelset != set(labelset):
-                    iter += 1
-                    if iter > max_iter:
-                        raise ValueError(all_labels_err)
-                    else:
-                        logger.debug(
-                            'Validation labels did not contain all labels in labelset. '
-                            f'Getting new validation set. Iteration {iter}'
-                        )
-                        continue
+            for split_name in target_split_durs.keys():
+                if target_split_durs[split_name] > 0 or target_split_durs[split_name] == -1:
+                    split_labels = [
+                        label
+                        for ind in split_inds[split_name]
+                        for label in labels[ind]
+                    ]
+                    split_labelset = set(split_labels)
+                    if split_labelset != set(labelset):
+                        iter += 1
+                        if iter > max_iter:
+                            raise ValueError(all_labels_err)
+                        else:
+                            logger.debug(
+                                f"Set of unique labels in '{split_name}' split did not equal specified labelset. "
+                                f"Getting new '{split_name}' split. Iteration: {iter}"
+                            )
+                            continue
 
             # successfully split
             break
@@ -292,4 +211,7 @@ def brute_force(durs,
         elif finished is False:
             continue
 
-    return train_inds, val_inds, test_inds
+    split_inds = {split_name: (inds if inds else None)
+                  for split_name, inds in split_inds.items()}
+
+    return split_inds['train'], split_inds['val'], split_inds['test']
