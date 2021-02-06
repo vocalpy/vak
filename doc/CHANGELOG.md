@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- change `split.algorithms.validate.validate_split_durations_and_convert_nonnegative` 
+  so that it no longer converts all durations to non-negative numbers, because the 
+  functions that call it need to "see" when a target split duration is specified as 
+  -1 (meaning "use any remaining vocalizations in this split") so they can determine 
+  properly when they've finished dividing the dataset into splits.
+  Accordingly, rename to `split.algorithms.validate.validate_split_durations`.
+  [#300](https://github.com/NickleDave/vak/pull/300) 
+
+### Fixed
+- fix `split.algorithms.bruteforce` so that it always returns either a list of 
+  indices or `None` for each split, instead of sometimes returning an empty list
+  instead of a `None`. Also rewrite this function for clarity and to obey DRY 
+  principle.
+  [#300](https://github.com/NickleDave/vak/pull/300)
+
 ## [0.4.0dev1] - 2021-01-24
 ### Added
 - automate generation of test data.
