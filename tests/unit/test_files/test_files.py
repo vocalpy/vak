@@ -1,3 +1,4 @@
+"""tests for vak.files.files module"""
 import pytest
 
 import vak.files
