@@ -1,5 +1,4 @@
 from datetime import datetime
-import os
 
 from crowsetta import Transcriber
 import numpy as np
