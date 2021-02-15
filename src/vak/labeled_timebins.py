@@ -410,4 +410,11 @@ def lbl_tb2segments(lbl_tb,
     onsets_s = t[onset_inds] - (timebin_dur / 2)
     offsets_s = t[offset_inds] + (timebin_dur / 2)
 
+    # but this estimate will be "wrong" if we set the onset or offset time
+    # outside the possible times in our timebin vector. Need to clean up.
+    if onsets_s[0] < 0.:
+        onsets_s[0] = 0.
+    if offsets_s[-1] > t[-1]:
+        offsets_s[-1] = t[-1]
+
     return labels, onsets_s, offsets_s
