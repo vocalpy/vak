@@ -35,4 +35,4 @@ __author__ = "David Nicholson, Yarden Cohen"
 __email__ = "nickledave@users.noreply.github.com"
 
 __license__ = "BSD"
-__copyright__ = "2020 %s" % __author__
+__copyright__ = "2017-present %s" % __author__
