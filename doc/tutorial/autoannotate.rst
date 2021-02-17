@@ -158,10 +158,23 @@ on your computer:
    data_dir = "/home/users/You/Data/vak_tutorial_data/032212"
 
 .. note::
+
    Notice that paths are enclosed in quotes; this is required
    for paths or any other string (text) in a ``toml`` file. If you
    get an error message about the ``toml`` file, check that
    you have put quotes around the paths.
+
+.. note::
+
+   Note also that you can write paths with just forward slashes,
+   even on Windows platforms! If you are on Windows,
+   you might be used to writing paths in Python with two
+   backwards slashes, like so: ``'C:\\Users\\Me\\Data'``,
+   or placing an ``r`` in front of text strings representing paths, like
+   ``r'C:\Users\Me\Data'``.
+   To make paths easier to type and read, we work with them
+   using the ``pathlib`` library: 
+   https://realpython.com/python-pathlib/.
 
 There is one other option you need to change, ``output_dir``
 that tells ``vak`` where to save the file it creates that contains information about the dataset.
@@ -208,6 +221,16 @@ Here it's fine to use the same directory you created before, or make a new one i
 training data and the files from training the neural network separate.
 ``vak`` will make a new directory inside of ``root_results_dir`` to save the files related to training
 every time that you run the ``train`` command.
+
+.. note::
+
+   If you are not using a computer with a specialized GPU for training neural networks,
+   you'll need to change one more option in the .toml configuration file.
+   Please change the value for the option ``device`` in the ``[TRAIN]`` section from
+   ``cuda`` to ``cpu``, to avoid getting an error about "CUDA not available".
+   Using a GPU can speed up training, but in practice we find it is quite possible
+   to train models for annotation on a CPU,
+   with training times ranging from a couple hours to overnight.
 
 To train a neural network, you simply run:
 
@@ -342,6 +365,12 @@ predictions, just to have everything in one place.
 
    output_dir = "/home/users/You/Data/vak_tutorial_data/vak/prep/predict"
    annot_csv_filename = "gy6or6.032312.annot.csv"
+
+.. note::
+
+   Here, just as above for training, if you're not using a computer with a GPU,
+   you'll want to change the option ``device`` in the ``[PREDICT]`` section
+   of the .toml configuration file from ``cuda`` to ``cpu``.
 
 Finally, after adding these paths,
 you can run the ``predict`` command to generate annotation files from the labels
