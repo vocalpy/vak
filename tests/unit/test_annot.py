@@ -1,92 +1,51 @@
-import os
-from pathlib import Path
-import unittest
-from glob import glob
-
-import crowsetta
+import pytest
 
 import vak.annotation
 import vak.io.audio
 
-HERE = Path(__file__).parent
-TEST_DATA_DIR = HERE.joinpath('..', '..', 'test_data')
-SETUP_SCRIPTS_DIR = HERE.joinpath('..', '..', 'setup_scripts')
+
+def test_files_from_dir(annot_dir_notmat,
+                        annot_files_notmat):
+    annot_files_from_dir = vak.annotation.files_from_dir(annot_dir_notmat, annot_format='notmat')
+
+    annot_files_notmat = [str(annot_file) for annot_file in annot_files_notmat]
+    assert sorted(annot_files_from_dir) == sorted(annot_files_notmat)
 
 
-class TestAnnot(unittest.TestCase):
+@pytest.mark.parametrize(
+    'source_type, source_format, annot_format',
+    [
+        ('audio', 'cbin', 'notmat'),
+        ('audio', 'wav', 'koumura'),
+        ('spect', 'mat', 'yarden'),
+    ]
+)
+def test_source_annot_map(source_type,
+                          source_format,
+                          annot_format,
+                          audio_list_factory,
+                          spect_list_mat,
+                          specific_annot_list,
+                          ):
+    if source_type == 'audio':
+        source_files = audio_list_factory(source_format)
+    else:
+        source_files = spect_list_mat
+    annot_list = specific_annot_list(annot_format)
+    source_annot_map = vak.annotation.source_annot_map(source_files=source_files,
+                                                       annot_list=annot_list)
 
-    def test_source_annot_map_wav_koumura(self):
-        scribe = crowsetta.Transcriber(annot_format='koumura')
-        koumura_dir = TEST_DATA_DIR.joinpath('koumura', 'Bird0')
-        annot_xml = str(koumura_dir.joinpath('Annotation.xml'))
-        wavpath = koumura_dir.joinpath('Wave')
-        annot_list = scribe.from_file(annot_file=annot_xml, wavpath=str(wavpath))
-        audio_files = wavpath.glob('*.wav')
-        audio_files = [str(path) for path in audio_files]
-        source_annot_map = vak.annotation.source_annot_map(source_files=audio_files,
-                                                           annot_list=annot_list)
+    # test all the audio paths made it into the map
+    source_files_from_map = list(source_annot_map.keys())
+    for source_file in source_files:
+        assert source_file in source_files_from_map
 
-        for source, annot in list(source_annot_map.items()):
-            self.assertTrue(source in audio_files)
-            self.assertTrue(annot in annot_list)
-            source_annot_map.pop(source)
+    # test all the annots made it into the map
+    annot_list_from_map = list(source_annot_map.values())
+    for annot in annot_list:
+        assert annot in annot_list_from_map
 
-        # if every source file got mapped to an annot, and we mapped all of them,
-        # then dictionary should be empty after loop
-        self.assertTrue(source_annot_map == {})
+    # test all mappings are correct
+    for source_path, annot in list(source_annot_map.items()):
+        assert vak.annotation.recursive_stem(annot.audio_path) == vak.annotation.recursive_stem(source_path)
 
-    def test_source_annot_map_cbin_notmat(self):
-        scribe = crowsetta.Transcriber(annot_format='notmat')
-        cbin_dir = TEST_DATA_DIR.joinpath('cbins', 'gy6or6', '032312')
-        notmats = cbin_dir.glob('*.not.mat')
-        notmats = [str(path) for path in notmats]
-        annot_list = scribe.from_file(annot_file=notmats)
-
-        audio_files = cbin_dir.glob('*.cbin')
-        audio_files = [str(path) for path in audio_files]
-        source_annot_map = vak.annotation.source_annot_map(source_files=audio_files,
-                                                           annot_list=annot_list)
-
-        for source, annot in list(source_annot_map.items()):
-            self.assertTrue(source in audio_files)
-            self.assertTrue(annot in annot_list)
-            source_annot_map.pop(source)
-
-        # if every source file got mapped to an annot, and we mapped all of them,
-        # then dictionary should be empty after loop
-        self.assertTrue(source_annot_map == {})
-
-    def test_source_annot_map_cbin_yarden(self):
-        scribe = crowsetta.Transcriber(annot_format='yarden')
-        mat_dir = TEST_DATA_DIR.joinpath('mat', 'llb3')
-        annot_file = str(mat_dir.joinpath('llb3_annot_subset.mat'))
-        annot_list = scribe.from_file(annot_file=annot_file)
-
-        spect_files = mat_dir.joinpath('spect').glob('*.mat')
-        spect_files = [str(path) for path in spect_files]
-
-        source_annot_map = vak.annotation.source_annot_map(source_files=spect_files,
-                                                           annot_list=annot_list)
-
-        for source, annot in list(source_annot_map.items()):
-            self.assertTrue(source in spect_files)
-            self.assertTrue(annot in annot_list)
-            source_annot_map.pop(source)
-
-        # if every source file got mapped to an annot, and we mapped all of them,
-        # then dictionary should be empty after loop
-        self.assertTrue(source_annot_map == {})
-
-
-    def test_files_from_dir(self):
-        notmat_dir = os.path.join(TEST_DATA_DIR, 'cbins', 'gy6or6', '032312')
-        annot_files = vak.annotation.files_from_dir(notmat_dir, annot_format='notmat')
-
-        notmat_files = glob(os.path.join(notmat_dir, '*.not.mat'))
-        self.assertTrue(
-            sorted(annot_files) == sorted(notmat_files)
-        )
-
-
-if __name__ == '__main__':
-    unittest.main()
