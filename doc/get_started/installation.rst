@@ -63,6 +63,14 @@ that it depends on, such as ``libcuda.so``.
 ``conda`` makes it possible to install ``cudatoolkit`` and other dependencies into a virtual environment
 to avoid dealing with system-wide installs of binaries.
 
+Finally you'll want to install a neural network model to train!
+
+.. code-block:: console
+
+    (vak-env)/home/you/code/ $ pip install tweetynet
+
+We need to install ``tweetynet`` separately to avoid issues with circular dependencies.
+
 Installation from source, e.g. for development
 ----------------------------------------------
 ``vak`` is developed with |poetry|_.
