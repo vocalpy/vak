@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "vak"
 version = "0.4.0dev1"
-description = "neural network toolbox for animal communication and bioacoustics"
+description = "a neural network toolbox for animal vocalizations and bioacoustics"
 authors = ["David Nicholson <nickledave@users.noreply.github.com>"]
 license = "BSD"
 classifiers = [
