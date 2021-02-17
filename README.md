@@ -3,10 +3,11 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Build Status](https://travis-ci.com/NickleDave/vak.svg?branch=master)](https://travis-ci.com/NickleDave/vak)
 # vak
-## automated annotation of animal vocalizations
+## a neural network toolbox for animal vocalizations and bioacoustics
 
-`vak` is a library for researchers studying animal vocalizations.
-It automates annotation of vocalizations, using artificial neural networks.
+`vak` is a library for researchers studying animal vocalizations and bioacoustics.
+Currently its main use is automated annotation of vocalizations and other animal sounds, 
+using artificial neural networks.
 By annotation, we mean something like the example of annotated birdsong shown below:  
 <img src="./doc/images/annotation_example_for_tutorial.png" alt="spectrogram of birdsong with syllables annotated" width="400">
 
