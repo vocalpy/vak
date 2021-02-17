@@ -158,10 +158,23 @@ on your computer:
    data_dir = "/home/users/You/Data/vak_tutorial_data/032212"
 
 .. note::
+
    Notice that paths are enclosed in quotes; this is required
    for paths or any other string (text) in a ``toml`` file. If you
    get an error message about the ``toml`` file, check that
    you have put quotes around the paths.
+
+.. note::
+
+   Note also that you can write paths with just forward slashes,
+   even on Windows platforms! If you are on Windows,
+   you might be used to writing paths in Python with two
+   backwards slashes, like so: ``'C:\\Users\\Me\\Data'``,
+   or placing an ``r`` in front of text strings representing paths, like
+   ``r'C:\Users\Me\Data'``.
+   To make paths easier to type and read, we work with them
+   using the ``pathlib`` library: 
+   https://realpython.com/python-pathlib/.
 
 There is one other option you need to change, ``output_dir``
 that tells ``vak`` where to save the file it creates that contains information about the dataset.
