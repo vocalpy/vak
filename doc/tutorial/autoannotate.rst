@@ -209,6 +209,16 @@ training data and the files from training the neural network separate.
 ``vak`` will make a new directory inside of ``root_results_dir`` to save the files related to training
 every time that you run the ``train`` command.
 
+.. note::
+
+   If you are not using a computer with a specialized GPU for training neural networks,
+   you'll need to change one more option in the .toml configuration file.
+   Please change the value for the option ``device`` in the ``[TRAIN]`` section from
+   ``cuda`` to ``cpu``, to avoid getting an error about "CUDA not available".
+   Using a GPU can speed up training, but in practice we find it is quite possible
+   to train models for annotation on a CPU,
+   with training times ranging from a couple hours to overnight.
+
 To train a neural network, you simply run:
 
 .. code-block:: console
@@ -342,6 +352,12 @@ predictions, just to have everything in one place.
 
    output_dir = "/home/users/You/Data/vak_tutorial_data/vak/prep/predict"
    annot_csv_filename = "gy6or6.032312.annot.csv"
+
+.. note::
+
+   Here, just as above for training, if you're not using a computer with a GPU,
+   you'll want to change the option ``device`` in the ``[PREDICT]`` section
+   of the .toml configuration file from ``cuda`` to ``cpu``.
 
 Finally, after adding these paths,
 you can run the ``predict`` command to generate annotation files from the labels
