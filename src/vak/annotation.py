@@ -140,9 +140,9 @@ def recursive_stem(path):
     >>> recursive_stem('gy6or6_baseline_230312_0808.138.cbin.not.mat')
     'gy6or6_baseline_230312_0808.138'
     >>> recursive_stem('Bird0/spectrograms/0.wav.npz')
-    '0.wav'
+    '0'
     >>> recursive_stem('Bird0/Wave/0.wav')
-    '0.wav'
+    '0'
 
     Parameters
     ----------
@@ -170,7 +170,11 @@ def recursive_stem(path):
 
 
 def source_annot_map(source_files, annot_list):
-    """map source files to annotations, i.e. audio or spectrogram files
+    """map source files, i.e. audio or spectrogram files, to annotations
+
+    returns a ``dict`` where each key is a path to a source audio file
+    or array file containing a spectrogram, and the corresponding value
+    is the annotation for the source file
 
     Parameters
     ----------
