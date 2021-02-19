@@ -91,8 +91,9 @@ def eval(csv_path,
         )
         spect_standardizer = None
 
-    logger.info(
-        f'loading labelmap from path: {spect_scaler_path}'
+    log_or_print(
+        f'loading labelmap from path: {spect_scaler_path}',
+        logger=logger, level='info'
     )
     with labelmap_path.open('r') as f:
         labelmap = json.load(f)
@@ -133,8 +134,9 @@ def eval(csv_path,
     )
 
     for model_name, model in models_map.items():
-        logger.info(
-            f'running evaluation for model: {model_name}'
+        log_or_print(
+            f'running evaluation for model: {model_name}',
+            logger=logger, level='info'
         )
         model.load(checkpoint_path)
         metric_vals = model.evaluate(eval_data=val_data,
@@ -161,7 +163,8 @@ def eval(csv_path,
         eval_csv_path = output_dir.joinpath(
             f'eval_{model_name}_{timenow}.csv'
         )
-        logger.info(
-            f'saving csv with evaluation metrics at: {eval_csv_path}'
+        log_or_print(
+            f'saving csv with evaluation metrics at: {eval_csv_path}',
+            logger=logger, level='info'
         )
         eval_df.to_csv(eval_csv_path, index=False)  # index is False to avoid having "Unnamed: 0" column when loading
