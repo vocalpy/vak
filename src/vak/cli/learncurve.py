@@ -26,7 +26,7 @@ def learning_curve(toml_path):
     in config.toml file, and adds path to that new directory to config.toml file.
     """
     toml_path = Path(toml_path)
-    cfg = config.parse.from_toml(toml_path)
+    cfg = config.parse.from_toml_path(toml_path)
 
     if cfg.learncurve is None:
         raise ValueError(

@@ -74,15 +74,16 @@ REQUIRED_EVAL_OPTIONS = [
 ]
 
 
-def parse_eval_config(config_obj, config_path):
+def parse_eval_config(config_toml, toml_path=None):
     """parse [EVAL] section of config.toml file
 
     Parameters
     ----------
-    config_obj : ConfigParser
+    config_toml : dict
         containing config.toml file already loaded by parse function
-    config_path : str
-        path to config.toml file (used for error messages)
+    toml_path : str
+        path to a configuration file in TOML format. Default is None.
+        Used for error messages if specified.
 
     Returns
     -------
@@ -91,13 +92,20 @@ def parse_eval_config(config_obj, config_path):
         of config.toml file
     """
     eval_section = dict(
-        config_obj['EVAL'].items()
+        config_toml['EVAL'].items()
     )
 
     for required_option in REQUIRED_EVAL_OPTIONS:
         if required_option not in eval_section:
-            raise KeyError(
-                f"the '{required_option}' option is required but was not found in the "
-                f"EVAL section of the config.toml file: {config_path}"
-            )
+            if toml_path:
+                err_msg = (
+                    f"the '{required_option}' option is required but was not found in the "
+                    f"EVAL section of the config.toml file: {toml_path}"
+                )
+            else:
+                err_msg = (
+                    f"the '{required_option}' option is required but was not found in the "
+                    f"EVAL section of the toml config"
+                )
+            raise KeyError(err_msg)
     return EvalConfig(**eval_section)

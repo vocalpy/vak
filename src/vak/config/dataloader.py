@@ -17,7 +17,8 @@ class DataLoaderConfig:
                           default=88)
 
 
-def parse_dataloader_config(config_toml, toml_path):
+def parse_dataloader_config(config_toml,
+                            toml_path=None):
     """parse [DATALOADER] section of config.toml file
 
     Parameters
@@ -30,7 +31,7 @@ def parse_dataloader_config(config_toml, toml_path):
         for consistency with other functions.
         **Removing it will cause ``vak.config.parse.from_toml`` to crash, since it
         tries to loop through all the section parser functions,
-        nd pass them both arguments.**
+        and pass them both arguments.**
 
     Returns
     -------
