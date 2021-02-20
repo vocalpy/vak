@@ -58,13 +58,18 @@ SECTION_PARSERS = {
 }
 
 
-def from_toml(toml_path):
-    """parse a TOML configuration file
+def from_toml(config_toml,
+              toml_path=None):
+    """load a TOML configuration file
 
     Parameters
     ----------
+    config_toml : dict
+        Python ``dict`` containing a .toml configuration file,
+        parsed by the ``toml`` library.
     toml_path : str, Path
-        path to a configuration file in TOML format
+        path to a configuration file in TOML format. Default is None.
+        Not required, used only to make any error messages clearer.
 
     Returns
     -------
@@ -72,18 +77,6 @@ def from_toml(toml_path):
         instance of Config class, whose attributes correspond to
         sections in a config.toml file.
     """
-    # check config_path is a file,
-    # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
-    toml_path = Path(toml_path)
-    if not toml_path.is_file():
-        raise FileNotFoundError(f'path not recognized as a file: {toml_path}')
-
-    try:
-        with toml_path.open('r') as fp:
-            config_toml = toml.load(fp)
-    except TomlDecodeError as e:
-        raise Exception(f'Error when parsing .toml config file: {toml_path}') from e
-
     are_sections_valid(config_toml, toml_path)
 
     if 'TRAIN' in config_toml:
@@ -110,3 +103,35 @@ def from_toml(toml_path):
             config_dict[section_name.lower()] = section_parser(config_toml, toml_path)
 
     return Config(**config_dict)
+
+
+def from_toml_path(toml_path):
+    """parse a TOML configuration file
+
+    Parameters
+    ----------
+    toml_path : str, Path
+        path to a configuration file in TOML format.
+        Parsed by ``toml`` library, then converted to an
+        instance of ``vak.config.parse.Config`` by
+        calling ``vak.parse.from_toml``
+
+    Returns
+    -------
+    config : vak.config.parse.Config
+        instance of Config class, whose attributes correspond to
+        sections in a config.toml file.
+    """
+    # check config_path is a file,
+    # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
+    toml_path = Path(toml_path)
+    if not toml_path.is_file():
+        raise FileNotFoundError(f'path not recognized as a file: {toml_path}')
+
+    try:
+        with toml_path.open('r') as fp:
+            config_toml = toml.load(fp)
+    except TomlDecodeError as e:
+        raise Exception(f'Error when parsing .toml config file: {toml_path}') from e
+
+    return from_toml(config_toml, toml_path)
