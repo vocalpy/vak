@@ -98,7 +98,8 @@ REQUIRED_PREDICT_OPTIONS = [
 ]
 
 
-def parse_predict_config(config_toml, toml_path):
+def parse_predict_config(config_toml,
+                         toml_path=None):
     """parse [PREDICT] section of config.toml file
 
     Parameters
@@ -106,7 +107,8 @@ def parse_predict_config(config_toml, toml_path):
     config_toml : dict
         containing configuration file in TOML format, already loaded by parse function
     toml_path : Path
-        path to a configuration file in TOML format (used for error messages)
+        path to a configuration file in TOML format. Default is None.
+        Used for error messages if specified.
 
     Returns
     -------
@@ -120,8 +122,15 @@ def parse_predict_config(config_toml, toml_path):
 
     for required_option in REQUIRED_PREDICT_OPTIONS:
         if required_option not in predict_section:
-            raise KeyError(
-                f"the '{required_option}' option is required but was not found in the "
-                f"PREDICT section of the config.toml file: {toml_path}"
-            )
+            if toml_path:
+                err_msg = (
+                    f"the '{required_option}' option is required but was not found in the "
+                    f"PREDICT section of the config.toml file: {toml_path}"
+                )
+            else:
+                err_msg = (
+                    f"the '{required_option}' option is required but was not found in the "
+                    f"PREDICT section of the toml config"
+                )
+            raise KeyError(err_msg)
     return PredictConfig(**predict_section)

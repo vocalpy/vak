@@ -112,7 +112,7 @@ REQUIRED_PREP_OPTIONS = [
 ]
 
 
-def parse_prep_config(config_toml, config_path):
+def parse_prep_config(config_toml, toml_path):
     """parse [PREP] section of config.toml file
 
     Parameters
@@ -120,7 +120,8 @@ def parse_prep_config(config_toml, config_path):
     config_toml : dict
         containing configuration file in TOML format, already loaded by parse function
     toml_path : Path
-        path to a configuration file in TOML format (used for error messages)
+        path to a configuration file in TOML format. Default is None.
+        Used for error messages if specified.
 
     Returns
     -------
@@ -140,9 +141,16 @@ def parse_prep_config(config_toml, config_path):
 
     for required_option in REQUIRED_PREP_OPTIONS:
         if required_option not in prep_section:
-            raise KeyError(
-                f"the '{required_option}' option is required but was not found in the "
-                f"PREP section of the config.toml file: {config_path}"
-            )
+            if toml_path:
+                err_msg = (
+                    f"the '{required_option}' option is required but was not found in the "
+                    f"PREP section of the config.toml file: {toml_path}"
+                )
+            else:
+                err_msg = (
+                    f"the '{required_option}' option is required but was not found in the "
+                    f"PREP section of the toml config"
+                )
+            raise KeyError(err_msg)
 
     return PrepConfig(**prep_section)
