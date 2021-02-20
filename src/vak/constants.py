@@ -30,3 +30,6 @@ NO_ANNOTATION_FORMAT = 'none'
 
 # format for timestamps
 STRFTIME_TIMESTAMP = '%y%m%d_%H%M%S'
+
+# ---- results, from train / learncurve ----
+RESULTS_DIR_PREFIX = 'results_'
