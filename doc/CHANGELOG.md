@@ -12,7 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -1 (meaning "use any remaining vocalizations in this split") so they can determine 
   properly when they've finished dividing the dataset into splits.
   Accordingly, rename to `split.algorithms.validate.validate_split_durations`.
-  [#300](https://github.com/NickleDave/vak/pull/300) 
+  [#300](https://github.com/NickleDave/vak/pull/300)
+- refactor code that programatically builds `results_path` used in `core` and `cli` 
+  functions that run `train` and `learncurve`
+  [#304](https://github.com/NickleDave/vak/pull/304).
+  For details see 
+  [comment on pull request](https://github.com/NickleDave/vak/pull/304#issue-576981330). 
 
 ### Fixed
 - fix `split.algorithms.bruteforce` so that it always returns either a list of 
