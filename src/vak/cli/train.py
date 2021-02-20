@@ -1,10 +1,11 @@
 from pathlib import Path
 import shutil
-from datetime import datetime
 
 from .. import config
 from .. import core
 from .. import logging
+from ..paths import generate_results_dir_name_as_path
+from ..timenow import get_timenow_as_str
 
 
 def train(toml_path):
@@ -32,13 +33,7 @@ def train(toml_path):
         )
 
     # ---- set up directory to save output -----------------------------------------------------------------------------
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    results_dirname = f'results_{timenow}'
-    if cfg.train.root_results_dir:
-        results_path = Path(cfg.train.root_results_dir)
-    else:
-        results_path = Path('.')
-    results_path = results_path.joinpath(results_dirname)
+    results_path = generate_results_dir_name_as_path(cfg.train.root_results_dir)
     results_path.mkdir(parents=True)
     # copy config file into results dir now that we've made the dir
     shutil.copy(toml_path, results_path)
@@ -46,7 +41,7 @@ def train(toml_path):
     # ---- set up logging ----------------------------------------------------------------------------------------------
     logger = logging.get_logger(log_dst=results_path,
                                 caller='train',
-                                timestamp=timenow,
+                                timestamp=get_timenow_as_str(),
                                 logger_name=__name__)
     logger.info('Logging results to {}'.format(results_path))
 
