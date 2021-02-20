@@ -18,7 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#304](https://github.com/NickleDave/vak/pull/304).
   For details see 
   [comment on pull request](https://github.com/NickleDave/vak/pull/304#issue-576981330). 
-
+- refactor `vak.config.parse.from_toml` function into two others, 
+  the original and a new `parse.from_toml_path` 
+  [#306](https://github.com/NickleDave/vak/pull/306).
+  For details see issue [#305](https://github.com/NickleDave/vak/issues/305)
+  
 ### Fixed
 - fix `split.algorithms.bruteforce` so that it always returns either a list of 
   indices or `None` for each split, instead of sometimes returning an empty list
