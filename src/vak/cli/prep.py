@@ -50,7 +50,7 @@ def prep(toml_path):
     will be 'predict' or 'test' (respectively).
     """
     toml_path = Path(toml_path)
-    cfg = config.parse.from_toml(toml_path)
+    cfg = config.parse.from_toml_path(toml_path)
 
     if cfg.prep is None:
         raise ValueError(
