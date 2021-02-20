@@ -71,24 +71,33 @@ VALID_OPTIONS = {
 }
 
 
-def are_sections_valid(config_dict, toml_path):
+def are_sections_valid(config_dict, toml_path=None):
     sections = list(config_dict.keys())
     MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
     # add model names to valid sections so users can define model config in sections
     valid_sections = VALID_SECTIONS + MODEL_NAMES
     for section in sections:
         if section not in valid_sections and f'{section}Model' not in valid_sections:
-            raise ValueError(
-                f'section defined in {toml_path} is not valid: {section}'
-            )
+            if toml_path:
+                err_msg = f'section defined in {toml_path} is not valid: {section}'
+            else:
+                err_msg = f'section defined in toml config is not valid: {section}'
+            raise ValueError(err_msg)
 
 
-def are_options_valid(config_dict, section, toml_path):
+def are_options_valid(config_dict, section, toml_path=None):
     user_options = set(config_dict[section].keys())
     valid_options = set(VALID_OPTIONS[section])
     if not user_options.issubset(valid_options):
         invalid_options = user_options - valid_options
-        raise ValueError(
-            f"the following options from {section} section in "
-            f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
+        if toml_path:
+            err_msg = (
+                f"the following options from {section} section in "
+                f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
         )
+        else:
+            err_msg = (
+                f"the following options from {section} section in "
+                f"the toml config are not valid:\n{invalid_options}"
+            )
+        raise ValueError(err_msg)
