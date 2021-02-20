@@ -27,3 +27,6 @@ VALID_SPECT_FORMATS = list(SPECT_FORMAT_LOAD_FUNCTION_MAP.keys())
 # ---- annotation files ----
 VALID_ANNOT_FORMATS = crowsetta.formats._INSTALLED
 NO_ANNOTATION_FORMAT = 'none'
+
+# format for timestamps
+STRFTIME_TIMESTAMP = '%y%m%d_%H%M%S'
