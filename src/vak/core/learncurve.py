@@ -1,5 +1,4 @@
 from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
 from pprint import pprint
 import re
@@ -17,6 +16,7 @@ from .. import split
 from ..converters import expanded_user_path
 from ..datasets.window_dataset import WindowDataset
 from ..logging import log_or_print
+from ..paths import generate_results_dir_name_as_path
 
 
 # pattern used by path.glob to find all training data subset csvs within previous_run_path
@@ -395,17 +395,7 @@ def learning_curve(model_config_map,
                 f'results_path not recognized as a directory: {results_path}'
             )
     else:
-        if root_results_dir:
-            root_results_dir = Path(root_results_dir)
-        else:
-            root_results_dir = Path('.')
-        if not root_results_dir.is_dir():
-            raise NotADirectoryError(
-                f'root_results_dir not recognized as a directory: {root_results_dir}'
-            )
-        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        results_dirname = f'results_{timenow}'
-        results_path = root_results_dir.joinpath(results_dirname)
+        results_path = generate_results_dir_name_as_path(root_results_dir)
         results_path.mkdir()
 
     log_or_print(
