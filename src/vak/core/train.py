@@ -1,4 +1,3 @@
-from datetime import datetime
 import json
 from pathlib import Path
 
@@ -16,6 +15,7 @@ from ..datasets.vocal_dataset import VocalDataset
 from ..device import get_default as get_default_device
 from ..io import dataframe
 from ..logging import log_or_print
+from ..paths import generate_results_dir_name_as_path
 
 
 def train(model_config_map,
@@ -147,17 +147,7 @@ def train(model_config_map,
                 f'results_path not recognized as a directory: {results_path}'
             )
     else:
-        if root_results_dir:
-            root_results_dir = Path(root_results_dir)
-        else:
-            root_results_dir = Path('.')
-        if not root_results_dir.is_dir():
-            raise NotADirectoryError(
-                f'root_results_dir not recognized as a directory: {root_results_dir}'
-            )
-        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        results_dirname = f'results_{timenow}'
-        results_path = root_results_dir.joinpath(results_dirname)
+        results_path = generate_results_dir_name_as_path(root_results_dir)
         results_path.mkdir()
 
     timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
