@@ -41,7 +41,7 @@ def learning_curve(toml_path):
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
     logger = logging.get_logger(log_dst=results_path,
-                                caller='train',
+                                caller='learncurve',
                                 timestamp=get_timenow_as_str(),
                                 logger_name=__name__)
     logger.info('Logging results to {}'.format(results_path))
