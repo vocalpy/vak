@@ -150,4 +150,4 @@ def labelset_to_set(labelset):
                     f"label '{label}' specified in labelset is invalid type: {type(label)}."
                     "Labels must be strings or integers."
                 )
-        return set(labelset)
+        return set(labelset_out)
