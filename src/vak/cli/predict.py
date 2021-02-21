@@ -29,7 +29,7 @@ def predict(toml_path):
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
     timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    logger = logging.get_logger(log_dst=cfg.prep.output_dir,
+    logger = logging.get_logger(log_dst=cfg.predict.output_dir,
                                 caller='predict',
                                 timestamp=timenow,
                                 logger_name=__name__)
