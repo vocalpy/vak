@@ -208,16 +208,15 @@ def to_dataframe(spect_format,
             audio_path = files.spect.find_audio_fname(spect_path)
 
         if annot is not None:
-            # TODO: change to annot.annot_path when changing dependency to crowsetta>=2.0
             annot_path = annot.annot_path
         else:
-            annot_path = None
+            annot_path = np.nan
 
         def abspath(a_path):
-            if a_path is None:
-                return
-            else:
+            if isinstance(a_path, str) or isinstance(a_path, Path):
                 return str(Path(a_path).absolute())
+            elif np.isnan(a_path):
+                return a_path
 
         record = tuple([
             abspath(audio_path),
