@@ -133,6 +133,21 @@ def to_dataframe(spect_format,
             'received values for annot_list and spect_annot_map, unclear which annotations to use'
         )
 
+    if (annot_list or spect_annot_map) and (annot_format is None):
+        if annot_list:
+            raise ValueError(
+                'an annot_list was provided, but no annot_format was specified'
+            )
+        elif spect_annot_map:
+            raise ValueError(
+                'a spect_annot_map was provided, but no annot_format was specified'
+            )
+
+    if annot_format is not None and (annot_list is None and spect_annot_map is None):
+        raise ValueError(
+            'an annot_format was specified but no annot_list or spect_annot_map was provided'
+        )
+
     if labelset is not None:
         labelset = labelset_to_set(labelset)
 
