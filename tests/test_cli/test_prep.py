@@ -10,7 +10,6 @@ import vak.paths
 import vak.io.spect
 
 from . import cli_asserts
-from ..test_core.test_prep import prep_output_matches_expected
 
 
 @pytest.mark.parametrize(
