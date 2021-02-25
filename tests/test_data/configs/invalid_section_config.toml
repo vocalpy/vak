@@ -14,7 +14,7 @@ test_dur = 10
 [SPECTROGRAM]
 fft_size=512
 step_size=64
-freq_cutoffs = 500, 10000
+freq_cutoffs = [500, 10000]
 thresh = 6.25
 transform_type = 'log_spect'
 
