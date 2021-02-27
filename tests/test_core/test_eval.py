@@ -27,15 +27,20 @@ def test_eval(audio_format,
               spect_format,
               annot_format,
               specific_config,
-              tmp_path):
+              tmp_path,
+              device):
     output_dir = tmp_path.joinpath(f'test_eval_{audio_format}_{spect_format}_{annot_format}')
     output_dir.mkdir()
 
-    options_to_change = {
-        'section': 'EVAL',
-        'option': 'output_dir',
-        'value': str(output_dir)
-    }
+    options_to_change = [
+        {'section': 'EVAL',
+         'option': 'output_dir',
+         'value': str(output_dir)},
+        {'section': 'EVAL',
+         'option': 'device',
+         'value': device}
+    ]
+
     toml_path = specific_config(config_type='eval',
                                 audio_format=audio_format,
                                 annot_format=annot_format,

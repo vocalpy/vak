@@ -50,10 +50,19 @@ def learncurve_output_matches_expected(cfg,
 
 
 def test_learncurve(specific_config,
-                    tmp_path):
+                    tmp_path,
+                    device):
+    options_to_change = {
+        'section': 'LEARNCURVE',
+        'option': 'device',
+        'value': device
+    }
+
     toml_path = specific_config(config_type='learncurve',
                                 audio_format='cbin',
-                                annot_format='notmat')
+                                annot_format='notmat',
+                                options_to_change=options_to_change)
+
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)

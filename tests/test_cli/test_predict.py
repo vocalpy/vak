@@ -21,15 +21,20 @@ def test_predict(audio_format,
                  spect_format,
                  annot_format,
                  specific_config,
-                 tmp_path):
+                 tmp_path,
+                 device):
     output_dir = tmp_path.joinpath(f'test_predict_{audio_format}_{spect_format}_{annot_format}')
     output_dir.mkdir()
 
-    options_to_change = {
-        'section': 'PREDICT',
-        'option': 'output_dir',
-        'value': str(output_dir)
-    }
+    options_to_change = [
+        {'section': 'PREDICT',
+         'option': 'output_dir',
+         'value': str(output_dir)},
+        {'section': 'PREDICT',
+         'option': 'device',
+         'value': device}
+    ]
+
     toml_path = specific_config(config_type='predict',
                                 audio_format=audio_format,
                                 annot_format=annot_format,
