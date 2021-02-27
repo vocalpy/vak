@@ -120,6 +120,8 @@ def specific_config(generated_test_configs_root,
             that points to temporary copy of specified config,
             with any options changed as specified
         """
+        original_config_path = None
+
         for schematized_config in list_of_schematized_configs:
             if all(
                 [
@@ -130,28 +132,35 @@ def specific_config(generated_test_configs_root,
                 ]
             ):
                 original_config_path = generated_test_configs_root.joinpath(schematized_config['filename'])
-                config_copy_path = tmp_path.joinpath(original_config_path.name)
-                config_copy_path = shutil.copy(src=original_config_path,
-                                               dst=config_copy_path)
 
-                if options_to_change is not None:
-                    if isinstance(options_to_change, dict):
-                        options_to_change = [options_to_change]
-                    elif isinstance(options_to_change, list):
-                        continue
-                    else:
-                        raise TypeError(f'invalid type for `options_to_change`: {type(options_to_change)}')
+        if original_config_path is None:
+            raise ValueError(
+                f"did not find a specific config with `config_type`='{config_type}', "
+                f"`annot_format`='{annot_format}', `audio_format`='{audio_format}', "
+                f"and `config_type`='{spect_format}', "
+            )
+        config_copy_path = tmp_path.joinpath(original_config_path.name)
+        config_copy_path = shutil.copy(src=original_config_path,
+                                       dst=config_copy_path)
 
-                    with config_copy_path.open('r') as fp:
-                        config_toml = toml.load(fp)
+        if options_to_change is not None:
+            if isinstance(options_to_change, dict):
+                options_to_change = [options_to_change]
+            elif isinstance(options_to_change, list):
+                pass
+            else:
+                raise TypeError(f'invalid type for `options_to_change`: {type(options_to_change)}')
 
-                    for opt_dict in options_to_change:
-                        config_toml[opt_dict['section']][opt_dict['option']] = opt_dict['value']
+            with config_copy_path.open('r') as fp:
+                config_toml = toml.load(fp)
 
-                    with config_copy_path.open('w') as fp:
-                        toml.dump(config_toml, fp)
+            for opt_dict in options_to_change:
+                config_toml[opt_dict['section']][opt_dict['option']] = opt_dict['value']
 
-                return config_copy_path
+            with config_copy_path.open('w') as fp:
+                toml.dump(config_toml, fp)
+
+        return config_copy_path
 
     return _specific_config
 
