@@ -30,8 +30,8 @@ test-data-clean-source:
 	rm -rfv ./tests/test_data/source/*
 
 test-data-download-source:
-	wget $(SOURCE_TEST_DATA_URL) -O $(SOURCE_TEST_DATA_TAR)
-	tar -xvzf $(SOURCE_TEST_DATA_TAR)
+	wget -q $(SOURCE_TEST_DATA_URL) -O $(SOURCE_TEST_DATA_TAR)
+	tar -xzf $(SOURCE_TEST_DATA_TAR)
 
 test-data-generate : $(TEST_DATA_GENERATE_SCRIPT)
 	poetry run python $(TEST_DATA_GENERATE_SCRIPT)
@@ -43,7 +43,7 @@ test-data-tar-generate:
 	tar -czvf $(GENERATED_TEST_DATA_TAR) $(GENERATED_TEST_DATA_TOP_LEVEL_DIRS)
 
 test-data-download-generate:
-	wget $(GENERATED_TEST_DATA_URL) -O $(GENERATED_TEST_DATA_TAR)
-	tar -xvzf $(GENERATED_TEST_DATA_TAR)
+	wget -q $(GENERATED_TEST_DATA_URL) -O $(GENERATED_TEST_DATA_TAR)
+	tar -xzf $(GENERATED_TEST_DATA_TAR)
 
 .PHONY: help variables test-data-clean-source test-data-download-source test-data-generate test-data-clean-generate test-data-tar-generate test-data-download-generate
