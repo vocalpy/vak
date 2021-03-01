@@ -1,4 +1,4 @@
-"""tests for vak.core.predict module"""
+"""tests for vak.core.train module"""
 import pytest
 
 import vak.config
@@ -43,11 +43,18 @@ def test_train(audio_format,
                spect_format,
                annot_format,
                specific_config,
-               tmp_path):
+               tmp_path,
+               device):
+    options_to_change = {
+        'section': 'TRAIN',
+        'option': 'device',
+        'value': device
+    }
     toml_path = specific_config(config_type='train',
                                 audio_format=audio_format,
                                 annot_format=annot_format,
-                                spect_format=spect_format)
+                                spect_format=spect_format,
+                                options_to_change=options_to_change)
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)

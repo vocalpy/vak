@@ -1,4 +1,5 @@
 """tests for vak.cli.learncurve module"""
+import vak.config
 import vak.constants
 import vak.cli.learncurve
 
@@ -7,15 +8,20 @@ from ..test_core.test_learncurve import learncurve_output_matches_expected
 
 
 def test_learncurve(specific_config,
-                    tmp_path):
+                    tmp_path,
+                    device):
     root_results_dir = tmp_path.joinpath('test_learncurve_root_results_dir')
     root_results_dir.mkdir()
 
-    options_to_change = {
-        'section': 'LEARNCURVE',
-        'option': 'root_results_dir',
-        'value': str(root_results_dir)
-    }
+    options_to_change = [
+        {'section': 'LEARNCURVE',
+         'option': 'root_results_dir',
+         'value': str(root_results_dir)},
+        {'section': 'LEARNCURVE',
+         'option': 'device',
+         'value': device}
+        ]
+
     toml_path = specific_config(config_type='learncurve',
                                 audio_format='cbin',
                                 annot_format='notmat',
