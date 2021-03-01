@@ -22,7 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the original and a new `parse.from_toml_path` 
   [#306](https://github.com/NickleDave/vak/pull/306).
   For details see issue [#305](https://github.com/NickleDave/vak/issues/305)
-  
+- switch to using Github Actions for continuous integration
+  [#312](https://github.com/NickleDave/vak/pull/312).
+
 ### Fixed
 - fix `split.algorithms.bruteforce` so that it always returns either a list of 
   indices or `None` for each split, instead of sometimes returning an empty list
