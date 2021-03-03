@@ -27,8 +27,13 @@ TRAIN_DUR_PAT = r'train_dur_(\d+\.\d+|\d+)s'
 
 def train_dur_csv_paths_from_dir(previous_run_path,
                                  train_set_durs,
+                                 timebin_dur,
                                  num_replicates,
                                  results_path,
+                                 window_size,
+                                 spect_key,
+                                 timebins_key,
+                                 labelmap,
                                  logger=None):
     """return a ``dict`` mapping training dataset durations to dataset csv paths
     from a previous run of `vak.core.learncurve.learning_curve`.
@@ -48,6 +53,8 @@ def train_dur_csv_paths_from_dir(previous_run_path,
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
         to create a learning curve, e.g. [5, 10, 15, 20].
+    timebin_dur : float
+        duration of timebins in spectrograms
     num_replicates : int
         number of times to replicate training for each training set duration
         to better estimate metrics for a training set of that size.
@@ -58,6 +65,15 @@ def train_dur_csv_paths_from_dir(previous_run_path,
         files representing subsets of training data that this function makes.
         Path derived from the ``root_results_dir`` argument
          to ``vak.core.learncurve.learning_curve``, unless specified by user.
+    window_size : int
+        size of windows taken from spectrograms, in number of time bins,
+        shonw to neural networks
+    spect_key : str
+        key for accessing spectrogram in files. Default is 's'.
+    timebins_key : str
+        key for accessing vector of time bins in files. Default is 't'.
+    labelmap : dict
+        that maps labelset to consecutive integers
 
     Other Parameters
     ----------------
@@ -132,6 +148,23 @@ def train_dur_csv_paths_from_dir(previous_run_path,
                 shutil.copy(src=csv_path,
                             dst=results_path_this_replicate.joinpath(csv_path.name))
             )
+
+            subset_df = pd.read(csv_path)
+            # ---- use *just* train subset to get spect vectors for WindowDataset
+            (spect_id_vector,
+             spect_inds_vector,
+             x_inds) = WindowDataset.spect_vectors_from_df(subset_df,
+                                                           window_size,
+                                                           spect_key,
+                                                           timebins_key,
+                                                           crop_dur=train_dur,
+                                                           timebin_dur=timebin_dur,
+                                                           labelmap=labelmap)
+            for vec_name, vec in zip(['spect_id_vector', 'spect_inds_vector', 'x_inds'],
+                                     [spect_id_vector, spect_inds_vector, x_inds]):
+                np.save(results_path_this_replicate.joinpath(f'{vec_name}.npy'),
+                        vec)
+
             # also need to copy the spect_id_vectors, etc. used with WindowDataset
             for vec_name in ('spect_id_vector', 'spect_inds_vector', 'x_inds'):
                 src_vec_path = csv_path.parent.joinpath(f'{vec_name}.npy')
@@ -424,8 +457,13 @@ def learning_curve(model_config_map,
         )
         train_dur_csv_paths = train_dur_csv_paths_from_dir(previous_run_path,
                                                            train_set_durs,
+                                                           timebin_dur,
                                                            num_replicates,
-                                                           results_path)
+                                                           results_path,
+                                                           window_size,
+                                                           spect_key,
+                                                           timebins_key,
+                                                           labelmap)
     else:
         log_or_print(
             f'Creating data sets of specified durations: {train_set_durs}',
