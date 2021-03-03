@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   properly when they've finished dividing the dataset into splits.
   Accordingly, rename to `split.algorithms.validate.validate_split_durations`.
   [#300](https://github.com/NickleDave/vak/pull/300)
-- refactor code that programatically builds `results_path` used in `core` and `cli` 
+- refactor code that programmatically builds `results_path` used in `core` and `cli` 
   functions that run `train` and `learncurve`
   [#304](https://github.com/NickleDave/vak/pull/304).
   For details see 
@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   For details see issue [#305](https://github.com/NickleDave/vak/issues/305)
 - switch to using Github Actions for continuous integration
   [#312](https://github.com/NickleDave/vak/pull/312).
+- parametrize `device` fixture so tests run on CPU and, when present, GPU
+  [#313](https://github.com/NickleDave/vak/pull/313)
 
 ### Fixed
 - fix `split.algorithms.bruteforce` so that it always returns either a list of 
