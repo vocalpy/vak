@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#312](https://github.com/NickleDave/vak/pull/312).
 - parametrize `device` fixture so tests run on CPU and, when present, GPU
   [#313](https://github.com/NickleDave/vak/pull/313)
+- refactor `cli.learncurve` module into a sub-package with separate module for 
+  `train_csv_paths` helper functions used by `learning_curve`
+  [#319](https://github.com/NickleDave/vak/pull/319)
 
 ### Fixed
 - fix `split.algorithms.bruteforce` so that it always returns either a list of 
@@ -33,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of a `None`. Also rewrite this function for clarity and to obey DRY 
   principle.
   [#300](https://github.com/NickleDave/vak/pull/300)
+- fix how runs of `learncurve` that use `previous_run_path` get the 
+  "spect vectors" that determine valid windows that can grabbed from 
+  the `WindowDataset`
+  [#319](https://github.com/NickleDave/vak/pull/319). 
+  For details see [#316](https://github.com/NickleDave/vak/issues/316).
 
 ## [0.4.0dev1] - 2021-01-24
 ### Added
