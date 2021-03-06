@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- add ability to save "raw outputs" of network, e.g. the "logits", 
+  when running `vak predict` command
+  [#320](https://github.com/NickleDave/vak/pull/320).
+  For details see issue [#90](https://github.com/NickleDave/vak/issues/90).
+
 ### Changed
 - change `split.algorithms.validate.validate_split_durations_and_convert_nonnegative` 
   so that it no longer converts all durations to non-negative numbers, because the 
