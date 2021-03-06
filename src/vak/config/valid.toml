@@ -91,3 +91,5 @@ device = 'cuda'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 min_segment_dur = 0.004
 majority_vote = false
+save_net_outputs = false
+

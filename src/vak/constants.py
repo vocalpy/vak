@@ -33,3 +33,7 @@ STRFTIME_TIMESTAMP = '%y%m%d_%H%M%S'
 
 # ---- results, from train / learncurve ----
 RESULTS_DIR_PREFIX = 'results_'
+
+# ---- output (default) file extensions. Using the `pathlib` name "suffix" ----
+ANNOT_CSV_SUFFIX = '.annot.csv'
+NET_OUTPUT_SUFFIX = '.output.npz'

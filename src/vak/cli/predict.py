@@ -51,4 +51,5 @@ def predict(toml_path):
                  output_dir=cfg.predict.output_dir,
                  min_segment_dur=cfg.predict.min_segment_dur,
                  majority_vote=cfg.predict.majority_vote,
+                 save_net_outputs=cfg.predict.save_net_outputs,
                  logger=logger)

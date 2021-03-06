@@ -9,9 +9,12 @@ import pandas as pd
 from tqdm import tqdm
 import torch.utils.data
 
-from .. import files
-from .. import io
-from .. import labeled_timebins
+from .. import (
+    constants,
+    files,
+    io,
+    labeled_timebins,
+)
 from ..logging import log_or_print
 from .. import models
 from .. import transforms
@@ -33,6 +36,7 @@ def predict(csv_path,
             output_dir=None,
             min_segment_dur=None,
             majority_vote=False,
+            save_net_outputs=False,
             logger=None,
             ):
     """make predictions on dataset with trained model specified in config.toml file.
@@ -85,6 +89,17 @@ def predict(csv_path,
         applied if the labelmap contains an 'unlabeled' label,
         because unlabeled segments makes it possible to identify
         the labeled segments. Default is False.
+   save_net_outputs : bool
+        if True, save 'raw' outputs of neural networks
+        before they are converted to annotations. Default is False.
+        Typically the output will be "logits"
+        to which a softmax transform might be applied.
+        For each item in the dataset--each row in  the `csv_path` .csv--
+        the output will be saved in a separate file in `output_dir`,
+        with the extension `{MODEL_NAME}.output.npz`. E.g., if the input is a
+        spectrogram with `spect_path` filename `gy6or6_032312_081416.npz`,
+        and the network is `TweetyNet`, then the net output file
+        will be `gy6or6_032312_081416.tweetynet.output.npz`.
 
     Other Parameters
     ----------------
@@ -144,7 +159,7 @@ def predict(csv_path,
 
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
     if annot_csv_filename is None:
-        annot_csv_filename = Path(csv_path).stem + '.annot.csv'
+        annot_csv_filename = Path(csv_path).stem + constants.ANNOT_CSV_SUFFIX
     annot_csv_path = Path(output_dir).joinpath(annot_csv_filename)
     log_or_print(f'will save annotations in .csv file: {annot_csv_path}',
                  logger=logger, level='info')
@@ -192,6 +207,20 @@ def predict(csv_path,
             if isinstance(spect_path, list) and len(spect_path) == 1:
                 spect_path = spect_path[0]
             y_pred = pred_dict[spect_path]
+
+            if save_net_outputs:
+                # not sure if there's a better way to get outputs into right shape;
+                # can't just call y_pred.reshape() because that basically flattens the whole array first
+                # meaning we end up with elements in the wrong order
+                # so instead we convert to sequence then stack horizontally, on column axis
+                net_output = torch.hstack(y_pred.unbind())
+                net_output = net_output[:, padding_mask]
+                net_output = net_output.cpu().numpy()
+                net_output_path = output_dir.joinpath(
+                    Path(spect_path).stem + f'{model_name}{constants.NET_OUTPUT_SUFFIX}'
+                )
+                np.savez(net_output_path, net_output)
+
             y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
             y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
 

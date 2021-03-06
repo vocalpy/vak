@@ -57,6 +57,17 @@ class PredictConfig:
         applied if the labelmap contains an 'unlabeled' label,
         because unlabeled segments makes it possible to identify
         the labeled segments. Default is False.
+   save_net_outputs : bool
+        if True, save 'raw' outputs of neural networks
+        before they are converted to annotations. Default is False.
+        Typically the output will be "logits"
+        to which a softmax transform might be applied.
+        For each item in the dataset--each row in  the `csv_path` .csv--
+        the output will be saved in a separate file in `output_dir`,
+        with the extension `{MODEL_NAME}.output.npz`. E.g., if the input is a
+        spectrogram with `spect_path` filename `gy6or6_032312_081416.npz`,
+        and the network is `TweetyNet`, then the net output file
+        will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path,
@@ -89,6 +100,7 @@ class PredictConfig:
     output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory, default=Path(os.getcwd()))
     min_segment_dur = attr.ib(validator=validators.optional(instance_of(float)), default=None)
     majority_vote = attr.ib(validator=instance_of(bool), default=True)
+    save_net_outputs = attr.ib(validator=instance_of(bool), default=False)
 
 
 REQUIRED_PREDICT_OPTIONS = [
