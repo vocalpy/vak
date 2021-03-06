@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor `cli.learncurve` module into a sub-package with separate module for 
   `train_csv_paths` helper functions used by `learning_curve`
   [#319](https://github.com/NickleDave/vak/pull/319)
+- lower the lower bounds on dependencies, so that users can install with earlier 
+  versions of `torch`, `torchvision`, etc.
+  [9c6ed46](https://github.com/NickleDave/vak/commit/9c6ed46822c53aaa25f66b050b6490657ec5005b)
 
 ### Fixed
 - fix `split.algorithms.bruteforce` so that it always returns either a list of 
@@ -43,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   For details see [#316](https://github.com/NickleDave/vak/issues/316).
 
 ## [0.4.0dev1] - 2021-01-24
+### Note this version was "yanked" from PyPI because of issues with how depenencies were specified
 ### Added
 - automate generation of test data.
   [#274](https://github.com/NickleDave/vak/pull/274)
