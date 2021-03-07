@@ -50,6 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the `WindowDataset`
   [#319](https://github.com/NickleDave/vak/pull/319). 
   For details see [#316](https://github.com/NickleDave/vak/issues/316).
+  There was a bug with the first attempt to fix this, that was resolved by 
+  [#322](https://github.com/NickleDave/vak/pull/322).
+  For details see issue [#321](https://github.com/NickleDave/vak/issues/321).
 
 ## [0.4.0dev1] - 2021-01-24
 ### Note this version was "yanked" from PyPI because of issues with how depenencies were specified
