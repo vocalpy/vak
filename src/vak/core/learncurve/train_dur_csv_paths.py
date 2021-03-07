@@ -1,6 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
-from pprint import pprint
+import pprint
 import re
 import shutil
 
@@ -117,12 +117,12 @@ def from_dir(previous_run_path,
     ):
         raise ValueError(
             'did not find correct number of replicates for all training set durations.'
-            f'Found the following:\n{pprint(train_dur_csv_paths, indent=4)}'
+            f'Found the following:\n{pprint.pformat(train_dur_csv_paths, indent=4)}'
         )
 
     log_or_print(
         f'Using the following training subsets from previous run path:\n'
-        f'{pprint(train_dur_csv_paths, indent=4)}',
+        f'{pprint.pformat(train_dur_csv_paths, indent=4)}',
         logger=logger, level='info'
     )
 
@@ -157,14 +157,6 @@ def from_dir(previous_run_path,
                                      [spect_id_vector, spect_inds_vector, x_inds]):
                 np.save(results_path_this_replicate.joinpath(f'{vec_name}.npy'),
                         vec)
-
-            # also need to copy the spect_id_vectors, etc. used with WindowDataset
-            for vec_name in ('spect_id_vector', 'spect_inds_vector', 'x_inds'):
-                src_vec_path = csv_path.parent.joinpath(f'{vec_name}.npy')
-                shutil.copy(
-                    src=src_vec_path,
-                    dst=results_path_this_replicate.joinpath(src_vec_path.name)
-                )
 
         train_dur_csv_paths[train_dur] = new_csv_paths
 

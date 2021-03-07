@@ -47,7 +47,7 @@ def test_learncurve(specific_config,
 
 @pytest.mark.parametrize(
     'window_size',
-    [25, 88, 100]
+    [44, 88, 176]
 )
 def test_learncurve_previous_run_path(specific_config,
                                       tmp_path,
