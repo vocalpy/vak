@@ -30,4 +30,5 @@ jobs:
           make test-data-download-source
           make test-data-download-generate
           poetry install
+          poetry run python ./src/scripts/test_data/fix_prep_csv_paths.py
           poetry run pytest
