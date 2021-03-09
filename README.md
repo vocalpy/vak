@@ -1,7 +1,7 @@
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Build Status](https://travis-ci.com/NickleDave/vak.svg?branch=master)](https://travis-ci.com/NickleDave/vak)
+[![Build Status](https://github.com/NickleDave/vak/actions/workflows/ci.yml/badge.svg)](https://github.com/NickleDave/vak/actions/workflows/ci.yml/badge.svg)
 # vak
 ## a neural network toolbox for animal vocalizations and bioacoustics
 
