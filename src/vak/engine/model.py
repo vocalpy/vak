@@ -338,7 +338,7 @@ class Model:
             logger=self.logger, level='info')
         torch.save(ckpt, ckpt_path)
 
-    def load(self, ckpt_path):
+    def load(self, ckpt_path, device=None):
         """load model state dict from a checkpoint file.
 
         Loads state_dicts into network and optimizer
@@ -350,10 +350,13 @@ class Model:
         ckpt_path : str, Path
             path including filename from which to load checkpoint
         """
+        if device is None:
+            device = get_default_device()
+
         log_or_print(
             f'Loading checkpoint from:\n{ckpt_path} ',
             logger=self.logger, level='info')
-        ckpt = torch.load(ckpt_path)
+        ckpt = torch.load(ckpt_path, map_location=device)
         self.network.load_state_dict(ckpt['network_state_dict'])
         self.optimizer.load_state_dict(ckpt['optimizer_state_dict'])
 

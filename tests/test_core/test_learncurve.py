@@ -97,15 +97,24 @@ def test_learncurve(specific_config,
 
 
 def test_learncurve_no_results_path(specific_config,
-                                    tmp_path):
+                                    tmp_path,
+                                    device):
     root_results_dir = tmp_path.joinpath('test_learncurve_no_results_path')
     root_results_dir.mkdir()
 
-    options_to_change = {
-        'section': 'LEARNCURVE',
-        'option': 'root_results_dir',
-        'value': str(root_results_dir)
-    }
+    options_to_change = [
+        {
+            'section': 'LEARNCURVE',
+            'option': 'root_results_dir',
+            'value': str(root_results_dir)
+        },
+        {
+            'section': 'LEARNCURVE',
+            'option': 'device',
+            'value': device
+        }
+    ]
+
     toml_path = specific_config(config_type='learncurve',
                                 audio_format='cbin',
                                 annot_format='notmat',
