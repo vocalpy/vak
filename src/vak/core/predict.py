@@ -189,7 +189,7 @@ def predict(csv_path,
         # ---------------- do the actual predicting --------------------------------------------------------------------
         log_or_print(f'loading checkpoint for {model_name} from path: {checkpoint_path}',
                      logger=logger, level='info')
-        model.load(checkpoint_path)
+        model.load(checkpoint_path, device=device)
         log_or_print(f'running predict method of {model_name}',
                      logger=logger, level='info')
         pred_dict = model.predict(pred_data=pred_data,

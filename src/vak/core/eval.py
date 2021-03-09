@@ -138,7 +138,7 @@ def eval(csv_path,
             f'running evaluation for model: {model_name}',
             logger=logger, level='info'
         )
-        model.load(checkpoint_path)
+        model.load(checkpoint_path, device=device)
         metric_vals = model.evaluate(eval_data=val_data,
                                      device=device)
         # create a "DataFrame" with just one row which we will save as a csv;
