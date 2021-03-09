@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- change `model.load` method, so that `torch.load` uses `map_location` parameter
+  [#324](https://github.com/NickleDave/vak/pull/324).
+  This way, loading a model trained on a GPU won't 
+  cause a RuntimeError if only a CPU is available.
+  For details see issue [#323](https://github.com/NickleDave/vak/issues/323).
+
 ## [0.4.0b1] -- 2021-03-06
 ### Added
 - add ability to save "raw outputs" of network, e.g. the "logits", 
