@@ -5,15 +5,36 @@
 # vak
 ## a neural network toolbox for animal vocalizations and bioacoustics
 
-`vak` is a library for researchers studying animal vocalizations and bioacoustics.
-Currently its main use is automated annotation of vocalizations and other animal sounds, 
+`vak` is a library for researchers studying animal vocalizations--such as 
+birdsong, bat calls, and even human speech--although it may be useful 
+to anyone working with bioacoustics data. 
+While there are many important reasons to study bioacoustics, the scope of `vak` 
+is limited to questions related to **vocal learning**, 
+"the ability to modify acoustic and syntactic sounds, acquire new sounds via imitation, and produce vocalizations"
+[(Wikipedia)](https://en.wikipedia.org/wiki/Vocal_learning). 
+Research questions related to vocal learning cut across a wide range of fields 
+including neuroscience, phsyiology, molecular biology, genomics, ecology, and evolution 
+[(Wirthlin et al. 2019)](https://www.sciencedirect.com/science/article/pii/S0896627319308396).
+
+`vak` has two main goals:  
+1. make it easier for researchers studying animal vocalizations to 
+apply neural network algorithms to their data
+2. provide a common framework that will facilitate benchmarking neural 
+network algorithms on tasks related to animal vocalizations
+
+Currently the main use is automated **annotation** of vocalizations and other animal sounds, 
 using artificial neural networks.
-By annotation, we mean something like the example of annotated birdsong shown below:  
+By **annotation**, we mean something like the example of annotated birdsong shown below:  
 <img src="./doc/images/annotation_example_for_tutorial.png" alt="spectrogram of birdsong with syllables annotated" width="400">
 
 You give `vak` training data in the form of audio or spectrogram files with annotations, 
 and then `vak` helps you train neural network models 
 and use the trained models to predict annotations for new files.
+
+We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).
+See pre-print here: [https://www.biorxiv.org/content/10.1101/2020.08.28.272088v2.full.pdf](https://www.biorxiv.org/content/10.1101/2020.08.28.272088v2.full.pdf)  
+We would love to help you use `vak` to benchmark your own model. 
+If you have questions, please feel free to [raise an issue](https://github.com/NickleDave/vak/issues).
 
 ### Installation
 Short version:
@@ -22,6 +43,11 @@ $ pip install vak
 ```
 For the long version detail, please see:
 https://vak.readthedocs.io/en/latest/get_started/installation.html
+
+We currently test `vak` on Ubuntu and MacOS. We have run on Windows and 
+know of other users successfully running `vak` on that operating system, 
+but installation on Windows will probably require some troubleshooting.
+A good place to start is by searching the [issues](https://github.com/NickleDave/vak/issues).
 
 ### Usage
 #### Training models to segment and label vocalizations
