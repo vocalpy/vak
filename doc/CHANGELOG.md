@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the original and a new `parse.from_toml_path` 
   [#306](https://github.com/NickleDave/vak/pull/306).
   For details see issue [#305](https://github.com/NickleDave/vak/issues/305)
+- switch to using `pytest` to run test suite [#309](https://github.com/NickleDave/vak/pull/309).
 - switch to using Github Actions for continuous integration
   [#312](https://github.com/NickleDave/vak/pull/312).
 - parametrize `device` fixture so tests run on CPU and, when present, GPU
@@ -53,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of a `None`. Also rewrite this function for clarity and to obey DRY 
   principle.
   [#300](https://github.com/NickleDave/vak/pull/300)
+- fix unit tests [#309](https://github.com/NickleDave/vak/pull/309).
 - fix how runs of `learncurve` that use `previous_run_path` get the 
   "spect vectors" that determine valid windows that can grabbed from 
   the `WindowDataset`
