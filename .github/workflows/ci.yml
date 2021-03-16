@@ -28,7 +28,7 @@ jobs:
       - name: run tests
         run: |
           make test-data-download-source
-          make test-data-download-generate
+          make test-data-download-generated-ci
           poetry install
-          poetry run python ./src/scripts/test_data/fix_prep_csv_paths.py
-          poetry run pytest
+          poetry run python ./tests/scripts/fix_prep_csv_paths.py
+          poetry run pytest --models teenytweetynet

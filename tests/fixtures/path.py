@@ -8,13 +8,17 @@ from vak.constants import RESULTS_DIR_PREFIX
 
 
 @pytest.fixture
-def previous_run_path(generated_test_data_root):
-    learncurve_results_root = generated_test_data_root.joinpath(
-        'results/learncurve/audio_cbin_annot_notmat'
-    )
-    results_dirs = sorted(learncurve_results_root.glob(f'{RESULTS_DIR_PREFIX}*'))
-    assert len(results_dirs) >= 1
-    return results_dirs[-1]
+def previous_run_path_factory(generated_test_data_root):
+
+    def _previous_run_path(model):
+        learncurve_results_root = generated_test_data_root.joinpath(
+            f'results/learncurve/audio_cbin_annot_notmat/{model}'
+        )
+        results_dirs = sorted(learncurve_results_root.glob(f'{RESULTS_DIR_PREFIX}*'))
+        assert len(results_dirs) >= 1
+        return results_dirs[-1]
+
+    return _previous_run_path
 
 
 @pytest.fixture

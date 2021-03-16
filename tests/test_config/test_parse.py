@@ -24,11 +24,15 @@ import vak.spect
 )
 def test_parse_config_section_returns_attrs_class(
         section_name,
-        all_generated_configs_toml_path_pairs
+        all_generated_configs_toml_path_pairs,
+        default_model,
 ):
     """test that ``vak.config.parse.parse_config_section``
     returns an instance of ``vak.config.learncurve.LearncurveConfig``"""
     for config_toml, toml_path in all_generated_configs_toml_path_pairs:
+        if default_model not in str(toml_path):
+            continue  # only need to check configs for one model
+            # also avoids FileNotFoundError on CI
         if section_name in config_toml:
             config_section_obj = vak.config.parse.parse_config_section(
                 config_toml=config_toml,
@@ -52,18 +56,25 @@ def test_parse_config_section_returns_attrs_class(
 )
 def test_parse_config_section_missing_options_raises(
         section_name,
-        all_generated_configs_toml_path_pairs
+        all_generated_configs_toml_path_pairs,
+        default_model,
 ):
     """test that configs without the required options in a section raise KeyError"""
     if vak.config.parse.REQUIRED_OPTIONS[section_name] is None:
         pytest.skip(f'no required options to test for section: {section_name}')
 
+    # in comprehensions below, filter by default model
+    # because we only need to check configs for one model
+    # also avoids FileNotFoundError on CI
     if section_name == 'PREP':
-        configs_toml_path_pairs = all_generated_configs_toml_path_pairs
+        configs_toml_path_pairs = ((config_toml, toml_path)
+                                   for config_toml, toml_path in all_generated_configs_toml_path_pairs
+                                   if default_model in str(toml_path))
     else:
         configs_toml_path_pairs = ((config_toml, toml_path)
                                    for config_toml, toml_path in all_generated_configs_toml_path_pairs
-                                   if section_name.lower() in toml_path.name)
+                                   if section_name.lower() in toml_path.name and default_model in str(toml_path))
+
     for config_toml, toml_path in configs_toml_path_pairs:
         if section_name in config_toml:
             for option in vak.config.parse.REQUIRED_OPTIONS[section_name]:
@@ -232,8 +243,11 @@ def test_load_from_toml_path_raises_when_config_doesnt_exist(config_that_doesnt_
         vak.config.parse._load_toml_from_path(config_that_doesnt_exist)
 
 
-def test_from_toml_path_returns_instance_of_config(all_generated_configs):
+def test_from_toml_path_returns_instance_of_config(all_generated_configs, default_model):
     for toml_path in all_generated_configs:
+        if default_model not in str(toml_path):
+            continue  # only need to check configs for one model
+            # also avoids FileNotFoundError on CI
         config_obj = vak.config.parse.from_toml_path(toml_path)
         assert isinstance(config_obj, vak.config.parse.Config)
 
@@ -243,8 +257,11 @@ def test_from_toml_path_raises_when_config_doesnt_exist(config_that_doesnt_exist
         vak.config.parse.from_toml_path(config_that_doesnt_exist)
 
 
-def test_from_toml(all_generated_configs_toml_path_pairs):
+def test_from_toml(all_generated_configs_toml_path_pairs, default_model):
     for config_toml, toml_path in all_generated_configs_toml_path_pairs:
+        if default_model not in str(toml_path):
+            continue  # only need to check configs for one model
+            # also avoids FileNotFoundError on CI
         config_obj = vak.config.parse.from_toml(config_toml, toml_path)
         assert isinstance(config_obj, vak.config.parse.Config)
 

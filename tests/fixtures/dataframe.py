@@ -13,12 +13,14 @@ def specific_csv_path(specific_config_toml):
     `config_type`, `audio_format`, `spect_format`, `annot_format`
     """
     def _specific_csv_path(config_type,
+                           model,
                            annot_format,
                            audio_format=None,
                            spect_format=None,
                            ):
         config_toml = specific_config_toml(
             config_type,
+            model,
             annot_format,
             audio_format,
             spect_format
@@ -38,12 +40,14 @@ def specific_dataframe(specific_csv_path):
     `config_type`, `audio_format`, `spect_format`, `annot_format`
     """
     def _specific_dataframe(config_type,
-                           annot_format,
-                           audio_format=None,
-                           spect_format=None,
-                           ):
+                            model,
+                            annot_format,
+                            audio_format=None,
+                            spect_format=None,
+                            ):
         csv_path = specific_csv_path(
             config_type,
+            model,
             annot_format,
             audio_format,
             spect_format

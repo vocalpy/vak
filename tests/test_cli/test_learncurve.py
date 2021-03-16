@@ -11,6 +11,7 @@ from ..test_core.test_learncurve import learncurve_output_matches_expected
 
 def test_learncurve(specific_config,
                     tmp_path,
+                    model,
                     device):
     root_results_dir = tmp_path.joinpath('test_learncurve_root_results_dir')
     root_results_dir.mkdir()
@@ -25,6 +26,7 @@ def test_learncurve(specific_config,
         ]
 
     toml_path = specific_config(config_type='learncurve',
+                                model=model,
                                 audio_format='cbin',
                                 annot_format='notmat',
                                 options_to_change=options_to_change)
@@ -51,8 +53,9 @@ def test_learncurve(specific_config,
 )
 def test_learncurve_previous_run_path(specific_config,
                                       tmp_path,
+                                      model,
                                       device,
-                                      previous_run_path,
+                                      previous_run_path_factory,
                                       window_size):
     root_results_dir = tmp_path.joinpath('test_learncurve_root_results_dir')
     root_results_dir.mkdir()
@@ -66,13 +69,14 @@ def test_learncurve_previous_run_path(specific_config,
          'value': device},
         {'section': 'LEARNCURVE',
          'option': 'previous_run_path',
-         'value': str(previous_run_path)},
+         'value': str(previous_run_path_factory(model))},
         {'section': 'DATALOADER',
          'option': 'window_size',
          'value': window_size}
     ]
 
     toml_path = specific_config(config_type='learncurve',
+                                model=model,
                                 audio_format='cbin',
                                 annot_format='notmat',
                                 options_to_change=options_to_change)

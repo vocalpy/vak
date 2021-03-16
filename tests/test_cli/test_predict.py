@@ -22,6 +22,7 @@ def test_predict(audio_format,
                  annot_format,
                  specific_config,
                  tmp_path,
+                 model,
                  device):
     output_dir = tmp_path.joinpath(f'test_predict_{audio_format}_{spect_format}_{annot_format}')
     output_dir.mkdir()
@@ -36,6 +37,7 @@ def test_predict(audio_format,
     ]
 
     toml_path = specific_config(config_type='predict',
+                                model=model,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
                                 options_to_change=options_to_change)

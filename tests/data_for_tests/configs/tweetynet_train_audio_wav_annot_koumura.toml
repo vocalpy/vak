@@ -1,11 +1,11 @@
 [PREP]
 labelset = '012345678'
-data_dir = "./tests/test_data/source/audio_wav_annot_koumura/Bird0"
-output_dir = "./tests/test_data/generated/prep/train/audio_wav_annot_koumura"
+data_dir = "./tests/data_for_tests/source/audio_wav_annot_koumura/Bird0"
+output_dir = "./tests/data_for_tests/generated/prep/train/audio_wav_annot_koumura"
 audio_format = "wav"
-spect_output_dir = "./tests/test_data/generated/prep/train/audio_wav_annot_koumura"
+spect_output_dir = "./tests/data_for_tests/generated/prep/train/audio_wav_annot_koumura"
 annot_format = "koumura"
-annot_file = "./tests/test_data/source/audio_wav_annot_koumura/Bird0/Annotation.xml"
+annot_file = "./tests/data_for_tests/source/audio_wav_annot_koumura/Bird0/Annotation.xml"
 test_dur = 50
 train_dur = 15
 val_dur = 30
@@ -30,7 +30,7 @@ ckpt_step = 200
 patience = 4
 num_workers = 4
 device = "cuda"
-root_results_dir = "./tests/test_data/generated/results/train/audio_wav_annot_koumura"
+root_results_dir = "./tests/data_for_tests/generated/results/train/audio_wav_annot_koumura/tweetynet"
 
 [TweetyNet.optimizer]
 lr = 0.001
