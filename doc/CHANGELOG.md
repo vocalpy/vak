@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- add built-in model `TeenyTweetyNet` 
+  [#329](https://github.com/NickleDave/vak/pull/329) 
+  that will be used to speed up `vak` test suite.
+  For details see issue [#308](https://github.com/NickleDave/vak/issues/308).
+
 ### Fixed
 - change `model.load` method, so that `torch.load` uses `map_location` parameter
   [#324](https://github.com/NickleDave/vak/pull/324).
