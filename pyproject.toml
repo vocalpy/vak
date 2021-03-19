@@ -47,6 +47,7 @@ vak = 'vak.__main__:main'
 [tool.poetry.plugins]
 
 [tool.poetry.plugins."vak.models"]
+TeenyTweetyNetModel = 'vak.models.teenytweetynet:TeenyTweetyNetModel'
 
 [tool.poetry.plugins."vak.metrics"]
 Accuracy = 'vak.metrics.Accuracy'
