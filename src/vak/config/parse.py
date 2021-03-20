@@ -105,6 +105,25 @@ def from_toml(config_toml,
     return Config(**config_dict)
 
 
+def _load_toml_from_path(toml_path):
+    """helper function to load toml config file,
+    factored out to use in other modules when needed
+
+    checks if ``toml_path`` exists before opening,
+    and tries to give a clear message if an error occurs when parsing"""
+    toml_path = Path(toml_path)
+    if not toml_path.is_file():
+        raise FileNotFoundError(f'.toml config file not found: {toml_path}')
+
+    try:
+        with toml_path.open('r') as fp:
+            config_toml = toml.load(fp)
+    except TomlDecodeError as e:
+        raise Exception(f'Error when parsing .toml config file: {toml_path}') from e
+
+    return config_toml
+
+
 def from_toml_path(toml_path):
     """parse a TOML configuration file
 
@@ -122,16 +141,5 @@ def from_toml_path(toml_path):
         instance of Config class, whose attributes correspond to
         sections in a config.toml file.
     """
-    # check config_path is a file,
-    # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
-    toml_path = Path(toml_path)
-    if not toml_path.is_file():
-        raise FileNotFoundError(f'path not recognized as a file: {toml_path}')
-
-    try:
-        with toml_path.open('r') as fp:
-            config_toml = toml.load(fp)
-    except TomlDecodeError as e:
-        raise Exception(f'Error when parsing .toml config file: {toml_path}') from e
-
+    config_toml = _load_toml_from_path(toml_path)
     return from_toml(config_toml, toml_path)
