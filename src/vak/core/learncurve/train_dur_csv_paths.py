@@ -143,10 +143,10 @@ def from_dir(previous_run_path,
             )
 
             subset_df = pd.read_csv(csv_path)
-            # ---- use *just* train subset to get spect vectors for WindowDataset
             (spect_id_vector,
              spect_inds_vector,
              x_inds) = WindowDataset.spect_vectors_from_df(subset_df,
+                                                           'train',
                                                            window_size,
                                                            spect_key,
                                                            timebins_key,
@@ -239,13 +239,14 @@ def from_df(dataset_df,
             results_path_this_replicate.mkdir()
             # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
-            train_df = dataset_df[dataset_df['split'] == 'train']
-            subset_df = split.dataframe(train_df, train_dur=train_dur, labelset=labelset)
-            subset_df = subset_df[subset_df['split'] == 'train']  # remove rows where split was set to 'None'
+            train_split_df = dataset_df[dataset_df['split'] == 'train']
+            train_split_df = split.dataframe(train_split_df, train_dur=train_dur, labelset=labelset)
+            train_split_df = train_split_df[train_split_df.split == 'train']  # remove rows where split set to 'None'
             # ---- use *just* train subset to get spect vectors for WindowDataset
             (spect_id_vector,
              spect_inds_vector,
-             x_inds) = WindowDataset.spect_vectors_from_df(subset_df,
+             x_inds) = WindowDataset.spect_vectors_from_df(train_split_df,
+                                                           'train',
                                                            window_size,
                                                            spect_key,
                                                            timebins_key,
@@ -258,15 +259,15 @@ def from_df(dataset_df,
                         vec)
             # keep the same validation and test set by concatenating them with the train subset
             subset_df = pd.concat(
-                (subset_df,
-                 dataset_df[dataset_df['split'] == 'val'],
-                 dataset_df[dataset_df['split'] == 'test'],
+                (train_split_df,
+                 dataset_df[dataset_df.split == 'val'],
+                 dataset_df[dataset_df.split == 'test'],
                  )
             )
 
             subset_csv_name = f'{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv'
             subset_csv_path = results_path_this_replicate.joinpath(subset_csv_name)
-            subset_df.to_csv(subset_csv_path)
+            subset_df.to_csv(subset_csv_path, index=False)
             train_dur_csv_paths[train_dur].append(subset_csv_path)
 
     return train_dur_csv_paths

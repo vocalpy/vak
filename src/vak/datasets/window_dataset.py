@@ -83,6 +83,8 @@ class WindowDataset(VisionDataset):
     # with x_inds, to mark invalid starting indices for windows
     INVALID_WINDOW_VAL = -1
 
+    VALID_SPLITS = ('train', 'val' 'test', 'all')
+
     def __init__(self,
                  root,
                  x_inds,
@@ -471,6 +473,7 @@ class WindowDataset(VisionDataset):
 
     @staticmethod
     def spect_vectors_from_df(df,
+                              split,
                               window_size,
                               spect_key='s',
                               timebins_key='t',
@@ -528,6 +531,11 @@ class WindowDataset(VisionDataset):
                 'must provide labelmap when specifying crop_dur'
             )
 
+        if split not in WindowDataset.VALID_SPLITS:
+            raise ValueError(
+                f'invalid value for split: {split}. Valid split names are: {WindowDataset.VALID_SPLITS}'
+            )
+
         if crop_dur is not None and timebin_dur is not None:
             crop_to_dur = True
             crop_dur = float(crop_dur)
@@ -541,6 +549,15 @@ class WindowDataset(VisionDataset):
                 unlabeled_label = 0
         else:
             crop_to_dur = False
+
+        if 'split' == 'all':
+            pass  # use all rows, don't select by split
+        else:
+            if split not in df.split.unique().tolist():
+                raise ValueError(
+                    f'split {split} not found in dataframe. Split are: {df.split.unique().tolist()}'
+                )
+            df = df[df['split'] == split]
 
         spect_paths = df['spect_path'].values
 
@@ -660,16 +677,21 @@ class WindowDataset(VisionDataset):
             after the cropping now set to WindowDataset.INVALID_WINDOW_VAL
             so they will be removed
         """
+        if split not in WindowDataset.VALID_SPLITS:
+            raise ValueError(
+                f'invalid value for split: {split}. Valid split names are: {WindowDataset.VALID_SPLITS}'
+            )
+
         df = pd.read_csv(csv_path)
 
-        if not df['split'].str.contains(split).any():
+        if split not in df.split.unique().tolist():
             raise ValueError(
-                f'split {split} not found in dataset in csv: {csv_path}'
+                f'split {split} not found in dataset in csv: {csv_path}. '
+                f'Splits are: {df.split.unique().tolist()}'
             )
-        else:
-            df = df[df['split'] == split]
 
         return WindowDataset.spect_vectors_from_df(df,
+                                                   split,
                                                    window_size,
                                                    spect_key,
                                                    timebins_key,
@@ -769,7 +791,7 @@ class WindowDataset(VisionDataset):
 
         if all([vec is None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
             # see Notes in class docstring to understand what these vectors do
-            spect_id_vector, spect_inds_vector, x_inds = cls.spect_vectors_from_df(df, window_size)
+            spect_id_vector, spect_inds_vector, x_inds = cls.spect_vectors_from_df(df, split, window_size)
 
         annots = annotation.from_df(df)
         timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
