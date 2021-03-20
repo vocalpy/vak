@@ -59,7 +59,8 @@ SECTION_PARSERS = {
 
 
 def from_toml(config_toml,
-              toml_path=None):
+              toml_path=None,
+              sections=None):
     """load a TOML configuration file
 
     Parameters
@@ -70,6 +71,12 @@ def from_toml(config_toml,
     toml_path : str, Path
         path to a configuration file in TOML format. Default is None.
         Not required, used only to make any error messages clearer.
+    sections : str, list
+        name of section or sections from configuration
+        file that should be parsed. Can be a string
+        (single section) or list of strings (multiple
+        sections). Default is None,
+        in which case all are validated and parsed.
 
     Returns
     -------
@@ -96,7 +103,9 @@ def from_toml(config_toml,
                 )
 
     config_dict = {}
-    for section_name in SECTION_PARSERS.keys():
+    if sections is None:
+        sections = list(SECTION_PARSERS.keys())  # i.e., parse all sections
+    for section_name in sections:
         if section_name in config_toml:
             are_options_valid(config_toml, section_name, toml_path)
             section_parser = SECTION_PARSERS[section_name]
@@ -124,7 +133,7 @@ def _load_toml_from_path(toml_path):
     return config_toml
 
 
-def from_toml_path(toml_path):
+def from_toml_path(toml_path, sections=None):
     """parse a TOML configuration file
 
     Parameters
@@ -134,6 +143,12 @@ def from_toml_path(toml_path):
         Parsed by ``toml`` library, then converted to an
         instance of ``vak.config.parse.Config`` by
         calling ``vak.parse.from_toml``
+    sections : str, list
+        name of section or sections from configuration
+        file that should be parsed. Can be a string
+        (single section) or list of strings (multiple
+        sections). Default is None,
+        in which case all are validated and parsed.
 
     Returns
     -------
@@ -142,4 +157,4 @@ def from_toml_path(toml_path):
         sections in a config.toml file.
     """
     config_toml = _load_toml_from_path(toml_path)
-    return from_toml(config_toml, toml_path)
+    return from_toml(config_toml, toml_path, sections)
