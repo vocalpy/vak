@@ -96,6 +96,23 @@ def parse_config_section(config_toml, section_name, toml_path=None):
     return SECTION_CLASSES[section_name](**section)
 
 
+def _validate_sections_arg_convert_list(sections):
+    if isinstance(sections, str):
+        sections = [sections]
+    elif isinstance(sections, list):
+        if not all([isinstance(section_name, str) for section_name in sections]):
+            raise ValueError(
+                "all section names in 'sections' should be strings"
+            )
+        if not all([section_name in list(SECTION_CLASSES.keys()) for section_name in sections]):
+            raise ValueError(
+                "all section names in 'sections' should be valid names of sections. "
+                f"Values for 'sections were: {sections}.\n"
+                f"Valid section names are: {list(SECTION_CLASSES.keys())}"
+            )
+    return sections
+
+
 def from_toml(config_toml,
               toml_path=None,
               sections=None):
@@ -124,25 +141,11 @@ def from_toml(config_toml,
     """
     are_sections_valid(config_toml, toml_path)
 
-    if 'TRAIN' in config_toml:
-        if 'LEARNCURVE' in config_toml:
-            raise ValueError(
-                'a single config.toml file cannot contain both TRAIN and LEARNCURVE sections, '
-                'because it is unclear which of those two sections to add paths to when running '
-                'the "prep" command to prepare datasets'
-            )
-
-        if 'PREP' in config_toml:
-            if 'test_set_duration' in config_toml['PREP']:
-                raise ValueError(
-                    "cannot define 'test_set_duration' option for PREP section when using with vak 'train' command, "
-                    "'test_set_duration' is not a valid option for the TRAIN section. "
-                    "Were you trying to use the 'learncurve' command instead?"
-                )
+    sections = _validate_sections_arg_convert_list(sections)
 
     config_dict = {}
     if sections is None:
-        sections = list(SECTION_CLASSES.keys())  # i.e., parse all sections
+        sections = list(SECTION_CLASSES.keys())  # i.e., parse all sections, except model
     for section_name in sections:
         if section_name in config_toml:
             are_options_valid(config_toml, section_name, toml_path)
