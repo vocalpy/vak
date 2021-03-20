@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#329](https://github.com/NickleDave/vak/pull/329) 
   that will be used to speed up `vak` test suite.
   For details see issue [#308](https://github.com/NickleDave/vak/issues/308).
+- make it so config does not validate other sections when running `vak prep`, 
+  to avoid annoying errors due to options that are going to change anyway 
+  [#335](https://github.com/NickleDave/vak/pull/335).
+  For details see [#314](https://github.com/NickleDave/vak/issues/314) and   
+  [#334](https://github.com/NickleDave/vak/issues/334).
+- raise clear error message when running `vak prep` and the section that a  
+  dataset is being `prep`ared for already has a `csv_path`. Ask user to 
+  remove it if they really want to generate a new one 
+  [#335](https://github.com/NickleDave/vak/pull/335).
+  For details see [#314](https://github.com/NickleDave/vak/issues/314) and   
+  [#333](https://github.com/NickleDave/vak/issues/333).
+
+### Changed
+- refactor `config` sub-package
+  [#335](https://github.com/NickleDave/vak/pull/335).
+  For details see [#331](https://github.com/NickleDave/vak/issues/331),  
+  [#332](https://github.com/NickleDave/vak/issues/332).
 
 ### Fixed
 - change `model.load` method, so that `torch.load` uses `map_location` parameter
