@@ -104,3 +104,14 @@ class PrepConfig:
     test_dur = attr.ib(converter=converters.optional(duration_from_toml_value),
                        validator=validators.optional(is_valid_duration),
                        default=None)
+
+    def __attrs_post_init__(self):
+        if self.audio_format is not None and self.spect_format is not None:
+            raise ValueError(
+                f'cannot specify audio_format and spect_format'
+            )
+
+        if self.audio_format is None and self.spect_format is None:
+            raise ValueError(
+                f'must specify either audio_format or spect_format'
+            )
