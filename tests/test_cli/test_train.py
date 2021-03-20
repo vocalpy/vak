@@ -42,7 +42,7 @@ def test_train(audio_format,
                                 spect_format=spect_format,
                                 options_to_change=options_to_change)
 
-    vak.cli.train(toml_path)
+    vak.cli.train.train(toml_path)
 
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)

@@ -5,20 +5,11 @@ Example: python -m vak --help
 import argparse
 from pathlib import Path
 
-from .cli import cli
-
 
 def get_parser():
     """returns ArgumentParser instance used by main()"""
-    CHOICES = [
-        'prep',
-        'train',
-        'eval',
-        'predict',
-        'finetune',
-        'learncurve',
-    ]
-
+    from .cli import cli  # avoid circular import
+    CHOICES = list(cli.CLI_COMMANDS.keys())
     parser = argparse.ArgumentParser(description='vak command-line interface',
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('command', type=str, metavar='command',
@@ -40,8 +31,8 @@ def main():
     """
     parser = get_parser()
     args = parser.parse_args()
-    cli(command=args.command,
-        config_file=args.configfile)
+    cli.cli(command=args.command,
+            config_file=args.configfile)
 
 
 if __name__ == "__main__":

@@ -73,6 +73,23 @@ VALID_OPTIONS = {
 
 def are_sections_valid(config_dict, toml_path=None):
     sections = list(config_dict.keys())
+    from ..cli.cli import CLI_COMMANDS  # avoid circular import
+    cli_commands_besides_prep = [command for command in CLI_COMMANDS if command != 'prep']
+    sections_that_are_commands_besides_prep = [section for section in sections
+                                               if section.lower() in cli_commands_besides_prep]
+    if len(sections_that_are_commands_besides_prep) == 0:
+        raise ValueError(
+            "did not find a section related to a vak command in config besides `prep`.\n"
+            f"Sections in config were: {sections}"
+        )
+
+    if len(sections_that_are_commands_besides_prep) > 1:
+        raise ValueError(
+            "found multiple sections related to a vak command in config besides `prep`.\n"
+            f"Those sections are: {sections_that_are_commands_besides_prep}. "
+            f"Please use just one command besides `prep` per .toml configuration file"
+        )
+
     MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
     # add model names to valid sections so users can define model config in sections
     valid_sections = VALID_SECTIONS + MODEL_NAMES

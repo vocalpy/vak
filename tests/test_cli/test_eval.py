@@ -43,7 +43,7 @@ def test_eval(audio_format,
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
 
-    vak.cli.eval(toml_path)
+    vak.cli.eval.eval(toml_path)
 
     assert eval_output_matches_expected(model_config_map,
                                         output_dir)

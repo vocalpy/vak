@@ -70,28 +70,3 @@ class SpectParamsConfig:
     freqbins_key = attr.ib(validator=instance_of(str), default='f')
     timebins_key = attr.ib(validator=instance_of(str), default='t')
     audio_path_key = attr.ib(validator=instance_of(str), default='audio_path')
-
-
-def parse_spect_params_config(config_toml, toml_path):
-    """parse [SPECT_PARAMS] section of config.toml file
-
-    Parameters
-    ----------
-    config_toml : dict
-        containing configuration file in TOML format, already loaded by parse function
-    toml_path : Path
-        path to a configuration file in TOML format (used for error messages)
-
-    Returns
-    -------
-    spect_params_config : vak.config.spect_params.SpectParamsConfig
-        instance with attributes set to values specified by config.toml section
-        or to defaults.
-    """
-    # return defaults if config doesn't have SPECT_PARAMS section
-    spect_params_section = {}
-    if 'SPECT_PARAMS' in config_toml:
-        spect_params_section.update(
-            config_toml['SPECT_PARAMS'].items()
-        )
-    return SpectParamsConfig(**spect_params_section)
