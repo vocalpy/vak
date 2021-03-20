@@ -29,6 +29,10 @@ def purpose_from_toml(config_toml, toml_path=None):
             return section_name.lower()  # this is the "purpose" of the file
 
 
+# see https://github.com/NickleDave/vak/issues/334
+SECTIONS_PREP_SHOULD_PARSE = ('PREP', 'SPECT_PARAMS')
+
+
 def prep(toml_path):
     """prepare datasets from vocalizations.
     Function called by command-line interface.
@@ -82,8 +86,10 @@ def prep(toml_path):
             f"the 'csv_path' option from the '{purpose.upper()}' section in the config file:\n{toml_path}"
         )
 
-    # now that we've checked that, go ahead and parse the whole config
-    cfg = config.parse.from_toml_path(toml_path)
+    # now that we've checked that, go ahead and parse the sections we want
+    cfg = config.parse.from_toml_path(toml_path, sections=SECTIONS_PREP_SHOULD_PARSE)
+    # notice we ignore any other option/values in the 'purpose' section,
+    # see https://github.com/NickleDave/vak/issues/334 and https://github.com/NickleDave/vak/issues/314
     if cfg.prep is None:
         raise ValueError(
             f'prep called with a config.toml file that does not have a PREP section: {toml_path}'
