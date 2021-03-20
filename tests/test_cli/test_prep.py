@@ -70,7 +70,7 @@ def test_prep(config_type,
                                 spect_format=spect_format,
                                 options_to_change=options_to_change)
 
-    vak.cli.prep(toml_path)
+    vak.cli.prep.prep(toml_path)
 
     cfg = vak.config.parse.from_toml_path(toml_path)
     command_section = getattr(cfg, config_type)

@@ -40,7 +40,7 @@ def test_predict(audio_format,
                                 annot_format=annot_format,
                                 options_to_change=options_to_change)
 
-    vak.cli.predict(toml_path)
+    vak.cli.predict.predict(toml_path)
 
     cfg = vak.config.parse.from_toml_path(toml_path)
     assert predict_output_matches_expected(output_dir, cfg.predict.annot_csv_filename)
