@@ -11,6 +11,32 @@ import vak.io.spect
 
 from . import cli_asserts
 
+@pytest.mark.parametrize(
+    'config_type, audio_format, spect_format, annot_format',
+    [
+        ('eval', 'cbin', None, 'notmat'),
+        ('learncurve', 'cbin', None, 'notmat'),
+        ('predict', 'cbin', None, 'notmat'),
+        ('predict', 'wav', None, 'koumura'),
+        ('train', 'cbin', None, 'notmat'),
+        ('train', 'wav', None, 'koumura'),
+        ('train', None, 'mat', 'yarden'),
+    ]
+)
+def test_purpose_from_toml(config_type,
+                           audio_format,
+                           spect_format,
+                           annot_format,
+                           specific_config,
+                           tmp_path):
+    toml_path = specific_config(config_type=config_type,
+                                audio_format=audio_format,
+                                annot_format=annot_format,
+                                spect_format=spect_format)
+    config_toml = vak.config.parse._load_toml_from_path(toml_path)
+    vak.cli.prep.purpose_from_toml(config_toml)
+
+
 
 @pytest.mark.parametrize(
     'config_type, audio_format, spect_format, annot_format',
