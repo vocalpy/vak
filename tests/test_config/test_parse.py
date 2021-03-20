@@ -25,10 +25,26 @@ def test_config_attrs_class(
         assert isinstance(config, vak.config.parse.Config)
 
 
+def test_load_from_toml_path(all_generated_configs):
+    for toml_path in all_generated_configs:
+        config_toml = vak.config.parse._load_toml_from_path(toml_path)
+        assert isinstance(config_toml, dict)
+
+
+def test_load_from_toml_path_raises_when_config_doesnt_exist(config_that_doesnt_exist):
+    with pytest.raises(FileNotFoundError):
+        vak.config.parse._load_toml_from_path(config_that_doesnt_exist)
+
+
 def test_from_toml_path_returns_instance_of_config(all_generated_configs):
     for toml_path in all_generated_configs:
         config_obj = vak.config.parse.from_toml_path(toml_path)
         assert isinstance(config_obj, vak.config.parse.Config)
+
+
+def test_from_toml_path_raises_when_config_doesnt_exist(config_that_doesnt_exist):
+    with pytest.raises(FileNotFoundError):
+        vak.config.parse.from_toml_path(config_that_doesnt_exist)
 
 
 def test_invalid_section_raises(invalid_section_config_path):

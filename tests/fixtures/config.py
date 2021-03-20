@@ -50,6 +50,11 @@ def list_of_schematized_configs(test_configs_root):
 
 
 @pytest.fixture
+def config_that_doesnt_exist(tmp_path):
+    return tmp_path / 'config_that_doesnt_exist.toml'
+
+
+@pytest.fixture
 def invalid_section_config_path(test_configs_root):
     return test_configs_root.joinpath('invalid_section_config.toml')
 
