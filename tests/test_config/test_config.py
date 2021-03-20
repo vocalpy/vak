@@ -1,4 +1,4 @@
-import vak.config.config
+import vak.config
 
 
 def test_config_attrs_class(
@@ -8,7 +8,8 @@ def test_config_attrs_class(
     for config_toml, toml_path in all_generated_configs_toml_path_pairs:
     # this is basically the body of the ``config.parse.from_toml`` function.
         config_dict = {}
-        for section_name in config_toml.keys():
+        for section_name in list(vak.config.parse.SECTION_CLASSES.keys()):
+            if section_name in config_toml:
                 vak.config.validators.are_options_valid(config_toml, section_name, toml_path)
                 section = vak.config.parse.parse_config_section(config_toml, section_name, toml_path)
                 config_dict[section_name.lower()] = section

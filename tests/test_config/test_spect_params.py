@@ -59,16 +59,3 @@ def test_spect_params_attrs_class(all_generated_configs_toml_path_pairs):
             spect_params_section = config_toml['SPECT_PARAMS']
             config = vak.config.spect_params.SpectParamsConfig(**spect_params_section)
             assert isinstance(config, vak.config.spect_params.SpectParamsConfig)
-
-
-def test_parse_spect_params_config_returns_attrs_class(
-        all_generated_configs_toml_path_pairs
-):
-    """test that ``vak.config.learncurve.parse_learncurve_config``
-    returns an instance of ``vak.config.learncurve.LearncurveConfig``"""
-    for config_toml, toml_path in all_generated_configs_toml_path_pairs:
-        if 'SPECT_PARAMS' in config_toml:
-            config = vak.config.spect_params.parse_spect_params_config(
-                config_toml=config_toml,
-                toml_path=toml_path)
-            assert isinstance(config, vak.config.spect_params.SpectParamsConfig)
