@@ -47,6 +47,23 @@ def test_from_toml_path_raises_when_config_doesnt_exist(config_that_doesnt_exist
         vak.config.parse.from_toml_path(config_that_doesnt_exist)
 
 
+def test_from_toml(all_generated_configs_toml_path_pairs):
+    for config_toml, toml_path in all_generated_configs_toml_path_pairs:
+        config_obj = vak.config.parse.from_toml(config_toml, toml_path)
+        assert isinstance(config_obj, vak.config.parse.Config)
+
+
+def test_from_toml_with_sections_not_none(all_generated_configs_toml_path_pairs):
+    for config_toml, toml_path in all_generated_configs_toml_path_pairs:
+        config_obj = vak.config.parse.from_toml(config_toml, toml_path, sections=['PREP', 'SPECT_PARAMS'])
+        assert isinstance(config_obj, vak.config.parse.Config)
+        for should_have in ('prep', 'spect_params'):
+            assert hasattr(config_obj, should_have)
+        for should_be_none in ('eval', 'learncurve', 'train', 'predict'):
+            assert getattr(config_obj, should_be_none) is None
+        assert getattr(config_obj, 'dataloader') == vak.config.dataloader.DataLoaderConfig()
+
+
 def test_invalid_section_raises(invalid_section_config_path):
     with pytest.raises(ValueError):
         vak.config.parse.from_toml_path(invalid_section_config_path)
