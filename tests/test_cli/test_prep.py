@@ -59,11 +59,19 @@ def test_prep(config_type,
     output_dir = tmp_path.joinpath(f'test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}')
     output_dir.mkdir()
 
-    options_to_change = {
-        'section': 'PREP',
-        'option': 'output_dir',
-        'value': str(output_dir)
-    }
+    options_to_change = [
+        {
+            'section': 'PREP',
+            'option': 'output_dir',
+            'value': str(output_dir)
+        },
+        # need to remove csv_path option from configs we already ran prep on to avoid error
+        {
+            'section': config_type.upper(),
+            'option': 'csv_path',
+            'value': None,
+        },
+    ]
     toml_path = specific_config(config_type=config_type,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
@@ -80,3 +88,41 @@ def test_prep(config_type,
     assert Path(csv_path).exists()
 
     assert cli_asserts.log_file_created(command='prep', output_path=cfg.prep.output_dir)
+
+
+@pytest.mark.parametrize(
+    'config_type, audio_format, spect_format, annot_format',
+    [
+        ('eval', 'cbin', None, 'notmat'),
+        ('learncurve', 'cbin', None, 'notmat'),
+        ('predict', 'cbin', None, 'notmat'),
+        ('predict', 'wav', None, 'koumura'),
+        ('train', 'cbin', None, 'notmat'),
+        ('train', 'wav', None, 'koumura'),
+        ('train', None, 'mat', 'yarden'),
+    ]
+)
+def test_prep_csv_path_raises(config_type,
+                              audio_format,
+                              spect_format,
+                              annot_format,
+                              specific_config,
+                              tmp_path):
+    output_dir = tmp_path.joinpath(f'test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}')
+    output_dir.mkdir()
+
+    options_to_change = [
+        {
+            'section': 'PREP',
+            'option': 'output_dir',
+            'value': str(output_dir)
+        },
+    ]
+    toml_path = specific_config(config_type=config_type,
+                                audio_format=audio_format,
+                                annot_format=annot_format,
+                                spect_format=spect_format,
+                                options_to_change=options_to_change)
+
+    with pytest.raises(ValueError):
+        vak.cli.prep.prep(toml_path)
