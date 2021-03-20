@@ -134,7 +134,7 @@ def run_prep(test_config_paths):
             raise FileNotFoundError(
                 f'{test_config_path} not found')
         print(f"re-running vak prep to set up for test, using config: {test_config_path.name}")
-        vak.cli.prep(toml_path=test_config_path)
+        vak.cli.prep.prep(toml_path=test_config_path)
 
 
 def run_results(test_config_paths):
@@ -143,11 +143,11 @@ def run_results(test_config_paths):
     """
     for test_config_path in test_config_paths:
         if 'train' in test_config_path.name:
-            vak.cli.train(toml_path=test_config_path)
+            vak.cli.train.train(toml_path=test_config_path)
         elif 'eval' in test_config_path.name:
-            vak.cli.eval(toml_path=test_config_path)
+            vak.cli.eval.eval(toml_path=test_config_path)
         elif 'predict' in test_config_path.name:
-            vak.cli.predict(toml_path=test_config_path)
+            vak.cli.predict.predict(toml_path=test_config_path)
         elif 'learncurve' in test_config_path.name:
             vak.cli.learncurve.learning_curve(toml_path=test_config_path)
         else:
