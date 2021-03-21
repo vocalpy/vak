@@ -9,13 +9,12 @@ from pathlib import Path
 def get_parser():
     """returns ArgumentParser instance used by main()"""
     from .cli import cli  # avoid circular import
-    CHOICES = list(cli.CLI_COMMANDS.keys())
     parser = argparse.ArgumentParser(description='vak command-line interface',
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('command', type=str, metavar='command',
-                        choices=CHOICES,
+                        choices=cli.CLI_COMMANDS,
                         help="Command to run, valid options are:\n"
-                             f"{CHOICES}\n"
+                             f"{cli.CLI_COMMANDS}\n"
                              "$ vak train ./configs/config_2018-12-17.toml")
     parser.add_argument('configfile', type=Path,
                         help='name of config.toml file to use \n'
@@ -29,6 +28,8 @@ def main():
     function is installed under just `vak` as a console script entry point,
     see setup.py)
     """
+    from .cli import cli  # avoid circular import
+
     parser = get_parser()
     args = parser.parse_args()
     cli.cli(command=args.command,
