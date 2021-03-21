@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#335](https://github.com/NickleDave/vak/pull/335).
   For details see [#314](https://github.com/NickleDave/vak/issues/314) and   
   [#333](https://github.com/NickleDave/vak/issues/333).
+- add `split` parameter to `WindowDataset.spect_vectors_from_df` 
+  [#336](https://github.com/NickleDave/vak/pull/336).
+  For details see issue [#328](https://github.com/NickleDave/vak/issues/328).
 
 ### Changed
 - refactor `config` sub-package
@@ -34,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This way, loading a model trained on a GPU won't 
   cause a RuntimeError if only a CPU is available.
   For details see issue [#323](https://github.com/NickleDave/vak/issues/323).
+- fix `train_dur_csv_paths.from_dir` so it uses correct dataset splits to 
+  generate `spect_vector`s for `WindowDataset` 
+  [#336](https://github.com/NickleDave/vak/pull/336).
+  For details see issue [#328](https://github.com/NickleDave/vak/issues/328).
 
 ## [0.4.0b1] -- 2021-03-06
 ### Added
