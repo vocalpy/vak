@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#335](https://github.com/NickleDave/vak/pull/335).
   For details see [#331](https://github.com/NickleDave/vak/issues/331),  
   [#332](https://github.com/NickleDave/vak/issues/332).
+- refactor unit tests so they can be run with `TeenyTweetyNet` on Github Actions
+  [#339](https://github.com/NickleDave/vak/pull/339).
+  For details see issue [#330](https://github.com/NickleDave/vak/issues/330).
 
 ### Fixed
 - change `model.load` method, so that `torch.load` uses `map_location` parameter
