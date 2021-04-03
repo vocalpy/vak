@@ -28,6 +28,7 @@ def test_eval(audio_format,
               annot_format,
               specific_config,
               tmp_path,
+              model,
               device):
     output_dir = tmp_path.joinpath(f'test_eval_{audio_format}_{spect_format}_{annot_format}')
     output_dir.mkdir()
@@ -42,6 +43,7 @@ def test_eval(audio_format,
     ]
 
     toml_path = specific_config(config_type='eval',
+                                model=model,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
                                 spect_format=spect_format,

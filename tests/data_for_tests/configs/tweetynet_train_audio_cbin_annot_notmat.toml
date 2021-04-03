@@ -1,9 +1,9 @@
 [PREP]
-data_dir = "./tests/test_data/source/audio_cbin_annot_notmat/gy6or6/032312"
-output_dir = "./tests/test_data/generated/prep/train/audio_cbin_annot_notmat"
+data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032312"
+output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat"
 audio_format = "cbin"
 annot_format = "notmat"
-spect_output_dir = "./tests/test_data/generated/prep/train/audio_cbin_annot_notmat"
+spect_output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat"
 labelset = "iabcdefghjk"
 train_dur = 50
 val_dur = 15
@@ -29,7 +29,7 @@ ckpt_step = 200
 patience = 4
 num_workers = 4
 device = "cuda"
-root_results_dir = "./tests/test_data/generated/results/train/audio_cbin_annot_notmat"
+root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/tweetynet"
 
 [TweetyNet.optimizer]
 lr = 0.001

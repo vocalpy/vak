@@ -29,8 +29,8 @@ def test_files_from_dir_with_cbin(audio_dir_cbin,
 
 @pytest.mark.parametrize(
     ('dir_path', 'ext'),
-    [('./tests/test_data/source/audio_wav_annot_textgrid/AGBk/', 'WAV'),
-     ('./tests/test_data/source/audio_wav_annot_koumura/Bird0/Wave', 'wav'),
+    [('./tests/data_for_tests/source/audio_wav_annot_textgrid/AGBk/', 'WAV'),
+     ('./tests/data_for_tests/source/audio_wav_annot_koumura/Bird0/Wave', 'wav'),
      ]
 )
 def test_from_dir_is_case_insensitive(dir_path, ext):
@@ -43,8 +43,8 @@ def test_from_dir_is_case_insensitive(dir_path, ext):
 
 @pytest.mark.parametrize(
     ('dir_path', 'ext'),
-    [('./tests/test_data/source/audio_wav_annot_textgrid/', 'WAV'),
-     ('./tests/test_data/source/audio_wav_annot_koumura/Bird0', 'wav'),
+    [('./tests/data_for_tests/source/audio_wav_annot_textgrid/', 'WAV'),
+     ('./tests/data_for_tests/source/audio_wav_annot_koumura/Bird0', 'wav'),
      ]
 )
 def test_from_dir_searches_child_dir(dir_path, ext):

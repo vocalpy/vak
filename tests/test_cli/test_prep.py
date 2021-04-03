@@ -28,8 +28,10 @@ def test_purpose_from_toml(config_type,
                            spect_format,
                            annot_format,
                            specific_config,
+                           default_model,
                            tmp_path):
     toml_path = specific_config(config_type=config_type,
+                                model=default_model,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
                                 spect_format=spect_format)
@@ -55,6 +57,7 @@ def test_prep(config_type,
               spect_format,
               annot_format,
               specific_config,
+              default_model,
               tmp_path):
     output_dir = tmp_path.joinpath(f'test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}')
     output_dir.mkdir()
@@ -73,6 +76,7 @@ def test_prep(config_type,
         },
     ]
     toml_path = specific_config(config_type=config_type,
+                                model=default_model,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
                                 spect_format=spect_format,
@@ -107,6 +111,7 @@ def test_prep_csv_path_raises(config_type,
                               spect_format,
                               annot_format,
                               specific_config,
+                              default_model,
                               tmp_path):
     output_dir = tmp_path.joinpath(f'test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}')
     output_dir.mkdir()
@@ -119,6 +124,7 @@ def test_prep_csv_path_raises(config_type,
         },
     ]
     toml_path = specific_config(config_type=config_type,
+                                model=default_model,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
                                 spect_format=spect_format,

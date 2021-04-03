@@ -1,9 +1,9 @@
 [PREP]
-data_dir = "./tests/test_data/source/spect_mat_annot_yarden/llb3/spect"
-output_dir = "./tests/test_data/generated/prep/train/spect_mat_annot_yarden"
+data_dir = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/spect"
+output_dir = "./tests/data_for_tests/generated/prep/train/spect_mat_annot_yarden"
 spect_format = "mat"
 annot_format = "yarden"
-annot_file = "./tests/test_data/source/spect_mat_annot_yarden/llb3/llb3_annot_subset.mat"
+annot_file = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/llb3_annot_subset.mat"
 labelset = "range: 1-3,6-14,17-19"
 train_dur = 213
 val_dur = 213
@@ -28,7 +28,7 @@ ckpt_step = 200
 patience = 4
 num_workers = 4
 device = "cuda"
-root_results_dir = "./tests/test_data/generated/results/train/spect_mat_annot_yarden"
+root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/tweetynet"
 
 [TweetyNet.optimizer]
 lr = 0.001

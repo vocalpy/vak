@@ -44,6 +44,7 @@ def test_train(audio_format,
                annot_format,
                specific_config,
                tmp_path,
+               model,
                device):
     options_to_change = {
         'section': 'TRAIN',
@@ -51,6 +52,7 @@ def test_train(audio_format,
         'value': device
     }
     toml_path = specific_config(config_type='train',
+                                model=model,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
                                 spect_format=spect_format,

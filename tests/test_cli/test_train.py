@@ -23,6 +23,7 @@ def test_train(audio_format,
                annot_format,
                specific_config,
                tmp_path,
+               model,
                device):
     root_results_dir = tmp_path.joinpath('test_train_root_results_dir')
     root_results_dir.mkdir()
@@ -37,6 +38,7 @@ def test_train(audio_format,
         ]
 
     toml_path = specific_config(config_type='train',
+                                model=model,
                                 audio_format=audio_format,
                                 annot_format=annot_format,
                                 spect_format=spect_format,

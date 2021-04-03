@@ -1,0 +1,116 @@
+{
+  "configs": [
+    {
+      "filename": "tweetynet_eval_audio_cbin_annot_notmat.toml",
+      "model": "tweetynet",
+      "config_type": "eval",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "tweetynet_learncurve_audio_cbin_annot_notmat.toml",
+      "model": "tweetynet",
+      "config_type": "learncurve",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "tweetynet_predict_audio_cbin_annot_notmat.toml",
+      "model": "tweetynet",
+      "config_type": "predict",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "tweetynet_predict_audio_wav_annot_koumura.toml",
+      "model": "tweetynet",
+      "config_type": "predict",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "koumura"
+    },
+    {
+      "filename": "tweetynet_train_audio_cbin_annot_notmat.toml",
+      "model": "tweetynet",
+      "config_type": "train",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "tweetynet_train_audio_wav_annot_koumura.toml",
+      "model": "tweetynet",
+      "config_type": "train",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "koumura"
+    },
+    {
+      "filename": "tweetynet_train_spect_mat_annot_yarden.toml",
+      "model": "tweetynet",
+      "config_type": "train",
+      "audio_format": null,
+      "spect_format": "mat",
+      "annot_format": "yarden"
+    },
+    {
+      "filename": "teenytweetynet_eval_audio_cbin_annot_notmat.toml",
+      "model": "teenytweetynet",
+      "config_type": "eval",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "teenytweetynet_learncurve_audio_cbin_annot_notmat.toml",
+      "model": "teenytweetynet",
+      "config_type": "learncurve",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "teenytweetynet_predict_audio_cbin_annot_notmat.toml",
+      "model": "teenytweetynet",
+      "config_type": "predict",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "teenytweetynet_predict_audio_wav_annot_koumura.toml",
+      "model": "teenytweetynet",
+      "config_type": "predict",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "koumura"
+    },
+    {
+      "filename": "teenytweetynet_train_audio_cbin_annot_notmat.toml",
+      "model": "teenytweetynet",
+      "config_type": "train",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "teenytweetynet_train_audio_wav_annot_koumura.toml",
+      "model": "teenytweetynet",
+      "config_type": "train",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "koumura"
+    },
+    {
+      "filename": "teenytweetynet_train_spect_mat_annot_yarden.toml",
+      "model": "teenytweetynet",
+      "config_type": "train",
+      "audio_format": null,
+      "spect_format": "mat",
+      "annot_format": "yarden"
+    }
+  ]
+}

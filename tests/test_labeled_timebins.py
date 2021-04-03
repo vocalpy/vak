@@ -136,9 +136,11 @@ SPECT_FILES_TO_SKIP = [
 def test_lbl_tb2segments_recovers_onsets_offsets_labels_from_real_data(
         specific_dataframe,
         labelset_yarden,
+        model,
 ):
     """test that ``lbl_tb2segments`` recovers onsets and offsets from real data"""
     vak_df = specific_dataframe(config_type='train',
+                                model=model,
                                 spect_format='mat',
                                 annot_format='yarden')
     labelmap = vak.labels.to_map(

@@ -3,9 +3,9 @@ from pathlib import Path
 import pandas as pd
 
 HERE = Path(__file__).parent
-PROJ_ROOT = HERE / '..' / '..' / '..'
-PROJ_ROOT_ABS = PROJ_ROOT.resolve()
-GENERATED_TEST_DATA = PROJ_ROOT / 'tests' / 'test_data' / 'generated'
+PROJ_ROOT = HERE / '..' / '..'
+PROJ_ROOT_ABS = PROJ_ROOT.resolve()  # <- used to fix paths!!!
+GENERATED_TEST_DATA = PROJ_ROOT / 'tests' / 'data_for_tests' / 'generated'
 
 
 def main():

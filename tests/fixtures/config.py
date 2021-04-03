@@ -8,11 +8,12 @@ import toml
 
 @pytest.fixture
 def test_configs_root(test_data_root):
-    """Path that points to test_data/configs
+    """Path that points to data_for_tests/configs
 
     Two types of config files in this directory:
-    1) those used by the src/scripts/test_data/test_data_generate.py script.
-       All configs that start with ``test_`` prefix.
+    1) those used by the tests/scripts/generate_data_for_tests.py script.
+       Will be listed in configs.json. See ``specific_config`` fixture below
+       for details about types of configs.
     2) those used by tests that are static, e.g., ``invalid_section_config.toml``
 
     This fixture facilitates access to type (2), e.g. in test_config/test_parse
@@ -72,7 +73,7 @@ def generated_test_configs_root(generated_test_data_root):
 # ---- path to config files ----
 @pytest.fixture
 def all_generated_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob('test*toml'))
+    return sorted(generated_test_configs_root.glob('*toml'))
 
 
 @pytest.fixture
@@ -98,6 +99,7 @@ def specific_config(generated_test_configs_root,
     e.g. to the ``tmp_path`` fixture used by unit tests
     """
     def _specific_config(config_type,
+                         model,
                          annot_format,
                          audio_format=None,
                          spect_format=None,
@@ -131,6 +133,7 @@ def specific_config(generated_test_configs_root,
             if all(
                 [
                     schematized_config['config_type'] == config_type,
+                    schematized_config['model'] == model,
                     schematized_config['annot_format'] == annot_format,
                     schematized_config['audio_format'] == audio_format,
                     schematized_config['spect_format'] == spect_format,
@@ -208,12 +211,14 @@ def specific_config_toml(specific_config):
     `config_type`, `audio_format`, `spect_format`, `annot_format`
     """
     def _specific_config_toml(config_type,
+                              model,
                               annot_format,
                               audio_format=None,
                               spect_format=None,
                               ):
         config_path = specific_config(
             config_type,
+            model,
             annot_format,
             audio_format,
             spect_format
