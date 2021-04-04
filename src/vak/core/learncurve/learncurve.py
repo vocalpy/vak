@@ -225,6 +225,7 @@ def learning_curve(model_config_map,
         )
 
         for replicate_num, this_train_dur_this_replicate_csv_path in enumerate(csv_paths):
+            replicate_num += 1  # so log statements below match replicate nums returned by train_dur_csv_paths
             log_or_print(
                 f'Training replicate {replicate_num} '
                 f'using dataset from .csv file: {this_train_dur_this_replicate_csv_path}',

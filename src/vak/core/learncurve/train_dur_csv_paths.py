@@ -1,5 +1,4 @@
 from collections import defaultdict
-from pathlib import Path
 import pprint
 import re
 import shutil
@@ -7,15 +6,72 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from vak import split
-from vak.datasets.window_dataset import WindowDataset
-from vak.logging import log_or_print
+from ... import split
+from ...converters import expanded_user_path
+from ...datasets.window_dataset import WindowDataset
+from ...logging import log_or_print
 
 
 # pattern used by path.glob to find all training data subset csvs within previous_run_path
 CSV_GLOB = '**/*prep*csv'
 # pattern used by re to get training subset duration
 TRAIN_DUR_PAT = r'train_dur_(\d+\.\d+|\d+)s'
+
+
+def _dict_from_dir(previous_run_path):
+    """
+    build dictionary that maps training set durations to a list of
+    training subset csv paths, ordered by replicate number
+
+    factored out as helper function so we can test this works correctly
+
+    Parameters
+    ----------
+    previous_run_path : str, Path
+        path to directory containing dataset .csv files
+        that represent subsets of training set, created by
+        a previous run of ``vak.core.learncurve.learning_curve``.
+        Typically directory will have a name like ``results_{timestamp}``
+        and the actual .csv splits will be in sub-directories with names
+        corresponding to the training set duration
+
+    Returns
+    -------
+    train_dur_csv_paths : dict
+        where keys are duration in seconds of subsets taken from training data,
+        and corresponding values are lists of paths to .csv files containing
+        those subsets
+    """
+    train_dur_csv_paths = {}
+    train_dur_dirs = previous_run_path.glob('train_dur_*s')
+    for train_dur_dir in train_dur_dirs:
+        train_dur = re.findall(TRAIN_DUR_PAT, train_dur_dir.name)
+        if len(train_dur) != 1:
+            raise ValueError(
+                f'did not find just a single training subset duration in filename:\n'
+                f'{train_subset_path}\n'
+                f'Instead found: {train_dur}'
+            )
+        train_dur = int(train_dur[0])
+        # sort by increasing replicate number -- numerically, not alphabetically
+        replicate_dirs = sorted(
+            train_dur_dir.glob('replicate_*'),
+            key=lambda dir_path: int(dir_path.name.split('_')[-1])
+        )
+        train_subset_paths = []
+        for replicate_dir in replicate_dirs:
+            train_subset_path = sorted(replicate_dir.glob('*prep*csv'))
+            if len(train_subset_path) != 1:
+                raise ValueError(
+                    f'did not find just a single training subset .csv in replicate directory:\n'
+                    f'{replicate_dir}\n'
+                    f'Instead found: {train_subset_path}'
+                )
+            train_subset_path = train_subset_path[0]
+            train_subset_paths.append(train_subset_path)
+        train_dur_csv_paths[train_dur] = train_subset_paths
+
+    return train_dur_csv_paths
 
 
 def from_dir(previous_run_path,
@@ -60,7 +116,7 @@ def from_dir(previous_run_path,
          to ``vak.core.learncurve.learning_curve``, unless specified by user.
     window_size : int
         size of windows taken from spectrograms, in number of time bins,
-        shonw to neural networks
+        shown to neural networks
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
@@ -87,21 +143,15 @@ def from_dir(previous_run_path,
     duration, i.e., that the new experiment will correctly use
     all datasets from a previous run
     """
-    previous_run_path = Path(previous_run_path)
-    csv_paths = sorted(previous_run_path.glob(CSV_GLOB))
+    previous_run_path = expanded_user_path(previous_run_path)
+    if not previous_run_path.is_dir():
+        raise NotADirectoryError(
+            f'previous_run_path not recognized as a directory:\n{previous_run_path}'
+        )
 
-    train_dur_csv_paths = defaultdict(list)
-    for train_subset_path in csv_paths:
-        train_dur = re.findall(TRAIN_DUR_PAT, train_subset_path.name)
-        if len(train_dur) != 1:
-            raise ValueError(
-                f'did not find just a single training subset duration in filename:\n'
-                f'{train_subset_path}\n'
-                f'Instead found: {train_dur}'
-            )
-        train_dur = int(train_dur[0])
-        train_dur_csv_paths[train_dur].append(train_subset_path)
+    train_dur_csv_paths = _dict_from_dir(previous_run_path)
 
+    # validate results
     found_train_set_durs = sorted(train_dur_csv_paths.keys())
     if not found_train_set_durs == sorted(train_set_durs):
         raise ValueError(
@@ -163,6 +213,31 @@ def from_dir(previous_run_path,
     return train_dur_csv_paths
 
 
+def train_dur_dirname(train_dur):
+    """helper function that returns name of directory for all replicates
+    trained with a training set of a specified duration
+
+    factored out as function so we can test and use in fixtures
+    """
+    return f'train_dur_{train_dur}s'
+
+
+def replicate_dirname(replicate_num):
+    """"helper function that returns name of directory for a replicate
+
+    factored out as function so we can test and use in fixtures
+    """
+    return f'replicate_{replicate_num}'
+
+
+def subset_csv_filename(csv_path, train_dur, replicate_num):
+    """"helper function that returns name of directory for a replicate
+
+    factored out as function so we can test and use in fixtures
+    """
+    return f'{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv'
+
+
 def from_df(dataset_df,
             csv_path,
             train_set_durs,
@@ -183,7 +258,7 @@ def from_df(dataset_df,
     ----------
     dataset_df : pandas.DataFrame
         representing an entire dataset of vocalizations.
-    csv_path : str
+    csv_path : pathlib.Path
         path to where dataset was saved as a csv.
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
@@ -232,10 +307,14 @@ def from_df(dataset_df,
     for train_dur in train_set_durs:
         log_or_print(f'subsetting training set for training set of duration: {train_dur}',
                      logger=logger, level='info')
-        results_path_this_train_dur = results_path.joinpath(f'train_dur_{train_dur}s')
+        results_path_this_train_dur = results_path.joinpath(
+            train_dur_dirname(train_dur)
+        )
         results_path_this_train_dur.mkdir()
         for replicate_num in range(1, num_replicates + 1):
-            results_path_this_replicate = results_path_this_train_dur.joinpath(f'replicate_{replicate_num}')
+            results_path_this_replicate = results_path_this_train_dur.joinpath(
+                replicate_dirname(replicate_num)
+            )
             results_path_this_replicate.mkdir()
             # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
@@ -265,8 +344,9 @@ def from_df(dataset_df,
                  )
             )
 
-            subset_csv_name = f'{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv'
-            subset_csv_path = results_path_this_replicate.joinpath(subset_csv_name)
+            subset_csv_path = results_path_this_replicate.joinpath(
+                subset_csv_filename(csv_path, train_dur, replicate_num)
+            )
             subset_df.to_csv(subset_csv_path, index=False)
             train_dur_csv_paths[train_dur].append(subset_csv_path)
 
