@@ -18,7 +18,7 @@ def test_configs_root(test_data_root):
 
     This fixture facilitates access to type (2), e.g. in test_config/test_parse
     """
-    return test_data_root.joinpath('configs')
+    return test_data_root.joinpath("configs")
 
 
 @pytest.fixture
@@ -46,40 +46,38 @@ def list_of_schematized_configs(test_configs_root):
     itself return a configuration ``filename``, when provided values for
     all of the other keys.
     """
-    with test_configs_root.joinpath('configs.json').open('r') as fp:
-        return json.load(fp)['configs']
+    with test_configs_root.joinpath("configs.json").open("r") as fp:
+        return json.load(fp)["configs"]
 
 
 @pytest.fixture
 def config_that_doesnt_exist(tmp_path):
-    return tmp_path / 'config_that_doesnt_exist.toml'
+    return tmp_path / "config_that_doesnt_exist.toml"
 
 
 @pytest.fixture
 def invalid_section_config_path(test_configs_root):
-    return test_configs_root.joinpath('invalid_section_config.toml')
+    return test_configs_root.joinpath("invalid_section_config.toml")
 
 
 @pytest.fixture
 def invalid_option_config_path(test_configs_root):
-    return test_configs_root.joinpath('invalid_option_config.toml')
+    return test_configs_root.joinpath("invalid_option_config.toml")
 
 
 @pytest.fixture
 def generated_test_configs_root(generated_test_data_root):
-    return generated_test_data_root.joinpath('configs')
+    return generated_test_data_root.joinpath("configs")
 
 
 # ---- path to config files ----
 @pytest.fixture
 def all_generated_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob('*toml'))
+    return sorted(generated_test_configs_root.glob("*toml"))
 
 
 @pytest.fixture
-def specific_config(generated_test_configs_root,
-                    list_of_schematized_configs,
-                    tmp_path):
+def specific_config(generated_test_configs_root, list_of_schematized_configs, tmp_path):
     """returns a factory function
     that will return the path
     to a specific configuration file, determined by
@@ -98,13 +96,15 @@ def specific_config(generated_test_configs_root,
     This makes it possible to dynamically change the ``root_results_dir``
     e.g. to the ``tmp_path`` fixture used by unit tests
     """
-    def _specific_config(config_type,
-                         model,
-                         annot_format,
-                         audio_format=None,
-                         spect_format=None,
-                         options_to_change=None
-                         ):
+
+    def _specific_config(
+        config_type,
+        model,
+        annot_format,
+        audio_format=None,
+        spect_format=None,
+        options_to_change=None,
+    ):
         """returns path to a specific configuration file,
         determined by characteristics specified by the caller:
         `config_type`, `audio_format`, `spect_format`, `annot_format`
@@ -132,14 +132,16 @@ def specific_config(generated_test_configs_root,
         for schematized_config in list_of_schematized_configs:
             if all(
                 [
-                    schematized_config['config_type'] == config_type,
-                    schematized_config['model'] == model,
-                    schematized_config['annot_format'] == annot_format,
-                    schematized_config['audio_format'] == audio_format,
-                    schematized_config['spect_format'] == spect_format,
+                    schematized_config["config_type"] == config_type,
+                    schematized_config["model"] == model,
+                    schematized_config["annot_format"] == annot_format,
+                    schematized_config["audio_format"] == audio_format,
+                    schematized_config["spect_format"] == spect_format,
                 ]
             ):
-                original_config_path = generated_test_configs_root.joinpath(schematized_config['filename'])
+                original_config_path = generated_test_configs_root.joinpath(
+                    schematized_config["filename"]
+                )
 
         if original_config_path is None:
             raise ValueError(
@@ -148,8 +150,7 @@ def specific_config(generated_test_configs_root,
                 f"and `config_type`='{spect_format}', "
             )
         config_copy_path = tmp_path.joinpath(original_config_path.name)
-        config_copy_path = shutil.copy(src=original_config_path,
-                                       dst=config_copy_path)
+        config_copy_path = shutil.copy(src=original_config_path, dst=config_copy_path)
 
         if options_to_change is not None:
             if isinstance(options_to_change, dict):
@@ -157,15 +158,17 @@ def specific_config(generated_test_configs_root,
             elif isinstance(options_to_change, list):
                 pass
             else:
-                raise TypeError(f'invalid type for `options_to_change`: {type(options_to_change)}')
+                raise TypeError(
+                    f"invalid type for `options_to_change`: {type(options_to_change)}"
+                )
 
-            with config_copy_path.open('r') as fp:
+            with config_copy_path.open("r") as fp:
                 config_toml = toml.load(fp)
 
             for opt_dict in options_to_change:
-                config_toml[opt_dict['section']][opt_dict['option']] = opt_dict['value']
+                config_toml[opt_dict["section"]][opt_dict["option"]] = opt_dict["value"]
 
-            with config_copy_path.open('w') as fp:
+            with config_copy_path.open("w") as fp:
                 toml.dump(config_toml, fp)
 
         return config_copy_path
@@ -175,29 +178,29 @@ def specific_config(generated_test_configs_root,
 
 @pytest.fixture
 def all_generated_train_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob('test_train*toml'))
+    return sorted(generated_test_configs_root.glob("test_train*toml"))
 
 
 @pytest.fixture
 def all_generated_learncurve_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob('test_learncurve*toml'))
+    return sorted(generated_test_configs_root.glob("test_learncurve*toml"))
 
 
 @pytest.fixture
 def all_generated_eval_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob('test_eval*toml'))
+    return sorted(generated_test_configs_root.glob("test_eval*toml"))
 
 
 @pytest.fixture
 def all_generated_predict_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob('test_predict*toml'))
+    return sorted(generated_test_configs_root.glob("test_predict*toml"))
 
 
 # ----  config toml from paths ----
 def _return_toml(toml_path):
     """return config files loaded into dicts with toml library
     used to test functions that parse config sections, taking these dicts as inputs"""
-    with toml_path.open('r') as fp:
+    with toml_path.open("r") as fp:
         config_toml = toml.load(fp)
     return config_toml
 
@@ -210,18 +213,16 @@ def specific_config_toml(specific_config):
     characteristics specified by the caller:
     `config_type`, `audio_format`, `spect_format`, `annot_format`
     """
-    def _specific_config_toml(config_type,
-                              model,
-                              annot_format,
-                              audio_format=None,
-                              spect_format=None,
-                              ):
+
+    def _specific_config_toml(
+        config_type,
+        model,
+        annot_format,
+        audio_format=None,
+        spect_format=None,
+    ):
         config_path = specific_config(
-            config_type,
-            model,
-            annot_format,
-            audio_format,
-            spect_format
+            config_type, model, annot_format, audio_format, spect_format
         )
         return _return_toml(config_path)
 

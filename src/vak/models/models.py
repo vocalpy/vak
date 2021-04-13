@@ -20,7 +20,7 @@ https://amir.rachum.com/blog/2017/07/28/python-entry-points/
 """
 from .. import entry_points
 
-MODELS_ENTRY_POINT = 'vak.models'
+MODELS_ENTRY_POINT = "vak.models"
 
 
 def find():
@@ -61,13 +61,15 @@ def from_model_config_map(model_config_map, num_classes, input_shape, logger=Non
     models_map = {}
     for model_name, model_config in model_config_map.items():
         # pass section dict as kwargs to config parser function
-        model_config['network'].update(
+        model_config["network"].update(
             num_classes=num_classes,
             input_shape=input_shape,
         )
         try:
             model = MODELS[model_name].from_config(config=model_config)
         except KeyError:
-            model = MODELS[f'{model_name}Model'].from_config(config=model_config, logger=logger)
+            model = MODELS[f"{model_name}Model"].from_config(
+                config=model_config, logger=logger
+            )
         models_map[model_name] = model
     return models_map

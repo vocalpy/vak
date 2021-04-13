@@ -26,10 +26,12 @@ def column_or_1d(y, warn=False):
         return np.ravel(y)
     if len(shape) == 2 and shape[1] == 1:
         if warn:
-            warnings.warn("A column-vector y was passed when a 1d array was"
-                          " expected. Please change the shape of y to "
-                          "(n_samples, ), for example using ravel().",
-                          stacklevel=2)
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples, ), for example using ravel().",
+                stacklevel=2,
+            )
         return np.ravel(y)
 
     raise ValueError("bad input shape {0}".format(shape))
@@ -53,10 +55,12 @@ def row_or_1d(y, warn=False):
         return np.ravel(y)
     if len(shape) == 2 and shape[0] == 1:
         if warn:
-            warnings.warn("A row-vector y was passed when a 1d array was"
-                          " expected. Please change the shape of y to "
-                          "(n_samples, ), for example using ravel().",
-                          stacklevel=2)
+            warnings.warn(
+                "A row-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples, ), for example using ravel().",
+                stacklevel=2,
+            )
         return np.ravel(y)
 
     raise ValueError("bad input shape {0}".format(shape))

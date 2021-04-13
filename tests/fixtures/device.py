@@ -1,9 +1,9 @@
 import pytest
 import torch
 
-DEVICES = ['cpu']
+DEVICES = ["cpu"]
 if torch.cuda.is_available():
-    DEVICES.append('cuda')
+    DEVICES.append("cuda")
 
 
 @pytest.fixture(params=DEVICES)

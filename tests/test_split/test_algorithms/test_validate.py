@@ -13,23 +13,27 @@ from vak.split.algorithms.validate import validate_split_durations
         (-1, 20, 100, 200, -1, 20, 100),
         (100, None, None, 200, 100, 0, 0),
         (None, None, 100, 200, 0, 0, 100),
-
-    ]
+    ],
 )
-def test_validate_durs(train_dur_in,
-                       val_dur_in,
-                       test_dur_in,
-                       dataset_dur,
-                       train_dur_expected,
-                       val_dur_expected,
-                       test_dur_expected):
-    train_dur_out, val_dur_out, test_dur_out = validate_split_durations(train_dur_in,
-                                                                        val_dur_in,
-                                                                        test_dur_in,
-                                                                        dataset_dur)
-    assert all([train_dur_out == train_dur_expected,
-                val_dur_out == val_dur_expected,
-                test_dur_out == test_dur_expected])
+def test_validate_durs(
+    train_dur_in,
+    val_dur_in,
+    test_dur_in,
+    dataset_dur,
+    train_dur_expected,
+    val_dur_expected,
+    test_dur_expected,
+):
+    train_dur_out, val_dur_out, test_dur_out = validate_split_durations(
+        train_dur_in, val_dur_in, test_dur_in, dataset_dur
+    )
+    assert all(
+        [
+            train_dur_out == train_dur_expected,
+            val_dur_out == val_dur_expected,
+            test_dur_out == test_dur_expected,
+        ]
+    )
 
 
 def test_validate_durs_all_durs_none_raises():
@@ -39,10 +43,7 @@ def test_validate_durs_all_durs_none_raises():
     dataset_dur = 200
     with pytest.raises(ValueError):
         # because we have to specify at least one of train_dur or test_dur
-        validate_split_durations(train_dur_in,
-                                 val_dur_in,
-                                 test_dur_in,
-                                 dataset_dur)
+        validate_split_durations(train_dur_in, val_dur_in, test_dur_in, dataset_dur)
 
 
 def test_validate_durs_val_only_raises():

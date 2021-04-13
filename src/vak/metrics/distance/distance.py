@@ -1,8 +1,6 @@
 from . import functional as F
 
-__all__ = [
-    'Levenshtein', 'SegmentErrorRate'
-]
+__all__ = ["Levenshtein", "SegmentErrorRate"]
 
 
 class Levenshtein:
@@ -20,6 +18,7 @@ class Levenshtein:
         number of deletions, insertions, or substitutions
         required to convert source into target.
     """
+
     def __init__(self):
         pass
 
@@ -43,6 +42,7 @@ class SegmentErrorRate:
     -------
     Levenshtein distance(y_pred, y_true) / len(y_true)
     """
+
     def __init__(self):
         pass
 

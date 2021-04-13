@@ -7,80 +7,71 @@ import vak.paths
 import vak.core.train
 
 
-def train_output_matches_expected(cfg,
-                                  model_config_map,
-                                  results_path):
-    assert results_path.joinpath('labelmap.json').exists()
+def train_output_matches_expected(cfg, model_config_map, results_path):
+    assert results_path.joinpath("labelmap.json").exists()
 
     if cfg.train.normalize_spectrograms:
-        assert results_path.joinpath('StandardizeSpect').exists()
+        assert results_path.joinpath("StandardizeSpect").exists()
 
     for model_name in model_config_map.keys():
         model_path = results_path.joinpath(model_name)
         assert model_path.exists()
 
-        tensorboard_log = sorted(model_path.glob(f'events.out.tfevents.*{model_name}'))
+        tensorboard_log = sorted(model_path.glob(f"events.out.tfevents.*{model_name}"))
         assert len(tensorboard_log) == 1
 
-        checkpoints_path = model_path.joinpath('checkpoints')
+        checkpoints_path = model_path.joinpath("checkpoints")
         assert checkpoints_path.exists()
-        assert checkpoints_path.joinpath('checkpoint.pt').exists()
+        assert checkpoints_path.joinpath("checkpoint.pt").exists()
         if cfg.train.val_step is not None:
-            assert checkpoints_path.joinpath('max-val-acc-checkpoint.pt').exists()
+            assert checkpoints_path.joinpath("max-val-acc-checkpoint.pt").exists()
 
     return True
 
 
 @pytest.mark.parametrize(
-    'audio_format, spect_format, annot_format',
+    "audio_format, spect_format, annot_format",
     [
-        ('cbin', None, 'notmat'),
-        ('wav', None, 'koumura'),
-        (None, 'mat', 'yarden'),
-    ]
+        ("cbin", None, "notmat"),
+        ("wav", None, "koumura"),
+        (None, "mat", "yarden"),
+    ],
 )
-def test_train(audio_format,
-               spect_format,
-               annot_format,
-               specific_config,
-               tmp_path,
-               model,
-               device):
-    options_to_change = {
-        'section': 'TRAIN',
-        'option': 'device',
-        'value': device
-    }
-    toml_path = specific_config(config_type='train',
-                                model=model,
-                                audio_format=audio_format,
-                                annot_format=annot_format,
-                                spect_format=spect_format,
-                                options_to_change=options_to_change)
+def test_train(
+    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+):
+    options_to_change = {"section": "TRAIN", "option": "device", "value": device}
+    toml_path = specific_config(
+        config_type="train",
+        model=model,
+        audio_format=audio_format,
+        annot_format=annot_format,
+        spect_format=spect_format,
+        options_to_change=options_to_change,
+    )
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
-    vak.core.train(model_config_map,
-                   cfg.train.csv_path,
-                   cfg.prep.labelset,
-                   cfg.dataloader.window_size,
-                   cfg.train.batch_size,
-                   cfg.train.num_epochs,
-                   cfg.train.num_workers,
-                   results_path=results_path,
-                   spect_key=cfg.spect_params.spect_key,
-                   timebins_key=cfg.spect_params.timebins_key,
-                   normalize_spectrograms=cfg.train.normalize_spectrograms,
-                   shuffle=cfg.train.shuffle,
-                   val_step=cfg.train.val_step,
-                   ckpt_step=cfg.train.ckpt_step,
-                   patience=cfg.train.patience,
-                   device=cfg.train.device,
-                   logger=None,
-                   )
+    vak.core.train(
+        model_config_map,
+        cfg.train.csv_path,
+        cfg.prep.labelset,
+        cfg.dataloader.window_size,
+        cfg.train.batch_size,
+        cfg.train.num_epochs,
+        cfg.train.num_workers,
+        results_path=results_path,
+        spect_key=cfg.spect_params.spect_key,
+        timebins_key=cfg.spect_params.timebins_key,
+        normalize_spectrograms=cfg.train.normalize_spectrograms,
+        shuffle=cfg.train.shuffle,
+        val_step=cfg.train.val_step,
+        ckpt_step=cfg.train.ckpt_step,
+        patience=cfg.train.patience,
+        device=cfg.train.device,
+        logger=None,
+    )
 
-    assert train_output_matches_expected(cfg,
-                                         model_config_map,
-                                         results_path)
+    assert train_output_matches_expected(cfg, model_config_map, results_path)

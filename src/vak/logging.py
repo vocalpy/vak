@@ -5,11 +5,7 @@ from pathlib import Path
 import sys
 
 
-def get_logger(log_dst,
-               caller,
-               logger_name,
-               timestamp=None,
-               level='INFO'):
+def get_logger(log_dst, caller, logger_name, timestamp=None, level="INFO"):
     """get a logger
 
     Parameters
@@ -36,24 +32,20 @@ def get_logger(log_dst,
     log_dst = Path(log_dst)
     if not log_dst.is_dir():
         raise NotADirectoryError(
-            f'destination for log file is not a directory: {log_dst}'
+            f"destination for log file is not a directory: {log_dst}"
         )
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
 
     if timestamp is None:
-        timestamp = datetime.now().strftime('%y%m%d_%H%M%S')
-    logfile_name = log_dst.joinpath(
-        f'{caller}_{timestamp}.log'
-    )
+        timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+    logfile_name = log_dst.joinpath(f"{caller}_{timestamp}.log")
     logger.addHandler(logging.FileHandler(logfile_name))
     logger.addHandler(logging.StreamHandler(sys.stdout))
     return logger
 
 
-def log_or_print(msg,
-                 logger=None,
-                 level=None):
+def log_or_print(msg, logger=None, level=None):
     """helper function to either send a message to the logger,
     or print the message if no logger is being used
 

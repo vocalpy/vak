@@ -31,11 +31,18 @@ class Config:
     learncurve : vak.config.learncurve.LearncurveConfig
         represents [LEARNCURVE] section of config.toml file
     """
-    spect_params = attr.ib(validator=instance_of(SpectParamsConfig), default=SpectParamsConfig())
-    dataloader = attr.ib(validator=instance_of(DataLoaderConfig), default=DataLoaderConfig())
+
+    spect_params = attr.ib(
+        validator=instance_of(SpectParamsConfig), default=SpectParamsConfig()
+    )
+    dataloader = attr.ib(
+        validator=instance_of(DataLoaderConfig), default=DataLoaderConfig()
+    )
 
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     eval = attr.ib(validator=optional(instance_of(EvalConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
-    learncurve = attr.ib(validator=optional(instance_of(LearncurveConfig)), default=None)
+    learncurve = attr.ib(
+        validator=optional(instance_of(LearncurveConfig)), default=None
+    )

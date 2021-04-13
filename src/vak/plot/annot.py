@@ -4,11 +4,7 @@ from matplotlib.collections import LineCollection
 import numpy as np
 
 
-def plot_segments(onsets,
-                  offsets,
-                  y=0.5,
-                  ax=None,
-                  line_kwargs=None):
+def plot_segments(onsets, offsets, y=0.5, ax=None, line_kwargs=None):
     """plot segments on an axis.
 
     Creates a collection of horizontal lines
@@ -38,18 +34,12 @@ def plot_segments(onsets,
         fig, ax = plt.subplots
     segments = []
     for on, off in zip(onsets, offsets):
-        segments.append(
-            ((on, y), (off, y))
-        )
+        segments.append(((on, y), (off, y)))
     lc = LineCollection(segments, **line_kwargs)
     ax.add_collection(lc)
 
 
-def plot_labels(labels,
-                t,
-                y=0.6,
-                ax=None,
-                text_kwargs=None):
+def plot_labels(labels, t, y=0.6, ax=None, text_kwargs=None):
     """plot labels on an axis.
 
     Parameters
@@ -77,14 +67,16 @@ def plot_labels(labels,
         ax.text(t_lbl, y, label, **text_kwargs)
 
 
-def annotation(annot,
-               t,
-               tlim=None,
-               y_segments=0.5,
-               y_labels=0.6,
-               line_kwargs=None,
-               text_kwargs=None,
-               ax=None):
+def annotation(
+    annot,
+    t,
+    tlim=None,
+    y_segments=0.5,
+    y_labels=0.6,
+    line_kwargs=None,
+    text_kwargs=None,
+    ax=None,
+):
     """plot segments with labels, from annotation
 
     Parameters
@@ -122,14 +114,14 @@ def annotation(annot,
 
     segment_centers = []
     for on, off in zip(annot.seq.onsets_s, annot.seq.offsets_s):
-        segment_centers.append(
-            np.mean([on, off])
-        )
-    plot_segments(onsets=annot.seq.onsets_s,
-                  offsets=annot.seq.offsets_s,
-                  y=y_segments,
-                  ax=ax,
-                  line_kwargs=line_kwargs)
+        segment_centers.append(np.mean([on, off]))
+    plot_segments(
+        onsets=annot.seq.onsets_s,
+        offsets=annot.seq.offsets_s,
+        y=y_segments,
+        ax=ax,
+        line_kwargs=line_kwargs,
+    )
 
     if tlim:
         ax.set_xlim(tlim)
@@ -146,8 +138,6 @@ def annotation(annot,
         labels = annot.seq.labels
 
     segment_centers = np.array(segment_centers)
-    plot_labels(labels=labels,
-                t=segment_centers,
-                y=y_labels,
-                ax=ax,
-                text_kwargs=text_kwargs)
+    plot_labels(
+        labels=labels, t=segment_centers, y=y_labels, ax=ax, text_kwargs=text_kwargs
+    )

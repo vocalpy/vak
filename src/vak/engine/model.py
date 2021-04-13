@@ -56,20 +56,22 @@ class Model:
     """
 
     REQUIRED_SUBCLASS_ATTRIBUTES = [
-        'network',
-        'optimizer',
-        'loss',
-        'metrics',
+        "network",
+        "optimizer",
+        "loss",
+        "metrics",
     ]
 
-    def __init__(self,
-                 network,
-                 loss,
-                 optimizer,
-                 metrics,
-                 logger=None,
-                 summary_writer=None,
-                 global_step=0):
+    def __init__(
+        self,
+        network,
+        loss,
+        optimizer,
+        metrics,
+        logger=None,
+        summary_writer=None,
+        global_step=0,
+    ):
         self.network = network
         self.optimizer = optimizer
         self.loss = loss
@@ -87,13 +89,14 @@ class Model:
         self.patience = None
         self.patience_counter = 0
 
-    def _train(self,
-               train_data,
-               epoch,
-               val_data=None,
-               val_step=None,
-               ckpt_step=None,
-               ):
+    def _train(
+        self,
+        train_data,
+        epoch,
+        val_data=None,
+        val_step=None,
+        ckpt_step=None,
+    ):
         """helper method, called by the fit method on each epoch.
         Iterates once through train_data, using it to update model parameters.
         Override this method if you need to implement your own training method.
@@ -114,37 +117,56 @@ class Model:
             loss.backward()
             self.optimizer.step()
             progress_bar.set_description(
-                f'Epoch {epoch}, batch {ind}. Loss: {loss.item():.4f}. Global step: {self.global_step}'
+                f"Epoch {epoch}, batch {ind}. Loss: {loss.item():.4f}. Global step: {self.global_step}"
             )
 
             if self.summary_writer is not None:
-                self.summary_writer.add_scalar('loss/train', loss.item(), self.global_step)
+                self.summary_writer.add_scalar(
+                    "loss/train", loss.item(), self.global_step
+                )
             self.global_step += 1
 
             if val_data is not None:
                 if self.global_step % val_step == 0:
-                    log_or_print(f'Step {self.global_step} is a validation step; computing metrics on validation set',
-                                 logger=self.logger, level='info')
+                    log_or_print(
+                        f"Step {self.global_step} is a validation step; computing metrics on validation set",
+                        logger=self.logger,
+                        level="info",
+                    )
                     metric_vals = self._eval(val_data)
                     self.network.train()  # because _eval calls network.eval()
-                    log_or_print(msg=', '.join([f'{metric_name}: {metric_value:.4f}'
-                                                for metric_name, metric_value in metric_vals.items()
-                                                if metric_name.startswith('avg_')]),
-                                 logger=self.logger, level='info')
+                    log_or_print(
+                        msg=", ".join(
+                            [
+                                f"{metric_name}: {metric_value:.4f}"
+                                for metric_name, metric_value in metric_vals.items()
+                                if metric_name.startswith("avg_")
+                            ]
+                        ),
+                        logger=self.logger,
+                        level="info",
+                    )
 
                     if self.summary_writer is not None:
                         for metric_name, metric_value in metric_vals.items():
-                            if metric_name.startswith('avg_'):
-                                self.summary_writer.add_scalar(f'{metric_name}/val',
-                                                               metric_value,
-                                                               self.global_step)
+                            if metric_name.startswith("avg_"):
+                                self.summary_writer.add_scalar(
+                                    f"{metric_name}/val", metric_value, self.global_step
+                                )
 
-                    current_val_acc = metric_vals['avg_acc']
+                    current_val_acc = metric_vals["avg_acc"]
                     if current_val_acc > self.max_val_acc:
                         self.max_val_acc = current_val_acc
-                        log_or_print(msg=f'Accuracy on validation set improved. Saving max-val-acc checkpoint.',
-                                     logger=self.logger, level='info')
-                        self.save(self.max_val_acc_ckpt_path, epoch=epoch, global_step=self.global_step)
+                        log_or_print(
+                            msg=f"Accuracy on validation set improved. Saving max-val-acc checkpoint.",
+                            logger=self.logger,
+                            level="info",
+                        )
+                        self.save(
+                            self.max_val_acc_ckpt_path,
+                            epoch=epoch,
+                            global_step=self.global_step,
+                        )
                         if self.patience:
                             self.patience_counter = 0
                     else:  # if accuracy did not improve
@@ -152,28 +174,41 @@ class Model:
                             self.patience_counter += 1
                             if self.patience_counter > self.patience:
                                 log_or_print(
-                                    'Stopping training early, '
-                                    f'accuracy has not improved in {self.patience} validation steps.',
-                                    logger=self.logger, level='info')
+                                    "Stopping training early, "
+                                    f"accuracy has not improved in {self.patience} validation steps.",
+                                    logger=self.logger,
+                                    level="info",
+                                )
                                 # save "backup" checkpoint upon stopping; don't save over "max-val-acc" checkpoint
-                                self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
+                                self.save(
+                                    self.ckpt_path,
+                                    epoch=epoch,
+                                    global_step=self.global_step,
+                                )
                                 progress_bar.close()
                                 break
                             else:
                                 log_or_print(
-                                    f'Accuracy has not improved in {self.patience_counter} validation steps. '
-                                    f'Not saving max-val-acc checkpoint for this validation step.',
-                                    logger=self.logger, level='info')
+                                    f"Accuracy has not improved in {self.patience_counter} validation steps. "
+                                    f"Not saving max-val-acc checkpoint for this validation step.",
+                                    logger=self.logger,
+                                    level="info",
+                                )
                         else:  # patience is None. We still log that we are not saving checkpoint.
                             log_or_print(
-                                'Accuracy is less than maximum validation accuracy so far. '
-                                'Not saving max-val-acc checkpoint.',
-                                logger=self.logger, level='info')
+                                "Accuracy is less than maximum validation accuracy so far. "
+                                "Not saving max-val-acc checkpoint.",
+                                logger=self.logger,
+                                level="info",
+                            )
 
             # below can be true regardless of whether we have val_data and/or current epoch is a val_epoch
             if self.global_step % ckpt_step == 0:
-                log_or_print(f'Step {self.global_step} is a checkpoint step.',
-                             logger=self.logger, level='info')
+                log_or_print(
+                    f"Step {self.global_step} is a checkpoint step.",
+                    logger=self.logger,
+                    level="info",
+                )
                 self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
 
     def _eval(self, eval_data):
@@ -196,16 +231,14 @@ class Model:
         progress_bar = tqdm(eval_data)
         with torch.no_grad():
             for ind, batch in enumerate(progress_bar):
-                x, y = batch['source'].to(self.device), batch['annot'].to(self.device)
+                x, y = batch["source"].to(self.device), batch["annot"].to(self.device)
                 # remove "batch" dimension added by collate_fn to x
                 # we keep for y because loss still expects the first dimension to be batch
                 if x.ndim == 5:
                     if x.shape[0] == 1:
                         x = torch.squeeze(x, dim=0)
                 else:
-                    raise ValueError(
-                        f'invalid shape for x: {x.shape}'
-                    )
+                    raise ValueError(f"invalid shape for x: {x.shape}")
 
                 out = self.network.forward(x)
                 # permute and flatten out
@@ -215,10 +248,14 @@ class Model:
                 out = torch.flatten(out, start_dim=1)
                 out = torch.unsqueeze(out, dim=0)
                 # reduce to predictions, assuming class dimension is 1
-                y_pred = torch.argmax(out, dim=1)  # y_pred has dims (batch size 1, predicted label per time bin)
+                y_pred = torch.argmax(
+                    out, dim=1
+                )  # y_pred has dims (batch size 1, predicted label per time bin)
 
-                if 'padding_mask' in batch:
-                    padding_mask = batch['padding_mask']  # boolean: 1 where valid, 0 where padding
+                if "padding_mask" in batch:
+                    padding_mask = batch[
+                        "padding_mask"
+                    ]  # boolean: 1 where valid, 0 where padding
                     # remove "batch" dimension added by collate_fn
                     # because this extra dimension just makes it confusing to use the mask as indices
                     if padding_mask.ndim == 2:
@@ -226,58 +263,66 @@ class Model:
                             padding_mask = torch.squeeze(padding_mask, dim=0)
                     else:
                         raise ValueError(
-                            f'invalid shape for padding mask: {padding_mask.shape}'
+                            f"invalid shape for padding mask: {padding_mask.shape}"
                         )
 
                     out = out[:, :, padding_mask]
                     y_pred = y_pred[:, padding_mask]
 
-                if (any(['levenshtein' in metric_name for metric_name in self.metrics.keys()]) or
-                        any(['segment_error_rate' in metric_name for metric_name in self.metrics.keys()])):
-                    y_labels = lbl_tb2labels(y.cpu().numpy(), eval_data.dataset.labelmap)
-                    y_pred_labels = lbl_tb2labels(y_pred.cpu().numpy(), eval_data.dataset.labelmap)
+                if any(
+                    [
+                        "levenshtein" in metric_name
+                        for metric_name in self.metrics.keys()
+                    ]
+                ) or any(
+                    [
+                        "segment_error_rate" in metric_name
+                        for metric_name in self.metrics.keys()
+                    ]
+                ):
+                    y_labels = lbl_tb2labels(
+                        y.cpu().numpy(), eval_data.dataset.labelmap
+                    )
+                    y_pred_labels = lbl_tb2labels(
+                        y_pred.cpu().numpy(), eval_data.dataset.labelmap
+                    )
                 else:
                     y_labels = None
                     y_pred_labels = None
 
                 for metric_name, metric_callable in self.metrics.items():
-                    if metric_name == 'loss':
-                        metric_vals[metric_name].append(
-                            metric_callable(out, y)
-                        )
-                    elif metric_name == 'acc':
-                        metric_vals[metric_name].append(
-                            metric_callable(y_pred, y)
-                        )
-                    elif metric_name == 'levenshtein':
+                    if metric_name == "loss":
+                        metric_vals[metric_name].append(metric_callable(out, y))
+                    elif metric_name == "acc":
+                        metric_vals[metric_name].append(metric_callable(y_pred, y))
+                    elif metric_name == "levenshtein":
                         metric_vals[metric_name].append(
                             metric_callable(y_pred_labels, y_labels)
                         )
-                    elif metric_name == 'segment_error_rate':
+                    elif metric_name == "segment_error_rate":
                         metric_vals[metric_name].append(
                             metric_callable(y_pred_labels, y_labels)
                         )
                     else:
                         raise NotImplementedError(
-                            f'calculation of metric not yet implemented for {metric_name}'
+                            f"calculation of metric not yet implemented for {metric_name}"
                         )
 
                 n_batches += 1
-                progress_bar.set_description(
-                    f'batch {ind} / {len(eval_data)}'
-                )
+                progress_bar.set_description(f"batch {ind} / {len(eval_data)}")
 
         # ---- compute metrics averaged across batches -----------------------------------------------------------------
         # iterate over list of keys, to avoid "dictionary changed size" error when adding average metrics
         for metric_name in list(metric_vals):
-            if metric_name in ['loss', 'acc', 'levenshtein', 'segment_error_rate']:
+            if metric_name in ["loss", "acc", "levenshtein", "segment_error_rate"]:
                 avg_metric_val = (
-                        torch.tensor(metric_vals[metric_name]).sum().cpu().numpy() / n_batches
+                    torch.tensor(metric_vals[metric_name]).sum().cpu().numpy()
+                    / n_batches
                 ).item()
-                metric_vals[f'avg_{metric_name}'] = avg_metric_val
+                metric_vals[f"avg_{metric_name}"] = avg_metric_val
             else:
                 raise NotImplementedError(
-                    f'calculation of metric across batches not yet implemented for {metric_name}'
+                    f"calculation of metric across batches not yet implemented for {metric_name}"
                 )
 
         return metric_vals
@@ -300,7 +345,7 @@ class Model:
 
         with torch.no_grad():
             for ind, batch in enumerate(progress_bar):
-                x, spect_path = batch['source'].to(self.device), batch['spect_path']
+                x, spect_path = batch["source"].to(self.device), batch["spect_path"]
                 if isinstance(spect_path, list) and len(spect_path) == 1:
                     spect_path = spect_path[0]
                 if x.ndim == 5:
@@ -308,9 +353,7 @@ class Model:
                         x = torch.squeeze(x, dim=0)
                 y_pred = self.network.forward(x)
                 preds[spect_path] = y_pred
-                progress_bar.set_description(
-                    f'batch {ind} / {len(pred_data)}'
-                )
+                progress_bar.set_description(f"batch {ind} / {len(pred_data)}")
 
         return preds
 
@@ -329,13 +372,13 @@ class Model:
             keyword arguments; if there are any, they will be added to checkpoint
         """
         ckpt = {
-            'network_state_dict': self.network.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
+            "network_state_dict": self.network.state_dict(),
+            "optimizer_state_dict": self.optimizer.state_dict(),
         }
         ckpt.update(**kwargs)
         log_or_print(
-            f'Saving checkpoint at:\n{ckpt_path} ',
-            logger=self.logger, level='info')
+            f"Saving checkpoint at:\n{ckpt_path} ", logger=self.logger, level="info"
+        )
         torch.save(ckpt, ckpt_path)
 
     def load(self, ckpt_path, device=None):
@@ -354,31 +397,32 @@ class Model:
             device = get_default_device()
 
         log_or_print(
-            f'Loading checkpoint from:\n{ckpt_path} ',
-            logger=self.logger, level='info')
+            f"Loading checkpoint from:\n{ckpt_path} ", logger=self.logger, level="info"
+        )
         ckpt = torch.load(ckpt_path, map_location=device)
-        self.network.load_state_dict(ckpt['network_state_dict'])
-        self.optimizer.load_state_dict(ckpt['optimizer_state_dict'])
+        self.network.load_state_dict(ckpt["network_state_dict"])
+        self.optimizer.load_state_dict(ckpt["optimizer_state_dict"])
 
-    def fit(self,
-            train_data,
-            num_epochs,
-            ckpt_root,
-            val_data=None,
-            val_step=None,
-            ckpt_step=None,
-            patience=None,
-            device=None
-            ):
+    def fit(
+        self,
+        train_data,
+        num_epochs,
+        ckpt_root,
+        val_data=None,
+        val_step=None,
+        ckpt_step=None,
+        patience=None,
+        device=None,
+    ):
         # ---- pre-conditions ----------
         if val_data is None:
             if patience is not None:
-                    raise ValueError(
-                        f'patience set to {patience}, but no validation dataset was provided to measure accuracy'
-                    )
+                raise ValueError(
+                    f"patience set to {patience}, but no validation dataset was provided to measure accuracy"
+                )
             if val_step is not None:
                 raise ValueError(
-                    f'val_step set to {val_step}, but no validation dataset was provided to measure accuracy'
+                    f"val_step set to {val_step}, but no validation dataset was provided to measure accuracy"
                 )
 
         # ---- set attributes ----------
@@ -389,11 +433,11 @@ class Model:
         # note there can be up to two checkpoint paths.
         # this first one is the "backup" checkpoint, saved intermittently (with frequency determined by ckpt_step)
         # and also saved at the end of training
-        self.ckpt_path = ckpt_root.joinpath('checkpoint.pt')
+        self.ckpt_path = ckpt_root.joinpath("checkpoint.pt")
 
         if val_data is not None:
             # this is the second checkpoint path, saved when accuracy improves on the validation set
-            self.max_val_acc_ckpt_path = ckpt_root.joinpath('max-val-acc-checkpoint.pt')
+            self.max_val_acc_ckpt_path = ckpt_root.joinpath("max-val-acc-checkpoint.pt")
             self.max_val_acc = 0
 
         if patience is not None:
@@ -404,33 +448,29 @@ class Model:
 
         # ---- actually do fitting ----------
         for epoch in range(1, num_epochs + 1):
-            log_or_print(f'epoch {epoch} / {num_epochs}', logger=self.logger, level='info')
-            self._train(train_data,
-                        epoch,
-                        val_data,
-                        val_step,
-                        ckpt_step)
+            log_or_print(
+                f"epoch {epoch} / {num_epochs}", logger=self.logger, level="info"
+            )
+            self._train(train_data, epoch, val_data, val_step, ckpt_step)
             if patience is not None:
                 if self.patience_counter > self.patience:
                     # need to break here too, not just inside _train function
                     break
 
-        if epoch == num_epochs:  # save at end, if we complete all epochs (not if we stopped because of patience)
-            log_or_print('Completed last epoch.', logger=self.logger, level='info')
+        if (
+            epoch == num_epochs
+        ):  # save at end, if we complete all epochs (not if we stopped because of patience)
+            log_or_print("Completed last epoch.", logger=self.logger, level="info")
             self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
 
-    def evaluate(self,
-                 eval_data,
-                 device=None):
+    def evaluate(self, eval_data, device=None):
         if device is None:
             device = get_default_device()
         self.device = device
         self.network.to(self.device)
         return self._eval(eval_data)
 
-    def predict(self,
-                pred_data,
-                device=None):
+    def predict(self, pred_data, device=None):
         if device is None:
             device = get_default_device()
         self.device = device

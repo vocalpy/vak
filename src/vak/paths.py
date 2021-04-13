@@ -27,11 +27,11 @@ def generate_results_dir_name_as_path(root_results_dir=None):
     if root_results_dir:
         root_results_dir = Path(root_results_dir)
     else:
-        root_results_dir = Path('.')
+        root_results_dir = Path(".")
     if not root_results_dir.is_dir():
         raise NotADirectoryError(
-            f'root_results_dir not recognized as a directory: {root_results_dir}'
+            f"root_results_dir not recognized as a directory: {root_results_dir}"
         )
 
-    results_dirname = f'{constants.RESULTS_DIR_PREFIX}{timenow.get_timenow_as_str()}'
+    results_dirname = f"{constants.RESULTS_DIR_PREFIX}{timenow.get_timenow_as_str()}"
     return root_results_dir.joinpath(results_dirname)

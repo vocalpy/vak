@@ -7,37 +7,35 @@ from . import train_dur_csv_paths as _train_dur_csv_paths
 from ..eval import eval
 from ..train import train
 from ...io import dataframe
-from ... import (
-    csv,
-    labels
-)
+from ... import csv, labels
 from ...converters import expanded_user_path
 from ...logging import log_or_print
 from ...paths import generate_results_dir_name_as_path
 
 
-def learning_curve(model_config_map,
-                   train_set_durs,
-                   num_replicates,
-                   csv_path,
-                   labelset,
-                   window_size,
-                   batch_size,
-                   num_epochs,
-                   num_workers,
-                   root_results_dir=None,
-                   results_path=None,
-                   previous_run_path=None,
-                   spect_key='s',
-                   timebins_key='t',
-                   normalize_spectrograms=True,
-                   shuffle=True,
-                   val_step=None,
-                   ckpt_step=None,
-                   patience=None,
-                   device=None,
-                   logger=None,
-                   ):
+def learning_curve(
+    model_config_map,
+    train_set_durs,
+    num_replicates,
+    csv_path,
+    labelset,
+    window_size,
+    batch_size,
+    num_epochs,
+    num_workers,
+    root_results_dir=None,
+    results_path=None,
+    previous_run_path=None,
+    spect_key="s",
+    timebins_key="t",
+    normalize_spectrograms=True,
+    shuffle=True,
+    val_step=None,
+    ckpt_step=None,
+    patience=None,
+    device=None,
+    logger=None,
+):
     """generate learning curve, by training models on training sets across a
     range of sizes and then measure accuracy of those models on a test set.
 
@@ -127,24 +125,19 @@ def learning_curve(model_config_map,
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
     csv_path = expanded_user_path(csv_path)
     if not csv_path.exists():
-        raise FileNotFoundError(
-            f'csv_path not found: {csv_path}'
-        )
+        raise FileNotFoundError(f"csv_path not found: {csv_path}")
 
-    log_or_print(
-        f'Using dataset from .csv: {csv_path}',
-        logger=logger, level='info'
-    )
+    log_or_print(f"Using dataset from .csv: {csv_path}", logger=logger, level="info")
     dataset_df = pd.read_csv(csv_path)
 
     if previous_run_path:
         previous_run_path = expanded_user_path(previous_run_path)
         if not previous_run_path.is_dir():
             raise NotADirectoryError(
-                f'previous_run_path not recognized as a directory:\n{previous_run_path}'
+                f"previous_run_path not recognized as a directory:\n{previous_run_path}"
             )
 
-    if val_step and not dataset_df['split'].str.contains('val').any():
+    if val_step and not dataset_df["split"].str.contains("val").any():
         raise ValueError(
             f"val_step set to {val_step} but dataset does not contain a validation set; "
             f"please run `vak prep` with a config.toml file that specifies a duration for the validation set."
@@ -155,21 +148,19 @@ def learning_curve(model_config_map,
         results_path = expanded_user_path(results_path)
         if not results_path.is_dir():
             raise NotADirectoryError(
-                f'results_path not recognized as a directory: {results_path}'
+                f"results_path not recognized as a directory: {results_path}"
             )
     else:
         results_path = generate_results_dir_name_as_path(root_results_dir)
         results_path.mkdir()
 
-    log_or_print(
-        f'Saving results to: {results_path}',
-        logger=logger, level='info'
-    )
+    log_or_print(f"Saving results to: {results_path}", logger=logger, level="info")
 
     timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
     log_or_print(
-        f'Size of each timebin in spectrogram, in seconds: {timebin_dur}',
-        logger=logger, level='info'
+        f"Size of each timebin in spectrogram, in seconds: {timebin_dur}",
+        logger=logger,
+        level="info",
     )
 
     # ---- get training set subsets ------------------------------------------------------------------------------------
@@ -182,148 +173,181 @@ def learning_curve(model_config_map,
 
     if previous_run_path:
         log_or_print(
-            f'Loading previous training subsets from:\n{previous_run_path}',
-            logger=logger, level='info'
+            f"Loading previous training subsets from:\n{previous_run_path}",
+            logger=logger,
+            level="info",
         )
-        train_dur_csv_paths = _train_dur_csv_paths.from_dir(previous_run_path,
-                                                            train_set_durs,
-                                                            timebin_dur,
-                                                            num_replicates,
-                                                            results_path,
-                                                            window_size,
-                                                            spect_key,
-                                                            timebins_key,
-                                                            labelmap)
+        train_dur_csv_paths = _train_dur_csv_paths.from_dir(
+            previous_run_path,
+            train_set_durs,
+            timebin_dur,
+            num_replicates,
+            results_path,
+            window_size,
+            spect_key,
+            timebins_key,
+            labelmap,
+        )
     else:
         log_or_print(
-            f'Creating data sets of specified durations: {train_set_durs}',
-            logger=logger, level='info'
+            f"Creating data sets of specified durations: {train_set_durs}",
+            logger=logger,
+            level="info",
         )
         # do all subsetting before training, so that we fail early if subsetting is going to fail
-        train_dur_csv_paths = _train_dur_csv_paths.from_df(dataset_df,
-                                                           csv_path,
-                                                           train_set_durs,
-                                                           timebin_dur,
-                                                           num_replicates,
-                                                           results_path,
-                                                           labelset,
-                                                           window_size,
-                                                           spect_key,
-                                                           timebins_key,
-                                                           labelmap,
-                                                           logger)
-
-    # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
-    log_or_print(
-        f'Starting training for learning curve.',
-        logger=logger, level='info'
-    )
-    for train_dur, csv_paths in train_dur_csv_paths.items():
-        log_or_print(
-            f'Training replicates for training set of size: {train_dur}s',
-            logger=logger, level='info'
+        train_dur_csv_paths = _train_dur_csv_paths.from_df(
+            dataset_df,
+            csv_path,
+            train_set_durs,
+            timebin_dur,
+            num_replicates,
+            results_path,
+            labelset,
+            window_size,
+            spect_key,
+            timebins_key,
+            labelmap,
+            logger,
         )
 
-        for replicate_num, this_train_dur_this_replicate_csv_path in enumerate(csv_paths):
+    # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
+    log_or_print(f"Starting training for learning curve.", logger=logger, level="info")
+    for train_dur, csv_paths in train_dur_csv_paths.items():
+        log_or_print(
+            f"Training replicates for training set of size: {train_dur}s",
+            logger=logger,
+            level="info",
+        )
+
+        for replicate_num, this_train_dur_this_replicate_csv_path in enumerate(
+            csv_paths
+        ):
             replicate_num += 1  # so log statements below match replicate nums returned by train_dur_csv_paths
             log_or_print(
-                f'Training replicate {replicate_num} '
-                f'using dataset from .csv file: {this_train_dur_this_replicate_csv_path}',
-                logger=logger, level='info'
+                f"Training replicate {replicate_num} "
+                f"using dataset from .csv file: {this_train_dur_this_replicate_csv_path}",
+                logger=logger,
+                level="info",
             )
-            this_train_dur_this_replicate_results_path = this_train_dur_this_replicate_csv_path.parent
+            this_train_dur_this_replicate_results_path = (
+                this_train_dur_this_replicate_csv_path.parent
+            )
             log_or_print(
-                f'Saving results to: {this_train_dur_this_replicate_results_path}',
-                logger=logger, level='info'
+                f"Saving results to: {this_train_dur_this_replicate_results_path}",
+                logger=logger,
+                level="info",
             )
 
             window_dataset_kwargs = {}
-            for window_dataset_kwarg in ['spect_id_vector', 'spect_inds_vector', 'x_inds']:
+            for window_dataset_kwarg in [
+                "spect_id_vector",
+                "spect_inds_vector",
+                "x_inds",
+            ]:
                 window_dataset_kwargs[window_dataset_kwarg] = np.load(
-                    this_train_dur_this_replicate_results_path.joinpath(f'{window_dataset_kwarg}.npy'))
+                    this_train_dur_this_replicate_results_path.joinpath(
+                        f"{window_dataset_kwarg}.npy"
+                    )
+                )
 
-            train(model_config_map,
-                  this_train_dur_this_replicate_csv_path,
-                  labelset,
-                  window_size,
-                  batch_size,
-                  num_epochs,
-                  num_workers,
-                  results_path=this_train_dur_this_replicate_results_path,
-                  spect_key=spect_key,
-                  timebins_key=timebins_key,
-                  normalize_spectrograms=normalize_spectrograms,
-                  shuffle=shuffle,
-                  val_step=val_step,
-                  ckpt_step=ckpt_step,
-                  patience=patience,
-                  device=device,
-                  logger=logger,
-                  **window_dataset_kwargs
-                  )
+            train(
+                model_config_map,
+                this_train_dur_this_replicate_csv_path,
+                labelset,
+                window_size,
+                batch_size,
+                num_epochs,
+                num_workers,
+                results_path=this_train_dur_this_replicate_results_path,
+                spect_key=spect_key,
+                timebins_key=timebins_key,
+                normalize_spectrograms=normalize_spectrograms,
+                shuffle=shuffle,
+                val_step=val_step,
+                ckpt_step=ckpt_step,
+                patience=patience,
+                device=device,
+                logger=logger,
+                **window_dataset_kwargs,
+            )
 
             log_or_print(
-                f'Evaluating models from replicate {replicate_num} '
-                f'using dataset from .csv file: {this_train_dur_this_replicate_results_path}',
-                logger=logger, level='info'
+                f"Evaluating models from replicate {replicate_num} "
+                f"using dataset from .csv file: {this_train_dur_this_replicate_results_path}",
+                logger=logger,
+                level="info",
             )
             for model_name in model_config_map.keys():
                 log_or_print(
-                    f'Evaluating model: {model_name}',
-                    logger=logger, level='info'
+                    f"Evaluating model: {model_name}", logger=logger, level="info"
                 )
-                results_model_root = this_train_dur_this_replicate_results_path.joinpath(model_name)
-                ckpt_root = results_model_root.joinpath('checkpoints')
-                ckpt_paths = sorted(ckpt_root.glob('*.pt'))
-                if any(['max-val-acc' in str(ckpt_path) for ckpt_path in ckpt_paths]):
-                    ckpt_paths = [ckpt_path for ckpt_path in ckpt_paths if 'max-val-acc' in str(ckpt_path)]
+                results_model_root = (
+                    this_train_dur_this_replicate_results_path.joinpath(model_name)
+                )
+                ckpt_root = results_model_root.joinpath("checkpoints")
+                ckpt_paths = sorted(ckpt_root.glob("*.pt"))
+                if any(["max-val-acc" in str(ckpt_path) for ckpt_path in ckpt_paths]):
+                    ckpt_paths = [
+                        ckpt_path
+                        for ckpt_path in ckpt_paths
+                        if "max-val-acc" in str(ckpt_path)
+                    ]
                     if len(ckpt_paths) != 1:
                         raise ValueError(
-                            f'did not find a single max-val-acc checkpoint path, instead found:\n{ckpt_paths}'
+                            f"did not find a single max-val-acc checkpoint path, instead found:\n{ckpt_paths}"
                         )
                     ckpt_path = ckpt_paths[0]
                 else:
                     if len(ckpt_paths) != 1:
                         raise ValueError(
-                            f'did not find a single checkpoint path, instead found:\n{ckpt_paths}'
+                            f"did not find a single checkpoint path, instead found:\n{ckpt_paths}"
                         )
                     ckpt_path = ckpt_paths[0]
                 log_or_print(
-                    f'Using checkpoint: {ckpt_path}',
-                    logger=logger, level='info'
+                    f"Using checkpoint: {ckpt_path}", logger=logger, level="info"
                 )
-                labelmap_path = this_train_dur_this_replicate_results_path.joinpath('labelmap.json')
+                labelmap_path = this_train_dur_this_replicate_results_path.joinpath(
+                    "labelmap.json"
+                )
                 log_or_print(
-                    f'Using labelmap: {labelmap_path}',
-                    logger=logger, level='info'
+                    f"Using labelmap: {labelmap_path}", logger=logger, level="info"
                 )
                 if normalize_spectrograms:
-                    spect_scaler_path = this_train_dur_this_replicate_results_path.joinpath('StandardizeSpect')
+                    spect_scaler_path = (
+                        this_train_dur_this_replicate_results_path.joinpath(
+                            "StandardizeSpect"
+                        )
+                    )
                     log_or_print(
-                        f'Using spect scaler to normalize: {spect_scaler_path}',
-                        logger=logger, level='info'
+                        f"Using spect scaler to normalize: {spect_scaler_path}",
+                        logger=logger,
+                        level="info",
                     )
                 else:
                     spect_scaler_path = None
 
-                eval(this_train_dur_this_replicate_csv_path,
-                     model_config_map,
-                     checkpoint_path=ckpt_path,
-                     labelmap_path=labelmap_path,
-                     output_dir=this_train_dur_this_replicate_results_path,
-                     window_size=window_size,
-                     num_workers=num_workers,
-                     split='test',
-                     spect_scaler_path=spect_scaler_path,
-                     spect_key=spect_key,
-                     timebins_key=timebins_key,
-                     device=device,
-                     logger=logger)
+                eval(
+                    this_train_dur_this_replicate_csv_path,
+                    model_config_map,
+                    checkpoint_path=ckpt_path,
+                    labelmap_path=labelmap_path,
+                    output_dir=this_train_dur_this_replicate_results_path,
+                    window_size=window_size,
+                    num_workers=num_workers,
+                    split="test",
+                    spect_scaler_path=spect_scaler_path,
+                    spect_key=spect_key,
+                    timebins_key=timebins_key,
+                    device=device,
+                    logger=logger,
+                )
 
     # ---- make a csv for analysis -------------------------------------------------------------------------------------
-    reg_exp_num = re.compile(r"[-+]?\d*\.\d+|\d+")  # to extract train set dur and replicate num from paths
+    reg_exp_num = re.compile(
+        r"[-+]?\d*\.\d+|\d+"
+    )  # to extract train set dur and replicate num from paths
 
-    eval_csv_paths = sorted(results_path.glob('**/eval*.csv'))
+    eval_csv_paths = sorted(results_path.glob("**/eval*.csv"))
     eval_df_0 = pd.read_csv(eval_csv_paths[0])  # use to just get columns
     eval_columns = eval_df_0.columns.tolist()  # will use below to re-order
     eval_dfs = []
@@ -331,24 +355,26 @@ def learning_curve(model_config_map,
         train_set_dur = reg_exp_num.findall(eval_csv_path.parents[1].name)
         if len(train_set_dur) != 1:
             raise ValueError(
-                f'unable to determine training set duration from .csv path: {train_set_dur}'
+                f"unable to determine training set duration from .csv path: {train_set_dur}"
             )
         else:
             train_set_dur = float(train_set_dur[0])
         replicate_num = reg_exp_num.findall(eval_csv_path.parents[0].name)
         if len(replicate_num) != 1:
             raise ValueError(
-                f'unable to determine replicate number from .csv path: {train_set_dur}'
+                f"unable to determine replicate number from .csv path: {train_set_dur}"
             )
         else:
             replicate_num = int(replicate_num[0])
         eval_df = pd.read_csv(eval_csv_path)
-        eval_df['train_set_dur'] = train_set_dur
-        eval_df['replicate_num'] = replicate_num
+        eval_df["train_set_dur"] = train_set_dur
+        eval_df["replicate_num"] = replicate_num
         eval_dfs.append(eval_df)
     all_eval_df = pd.concat(eval_dfs)
-    all_eval_columns = ['train_set_dur', 'replicate_num', *eval_columns]
+    all_eval_columns = ["train_set_dur", "replicate_num", *eval_columns]
     all_eval_df = all_eval_df[all_eval_columns]
-    all_eval_df.sort_values(by=['train_set_dur', 'replicate_num'])
-    learncurve_csv_path = results_path.joinpath('learning_curve.csv')
-    all_eval_df.to_csv(learncurve_csv_path, index=False)    # index=False to avoid adding "Unnamed: 0" column
+    all_eval_df.sort_values(by=["train_set_dur", "replicate_num"])
+    learncurve_csv_path = results_path.joinpath("learning_curve.csv")
+    all_eval_df.to_csv(
+        learncurve_csv_path, index=False
+    )  # index=False to avoid adding "Unnamed: 0" column

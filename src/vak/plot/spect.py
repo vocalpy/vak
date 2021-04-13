@@ -4,13 +4,7 @@ import matplotlib.pyplot as plt
 from .annot import annotation
 
 
-def spect(s,
-          t,
-          f,
-          tlim=None,
-          flim=None,
-          ax=None,
-          imshow_kwargs=None):
+def spect(s, t, f, tlim=None, flim=None, ax=None, imshow_kwargs=None):
     """plot spectrogram
 
     Parameters
@@ -46,11 +40,7 @@ def spect(s,
 
     extent = [t.min(), t.max(), f.min(), f.max()]
 
-    ax.imshow(s,
-              aspect='auto',
-              origin='lower',
-              extent=extent,
-              **imshow_kwargs)
+    ax.imshow(s, aspect="auto", origin="lower", extent=extent, **imshow_kwargs)
 
     if tlim is not None:
         ax.set_xlim(tlim)
@@ -59,17 +49,18 @@ def spect(s,
         ax.set_ylim(flim)
 
 
-def spect_annot(s,
-                t,
-                f,
-                annot,
-                tlim=None,
-                flim=None,
-                figsize=(20, 7.5),
-                imshow_kwargs=None,
-                line_kwargs=None,
-                text_kwargs=None,
-                ):
+def spect_annot(
+    s,
+    t,
+    f,
+    annot,
+    tlim=None,
+    flim=None,
+    figsize=(20, 7.5),
+    imshow_kwargs=None,
+    line_kwargs=None,
+    text_kwargs=None,
+):
     """plot a spectrogram with annotated segments below it.
     Convenience function that calls `vak.plot.spect` and `vak.plot.annotation`
 
@@ -120,6 +111,8 @@ def spect_annot(s,
 
     spect(s, t, f, tlim, flim, ax=spect_ax, imshow_kwargs=imshow_kwargs)
 
-    annotation(annot, t, tlim, ax=annot_ax, line_kwargs=line_kwargs, text_kwargs=text_kwargs)
+    annotation(
+        annot, t, tlim, ax=annot_ax, line_kwargs=line_kwargs, text_kwargs=text_kwargs
+    )
 
     return fig, spect_ax, annot_ax

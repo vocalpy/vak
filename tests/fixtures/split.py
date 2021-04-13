@@ -7,9 +7,9 @@ from vak.timebins import timebin_dur_from_vec
 
 
 @pytest.fixture
-def audio_cbin_annot_notmat_durs_labels(audio_list_cbin,
-                                        annot_list_notmat,
-                                        labelset_notmat):
+def audio_cbin_annot_notmat_durs_labels(
+    audio_list_cbin, annot_list_notmat, labelset_notmat
+):
     """returns list of durations of .cbin audio files, and
     another list with labels from annotations in each .not.mat file
     for the associated .cbin audio file"""
@@ -24,9 +24,9 @@ def audio_cbin_annot_notmat_durs_labels(audio_list_cbin,
 
 
 @pytest.fixture
-def spect_mat_annot_yarden_durs_labels(spect_list_mat,
-                                       annot_list_yarden,
-                                       labelset_yarden):
+def spect_mat_annot_yarden_durs_labels(
+    spect_list_mat, annot_list_yarden, labelset_yarden
+):
     """returns list of durations of .mat spectrogram files, and
     another list with labels from annotations in the .mat file
     for each associated .mat spectrogram file"""
@@ -37,7 +37,7 @@ def spect_mat_annot_yarden_durs_labels(spect_list_mat,
         if set(annot.seq.labels).issubset(labelset_yarden):
             labels.append(annot.seq.labels)
             mat_dict = loadmat(spect_file_mat)
-            timebin_dur = timebin_dur_from_vec(mat_dict['t'])
-            dur = mat_dict['s'].shape[-1] * timebin_dur
+            timebin_dur = timebin_dur_from_vec(mat_dict["t"])
+            dur = mat_dict["s"].shape[-1] * timebin_dur
             durs.append(dur)
     return durs, labels

@@ -10,19 +10,18 @@ import vak.io.dataframe
 import vak.labels
 import vak.paths
 
-SPECT_KEY = 's'
-TIMEBINS_KEY = 't'
+SPECT_KEY = "s"
+TIMEBINS_KEY = "t"
 
 
 @pytest.fixture
 def tmp_previous_run_path_factory(tmp_path):
-
-    def _tmp_previous_run_path(train_set_durs,
-                               num_replicates,
-                               dataset_csv_path_filename='fake_data_prep.csv'):
+    def _tmp_previous_run_path(
+        train_set_durs, num_replicates, dataset_csv_path_filename="fake_data_prep.csv"
+    ):
         results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
         results_path.mkdir()
-        csv_path = tmp_path.joinpath('data_dir').joinpath(dataset_csv_path_filename)
+        csv_path = tmp_path.joinpath("data_dir").joinpath(dataset_csv_path_filename)
 
         for train_set_dur in train_set_durs:
             path_this_train_dur = results_path.joinpath(
@@ -31,7 +30,9 @@ def tmp_previous_run_path_factory(tmp_path):
             path_this_train_dur.mkdir()
             for replicate_num in range(1, num_replicates + 1):
                 path_this_replicate = path_this_train_dur.joinpath(
-                    vak.core.learncurve.train_dur_csv_paths.replicate_dirname(replicate_num)
+                    vak.core.learncurve.train_dur_csv_paths.replicate_dirname(
+                        replicate_num
+                    )
                 )
                 path_this_replicate.mkdir()
                 fake_subset_csv_path = path_this_replicate.joinpath(
@@ -40,8 +41,8 @@ def tmp_previous_run_path_factory(tmp_path):
                     )
                 )
                 # make fake subset csv path exist
-                with fake_subset_csv_path.open('w') as fp:
-                    fp.write('')
+                with fake_subset_csv_path.open("w") as fp:
+                    fp.write("")
                 assert fake_subset_csv_path.exists()
 
         return results_path
@@ -50,15 +51,13 @@ def tmp_previous_run_path_factory(tmp_path):
 
 
 @pytest.mark.parametrize(
-    'train_set_durs, num_replicates',
+    "train_set_durs, num_replicates",
     [
         ([4, 6], 2),
         ([30, 45, 60, 120, 180], 10),
-    ]
+    ],
 )
-def test_dict_from_dir(tmp_previous_run_path_factory,
-                       train_set_durs,
-                       num_replicates):
+def test_dict_from_dir(tmp_previous_run_path_factory, train_set_durs, num_replicates):
     """note: this test specifically tests that
     csv paths are sorted numerically by replicate number,
     not alphabetically.
@@ -68,48 +67,51 @@ def test_dict_from_dir(tmp_previous_run_path_factory,
     """
     previous_run_path = tmp_previous_run_path_factory(train_set_durs, num_replicates)
 
-    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths._dict_from_dir(previous_run_path)
+    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths._dict_from_dir(
+        previous_run_path
+    )
 
     assert isinstance(train_dur_csv_paths, dict)
     assert sorted(train_dur_csv_paths.keys()) == train_set_durs
     for train_set_dur, csv_list in train_dur_csv_paths.items():
-        replicate_nums = [int(csv.parent.name.split('_')[-1]) for csv in csv_list]
+        replicate_nums = [int(csv.parent.name.split("_")[-1]) for csv in csv_list]
         assert replicate_nums == list(range(1, num_replicates + 1))
 
 
-@pytest.mark.parametrize(
-    'window_size',
-    [44, 88, 176]
-)
-def test_from_dir(specific_config,
-                  labelset_notmat,
-                  tmp_path,
-                  default_model,
-                  device,
-                  previous_run_path_factory,
-                  window_size):
-    root_results_dir = tmp_path.joinpath('tmp_root_results_dir')
+@pytest.mark.parametrize("window_size", [44, 88, 176])
+def test_from_dir(
+    specific_config,
+    labelset_notmat,
+    tmp_path,
+    default_model,
+    device,
+    previous_run_path_factory,
+    window_size,
+):
+    root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()
 
     options_to_change = [
-        {'section': 'LEARNCURVE',
-         'option': 'root_results_dir',
-         'value': str(root_results_dir)},
-        {'section': 'LEARNCURVE',
-         'option': 'device',
-         'value': device},
-        {'section': 'LEARNCURVE',
-         'option': 'previous_run_path',
-         'value': str(previous_run_path_factory(default_model))},
-        {'section': 'DATALOADER',
-         'option': 'window_size',
-         'value': window_size}
+        {
+            "section": "LEARNCURVE",
+            "option": "root_results_dir",
+            "value": str(root_results_dir),
+        },
+        {"section": "LEARNCURVE", "option": "device", "value": device},
+        {
+            "section": "LEARNCURVE",
+            "option": "previous_run_path",
+            "value": str(previous_run_path_factory(default_model)),
+        },
+        {"section": "DATALOADER", "option": "window_size", "value": window_size},
     ]
-    toml_path = specific_config(config_type='learncurve',
-                                model=default_model,
-                                audio_format='cbin',
-                                annot_format='notmat',
-                                options_to_change=options_to_change)
+    toml_path = specific_config(
+        config_type="learncurve",
+        model=default_model,
+        audio_format="cbin",
+        annot_format="notmat",
+        options_to_change=options_to_change,
+    )
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     csv_path = cfg.learncurve.csv_path
@@ -124,57 +126,53 @@ def test_from_dir(specific_config,
         map_unlabeled = False
     labelmap = vak.labels.to_map(labelset_notmat, map_unlabeled=map_unlabeled)
 
-    results_path = tmp_path.joinpath('test_from_dir')
+    results_path = tmp_path.joinpath("test_from_dir")
     results_path.mkdir()
 
     previous_run_path = previous_run_path_factory(default_model)
     previous_run_path = vak.converters.expanded_user_path(previous_run_path)
 
-    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths.from_dir(previous_run_path,
-                                                                           cfg.learncurve.train_set_durs,
-                                                                           timebin_dur,
-                                                                           cfg.learncurve.num_replicates,
-                                                                           results_path,
-                                                                           window_size,
-                                                                           SPECT_KEY,
-                                                                           TIMEBINS_KEY,
-                                                                           labelmap)
+    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths.from_dir(
+        previous_run_path,
+        cfg.learncurve.train_set_durs,
+        timebin_dur,
+        cfg.learncurve.num_replicates,
+        results_path,
+        window_size,
+        SPECT_KEY,
+        TIMEBINS_KEY,
+        labelmap,
+    )
     assert isinstance(train_dur_csv_paths, dict)
     assert sorted(train_dur_csv_paths.keys()) == sorted(cfg.learncurve.train_set_durs)
     for train_set_dur, csv_list in train_dur_csv_paths.items():
-        replicate_nums = [int(csv.parent.name.split('_')[-1]) for csv in csv_list]
+        replicate_nums = [int(csv.parent.name.split("_")[-1]) for csv in csv_list]
         assert replicate_nums == list(range(1, cfg.learncurve.num_replicates + 1))
 
 
-@pytest.mark.parametrize(
-    'window_size',
-    [44, 88, 176]
-)
-def test_from_df(specific_config,
-                 labelset_notmat,
-                 default_model,
-                 device,
-                 tmp_path,
-                 window_size):
-    root_results_dir = tmp_path.joinpath('tmp_root_results_dir')
+@pytest.mark.parametrize("window_size", [44, 88, 176])
+def test_from_df(
+    specific_config, labelset_notmat, default_model, device, tmp_path, window_size
+):
+    root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()
 
     options_to_change = [
-        {'section': 'LEARNCURVE',
-         'option': 'root_results_dir',
-         'value': str(root_results_dir)},
-        {'section': 'LEARNCURVE',
-         'option': 'device',
-         'value': device},
-        {'section': 'DATALOADER',
-         'option': 'window_size',
-         'value': window_size}
+        {
+            "section": "LEARNCURVE",
+            "option": "root_results_dir",
+            "value": str(root_results_dir),
+        },
+        {"section": "LEARNCURVE", "option": "device", "value": device},
+        {"section": "DATALOADER", "option": "window_size", "value": window_size},
     ]
-    toml_path = specific_config(config_type='learncurve',
-                                model=default_model,
-                                audio_format='cbin',
-                                annot_format='notmat',
-                                options_to_change=options_to_change)
+    toml_path = specific_config(
+        config_type="learncurve",
+        model=default_model,
+        audio_format="cbin",
+        annot_format="notmat",
+        options_to_change=options_to_change,
+    )
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     csv_path = cfg.learncurve.csv_path
@@ -189,17 +187,19 @@ def test_from_df(specific_config,
         map_unlabeled = False
     labelmap = vak.labels.to_map(labelset_notmat, map_unlabeled=map_unlabeled)
 
-    results_path = tmp_path.joinpath('test_from_df')
+    results_path = tmp_path.joinpath("test_from_df")
     results_path.mkdir()
 
-    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths.from_df(dataset_df,
-                                                                          csv_path,
-                                                                          cfg.learncurve.train_set_durs,
-                                                                          timebin_dur,
-                                                                          cfg.learncurve.num_replicates,
-                                                                          results_path,
-                                                                          labelmap,
-                                                                          window_size,
-                                                                          SPECT_KEY,
-                                                                          TIMEBINS_KEY,
-                                                                          labelmap)
+    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths.from_df(
+        dataset_df,
+        csv_path,
+        cfg.learncurve.train_set_durs,
+        timebin_dur,
+        cfg.learncurve.num_replicates,
+        results_path,
+        labelmap,
+        window_size,
+        SPECT_KEY,
+        TIMEBINS_KEY,
+        labelmap,
+    )

@@ -3,7 +3,13 @@ import attr
 from attr import converters, validators
 from attr.validators import instance_of
 
-from .validators import is_a_directory, is_a_file, is_audio_format, is_annot_format, is_spect_format
+from .validators import (
+    is_a_directory,
+    is_a_file,
+    is_audio_format,
+    is_annot_format,
+    is_spect_format,
+)
 from ..converters import expanded_user_path, labelset_to_set
 
 
@@ -21,7 +27,7 @@ def is_valid_duration(instance, attribute, value):
     """validator for dataset split durations"""
     if type(value) not in {int, float}:
         raise TypeError(
-            f'invalid type for {attribute} of {instance}: {type(value)}. Type should be float or int.'
+            f"invalid type for {attribute} of {instance}: {type(value)}. Type should be float or int."
         )
 
     if value == -1:  # specifies "use the remainder of the dataset"
@@ -30,7 +36,7 @@ def is_valid_duration(instance, attribute, value):
 
     if not value >= 0:
         raise ValueError(
-            f'value specified for {attribute} of {instance} must be greater than or equal to zero, was {value}'
+            f"value specified for {attribute} of {instance} must be greater than or equal to zero, was {value}"
         )
 
 
@@ -79,39 +85,49 @@ class PrepConfig:
     test_dur : float
         total duration of test set, in seconds.
     """
+
     data_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
     output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
 
     audio_format = attr.ib(validator=validators.optional(is_audio_format), default=None)
     spect_format = attr.ib(validator=validators.optional(is_spect_format), default=None)
-    spect_output_dir = attr.ib(converter=converters.optional(expanded_user_path),
-                               validator=validators.optional(is_a_directory),
-                               default=None)
-    annot_file = attr.ib(converter=converters.optional(expanded_user_path),
-                         validator=validators.optional(is_a_file), default=None)
+    spect_output_dir = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_directory),
+        default=None,
+    )
+    annot_file = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_file),
+        default=None,
+    )
     annot_format = attr.ib(validator=validators.optional(is_annot_format), default=None)
 
-    labelset = attr.ib(converter=converters.optional(labelset_to_set),
-                       validator=validators.optional(instance_of(set)),
-                       default=None)
+    labelset = attr.ib(
+        converter=converters.optional(labelset_to_set),
+        validator=validators.optional(instance_of(set)),
+        default=None,
+    )
 
-    train_dur = attr.ib(converter=converters.optional(duration_from_toml_value),
-                        validator=validators.optional(is_valid_duration),
-                        default=None)
-    val_dur = attr.ib(converter=converters.optional(duration_from_toml_value),
-                      validator=validators.optional(is_valid_duration),
-                      default=None)
-    test_dur = attr.ib(converter=converters.optional(duration_from_toml_value),
-                       validator=validators.optional(is_valid_duration),
-                       default=None)
+    train_dur = attr.ib(
+        converter=converters.optional(duration_from_toml_value),
+        validator=validators.optional(is_valid_duration),
+        default=None,
+    )
+    val_dur = attr.ib(
+        converter=converters.optional(duration_from_toml_value),
+        validator=validators.optional(is_valid_duration),
+        default=None,
+    )
+    test_dur = attr.ib(
+        converter=converters.optional(duration_from_toml_value),
+        validator=validators.optional(is_valid_duration),
+        default=None,
+    )
 
     def __attrs_post_init__(self):
         if self.audio_format is not None and self.spect_format is not None:
-            raise ValueError(
-                f'cannot specify audio_format and spect_format'
-            )
+            raise ValueError(f"cannot specify audio_format and spect_format")
 
         if self.audio_format is None and self.spect_format is None:
-            raise ValueError(
-                f'must specify either audio_format or spect_format'
-            )
+            raise ValueError(f"must specify either audio_format or spect_format")

@@ -14,42 +14,42 @@ from .train import TrainConfig
 from .validators import are_sections_valid, are_options_valid
 
 SECTION_CLASSES = {
-    'DATALOADER': DataLoaderConfig,
-    'EVAL': EvalConfig,
-    'LEARNCURVE': LearncurveConfig,
-    'PREDICT': PredictConfig,
-    'PREP': PrepConfig,
-    'SPECT_PARAMS': SpectParamsConfig,
-    'TRAIN': TrainConfig,
+    "DATALOADER": DataLoaderConfig,
+    "EVAL": EvalConfig,
+    "LEARNCURVE": LearncurveConfig,
+    "PREDICT": PredictConfig,
+    "PREP": PrepConfig,
+    "SPECT_PARAMS": SpectParamsConfig,
+    "TRAIN": TrainConfig,
 }
 
 REQUIRED_OPTIONS = {
-    'DATALOADER': None,
-    'EVAL': [
-        'checkpoint_path',
-        'labelmap_path',
-        'output_dir',
-        'models',
+    "DATALOADER": None,
+    "EVAL": [
+        "checkpoint_path",
+        "labelmap_path",
+        "output_dir",
+        "models",
     ],
-    'LEARNCURVE': [
-        'models',
-        'root_results_dir',
-        'train_set_durs',
-        'num_replicates',
+    "LEARNCURVE": [
+        "models",
+        "root_results_dir",
+        "train_set_durs",
+        "num_replicates",
     ],
-    'PREDICT': [
-        'checkpoint_path',
-        'labelmap_path',
-        'models',
+    "PREDICT": [
+        "checkpoint_path",
+        "labelmap_path",
+        "models",
     ],
-    'PREP': [
-        'data_dir',
-        'output_dir',
+    "PREP": [
+        "data_dir",
+        "output_dir",
     ],
-    'SPECT_PARAMS': None,
-    'TRAIN': [
-        'models',
-        'root_results_dir',
+    "SPECT_PARAMS": None,
+    "TRAIN": [
+        "models",
+        "root_results_dir",
     ],
 }
 
@@ -74,9 +74,7 @@ def parse_config_section(config_toml, section_name, toml_path=None):
         instance of class that represents section of config.toml file,
         e.g. PredictConfig for 'PREDICT' section
     """
-    section = dict(
-        config_toml[section_name].items()
-    )
+    section = dict(config_toml[section_name].items())
 
     required_options = REQUIRED_OPTIONS[section_name]
     if required_options is not None:
@@ -101,10 +99,10 @@ def _validate_sections_arg_convert_list(sections):
         sections = [sections]
     elif isinstance(sections, list):
         if not all([isinstance(section_name, str) for section_name in sections]):
-            raise ValueError(
-                "all section names in 'sections' should be strings"
-            )
-        if not all([section_name in list(SECTION_CLASSES.keys()) for section_name in sections]):
+            raise ValueError("all section names in 'sections' should be strings")
+        if not all(
+            [section_name in list(SECTION_CLASSES.keys()) for section_name in sections]
+        ):
             raise ValueError(
                 "all section names in 'sections' should be valid names of sections. "
                 f"Values for 'sections were: {sections}.\n"
@@ -113,9 +111,7 @@ def _validate_sections_arg_convert_list(sections):
     return sections
 
 
-def from_toml(config_toml,
-              toml_path=None,
-              sections=None):
+def from_toml(config_toml, toml_path=None, sections=None):
     """load a TOML configuration file
 
     Parameters
@@ -145,11 +141,15 @@ def from_toml(config_toml,
 
     config_dict = {}
     if sections is None:
-        sections = list(SECTION_CLASSES.keys())  # i.e., parse all sections, except model
+        sections = list(
+            SECTION_CLASSES.keys()
+        )  # i.e., parse all sections, except model
     for section_name in sections:
         if section_name in config_toml:
             are_options_valid(config_toml, section_name, toml_path)
-            config_dict[section_name.lower()] = parse_config_section(config_toml, section_name, toml_path)
+            config_dict[section_name.lower()] = parse_config_section(
+                config_toml, section_name, toml_path
+            )
 
     return Config(**config_dict)
 
@@ -162,13 +162,13 @@ def _load_toml_from_path(toml_path):
     and tries to give a clear message if an error occurs when parsing"""
     toml_path = Path(toml_path)
     if not toml_path.is_file():
-        raise FileNotFoundError(f'.toml config file not found: {toml_path}')
+        raise FileNotFoundError(f".toml config file not found: {toml_path}")
 
     try:
-        with toml_path.open('r') as fp:
+        with toml_path.open("r") as fp:
             config_toml = toml.load(fp)
     except TomlDecodeError as e:
-        raise Exception(f'Error when parsing .toml config file: {toml_path}') from e
+        raise Exception(f"Error when parsing .toml config file: {toml_path}") from e
 
     return config_toml
 

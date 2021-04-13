@@ -7,22 +7,23 @@ from attr.validators import instance_of
 def freq_cutoffs_validator(instance, attribute, value):
     if len(value) != 2:
         raise ValueError(
-            f'freq_cutoffs should be a list of two elements, but instead got: {value}')
+            f"freq_cutoffs should be a list of two elements, but instead got: {value}"
+        )
     if value[0] > value[1]:
         raise ValueError(
-            f'lower freq_cutoff should be less than higher freq_cutoff, instead of: {value}'
+            f"lower freq_cutoff should be less than higher freq_cutoff, instead of: {value}"
         )
 
 
-VALID_TRANSFORM_TYPES = {'log_spect', 'log_spect_plus_one'}
+VALID_TRANSFORM_TYPES = {"log_spect", "log_spect_plus_one"}
 
 
 def is_valid_transform_type(instance, attribute, value):
     if value not in VALID_TRANSFORM_TYPES:
         raise ValueError(
-            f'Value for `transform_type`, {value}, in [SPECT_PARAMS] '
-            'section of .toml file is not recognized. Must be one '
-            f'of the following: {VALID_TRANSFORM_TYPES}'
+            f"Value for `transform_type`, {value}, in [SPECT_PARAMS] "
+            "section of .toml file is not recognized. Must be one "
+            f"of the following: {VALID_TRANSFORM_TYPES}"
         )
 
 
@@ -57,16 +58,22 @@ class SpectParamsConfig:
         key for accessing path to source audio file for spectogram in files.
         Default is 'audio_path'.
     """
+
     fft_size = attr.ib(converter=int, validator=instance_of(int), default=512)
     step_size = attr.ib(converter=int, validator=instance_of(int), default=64)
-    freq_cutoffs = attr.ib(validator=validators.optional(freq_cutoffs_validator),
-                           default=None)
-    thresh = attr.ib(converter=converters.optional(float),
-                     validator=validators.optional(instance_of(float)),
-                     default=None)
-    transform_type = attr.ib(validator=validators.optional([instance_of(str), is_valid_transform_type]),
-                             default=None)
-    spect_key = attr.ib(validator=instance_of(str), default='s')
-    freqbins_key = attr.ib(validator=instance_of(str), default='f')
-    timebins_key = attr.ib(validator=instance_of(str), default='t')
-    audio_path_key = attr.ib(validator=instance_of(str), default='audio_path')
+    freq_cutoffs = attr.ib(
+        validator=validators.optional(freq_cutoffs_validator), default=None
+    )
+    thresh = attr.ib(
+        converter=converters.optional(float),
+        validator=validators.optional(instance_of(float)),
+        default=None,
+    )
+    transform_type = attr.ib(
+        validator=validators.optional([instance_of(str), is_valid_transform_type]),
+        default=None,
+    )
+    spect_key = attr.ib(validator=instance_of(str), default="s")
+    freqbins_key = attr.ib(validator=instance_of(str), default="f")
+    timebins_key = attr.ib(validator=instance_of(str), default="t")
+    audio_path_key = attr.ib(validator=instance_of(str), default="audio_path")

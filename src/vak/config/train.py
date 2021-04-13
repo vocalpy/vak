@@ -56,9 +56,12 @@ class TrainConfig:
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
     """
+
     # required
-    models = attr.ib(converter=comma_separated_list,
-                     validator=[instance_of(list), is_valid_model_name])
+    models = attr.ib(
+        converter=comma_separated_list,
+        validator=[instance_of(list), is_valid_model_name],
+    )
     num_epochs = attr.ib(converter=int, validator=instance_of(int))
     batch_size = attr.ib(converter=int, validator=instance_of(int))
     root_results_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
@@ -66,24 +69,42 @@ class TrainConfig:
     # optional
     # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
     # what sections are defined to figure out where to add csv_path after it creates the csv
-    csv_path = attr.ib(converter=converters.optional(expanded_user_path),
-                       validator=validators.optional(is_a_file),
-                       default=None
-                       )
+    csv_path = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_file),
+        default=None,
+    )
 
-    results_dirname = attr.ib(converter=converters.optional(expanded_user_path),
-                              validator=validators.optional(is_a_directory), default=None)
+    results_dirname = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_directory),
+        default=None,
+    )
 
-    normalize_spectrograms = attr.ib(converter=bool_from_str,
-                                     validator=validators.optional(instance_of(bool)), default=False)
+    normalize_spectrograms = attr.ib(
+        converter=bool_from_str,
+        validator=validators.optional(instance_of(bool)),
+        default=False,
+    )
 
     num_workers = attr.ib(validator=instance_of(int), default=2)
     device = attr.ib(validator=instance_of(str), default=device.get_default())
-    shuffle = attr.ib(converter=bool_from_str, validator=instance_of(bool), default=True)
+    shuffle = attr.ib(
+        converter=bool_from_str, validator=instance_of(bool), default=True
+    )
 
-    val_step = attr.ib(converter=converters.optional(int),
-                             validator=validators.optional(instance_of(int)), default=None)
-    ckpt_step = attr.ib(converter=converters.optional(int),
-                              validator=validators.optional(instance_of(int)), default=None)
-    patience = attr.ib(converter=converters.optional(int),
-                       validator=validators.optional(instance_of(int)), default=None)
+    val_step = attr.ib(
+        converter=converters.optional(int),
+        validator=validators.optional(instance_of(int)),
+        default=None,
+    )
+    ckpt_step = attr.ib(
+        converter=converters.optional(int),
+        validator=validators.optional(instance_of(int)),
+        default=None,
+    )
+    patience = attr.ib(
+        converter=converters.optional(int),
+        validator=validators.optional(instance_of(int)),
+        default=None,
+    )

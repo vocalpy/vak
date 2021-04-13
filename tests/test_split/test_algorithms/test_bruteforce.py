@@ -8,15 +8,17 @@ from vak.split.algorithms import brute_force
 NUM_SAMPLES = 10
 
 
-def is_expected_output(train_dur,
-                       val_dur,
-                       test_dur,
-                       labelset,
-                       durs,
-                       labels,
-                       train_inds,
-                       val_inds,
-                       test_inds):
+def is_expected_output(
+    train_dur,
+    val_dur,
+    test_dur,
+    labelset,
+    durs,
+    labels,
+    train_inds,
+    val_inds,
+    test_inds,
+):
     """asserts that output from ``bruteforce`` is expected output
 
     Checks that each split returned by ``bruteforce`` is the
@@ -64,28 +66,33 @@ def is_expected_output(train_dur,
     in the split equals the specified ``labelset``.
     """
     for split, dur_in, inds in zip(
-            ('train', 'val', 'test'),
-            (train_dur, val_dur, test_dur),
-            (train_inds, val_inds, test_inds)):
+        ("train", "val", "test"),
+        (train_dur, val_dur, test_dur),
+        (train_inds, val_inds, test_inds),
+    ):
         if dur_in is not None:
             dur_out = sum([durs[ind] for ind in inds])
             if dur_in > 0:
                 assert dur_out >= dur_in
             elif dur_in == -1:
-                if split == 'train':
-                    assert isclose(dur_out, sum(durs) - sum([durs[ind] for ind in test_inds]))
-                elif split == 'test':
-                    assert isclose(dur_out, sum(durs) - sum([durs[ind] for ind in train_inds]))
+                if split == "train":
+                    assert isclose(
+                        dur_out, sum(durs) - sum([durs[ind] for ind in test_inds])
+                    )
+                elif split == "test":
+                    assert isclose(
+                        dur_out, sum(durs) - sum([durs[ind] for ind in train_inds])
+                    )
 
             all_lbls_this_set = [lbl for ind in inds for lbl in labels[ind]]
             assert labelset == set(all_lbls_this_set)
         else:
             assert inds is None
 
-    assert (set(train_inds).isdisjoint(set(test_inds)))
+    assert set(train_inds).isdisjoint(set(test_inds))
     if val_dur is not None:
-        assert (set(train_inds).isdisjoint(set(val_inds)))
-        assert (set(test_inds).isdisjoint(set(val_inds)))
+        assert set(train_inds).isdisjoint(set(val_inds))
+        assert set(test_inds).isdisjoint(set(val_inds))
 
     return True
 
@@ -95,25 +102,30 @@ def test_bruteforce_train_test_val_mock():
     test_dur = 2
     val_dur = 1
     durs = (1, 1, 1, 1, 1)
-    labelset = set(list('abcde'))
-    labels = [list('abcde') for _ in range(5)]
+    labelset = set(list("abcde"))
+    labels = [list("abcde") for _ in range(5)]
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, val_dur, test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
-def test_bruteforce_train_test_val_cbin(audio_cbin_annot_notmat_durs_labels,
-                                        labelset_notmat):
+def test_bruteforce_train_test_val_cbin(
+    audio_cbin_annot_notmat_durs_labels, labelset_notmat
+):
     labelset_notmat = set(labelset_notmat)
     durs, labels = audio_cbin_annot_notmat_durs_labels
     train_dur = 35
@@ -121,26 +133,26 @@ def test_bruteforce_train_test_val_cbin(audio_cbin_annot_notmat_durs_labels,
     test_dur = 35
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs,
-                                                      labels,
-                                                      labelset_notmat,
-                                                      train_dur,
-                                                      val_dur,
-                                                      test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset_notmat, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset_notmat,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset_notmat,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
-def test_bruteforce_train_test_val_mat(spect_mat_annot_yarden_durs_labels,
-                                       labelset_yarden):
+def test_bruteforce_train_test_val_mat(
+    spect_mat_annot_yarden_durs_labels, labelset_yarden
+):
     labelset_yarden = set(labelset_yarden)
     durs, labels = spect_mat_annot_yarden_durs_labels
     train_dur = 200
@@ -148,22 +160,21 @@ def test_bruteforce_train_test_val_mat(spect_mat_annot_yarden_durs_labels,
     test_dur = 200
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs,
-                                                      labels,
-                                                      labelset_yarden,
-                                                      train_dur,
-                                                      val_dur,
-                                                      test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset_yarden, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset_yarden,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset_yarden,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
 def test_bruteforce_train_neg_one_test_mock():
@@ -171,26 +182,30 @@ def test_bruteforce_train_neg_one_test_mock():
     val_dur = None
     test_dur = -1
     durs = (1, 1, 1, 1, 1)
-    labelset = set(list('abcde'))
-    labels = [list('abcde') for _ in range(5)]
+    labelset = set(list("abcde"))
+    labels = [list("abcde") for _ in range(5)]
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, val_dur, test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset, train_dur, val_dur, test_dur
+        )
 
-        assert (
-            is_expected_output(train_dur,
-                          val_dur,
-                          test_dur,
-                          labelset,
-                          durs,
-                          labels,
-                          train_inds,
-                          val_inds,
-                          test_inds))
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
-def test_bruteforce_train_neg_one_test_cbin(audio_cbin_annot_notmat_durs_labels,
-                               labelset_notmat):
+def test_bruteforce_train_neg_one_test_cbin(
+    audio_cbin_annot_notmat_durs_labels, labelset_notmat
+):
     labelset_notmat = set(labelset_notmat)
     durs, labels = audio_cbin_annot_notmat_durs_labels
     train_dur = 35
@@ -198,26 +213,24 @@ def test_bruteforce_train_neg_one_test_cbin(audio_cbin_annot_notmat_durs_labels,
     test_dur = -1
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs,
-                                                      labels,
-                                                      labelset_notmat,
-                                                      train_dur,
-                                                      val_dur,
-                                                      test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset_notmat, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset_notmat,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset_notmat,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
-def test_bruteforce_train_mat(spect_mat_annot_yarden_durs_labels,
-                              labelset_yarden):
+def test_bruteforce_train_mat(spect_mat_annot_yarden_durs_labels, labelset_yarden):
     labelset_yarden = set(labelset_yarden)
     durs, labels = spect_mat_annot_yarden_durs_labels
     train_dur = 300
@@ -225,22 +238,21 @@ def test_bruteforce_train_mat(spect_mat_annot_yarden_durs_labels,
     test_dur = -1
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs,
-                                                      labels,
-                                                      labelset_yarden,
-                                                      train_dur,
-                                                      val_dur,
-                                                      test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset_yarden, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset_yarden,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset_yarden,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
 def test_bruteforce_test_mock():
@@ -248,25 +260,28 @@ def test_bruteforce_test_mock():
     test_dur = 2
     val_dur = None
     durs = (1, 1, 1, 1, 1)
-    labelset = set(list('abcde'))
-    labels = [list('abcde') for _ in range(5)]
+    labelset = set(list("abcde"))
+    labels = [list("abcde") for _ in range(5)]
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs, labels, labelset, train_dur, val_dur, test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
-def test_bruteforce_test_cbin(audio_cbin_annot_notmat_durs_labels,
-                              labelset_notmat):
+def test_bruteforce_test_cbin(audio_cbin_annot_notmat_durs_labels, labelset_notmat):
     labelset_notmat = set(labelset_notmat)
     durs, labels = audio_cbin_annot_notmat_durs_labels
     train_dur = -1
@@ -274,26 +289,24 @@ def test_bruteforce_test_cbin(audio_cbin_annot_notmat_durs_labels,
     test_dur = 25
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs,
-                                                      labels,
-                                                      labelset_notmat,
-                                                      train_dur,
-                                                      val_dur,
-                                                      test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset_notmat, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset_notmat,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset_notmat,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )
 
 
-def test_bruteforce_test_mat(spect_mat_annot_yarden_durs_labels,
-                             labelset_yarden):
+def test_bruteforce_test_mat(spect_mat_annot_yarden_durs_labels, labelset_yarden):
     labelset_yarden = set(labelset_yarden)
     durs, labels = spect_mat_annot_yarden_durs_labels
     train_dur = -1
@@ -301,19 +314,18 @@ def test_bruteforce_test_mat(spect_mat_annot_yarden_durs_labels,
     test_dur = 200
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = brute_force(durs,
-                                                      labels,
-                                                      labelset_yarden,
-                                                      train_dur,
-                                                      val_dur,
-                                                      test_dur)
+        train_inds, val_inds, test_inds = brute_force(
+            durs, labels, labelset_yarden, train_dur, val_dur, test_dur
+        )
 
-        assert is_expected_output(train_dur,
-                             val_dur,
-                             test_dur,
-                             labelset_yarden,
-                             durs,
-                             labels,
-                             train_inds,
-                             val_inds,
-                             test_inds)
+        assert is_expected_output(
+            train_dur,
+            val_dur,
+            test_dur,
+            labelset_yarden,
+            durs,
+            labels,
+            train_inds,
+            val_inds,
+            test_inds,
+        )

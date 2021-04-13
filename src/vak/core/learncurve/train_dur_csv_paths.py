@@ -13,9 +13,9 @@ from ...logging import log_or_print
 
 
 # pattern used by path.glob to find all training data subset csvs within previous_run_path
-CSV_GLOB = '**/*prep*csv'
+CSV_GLOB = "**/*prep*csv"
 # pattern used by re to get training subset duration
-TRAIN_DUR_PAT = r'train_dur_(\d+\.\d+|\d+)s'
+TRAIN_DUR_PAT = r"train_dur_(\d+\.\d+|\d+)s"
 
 
 def _dict_from_dir(previous_run_path):
@@ -43,29 +43,29 @@ def _dict_from_dir(previous_run_path):
         those subsets
     """
     train_dur_csv_paths = {}
-    train_dur_dirs = previous_run_path.glob('train_dur_*s')
+    train_dur_dirs = previous_run_path.glob("train_dur_*s")
     for train_dur_dir in train_dur_dirs:
         train_dur = re.findall(TRAIN_DUR_PAT, train_dur_dir.name)
         if len(train_dur) != 1:
             raise ValueError(
-                f'did not find just a single training subset duration in filename:\n'
-                f'{train_subset_path}\n'
-                f'Instead found: {train_dur}'
+                f"did not find just a single training subset duration in filename:\n"
+                f"{train_subset_path}\n"
+                f"Instead found: {train_dur}"
             )
         train_dur = int(train_dur[0])
         # sort by increasing replicate number -- numerically, not alphabetically
         replicate_dirs = sorted(
-            train_dur_dir.glob('replicate_*'),
-            key=lambda dir_path: int(dir_path.name.split('_')[-1])
+            train_dur_dir.glob("replicate_*"),
+            key=lambda dir_path: int(dir_path.name.split("_")[-1]),
         )
         train_subset_paths = []
         for replicate_dir in replicate_dirs:
-            train_subset_path = sorted(replicate_dir.glob('*prep*csv'))
+            train_subset_path = sorted(replicate_dir.glob("*prep*csv"))
             if len(train_subset_path) != 1:
                 raise ValueError(
-                    f'did not find just a single training subset .csv in replicate directory:\n'
-                    f'{replicate_dir}\n'
-                    f'Instead found: {train_subset_path}'
+                    f"did not find just a single training subset .csv in replicate directory:\n"
+                    f"{replicate_dir}\n"
+                    f"Instead found: {train_subset_path}"
                 )
             train_subset_path = train_subset_path[0]
             train_subset_paths.append(train_subset_path)
@@ -74,16 +74,18 @@ def _dict_from_dir(previous_run_path):
     return train_dur_csv_paths
 
 
-def from_dir(previous_run_path,
-             train_set_durs,
-             timebin_dur,
-             num_replicates,
-             results_path,
-             window_size,
-             spect_key,
-             timebins_key,
-             labelmap,
-             logger=None):
+def from_dir(
+    previous_run_path,
+    train_set_durs,
+    timebin_dur,
+    num_replicates,
+    results_path,
+    window_size,
+    spect_key,
+    timebins_key,
+    labelmap,
+    logger=None,
+):
     """return a ``dict`` mapping training dataset durations to dataset csv paths
     from a previous run of `vak.core.learncurve.learning_curve`.
 
@@ -146,7 +148,7 @@ def from_dir(previous_run_path,
     previous_run_path = expanded_user_path(previous_run_path)
     if not previous_run_path.is_dir():
         raise NotADirectoryError(
-            f'previous_run_path not recognized as a directory:\n{previous_run_path}'
+            f"previous_run_path not recognized as a directory:\n{previous_run_path}"
         )
 
     train_dur_csv_paths = _dict_from_dir(previous_run_path)
@@ -155,58 +157,69 @@ def from_dir(previous_run_path,
     found_train_set_durs = sorted(train_dur_csv_paths.keys())
     if not found_train_set_durs == sorted(train_set_durs):
         raise ValueError(
-            f'training set durations found in {previous_run_path} did not match '
-            f'specified training set durations.\n'
-            f'Specified: {sorted(train_set_durs)}\n'
-            f'Found: {found_train_set_durs}'
+            f"training set durations found in {previous_run_path} did not match "
+            f"specified training set durations.\n"
+            f"Specified: {sorted(train_set_durs)}\n"
+            f"Found: {found_train_set_durs}"
         )
 
     if not all(
-            [len(csv_paths) == num_replicates
-             for csv_paths in train_dur_csv_paths.values()]
+        [len(csv_paths) == num_replicates for csv_paths in train_dur_csv_paths.values()]
     ):
         raise ValueError(
-            'did not find correct number of replicates for all training set durations.'
-            f'Found the following:\n{pprint.pformat(train_dur_csv_paths, indent=4)}'
+            "did not find correct number of replicates for all training set durations."
+            f"Found the following:\n{pprint.pformat(train_dur_csv_paths, indent=4)}"
         )
 
     log_or_print(
-        f'Using the following training subsets from previous run path:\n'
-        f'{pprint.pformat(train_dur_csv_paths, indent=4)}',
-        logger=logger, level='info'
+        f"Using the following training subsets from previous run path:\n"
+        f"{pprint.pformat(train_dur_csv_paths, indent=4)}",
+        logger=logger,
+        level="info",
     )
 
     # need to copy .csv files, and change path in train_dur_csv_paths to point to copies
     # so that `vak.train` doesn't try to write over existing results dir, causing a crash
-    for train_dur in train_dur_csv_paths.keys():  # use keys so we can modify dict inside loop
-        results_path_this_train_dur = results_path.joinpath(f'train_dur_{train_dur}s')
+    for (
+        train_dur
+    ) in train_dur_csv_paths.keys():  # use keys so we can modify dict inside loop
+        results_path_this_train_dur = results_path.joinpath(f"train_dur_{train_dur}s")
         results_path_this_train_dur.mkdir()
         csv_paths = train_dur_csv_paths[train_dur]
         new_csv_paths = []
         for replicate_num, csv_path in zip(range(1, len(csv_paths) + 1), csv_paths):
-            results_path_this_replicate = results_path_this_train_dur.joinpath(f'replicate_{replicate_num}')
+            results_path_this_replicate = results_path_this_train_dur.joinpath(
+                f"replicate_{replicate_num}"
+            )
             results_path_this_replicate.mkdir()
             # copy csv using Path.rename() method, append returned new path to list
             new_csv_paths.append(
-                shutil.copy(src=csv_path,
-                            dst=results_path_this_replicate.joinpath(csv_path.name))
+                shutil.copy(
+                    src=csv_path,
+                    dst=results_path_this_replicate.joinpath(csv_path.name),
+                )
             )
 
             subset_df = pd.read_csv(csv_path)
-            (spect_id_vector,
-             spect_inds_vector,
-             x_inds) = WindowDataset.spect_vectors_from_df(subset_df,
-                                                           'train',
-                                                           window_size,
-                                                           spect_key,
-                                                           timebins_key,
-                                                           crop_dur=train_dur,
-                                                           timebin_dur=timebin_dur,
-                                                           labelmap=labelmap)
-            for vec_name, vec in zip(['spect_id_vector', 'spect_inds_vector', 'x_inds'],
-                                     [spect_id_vector, spect_inds_vector, x_inds]):
-                np.save(results_path_this_replicate.joinpath(f'{vec_name}.npy'),
-                        vec)
+            (
+                spect_id_vector,
+                spect_inds_vector,
+                x_inds,
+            ) = WindowDataset.spect_vectors_from_df(
+                subset_df,
+                "train",
+                window_size,
+                spect_key,
+                timebins_key,
+                crop_dur=train_dur,
+                timebin_dur=timebin_dur,
+                labelmap=labelmap,
+            )
+            for vec_name, vec in zip(
+                ["spect_id_vector", "spect_inds_vector", "x_inds"],
+                [spect_id_vector, spect_inds_vector, x_inds],
+            ):
+                np.save(results_path_this_replicate.joinpath(f"{vec_name}.npy"), vec)
 
         train_dur_csv_paths[train_dur] = new_csv_paths
 
@@ -219,37 +232,39 @@ def train_dur_dirname(train_dur):
 
     factored out as function so we can test and use in fixtures
     """
-    return f'train_dur_{train_dur}s'
+    return f"train_dur_{train_dur}s"
 
 
 def replicate_dirname(replicate_num):
-    """"helper function that returns name of directory for a replicate
+    """ "helper function that returns name of directory for a replicate
 
     factored out as function so we can test and use in fixtures
     """
-    return f'replicate_{replicate_num}'
+    return f"replicate_{replicate_num}"
 
 
 def subset_csv_filename(csv_path, train_dur, replicate_num):
-    """"helper function that returns name of directory for a replicate
+    """ "helper function that returns name of directory for a replicate
 
     factored out as function so we can test and use in fixtures
     """
-    return f'{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv'
+    return f"{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv"
 
 
-def from_df(dataset_df,
-            csv_path,
-            train_set_durs,
-            timebin_dur,
-            num_replicates,
-            results_path,
-            labelset,
-            window_size,
-            spect_key,
-            timebins_key,
-            labelmap,
-            logger=None):
+def from_df(
+    dataset_df,
+    csv_path,
+    train_set_durs,
+    timebin_dur,
+    num_replicates,
+    results_path,
+    labelset,
+    window_size,
+    spect_key,
+    timebins_key,
+    labelmap,
+    logger=None,
+):
     """return a ``dict`` mapping training dataset durations to dataset csv paths.
 
     csv paths representing subsets of the training data are generated using ``vak.split``.
@@ -305,8 +320,11 @@ def from_df(dataset_df,
     """
     train_dur_csv_paths = defaultdict(list)
     for train_dur in train_set_durs:
-        log_or_print(f'subsetting training set for training set of duration: {train_dur}',
-                     logger=logger, level='info')
+        log_or_print(
+            f"subsetting training set for training set of duration: {train_dur}",
+            logger=logger,
+            level="info",
+        )
         results_path_this_train_dur = results_path.joinpath(
             train_dur_dirname(train_dur)
         )
@@ -318,30 +336,40 @@ def from_df(dataset_df,
             results_path_this_replicate.mkdir()
             # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
-            train_split_df = dataset_df[dataset_df['split'] == 'train']
-            train_split_df = split.dataframe(train_split_df, train_dur=train_dur, labelset=labelset)
-            train_split_df = train_split_df[train_split_df.split == 'train']  # remove rows where split set to 'None'
+            train_split_df = dataset_df[dataset_df["split"] == "train"]
+            train_split_df = split.dataframe(
+                train_split_df, train_dur=train_dur, labelset=labelset
+            )
+            train_split_df = train_split_df[
+                train_split_df.split == "train"
+            ]  # remove rows where split set to 'None'
             # ---- use *just* train subset to get spect vectors for WindowDataset
-            (spect_id_vector,
-             spect_inds_vector,
-             x_inds) = WindowDataset.spect_vectors_from_df(train_split_df,
-                                                           'train',
-                                                           window_size,
-                                                           spect_key,
-                                                           timebins_key,
-                                                           crop_dur=train_dur,
-                                                           timebin_dur=timebin_dur,
-                                                           labelmap=labelmap)
-            for vec_name, vec in zip(['spect_id_vector', 'spect_inds_vector', 'x_inds'],
-                                     [spect_id_vector, spect_inds_vector, x_inds]):
-                np.save(results_path_this_replicate.joinpath(f'{vec_name}.npy'),
-                        vec)
+            (
+                spect_id_vector,
+                spect_inds_vector,
+                x_inds,
+            ) = WindowDataset.spect_vectors_from_df(
+                train_split_df,
+                "train",
+                window_size,
+                spect_key,
+                timebins_key,
+                crop_dur=train_dur,
+                timebin_dur=timebin_dur,
+                labelmap=labelmap,
+            )
+            for vec_name, vec in zip(
+                ["spect_id_vector", "spect_inds_vector", "x_inds"],
+                [spect_id_vector, spect_inds_vector, x_inds],
+            ):
+                np.save(results_path_this_replicate.joinpath(f"{vec_name}.npy"), vec)
             # keep the same validation and test set by concatenating them with the train subset
             subset_df = pd.concat(
-                (train_split_df,
-                 dataset_df[dataset_df.split == 'val'],
-                 dataset_df[dataset_df.split == 'test'],
-                 )
+                (
+                    train_split_df,
+                    dataset_df[dataset_df.split == "val"],
+                    dataset_df[dataset_df.split == "test"],
+                )
             )
 
             subset_csv_path = results_path_this_replicate.joinpath(

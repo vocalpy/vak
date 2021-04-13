@@ -9,4 +9,4 @@ def default_model():
 
     currently ``teenytweetynet``
     """
-    return 'teenytweetynet'
+    return "teenytweetynet"

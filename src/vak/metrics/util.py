@@ -10,7 +10,7 @@ https://amir.rachum.com/blog/2017/07/28/python-entry-points/
 """
 from .. import entry_points
 
-METRICS_ENTRY_POINT = 'vak.models'
+METRICS_ENTRY_POINT = "vak.models"
 
 
 def find():

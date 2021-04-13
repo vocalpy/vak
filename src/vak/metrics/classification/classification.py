@@ -2,7 +2,7 @@ from . import functional as F
 
 
 __all__ = [
-    'Accuracy',
+    "Accuracy",
 ]
 
 
@@ -21,6 +21,7 @@ class Accuracy:
         between 0 and 1. Sum of predicted labels that equal true labels,
         divided by number of true labels.
     """
+
     def __init__(self):
         pass
 

@@ -12,19 +12,21 @@ from ..datasets.vocal_dataset import VocalDataset
 from ..logging import log_or_print
 
 
-def eval(csv_path,
-         model_config_map,
-         checkpoint_path,
-         labelmap_path,
-         output_dir,
-         window_size,
-         num_workers,
-         split='test',
-         spect_scaler_path=None,
-         spect_key='s',
-         timebins_key='t',
-         device=None,
-         logger=None):
+def eval(
+    csv_path,
+    model_config_map,
+    checkpoint_path,
+    labelmap_path,
+    output_dir,
+    window_size,
+    num_workers,
+    split="test",
+    spect_scaler_path=None,
+    spect_key="s",
+    timebins_key="t",
+    device=None,
+    logger=None,
+):
     """evaluate a trained model
 
     Parameters
@@ -75,50 +77,56 @@ def eval(csv_path,
     None
     """
     # ---- get time for .csv file --------------------------------------------------------------------------
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
+    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------
     if spect_scaler_path:
         log_or_print(
-            f'loading spect scaler from path: {spect_scaler_path}',
-            logger=logger, level='info'
+            f"loading spect scaler from path: {spect_scaler_path}",
+            logger=logger,
+            level="info",
         )
         spect_standardizer = joblib.load(spect_scaler_path)
     else:
         log_or_print(
-            f'not using a spect scaler',
-            logger=logger, level='info',
+            f"not using a spect scaler",
+            logger=logger,
+            level="info",
         )
         spect_standardizer = None
 
     log_or_print(
-        f'loading labelmap from path: {spect_scaler_path}',
-        logger=logger, level='info'
+        f"loading labelmap from path: {spect_scaler_path}", logger=logger, level="info"
     )
-    with labelmap_path.open('r') as f:
+    with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    item_transform = transforms.get_defaults('eval',
-                                             spect_standardizer,
-                                             window_size=window_size,
-                                             return_padding_mask=True,
-                                             )
-    log_or_print(
-        f'creating dataset for evaluation from: {csv_path}',
-        logger=logger, level='info',
+    item_transform = transforms.get_defaults(
+        "eval",
+        spect_standardizer,
+        window_size=window_size,
+        return_padding_mask=True,
     )
-    val_dataset = VocalDataset.from_csv(csv_path=csv_path,
-                                        split=split,
-                                        labelmap=labelmap,
-                                        spect_key=spect_key,
-                                        timebins_key=timebins_key,
-                                        item_transform=item_transform,
-                                        )
-    val_data = torch.utils.data.DataLoader(dataset=val_dataset,
-                                           shuffle=False,
-                                           # batch size 1 because each spectrogram reshaped into a batch of windows
-                                           batch_size=1,
-                                           num_workers=num_workers)
+    log_or_print(
+        f"creating dataset for evaluation from: {csv_path}",
+        logger=logger,
+        level="info",
+    )
+    val_dataset = VocalDataset.from_csv(
+        csv_path=csv_path,
+        split=split,
+        labelmap=labelmap,
+        spect_key=spect_key,
+        timebins_key=timebins_key,
+        item_transform=item_transform,
+    )
+    val_data = torch.utils.data.DataLoader(
+        dataset=val_dataset,
+        shuffle=False,
+        # batch size 1 because each spectrogram reshaped into a batch of windows
+        batch_size=1,
+        num_workers=num_workers,
+    )
 
     # ---------------- do the actual evaluating ------------------------------------------------------------------------
     input_shape = val_dataset.shape
@@ -128,43 +136,40 @@ def eval(csv_path,
         input_shape = input_shape[1:]
 
     models_map = models.from_model_config_map(
-        model_config_map,
-        num_classes=len(labelmap),
-        input_shape=input_shape
+        model_config_map, num_classes=len(labelmap), input_shape=input_shape
     )
 
     for model_name, model in models_map.items():
         log_or_print(
-            f'running evaluation for model: {model_name}',
-            logger=logger, level='info'
+            f"running evaluation for model: {model_name}", logger=logger, level="info"
         )
         model.load(checkpoint_path, device=device)
-        metric_vals = model.evaluate(eval_data=val_data,
-                                     device=device)
+        metric_vals = model.evaluate(eval_data=val_data, device=device)
         # create a "DataFrame" with just one row which we will save as a csv;
         # the idea is to be able to concatenate csvs from multiple runs of eval
         row = OrderedDict(
             [
-                ('model_name', model_name),
-                ('checkpoint_path', checkpoint_path),
-                ('labelmap_path', labelmap_path),
-                ('spect_scaler_path', spect_scaler_path),
-                ('csv_path', csv_path),
+                ("model_name", model_name),
+                ("checkpoint_path", checkpoint_path),
+                ("labelmap_path", labelmap_path),
+                ("spect_scaler_path", spect_scaler_path),
+                ("csv_path", csv_path),
             ]
         )
         # order metrics by name to be extra sure they will be consistent across runs
         row.update(
-            sorted([(k, v) for k, v in metric_vals.items() if k.startswith('avg_')])
+            sorted([(k, v) for k, v in metric_vals.items() if k.startswith("avg_")])
         )
 
         # pass index into dataframe, needed when using all scalar values (a single row)
         # throw away index below when saving to avoid extra column
         eval_df = pd.DataFrame(row, index=[0])
-        eval_csv_path = output_dir.joinpath(
-            f'eval_{model_name}_{timenow}.csv'
-        )
+        eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
         log_or_print(
-            f'saving csv with evaluation metrics at: {eval_csv_path}',
-            logger=logger, level='info'
+            f"saving csv with evaluation metrics at: {eval_csv_path}",
+            logger=logger,
+            level="info",
         )
-        eval_df.to_csv(eval_csv_path, index=False)  # index is False to avoid having "Unnamed: 0" column when loading
+        eval_df.to_csv(
+            eval_csv_path, index=False
+        )  # index is False to avoid having "Unnamed: 0" column when loading

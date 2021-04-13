@@ -26,23 +26,15 @@ def to_map(labelset, map_unlabeled=True):
         maps labels to integers
     """
     if type(labelset) != set:
-        raise TypeError(
-            f'type of labelset must be set, got type {type(labelset)}'
-        )
+        raise TypeError(f"type of labelset must be set, got type {type(labelset)}")
 
     labellist = []
     if map_unlabeled is True:
-        labellist.append('unlabeled')
+        labellist.append("unlabeled")
 
-    labellist.extend(
-        sorted(list(labelset))
-    )
+    labellist.extend(sorted(list(labelset)))
 
-    labelmap = dict(
-        zip(
-            labellist, range(len(labellist))
-        )
-    )
+    labelmap = dict(zip(labellist, range(len(labellist))))
     return labelmap
 
 

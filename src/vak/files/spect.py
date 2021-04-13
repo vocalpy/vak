@@ -38,15 +38,11 @@ def find_audio_fname(spect_path, audio_ext=None):
     elif type(audio_ext) is str:
         audio_ext = [audio_ext]
     else:
-        raise TypeError(
-            f'invalid type for audio_ext: {type(audio_ext)}'
-        )
+        raise TypeError(f"invalid type for audio_ext: {type(audio_ext)}")
 
     audio_fnames = []
     for ext in audio_ext:
-        audio_fnames.append(
-            find_fname(str(spect_path), ext)
-        )
+        audio_fnames.append(find_fname(str(spect_path), ext))
     # remove Nones
     audio_fnames = [path for path in audio_fnames if path is not None]
     # keep just file name from spect path
@@ -56,7 +52,7 @@ def find_audio_fname(spect_path, audio_ext=None):
         return audio_fnames[0]
     else:
         raise ValueError(
-            f'unable to determine filename of audio file from: {spect_path}'
+            f"unable to determine filename of audio file from: {spect_path}"
         )
 
 
@@ -84,7 +80,7 @@ def load(spect_path, spect_format=None):
     spect_path = Path(spect_path)
     if spect_format is None:
         # "replace('.', '')", because suffix returns file extension with period included
-        spect_format = spect_path.suffix.replace('.', '')
+        spect_format = spect_path.suffix.replace(".", "")
     spect_dict = constants.SPECT_FORMAT_LOAD_FUNCTION_MAP[spect_format](spect_path)
     return spect_dict
 
@@ -117,14 +113,15 @@ def timebin_dur(spect_path, spect_format, timebins_key, n_decimals_trunc=5):
     return timebin_dur
 
 
-def is_valid_set_of_spect_files(spect_paths,
-                                spect_format,
-                                freqbins_key='f',
-                                timebins_key='t',
-                                spect_key='s',
-                                n_decimals_trunc=5,
-                                logger=None
-                                ):
+def is_valid_set_of_spect_files(
+    spect_paths,
+    spect_format,
+    freqbins_key="f",
+    timebins_key="t",
+    spect_key="s",
+    n_decimals_trunc=5,
+    logger=None,
+):
     """validate a set of spectrogram files that will be used as a dataset.
     Validates that:
       - all files contain a spectrogram array that can be accessed with the specified key
@@ -179,41 +176,39 @@ def is_valid_set_of_spect_files(spect_paths,
         # number of freq. bins should equal number of rows
         if spect_dict[freqbins_key].shape[-1] != spect_dict[spect_key].shape[0]:
             raise ValueError(
-                f'length of frequency bins in {spect_path.name} '
-                'does not match number of rows in spectrogram'
+                f"length of frequency bins in {spect_path.name} "
+                "does not match number of rows in spectrogram"
             )
         # number of time bins should equal number of columns
         if spect_dict[timebins_key].shape[-1] != spect_dict[spect_key].shape[1]:
             raise ValueError(
-                f'length of time_bins in {spect_path.name} '
-                f'does not match number of columns in spectrogram'
+                f"length of time_bins in {spect_path.name} "
+                f"does not match number of columns in spectrogram"
             )
 
         return spect_path, freq_bins, timebin_dur
 
     spect_paths_bag = db.from_sequence(spect_paths)
 
-    log_or_print('validating set of spectrogram files', logger=logger, level='info')
+    log_or_print("validating set of spectrogram files", logger=logger, level="info")
 
     with ProgressBar():
         path_freqbins_timebin_dur_tups = list(spect_paths_bag.map(_validate))
 
-    all_freq_bins = np.stack(
-        [tup[1] for tup in path_freqbins_timebin_dur_tups]
-    )
+    all_freq_bins = np.stack([tup[1] for tup in path_freqbins_timebin_dur_tups])
     uniq_freq_bins = np.unique(all_freq_bins, axis=0)
     if len(uniq_freq_bins) != 1:
         raise ValueError(
-            f'Found more than one frequency bin vector across files. '
-            f'Instead found {len(uniq_freq_bins)}'
+            f"Found more than one frequency bin vector across files. "
+            f"Instead found {len(uniq_freq_bins)}"
         )
 
     timebin_durs = [tup[2] for tup in path_freqbins_timebin_dur_tups]
     uniq_durs = np.unique(timebin_durs)
     if len(uniq_durs) != 1:
         raise ValueError(
-            'Found more than one duration for time bins across spectrogram files. '
-            f'Durations found were: {uniq_durs}'
+            "Found more than one duration for time bins across spectrogram files. "
+            f"Durations found were: {uniq_durs}"
         )
 
     return True

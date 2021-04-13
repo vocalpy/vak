@@ -2,11 +2,11 @@ import numpy as np
 import torch
 
 __all__ = [
-    'pad_to_window',
-    'standardize_spect',
-    'to_floattensor',
-    'to_longtensor',
-    'view_as_window_batch'
+    "pad_to_window",
+    "standardize_spect",
+    "to_floattensor",
+    "to_longtensor",
+    "view_as_window_batch",
 ]
 
 
@@ -36,7 +36,7 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     return tfm
 
 
-def pad_to_window(arr, window_size, padval=0., return_padding_mask=True):
+def pad_to_window(arr, window_size, padval=0.0, return_padding_mask=True):
     """pad a 1d or 2d array so that it can be reshaped
     into consecutive windows of specified size
 
@@ -75,12 +75,10 @@ def pad_to_window(arr, window_size, padval=0., return_padding_mask=True):
         height, width = arr.shape
     else:
         raise ValueError(
-            f'input array must be 1d or 2d but number of dimensions was: {arr.ndim}'
+            f"input array must be 1d or 2d but number of dimensions was: {arr.ndim}"
         )
 
-    target_width = int(
-        np.ceil(width / window_size) * window_size
-    )
+    target_width = int(np.ceil(width / window_size) * window_size)
 
     if arr.ndim == 1:
         padded = np.ones((target_width,)) * padval
@@ -125,10 +123,8 @@ def view_as_window_batch(arr, window_width):
     adapted from skimage.util.view_as_blocks
     https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
-    if not(type(window_width) == int and window_width > 0):
-        raise ValueError(
-            f'window width must be a positive integer'
-        )
+    if not (type(window_width) == int and window_width > 0):
+        raise ValueError(f"window width must be a positive integer")
 
     if arr.ndim == 1:
         window_shape = (window_width,)
@@ -137,18 +133,22 @@ def view_as_window_batch(arr, window_width):
         window_shape = (height, window_width)
     else:
         raise ValueError(
-            f'input array must be 1d or 2d but number of dimensions was: {arr.ndim}'
+            f"input array must be 1d or 2d but number of dimensions was: {arr.ndim}"
         )
 
     window_shape = np.array(window_shape)
     arr_shape = np.array(arr.shape)
     if (arr_shape % window_shape).sum() != 0:
-        raise ValueError("'window_width' does not divide evenly into with 'arr' shape. "
-                         "Use 'pad_to_window' transform to pad array so it can be windowed.")
+        raise ValueError(
+            "'window_width' does not divide evenly into with 'arr' shape. "
+            "Use 'pad_to_window' transform to pad array so it can be windowed."
+        )
 
     new_shape = tuple(arr_shape // window_shape) + tuple(window_shape)
     new_strides = tuple(arr.strides * window_shape) + arr.strides
-    batch_windows = np.lib.stride_tricks.as_strided(arr, shape=new_shape, strides=new_strides)
+    batch_windows = np.lib.stride_tricks.as_strided(
+        arr, shape=new_shape, strides=new_strides
+    )
     # when 2d, first dim 1 because new shape has height equal to original arr
     if batch_windows.ndim == 4 and batch_windows.shape[0] == 1:
         # we don't want that extra dim of size 1, we want first dim to be "batch"

@@ -2,26 +2,28 @@ import torch
 from torch import nn
 
 from ..engine.model import Model
+
 # absolute import to avoid name clash in model def below
 import vak.metrics
 
 
 class TeenyTweetyNet(nn.Module):
-    def __init__(self,
-                 num_classes,
-                 input_shape=(1, 513, 88),
-                 conv1_filters=8,
-                 conv1_kernel_size=(5, 5),
-                 conv1_padding=(0, 2),
-                 conv2_filters=16,
-                 conv2_kernel_size=(5, 5),
-                 conv2_padding=(0, 2),
-                 pool1_size=(8, 1),
-                 pool1_stride=(8, 1),
-                 pool2_size=(8, 1),
-                 pool2_stride=(8, 1),
-                 hidden_size=64,
-                 ):
+    def __init__(
+        self,
+        num_classes,
+        input_shape=(1, 513, 88),
+        conv1_filters=8,
+        conv1_kernel_size=(5, 5),
+        conv1_padding=(0, 2),
+        conv2_filters=16,
+        conv2_kernel_size=(5, 5),
+        conv2_padding=(0, 2),
+        pool1_size=(8, 1),
+        pool1_stride=(8, 1),
+        pool2_size=(8, 1),
+        pool2_stride=(8, 1),
+        hidden_size=64,
+    ):
         """TeenyTweetyNet model
 
         Parameters
@@ -55,20 +57,22 @@ class TeenyTweetyNet(nn.Module):
         self.hidden_size = hidden_size
 
         self.cnn = nn.Sequential(
-            nn.Conv2d(in_channels=self.input_shape[0],
-                      out_channels=conv1_filters,
-                      kernel_size=conv1_kernel_size,
-                      padding=conv1_padding),
+            nn.Conv2d(
+                in_channels=self.input_shape[0],
+                out_channels=conv1_filters,
+                kernel_size=conv1_kernel_size,
+                padding=conv1_padding,
+            ),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=pool1_size,
-                         stride=pool1_stride),
-            nn.Conv2d(in_channels=conv1_filters,
-                      out_channels=conv2_filters,
-                      kernel_size=conv2_kernel_size,
-                      padding=conv2_padding),
+            nn.MaxPool2d(kernel_size=pool1_size, stride=pool1_stride),
+            nn.Conv2d(
+                in_channels=conv1_filters,
+                out_channels=conv2_filters,
+                kernel_size=conv2_kernel_size,
+                padding=conv2_padding,
+            ),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=pool2_size,
-                         stride=pool2_stride),
+            nn.MaxPool2d(kernel_size=pool2_size, stride=pool2_stride),
         )
 
         # determine number of features in output after stacking channels
@@ -80,11 +84,13 @@ class TeenyTweetyNet(nn.Module):
         channels_out, freqbins_out = tmp_out.shape[1], tmp_out.shape[2]
         self.num_rnn_features = channels_out * freqbins_out
 
-        self.rnn = nn.LSTM(input_size=self.num_rnn_features,
-                           hidden_size=self.hidden_size,
-                           num_layers=1,
-                           dropout=0,
-                           bidirectional=True)
+        self.rnn = nn.LSTM(
+            input_size=self.num_rnn_features,
+            hidden_size=self.hidden_size,
+            num_layers=1,
+            dropout=0,
+            bidirectional=True,
+        )
 
         # for self.fc, in_features = hidden_size * 2, because LSTM is bidirectional
         # so we get hidden forward + hidden backward as output
@@ -111,11 +117,19 @@ class TeenyTweetyNet(nn.Module):
 class TeenyTweetyNetModel(Model):
     @classmethod
     def from_config(cls, config, logger=None):
-        network = TeenyTweetyNet(**config['network'])
-        loss = nn.CrossEntropyLoss(**config['loss'])
-        optimizer = torch.optim.Adam(params=network.parameters(), **config['optimizer'])
-        metrics = {'acc': vak.metrics.Accuracy(),
-                   'levenshtein': vak.metrics.Levenshtein(),
-                   'segment_error_rate': vak.metrics.SegmentErrorRate(),
-                   'loss': torch.nn.CrossEntropyLoss()}
-        return cls(network=network, optimizer=optimizer, loss=loss, metrics=metrics, logger=logger)
+        network = TeenyTweetyNet(**config["network"])
+        loss = nn.CrossEntropyLoss(**config["loss"])
+        optimizer = torch.optim.Adam(params=network.parameters(), **config["optimizer"])
+        metrics = {
+            "acc": vak.metrics.Accuracy(),
+            "levenshtein": vak.metrics.Levenshtein(),
+            "segment_error_rate": vak.metrics.SegmentErrorRate(),
+            "loss": torch.nn.CrossEntropyLoss(),
+        }
+        return cls(
+            network=network,
+            optimizer=optimizer,
+            loss=loss,
+            metrics=metrics,
+            logger=logger,
+        )

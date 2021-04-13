@@ -22,15 +22,20 @@ def purpose_from_toml(config_toml, toml_path=None):
     are_sections_valid(config_toml, toml_path=toml_path)
 
     from ..cli.cli import CLI_COMMANDS  # avoid circular imports
-    commands_that_are_not_prep = (command for command in CLI_COMMANDS if command != 'prep')
+
+    commands_that_are_not_prep = (
+        command for command in CLI_COMMANDS if command != "prep"
+    )
     for command in commands_that_are_not_prep:
-        section_name = command.upper()  # we write section names in uppercase, e.g. `[PREP]`, by convention
+        section_name = (
+            command.upper()
+        )  # we write section names in uppercase, e.g. `[PREP]`, by convention
         if section_name in config_toml:
             return section_name.lower()  # this is the "purpose" of the file
 
 
 # see https://github.com/NickleDave/vak/issues/334
-SECTIONS_PREP_SHOULD_PARSE = ('PREP', 'SPECT_PARAMS')
+SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS")
 
 
 def prep(toml_path):
@@ -79,7 +84,10 @@ def prep(toml_path):
     config_toml = _load_toml_from_path(toml_path)
     # ---- figure out purpose of config file from sections; will save csv path in that section -------------------------
     purpose = purpose_from_toml(config_toml, toml_path)
-    if 'csv_path' in config_toml[purpose.upper()] and config_toml[purpose.upper()]['csv_path'] is not None:
+    if (
+        "csv_path" in config_toml[purpose.upper()]
+        and config_toml[purpose.upper()]["csv_path"] is not None
+    ):
         raise ValueError(
             f"config .toml file already has a 'csv_path' option in the '{purpose.upper()}' section, "
             f"and running `prep` would overwrite that value. To `prep` a new dataset, please remove "
@@ -92,10 +100,10 @@ def prep(toml_path):
     # see https://github.com/NickleDave/vak/issues/334 and https://github.com/NickleDave/vak/issues/314
     if cfg.prep is None:
         raise ValueError(
-            f'prep called with a config.toml file that does not have a PREP section: {toml_path}'
+            f"prep called with a config.toml file that does not have a PREP section: {toml_path}"
         )
 
-    if purpose == 'predict':
+    if purpose == "predict":
         if cfg.prep.labelset is not None:
             warnings.warn(
                 "config has a PREDICT section, but labelset option is specified in PREP section."
@@ -107,11 +115,13 @@ def prep(toml_path):
             cfg.prep.labelset = None
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
-    timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-    logger = logging.get_logger(log_dst=cfg.prep.output_dir,
-                                caller='prep',
-                                timestamp=timenow,
-                                logger_name=__name__)
+    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
+    logger = logging.get_logger(
+        log_dst=cfg.prep.output_dir,
+        caller="prep",
+        timestamp=timenow,
+        logger_name=__name__,
+    )
 
     section = purpose.upper()
     logger.info(
@@ -119,24 +129,25 @@ def prep(toml_path):
         f"will add 'csv_path' option to '{section}' section"
     )
 
-    vak_df, csv_path = core.prep(data_dir=cfg.prep.data_dir,
-                                 purpose=purpose,
-                                 audio_format=cfg.prep.audio_format,
-                                 spect_format=cfg.prep.spect_format,
-                                 spect_output_dir=cfg.prep.spect_output_dir,
-                                 spect_params=cfg.spect_params,
-                                 annot_format=cfg.prep.annot_format,
-                                 annot_file=cfg.prep.annot_file,
-                                 labelset=cfg.prep.labelset,
-                                 output_dir=cfg.prep.output_dir,
-                                 train_dur=cfg.prep.train_dur,
-                                 val_dur=cfg.prep.val_dur,
-                                 test_dur=cfg.prep.test_dur,
-                                 logger=logger,
-                                 )
+    vak_df, csv_path = core.prep(
+        data_dir=cfg.prep.data_dir,
+        purpose=purpose,
+        audio_format=cfg.prep.audio_format,
+        spect_format=cfg.prep.spect_format,
+        spect_output_dir=cfg.prep.spect_output_dir,
+        spect_params=cfg.spect_params,
+        annot_format=cfg.prep.annot_format,
+        annot_file=cfg.prep.annot_file,
+        labelset=cfg.prep.labelset,
+        output_dir=cfg.prep.output_dir,
+        train_dur=cfg.prep.train_dur,
+        val_dur=cfg.prep.val_dur,
+        test_dur=cfg.prep.test_dur,
+        logger=logger,
+    )
 
     # use config and section from above to add csv_path to config.toml file
-    config_toml[section]['csv_path'] = str(csv_path)
+    config_toml[section]["csv_path"] = str(csv_path)
 
-    with toml_path.open('w') as fp:
+    with toml_path.open("w") as fp:
         toml.dump(config_toml, fp)

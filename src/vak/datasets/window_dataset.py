@@ -83,23 +83,24 @@ class WindowDataset(VisionDataset):
     # with x_inds, to mark invalid starting indices for windows
     INVALID_WINDOW_VAL = -1
 
-    VALID_SPLITS = ('train', 'val' 'test', 'all')
+    VALID_SPLITS = ("train", "val" "test", "all")
 
-    def __init__(self,
-                 root,
-                 x_inds,
-                 spect_id_vector,
-                 spect_inds_vector,
-                 spect_paths,
-                 annots,
-                 labelmap,
-                 timebin_dur,
-                 window_size,
-                 spect_key='s',
-                 timebins_key='t',
-                 transform=None,
-                 target_transform=None,
-                 ):
+    def __init__(
+        self,
+        root,
+        x_inds,
+        spect_id_vector,
+        spect_inds_vector,
+        spect_paths,
+        annots,
+        labelmap,
+        timebin_dur,
+        window_size,
+        spect_key="s",
+        timebins_key="t",
+        transform=None,
+        target_transform=None,
+    ):
         """initialize a WindowDataset instance
 
         Parameters
@@ -144,8 +145,9 @@ class WindowDataset(VisionDataset):
         target_transform : callable
             A function/transform that takes in the target and transforms it.
         """
-        super(WindowDataset, self).__init__(root, transform=transform,
-                                            target_transform=target_transform)
+        super(WindowDataset, self).__init__(
+            root, transform=transform, target_transform=target_transform
+        )
         self.x_inds = x_inds
         self.spect_id_vector = spect_id_vector
         self.spect_inds_vector = spect_inds_vector
@@ -155,8 +157,8 @@ class WindowDataset(VisionDataset):
         self.annots = annots
         self.labelmap = labelmap
         self.timebin_dur = timebin_dur
-        if 'unlabeled' in self.labelmap:
-            self.unlabeled_label = self.labelmap['unlabeled']
+        if "unlabeled" in self.labelmap:
+            self.unlabeled_label = self.labelmap["unlabeled"]
         else:
             # if there is no "unlabeled label" (e.g., because all segments have labels)
             # just assign dummy value that will end up getting replaced by actual labels by label_timebins()
@@ -194,16 +196,20 @@ class WindowDataset(VisionDataset):
         spect = spect_dict[self.spect_key]
         timebins = spect_dict[self.timebins_key]
 
-        annot = self.annots[spect_id]  # "annot id" == spect_id if both were taken from rows of DataFrame
+        annot = self.annots[
+            spect_id
+        ]  # "annot id" == spect_id if both were taken from rows of DataFrame
         lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
-        lbl_tb = labeled_timebins.label_timebins(lbls_int,
-                                                 annot.seq.onsets_s,
-                                                 annot.seq.offsets_s,
-                                                 timebins,
-                                                 unlabeled_label=self.unlabeled_label)
+        lbl_tb = labeled_timebins.label_timebins(
+            lbls_int,
+            annot.seq.onsets_s,
+            annot.seq.offsets_s,
+            timebins,
+            unlabeled_label=self.unlabeled_label,
+        )
 
-        window = spect[:, window_start_ind:window_start_ind + self.window_size]
-        labelvec = lbl_tb[window_start_ind:window_start_ind + self.window_size]
+        window = spect[:, window_start_ind : window_start_ind + self.window_size]
+        labelvec = lbl_tb[window_start_ind : window_start_ind + self.window_size]
 
         return window, labelvec
 
@@ -229,14 +235,16 @@ class WindowDataset(VisionDataset):
         return self.spect_inds_vector.shape[-1] * self.timebin_dur
 
     @staticmethod
-    def crop_spect_vectors_keep_classes(lbl_tb,
-                                        spect_id_vector,
-                                        spect_inds_vector,
-                                        x_inds,
-                                        crop_dur,
-                                        timebin_dur,
-                                        labelmap,
-                                        window_size):
+    def crop_spect_vectors_keep_classes(
+        lbl_tb,
+        spect_id_vector,
+        spect_inds_vector,
+        x_inds,
+        crop_dur,
+        timebin_dur,
+        labelmap,
+        window_size,
+    ):
         """crop spect_id_vector and spect_ind_vector to a target duration
         while making sure that all classes are present in the cropped
         vectors
@@ -283,17 +291,19 @@ class WindowDataset(VisionDataset):
         spect_inds_vector = validators.column_or_1d(spect_inds_vector)
         x_inds = validators.column_or_1d(x_inds)
 
-        lens = (lbl_tb.shape[-1],
-                spect_id_vector.shape[-1],
-                spect_inds_vector.shape[-1],
-                x_inds.shape[-1])
+        lens = (
+            lbl_tb.shape[-1],
+            spect_id_vector.shape[-1],
+            spect_inds_vector.shape[-1],
+            x_inds.shape[-1],
+        )
         uniq_lens = set(lens)
         if len(uniq_lens) != 1:
             raise ValueError(
-                'lbl_tb, spect_id_vector, spect_inds_vector, and x_inds should all '
-                'have the same length, but did not find one unique length. '
-                'Lengths of lbl_tb, spect_id_vector, spect_inds_vector, and x_inds_vector '
-                f'were: {lens}'
+                "lbl_tb, spect_id_vector, spect_inds_vector, and x_inds should all "
+                "have the same length, but did not find one unique length. "
+                "Lengths of lbl_tb, spect_id_vector, spect_inds_vector, and x_inds_vector "
+                f"were: {lens}"
             )
 
         cropped_length = np.round(crop_dur / timebin_dur).astype(int)
@@ -309,16 +319,18 @@ class WindowDataset(VisionDataset):
             )
 
         elif spect_id_vector.shape[-1] > cropped_length:
-            classes = np.asarray(
-                sorted(list(labelmap.values()))
-            )
+            classes = np.asarray(sorted(list(labelmap.values())))
 
             # try cropping off the end first
             lbl_tb_cropped = lbl_tb[:cropped_length]
 
             if np.array_equal(np.unique(lbl_tb_cropped), classes):
                 x_inds[cropped_length:] = WindowDataset.INVALID_WINDOW_VAL
-                return spect_id_vector[:cropped_length], spect_inds_vector[:cropped_length], x_inds
+                return (
+                    spect_id_vector[:cropped_length],
+                    spect_inds_vector[:cropped_length],
+                    x_inds,
+                )
 
             # try truncating off the front instead
             lbl_tb_cropped = lbl_tb[-cropped_length:]
@@ -328,9 +340,14 @@ class WindowDataset(VisionDataset):
                 # also need to 'reset' the indexing so it starts at 0. First find current minimum index value
                 min_x_ind = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL].min()
                 # Then set min x ind to 0, min x ind + 1 to 1, min ind + 2 to 2, ...
-                x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] = \
+                x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] = (
                     x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL] - min_x_ind
-                return spect_id_vector[-cropped_length:], spect_inds_vector[-cropped_length:], x_inds
+                )
+                return (
+                    spect_id_vector[-cropped_length:],
+                    spect_inds_vector[-cropped_length:],
+                    x_inds,
+                )
 
             # try cropping silences
             # This is done by seeking segments > window_size + 2 bins and removing from them
@@ -350,39 +367,61 @@ class WindowDataset(VisionDataset):
             # because we do not ignore non-silence segments.
 
             # first identify all silence segments larger than the window duration + 2
-            if 'unlabeled' in labelmap:
-                unlabeled = labelmap['unlabeled']
+            if "unlabeled" in labelmap:
+                unlabeled = labelmap["unlabeled"]
             else:
                 raise ValueError(
                     "was not able to crop spect vectors to specified duration; "
                     "could not crop from start or end, and there are no unlabeled segments "
                     "that could be used to further crop"
                 )
-            valid_unlabeled = np.logical_and(lbl_tb == unlabeled, x_inds != WindowDataset.INVALID_WINDOW_VAL)
+            valid_unlabeled = np.logical_and(
+                lbl_tb == unlabeled, x_inds != WindowDataset.INVALID_WINDOW_VAL
+            )
             unlabeled_diff = np.diff(np.concatenate([[0], valid_unlabeled, [0]]))
             unlabeled_onsets = np.where(unlabeled_diff == 1)[0]
             unlabeled_offsets = np.where(unlabeled_diff == -1)[0]
             unlabeled_durations = unlabeled_offsets - unlabeled_onsets
             N_PAD_BINS = 2
-            unlabeled_onsets = unlabeled_onsets[unlabeled_durations >= window_size + N_PAD_BINS]
-            unlabeled_offsets = unlabeled_offsets[unlabeled_durations >= window_size + N_PAD_BINS]
-            unlabeled_durations = unlabeled_durations[unlabeled_durations >= window_size + N_PAD_BINS]
+            unlabeled_onsets = unlabeled_onsets[
+                unlabeled_durations >= window_size + N_PAD_BINS
+            ]
+            unlabeled_offsets = unlabeled_offsets[
+                unlabeled_durations >= window_size + N_PAD_BINS
+            ]
+            unlabeled_durations = unlabeled_durations[
+                unlabeled_durations >= window_size + N_PAD_BINS
+            ]
             # indicate silences in the beginning of files
-            border_onsets = np.concatenate([[WindowDataset.INVALID_WINDOW_VAL],
-                                            x_inds])[unlabeled_onsets] == WindowDataset.INVALID_WINDOW_VAL
+            border_onsets = (
+                np.concatenate([[WindowDataset.INVALID_WINDOW_VAL], x_inds])[
+                    unlabeled_onsets
+                ]
+                == WindowDataset.INVALID_WINDOW_VAL
+            )
             # indicate silences at the end of files
-            border_offsets = np.concatenate([x_inds, [WindowDataset.INVALID_WINDOW_VAL]]
-                                            )[unlabeled_offsets + 1] == WindowDataset.INVALID_WINDOW_VAL
+            border_offsets = (
+                np.concatenate([x_inds, [WindowDataset.INVALID_WINDOW_VAL]])[
+                    unlabeled_offsets + 1
+                ]
+                == WindowDataset.INVALID_WINDOW_VAL
+            )
 
             # This is how much data can be ignored from each silence segment without ignoring the end of file windows
-            num_potential_ignored_data_bins = unlabeled_durations - (window_size + N_PAD_BINS) + \
-                                              window_size * border_onsets
+            num_potential_ignored_data_bins = (
+                unlabeled_durations
+                - (window_size + N_PAD_BINS)
+                + window_size * border_onsets
+            )
 
             num_bins_to_crop = len(lbl_tb) - cropped_length
             if sum(num_potential_ignored_data_bins) < num_bins_to_crop:
                 # This is how much data can be ignored from each silence segment including the end of file windows
-                num_potential_ignored_data_bins = unlabeled_durations - (window_size - N_PAD_BINS) + \
-                                                  window_size * (border_onsets + border_offsets)
+                num_potential_ignored_data_bins = (
+                    unlabeled_durations
+                    - (window_size - N_PAD_BINS)
+                    + window_size * (border_onsets + border_offsets)
+                )
             else:
                 border_offsets[:] = False
 
@@ -395,63 +434,127 @@ class WindowDataset(VisionDataset):
 
             segment_ind = np.arange(len(num_potential_ignored_data_bins))
             random.shuffle(segment_ind)
-            last_ind = np.where(np.cumsum(num_potential_ignored_data_bins[segment_ind]) >= num_bins_to_crop)[0][0]
+            last_ind = np.where(
+                np.cumsum(num_potential_ignored_data_bins[segment_ind])
+                >= num_bins_to_crop
+            )[0][0]
             bins_to_ignore = np.array([], dtype=int)
             for cnt in range(last_ind):
                 if border_onsets[segment_ind[cnt]]:  # remove silences at file onsets
-                    bins_to_ignore = np.concatenate([bins_to_ignore,
-                                                     np.arange(unlabeled_onsets[segment_ind[cnt]],
-                                                               unlabeled_offsets[segment_ind[cnt]] - 1)])
-                elif border_offsets[segment_ind[cnt]]:  # remove silences at file offsets
-                    bins_to_ignore = np.concatenate([bins_to_ignore,
-                                                     np.arange(unlabeled_onsets[segment_ind[cnt]] + 1,
-                                                               unlabeled_offsets[segment_ind[cnt]])])
+                    bins_to_ignore = np.concatenate(
+                        [
+                            bins_to_ignore,
+                            np.arange(
+                                unlabeled_onsets[segment_ind[cnt]],
+                                unlabeled_offsets[segment_ind[cnt]] - 1,
+                            ),
+                        ]
+                    )
+                elif border_offsets[
+                    segment_ind[cnt]
+                ]:  # remove silences at file offsets
+                    bins_to_ignore = np.concatenate(
+                        [
+                            bins_to_ignore,
+                            np.arange(
+                                unlabeled_onsets[segment_ind[cnt]] + 1,
+                                unlabeled_offsets[segment_ind[cnt]],
+                            ),
+                        ]
+                    )
                 else:  # remove silences within the files
-                    bins_to_ignore = np.concatenate([bins_to_ignore,
-                                                     np.arange(unlabeled_onsets[segment_ind[cnt]] + 1,
-                                                               unlabeled_offsets[segment_ind[cnt]] - 1)])
-            left_to_crop = num_bins_to_crop - sum(num_potential_ignored_data_bins[segment_ind[:last_ind]])-border_onsets[segment_ind[last_ind]]*window_size
+                    bins_to_ignore = np.concatenate(
+                        [
+                            bins_to_ignore,
+                            np.arange(
+                                unlabeled_onsets[segment_ind[cnt]] + 1,
+                                unlabeled_offsets[segment_ind[cnt]] - 1,
+                            ),
+                        ]
+                    )
+            left_to_crop = (
+                num_bins_to_crop
+                - sum(num_potential_ignored_data_bins[segment_ind[:last_ind]])
+                - border_onsets[segment_ind[last_ind]] * window_size
+            )
             if border_onsets[segment_ind[last_ind]]:
-                bins_to_ignore = np.concatenate([bins_to_ignore,
-                                             np.arange(unlabeled_onsets[segment_ind[last_ind]],
-                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop)])
+                bins_to_ignore = np.concatenate(
+                    [
+                        bins_to_ignore,
+                        np.arange(
+                            unlabeled_onsets[segment_ind[last_ind]],
+                            unlabeled_onsets[segment_ind[last_ind]] + left_to_crop,
+                        ),
+                    ]
+                )
             elif border_offsets[segment_ind[last_ind]]:
-                if left_to_crop < num_potential_ignored_data_bins[segment_ind[last_ind]] - window_size:
-                    bins_to_ignore = np.concatenate([bins_to_ignore,
-                                             np.arange(unlabeled_onsets[segment_ind[last_ind]] + 1,
-                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop)])
+                if (
+                    left_to_crop
+                    < num_potential_ignored_data_bins[segment_ind[last_ind]]
+                    - window_size
+                ):
+                    bins_to_ignore = np.concatenate(
+                        [
+                            bins_to_ignore,
+                            np.arange(
+                                unlabeled_onsets[segment_ind[last_ind]] + 1,
+                                unlabeled_onsets[segment_ind[last_ind]] + left_to_crop,
+                            ),
+                        ]
+                    )
                 else:
-                    bins_to_ignore = np.concatenate([bins_to_ignore,
-                                             np.arange(unlabeled_onsets[segment_ind[last_ind]] + 1,
-                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop - window_size)])
+                    bins_to_ignore = np.concatenate(
+                        [
+                            bins_to_ignore,
+                            np.arange(
+                                unlabeled_onsets[segment_ind[last_ind]] + 1,
+                                unlabeled_onsets[segment_ind[last_ind]]
+                                + left_to_crop
+                                - window_size,
+                            ),
+                        ]
+                    )
             else:
-                bins_to_ignore = np.concatenate([bins_to_ignore,
-                                             np.arange(unlabeled_onsets[segment_ind[last_ind]] + 1,
-                                                       unlabeled_onsets[segment_ind[last_ind]] + left_to_crop)])
-            
+                bins_to_ignore = np.concatenate(
+                    [
+                        bins_to_ignore,
+                        np.arange(
+                            unlabeled_onsets[segment_ind[last_ind]] + 1,
+                            unlabeled_onsets[segment_ind[last_ind]] + left_to_crop,
+                        ),
+                    ]
+                )
+
             x_inds[bins_to_ignore] = WindowDataset.INVALID_WINDOW_VAL
-        
+
             # we may still need to crop. Try doing it from the beginning of the dataset
-            if crop_more > 0:  # This addition can lead to imprecision but only in cases where we ask for very small datasets
+            if (
+                crop_more > 0
+            ):  # This addition can lead to imprecision but only in cases where we ask for very small datasets
                 if crop_more > sum(x_inds != WindowDataset.INVALID_WINDOW_VAL):
-                     raise ValueError(
+                    raise ValueError(
                         "was not able to crop spect vectors to specified duration "
                         "in a way that maintained all classes in dataset"
-                        )
-                extra_bins = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL][:crop_more]
+                    )
+                extra_bins = x_inds[x_inds != WindowDataset.INVALID_WINDOW_VAL][
+                    :crop_more
+                ]
                 bins_to_ignore = np.concatenate([bins_to_ignore, extra_bins])
                 x_inds[bins_to_ignore] = WindowDataset.INVALID_WINDOW_VAL
 
-            if np.array_equal(np.unique(lbl_tb[np.setdiff1d(np.arange(len(lbl_tb)), bins_to_ignore)]), classes):
+            if np.array_equal(
+                np.unique(lbl_tb[np.setdiff1d(np.arange(len(lbl_tb)), bins_to_ignore)]),
+                classes,
+            ):
                 return spect_id_vector, spect_inds_vector, x_inds
 
         raise ValueError(
-                "was not able to crop spect vectors to specified duration "
-                "in a way that maintained all classes in dataset"
-            )
+            "was not able to crop spect vectors to specified duration "
+            "in a way that maintained all classes in dataset"
+        )
 
     @staticmethod
-    def n_time_bins_spect(spect_path, spect_key='s'):
+    def n_time_bins_spect(spect_path, spect_key="s"):
         """get number of time bins in a spectrogram,
         given a path to the array file containing that spectrogram
 
@@ -472,15 +575,16 @@ class WindowDataset(VisionDataset):
         return spect.shape[-1]
 
     @staticmethod
-    def spect_vectors_from_df(df,
-                              split,
-                              window_size,
-                              spect_key='s',
-                              timebins_key='t',
-                              crop_dur=None,
-                              timebin_dur=None,
-                              labelmap=None,
-                              ):
+    def spect_vectors_from_df(
+        df,
+        split,
+        window_size,
+        spect_key="s",
+        timebins_key="t",
+        crop_dur=None,
+        timebin_dur=None,
+        labelmap=None,
+    ):
         """get spect_id_vector and spect_ind_vector from a dataframe
         that represents a dataset of vocalizations.
         See WindowDataset class docstring for
@@ -522,18 +626,14 @@ class WindowDataset(VisionDataset):
             so they will be removed
         """
         if crop_dur is not None and timebin_dur is None:
-            raise ValueError(
-                'must provide timebin_dur when specifying crop_dur'
-            )
+            raise ValueError("must provide timebin_dur when specifying crop_dur")
 
         if crop_dur is not None and labelmap is None:
-            raise ValueError(
-                'must provide labelmap when specifying crop_dur'
-            )
+            raise ValueError("must provide labelmap when specifying crop_dur")
 
         if split not in WindowDataset.VALID_SPLITS:
             raise ValueError(
-                f'invalid value for split: {split}. Valid split names are: {WindowDataset.VALID_SPLITS}'
+                f"invalid value for split: {split}. Valid split names are: {WindowDataset.VALID_SPLITS}"
             )
 
         if crop_dur is not None and timebin_dur is not None:
@@ -541,8 +641,8 @@ class WindowDataset(VisionDataset):
             crop_dur = float(crop_dur)
             timebin_dur = float(timebin_dur)
             annots = annotation.from_df(df)
-            if 'unlabeled' in labelmap:
-                unlabeled_label = labelmap['unlabeled']
+            if "unlabeled" in labelmap:
+                unlabeled_label = labelmap["unlabeled"]
             else:
                 # if there is no "unlabeled label" (e.g., because all segments have labels)
                 # just assign dummy value that will end up getting replaced by actual labels by label_timebins()
@@ -550,16 +650,16 @@ class WindowDataset(VisionDataset):
         else:
             crop_to_dur = False
 
-        if 'split' == 'all':
+        if "split" == "all":
             pass  # use all rows, don't select by split
         else:
             if split not in df.split.unique().tolist():
                 raise ValueError(
-                    f'split {split} not found in dataframe. Split are: {df.split.unique().tolist()}'
+                    f"split {split} not found in dataframe. Split are: {df.split.unique().tolist()}"
                 )
-            df = df[df['split'] == split]
+            df = df[df["split"] == split]
 
-        spect_paths = df['spect_path'].values
+        spect_paths = df["spect_path"].values
 
         spect_id_vector = []
         spect_inds_vector = []
@@ -578,34 +678,44 @@ class WindowDataset(VisionDataset):
 
                 valid_x_inds = np.arange(total_tb, total_tb + n_tb_spect)
                 last_valid_window_ind = total_tb + n_tb_spect - window_size
-                valid_x_inds[valid_x_inds > last_valid_window_ind] = WindowDataset.INVALID_WINDOW_VAL
+                valid_x_inds[
+                    valid_x_inds > last_valid_window_ind
+                ] = WindowDataset.INVALID_WINDOW_VAL
                 x_inds.append(valid_x_inds)
 
                 total_tb += n_tb_spect
 
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
                 timebins = spect_dict[timebins_key]
-                lbl_tb.append(labeled_timebins.label_timebins(lbls_int,
-                                                              annot.seq.onsets_s,
-                                                              annot.seq.offsets_s,
-                                                              timebins,
-                                                              unlabeled_label=unlabeled_label))
+                lbl_tb.append(
+                    labeled_timebins.label_timebins(
+                        lbls_int,
+                        annot.seq.onsets_s,
+                        annot.seq.offsets_s,
+                        timebins,
+                        unlabeled_label=unlabeled_label,
+                    )
+                )
 
             spect_id_vector = np.concatenate(spect_id_vector)
             spect_inds_vector = np.concatenate(spect_inds_vector)
             lbl_tb = np.concatenate(lbl_tb)
             x_inds = np.concatenate(x_inds)
 
-            (spect_id_vector,
-             spect_inds_vector,
-             x_inds) = WindowDataset.crop_spect_vectors_keep_classes(lbl_tb,
-                                                                     spect_id_vector,
-                                                                     spect_inds_vector,
-                                                                     x_inds,
-                                                                     crop_dur,
-                                                                     timebin_dur,
-                                                                     labelmap,
-                                                                     window_size)
+            (
+                spect_id_vector,
+                spect_inds_vector,
+                x_inds,
+            ) = WindowDataset.crop_spect_vectors_keep_classes(
+                lbl_tb,
+                spect_id_vector,
+                spect_inds_vector,
+                x_inds,
+                crop_dur,
+                timebin_dur,
+                labelmap,
+                window_size,
+            )
 
         else:  # crop_to_dur is False
             for ind, spect_path in enumerate(spect_paths):
@@ -616,7 +726,9 @@ class WindowDataset(VisionDataset):
 
                 valid_x_inds = np.arange(total_tb, total_tb + n_tb_spect)
                 last_valid_window_ind = total_tb + n_tb_spect - window_size
-                valid_x_inds[valid_x_inds > last_valid_window_ind] = WindowDataset.INVALID_WINDOW_VAL
+                valid_x_inds[
+                    valid_x_inds > last_valid_window_ind
+                ] = WindowDataset.INVALID_WINDOW_VAL
                 x_inds.append(valid_x_inds)
 
                 total_tb += n_tb_spect
@@ -629,14 +741,16 @@ class WindowDataset(VisionDataset):
         return spect_id_vector, spect_inds_vector, x_inds
 
     @staticmethod
-    def spect_vectors_from_csv(csv_path,
-                               split,
-                               window_size,
-                               spect_key='s',
-                               timebins_key='t',
-                               crop_dur=None,
-                               timebin_dur=None,
-                               labelmap=None):
+    def spect_vectors_from_csv(
+        csv_path,
+        split,
+        window_size,
+        spect_key="s",
+        timebins_key="t",
+        crop_dur=None,
+        timebin_dur=None,
+        labelmap=None,
+    ):
         """get spect_id_vector and spect_ind_vector from a
         .csv file that represents a dataset of vocalizations.
         See WindowDataset class docstring for
@@ -679,39 +793,43 @@ class WindowDataset(VisionDataset):
         """
         if split not in WindowDataset.VALID_SPLITS:
             raise ValueError(
-                f'invalid value for split: {split}. Valid split names are: {WindowDataset.VALID_SPLITS}'
+                f"invalid value for split: {split}. Valid split names are: {WindowDataset.VALID_SPLITS}"
             )
 
         df = pd.read_csv(csv_path)
 
         if split not in df.split.unique().tolist():
             raise ValueError(
-                f'split {split} not found in dataset in csv: {csv_path}. '
-                f'Splits are: {df.split.unique().tolist()}'
+                f"split {split} not found in dataset in csv: {csv_path}. "
+                f"Splits are: {df.split.unique().tolist()}"
             )
 
-        return WindowDataset.spect_vectors_from_df(df,
-                                                   split,
-                                                   window_size,
-                                                   spect_key,
-                                                   timebins_key,
-                                                   crop_dur,
-                                                   timebin_dur,
-                                                   labelmap)
+        return WindowDataset.spect_vectors_from_df(
+            df,
+            split,
+            window_size,
+            spect_key,
+            timebins_key,
+            crop_dur,
+            timebin_dur,
+            labelmap,
+        )
 
     @classmethod
-    def from_csv(cls,
-                 csv_path,
-                 split,
-                 labelmap,
-                 window_size,
-                 spect_key='s',
-                 timebins_key='t',
-                 spect_id_vector=None,
-                 spect_inds_vector=None,
-                 x_inds=None,
-                 transform=None,
-                 target_transform=None):
+    def from_csv(
+        cls,
+        csv_path,
+        split,
+        labelmap,
+        window_size,
+        spect_key="s",
+        timebins_key="t",
+        spect_id_vector=None,
+        spect_inds_vector=None,
+        x_inds=None,
+        transform=None,
+        target_transform=None,
+    ):
         """given a path to a csv representing a dataset,
         returns an initialized WindowDataset.
 
@@ -753,20 +871,31 @@ class WindowDataset(VisionDataset):
         -------
         initialized instance of WindowDataset
         """
-        if any([vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
-            if not all([vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
+        if any(
+            [vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]
+        ):
+            if not all(
+                [
+                    vec is not None
+                    for vec in [spect_id_vector, spect_inds_vector, x_inds]
+                ]
+            ):
 
                 raise ValueError(
-                    'if any of the following parameters are specified, they all must be specified: '
-                    'spect_id_vector, spect_inds_vector, x_inds'
+                    "if any of the following parameters are specified, they all must be specified: "
+                    "spect_id_vector, spect_inds_vector, x_inds"
                 )
 
-        if all([vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
-            for vec_name, vec in zip(['spect_id_vector', 'spect_inds_vector', 'x_inds'],
-                                     [spect_id_vector, spect_inds_vector, x_inds]):
+        if all(
+            [vec is not None for vec in [spect_id_vector, spect_inds_vector, x_inds]]
+        ):
+            for vec_name, vec in zip(
+                ["spect_id_vector", "spect_inds_vector", "x_inds"],
+                [spect_id_vector, spect_inds_vector, x_inds],
+            ):
                 if not type(vec) is np.ndarray:
                     raise TypeError(
-                        f'{vec_name} must be a numpy.ndarray but type was: {type(spect_id_vector)}'
+                        f"{vec_name} must be a numpy.ndarray but type was: {type(spect_id_vector)}"
                     )
 
             spect_id_vector = validators.column_or_1d(spect_id_vector)
@@ -775,39 +904,40 @@ class WindowDataset(VisionDataset):
 
             if spect_id_vector.shape[-1] != spect_inds_vector.shape[-1]:
                 raise ValueError(
-                    'spect_id_vector and spect_inds_vector should be same length, but '
-                    f'spect_id_vector.shape[-1] is {spect_id_vector.shape[-1]} and '
-                    f'spect_inds_vector.shape[-1] is {spect_inds_vector.shape[-1]}.'
+                    "spect_id_vector and spect_inds_vector should be same length, but "
+                    f"spect_id_vector.shape[-1] is {spect_id_vector.shape[-1]} and "
+                    f"spect_inds_vector.shape[-1] is {spect_inds_vector.shape[-1]}."
                 )
 
         df = pd.read_csv(csv_path)
-        if not df['split'].str.contains(split).any():
-            raise ValueError(
-                f'split {split} not found in dataset in csv: {csv_path}'
-            )
+        if not df["split"].str.contains(split).any():
+            raise ValueError(f"split {split} not found in dataset in csv: {csv_path}")
         else:
-            df = df[df['split'] == split]
-        spect_paths = df['spect_path'].values
+            df = df[df["split"] == split]
+        spect_paths = df["spect_path"].values
 
         if all([vec is None for vec in [spect_id_vector, spect_inds_vector, x_inds]]):
             # see Notes in class docstring to understand what these vectors do
-            spect_id_vector, spect_inds_vector, x_inds = cls.spect_vectors_from_df(df, split, window_size)
+            spect_id_vector, spect_inds_vector, x_inds = cls.spect_vectors_from_df(
+                df, split, window_size
+            )
 
         annots = annotation.from_df(df)
         timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
 
         # note that we set "root" to csv path
-        return cls(csv_path,
-                   x_inds,
-                   spect_id_vector,
-                   spect_inds_vector,
-                   spect_paths,
-                   annots,
-                   labelmap,
-                   timebin_dur,
-                   window_size,
-                   spect_key,
-                   timebins_key,
-                   transform,
-                   target_transform
-                   )
+        return cls(
+            csv_path,
+            x_inds,
+            spect_id_vector,
+            spect_inds_vector,
+            spect_paths,
+            annots,
+            labelmap,
+            timebin_dur,
+            window_size,
+            spect_key,
+            timebins_key,
+            transform,
+            target_transform,
+        )
