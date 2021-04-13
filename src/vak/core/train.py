@@ -8,7 +8,7 @@ import torch.utils.data
 from .. import csv
 from .. import labels
 from .. import models
-from .. import summary_writer
+from .. import tensorboard
 from .. import transforms
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
@@ -266,8 +266,8 @@ def train(model_config_map,
         ckpt_root = results_model_root.joinpath('checkpoints')
         ckpt_root.mkdir()
         log_or_print(f'training {model_name}', logger=logger, level='info')
-        writer = summary_writer.get_summary_writer(log_dir=results_model_root,
-                                                   filename_suffix=model_name)
+        writer = tensorboard.get_summary_writer(log_dir=results_model_root,
+                                                filename_suffix=model_name)
         model.summary_writer = writer
         model.fit(train_data=train_data,
                   num_epochs=num_epochs,

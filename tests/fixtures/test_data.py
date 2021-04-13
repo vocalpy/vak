@@ -25,3 +25,13 @@ def generated_test_data_root(test_data_root):
     """'generated' test data, i.e. files created by vak:
     csv files, logs, neural network checkpoints, etc."""
     return test_data_root.joinpath('generated')
+
+
+@pytest.fixture
+def generated_prep_data_root(generated_test_data_root):
+    return generated_test_data_root / 'prep'
+
+
+@pytest.fixture
+def generated_results_data_root(generated_test_data_root):
+    return generated_test_data_root / 'results'

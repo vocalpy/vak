@@ -10,29 +10,31 @@ from .__about__ import (
     __version__,
 )
 
-from . import __main__
-from . import annotation
-from . import cli
-from . import config
-from . import csv
-from . import datasets
-from . import device
-from . import engine
-from . import entry_points
-from . import files
-from . import io
-from . import labels
-from . import labeled_timebins
-from . import logging
-from . import metrics
-from . import models
-from . import plot
-from . import spect
-from . import summary_writer
-from . import timebins
-from . import transforms
-from . import split
-from . import validators
+from . import (
+    __main__,
+    annotation,
+    cli,
+    config,
+    csv,
+    datasets,
+    device,
+    engine,
+    entry_points,
+    files,
+    io,
+    labels,
+    labeled_timebins,
+    logging,
+    metrics,
+    models,
+    plot,
+    spect,
+    tensorboard,
+    timebins,
+    transforms,
+    split,
+    validators,
+)
 
 from .engine.model import Model
 
@@ -58,8 +60,8 @@ __all__ = [
     'plot',
     'spect',
     'split',
-    'summary_writer',
+    'tensorboard',
     'timebins',
     'transforms',
-    'validators.py',
+    'validators',
 ]
