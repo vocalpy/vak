@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- add `events2df` function to `tensorboard` module that converts an "events" file 
+  (log) created during training into a `pandas.DataFrame`, to make it easier to 
+  work directly with logged scalar values, e.g. plot training history showing loss 
+  [#346](https://github.com/NickleDave/vak/pull/346).
+
+### Changed
+- change name of `summary_writer` module to `tensorboard` to reflect that it contains 
+  any function related to `tensorboard` [#346](https://github.com/NickleDave/vak/pull/346).
+
 ## [0.4.0b3](https://github.com/NickleDave/vak/releases/tag/0.4.0b3) -- 2021-04-04
 ### Changed
 - refactor unit tests so they can be run with `TeenyTweetyNet` on Github Actions
