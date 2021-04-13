@@ -1,5 +1,3 @@
 from .distance import *
 
-__all__ = [
-    'Levenshtein', 'SegmentErrorRate'
-]
+__all__ = ["Levenshtein", "SegmentErrorRate"]

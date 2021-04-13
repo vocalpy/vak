@@ -26,14 +26,14 @@ def format_from_df(vak_df):
     annot_format : str
         format of annotations for vocalizations.
     """
-    annot_format = vak_df['annot_format'].unique()
+    annot_format = vak_df["annot_format"].unique()
     if len(annot_format) == 1:
         annot_format = annot_format.item()
         if annot_format is None or annot_format == constants.NO_ANNOTATION_FORMAT:
             return None
     elif len(annot_format) > 1:
         raise ValueError(
-            f'unable to load labels for dataset, found multiple annotation formats: {annot_format}'
+            f"unable to load labels for dataset, found multiple annotation formats: {annot_format}"
         )
 
     return annot_format
@@ -69,40 +69,48 @@ def from_df(vak_df):
 
     scribe = crowsetta.Transcriber(format=annot_format)
 
-    if len(vak_df['annot_path'].unique()) == 1:
+    if len(vak_df["annot_path"].unique()) == 1:
         # --> there is a single annotation file associated with all rows
         # this can be true in two different cases:
         # (1) many rows, all have the same file
         # (2) only one row, so there's only one annotation file (which may contain annotation for multiple source files)
-        annot_path = vak_df['annot_path'].unique().item()
+        annot_path = vak_df["annot_path"].unique().item()
         annots = scribe.from_file(annot_path)
 
         # as long as we have at least as many annotations as there are rows in the dataframe
-        if ((isinstance(annots, list) and len(annots) >= len(vak_df)) or  # case 1
-                (isinstance(annots, crowsetta.Annotation) and len(vak_df) == 1)):  # case 2
+        if (isinstance(annots, list) and len(annots) >= len(vak_df)) or (  # case 1
+            isinstance(annots, crowsetta.Annotation) and len(vak_df) == 1
+        ):  # case 2
             if isinstance(annots, crowsetta.Annotation):
-                annots = [annots]  # wrap in list for source_annot_map to iterate over it
+                annots = [
+                    annots
+                ]  # wrap in list for source_annot_map to iterate over it
             # then we can try and map those annotations to the rows
-            audio_annot_map = source_annot_map(vak_df['audio_path'].values, annots)
+            audio_annot_map = source_annot_map(vak_df["audio_path"].values, annots)
             # sort by row of dataframe
-            annots = [audio_annot_map[audio_path] for audio_path in vak_df['audio_path'].values]
+            annots = [
+                audio_annot_map[audio_path]
+                for audio_path in vak_df["audio_path"].values
+            ]
 
         else:
             raise ValueError(
-                'unable to load labels from dataframe; found a single annotation file associated with all '
-                'rows in dataframe, but loading it did not return a list of annotations for each row.\n'
-                f'Single annotation file: {annot_path}\n'
-                f'Loading it returned a {type(annots)}.'
+                "unable to load labels from dataframe; found a single annotation file associated with all "
+                "rows in dataframe, but loading it did not return a list of annotations for each row.\n"
+                f"Single annotation file: {annot_path}\n"
+                f"Loading it returned a {type(annots)}."
             )
 
-    elif len(vak_df['annot_path'].unique()) == len(vak_df):
+    elif len(vak_df["annot_path"].unique()) == len(vak_df):
         # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
-        annots = [scribe.from_file(annot_path) for annot_path in vak_df['annot_path'].values]
+        annots = [
+            scribe.from_file(annot_path) for annot_path in vak_df["annot_path"].values
+        ]
 
     else:
         raise ValueError(
-            'unable to load labels from dataframe; did not find an annotation file for each row or '
-            'a single annotation file associated with all rows.'
+            "unable to load labels from dataframe; did not find an annotation file for each row or "
+            "a single annotation file associated with all rows."
         )
 
     return annots
@@ -115,8 +123,8 @@ def files_from_dir(annot_dir, annot_format):
     """
     if annot_format not in constants.VALID_ANNOT_FORMATS:
         raise ValueError(
-            f'specified annotation format, {annot_format} not valid.\n'
-            f'Valid formats are: {constants.VALID_ANNOT_FORMATS}'
+            f"specified annotation format, {annot_format} not valid.\n"
+            f"Valid formats are: {constants.VALID_ANNOT_FORMATS}"
         )
 
     format_module = getattr(crowsetta.formats, annot_format)
@@ -156,14 +164,12 @@ def recursive_stem(path):
     """
     name = Path(path).name
     stem, ext = os.path.splitext(name)
-    ext = ext.replace('.', '').lower()
+    ext = ext.replace(".", "").lower()
     while ext not in constants.VALID_AUDIO_FORMATS:
         new_stem, ext = os.path.splitext(stem)
-        ext = ext.replace('.', '').lower()
+        ext = ext.replace(".", "").lower()
         if new_stem == stem:
-            raise ValueError(
-                f'unable to compute stem of {path}'
-            )
+            raise ValueError(f"unable to compute stem of {path}")
         else:
             stem = new_stem
     return stem
@@ -203,16 +209,20 @@ def source_annot_map(source_files, annot_list):
     if len(keys_set) < len(keys):
         duplicates = [item for item, count in Counter(keys).items() if count > 1]
         raise ValueError(
-            f'found multiple annotations with the same audio filename(s): {duplicates}'
+            f"found multiple annotations with the same audio filename(s): {duplicates}"
         )
     del keys, keys_set
-    audio_stem_annot_map = {recursive_stem(annot.audio_path): annot for annot in annot_list}
+    audio_stem_annot_map = {
+        recursive_stem(annot.audio_path): annot for annot in annot_list
+    }
 
     # Make a copy from which we remove source files after mapping them to annotation,
     # to validate that function worked,
     # by making sure there are no items left in this copy after the loop
     source_files_copy = copy.deepcopy(source_files)
-    for source_file in list(source_files):  # list() to copy, so we can pop off items while iterating
+    for source_file in list(
+        source_files
+    ):  # list() to copy, so we can pop off items while iterating
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
@@ -222,8 +232,8 @@ def source_annot_map(source_files, annot_list):
             annot = audio_stem_annot_map[source_file_stem]
         except KeyError:
             raise ValueError(
-                f'could not find annotation for source file: {source_file}.\n'
-                f'No annotation had an audio file whose stem matched the source file stem: {source_file_stem}'
+                f"could not find annotation for source file: {source_file}.\n"
+                f"No annotation had an audio file whose stem matched the source file stem: {source_file_stem}"
             )
 
         source_annot_map[source_file] = annot
@@ -231,8 +241,8 @@ def source_annot_map(source_files, annot_list):
 
     if len(source_files_copy) > 0:
         raise ValueError(
-            'could not map the following source files to annotations: '
-            f'{source_files_copy}'
+            "could not map the following source files to annotations: "
+            f"{source_files_copy}"
         )
 
     return source_annot_map

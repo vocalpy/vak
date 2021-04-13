@@ -15,15 +15,18 @@ from . import transforms as vak_transforms
 
 class TrainItemTransform:
     """default transform used when training models"""
-    def __init__(self,
-                 spect_standardizer=None,):
+
+    def __init__(
+        self,
+        spect_standardizer=None,
+    ):
         if spect_standardizer is not None:
             if isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
                 source_transform = [spect_standardizer]
             else:
                 raise TypeError(
-                    f'invalid type for spect_standardizer: {type(spect_standardizer)}. '
-                    'Should be an instance of vak.transforms.StandardizeSpect'
+                    f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
+                    "Should be an instance of vak.transforms.StandardizeSpect"
                 )
         else:
             source_transform = []
@@ -41,12 +44,12 @@ class TrainItemTransform:
         source = self.source_transform(source)
         annot = self.annot_transform(annot)
         item = {
-            'source': source,
-            'annot': annot,
+            "source": source,
+            "annot": annot,
         }
 
         if spect_path is not None:
-            item['spect_path'] = spect_path
+            item["spect_path"] = spect_path
 
         return item
 
@@ -60,30 +63,35 @@ class EvalItemTransform:
     If return_padding_mask is True, item includes 'padding_mask' that
     can be used to crop off any predictions made on the padding.
     """
-    def __init__(self,
-                 window_size,
-                 spect_standardizer=None,
-                 padval=0.,
-                 return_padding_mask=True,
-                 channel_dim=1):
+
+    def __init__(
+        self,
+        window_size,
+        spect_standardizer=None,
+        padval=0.0,
+        return_padding_mask=True,
+        channel_dim=1,
+    ):
         if spect_standardizer is not None:
             if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
                 raise TypeError(
-                    f'invalid type for spect_standardizer: {type(spect_standardizer)}. '
-                    'Should be an instance of vak.transforms.StandardizeSpect'
+                    f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
+                    "Should be an instance of vak.transforms.StandardizeSpect"
                 )
         self.spect_standardizer = spect_standardizer
 
-        self.pad_to_window = vak_transforms.PadToWindow(window_size,
-                                                        padval,
-                                                        return_padding_mask=return_padding_mask)
+        self.pad_to_window = vak_transforms.PadToWindow(
+            window_size, padval, return_padding_mask=return_padding_mask
+        )
 
-        self.source_transform_after_pad = torchvision.transforms.Compose([
-            vak_transforms.ViewAsWindowBatch(window_size),
-            vak_transforms.ToFloatTensor(),
-            # below, add channel at first dimension because windows become batch
-            vak_transforms.AddChannel(channel_dim=channel_dim),
-        ])
+        self.source_transform_after_pad = torchvision.transforms.Compose(
+            [
+                vak_transforms.ViewAsWindowBatch(window_size),
+                vak_transforms.ToFloatTensor(),
+                # below, add channel at first dimension because windows become batch
+                vak_transforms.AddChannel(channel_dim=channel_dim),
+            ]
+        )
 
         self.annot_transform = vak_transforms.ToLongTensor()
 
@@ -101,15 +109,15 @@ class EvalItemTransform:
         annot = self.annot_transform(annot)
 
         item = {
-            'source': source,
-            'annot': annot,
+            "source": source,
+            "annot": annot,
         }
 
         if padding_mask is not None:
-            item['padding_mask'] = padding_mask
+            item["padding_mask"] = padding_mask
 
         if spect_path is not None:
-            item['spect_path'] = spect_path
+            item["spect_path"] = spect_path
 
         return item
 
@@ -122,30 +130,35 @@ class PredictItemTransform:
     If return_padding_mask is True, item includes 'padding_mask' that
     can be used to crop off any predictions made on the padding.
     """
-    def __init__(self,
-                 window_size,
-                 spect_standardizer=None,
-                 padval=0.,
-                 return_padding_mask=True,
-                 channel_dim=1):
+
+    def __init__(
+        self,
+        window_size,
+        spect_standardizer=None,
+        padval=0.0,
+        return_padding_mask=True,
+        channel_dim=1,
+    ):
         if spect_standardizer is not None:
             if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
                 raise TypeError(
-                    f'invalid type for spect_standardizer: {type(spect_standardizer)}. '
-                    'Should be an instance of vak.transforms.StandardizeSpect'
+                    f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
+                    "Should be an instance of vak.transforms.StandardizeSpect"
                 )
         self.spect_standardizer = spect_standardizer
 
-        self.pad_to_window = vak_transforms.PadToWindow(window_size,
-                                                        padval,
-                                                        return_padding_mask=return_padding_mask)
+        self.pad_to_window = vak_transforms.PadToWindow(
+            window_size, padval, return_padding_mask=return_padding_mask
+        )
 
-        self.source_transform_after_pad = torchvision.transforms.Compose([
-            vak_transforms.ViewAsWindowBatch(window_size),
-            vak_transforms.ToFloatTensor(),
-            # below, add channel at first dimension because windows become batch
-            vak_transforms.AddChannel(channel_dim=channel_dim),
-        ])
+        self.source_transform_after_pad = torchvision.transforms.Compose(
+            [
+                vak_transforms.ViewAsWindowBatch(window_size),
+                vak_transforms.ToFloatTensor(),
+                # below, add channel at first dimension because windows become batch
+                vak_transforms.AddChannel(channel_dim=channel_dim),
+            ]
+        )
 
     def __call__(self, source, spect_path=None):
         if self.spect_standardizer:
@@ -160,24 +173,25 @@ class PredictItemTransform:
         source = self.source_transform_after_pad(source)
 
         item = {
-            'source': source,
+            "source": source,
         }
 
         if padding_mask is not None:
-            item['padding_mask'] = padding_mask
+            item["padding_mask"] = padding_mask
 
         if spect_path is not None:
-            item['spect_path'] = spect_path
+            item["spect_path"] = spect_path
 
         return item
 
 
-def get_defaults(mode,
-                 spect_standardizer=None,
-                 window_size=None,
-                 padval=0.,
-                 return_padding_mask=False,
-                 ):
+def get_defaults(
+    mode,
+    spect_standardizer=None,
+    window_size=None,
+    padval=0.0,
+    return_padding_mask=False,
+):
     """get default transforms
 
     Parameters
@@ -211,27 +225,28 @@ def get_defaults(mode,
     if spect_standardizer is not None:
         if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
             raise TypeError(
-                f'invalid type for spect_standardizer: {type(spect_standardizer)}. '
-                'Should be an instance of vak.transforms.StandardizeSpect'
+                f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
+                "Should be an instance of vak.transforms.StandardizeSpect"
             )
 
-    if mode == 'train':
+    if mode == "train":
         if spect_standardizer is not None:
             transform = [spect_standardizer]
         else:
             transform = []
 
-
-        transform.extend([
-            vak_transforms.ToFloatTensor(),
-            vak_transforms.AddChannel(),
-        ])
+        transform.extend(
+            [
+                vak_transforms.ToFloatTensor(),
+                vak_transforms.AddChannel(),
+            ]
+        )
         transform = torchvision.transforms.Compose(transform)
 
         target_transform = vak_transforms.ToLongTensor()
         return transform, target_transform
 
-    elif mode == 'predict':
+    elif mode == "predict":
         item_transform = PredictItemTransform(
             spect_standardizer=spect_standardizer,
             window_size=window_size,
@@ -240,7 +255,7 @@ def get_defaults(mode,
         )
         return item_transform
 
-    elif mode == 'eval':
+    elif mode == "eval":
         item_transform = EvalItemTransform(
             spect_standardizer=spect_standardizer,
             window_size=window_size,
@@ -250,6 +265,4 @@ def get_defaults(mode,
         return item_transform
 
     else:
-        raise ValueError(
-            f'invalid mode: {mode}'
-        )
+        raise ValueError(f"invalid mode: {mode}")

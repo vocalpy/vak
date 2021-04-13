@@ -37,29 +37,33 @@ class EvalConfig:
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     """
+
     # required, external files
-    checkpoint_path = attr.ib(converter=expanded_user_path,
-                              validator=is_a_file)
-    labelmap_path = attr.ib(converter=expanded_user_path,
-                            validator=is_a_file)
+    checkpoint_path = attr.ib(converter=expanded_user_path, validator=is_a_file)
+    labelmap_path = attr.ib(converter=expanded_user_path, validator=is_a_file)
     output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
 
     # required, model / dataloader
-    models = attr.ib(converter=comma_separated_list,
-                     validator=[instance_of(list), is_valid_model_name])
+    models = attr.ib(
+        converter=comma_separated_list,
+        validator=[instance_of(list), is_valid_model_name],
+    )
     batch_size = attr.ib(converter=int, validator=instance_of(int))
 
     # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
     # what sections are defined to figure out where to add csv_path after it creates the csv
-    csv_path = attr.ib(converter=converters.optional(expanded_user_path),
-                       validator=validators.optional(is_a_file),
-                       default=None
-                       )
+    csv_path = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_file),
+        default=None,
+    )
 
     # optional, transform
-    spect_scaler_path = attr.ib(converter=converters.optional(expanded_user_path),
-                                validator=validators.optional(is_a_file),
-                                default=None)
+    spect_scaler_path = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_file),
+        default=None,
+    )
 
     # optional, data loader
     num_workers = attr.ib(validator=instance_of(int), default=2)

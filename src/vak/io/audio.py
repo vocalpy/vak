@@ -37,15 +37,17 @@ def files_from_dir(audio_dir, audio_format):
     return audio_files
 
 
-def to_spect(audio_format,
-             spect_params,
-             output_dir,
-             audio_dir=None,
-             audio_files=None,
-             annot_list=None,
-             audio_annot_map=None,
-             labelset=None,
-             logger=None):
+def to_spect(
+    audio_format,
+    spect_params,
+    output_dir,
+    audio_dir=None,
+    audio_files=None,
+    annot_list=None,
+    audio_annot_map=None,
+    labelset=None,
+    logger=None,
+):
     """makes spectrograms from audio files and saves in array files
 
     Parameters
@@ -111,20 +113,26 @@ def to_spect(audio_format,
         )
 
     if all([arg is None for arg in (audio_dir, audio_files, audio_annot_map)]):
-        raise ValueError('must specify one of: audio_dir, audio_files, audio_annot_map')
+        raise ValueError("must specify one of: audio_dir, audio_files, audio_annot_map")
 
     if audio_dir and audio_files:
-        raise ValueError('received values for audio_dir and audio_files, unclear which to use')
+        raise ValueError(
+            "received values for audio_dir and audio_files, unclear which to use"
+        )
 
     if audio_dir and audio_annot_map:
-        raise ValueError('received values for audio_dir and audio_annot_map, unclear which to use')
+        raise ValueError(
+            "received values for audio_dir and audio_annot_map, unclear which to use"
+        )
 
     if audio_files and audio_annot_map:
-        raise ValueError('received values for audio_files and audio_annot_map, unclear which to use')
+        raise ValueError(
+            "received values for audio_files and audio_annot_map, unclear which to use"
+        )
 
     if annot_list and audio_annot_map:
         raise ValueError(
-            'received values for annot_list and array_annot_map, unclear which annotations to use'
+            "received values for annot_list and array_annot_map, unclear which annotations to use"
         )
 
     if labelset is not None:
@@ -132,9 +140,9 @@ def to_spect(audio_format,
 
     if type(spect_params) not in [dict, SpectParamsConfig]:
         raise TypeError(
-            'type of spect_params must be an instance of vak.config.spect_params.SpectParamsConfig, '
-            'or a dict that can be converted to a SpectParamsConfig instance, '
-            f'but was {type(spect_params)}'
+            "type of spect_params must be an instance of vak.config.spect_params.SpectParamsConfig, "
+            "or a dict that can be converted to a SpectParamsConfig instance, "
+            f"but was {type(spect_params)}"
         )
     if type(spect_params) is dict:
         spect_params = SpectParamsConfig(**spect_params)
@@ -145,14 +153,16 @@ def to_spect(audio_format,
         exts = []
         for audio_file in audio_files:
             root, ext = os.path.splitext(audio_file)
-            ext = ext.lower()  # make case-insensitive, e.g. treat .wav and .WAV the same
+            ext = (
+                ext.lower()
+            )  # make case-insensitive, e.g. treat .wav and .WAV the same
             exts.append(ext)
         uniq_ext = set(exts)
         if len(uniq_ext) > 1:
             raise ValueError(
-                'audio_files should all have the same extension, '
-                f'but found more than one: {uniq_ext}'
-                )
+                "audio_files should all have the same extension, "
+                f"but found more than one: {uniq_ext}"
+            )
         else:
             ext_str = uniq_ext.pop()
             if audio_format not in ext_str:
@@ -169,8 +179,7 @@ def to_spect(audio_format,
         if annot_list:
             audio_annot_map = source_annot_map(audio_files, annot_list)
 
-    log_or_print('creating array files with spectrograms',
-                 logger=logger, level='info')
+    log_or_print("creating array files with spectrograms", logger=logger, level="info")
 
     # use mapping (if generated/supplied) with labelset, if supplied, to filter
     if audio_annot_map:
@@ -186,9 +195,12 @@ def to_spect(audio_format,
                     # because there's some label in labels that's not in labelset
                     audio_annot_map.pop(audio_file)
                     extra_labels = annot_labelset - labelset
-                    log_or_print(f'Found labels, {extra_labels}, in {Path(audio_file).name}, '
-                                 'that are not in labels_mapping. Skipping file.',
-                                 logger=logger, level='info')
+                    log_or_print(
+                        f"Found labels, {extra_labels}, in {Path(audio_file).name}, "
+                        "that are not in labels_mapping. Skipping file.",
+                        logger=logger,
+                        level="info",
+                    )
         audio_files = sorted(list(audio_annot_map.keys()))
 
     # this is defined here so all other arguments to 'to_spect' are in scope
@@ -197,19 +209,23 @@ def to_spect(audio_format,
         files containing spectrograms.
         Accepts path to audio file, saves .npz file with spectrogram"""
         dat, fs = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
-        s, f, t = spectrogram(dat, fs,
-                              spect_params.fft_size,
-                              spect_params.step_size,
-                              spect_params.thresh,
-                              spect_params.transform_type,
-                              spect_params.freq_cutoffs)
-        spect_dict = {spect_params.spect_key: s,
-                      spect_params.freqbins_key: f,
-                      spect_params.timebins_key: t,
-                      spect_params.audio_path_key: audio_file}
+        s, f, t = spectrogram(
+            dat,
+            fs,
+            spect_params.fft_size,
+            spect_params.step_size,
+            spect_params.thresh,
+            spect_params.transform_type,
+            spect_params.freq_cutoffs,
+        )
+        spect_dict = {
+            spect_params.spect_key: s,
+            spect_params.freqbins_key: f,
+            spect_params.timebins_key: t,
+            spect_params.audio_path_key: audio_file,
+        }
         basename = os.path.basename(audio_file)
-        npz_fname = os.path.join(os.path.normpath(output_dir),
-                                 basename + '.spect.npz')
+        npz_fname = os.path.join(os.path.normpath(output_dir), basename + ".spect.npz")
         np.savez(npz_fname, **spect_dict)
         return npz_fname
 

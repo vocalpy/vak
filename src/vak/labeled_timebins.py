@@ -6,10 +6,7 @@ from .timebins import timebin_dur_from_vec
 from .validators import row_or_1d, column_or_1d
 
 
-def has_unlabeled(labels_int,
-                  onsets_s,
-                  offsets_s,
-                  time_bins):
+def has_unlabeled(labels_int, onsets_s, offsets_s, time_bins):
     """determine whether there are unlabeled segments in a spectrogram,
     given labels, onsets, and offsets of vocalizations, and vector of
     time bins from spectrogram
@@ -31,19 +28,23 @@ def has_unlabeled(labels_int,
     has_unlabeled : bool
         if True, there are time bins that do not have labels associated with them
     """
-    if (type(labels_int) == list and not all([type(lbl) == int for lbl in labels_int]) or
-            (type(labels_int) == np.ndarray and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64])):
-        raise TypeError('labels_int must be a list or numpy.ndarray of integers')
+    if (
+        type(labels_int) == list
+        and not all([type(lbl) == int for lbl in labels_int])
+        or (
+            type(labels_int) == np.ndarray
+            and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64]
+        )
+    ):
+        raise TypeError("labels_int must be a list or numpy.ndarray of integers")
 
     dummy_unlabeled_label = np.max(labels_int) + 1
-    label_vec = np.ones((time_bins.shape[-1], 1), dtype='int8') * dummy_unlabeled_label
-    onset_inds = [np.argmin(np.abs(time_bins - onset))
-                  for onset in onsets_s]
-    offset_inds = [np.argmin(np.abs(time_bins - offset))
-                   for offset in offsets_s]
+    label_vec = np.ones((time_bins.shape[-1], 1), dtype="int8") * dummy_unlabeled_label
+    onset_inds = [np.argmin(np.abs(time_bins - onset)) for onset in onsets_s]
+    offset_inds = [np.argmin(np.abs(time_bins - offset)) for offset in offsets_s]
     for label, onset, offset in zip(labels_int, onset_inds, offset_inds):
         # offset_inds[ind]+1 because offset time bin is still "part of" syllable
-        label_vec[onset:offset+1] = label
+        label_vec[onset : offset + 1] = label
 
     if dummy_unlabeled_label in label_vec:
         return True
@@ -51,11 +52,7 @@ def has_unlabeled(labels_int,
         return False
 
 
-def label_timebins(labels_int,
-                   onsets_s,
-                   offsets_s,
-                   time_bins,
-                   unlabeled_label=0):
+def label_timebins(labels_int, onsets_s, offsets_s, time_bins, unlabeled_label=0):
     """makes a vector of labels for each time bin from a spectrogram,
     given labels, onsets, and offsets of vocalizations
 
@@ -79,25 +76,27 @@ def label_timebins(labels_int,
     lbl_tb : numpy.ndarray
         same length as time_bins, with each element a label for each time bin
     """
-    if (type(labels_int) == list and not all([type(lbl) == int for lbl in labels_int]) or
-            (type(labels_int) == np.ndarray and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64])):
-        raise TypeError('labels_int must be a list or numpy.ndarray of integers')
+    if (
+        type(labels_int) == list
+        and not all([type(lbl) == int for lbl in labels_int])
+        or (
+            type(labels_int) == np.ndarray
+            and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64]
+        )
+    ):
+        raise TypeError("labels_int must be a list or numpy.ndarray of integers")
 
-    label_vec = np.ones((time_bins.shape[-1],), dtype='int8') * unlabeled_label
-    onset_inds = [np.argmin(np.abs(time_bins - onset))
-                  for onset in onsets_s]
-    offset_inds = [np.argmin(np.abs(time_bins - offset))
-                   for offset in offsets_s]
+    label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * unlabeled_label
+    onset_inds = [np.argmin(np.abs(time_bins - onset)) for onset in onsets_s]
+    offset_inds = [np.argmin(np.abs(time_bins - offset)) for offset in offsets_s]
     for label, onset, offset in zip(labels_int, onset_inds, offset_inds):
         # offset_inds[ind]+1 because offset time bin is still "part of" syllable
-        label_vec[onset:offset+1] = label
+        label_vec[onset : offset + 1] = label
 
     return label_vec
 
 
-def lbl_tb2labels(labeled_timebins,
-                  labels_mapping,
-                  spect_ID_vector=None):
+def lbl_tb2labels(labeled_timebins, labels_mapping, spect_ID_vector=None):
     """converts output of network from label for each frame
     to one label for each continuous segment
 
@@ -132,11 +131,10 @@ def lbl_tb2labels(labeled_timebins,
     labels = labeled_timebins[idx]
 
     # remove 'unlabeled' label
-    if 'unlabeled' in labels_mapping:
-        labels = labels[labels != labels_mapping['unlabeled']]
+    if "unlabeled" in labels_mapping:
+        labels = labels[labels != labels_mapping["unlabeled"]]
 
-    inverse_labels_mapping = dict((v, k) for k, v
-                                  in labels_mapping.items())
+    inverse_labels_mapping = dict((v, k) for k, v in labels_mapping.items())
     labels = labels.tolist()
     labels = [inverse_labels_mapping[label] for label in labels]
 
@@ -152,13 +150,13 @@ def lbl_tb2labels(labeled_timebins,
             these = np.where(spect_ID_vector == spect_ID)
             curr_labels = labels_arr[these].tolist()
             if all([type(el) is str for el in curr_labels]):
-                labels_list.append(''.join(curr_labels))
+                labels_list.append("".join(curr_labels))
             elif all([type(el) is int for el in curr_labels]):
                 labels_list.append(curr_labels)
         return labels_list, spect_ID_vector
     else:
         if all([type(el) is str or type(el) is np.str_ for el in labels]):
-            return ''.join(labels)
+            return "".join(labels)
         elif all([type(el) is int for el in labels]):
             return labels
 
@@ -188,12 +186,8 @@ def _segment_lbl_tb(lbl_tb):
     # and in case user wants to do just this with output of neural net
     offset_inds = np.where(np.diff(lbl_tb, axis=0))[0]
     onset_inds = offset_inds + 1
-    offset_inds = np.concatenate(
-        (offset_inds, np.asarray([lbl_tb.shape[0] - 1]))
-    )
-    onset_inds = np.concatenate(
-        (np.asarray([0]), onset_inds)
-    )
+    offset_inds = np.concatenate((offset_inds, np.asarray([lbl_tb.shape[0] - 1])))
+    onset_inds = np.concatenate((np.asarray([0]), onset_inds))
     labels = lbl_tb[onset_inds]
     return labels, onset_inds, offset_inds
 
@@ -223,11 +217,9 @@ def lbl_tb_segment_inds_list(lbl_tb, unlabeled_label=0):
     return np.split(segment_inds, np.where(np.diff(segment_inds) != 1)[0] + 1)
 
 
-def remove_short_segments(lbl_tb,
-                          segment_inds_list,
-                          timebin_dur,
-                          min_segment_dur,
-                          unlabeled_label=0):
+def remove_short_segments(
+    lbl_tb, segment_inds_list, timebin_dur, min_segment_dur, unlabeled_label=0
+):
     """remove segments from vector of labeled timebins
     that are shorter than specified duration
 
@@ -273,8 +265,7 @@ def remove_short_segments(lbl_tb,
     return lbl_tb, segment_inds_list
 
 
-def majority_vote_transform(lbl_tb,
-                            segment_inds_list):
+def majority_vote_transform(lbl_tb, segment_inds_list):
     """transform segments containing multiple labels
         into segments with a single label by taking a "majority vote",
         i.e. assign all time bins in the segment the most frequently
@@ -303,12 +294,9 @@ def majority_vote_transform(lbl_tb,
     return lbl_tb
 
 
-def lbl_tb2segments(lbl_tb,
-                    labelmap,
-                    t,
-                    min_segment_dur=None,
-                    majority_vote=False,
-                    n_decimals_trunc=5):
+def lbl_tb2segments(
+    lbl_tb, labelmap, t, min_segment_dur=None, majority_vote=False, n_decimals_trunc=5
+):
     """convert vector of labeled timebins into segments,
     by finding where continuous runs of a single label start
     and stop. Returns vectors of labels and onsets and offsets
@@ -362,22 +350,24 @@ def lbl_tb2segments(lbl_tb,
     timebin_dur = timebin_dur_from_vec(t, n_decimals_trunc)
 
     if min_segment_dur is not None or majority_vote:
-        if 'unlabeled' not in labelmap:
+        if "unlabeled" not in labelmap:
             raise ValueError(
                 "min_segment_dur or majority_vote specified,"
                 " but 'unlabeled' not in labelmap.\n"
                 "Without 'unlabeled' segments these transforms cannot be applied."
             )
-        segment_inds_list = lbl_tb_segment_inds_list(lbl_tb,
-                                                     unlabeled_label=labelmap['unlabeled'])
+        segment_inds_list = lbl_tb_segment_inds_list(
+            lbl_tb, unlabeled_label=labelmap["unlabeled"]
+        )
 
     if min_segment_dur is not None:
-        lbl_tb, segment_inds_list = remove_short_segments(lbl_tb,
-                                                          segment_inds_list,
-                                                          timebin_dur,
-                                                          min_segment_dur,
-                                                          labelmap['unlabeled'],
-                                                          )
+        lbl_tb, segment_inds_list = remove_short_segments(
+            lbl_tb,
+            segment_inds_list,
+            timebin_dur,
+            min_segment_dur,
+            labelmap["unlabeled"],
+        )
 
     if majority_vote:
         lbl_tb = majority_vote_transform(lbl_tb, segment_inds_list)
@@ -385,17 +375,14 @@ def lbl_tb2segments(lbl_tb,
     labels, onset_inds, offset_inds = _segment_lbl_tb(lbl_tb)
 
     # remove 'unlabeled' label
-    if 'unlabeled' in labelmap:
-        keep = np.where(labels != labelmap['unlabeled'])[0]
+    if "unlabeled" in labelmap:
+        keep = np.where(labels != labelmap["unlabeled"])[0]
         labels = labels[keep]
         onset_inds = onset_inds[keep]
         offset_inds = offset_inds[keep]
-    inverse_labelmap = dict((v, k) for k, v
-                            in labelmap.items())
+    inverse_labelmap = dict((v, k) for k, v in labelmap.items())
     labels = labels.tolist()
-    labels = np.asarray(
-        [inverse_labelmap[label] for label in labels]
-    )
+    labels = np.asarray([inverse_labelmap[label] for label in labels])
     # the 'best' estimate we can get of onset and offset times,
     # given binned times, and labels applied to each time bin,
     # is "some time" between the last labeled bin for one segment,
@@ -412,8 +399,8 @@ def lbl_tb2segments(lbl_tb,
 
     # but this estimate will be "wrong" if we set the onset or offset time
     # outside the possible times in our timebin vector. Need to clean up.
-    if onsets_s[0] < 0.:
-        onsets_s[0] = 0.
+    if onsets_s[0] < 0.0:
+        onsets_s[0] = 0.0
     if offsets_s[-1] > t[-1]:
         offsets_s[-1] = t[-1]
 

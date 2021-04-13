@@ -16,7 +16,7 @@ def comma_separated_list(value):
         return [element.strip() for element in value.split()]
     else:
         raise TypeError(
-            f'unexpected type when converting to comma-separated list: {type(value)}'
+            f"unexpected type when converting to comma-separated list: {type(value)}"
         )
 
 
@@ -55,15 +55,15 @@ def range_str(range_str, sort=True):
     # http://code.activestate.com/recipes/577279-generate-list-of-numbers-from-hyphenated-and-comma/
     s = "".join(range_str.split())  # removes white space
     list_range = []
-    for substr in range_str.split(','):
-        subrange = substr.split('-')
+    for substr in range_str.split(","):
+        subrange = substr.split("-")
         if len(subrange) not in [1, 2]:
-            raise SyntaxError("unable to parse range {} in labelset {}."
-                              .format(subrange, substr))
-        list_range.extend(
-            [int(subrange[0])]
-        ) if len(subrange) == 1 else list_range.extend(
-            range(int(subrange[0]), int(subrange[1]) + 1))
+            raise SyntaxError(
+                "unable to parse range {} in labelset {}.".format(subrange, substr)
+            )
+        list_range.extend([int(subrange[0])]) if len(
+            subrange
+        ) == 1 else list_range.extend(range(int(subrange[0]), int(subrange[1]) + 1))
 
     if sort:
         list_range.sort()
@@ -122,15 +122,15 @@ def labelset_to_set(labelset):
     """
     if type(labelset) not in (str, list, set):
         raise TypeError(
-            'labelset must be specified as a string, list, or set, '
-            f'but the type of labelset was: {type(labelset)}'
+            "labelset must be specified as a string, list, or set, "
+            f"but the type of labelset was: {type(labelset)}"
         )
 
     if type(labelset) is set:
         return labelset
     elif type(labelset) is str:
-        if labelset.startswith('range:'):
-            labelset = labelset.replace('range:', '')
+        if labelset.startswith("range:"):
+            labelset = labelset.replace("range:", "")
             return set(range_str(labelset))
         else:
             return set(labelset)
@@ -140,8 +140,8 @@ def labelset_to_set(labelset):
             if isinstance(label, int):
                 labelset_out.append(str(label))
             elif isinstance(label, str):
-                if label.startswith('range:'):
-                    label = label.replace('range:', '')
+                if label.startswith("range:"):
+                    label = label.replace("range:", "")
                     labelset_out.extend(range_str(label))
                 else:
                     labelset_out.append(label)

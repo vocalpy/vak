@@ -23,8 +23,9 @@ def residual_two_functions(params, x, y1, y1err, y2, y2err):
     return np.concatenate((diff1, diff2))
 
 
-def fit_learning_curve(train_set_size, error_test, error_train=None,
-                       pinit=(1.0, -1.0), funcs=1):
+def fit_learning_curve(
+    train_set_size, error_test, error_train=None, pinit=(1.0, -1.0), funcs=1
+):
     """
     returns parameters to predict learning curve as a power function with the form
     y = a + b * x**alpha
@@ -81,14 +82,15 @@ def fit_learning_curve(train_set_size, error_test, error_train=None,
     """
 
     if funcs not in [1, 2]:
-        raise ValueError('funcs argument should equal 1 or 2')
+        raise ValueError("funcs argument should equal 1 or 2")
 
     if funcs == 2 and error_train is None:
-        raise ValueError('error_train is a required argument when funcs==2')
+        raise ValueError("error_train is a required argument when funcs==2")
 
     if train_set_size.shape[0] != error_test.shape[0]:
         raise ValueError(
-            'Number of elements in train_set_size does not match number of columns in error_test')
+            "Number of elements in train_set_size does not match number of columns in error_test"
+        )
 
     fitfunc = lambda p, x: p[0] + p[1] * x
     errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
@@ -100,21 +102,25 @@ def fit_learning_curve(train_set_size, error_test, error_train=None,
         logy = np.log10(y)
         yerr = np.std(error_test, axis=1)
         logyerr = yerr / y
-        out1 = optimize.leastsq(errfunc, pinit,
-                                args=(logx, logy, logyerr), full_output=True)
+        out1 = optimize.leastsq(
+            errfunc, pinit, args=(logx, logy, logyerr), full_output=True
+        )
         pfinal = out1[0]
         b = 10.0 ** pfinal[0]
         alpha = pfinal[1]
         return b, alpha
 
-    elif error_train is not None and funcs == 1:  # if we have train error too, then try Cortes et al. 1994 approach
+    elif (
+        error_train is not None and funcs == 1
+    ):  # if we have train error too, then try Cortes et al. 1994 approach
         err_diff = error_test - error_train
         y = np.mean(err_diff, axis=1)
         logy = np.log10(y)
         yerr = np.std(err_diff, axis=1)
         logyerr = yerr / y
-        out1 = optimize.leastsq(errfunc, pinit,
-                                args=(logx, logy, logyerr), full_output=True)
+        out1 = optimize.leastsq(
+            errfunc, pinit, args=(logx, logy, logyerr), full_output=True
+        )
         pfinal = out1[0]
         b = (10.0 ** pfinal[0]) / 2
         alpha = pfinal[1]
@@ -139,9 +145,10 @@ def fit_learning_curve(train_set_size, error_test, error_train=None,
         if len(pinit) < 3:  # if default pinit from function declaration
             # change instead to default pinit in next line
             pinit = [1.0, -1.0, 1.0, 1.0, 0.05]
-        best, cov, info, message, ier = optimize.leastsq(residual_two_functions,
-                                                         pinit,
-                                                         args=(train_set_size, y1, y1err, y2, y2err),
-                                                         full_output=True)
+        best, cov, info, message, ier = optimize.leastsq(
+            residual_two_functions,
+            pinit,
+            args=(train_set_size, y1, y1err, y2, y2err),
+            full_output=True,
+        )
         return best
-

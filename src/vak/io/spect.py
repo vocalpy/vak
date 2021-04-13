@@ -21,29 +21,30 @@ from ..logging import log_or_print
 
 # constant, used for names of columns in DataFrame below
 DF_COLUMNS = [
-    'audio_path',
-    'spect_path',
-    'annot_path',
-    'annot_format',
-    'duration',
-    'timebin_dur',
+    "audio_path",
+    "spect_path",
+    "annot_path",
+    "annot_format",
+    "duration",
+    "timebin_dur",
 ]
 
 
-def to_dataframe(spect_format,
-                 spect_dir=None,
-                 spect_files=None,
-                 annot_list=None,
-                 annot_format=None,
-                 spect_annot_map=None,
-                 labelset=None,
-                 n_decimals_trunc=5,
-                 freqbins_key='f',
-                 timebins_key='t',
-                 spect_key='s',
-                 audio_path_key='audio_path',
-                 logger=None,
-                 ):
+def to_dataframe(
+    spect_format,
+    spect_dir=None,
+    spect_files=None,
+    annot_list=None,
+    annot_format=None,
+    spect_annot_map=None,
+    labelset=None,
+    n_decimals_trunc=5,
+    freqbins_key="f",
+    timebins_key="t",
+    spect_key="s",
+    audio_path_key="audio_path",
+    logger=None,
+):
     """convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
     Spectrogram files are array in .npz files created by numpy or in .mat files created by Matlab.
 
@@ -117,35 +118,41 @@ def to_dataframe(spect_format,
         )
 
     if all([arg is None for arg in (spect_dir, spect_files, spect_annot_map)]):
-        raise ValueError('must specify one of: spect_dir, spect_files, spect_annot_map')
+        raise ValueError("must specify one of: spect_dir, spect_files, spect_annot_map")
 
     if spect_dir and spect_files:
-        raise ValueError('received values for spect_dir and spect_files, unclear which to use')
+        raise ValueError(
+            "received values for spect_dir and spect_files, unclear which to use"
+        )
 
     if spect_dir and spect_annot_map:
-        raise ValueError('received values for spect_dir and spect_annot_map, unclear which to use')
+        raise ValueError(
+            "received values for spect_dir and spect_annot_map, unclear which to use"
+        )
 
     if spect_files and spect_annot_map:
-        raise ValueError('received values for spect_files and spect_annot_map, unclear which to use')
+        raise ValueError(
+            "received values for spect_files and spect_annot_map, unclear which to use"
+        )
 
     if annot_list and spect_annot_map:
         raise ValueError(
-            'received values for annot_list and spect_annot_map, unclear which annotations to use'
+            "received values for annot_list and spect_annot_map, unclear which annotations to use"
         )
 
     if (annot_list or spect_annot_map) and (annot_format is None):
         if annot_list:
             raise ValueError(
-                'an annot_list was provided, but no annot_format was specified'
+                "an annot_list was provided, but no annot_format was specified"
             )
         elif spect_annot_map:
             raise ValueError(
-                'a spect_annot_map was provided, but no annot_format was specified'
+                "a spect_annot_map was provided, but no annot_format was specified"
             )
 
     if annot_format is not None and (annot_list is None and spect_annot_map is None):
         raise ValueError(
-            'an annot_format was specified but no annot_list or spect_annot_map was provided'
+            "an annot_format was specified but no annot_list or spect_annot_map was provided"
         )
 
     if labelset is not None:
@@ -154,20 +161,22 @@ def to_dataframe(spect_format,
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
         # note we already validated format above
-        spect_files = glob(os.path.join(spect_dir, f'*{spect_format}'))
+        spect_files = glob(os.path.join(spect_dir, f"*{spect_format}"))
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
             spect_annot_map = source_annot_map(spect_files, annot_list)
         else:
             # no annotation, so map spectrogram files to None
-            spect_annot_map = dict((spect_path, None)
-                                   for spect_path in spect_files)
+            spect_annot_map = dict((spect_path, None) for spect_path in spect_files)
 
     # --- filter by labelset -------------------------------------------------------------------------------------------
-    if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
+    if (
+        labelset
+    ):  # then assume user wants to filter out files where annotation has labels not in labelset
         for spect_path in list(
-                spect_annot_map.keys()):  # iterate over keys so we can pop from dict without RuntimeError
+            spect_annot_map.keys()
+        ):  # iterate over keys so we can pop from dict without RuntimeError
             annot = spect_annot_map[spect_path]
             labels_set = set(annot.seq.labels)
             # below, set(labels_mapping) is a set of that dict's keys
@@ -175,30 +184,34 @@ def to_dataframe(spect_format,
                 extra_labels = labels_set - set(labelset)
                 # because there's some label in labels
                 # that's not in labels_mapping
-                log_or_print(f'Found labels, {extra_labels}, in {Path(spect_path).name}, '
-                             'that are not in labels_mapping. Skipping file.',
-                             logger=logger, level='info')
+                log_or_print(
+                    f"Found labels, {extra_labels}, in {Path(spect_path).name}, "
+                    "that are not in labels_mapping. Skipping file.",
+                    logger=logger,
+                    level="info",
+                )
                 spect_annot_map.pop(spect_path)
                 continue
 
     # ---- validate set of spectrogram files ---------------------------------------------------------------------------
     # regardless of whether we just made it or user supplied it
     spect_paths = list(spect_annot_map.keys())
-    files.spect.is_valid_set_of_spect_files(spect_paths,
-                                            spect_format,
-                                            freqbins_key,
-                                            timebins_key,
-                                            spect_key,
-                                            n_decimals_trunc,
-                                            logger=logger)
+    files.spect.is_valid_set_of_spect_files(
+        spect_paths,
+        spect_format,
+        freqbins_key,
+        timebins_key,
+        spect_key,
+        n_decimals_trunc,
+        logger=logger,
+    )
 
     # now that we have validated that duration of time bins is consistent across files, we can just open one file
     # to get that time bin duration. This way validation function has no side effects, like returning time bin, and
     # this is still relatively fast compared to looping through all files again
-    timebin_dur = files.spect.timebin_dur(spect_paths[0],
-                                          spect_format,
-                                          timebins_key,
-                                          n_decimals_trunc)
+    timebin_dur = files.spect.timebin_dur(
+        spect_paths[0], spect_format, timebins_key, n_decimals_trunc
+    )
 
     # ---- actually make the dataframe ---------------------------------------------------------------------------------
     # this is defined here so all other arguments to 'to_dataframe' are in scope
@@ -233,18 +246,24 @@ def to_dataframe(spect_format,
             elif np.isnan(a_path):
                 return a_path
 
-        record = tuple([
-            abspath(audio_path),
-            abspath(spect_path),
-            abspath(annot_path),
-            annot_format if annot_format else constants.NO_ANNOTATION_FORMAT,
-            spect_dur,
-            timebin_dur,
-        ])
+        record = tuple(
+            [
+                abspath(audio_path),
+                abspath(spect_path),
+                abspath(annot_path),
+                annot_format if annot_format else constants.NO_ANNOTATION_FORMAT,
+                spect_dur,
+                timebin_dur,
+            ]
+        )
         return record
 
     spect_path_annot_tuples = db.from_sequence(spect_annot_map.items())
-    log_or_print('creating pandas.DataFrame representing dataset from spectrogram files', logger=logger, level='info')
+    log_or_print(
+        "creating pandas.DataFrame representing dataset from spectrogram files",
+        logger=logger,
+        level="info",
+    )
     with ProgressBar():
         records = list(spect_path_annot_tuples.map(_to_record))
 

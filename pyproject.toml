@@ -40,6 +40,7 @@ tweetynet = ">=0.5.0"
 sphinx = ">=3.4.1"
 ipython = ">=7.0"
 jedi = "<0.18"
+black = "^20.8b1"
 
 [tool.poetry.scripts]
 vak = 'vak.__main__:main'

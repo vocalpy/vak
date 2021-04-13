@@ -6,11 +6,11 @@ from .prep import prep
 
 
 COMMAND_FUNCTION_MAP = {
-    'prep': prep,
-    'train': train,
-    'eval': eval,
-    'predict': predict,
-    'learncurve': learning_curve,
+    "prep": prep,
+    "train": train,
+    "eval": eval,
+    "predict": predict,
+    "learncurve": learning_curve,
 }
 
 CLI_COMMANDS = tuple(COMMAND_FUNCTION_MAP.keys())
@@ -29,6 +29,4 @@ def cli(command, config_file):
     if command in COMMAND_FUNCTION_MAP:
         COMMAND_FUNCTION_MAP[command](toml_path=config_file)
     else:
-        raise ValueError(
-            f'command not recognized: {command}'
-        )
+        raise ValueError(f"command not recognized: {command}")

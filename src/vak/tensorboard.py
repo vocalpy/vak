@@ -27,23 +27,18 @@ def get_summary_writer(log_dir, filename_suffix):
     >>> tweety_net_model.summary_writer = summary_writer  # set attribute equal to instance we just made
     >>> tweety_net_model.train()  # now events during training will be logged with that summary writer
     """
-    return SummaryWriter(
-        log_dir=log_dir,
-        filename_suffix=filename_suffix
-    )
+    return SummaryWriter(log_dir=log_dir, filename_suffix=filename_suffix)
 
 
 DEFAULT_SIZE_GUIDANCE = {
-        "compressedHistograms": 1,
-        "images": 1,
-        "scalars": 0,  # 0 means load all
-        "histograms": 1,
-    }
+    "compressedHistograms": 1,
+    "images": 1,
+    "scalars": 0,  # 0 means load all
+    "histograms": 1,
+}
 
 
-def events2df(events_path,
-              size_guidance=None,
-              drop_wall_time=True):
+def events2df(events_path, size_guidance=None, drop_wall_time=True):
     """convert ``tensorboard`` "events" log file to pandas DataFrame
 
     events files are created by SummaryWriter from PyTorch or Tensorflow.
@@ -104,15 +99,14 @@ def events2df(events_path,
     ea = EventAccumulator(path=events_path, size_guidance=size_guidance)
     ea.Reload()  # load all data written so far
 
-    scalar_tags = ea.Tags()['scalars']  # list of tags for values written to scalar
+    scalar_tags = ea.Tags()["scalars"]  # list of tags for values written to scalar
     # make a dataframe for each tag, which we will then concatenate using 'step' as the index
     # so that pandas will fill in with NaNs for any scalars that were not measured on every step
     dfs = {}
     for scalar_tag in scalar_tags:
-        dfs[scalar_tag] = pd.DataFrame(ea.Scalars(scalar_tag),
-                                       columns=["wall_time",
-                                                "step",
-                                                scalar_tag])
+        dfs[scalar_tag] = pd.DataFrame(
+            ea.Scalars(scalar_tag), columns=["wall_time", "step", scalar_tag]
+        )
         dfs[scalar_tag] = dfs[scalar_tag].set_index("step")
         if drop_wall_time:
             dfs[scalar_tag].drop("wall_time", axis=1, inplace=True)

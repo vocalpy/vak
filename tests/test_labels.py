@@ -3,12 +3,12 @@ import vak.labels
 
 
 def test_to_map():
-    labelset = set(list('abcde'))
+    labelset = set(list("abcde"))
     labelmap = vak.labels.to_map(labelset, map_unlabeled=False)
     assert type(labelmap) == dict
     assert len(labelmap) == len(labelset)  # because map_unlabeled=False
 
-    labelset = set(list('abcde'))
+    labelset = set(list("abcde"))
     labelmap = vak.labels.to_map(labelset, map_unlabeled=True)
     assert type(labelmap) == dict
     assert len(labelmap) == len(labelset) + 1  # because map_unlabeled=True

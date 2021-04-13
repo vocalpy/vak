@@ -9,15 +9,17 @@ from ..converters import expanded_user_path, labelset_to_set
 from ..logging import log_or_print
 
 
-def from_files(data_dir,
-               annot_format=None,
-               labelset=None,
-               annot_file=None,
-               audio_format=None,
-               spect_format=None,
-               spect_params=None,
-               spect_output_dir=None,
-               logger=None):
+def from_files(
+    data_dir,
+    annot_format=None,
+    labelset=None,
+    annot_file=None,
+    audio_format=None,
+    spect_format=None,
+    spect_params=None,
+    spect_output_dir=None,
+    logger=None,
+):
     """create a pandas DataFrame representing a dataset for machine learning
     from a set of files in a directory
 
@@ -84,29 +86,28 @@ def from_files(data_dir,
         raise ValueError("Must specify either audio_format or spect_format")
 
     if audio_format and spect_format:
-        raise ValueError("Cannot specify both audio_format and spect_format, "
-                         "unclear whether to create spectrograms from audio files or "
-                         "use already-generated spectrograms from array files")
+        raise ValueError(
+            "Cannot specify both audio_format and spect_format, "
+            "unclear whether to create spectrograms from audio files or "
+            "use already-generated spectrograms from array files"
+        )
 
     data_dir = expanded_user_path(data_dir)
     if not data_dir.is_dir():
-        raise NotADirectoryError(
-            f'data_dir not found: {data_dir}'
-        )
+        raise NotADirectoryError(f"data_dir not found: {data_dir}")
 
     if spect_output_dir:
         spect_output_dir = expanded_user_path(spect_output_dir)
         if not spect_output_dir.is_dir():
-            raise NotADirectoryError(
-                f'spect_output_dir not found: {spect_output_dir}'
-            )
+            raise NotADirectoryError(f"spect_output_dir not found: {spect_output_dir}")
     else:
         spect_output_dir = data_dir
 
     if annot_format is not None:
         if annot_file is None:
-            annot_files = annotation.files_from_dir(annot_dir=data_dir,
-                                                    annot_format=annot_format)
+            annot_files = annotation.files_from_dir(
+                annot_dir=data_dir, annot_format=annot_format
+            )
             scribe = Transcriber(format=annot_format)
             annot_list = scribe.from_file(annot_files)
         else:
@@ -118,42 +119,49 @@ def from_files(data_dir,
     # ------ if making dataset from audio files, need to make into array files first! ----------------------------------
     if audio_format:
         log_or_print(
-            f'making array files containing spectrograms from audio files in: {data_dir}',
-            logger=logger, level='info'
+            f"making array files containing spectrograms from audio files in: {data_dir}",
+            logger=logger,
+            level="info",
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
 
-        timenow = datetime.now().strftime('%y%m%d_%H%M%S')
-        spect_dirname = f'spectrograms_generated_{timenow}'
+        timenow = datetime.now().strftime("%y%m%d_%H%M%S")
+        spect_dirname = f"spectrograms_generated_{timenow}"
         spect_output_dir = spect_output_dir.joinpath(spect_dirname)
         spect_output_dir.mkdir()
 
-        spect_files = audio.to_spect(audio_format=audio_format,
-                                     spect_params=spect_params,
-                                     output_dir=spect_output_dir,
-                                     audio_files=audio_files,
-                                     annot_list=annot_list,
-                                     labelset=labelset)
-        spect_format = 'npz'
+        spect_files = audio.to_spect(
+            audio_format=audio_format,
+            spect_params=spect_params,
+            output_dir=spect_output_dir,
+            audio_files=audio_files,
+            annot_list=annot_list,
+            labelset=labelset,
+        )
+        spect_format = "npz"
     else:  # if audio format is None
         spect_files = None
 
     to_dataframe_kwargs = {
-        'spect_format': spect_format,
-        'labelset': labelset,
-        'annot_list': annot_list,
-        'annot_format': annot_format,
+        "spect_format": spect_format,
+        "labelset": labelset,
+        "annot_list": annot_list,
+        "annot_format": annot_format,
     }
 
     if spect_files:  # because we just made them, and put them in spect_output_dir
-        to_dataframe_kwargs['spect_files'] = spect_files
+        to_dataframe_kwargs["spect_files"] = spect_files
         log_or_print(
-            f'creating dataset from spectrogram files in: {spect_output_dir}', logger=logger, level='info'
+            f"creating dataset from spectrogram files in: {spect_output_dir}",
+            logger=logger,
+            level="info",
         )
     else:
-        to_dataframe_kwargs['spect_dir'] = data_dir
+        to_dataframe_kwargs["spect_dir"] = data_dir
         log_or_print(
-            f'creating dataset from spectrogram files in: {data_dir}', logger=logger, level='info'
+            f"creating dataset from spectrogram files in: {data_dir}",
+            logger=logger,
+            level="info",
         )
 
     vak_df = spect.to_dataframe(**to_dataframe_kwargs, logger=logger)
@@ -174,12 +182,12 @@ def add_split_col(df, split):
         string that will be assigned to every row in the added "split" column.
         One of {'train', 'val', 'test', 'predict'}.
     """
-    if split not in {'train', 'val', 'test', 'predict'}:
+    if split not in {"train", "val", "test", "predict"}:
         raise ValueError(
             f"value for split should be one of {{'train', 'val', 'test', 'predict'}}, but was {split}"
         )
-    split_col = np.asarray([split for _ in range(len(df))], dtype='object')
-    df['split'] = split_col
+    split_col = np.asarray([split for _ in range(len(df))], dtype="object")
+    df["split"] = split_col
     return df
 
 
@@ -200,10 +208,10 @@ def validate_and_get_timebin_dur(df, expected_timebin_dur=None):
     timebin_dur : float
         duration of time bins for all spectrograms in the dataset
     """
-    timebin_dur = df['timebin_dur'].unique()
+    timebin_dur = df["timebin_dur"].unique()
     if len(timebin_dur) > 1:
         raise ValueError(
-            f'found more than one time bin duration in dataset: {timebin_dur}'
+            f"found more than one time bin duration in dataset: {timebin_dur}"
         )
     elif len(timebin_dur) == 1:
         timebin_dur = timebin_dur.item()
@@ -211,7 +219,7 @@ def validate_and_get_timebin_dur(df, expected_timebin_dur=None):
     if expected_timebin_dur:
         if timebin_dur != expected_timebin_dur:
             raise ValueError(
-                'timebin duration from dataset, {}, did not match expected timebin duration'
+                "timebin duration from dataset, {}, did not match expected timebin duration"
             )
 
     return timebin_dur
@@ -219,4 +227,4 @@ def validate_and_get_timebin_dur(df, expected_timebin_dur=None):
 
 def split_dur(df, split):
     """get duration of a split in the dataset"""
-    return df[df['split'] == split]['duration'].sum()
+    return df[df["split"] == split]["duration"].sum()

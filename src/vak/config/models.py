@@ -46,7 +46,7 @@ def map_from_config_dict(config_dict, model_names):
     for model_name in model_names:
         if model_name not in MODELS:
             # try appending 'Model' to name
-            tmp_model_name = f'{model_name}Model'
+            tmp_model_name = f"{model_name}Model"
             if tmp_model_name not in MODELS:
                 raise ValueError(
                     f"Did not find an installed model named {model_name} or {tmp_model_name}. "
@@ -61,11 +61,11 @@ def map_from_config_dict(config_dict, model_names):
             model_config_dict = config_dict[model_name]
         else:
             # try appending 'Model' to name
-            tmp_model_name = f'{model_name}Model'
+            tmp_model_name = f"{model_name}Model"
             if tmp_model_name not in sections:
                 raise ValueError(
-                    f'did not find section named {model_name} or {tmp_model_name} '
-                    f'in config'
+                    f"did not find section named {model_name} or {tmp_model_name} "
+                    f"in config"
                 )
             model_config_dict = config_dict[tmp_model_name]
 
@@ -103,8 +103,10 @@ def map_from_path(toml_path, model_names):
     # because if it doesn't ConfigParser will just return an "empty" instance w/out sections or options
     toml_path = Path(toml_path)
     if not toml_path.is_file():
-        raise FileNotFoundError(f'file not found, or not recognized as a file: {toml_path}')
+        raise FileNotFoundError(
+            f"file not found, or not recognized as a file: {toml_path}"
+        )
 
-    with toml_path.open('r') as fp:
+    with toml_path.open("r") as fp:
         config_dict = toml.load(fp)
     return map_from_config_dict(config_dict, model_names)

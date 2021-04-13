@@ -3,7 +3,7 @@ import pandas as pd
 from . import annotation, files, labels, labeled_timebins
 
 
-def has_unlabeled(csv_path, labelset, timebins_key='t'):
+def has_unlabeled(csv_path, labelset, timebins_key="t"):
     """determine if a dataset has segments that are unlabeled.
 
     Used to decide whether an additional class needs to be added
@@ -31,14 +31,13 @@ def has_unlabeled(csv_path, labelset, timebins_key='t'):
     annots = annotation.from_df(vak_df)
 
     has_unlabeled_list = []
-    for annot, spect_path in zip(annots, vak_df['spect_path'].values):
+    for annot, spect_path in zip(annots, vak_df["spect_path"].values):
         time_bins = files.spect.load(spect_path)[timebins_key]
         lbls_int = [tmp_labelmap[lbl] for lbl in annot.seq.labels]
         has_unlabeled_list.append(
-            labeled_timebins.has_unlabeled(lbls_int,
-                                           annot.seq.onsets_s,
-                                           annot.seq.offsets_s,
-                                           time_bins)
+            labeled_timebins.has_unlabeled(
+                lbls_int, annot.seq.onsets_s, annot.seq.offsets_s, time_bins
+            )
         )
 
     return any(has_unlabeled_list)

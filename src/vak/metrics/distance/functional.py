@@ -42,13 +42,11 @@ def levenshtein(source, target):
         # Target and source items are aligned, and either
         # are different (cost of 1), or are the same (cost of 0).
         current_row[1:] = np.minimum(
-                current_row[1:],
-                np.add(previous_row[:-1], target != s))
+            current_row[1:], np.add(previous_row[:-1], target != s)
+        )
 
         # Deletion (target grows shorter than source):
-        current_row[1:] = np.minimum(
-                current_row[1:],
-                current_row[0:-1] + 1)
+        current_row[1:] = np.minimum(current_row[1:], current_row[0:-1] + 1)
 
         previous_row = current_row
 
@@ -72,6 +70,6 @@ def segment_error_rate(y_pred, y_true):
     Levenshtein distance / len(y_true)
     """
     if type(y_true) != str or type(y_pred) != str:
-        raise TypeError('Both `y_true` and `y_pred` must be of type `str')
+        raise TypeError("Both `y_true` and `y_pred` must be of type `str")
 
     return levenshtein(y_pred, y_true) / len(y_true)

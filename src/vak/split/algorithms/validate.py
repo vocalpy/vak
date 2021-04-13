@@ -1,9 +1,4 @@
-
-
-def validate_split_durations(train_dur,
-                             val_dur,
-                             test_dur,
-                             dataset_dur):
+def validate_split_durations(train_dur, val_dur, test_dur, dataset_dur):
     """helper function to validate durations specified for splits,
     so other functions can do the actual splitting.
 
@@ -41,19 +36,23 @@ def validate_split_durations(train_dur,
     """
     if val_dur and (train_dur is None and test_dur is None):
         raise ValueError(
-            'cannot specify only val_dur, unclear how to split dataset into training and test sets'
+            "cannot specify only val_dur, unclear how to split dataset into training and test sets"
         )
 
     # make a dict so we can refer to variable by name in loop
     split_durs = {
-        'train': train_dur,
-        'val': val_dur,
-        'test': test_dur,
+        "train": train_dur,
+        "val": val_dur,
+        "test": test_dur,
     }
     if all([dur is None for dur in split_durs.values()]):
-        raise ValueError("train_dur, val_dur, and test_dur were all None; must specify at least train_dur or test_dur")
+        raise ValueError(
+            "train_dur, val_dur, and test_dur were all None; must specify at least train_dur or test_dur"
+        )
 
-    if not all([dur >= 0 or dur == -1 for dur in split_durs.values() if dur is not None]):
+    if not all(
+        [dur >= 0 or dur == -1 for dur in split_durs.values() if dur is not None]
+    ):
         raise ValueError(
             "all durations for split must be real non-negative number or "
             "set to -1 (meaning 'use the remaining dataset)"
@@ -61,7 +60,7 @@ def validate_split_durations(train_dur,
 
     if sum([split_dur == -1 for split_dur in split_durs.values()]) > 1:
         raise ValueError(
-            'cannot specify duration of more than one split as -1, unclear how to calculate durations of splits.'
+            "cannot specify duration of more than one split as -1, unclear how to calculate durations of splits."
         )
 
     # set any None values for durations to 0; no part of dataset will go to that split
@@ -74,16 +73,16 @@ def validate_split_durations(train_dur,
 
         if total_other_splits_dur > dataset_dur:
             raise ValueError(
-                'One dataset split duration was specified as -1, but the total of the other durations specified, '
-                f'{total_other_splits_dur} s, is greater than total duration of Dataset, {dataset_dur}.'
+                "One dataset split duration was specified as -1, but the total of the other durations specified, "
+                f"{total_other_splits_dur} s, is greater than total duration of Dataset, {dataset_dur}."
             )
     else:  # if none of the target durations are -1
         total_splits_dur = sum(split_durs.values())
 
         if total_splits_dur > dataset_dur:
             raise ValueError(
-                f'Total of the split durations specified, {total_splits_dur} s, '
-                f'is greater than total duration of dataset, {dataset_dur}.'
+                f"Total of the split durations specified, {total_splits_dur} s, "
+                f"is greater than total duration of dataset, {dataset_dur}."
             )
 
-    return split_durs['train'], split_durs['val'], split_durs['test']
+    return split_durs["train"], split_durs["val"], split_durs["test"]

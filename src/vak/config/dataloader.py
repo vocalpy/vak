@@ -12,6 +12,5 @@ class DataLoaderConfig:
         size of windows taken from spectrograms, in number of time bins,
         shonw to neural networks
     """
-    window_size = attr.ib(converter=int,
-                          validator=instance_of(int),
-                          default=88)
+
+    window_size = attr.ib(converter=int, validator=instance_of(int), default=88)
