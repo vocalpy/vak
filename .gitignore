@@ -21,3 +21,7 @@ doc/_build/
 tests/data_for_tests/source/
 tests/data_for_tests/generated/
 *.tar.gz
+
+# coverage / pytest-cov
+.coverage
+coverage.xml
