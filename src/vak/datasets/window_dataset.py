@@ -20,7 +20,7 @@ class WindowDataset(VisionDataset):
     Returns windows from the spectrograms, along with labels for each
     time bin in the window, derived from the annotations.
 
-    Abstraction that enables training on a dataset of a specified duraiton.
+    Abstraction that enables training on a dataset of a specified duration.
 
     Attributes
     ----------
@@ -28,7 +28,8 @@ class WindowDataset(VisionDataset):
         path to a .csv file that represents the dataset.
         Name 'root' is used for consistency with torchvision.datasets
     x_inds : numpy.ndarray
-        indices of each window in the dataset
+        vector [1,2,3,...,n] that indexes the number of windows
+        in entire dataset. See ``Notes`` for more detail.
     spect_id_vector : numpy.ndarray
         represents the 'id' of any spectrogram,
         i.e., the index into spect_paths that will let us load it
@@ -62,21 +63,26 @@ class WindowDataset(VisionDataset):
     -----
     This class uses three vectors to represent
     a dataset of windows from spectrograms, without actually loading
-    all the spectrograms and concatenating them into one big matrix.
+    all the spectrograms and concatenating them into one big array.
     The three vectors correspond to this imaginary, unloaded big matrix:
-    (1) `spect_id_vector` that represents the 'id' of any spectrogram in this matrix,
-    i.e., the index into spect_paths that will let us load it, and
-    (2) `spect_inds_vector` where the elements represents valid indices of windows
+    (1) ``spect_id_vector`` that represents the "id" of any spectrogram in this matrix,
+    i.e., the index into ``spect_path`` of the dataset .csv that will let us load it, and
+    (2) ``spect_inds_vector`` where the elements represents valid indices of windows
     we can grab from each spectrogram. Valid indices are any up to the index n, where
     n = number of time bins in this spectrogram - number of time bins in our window
     (because if we tried to go past that the window would go past the edge of the
     spectrogram).
-    (3) `x_inds` is our 'training set' vector, just a set
+    (3) ``x_inds`` is our 'training set' vector, just a set
     of indices (0, 1, ..., m) where m is the length of vectors (1) and (2).
-
     When we want to grab a batch of size b of windows, we get b indices from x,
     and then index into vectors (1) and (2) so we know which spectrogram files to
-    load, and which windows to grab from each spectrogram
+    load, and which windows to grab from each spectrogram.
+    In terms of implementation: when a ``torch.DataLoader`` calls ``__getitem__``
+    with ``idx``, we index into this vector that maps to valid windows, as
+    determined by ``spect_id_vector`` and ``spect_inds_vector``
+
+    This could be done without ``x_inds``, but ``x_inds`` lets us
+    more explicitly return a ``__len__`` for the dataset.
     """
 
     # class attribute, constant used by several methods
