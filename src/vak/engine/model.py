@@ -328,7 +328,7 @@ class Model:
         return metric_vals
 
     def _predict(self, pred_data):
-        """helper method, called by the predict method on each epoch.
+        """helper method, called by the predict method.
         Uses the model to make predictions, by iterating through pred_data
         and returning the outputs of each batch fed into it.
         Override this method if you need to implement your own predict method.
