@@ -96,7 +96,7 @@ def eval(
         spect_standardizer = None
 
     log_or_print(
-        f"loading labelmap from path: {spect_scaler_path}", logger=logger, level="info"
+        f"loading labelmap from path: {labelmap_path}", logger=logger, level="info"
     )
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
