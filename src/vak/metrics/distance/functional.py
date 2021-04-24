@@ -87,4 +87,12 @@ def segment_error_rate(y_pred, y_true):
     if type(y_true) != str or type(y_pred) != str:
         raise TypeError("Both `y_true` and `y_pred` must be of type `str")
 
+    # handle divide by zero edge cases
+    if len(y_true) == 0 and len(y_pred) == 0:
+        return 0.
+    elif len(y_true) == 0 and len(y_pred) != 0:
+        raise ValueError(
+            f'segment error rate is undefined when length of y_true is zero'
+        )
+
     return levenshtein(y_pred, y_true) / len(y_true)
