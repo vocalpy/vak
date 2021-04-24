@@ -16,41 +16,56 @@ def levenshtein(source, target):
         number of deletions, insertions, or substitutions
         required to convert source into target.
 
-    from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
+    adapted from https://github.com/toastdriven/pylev/blob/master/pylev.py
+    to fix issues with the Numpy implementation in
+    https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
     """
-    if len(source) < len(target):
-        return levenshtein(target, source)
-
-    # So now we have len(source) >= len(target).
-    if len(target) == 0:
-        return len(source)
+    if source == target:
+        return 0
 
     # We call tuple() to force strings to be used as sequences
     # ('c', 'a', 't', 's') - numpy uses them as values by default.
     source = np.array(tuple(source))
     target = np.array(tuple(target))
 
+    len_source = source.size
+    len_target = target.size
+
+    if len_source == 0:
+        return len_target
+    if len_target == 0:
+        return len_source
+
+    if len_source > len_target:
+        source, target = target, source
+        len_source, len_target = len_target, len_source
+
     # We use a dynamic programming algorithm, but with the
     # added optimization that we only need the last two rows
     # of the matrix.
-    previous_row = np.arange(target.size + 1)
-    for s in source:
-        # Insertion (target grows longer than source):
-        current_row = previous_row + 1
+    d0 = np.arange(len_target + 1)
+    d1 = np.arange(len_target + 1)
+    for i in range(len_source):
+        d1[0] = i + 1
+        for j in range(len_target):
+            cost = d0[j]
 
-        # Substitution or matching:
-        # Target and source items are aligned, and either
-        # are different (cost of 1), or are the same (cost of 0).
-        current_row[1:] = np.minimum(
-            current_row[1:], np.add(previous_row[:-1], target != s)
-        )
+            if source[i] != target[j]:
+                cost += 1  # substitution
 
-        # Deletion (target grows shorter than source):
-        current_row[1:] = np.minimum(current_row[1:], current_row[0:-1] + 1)
+                x_cost = d1[j] + 1  # insertion
+                if x_cost < cost:
+                    cost = x_cost
 
-        previous_row = current_row
+                y_cost = d0[j + 1] + 1
+                if y_cost < cost:
+                    cost = y_cost
 
-    return previous_row[-1]
+            d1[j + 1] = cost
+
+        d0, d1 = d1, d0
+
+    return d0[-1]
 
 
 def segment_error_rate(y_pred, y_true):
