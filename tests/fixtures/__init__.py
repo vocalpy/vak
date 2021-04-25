@@ -9,3 +9,4 @@ from .spect import *
 from .split import *
 from .test_data import *
 from .tensorboard import *
+from .torch import *
