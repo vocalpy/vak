@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix how `train_dur_csv_paths.from_dir` orders replicates
   [#342](https://github.com/NickleDave/vak/pull/342).
   For details see issue [#340](https://github.com/NickleDave/vak/issues/340).
+- fix bug in Levenshtein distance implementation 
+  [#356](https://github.com/NickleDave/vak/pull/342).
+  For details see issue [#355](https://github.com/NickleDave/vak/issues/355).
+  Also added unit tests for Levenshtein distance and segment error rate
+  in [#356](https://github.com/NickleDave/vak/pull/342).
 
 ## [0.4.0b2] -- 2021-03-21
 ### Added
