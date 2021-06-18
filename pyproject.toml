@@ -12,13 +12,14 @@ classifiers = [
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: Implementation :: CPython'
 ]
 readme = 'README.md'
 homepage = 'https://github.com/NickleDave/vak'
 
 [tool.poetry.dependencies]
-python = ">=3.6.2,<3.9"
+python = ">=3.6.2,<3.10"
 attrs = ">=19.3.0"
 crowsetta = ">=3.1.1"
 dask = {extras = ["bag"], version = ">=2.10.1"}
