@@ -27,6 +27,20 @@ def test_has_unlabeled():
     assert has_ is False
 
 
+@pytest.mark.parametrize(
+    "labeled_timebins, labels_mapping, spect_ID_vector, expected_labels",
+    [
+        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {'unlabeled': 0, 'a': 1, 'b': 2}, None, 'ab'),
+        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {'unlabeled': 0, '1': 1, '2': 2}, None, '12'),
+        (np.array([0, 0, 21, 21, 0, 0, 22, 22, 0, 0]), {'unlabeled': 0, '21': 21, '22': 22}, None, 'AB'),
+        (np.array([0, 0, 11, 11, 0, 0, 12, 12, 0, 0]), {'unlabeled': 0, '11': 11, '12': 12}, None, 'AB'),
+    ]
+)
+def test_lbl_tb2labels(labeled_timebins, labels_mapping, spect_ID_vector, expected_labels):
+    labels = vak.labeled_timebins.lbl_tb2labels(labeled_timebins, labels_mapping, spect_ID_vector)
+    assert labels == expected_labels
+
+
 def test_segment_lbl_tb():
     lbl_tb = np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0])
     labels, onset_inds, offset_inds = vak.labeled_timebins._segment_lbl_tb(lbl_tb)
