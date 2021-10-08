@@ -96,9 +96,61 @@ def label_timebins(labels_int, onsets_s, offsets_s, time_bins, unlabeled_label=0
     return label_vec
 
 
+ALPHANUMERIC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+DUMMY_SINGLE_CHAR_LABELS = [
+    # some large range of characters not typically used as labels
+    chr(x) for x in range(162, 400)
+]
+# start with alphanumeric since more human readable;
+# mapping can be arbitrary as long as it's consistent
+DUMMY_SINGLE_CHAR_LABELS = (
+    *ALPHANUMERIC,
+    *DUMMY_SINGLE_CHAR_LABELS
+)
+
+
+# added to fix https://github.com/NickleDave/vak/issues/373
+def _multi_char_labels_to_single_char(labels_mapping):
+    """returns a copy of a ``labels_mapping`` where any
+    labels with multiple characters are converted to
+    single characters
+
+    this makes it possible to correctly compute metrics
+    like Levenshtein edit distance
+    """
+    current_str_labels = sorted(
+        # sort to be extra sure we get same order every time
+        # (even though OrderedDict is now default in Python).
+        # Same order forces mapping to single characters to be deterministic across function calls.
+        labels_mapping.keys()
+    )
+    new_labels_mapping = {}
+    for dummy_label_ind, label_str in enumerate(current_str_labels):
+        label_int = labels_mapping[label_str]
+        if len(label_str) > 1:
+            # replace with dummy label
+            new_label_str = DUMMY_SINGLE_CHAR_LABELS[dummy_label_ind]
+            new_labels_mapping[new_label_str] = label_int
+        else:
+            new_labels_mapping[label_str] = label_int
+    return new_labels_mapping
+
+
 def lbl_tb2labels(labeled_timebins, labels_mapping, spect_ID_vector=None):
     """converts output of network from label for each frame
-    to one label for each continuous segment
+    to one label for each continuous segment.
+
+    This function is used when evaluating a model,
+    to convert outputs to dummy strings that make it possible
+    to compute string-based metrics, such as edit distance.
+
+    It should **not** be used to convert predictions
+    to annotations, because it can modify the
+    ``labels_mapping`` so that metrics are correctly
+    computed.
+
+    For mapping outputs to string label predictions,
+    use ``vak.labeled_timebins.lbl_tb2segments``.
 
     Parameters
     ----------
@@ -134,6 +186,16 @@ def lbl_tb2labels(labeled_timebins, labels_mapping, spect_ID_vector=None):
     if "unlabeled" in labels_mapping:
         labels = labels[labels != labels_mapping["unlabeled"]]
 
+    # replace any multiple character labels in mapping
+    # with dummy single-character labels
+    # so that we do not affect Levenshtein distance computation
+    # see https://github.com/NickleDave/vak/issues/373
+    if any([len(label) > 1 for label in labels_mapping.keys()]):  # only re-map if necessary
+        # (to minimize chance of knock-on bugs)
+        labels_mapping = _multi_char_labels_to_single_char(labels_mapping)
+
+    # only invert mapping and then map integer labels to characters
+    # *after* ensuring all string labels are single-character
     inverse_labels_mapping = dict((v, k) for k, v in labels_mapping.items())
     labels = labels.tolist()
     labels = [inverse_labels_mapping[label] for label in labels]
