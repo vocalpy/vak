@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- change Python constraint to include 3.9
+  [#368](https://github.com/NickleDave/vak/pull/368)
+
+### Fixed
+- fix typo in `doc/reference/reference.rst` that broke a link
+  [#363](https://github.com/NickleDave/vak/issues/363)
+- fix bug in function `lbl_tb2labels` that affect calculation of segment error rate 
+  for annotations with digits that had multiple characters (e.g. '21', '22').
+  [#377](https://github.com/NickleDave/vak/pull/377).
+  For details see [#373](https://github.com/NickleDave/vak/issues/373)
+
 ## [0.4.0b4](https://github.com/NickleDave/vak/releases/tag/0.4.0b4) -- 2021-04-25
 ### Added
 - add `events2df` function to `tensorboard` module that converts an "events" file 
