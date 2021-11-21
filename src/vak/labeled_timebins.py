@@ -409,6 +409,13 @@ def lbl_tb2segments(
     """
     lbl_tb = column_or_1d(lbl_tb)
 
+    if "unlabeled" in labelmap:
+        # handle the case when all time bins are predicted to be unlabeled
+        # see https://github.com/NickleDave/vak/issues/383
+        uniq_lbl_tb = np.unique(lbl_tb)
+        if len(uniq_lbl_tb) == 1 and uniq_lbl_tb[0] == labelmap["unlabeled"]:
+            return None, None, None
+
     timebin_dur = timebin_dur_from_vec(t, n_decimals_trunc)
 
     if min_segment_dur is not None or majority_vote:
@@ -442,6 +449,11 @@ def lbl_tb2segments(
         labels = labels[keep]
         onset_inds = onset_inds[keep]
         offset_inds = offset_inds[keep]
+
+    # handle case where removing 'unlabeled' **after** clean-up leaves no segments
+    if all([len(vec) == 0 for vec in (labels, onset_inds, offset_inds)]):
+        return None, None, None
+
     inverse_labelmap = dict((v, k) for k, v in labelmap.items())
     labels = labels.tolist()
     labels = np.asarray([inverse_labelmap[label] for label in labels])
