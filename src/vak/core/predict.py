@@ -265,6 +265,10 @@ def predict(
                 min_segment_dur=min_segment_dur,
                 majority_vote=majority_vote,
             )
+            if labels is None and onsets_s is None and offsets_s is None:
+                # handle the case when all time bins are predicted to be unlabeled
+                # see https://github.com/NickleDave/vak/issues/383
+                continue
             seq = crowsetta.Sequence.from_keyword(
                 labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
             )
