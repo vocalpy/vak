@@ -13,6 +13,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "Luke-Poeppel",
+      "name": "Luke Poeppel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20927930?v=4",
+      "profile": "http://www.lukepoeppel.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
