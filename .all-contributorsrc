@@ -35,6 +35,29 @@
         "userTesting",
         "question"
       ]
+    },
+    {
+      "login": "NickleDave",
+      "name": "David Nicholson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11934090?v=4",
+      "profile": "https://nicholdav.info/",
+      "contributions": [
+        "bug",
+        "code",
+        "data",
+        "doc",
+        "example",
+        "ideas",
+        "infra",
+        "maintenance",
+        "mentoring",
+        "projectManagement",
+        "review",
+        "question",
+        "talk",
+        "test",
+        "tutorial"
+      ]
     }
   ],
   "contributorsPerLine": 7,
