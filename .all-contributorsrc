@@ -22,6 +22,19 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "yardencsGitHub",
+      "name": "yardencsGitHub",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17324841?v=4",
+      "profile": "https://yardencsgithub.github.io/",
+      "contributions": [
+        "code",
+        "ideas",
+        "talk",
+        "userTesting",
+        "question"
+      ]
     }
   ],
   "contributorsPerLine": 7,
