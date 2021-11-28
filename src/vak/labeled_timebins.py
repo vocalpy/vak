@@ -437,6 +437,8 @@ def lbl_tb2segments(
             min_segment_dur,
             labelmap["unlabeled"],
         )
+        if len(segment_inds_list) == 0:  # no segments left after removing
+            return None, None, None
 
     if majority_vote:
         lbl_tb = majority_vote_transform(lbl_tb, segment_inds_list)
