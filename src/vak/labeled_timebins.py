@@ -177,7 +177,7 @@ def lbl_tb2labels(labeled_timebins, labels_mapping, spect_ID_vector=None):
         segment in each spectrogram as identified by spect_ID_vector.
     """
     labeled_timebins = row_or_1d(labeled_timebins)
-    idx = np.diff(labeled_timebins, axis=0).astype(np.bool)
+    idx = np.diff(labeled_timebins, axis=0).astype(bool)
     idx = np.insert(idx, 0, True)
 
     labels = labeled_timebins[idx]
