@@ -1,0 +1,35 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: vak
+message: >-
+  a neural network toolbox for animal vocalizations
+  and bioacoustics 
+type: software
+authors:
+  - given-names: David
+    family-names: Nicholson
+    email: nicholdav@gmail.com
+    affiliation: Emory University
+    orcid: 'https://orcid.org/0000-0002-4261-4719'
+  - given-names: Yarden
+    family-names: Cohen
+    orcid: 'https://orcid.org/0000-0002-8149-6954'
+    affiliation: Weizmann Institute
+    email: yardencsmail@gmail.com
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.2604340
+repository-code: 'https://github.com/NickleDave/vak'
+url: 'https://vak.readthedocs.io'
+repository-artifact: 'https://pypi.org/project/vak/'
+keywords:
+  - python
+  - animal vocalizations
+  - neural networks
+  - bioacoustics
+license: BSD-3-Clause
+commit: ad85cee297151f601b452437956fe3fbe24d2519
+version: 0.4.0b6
+date-released: '2021-11-23'
