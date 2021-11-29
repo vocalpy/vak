@@ -233,3 +233,48 @@ def test_lbl_tb2segments_majority_vote():
         lbl_tb, labelmap, timebins, majority_vote=True
     )
     assert np.all(np.char.equal(labels_out, np.array(["a", "b"])))
+
+
+def test_lbl_tb2segments_all_unlabeled():
+    """test that ``lbl_tb2segments`` returns all ``None``s when
+    all elements in the input vector ``lbl_tb`` are the ``unlabeled`` class"""
+    labelmap = {
+        "unlabeled": 0,
+        "a": 1,
+        "b": 2,
+    }
+    N_TIMEBINS = 4000  # just want some number that's on the order of size of a typical Bengalese finch song
+    lbl_tb = np.zeros(N_TIMEBINS).astype(int)
+    timebins = np.arange(1, lbl_tb.shape[0] + 1) * 0.001
+    labels_out, onsets_s_out, offsets_s_out = vak.labeled_timebins.lbl_tb2segments(
+        lbl_tb, labelmap, timebins, majority_vote=True
+    )
+    assert all([out is None for out in [labels_out, onsets_s_out, offsets_s_out]])
+
+
+@pytest.mark.parametrize(
+    'y_pred, timebin_dur, min_segment_dur, labelmap',
+    [
+        (np.array([0, 0, 0, 0, 0, 0, 7, 7, 3,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, ]),
+         0.002,
+         0.025,
+         {"unlabeled": 0, "a": 3, "b": 7}),
+    ]
+)
+def test_lbl_tb2segments_min_seg_dur_makes_all_unlabeled(y_pred,
+                                                         timebin_dur,
+                                                         min_segment_dur,
+                                                         labelmap):
+    """test that ``lbl_tb2segments`` returns all ``None``s when
+    removing all segments less than the minimum segment duration
+    causes all elements in the input vector ``lbl_tb``
+    to become the ``unlabeled`` class"""
+    # TODO: assert that applying 'minimum segment duration' post-processing does what we expect
+    # i.e. converts all elements to 'unlabeled'
+    timebins = np.arange(1, y_pred.shape[0] + 1) * timebin_dur
+    labels_out, onsets_s_out, offsets_s_out = vak.labeled_timebins.lbl_tb2segments(
+        y_pred, labelmap, timebins, min_segment_dur=min_segment_dur, majority_vote=True
+    )
+    assert all([out is None for out in [labels_out, onsets_s_out, offsets_s_out]])

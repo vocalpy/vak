@@ -177,7 +177,7 @@ def lbl_tb2labels(labeled_timebins, labels_mapping, spect_ID_vector=None):
         segment in each spectrogram as identified by spect_ID_vector.
     """
     labeled_timebins = row_or_1d(labeled_timebins)
-    idx = np.diff(labeled_timebins, axis=0).astype(np.bool)
+    idx = np.diff(labeled_timebins, axis=0).astype(bool)
     idx = np.insert(idx, 0, True)
 
     labels = labeled_timebins[idx]
@@ -292,11 +292,11 @@ def remove_short_segments(
         where each element is a label for a time bin.
         Output of a neural network.
     segment_inds_list : list
-        of numpy.ndarray, indices that will recover segments list from lbl_tb.
-        Returned by funciton ``vak.labels.lbl_tb_segment_inds_list``.
+        of numpy.ndarray, indices that will recover segments list from ``lbl_tb``.
+        Returned by function ``vak.labels.lbl_tb_segment_inds_list``.
     timebin_dur : float
         Duration of a single timebin in the spectrogram, in seconds.
-        Used to convert onset and offset indices in lbl_tb to seconds.
+        Used to convert onset and offset indices in ``lbl_tb`` to seconds.
     min_segment_dur : float
         minimum duration of segment, in seconds. If specified, then
         any segment with a duration less than min_segment_dur is
@@ -309,22 +309,22 @@ def remove_short_segments(
     Returns
     -------
     lbl_tb : numpy.ndarray
-        with segments removed whose duration is shorter than min_segment_dur
+        with segments whose duration is shorter than ``min_segment_dur`` set to ``unlabeled_label``
     segment_inds_list : list
-        of numpy.ndarray, with arrays popped off that correspond
-        to segments removed from lbl_tb
+        of numpy.ndarray, with arrays removed that represented
+        segments in ``lbl_tb`` that were shorter than ``min_segment_dur``
     """
-    to_pop = []
+    new_segment_inds_list = []
 
     for segment_inds in segment_inds_list:
         if segment_inds.shape[-1] * timebin_dur < min_segment_dur:
             lbl_tb[segment_inds] = unlabeled_label
+            # DO NOT keep segment_inds array
+        else:
+            # do keep segment_inds array, don't change lbl_tb
+            new_segment_inds_list.append(segment_inds)
 
-    if to_pop:
-        for seg_inds in to_pop:
-            segment_inds_list.remove(seg_inds)
-
-    return lbl_tb, segment_inds_list
+    return lbl_tb, new_segment_inds_list
 
 
 def majority_vote_transform(lbl_tb, segment_inds_list):
@@ -437,6 +437,8 @@ def lbl_tb2segments(
             min_segment_dur,
             labelmap["unlabeled"],
         )
+        if len(segment_inds_list) == 0:  # no segments left after removing
+            return None, None, None
 
     if majority_vote:
         lbl_tb = majority_vote_transform(lbl_tb, segment_inds_list)
