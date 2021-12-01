@@ -4,11 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0b6](https://github.com/NickleDave/vak/releases/tag/0.4.0b5) -- 2021-11-23
+## [Unreleased]
+### Added
+- add a [CITATION.cff](https://citation-file-format.github.io/) file
+  [#407](https://github.com/NickleDave/vak/pull/407).
+- add an [all-contributors](https://allcontributors.org/) table to README, 
+  using their bot to adopt the spec.
+  E.g., [#395](https://github.com/NickleDave/vak/pull/395). 
+  Fixes [#387](https://github.com/NickleDave/vak/issues/387).
+
 ### Fixed
-- fix how `predict` handles annotations that are predicted to have no labeled segments
-  [#393](https://github.com/NickleDave/vak/issues/393).
-  Fixes [#386](https://github.com/NickleDave/vak/issues/386).
+- make further fixes + add unit tests for handling predictions where all timebins 
+  are the background "unlabeled" class [#409](https://github.com/NickleDave/vak/pull/409).
+  Fixes bug in `remove_short_segments` [#403](https://github.com/NickleDave/vak/issues/403).
+  Related to [#393](https://github.com/NickleDave/vak/issues/393) 
+  and [#386](https://github.com/NickleDave/vak/issues/386).
+
+## [0.4.0b6](https://github.com/NickleDave/vak/releases/tag/0.4.0b6) -- 2021-11-23
+### Changed
+- bump minimum Python to 3.7
+  [#388](https://github.com/NickleDave/vak/pull/388).
+  Fixes [#380](https://github.com/NickleDave/vak/issues/380).
+
+### Fixed
+- fix how `predict` handles annotations that are predicted to have no labeled segments, 
+  i.e. where all time bins are predicted to have "background" / "unlabeled" class
+  [#394](https://github.com/NickleDave/vak/pull/394).
+  For details, see [#393](https://github.com/NickleDave/vak/issues/393) and 
+  [#386](https://github.com/NickleDave/vak/issues/386).
 
 ## [0.4.0b5](https://github.com/NickleDave/vak/releases/tag/0.4.0b5) -- 2021-10-08
 ### Changed
