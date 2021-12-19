@@ -6,9 +6,6 @@ audio_format = "cbin"
 [SPECT_PARAMS]
 fft_size = 512
 step_size = 64
-freq_cutoffs = [ 500, 10000,]
-thresh = 6.25
-transform_type = "log_spect"
 
 [TweetyNet.optimizer]
 lr = 0.001
@@ -17,10 +14,12 @@ lr = 0.001
 checkpoint_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 labelmap_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/labelmap.json"
 models = "TweetyNet"
-batch_size = 11
+batch_size = 1
 num_workers = 4
 device = "cuda"
 spect_scaler_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/StandardizeSpect"
 csv_path = "/PATH/TO/DATA/vak/prep/predict/032412_prep_200209_123936.csv"
 output_dir = "/PATH/TO/DATA/vak/prep/predict"
 annot_csv_filename = "gy6or6.032312.annot.csv"
+majority_vote = true
+min_segment_dur = 0.01

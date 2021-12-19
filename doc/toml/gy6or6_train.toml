@@ -11,12 +11,9 @@ test_dur = 30
 [SPECT_PARAMS]
 fft_size = 512
 step_size = 64
-freq_cutoffs = [ 500, 10000,]
-thresh = 6.25
-transform_type = "log_spect"
 
 [DATALOADER]
-window_size = 88
+window_size = 176
 
 [TRAIN]
 models = [ "TweetyNet",]
@@ -24,10 +21,13 @@ root_results_dir = "/PATH/TO/DATA/vak/train/results"
 batch_size = 8
 num_epochs = 2
 normalize_spectrograms = true
-val_step = 50
+val_step = 400
 ckpt_step = 200
 patience = 4
 csv_path = "/PATH/TO/DATA/prep/train/032312_prep_200209_123939.csv"
 
 [TweetyNet.optimizer]
 lr = 0.001
+
+[TweetyNet.network]
+hidden_size = 256
