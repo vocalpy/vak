@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   E.g., [#395](https://github.com/NickleDave/vak/pull/395). 
   Fixes [#387](https://github.com/NickleDave/vak/issues/387).
 
+### Changed
+- updated the .toml configuration files in the tutorial 
+  to match what was used for [TweetyNet paper](https://github.com/yardencsGitHub/tweetynet).
+  [#416](https://github.com/NickleDave/vak/pull/416).
+  Fixes [#414](https://github.com/NickleDave/vak/issues/414).
+
 ### Fixed
 - make further fixes + add unit tests for handling predictions where all timebins 
   are the background "unlabeled" class [#409](https://github.com/NickleDave/vak/pull/409).
