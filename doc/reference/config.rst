@@ -1,6 +1,12 @@
-======================
-config.toml files spec
-======================
+.. _config:
+
+===================
+Configuration files
+===================
+
+This format describes the ``.toml`` configuration files used
+when running ``vak`` commands through the command-line interface,
+as described in :ref:`cli`.
 
 Valid Sections
 ==============
