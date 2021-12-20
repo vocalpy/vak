@@ -1,3 +1,5 @@
+.. _autoannotate:
+
 ====================
 Automated Annotation
 ====================
