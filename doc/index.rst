@@ -1,50 +1,45 @@
+================
 ``vak`` वाच् *vāc*
-=================
+================
+
 a neural network toolbox for animal vocalizations and bioacoustics
-------------------------------------------------------------------
+==================================================================
 
 .. image:: images/song_with_colored_segments.png
 
-``vak`` is a library for researchers studying animal vocalizations--such as
-birdsong, bat calls, and even human speech--although it may be useful
-to anyone working with bioacoustics data.
-While there are many important reasons to study bioacoustics, the scope of ``vak``
-is limited to questions related to **vocal learning**,
-"the ability to modify acoustic and syntactic sounds,
-acquire new sounds via imitation, and produce vocalizations" [Wikipedia]_.
-Research questions related to vocal learning cut across a wide range of fields
-including neuroscience, phsyiology, molecular biology, genomics, ecology, and evolution [Wir2019]_.
+``vak`` is a library that makes it easier
+for researchers studying animal
+vocalizations---such as birdsong, bat calls,
+and even human speech---to work with
+neural network algorithms.
 
-`vak` has two main goals:
+.. |---| unicode:: U+02014 .. em dash
 
-1. make it easier for researchers studying animal vocalizations to
-   apply neural network algorithms to their data
-2. provide a common framework that will facilitate benchmarking neural
-   network algorithms on tasks related to animal vocalizations
-
-Currently the main use is automated **annotation** of vocalizations and other animal sounds,
-using artificial neural networks.
-By **annotation**, we mean something like the example of annotated birdsong shown below:
+Currently the main use is automated **annotation** of animal vocalizations.
+By **annotation**, we mean something like this example of annotated birdsong:
 
 .. image:: images/annotation_example_for_tutorial.png
 
 Please see links below for information on how to get started and how to use ``vak`` to
 apply neural network models to your data.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+:ref:`get_started`
+---------------------------------
+If you are new to working with ``vak``,
+and you're looking for installation instructions and a tutorial,
+:ref:`start here <get_started>`.
 
-   get_started/installation
-   tutorial/tutorial
-   howto/howto
-   reference/reference
-   explanations/explanations
+:ref:`howto`
+-------------
+If there is something specific you're trying to do,
+like use your own spectrogram files or annotation formats with ``vak``,
+please check in the :ref:`howto`.
 
-.. [Wikipedia] https://en.wikipedia.org/wiki/Vocal_learning
+:ref:`reference`
+----------------
+If you need to look up information about the command-line interface, configuration files, etc.,
+please consult the :ref:`reference`.
 
-.. [Wir2019] Wirthlin M, Chang EF, Knörnschild M, Krubitzer LA, Mello CV, Miller CT,
-             Pfenning AR, Vernes SC, Tchernichovski O, Yartsev MM.
-             A modular approach to vocal learning: disentangling the diversity of
-             a complex behavioral trait. Neuron. 2019 Oct 9;104(1):87-99.
-             https://www.sciencedirect.com/science/article/pii/S0896627319308396
+:ref:`about`
+------------
+For more about the goals of ``vak`` and its development, please see :ref:`about`.
