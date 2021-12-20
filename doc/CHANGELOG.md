@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to match what was used for [TweetyNet paper](https://github.com/yardencsGitHub/tweetynet).
   [#416](https://github.com/NickleDave/vak/pull/416).
   Fixes [#414](https://github.com/NickleDave/vak/issues/414).
+- move tutorial into "getting started" section of docs, 
+  and revise landing page of docs
+  [#419](https://github.com/NickleDave/vak/pull/419).
 
 ### Fixed
 - make further fixes + add unit tests for handling predictions where all timebins 
