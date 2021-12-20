@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   using their bot to adopt the spec.
   E.g., [#395](https://github.com/NickleDave/vak/pull/395). 
   Fixes [#387](https://github.com/NickleDave/vak/issues/387).
+- Add description of command-line interface to reference section of documentation.
+  [#417](https://github.com/NickleDave/vak/pull/417).
+  Fixes [#270](https://github.com/NickleDave/vak/issues/270).
 
 ### Changed
 - updated the .toml configuration files in the tutorial 
