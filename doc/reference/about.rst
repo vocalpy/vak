@@ -11,7 +11,7 @@ The ``vak`` library has two main goals:
 2. provide a common framework for benchmarking neural
    network algorithms on tasks related to animal vocalizations
 
-Neural network algorithms in ``vak`` helps answer questions about **vocal learning**,
+Neural network algorithms in ``vak`` help answer questions about **vocal learning**,
 "the ability to modify acoustic and syntactic sounds,
 acquire new sounds via imitation, and produce vocalizations" [Wikipedia]_.
 Research questions related to vocal learning cut across a wide range of fields

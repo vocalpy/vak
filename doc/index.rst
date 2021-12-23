@@ -13,8 +13,6 @@ vocalizations---such as birdsong, bat calls,
 and even human speech---to work with
 neural network algorithms.
 
-.. |---| unicode:: U+02014 .. em dash
-
 Currently the main use is automated **annotation** of animal vocalizations.
 By **annotation**, we mean something like this example of annotated birdsong:
 
