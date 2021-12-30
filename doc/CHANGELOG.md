@@ -12,9 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   using their bot to adopt the spec.
   E.g., [#395](https://github.com/NickleDave/vak/pull/395). 
   Fixes [#387](https://github.com/NickleDave/vak/issues/387).
-- Add description of command-line interface to reference section of documentation.
+- add description of command-line interface to reference section of documentation.
   [#417](https://github.com/NickleDave/vak/pull/417).
   Fixes [#270](https://github.com/NickleDave/vak/issues/270).
+- add how-to on using an annotation format that's not built in
+  [#421](https://github.com/NickleDave/vak/pull/421).
+  Fixes [#397](https://github.com/NickleDave/vak/issues/397).
+- add how-to on using custom spectrograms 
+  [#421](https://github.com/NickleDave/vak/pull/421).
+  Fixes [#413](https://github.com/NickleDave/vak/issues/413).
 
 ### Changed
 - updated the .toml configuration files in the tutorial 
