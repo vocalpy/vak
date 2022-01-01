@@ -41,3 +41,11 @@ please consult the :ref:`reference`.
 :ref:`about`
 ------------
 For more about the goals of ``vak`` and its development, please see :ref:`about`.
+
+.. toctree::
+   :hidden:
+
+   get_started/get_started
+   howto/howto
+   reference/reference
+   reference/about

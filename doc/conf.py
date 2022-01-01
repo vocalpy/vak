@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'vak'
-copyright = '2018, David Nicholson, Yarden Cohen'
+copyright = '2017-present, David Nicholson, Yarden Cohen'
 author = 'David Nicholson, Yarden Cohen'
 
 # The short X.Y version
@@ -88,7 +88,9 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'sidebar_includehidden': 'true'
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
