@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Fixes bug in `remove_short_segments` [#403](https://github.com/NickleDave/vak/issues/403).
   Related to [#393](https://github.com/NickleDave/vak/issues/393) 
   and [#386](https://github.com/NickleDave/vak/issues/386).
+- fix docs so entries appear in navbar
+  [#427](https://github.com/NickleDave/vak/pull/427).
+  Fixes [#426](https://github.com/NickleDave/vak/issues/426).
 
 ## [0.4.0b6](https://github.com/NickleDave/vak/releases/tag/0.4.0b6) -- 2021-11-23
 ### Changed
