@@ -17,19 +17,19 @@ class Config:
     Attributes
     ----------
     prep : vak.config.prep.PrepConfig
-        represents [PREP] section of config.toml file
-    spect : vak.config.spectrogram.SpectConfig
-        represents [SPECTROGRAM] section of config.toml file
+        represents ``[PREP]`` section of config.toml file
+    spect_params : vak.config.spect_params.SpectParamsConfig
+        represents ``[SPECT_PARAMS]`` section of config.toml file
     dataloader : vak.config.dataloader.DataLoaderConfig
-        represents [DATALOADER] section of config.toml file
+        represents ``[DATALOADER]`` section of config.toml file
     train : vak.config.train.TrainConfig
-        represents [TRAIN] section of config.toml file
+        represents ``[TRAIN]`` section of config.toml file
     eval : vak.config.eval.EvalConfig
-        represents [EVAL] section of config.toml file
+        represents ``[EVAL]`` section of config.toml file
     predict : vak.config.predict.PredictConfig
-        represents [PREDICT] section of config.toml file.
+        represents ``[PREDICT]`` section of config.toml file.
     learncurve : vak.config.learncurve.LearncurveConfig
-        represents [LEARNCURVE] section of config.toml file
+        represents ``[LEARNCURVE]`` section of config.toml file
     """
 
     spect_params = attr.ib(
