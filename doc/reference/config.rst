@@ -4,132 +4,84 @@
 Configuration files
 ===================
 
-This format describes the ``.toml`` configuration files used
+This document contains the specification
+for the ``.toml`` configuration files used
 when running ``vak`` commands through the command-line interface,
 as described in :ref:`cli`.
 
-Valid Sections
-==============
-Following is the set of valid section names:
-{PREP, SPECT_PARAMS, DATALOADER, TRAIN, PREDICT, LEARNCURVE}.
-In addition, a section is valid whose name is the name of a class
-representing a neural network that subclasses the
-``vak``, e.g., "TweetyNet"
-and whose options define hyperparameters for that network.
-More detail below.
 
+A ``.toml`` configuration file is split up into sections.
+The sections and their valid options
+are represented in the ``vak`` code
+by classes.
+To ensure that the code and this documentation
+do not go out of sync,
+the options are presented below
+exactly as documented in the code
+for each class.
+
+
+.. contents::
+   :local:
+
+Valid section names
+===================
+
+Following is the set of valid section names:
+``{PREP, SPECT_PARAMS, DATALOADER, TRAIN, PREDICT, LEARNCURVE}``.
+In the code, these names correspond to attributes
+of the main ``Config`` class, as shown below.
+
+The only other valid section name
+is the name of a class
+representing a neural network.
+For such sections to be recognized as valid,
+the model must be installed via the ``vak.models``
+entry point, so that it can be recognized by the function
+``vak.config.validators.is_valid_model_name``.
+
+.. autoclass:: vak.config.config.Config
 
 Valid Options by Section
 ========================
-DATA
------
-1. `labelset`
-Type str, the set of labels that correspond to annotated segments
-that a network should learn to segment and classify. Note that
-segments that are not annotated, e.g. silent gaps between songbird
-syllables, then `vak` will assign a dummy label to those segments
--- you don't have to give them a label here.
 
-.. code-block:: toml
+Each section of the ``.toml`` config
+has a set of option names
+that are considered valid.
+Valid options for each section are presented below.
 
-    labelset = "iabcdefghjk"
+``[PREP]`` section
+------------------
 
-2. `data_dir`
-Type str, path to directory with audio files from which to make dataset
+.. autoclass:: vak.config.prep.PrepConfig
 
-.. code-block:: toml
+``[SPECT_PARAMS]`` section
+--------------------------
 
-    data_dir = "./tests/test_data/cbins/gy6or6/032312"
+.. autoclass:: vak.config.spect_params.SpectParamsConfig
 
-3. `traindur`
-Type int, total duration of training set, in seconds.
-Training subsets of shorter duration will be drawn from this set.
+``[DATALOADER]`` section
+--------------------------
 
-.. code-block:: toml
+.. autoclass:: vak.config.dataloader.DataLoaderConfig
 
-    total_train_set_duration = 50
 
-4. `valdur`
+``[TRAIN]`` section
+-------------------
 
-.. code-block:: toml
+.. autoclass:: vak.config.train.TrainConfig
 
-    validation_set_duration = 15
+``[EVAL]`` section
+------------------
 
-5. `testdur`
+.. autoclass:: vak.config.eval.EvalConfig
 
-.. code-block:: toml
+``[PREDICT]`` section
+---------------------
 
-    test_set_duration = 30
+.. autoclass:: vak.config.predict.PredictConfig
 
-6. `output_dir`
+``[LEARNCURVE]`` section
+------------------------
 
-.. code-block:: toml
-
-    output_dir = "./tests/test_data/vds/"
-
-7. `audio_format`
-
-.. code-block:: toml
-
-    audio_format = "cbin"
-
-8. `annot_format`
-
-.. code-block:: toml
-
-    annot_format = "notmat"
-
-TRAIN
------
-1. `csv_path`
-
-Type str, path to .csv file that represents data for training,
-i.e., `train` and `val` splits
-
-.. code-block:: toml
-
-    csv_path = "/some/path/here"
-
-2. `normalize_spectrograms`
-Type bool, whether to normalize spectrograms.
-
-.. code-block:: toml
-
-    normalize_spectrograms = true
-
-3. num_epochs
-
-.. code-block:: toml
-
-    num_epochs = 2
-
-4. val_step
-step at which to estimate accuracy using validation set.
-Default is None, in which case no validation is done.
-
-.. code-block:: toml
-
-    val_step = 500
-
-5. ckpt_step
-step at which to save to checkpoint file.
-Default is None, in which case checkpoint is only saved at the last epoch.
-
-.. code-block:: toml
-
-    ckpt_step = 200
-
-6. patience
-
-.. code-block:: toml
-
-    patience = 2
-
-number of validation steps to wait without the error dropping before stopping the
-training. Default is None, in which case training continues for num_epochs
-
-7. networks
-
-.. code-block:: toml
-
-    networks = "TweetyNet"
+.. autoclass:: vak.config.learncurve.LearncurveConfig
