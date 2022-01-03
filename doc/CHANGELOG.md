@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - move tutorial into "getting started" section of docs, 
   and revise landing page of docs
   [#419](https://github.com/NickleDave/vak/pull/419).
+- revise the documentation for the configuration file format.
+  Show valid options for each section by including docstrings from the classes
+  that represents the different sections
+  [#428](https://github.com/NickleDave/vak/pull/428).
+  Fixes [#271](https://github.com/NickleDave/vak/issues/271).
 
 ### Fixed
 - make further fixes + add unit tests for handling predictions where all timebins 
