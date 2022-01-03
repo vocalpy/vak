@@ -11,7 +11,7 @@ from ..timebins import timebin_dur_from_vec
 
 
 def find_audio_fname(spect_path, audio_ext=None):
-    """finds name of audio file in a path to a spectogram file,
+    """finds name of audio file in a path to a spectrogram file,
     if one is present.
 
     Checks for any extension that is a valid audio file format
