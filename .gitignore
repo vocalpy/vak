@@ -13,6 +13,7 @@
 *egg-info/
 dist/
 build/
+.venv
 
 # Sphinx
 doc/_build/
