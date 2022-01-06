@@ -1,3 +1,5 @@
+include .make/venv.Makefile
+
 TEST_DATA_GENERATE_SCRIPT=./tests/scripts/generate_data_for_tests.py
 
 DATA_FOR_TESTS_DIR=./tests/data_for_tests/
@@ -30,6 +32,9 @@ help:
 	@echo '     make test-data-download-generated-all   download .tar with all generated test data and expand        	'
 	@echo '     make test-data-download-generated-ci    download .tar with generated test data for CI and expand        	'
 	@echo '     make variables                          show variables defined for Makefile 					'
+	@echo '     make venv	                     	    make virtual environment (as `.venv`) if one does not exist 					'
+	@echo '     make clean-venv                         remove any existing virtual environment (`rm -rf .venv`)					'
+	@echo '     make show-venv                          show virtual environment and variables used to make it	'
 
 variables:
 	@echo '     TESTS_DATA_GENERATE_SCRIPT      : $(TEST_DATA_GENERATE_SCRIPT)				'
