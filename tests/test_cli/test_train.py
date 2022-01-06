@@ -14,7 +14,7 @@ from ..test_core.test_train import train_output_matches_expected
     "audio_format, spect_format, annot_format",
     [
         ("cbin", None, "notmat"),
-        ("wav", None, "koumura"),
+        ("wav", None, "birdsong-recognition-dataset"),
         (None, "mat", "yarden"),
     ],
 )

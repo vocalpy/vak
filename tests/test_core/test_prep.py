@@ -37,9 +37,9 @@ def prep_output_matches_expected(csv_path, df_returned_by_prep):
         ("eval", "cbin", None, "notmat"),
         ("learncurve", "cbin", None, "notmat"),
         ("predict", "cbin", None, "notmat"),
-        ("predict", "wav", None, "koumura"),
+        ("predict", "wav", None, "birdsong-recognition-dataset"),
         ("train", "cbin", None, "notmat"),
-        ("train", "wav", None, "koumura"),
+        ("train", "wav", None, "birdsong-recognition-dataset"),
         ("train", None, "mat", "yarden"),
     ],
 )

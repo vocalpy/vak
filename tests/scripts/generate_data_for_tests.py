@@ -16,15 +16,15 @@ for any prep command, the output goes to some child directory of ./tests/data_fo
 for any command run with a `prep`d dataset, the output goes to some child dir of ./tests/data_for_tests/generated/results
 
 examples:
-    when we run `vak prep tests/data_for_tests/generated/configs/test_train_audio_wav_annot_koumura.toml`
+    when we run `vak prep tests/data_for_tests/generated/configs/test_train_audio_wav_annot_birdsongrec.toml`
     the `prep`d dataset will be in a new directory created in
-    `./tests/data_for_tests/generated/prep/train/audio_wav_annot_koumura`
+    `./tests/data_for_tests/generated/prep/train/audio_wav_annot_birdsongrec`
 
-    when we run `vak train tests/data_for_tests/genereated/configs/test_train_audio_wav_annot_koumura.toml`
+    when we run `vak train tests/data_for_tests/genereated/configs/test_train_audio_wav_annot_birdsongrec.toml`
     it will use the `prep`d dataset csv that's now in
-    `./tests/data_for_tests/generated/prep/train/audio_wav_annot_koumura`, that the temporary config.toml points to,
+    `./tests/data_for_tests/generated/prep/train/audio_wav_annot_birdsongrec`, that the temporary config.toml points to,
     and the results will go to a new directory created in
-    `./tests/data_for_tests/generated/results/train/audio_wav_annot_koumura`
+    `./tests/data_for_tests/generated/results/train/audio_wav_annot_birdsongrec`
 
 To set up this directory structure, we iterate through the constants defined below.
 
@@ -94,7 +94,7 @@ COMMAND_DIRS = [
 # these sub-dirs get made in each of the COMMAND_DIRS (except for 'configs')
 DATA_DIRS = [
     "audio_cbin_annot_notmat",
-    "audio_wav_annot_koumura",
+    "audio_wav_annot_birdsongrec",
     "spect_mat_annot_yarden",
 ]
 

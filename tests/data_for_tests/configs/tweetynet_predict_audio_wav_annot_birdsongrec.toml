@@ -1,8 +1,8 @@
 [PREP]
-data_dir = "./tests/data_for_tests/source/audio_wav_annot_koumura/Bird0"
-output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_koumura"
+data_dir = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0"
+output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_birdsongrec"
 audio_format = "wav"
-spect_output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_koumura"
+spect_output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_birdsongrec"
 
 [SPECT_PARAMS]
 fft_size = 512
@@ -22,7 +22,7 @@ models = "TweetyNet"
 batch_size = 11
 num_workers = 4
 device = "cuda"
-output_dir = "./tests/data_for_tests/generated/results/predict/audio_wav_annot_koumura/tweetynet"
+output_dir = "./tests/data_for_tests/generated/results/predict/audio_wav_annot_birdsongrec/tweetynet"
 annot_csv_filename = "Bird0.annot.csv"
 
 [TweetyNet.optimizer]
