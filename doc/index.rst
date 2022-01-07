@@ -38,6 +38,10 @@ please check in the :ref:`howto_index`.
 If you need to look up information about the command-line interface, configuration files, etc.,
 please consult the :ref:`reference_index`.
 
+:ref:`devindex`
+------------------
+To learn about development of ``vak`` and how you can contribute, please see :ref:`devindex`
+
 :ref:`about`
 ------------
 For more about the goals of ``vak`` and its development, please see :ref:`about`.
@@ -48,9 +52,11 @@ Not enough open-source research software libraries have poems. We do, here: :ref
 
 .. toctree::
    :hidden:
+   :maxdepth: 1
 
    get_started/index
    howto/index
    reference/index
+   development/index
    reference/about
    poems/index
