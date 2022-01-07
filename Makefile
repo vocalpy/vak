@@ -15,9 +15,9 @@ SOURCE_TEST_DATA_TAR=${DATA_FOR_TESTS_DIR}source/source_test_data.tar.gz
 GENERATED_TEST_DATA_CI_TAR=${GENERATED_TEST_DATA_DIR}generated_test_data.ci.tar.gz
 GENERATED_TEST_DATA_ALL_TAR=${GENERATED_TEST_DATA_DIR}generated_test_data.tar.gz
 
-SOURCE_TEST_DATA_URL=https://osf.io/thvaw/download
-GENERATED_TEST_DATA_ALL_URL=https://osf.io/maf7e/download
-GENERATED_TEST_DATA_CI_URL=https://osf.io/z5mk6/download
+SOURCE_TEST_DATA_URL=https://osf.io/ubhsj/download
+GENERATED_TEST_DATA_ALL_URL=https://osf.io/8swue/download
+GENERATED_TEST_DATA_CI_URL=https://osf.io/vsk9x/download
 
 help:
 	@echo 'Makefile for vak                                                           			'
