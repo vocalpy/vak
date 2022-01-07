@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.4.1]
 ### Changed
 - switch to using `flit` to build/publish, drop `poetry`
   [#434](https://github.com/NickleDave/vak/pull/434).
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - resolve various minor docs issues
   [#438](https://github.com/NickleDave/vak/pull/438).
 
-## [0.4.0]
+## [0.4.0](https://github.com/NickleDave/vak/releases/tag/0.4.0) -- 2021-12-29
 ### Added
 - add a [CITATION.cff](https://citation-file-format.github.io/) file
   [#407](https://github.com/NickleDave/vak/pull/407).
