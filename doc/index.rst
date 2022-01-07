@@ -42,6 +42,10 @@ please consult the :ref:`reference`.
 ------------
 For more about the goals of ``vak`` and its development, please see :ref:`about`.
 
+:ref:`poems`
+------------
+Not enough open-source research software libraries have :ref:`poems`.
+
 .. toctree::
    :hidden:
 

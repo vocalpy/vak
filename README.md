@@ -13,24 +13,16 @@
 `vak` is a library for researchers studying animal vocalizations--such as 
 birdsong, bat calls, and even human speech--although it may be useful 
 to anyone working with bioacoustics data. 
-While there are many important reasons to study bioacoustics, the scope of `vak` 
-is limited to questions related to **vocal learning**, 
-"the ability to modify acoustic and syntactic sounds, acquire new sounds via imitation, and produce vocalizations"
-[(Wikipedia)](https://en.wikipedia.org/wiki/Vocal_learning). 
-Research questions related to vocal learning cut across a wide range of fields 
-including neuroscience, phsyiology, molecular biology, genomics, ecology, and evolution 
-[(Wirthlin et al. 2019)](https://www.sciencedirect.com/science/article/pii/S0896627319308396).
 
-`vak` has two main goals:  
+The library has two main goals:  
 1. make it easier for researchers studying animal vocalizations to 
 apply neural network algorithms to their data
 2. provide a common framework that will facilitate benchmarking neural 
 network algorithms on tasks related to animal vocalizations
 
-Currently the main use is automated **annotation** of vocalizations and other animal sounds, 
-using artificial neural networks.
+Currently the main use is automated **annotation** of vocalizations and other animal sounds.
 By **annotation**, we mean something like the example of annotated birdsong shown below:  
-<img src="./doc/images/annotation_example_for_tutorial.png" alt="spectrogram of birdsong with syllables annotated" width="400">
+<img src="./doc/images/annotation_example.png" alt="spectrogram of birdsong with syllables annotated" width="400">
 
 You give `vak` training data in the form of audio or spectrogram files with annotations, 
 and then `vak` helps you train neural network models 
@@ -46,7 +38,7 @@ Short version:
 ```console
 $ pip install vak
 ```
-For the long version detail, please see:
+For the long version, please see:
 https://vak.readthedocs.io/en/latest/get_started/installation.html
 
 We currently test `vak` on Ubuntu and MacOS. We have run on Windows and 
@@ -55,7 +47,7 @@ but installation on Windows will probably require some troubleshooting.
 A good place to start is by searching the [issues](https://github.com/NickleDave/vak/issues).
 
 ### Usage
-#### Training models to segment and label vocalizations
+#### Tutorial
 Currently the easiest way to work with `vak` is through the command line.
 ![terminal showing vak help command output](./doc/images/terminalizer/vak-help.gif)
 
@@ -64,32 +56,10 @@ You run it with `config.toml` files, using one of a handful of commands.
 For more details, please see the "autoannotate" tutorial here:  
 https://vak.readthedocs.io/en/latest/tutorial/autoannotate.html
 
-#### Data and folder structures
-To train models, you provide training data in the form of audio or 
-spectrograms files, and annotations for those files.
+#### How can I use my data with `vak`?
 
-#### Spectrograms and labels
-The package can generate spectrograms from `.wav` files or `.cbin` audio files.
-It can also accept spectrograms in the form of Matlab `.mat` or Numpy `.npz` files.
-The locations of these files are specified in the `config.toml` file.
-
-The annotations are parsed by a separate library, `crowsetta`, that 
-aims to handle common formats like Praat `textgrid` files, and enable 
-researchers to easily work with formats they may have developed in their 
-own labs. For more information please see:  
-https://crowsetta.readthedocs.io/en/latest/  
-https://github.com/NickleDave/crowsetta  
-
-#### Preparing training files
-It is possible to train on any manually annotated data but there are some useful guidelines:
-* __Use as many examples as possible__ - The results will just be better. Specifically, this code will not label correctly syllables it did not encounter while training and will most probably generalize to the nearest sample or ignore the syllable.
-* __Use noise examples__ - This will make the code very good in ignoring noise.
-* __Examples of syllables on noise are important__ - It is a good practice to start with clean recordings. The code will not perform miracles and is most likely to fail if the audio is too corrupt or masked by noise. Still, training with examples of syllables on the background of cage noises will be beneficial.
-
-### Predicting annotations for audio
-You can predict annotations for audio files by creating a `config.toml` file with a [PREDICT] section.  
-For more details, please see the "autoannotate" tutorial here:
-https://vak.readthedocs.io/en/latest/tutorial/autoannotate.html
+Please see the How-To Guides in the documentation here:
+https://vak.readthedocs.io/en/latest/howto/howto.html
 
 ### Support / Contributing
 Currently we are handling support through the issue tracker on GitHub:  
@@ -106,6 +76,8 @@ If you use vak for a publication, please cite its DOI:
 is [here](./LICENSE).
 
 ### Misc
+For more on the history of `vak` please see: https://vak.readthedocs.io/en/latest/reference/about.html
+
 #### "Why this name, vak?"
 It has only three letters, so it is quick to type,
 and it wasn't taken on [pypi](https://pypi.org/) yet.
@@ -113,7 +85,7 @@ Also I guess it has [something to do with speech](https://en.wikipedia.org/wiki/
 "vak" rhymes with "squawk" and "talk".
 
 #### Does your library have any poems?
-[Yes.](./doc/poem.md)
+[Yes.](https://vak.readthedocs.io/en/latest//poems/poems.html)
 
 ## Contributors ✨
 
