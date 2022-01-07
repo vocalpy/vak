@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - do various clean-up steps to development / CI workflows, 
   in the process of getting ready to publish `vak` on `conda-forge`
   [#437](https://github.com/NickleDave/vak/pull/437).
+- resolve various minor docs issues
+  [#438](https://github.com/NickleDave/vak/pull/438).
 
 ## [0.4.0]
 ### Added
