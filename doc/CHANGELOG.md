@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - switch to using `flit` to build/publish, drop `poetry`
   [#434](https://github.com/NickleDave/vak/pull/434).
   Fixes [#433](https://github.com/NickleDave/vak/issues/433).
+- raise minimum required `pytorch` version to 1.7.1 and 
+  minimum `crowsetta` version to 3.2.0'
+  [#437](https://github.com/NickleDave/vak/pull/437).
+- do various clean-up steps to development / CI workflows, 
+  in the process of getting ready to publish `vak` on `conda-forge`
+  [#437](https://github.com/NickleDave/vak/pull/437).
 
 ## [0.4.0]
 ### Added
