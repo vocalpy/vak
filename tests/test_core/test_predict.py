@@ -21,9 +21,9 @@ def predict_output_matches_expected(output_dir, annot_csv_filename):
     "audio_format, spect_format, annot_format, save_net_outputs",
     [
         ("cbin", None, "notmat", False),
-        ("wav", None, "koumura", False),
+        ("wav", None, "birdsong-recognition-dataset", False),
         ("cbin", None, "notmat", True),
-        ("wav", None, "koumura", True),
+        ("wav", None, "birdsong-recognition-dataset", True),
     ],
 )
 def test_predict(

@@ -14,7 +14,7 @@ from ..test_core.test_predict import predict_output_matches_expected
     "audio_format, spect_format, annot_format",
     [
         ("cbin", None, "notmat"),
-        ("wav", None, "koumura"),
+        ("wav", None, "birdsong-recognition-dataset"),
     ],
 )
 def test_predict(

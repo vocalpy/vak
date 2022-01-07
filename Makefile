@@ -1,3 +1,5 @@
+include .make/venv.Makefile
+
 TEST_DATA_GENERATE_SCRIPT=./tests/scripts/generate_data_for_tests.py
 
 DATA_FOR_TESTS_DIR=./tests/data_for_tests/
@@ -13,9 +15,9 @@ SOURCE_TEST_DATA_TAR=${DATA_FOR_TESTS_DIR}source/source_test_data.tar.gz
 GENERATED_TEST_DATA_CI_TAR=${GENERATED_TEST_DATA_DIR}generated_test_data.ci.tar.gz
 GENERATED_TEST_DATA_ALL_TAR=${GENERATED_TEST_DATA_DIR}generated_test_data.tar.gz
 
-SOURCE_TEST_DATA_URL=https://osf.io/thvaw/download
-GENERATED_TEST_DATA_ALL_URL=https://osf.io/maf7e/download
-GENERATED_TEST_DATA_CI_URL=https://osf.io/z5mk6/download
+SOURCE_TEST_DATA_URL=https://osf.io/ubhsj/download
+GENERATED_TEST_DATA_ALL_URL=https://osf.io/8swue/download
+GENERATED_TEST_DATA_CI_URL=https://osf.io/vsk9x/download
 
 help:
 	@echo 'Makefile for vak                                                           			'
@@ -30,6 +32,9 @@ help:
 	@echo '     make test-data-download-generated-all   download .tar with all generated test data and expand        	'
 	@echo '     make test-data-download-generated-ci    download .tar with generated test data for CI and expand        	'
 	@echo '     make variables                          show variables defined for Makefile 					'
+	@echo '     make venv	                     	    make virtual environment (as `.venv`) if one does not exist 					'
+	@echo '     make clean-venv                         remove any existing virtual environment (`rm -rf .venv`)					'
+	@echo '     make show-venv                          show virtual environment and variables used to make it	'
 
 variables:
 	@echo '     TESTS_DATA_GENERATE_SCRIPT      : $(TEST_DATA_GENERATE_SCRIPT)				'
@@ -58,7 +63,7 @@ test-data-download-source:
 	tar -xzf $(SOURCE_TEST_DATA_TAR)
 
 test-data-generate : $(TEST_DATA_GENERATE_SCRIPT)
-	poetry run python $(TEST_DATA_GENERATE_SCRIPT)
+	python $(TEST_DATA_GENERATE_SCRIPT)
 
 test-data-clean-generated :
 	rm -rfv ./tests/data_for_tests/generated/*

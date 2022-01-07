@@ -65,21 +65,21 @@ def labelset_notmat(generated_test_configs_root):
 
 
 @pytest.fixture
-def annot_file_koumura(source_test_data_root):
+def annot_file_birdsongrec(source_test_data_root):
     return source_test_data_root.joinpath(
-        "audio_wav_annot_koumura", "Bird0", "Annotation.xml"
+        "audio_wav_annot_birdsongrec", "Bird0", "Annotation.xml"
     )
 
 
 @pytest.fixture
-def annot_list_koumura(annot_file_koumura):
-    scribe = crowsetta.Transcriber(format="koumura")
-    annot_list = scribe.from_file(annot_file_koumura)
+def annot_list_birdsongrec(annot_file_birdsongrec):
+    scribe = crowsetta.Transcriber(format="birdsong-recognition-dataset")
+    annot_list = scribe.from_file(annot_file_birdsongrec)
     return annot_list
 
 
 @pytest.fixture
-def specific_annot_list(annot_list_notmat, annot_list_yarden, annot_list_koumura):
+def specific_annot_list(annot_list_notmat, annot_list_yarden, annot_list_birdsongrec):
     """factory fixture, returns a function that
     returns a fixture containing a list of Annotation objects,
     given a specified annotation format
@@ -89,7 +89,7 @@ def specific_annot_list(annot_list_notmat, annot_list_yarden, annot_list_koumura
     FORMAT_ANNOT_LIST_FIXTURE_MAP = {
         "notmat": annot_list_notmat,
         "yarden": annot_list_yarden,
-        "koumura": annot_list_koumura,
+        "birdsong-recognition-dataset": annot_list_birdsongrec,
     }
 
     def _annot_list_factory(format):

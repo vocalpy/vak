@@ -17,7 +17,7 @@ def test_files_from_dir(annot_dir_notmat, annot_files_notmat):
     "source_type, source_format, annot_format",
     [
         ("audio", "cbin", "notmat"),
-        ("audio", "wav", "koumura"),
+        ("audio", "wav", "birdsong-recognition-dataset"),
         ("spect", "mat", "yarden"),
     ],
 )

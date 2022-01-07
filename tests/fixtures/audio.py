@@ -69,7 +69,7 @@ def audio_list_cbin_labels_not_in_labelset(
 # TODO: add .WAV from TIMIT
 @pytest.fixture
 def audio_dir_wav(source_test_data_root):
-    return source_test_data_root.joinpath("audio_wav_annot_koumura", "Bird0", "Wave")
+    return source_test_data_root.joinpath("audio_wav_annot_birdsongrec", "Bird0", "Wave")
 
 
 @pytest.fixture
