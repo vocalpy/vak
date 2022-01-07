@@ -85,7 +85,7 @@ Also I guess it has [something to do with speech](https://en.wikipedia.org/wiki/
 "vak" rhymes with "squawk" and "talk".
 
 #### Does your library have any poems?
-[Yes.](./doc/poem.md)
+[Yes.](https://vak.readthedocs.io/en/latest//poems/poems.html)
 
 ## Contributors ✨
 
