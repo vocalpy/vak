@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- make minor revisions to docs
+  [#443](https://github.com/NickleDave/vak/pull/443).
+  Fixes [#439](https://github.com/NickleDave/vak/issues/439).
+
 ## [0.4.1]
 ### Changed
 - switch to using `flit` to build/publish, drop `poetry`
