@@ -35,15 +35,34 @@ If you have questions, please feel free to [raise an issue](https://github.com/N
 
 ### Installation
 Short version:
+
+#### with `pip`
+
 ```console
 $ pip install vak
 ```
-For the long version, please see:
+
+#### with `conda`
+##### on Mac and Linux
+
+```console
+$ conda install vak -c conda-forge
+```
+
+##### on Windows
+On Windows, you need to add an additional channel, `pytorch`.  
+You can do this by repeating the `-c` option more than once.
+```console
+$ conda install vak -c conda-forge -c pytorch
+$ #                                 ^ notice additional channel!
+```
+
+For more details, please see:
 https://vak.readthedocs.io/en/latest/get_started/installation.html
 
 We currently test `vak` on Ubuntu and MacOS. We have run on Windows and 
 know of other users successfully running `vak` on that operating system, 
-but installation on Windows will probably require some troubleshooting.
+but installation on Windows may require some troubleshooting.
 A good place to start is by searching the [issues](https://github.com/NickleDave/vak/issues).
 
 ### Usage
