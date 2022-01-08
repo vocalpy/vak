@@ -44,7 +44,7 @@ For more about the goals of ``vak`` and its development, please see :ref:`about`
 
 :ref:`poems_index`
 ------------------
-Not enough open-source research software libraries have :ref:`poems_index`.
+Not enough open-source research software libraries have poems. We do, here: :ref:`poems_index`.
 
 .. toctree::
    :hidden:
