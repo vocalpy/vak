@@ -1,4 +1,4 @@
-.. _get_started:
+.. _get_started_index:
 
 ===============
 Getting Started

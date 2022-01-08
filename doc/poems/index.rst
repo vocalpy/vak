@@ -1,4 +1,4 @@
-.. _poems:
+.. _poems_index:
 
 =====
 Poems

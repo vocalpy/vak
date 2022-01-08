@@ -1,4 +1,4 @@
-.. _howto:
+.. _howto_index:
 
 =============
 How-to guides

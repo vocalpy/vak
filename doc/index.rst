@@ -21,35 +21,36 @@ By **annotation**, we mean something like this example of annotated birdsong:
 Please see links below for information on how to get started and how to use ``vak`` to
 apply neural network models to your data.
 
-:ref:`get_started`
+:ref:`get_started_index`
 ---------------------------------
 If you are new to working with ``vak``,
 and you're looking for installation instructions and a tutorial,
-:ref:`start here <get_started>`.
+:ref:`start here <get_started_index>`.
 
-:ref:`howto`
--------------
+:ref:`howto_index`
+------------------
 If there is something specific you're trying to do,
 like use your own spectrogram files or annotation formats with ``vak``,
-please check in the :ref:`howto`.
+please check in the :ref:`howto_index`.
 
-:ref:`reference`
-----------------
+:ref:`reference_index`
+----------------------
 If you need to look up information about the command-line interface, configuration files, etc.,
-please consult the :ref:`reference`.
+please consult the :ref:`reference_index`.
 
 :ref:`about`
 ------------
 For more about the goals of ``vak`` and its development, please see :ref:`about`.
 
-:ref:`poems`
-------------
-Not enough open-source research software libraries have :ref:`poems`.
+:ref:`poems_index`
+------------------
+Not enough open-source research software libraries have :ref:`poems_index`.
 
 .. toctree::
    :hidden:
 
-   get_started/get_started
-   howto/howto
-   reference/reference
+   get_started/index
+   howto/index
+   reference/index
    reference/about
+   poems/index
