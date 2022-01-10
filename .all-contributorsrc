@@ -67,6 +67,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "theresekoch",
+      "name": "Therese Koch",
+      "avatar_url": "https://avatars.githubusercontent.com/u/46657075?v=4",
+      "profile": "https://www.utsouthwestern.edu/labs/roberts/",
+      "contributions": [
+        "doc",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
