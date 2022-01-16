@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- add a [Code of Conduct](https://github.com/NickleDave/vak/blob/main/CODE_OF_CONDUCT.md), 
+  a [contributing guide on GitHub](https://github.com/NickleDave/vak/blob/main/.github/CONTRIBUTING.md), 
+  and a 
+  [Development section of the documentation](https://vak.readthedocs.io/en/latest/development/index.html) 
+  [#448](https://github.com/NickleDave/vak/pull/448).
+  Fixes [#8](https://github.com/NickleDave/vak/issues/8) and
+  [#56](https://github.com/NickleDave/vak/issues/56).
+- add pull request templates on GitHub 
+  [#445](https://github.com/NickleDave/vak/pull/448).
+  Fixes [#85](https://github.com/NickleDave/vak/issues/85).
+
 ### Changed
 - make minor revisions to docs
   [#443](https://github.com/NickleDave/vak/pull/443).
