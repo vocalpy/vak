@@ -122,9 +122,6 @@ You will need:
 Steps
 ~~~~~
 
-.. contents::
-   :local:
-
 1. Clone the repository
 #######################
 

@@ -20,10 +20,6 @@ the options are presented below
 exactly as documented in the code
 for each class.
 
-
-.. contents::
-   :local:
-
 Valid section names
 ===================
 
