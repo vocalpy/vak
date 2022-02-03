@@ -52,7 +52,11 @@ test = [
     "tweetynet >=0.7.0",
 ]
 doc = [
-    "sphinx >=3.4.1"
+    "furo >=2022.1.2",
+    "sphinx >=3.4.1",
+    "sphinxext-opengraph  >=0.5.1",
+    "sphinx-copybutton >=0.4.0",
+    "sphinx-autobuild >= 2021.3.14",
 ]
 
 [project.urls]

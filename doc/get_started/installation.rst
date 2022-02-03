@@ -10,9 +10,6 @@ We recommend ``conda`` for most users. For more detail, please see :ref:`why-con
 We also recommend installing ``vak`` into a virtual environment.
 For an explanation, please see :ref:`why-virtualenv`.
 
-.. contents::
-   :local:
-
 with ``conda``
 ==============
 
