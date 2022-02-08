@@ -47,17 +47,33 @@ To install ``vak`` with ``pip``, run:
 
 .. code-block:: shell
 
-   (.venv) /home/you/code/ $ pip install vak
+   pip install vak
+
+.. _install-tweetynet:
 
 Installing a neural network model
 =================================
 
 Finally you'll want to install a neural network model to train!
-Currently this is done with ``pip``. You can use ``pip`` inside a ``conda`` environment.
+``vak`` was developed to benchmark a neural network model,
+`TweetyNet <https://github.com/yardencsGitHub/tweetynet>`_.
+We use this model in the tutorial: :ref:`autoannotate`.
+
+With ``conda``
+--------------
 
 .. code-block:: shell
 
-   (vak-env) /home/you/code/ $ pip install tweetynet
+   conda install tweetynet -c conda-forge
+
+With ``pip``
+------------
+(You can use ``pip`` inside a ``conda`` environment.)
+
+
+.. code-block:: shell
+
+   pip install tweetynet
 
 
 .. _why-conda:
