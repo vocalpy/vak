@@ -1,8 +1,8 @@
 :hide-toc:
 
-================
-``vak`` वाच् *vāc*
-================
+=======
+``vak``
+=======
 
 a neural network toolbox for animal vocalizations and bioacoustics
 ==================================================================

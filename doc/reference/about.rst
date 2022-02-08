@@ -1,8 +1,8 @@
 .. _about:
 
-======================
-About ``vak`` वाच् *vāc*
-======================
+=============
+About ``vak``
+=============
 
 The ``vak`` library has two main goals:
 
