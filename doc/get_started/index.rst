@@ -22,3 +22,10 @@ To do so, run through :ref:`this hands-on tutorial <autoannotate>`
 where you'll automate annotation of birdsong syllables
 using a neural network,
 `TweetyNet <https://github.com/yardencsGitHub/tweetynet>`_.
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+
+   installation
+   autoannotate
