@@ -79,9 +79,9 @@ It will look something like this:
 Basically any time you run ``vak``, what you type at the prompt
 will have the following form:
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ vak command config.toml
+   vak command config.toml
 
 where ``command`` will be an actual command, like ``prep``, and ``config.toml``
 will be the name of an actual configuration file, that let you configure
@@ -90,9 +90,9 @@ how a command will run.
 To see a list of available commands when you are at the command line,
 you can say:
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ vak --help
+   vak --help
 
 The ``.toml`` files are set up so that each section corresponds to one
 of the commands. For example, there is a section called ``[PREP]`` where you
@@ -191,9 +191,9 @@ or create the directory using the File Explorer or the ``mkdir`` command from th
 After you have changed these two options (we'll ignore the others for now),
 you can run the command in the terminal that prepares datasets:
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ vak prep gy6or6_train.toml
+   vak prep gy6or6_train.toml
 
 Notice that the command has the structure we described above, ``vak command config.toml`` \.
 
@@ -208,6 +208,11 @@ automatically adds the path to that file to the ``[TRAIN]`` section of the ``con
 -------------------------------
 
 Now that you've prepared the dataset, you can train a neural network with it.
+In this example we will train ``TweetyNet``,
+a neural network architecture that annotates vocalizations
+(see: https://github.com/yardencsGitHub/tweetynet ).
+Please make sure you have installed it following the steps in
+:ref:`install-tweetynet` in :ref:`installation`.
 
 Before we start training, there is one option you have to change in the ``[TRAIN]`` section
 of the ``config.toml`` file, ``root_results_dir``,
@@ -236,12 +241,10 @@ every time that you run the ``train`` command.
 
 To train a neural network, you simply run:
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ vak train gy6o6_train.toml
+   vak train gy6o6_train.toml
 
-In this example we are training ``TweetyNet``\ (https://github.com/yardencsGitHub/tweetynet_),
-the default neural network architecture built into ``vak``.
 You will see output to the console as the network trains. The options in the ``[TRAIN]`` section of
 the ``config.toml`` file tell ``vak`` to train until the error (measured on a separate "validation" set)
 has not improved for four epochs (an epoch is one iteration through the entire training data).
@@ -285,9 +288,9 @@ to tell ``vak`` where to save the file it creates that contains information abou
 This part is the same as before too: after you change these options,
 you'll run the ``prep`` command to prepare the dataset for prediction:
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ vak prep gy6or6_predict.toml
+   vak prep gy6or6_predict.toml
 
 As you might guess from last time, ``vak`` will make files for the dataset and a .csv file that points to those,
 and then add the path to that file as the option ``csv_path`` in the ``[PREDICT]`` section of the ``config.toml`` file.
@@ -378,9 +381,9 @@ Finally, after adding these paths,
 you can run the ``predict`` command to generate annotation files from the labels
 predicted by the trained neural network.
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ vak predict gy6or6_predict.toml
+   vak predict gy6or6_predict.toml
 
 That's it! With those four simple steps you can train neural networks and then use the
 trained networks to predict annotations for vocalizations.
