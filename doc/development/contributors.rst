@@ -127,9 +127,9 @@ Steps
 
 Clone the repository from Github using ``git``
 
-.. code-block:: console
+.. code-block:: shell
 
-    you@your-computer: ~/Documents $ git clone https://github.com/NickleDave/vak
+   git clone https://github.com/NickleDave/vak
 
 2. Create a virtual environment
 ###############################
@@ -138,19 +138,19 @@ The repository includes a Makefile that automates setting up a development envir
 
 To create a virtual environment, run the following:
 
-.. code-block:: console
+.. code-block:: shell
 
    make venv
 
 You can then activate the virtual environment by executing:
 
-.. code-block:: console
+.. code-block:: shell
 
    . ./.venv/activate
 
 on MacOS and Linux, or
 
-.. code-block:: console
+.. code-block:: shell
 
    ./.venv/activate.bat
 
@@ -180,7 +180,7 @@ as ``vak`` develops, so they are kept separate.
 
 To download these files, run:
 
-.. code-block:: console
+.. code-block:: shell
 
    make test-data-download-source
 
@@ -194,7 +194,7 @@ to run this script.
 
 To download these files, run:
 
-.. code-block:: console
+.. code-block:: shell
 
    make test-data-download-generated
 
@@ -235,15 +235,15 @@ that is set up as if it were a Python package.
 We use the `pytest <https://pytest.org>`_ framework to run the test suite.
 To run the entire test suite, run ``pytest`` from the command line:
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ pytest
+   pytest
 
 You can also run tests in just one test script using:
 
-.. code-block:: console
+.. code-block:: shell
 
-   $ pytest ./tests/NAME_OF_TEST_FILE.py
+   pytest ./tests/NAME_OF_TEST_FILE.py
 
 Please write tests for your code so that we can be sure that it won't break any of the
 existing functionality.
