@@ -20,7 +20,7 @@ authors:
     email: yardencsmail@gmail.com
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.2604340
+    value: 10.5281/zenodo.5828090
 repository-code: 'https://github.com/NickleDave/vak'
 url: 'https://vak.readthedocs.io'
 repository-artifact: 'https://pypi.org/project/vak/'
@@ -30,6 +30,6 @@ keywords:
   - neural networks
   - bioacoustics
 license: BSD-3-Clause
-commit: ad85cee297151f601b452437956fe3fbe24d2519
-version: 0.4.0b6
-date-released: '2021-11-23'
+commit: 5d1b5325306699fdaf4caacd92f9bfb864d00649
+version: 0.4.1
+date-released: '2022-01-07'
