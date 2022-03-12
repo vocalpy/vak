@@ -22,16 +22,14 @@ network algorithms on tasks related to animal vocalizations
 
 Currently the main use is automated **annotation** of vocalizations and other animal sounds.
 By **annotation**, we mean something like the example of annotated birdsong shown below:  
-<img src="./doc/images/annotation_example.png" alt="spectrogram of birdsong with syllables annotated" width="400">
+<p align="center">"<img src="./doc/images/annotation-example.png" alt="spectrogram of birdsong with syllables annotated" width="400"></p>
 
 You give `vak` training data in the form of audio or spectrogram files with annotations, 
 and then `vak` helps you train neural network models 
 and use the trained models to predict annotations for new files.
 
-We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).
-See pre-print here: [https://www.biorxiv.org/content/10.1101/2020.08.28.272088v2.full.pdf](https://www.biorxiv.org/content/10.1101/2020.08.28.272088v2.full.pdf)  
-We would love to help you use `vak` to benchmark your own model. 
-If you have questions, please feel free to [raise an issue](https://github.com/NickleDave/vak/issues).
+We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).  
+Please see the eLife article here: https://elifesciences.org/articles/63853  
 
 ### Installation
 Short version:
@@ -60,7 +58,7 @@ $ #                                 ^ notice additional channel!
 For more details, please see:
 https://vak.readthedocs.io/en/latest/get_started/installation.html
 
-We currently test `vak` on Ubuntu and MacOS. We have run on Windows and 
+We test `vak` on Ubuntu and MacOS. We have run on Windows and 
 know of other users successfully running `vak` on that operating system, 
 but installation on Windows may require some troubleshooting.
 A good place to start is by searching the [issues](https://github.com/NickleDave/vak/issues).
@@ -70,7 +68,7 @@ A good place to start is by searching the [issues](https://github.com/NickleDave
 Currently the easiest way to work with `vak` is through the command line.
 ![terminal showing vak help command output](./doc/images/terminalizer/vak-help.gif)
 
-You run it with `config.toml` files, using one of a handful of commands.
+You run it with configuration files, using one of a handful of commands.
 
 For more details, please see the "autoannotate" tutorial here:  
 https://vak.readthedocs.io/en/latest/tutorial/autoannotate.html
@@ -81,7 +79,7 @@ Please see the How-To Guides in the documentation here:
 https://vak.readthedocs.io/en/latest/howto/howto.html
 
 ### Support / Contributing
-Currently we are handling support through the issue tracker on GitHub:  
+We handle support through the issue tracker on GitHub:  
 https://github.com/NickleDave/vak/issues  
 Please raise an issue there if you run into trouble.  
 That would be a great place to start if you are interested in contributing, as well.
@@ -94,7 +92,7 @@ If you use vak for a publication, please cite its DOI:
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)  
 is [here](./LICENSE).
 
-### Misc
+### About
 For more on the history of `vak` please see: https://vak.readthedocs.io/en/latest/reference/about.html
 
 #### "Why this name, vak?"
