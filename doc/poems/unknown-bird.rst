@@ -52,5 +52,5 @@ by `W.S. Merwin <https://en.wikipedia.org/wiki/W._S._Merwin>`_
 | with a sound of our own
 
 From The Pupil, 2002 and
-`Migrations, New & Selected Poems, 2005. <https://www.coppercanyonpress.org/books/migration-new-and-selected-poems-by-w-s-merwin/>`_.
-Shared as Poem of the Week on `The Merwin Conservancy<https://merwinconservancy.org/2016/01/poem-of-the-week-unknown-bird/>`_.
+`Migrations, New & Selected Poems, 2005 <https://www.coppercanyonpress.org/books/migration-new-and-selected-poems-by-w-s-merwin/>`_.
+Shared as Poem of the Week on `The Merwin Conservancy <https://merwinconservancy.org/2016/01/poem-of-the-week-unknown-bird/>`_.
