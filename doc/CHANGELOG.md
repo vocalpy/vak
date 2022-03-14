@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - make minor revisions to docs
   [#443](https://github.com/NickleDave/vak/pull/443).
   Fixes [#439](https://github.com/NickleDave/vak/issues/439).
+- rewrite docs in Markdown / `MyST` wherever possible; 
+  install MyST parser for Sphinx
+  [#463](https://github.com/NickleDave/vak/pull/463).
+  Fixes [#384](https://github.com/NickleDave/vak/issues/384).
 
 ## [0.4.1]
 ### Changed
