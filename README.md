@@ -102,7 +102,7 @@ Also I guess it has [something to do with speech](https://en.wikipedia.org/wiki/
 "vak" rhymes with "squawk" and "talk".
 
 #### Does your library have any poems?
-[Yes.](https://vak.readthedocs.io/en/latest//poems/poems.html)
+[Yes.](https://vak.readthedocs.io/en/latest/poems/index.html)
 
 ## Contributors ✨
 
