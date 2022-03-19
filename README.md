@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
@@ -120,6 +120,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/marichard123"><img src="https://avatars.githubusercontent.com/u/30010668?v=4?s=100" width="100px;" alt=""/><br /><sub><b>marichard123</b></sub></a><br /><a href="https://github.com/NickleDave/vak/commits?author=marichard123" title="Documentation">📖</a></td>
     <td align="center"><a href="https://www.utsouthwestern.edu/labs/roberts/"><img src="https://avatars.githubusercontent.com/u/46657075?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Therese Koch</b></sub></a><br /><a href="https://github.com/NickleDave/vak/commits?author=theresekoch" title="Documentation">📖</a> <a href="https://github.com/NickleDave/vak/issues?q=author%3Atheresekoch" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/alyndanoel"><img src="https://avatars.githubusercontent.com/u/48728732?v=4?s=100" width="100px;" alt=""/><br /><sub><b>alyndanoel</b></sub></a><br /><a href="#ideas-alyndanoel" title="Ideas, Planning, & Feedback">🤔</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/adamfishbein"><img src="https://avatars.githubusercontent.com/u/70346566?v=4?s=100" width="100px;" alt=""/><br /><sub><b>adamfishbein</b></sub></a><br /><a href="https://github.com/NickleDave/vak/commits?author=adamfishbein" title="Documentation">📖</a></td>
   </tr>
 </table>
 
