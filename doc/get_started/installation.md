@@ -12,16 +12,17 @@ For an explanation, please see {ref}`why-virtualenv`.
 
 ### on Mac and Linux
 
-To create a new virtual environment that contains `vak` and all the libraries it depends on, run:
+To create a new virtual environment that contains `vak` 
+and all the libraries it depends on, run:
 
 ```shell
-$ conda create --name vak-env vak -c conda-forge
+conda create --name vak-env vak -c conda-forge
 ```
 
 To install `vak` into an existing environment, run:
 
 ```shell
-(existing-env) $ conda install vak -c conda-forge
+conda install vak -c conda-forge
 ```
 
 ### on Windows
@@ -29,10 +30,16 @@ To install `vak` into an existing environment, run:
 On Windows, you need to add an additional channel, `pytorch`.
 You can do this by repeating the `-c` option more than once.
 
-E.g, to install `vak` into an existing environment on Windows:
+E.g, to create a new environment with `vak` installed on Windows, do
+
+```shell
+conda create --name vak-env vak -c conda-forge -c pytorch
+```
+
+and to install `vak` into an existing environment on Windows
 
 ```powershell
-(existing-env) C:\Users\You> conda install vak -c conda-forge -c pytorch
+conda install vak -c conda-forge -c pytorch
 ```
 
 ## with `pip`
