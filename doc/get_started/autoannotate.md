@@ -33,15 +33,15 @@ Before going through this tutorial, you'll need to:
    or [notepad++](https://notepad-plus-plus.org/)
 3. download example data (from this dataset: <https://figshare.com/articles/Bengalese_Finch_song_repository/4805749> )
 
-> - one day of birdsong, for
->   {download}`training data (click to download) <https://ndownloader.figshare.com/files/9537229>`
-> - another day, for
->   {download}`prediction data (click to download) <https://ndownloader.figshare.com/files/9537232>`
-> - Be sure to extract the files from these archives!
->   On Windows you can use programs like [WinRAR](https://www.rarlab.com/)
->   or [WinZIP](https://www.winzip.com/win/en/tar-gz-file.html),
->   on mac you can double click the `.tar.gz` file, and on
->   (Ubuntu) linux you can right-click and select the `Extract to` option.
+   - one day of birdsong, for training data (click to download)  
+     {download}`https://ndownloader.figshare.com/files/9537229`
+   - another day, to use to predict annnotations (click to download)
+     {download}`https://ndownloader.figshare.com/files/9537232`
+   - Be sure to extract the files from these archives!
+     On Windows you can use programs like [WinRAR](https://www.rarlab.com/)
+     or [WinZIP](https://www.winzip.com/win/en/tar-gz-file.html),
+     on mac you can double click the `.tar.gz` file, and on
+     (Ubuntu) linux you can right-click and select the `Extract to` option.
 
 4. download the corresponding configuration files (click to download):
    {download}`gy6or6_train.toml <../toml/gy6or6_train.toml>`
