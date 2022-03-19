@@ -10,7 +10,12 @@ from scipy.io import loadmat
 import soundfile
 
 
-AUDIO_FORMAT_FUNC_MAP = {"cbin": load_cbin, "wav": soundfile.read}
+AUDIO_FORMAT_FUNC_MAP = {
+    "cbin": load_cbin,
+    "flac": soundfile.read,
+    "ogg": soundfile.read,
+    "wav": soundfile.read,
+}
 
 VALID_AUDIO_FORMATS = list(AUDIO_FORMAT_FUNC_MAP.keys())
 
