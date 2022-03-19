@@ -47,6 +47,13 @@ Before going through this tutorial, you'll need to:
    {download}`gy6or6_train.toml <../toml/gy6or6_train.toml>`
    and {download}`gy6or6_predict.toml <../toml/gy6or6_predict.toml>`
 
+:::{note}
+This tutorial uses audio files in a `.cbin` format. 
+The `vak` library can load common audio formats (WAV, FLAC, OGG).
+If you are wondering about the `.cbin` format, 
+please see <https://github.com/NickleDave/evfuncs>.
+:::
+
 ## Overview
 
 There are four steps to using `vak` to automate annotating vocalizations
