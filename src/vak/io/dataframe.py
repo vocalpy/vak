@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from crowsetta import Transcriber
+import crowsetta
 import numpy as np
 
 from . import audio, spect
@@ -108,11 +108,15 @@ def from_files(
             annot_files = annotation.files_from_dir(
                 annot_dir=data_dir, annot_format=annot_format
             )
-            scribe = Transcriber(format=annot_format)
+            scribe = crowsetta.Transcriber(format=annot_format)
             annot_list = scribe.from_file(annot_files)
         else:
-            scribe = Transcriber(format=annot_format)
+            scribe = crowsetta.Transcriber(format=annot_format)
             annot_list = scribe.from_file(annot_file)
+        if isinstance(annot_list, crowsetta.Annotation):
+            # if e.g. only one annotated audio file in directory, wrap in a list to make iterable
+            # fixes https://github.com/NickleDave/vak/issues/467
+            annot_list = [annot_list]
     else:  # if annot_format not specified
         annot_list = None
 
