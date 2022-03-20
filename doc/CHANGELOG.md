@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#463](https://github.com/NickleDave/vak/pull/463).
   Fixes [#384](https://github.com/NickleDave/vak/issues/384).
 
+### Fixed
+- fix bug that caused `vak prep` to crash 
+  when there was only one file in a data directory
+  [#483](https://github.com/NickleDave/vak/pull/483).
+  Fixes [#467](https://github.com/NickleDave/vak/issues/467).
+
 ## [0.4.1]
 ### Changed
 - switch to using `flit` to build/publish, drop `poetry`
