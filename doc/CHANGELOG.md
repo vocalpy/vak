@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when there was only one file in a data directory
   [#483](https://github.com/NickleDave/vak/pull/483).
   Fixes [#467](https://github.com/NickleDave/vak/issues/467).
+- fix bug that caused `vak prep` to crash 
+  when a `.not.mat` annotation file only had a single annotated segment
+  [#488](https://github.com/NickleDave/vak/pull/488).
+  Fixes [#466](https://github.com/NickleDave/vak/issues/466).
 
 ## [0.4.1]
 ### Changed
