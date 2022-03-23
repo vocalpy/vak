@@ -8,4 +8,5 @@
 
 cli
 config
+spect_file_format
 ```
