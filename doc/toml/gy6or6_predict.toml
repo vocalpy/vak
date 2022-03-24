@@ -18,7 +18,6 @@ batch_size = 1
 num_workers = 4
 device = "cuda"
 spect_scaler_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/StandardizeSpect"
-csv_path = "/PATH/TO/DATA/vak/prep/predict/032412_prep_200209_123936.csv"
 output_dir = "/PATH/TO/DATA/vak/prep/predict"
 annot_csv_filename = "gy6or6.032312.annot.csv"
 majority_vote = true
