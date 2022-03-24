@@ -6,7 +6,6 @@ annot_format = "notmat"
 labelset = "iabcdefghjk"
 train_dur = 50
 val_dur = 15
-test_dur = 30
 
 [SPECT_PARAMS]
 fft_size = 512
@@ -24,7 +23,6 @@ normalize_spectrograms = true
 val_step = 400
 ckpt_step = 200
 patience = 4
-csv_path = "/PATH/TO/DATA/prep/train/032312_prep_200209_123939.csv"
 
 [TweetyNet.optimizer]
 lr = 0.001
