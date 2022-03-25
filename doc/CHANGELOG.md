@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   spectrogram files 
   [#494](https://github.com/NickleDave/vak/pull/494).
   Fixes [#492](https://github.com/NickleDave/vak/issues/492).
+- add more detail to explanation of how to use `'csv'` format 
+  for annotation
+  [#495](https://github.com/NickleDave/vak/pull/495).
+  Fixes [#491](https://github.com/NickleDave/vak/issues/491).
 
 ### Changed
 - make minor revisions to docs
