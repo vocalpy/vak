@@ -36,6 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   install MyST parser for Sphinx
   [#463](https://github.com/NickleDave/vak/pull/463).
   Fixes [#384](https://github.com/NickleDave/vak/issues/384).
+- require `crowsetta` version 3 .4.0 or greater; 
+  in this version, annotation format `'csv'` is now named `'generic-seq'` 
+  (and the name `'csv'` will stop working in the next version);
+  format `'simple-csv'` renamed to `'simple-seq'`
+  [#496](https://github.com/NickleDave/vak/pull/496).
+  Fixes [#497](https://github.com/NickleDave/vak/issues/497).
 
 ### Fixed
 - fix bug that caused `vak prep` to crash 
