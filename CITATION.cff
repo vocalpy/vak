@@ -30,6 +30,6 @@ keywords:
   - neural networks
   - bioacoustics
 license: BSD-3-Clause
-commit: 5d1b5325306699fdaf4caacd92f9bfb864d00649
+commit: ad802dcad34b524533b765e5dfb3709b308a3152
 version: 0.4.2
 date-released: '2022-03-29'
