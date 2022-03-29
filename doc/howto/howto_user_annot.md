@@ -19,9 +19,9 @@ You can easily create files in this format with the `pandas`  library,
 as we show with an example script below.
 The second approach is to convert your annotations 
 to a more generic format built into `crowsetta`, 
-called `'generic-seq'`.
-The `'generic-seq'` is designed to convert 
-a large set of annotation files into a single file.
+called `'generic-seq'`, 
+that is designed to represent 
+a large set of annotations as a single `.csv` file.
 In the sections below, we walk through both methods.
 
 ## Method 1: converting your annotations to the `'simple-seq'` format
@@ -35,7 +35,7 @@ per audio file or spectrogram file.
 This is likely to be the case if you are using apps like Praat or Audacity.
 An example of such a format is the Audacity 
 [standard label track format](https://manual.audacityteam.org/man/importing_and_exporting_labels.html#Standard_.28default.29_format), 
-exported to `.txt` files when you annotate with 
+exported to `.txt` files, that you would get if you were to annotate with  
 [region labels](https://manual.audacityteam.org/man/label_tracks.html#type).
 
 Below we provide an example of how you would write 
@@ -50,21 +50,26 @@ annotation file for each file you have with a vocalization in it,
 either an audio file or an array file containing a spectrogram.
 In other words, a directory of your data looks something like this:
 
-```
+```console
 BB_SGP16-1___20160521_214723.txt
 BB_SGP16-1___20160521_214723.wav
 BBY15-4___20150907_211645.txt
 BBY15-4___20150907_211645.wav
 ... # more files here
-DB_1-WWS16-2___20160822_203501.csv
 DB_1-WWS16-2___20160822_203501.txt
 DB_1-WWS16-2___20160822_203501.wav
 ```
 
-Notice that each `.wav` audio file has  
+Notice that each `.wav` audio file has 
 a corresponding `.txt` file with annotations.
 Each of the `.txt` files has columns 
 that could be imported into a GUI application, e.g. Audacity.
+
+:::{note}
+Those files are taken from this dataset:  
+<https://figshare.com/articles/dataset/Wav_and_label_files_used_in_the_workshop/4714387>  
+You can download them to work through the example yourself.
+:::
 
 Here's we use the `cat` command in the terminal 
 to dump out the contents of the first `.txt` file:
@@ -82,14 +87,15 @@ and move the cursor around).
 Lastly we see that there is no *header*, that is, 
 no first row with column names, such as "start time", "stop time", and "name".
 
-What we want is a comma-separated file, i.e. a `.csv`, 
+What we want is to convert each `.txt` file to a comma-separated file
+(a `.csv`) in the `'simple-seq'` format,
 with a header that has the specific column names that `crowsetta` recognizes.
 We can easily create such files with `pandas`. 
-We will write a script to create  a `.csv` file for each `.txt` file.
-After running the script, then, 
+We will write a script to do so.
+After running the script,  
 we will have a `.csv` file for each `.txt` file in our directory, as shown:
 
-```
+```console
 BB_SGP16-1___20160521_214723.csv
 BB_SGP16-1___20160521_214723.txt
 BB_SGP16-1___20160521_214723.wav
@@ -101,12 +107,6 @@ DB_1-WWS16-2___20160822_203501.csv
 DB_1-WWS16-2___20160822_203501.txt
 DB_1-WWS16-2___20160822_203501.wav
 ```
-
-:::{note}
-Those files are taken from this dataset:  
-<https://figshare.com/articles/dataset/Wav_and_label_files_used_in_the_workshop/4714387>  
-You can download them to work through the example yourself.
-:::
 
 ### Example script for converting `.txt` files to the `'simple-seq'` format
 
