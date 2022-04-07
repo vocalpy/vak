@@ -1,3 +1,10 @@
+<br>
+<div align="center"><img src="./doc/images/logo/vak-logo-primary.png" width="400"></div>
+
+<hr>
+
+## a neural network toolbox for animal vocalizations and bioacoustics
+
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
@@ -7,8 +14,6 @@
 [![Build Status](https://github.com/NickleDave/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/NickleDave/vak/actions/workflows/ci-linux.yml/badge.svg)
 [![Build Status](https://github.com/NickleDave/vak/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/NickleDave/vak/actions/workflows/ci-macos.yml/badge.svg)
 [![codecov](https://codecov.io/gh/NickleDave/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/NickleDave/vak)
-# vak
-## a neural network toolbox for animal vocalizations and bioacoustics
 
 `vak` is a library for researchers studying animal vocalizations--such as 
 birdsong, bat calls, and even human speech--although it may be useful 
