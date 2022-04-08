@@ -98,6 +98,13 @@ html_theme = 'furo'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []  # empty to suppress warning
 
+html_logo = "./images/logo/vak-logo-primary.png"
+
+html_theme_options = {
+    "sidebar_hide_name": True,
+}
+
+
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
