@@ -102,6 +102,14 @@ html_logo = "./images/logo/vak-logo-primary.png"
 
 html_theme_options = {
     "sidebar_hide_name": True,
+    "light_css_variables": {
+        "color-brand-primary": "#2AB991",
+        "color-brand-content": "#2AB991",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#2AB991",
+        "color-brand-content": "#2AB991",
+    },
 }
 
 
