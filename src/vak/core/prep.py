@@ -51,7 +51,7 @@ def prep(
         format of audio files. One of {'wav', 'cbin'}.
         Default is None, but either audio_format or spect_format must be specified.
     spect_format : str
-        format of files containg spectrograms as 2-d matrices. One of {'mat', 'npz'}.
+        format of files containing spectrograms as 2-d matrices. One of {'mat', 'npz'}.
         Default is None, but either audio_format or spect_format must be specified.
     spect_params : dict, vak.config.SpectParams
         parameters for creating spectrograms. Default is None.
