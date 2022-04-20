@@ -1,7 +1,7 @@
 """command-line interface functions for training,
 creating learning curves, etc."""
 
-from . import cli, eval, learncurve, predict, prep, train
+from . import cli, eval, learncurve, predict, prep, train, tain_checkpoint
 
 
 __all__ = [
@@ -11,4 +11,5 @@ __all__ = [
     "predict",
     "prep",
     "train",
+    "train_checkpoint",
 ]

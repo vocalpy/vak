@@ -14,6 +14,7 @@ VALID_PURPOSES = frozenset(
         "learncurve",
         "predict",
         "train",
+        "train_checkpoint",
     ]
 )
 
@@ -43,7 +44,7 @@ def prep(
     data_dir : str, Path
         path to directory with files from which to make dataset
     purpose : str
-        one of {'train', 'predict', 'learncurve'}
+        one of {'train', 'predict', 'learncurve', 'train_checkpoint'}
     output_dir : str
         Path to location where data sets should be saved.
         Default is None, in which case data sets to `data_dir`.
@@ -173,7 +174,7 @@ def prep(
 
     # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
     # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
-    if (purpose == "train" or purpose == "learncurve") and (
+    if (purpose == "train" or purpose == "learncurve" or purpose == "train_checkpoint") and (
         (train_dur is not None and train_dur > 0)
         and (val_dur is None or val_dur == 0)
         and (test_dur is None or val_dur == 0)

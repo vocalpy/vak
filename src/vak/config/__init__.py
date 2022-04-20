@@ -10,5 +10,6 @@ from . import (
     prep,
     spect_params,
     train,
+    train_checkpoint,
     validators,
 )

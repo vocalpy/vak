@@ -8,6 +8,7 @@ from .predict import PredictConfig
 from .prep import PrepConfig
 from .spect_params import SpectParamsConfig
 from .train import TrainConfig
+from .train_checkpoint import Train_CheckpointConfig
 
 
 @attr.s
@@ -30,6 +31,8 @@ class Config:
         represents ``[PREDICT]`` section of config.toml file.
     learncurve : vak.config.learncurve.LearncurveConfig
         represents ``[LEARNCURVE]`` section of config.toml file
+    train_checkpoint : vak.config.train_checkpoint.Train_CheckpointConfig
+        represents ``[TRAIN_CHECKPOINT]`` section of config.toml file
     """
 
     spect_params = attr.ib(
@@ -41,6 +44,7 @@ class Config:
 
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
+    train_checkpoint = attr.ib(validator=optional(instance_of(Train_CheckpointConfig)), default=None)
     eval = attr.ib(validator=optional(instance_of(EvalConfig)), default=None)
     predict = attr.ib(validator=optional(instance_of(PredictConfig)), default=None)
     learncurve = attr.ib(

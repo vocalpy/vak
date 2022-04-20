@@ -3,7 +3,7 @@ from .train import train
 from .learncurve import learning_curve
 from .predict import predict
 from .prep import prep
-
+from .train_checkpoint import train_checkpoint
 
 COMMAND_FUNCTION_MAP = {
     "prep": prep,
@@ -11,6 +11,7 @@ COMMAND_FUNCTION_MAP = {
     "eval": eval,
     "predict": predict,
     "learncurve": learning_curve,
+    "train_checkpoint": train_checkpoint,
 }
 
 CLI_COMMANDS = tuple(COMMAND_FUNCTION_MAP.keys())
@@ -22,7 +23,7 @@ def cli(command, config_file):
     Parameters
     ----------
     command : string
-        One of {'prep', 'train', 'eval', 'predict', 'learncurve'}
+        One of {'prep', 'train', 'eval', 'predict', 'learncurve', 'train_checkpoint'}
     config_file : str, Path
         path to a config.toml file
     """

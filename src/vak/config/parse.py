@@ -11,6 +11,7 @@ from .predict import PredictConfig
 from .prep import PrepConfig
 from .spect_params import SpectParamsConfig
 from .train import TrainConfig
+from .train_checkpoint import Train_CheckpointConfig
 from .validators import are_sections_valid, are_options_valid
 
 SECTION_CLASSES = {
@@ -21,6 +22,7 @@ SECTION_CLASSES = {
     "PREP": PrepConfig,
     "SPECT_PARAMS": SpectParamsConfig,
     "TRAIN": TrainConfig,
+    "TRAIN_CHECKPOINT": Train_CheckpointConfig,
 }
 
 REQUIRED_OPTIONS = {
@@ -50,6 +52,12 @@ REQUIRED_OPTIONS = {
     "TRAIN": [
         "models",
         "root_results_dir",
+    ],
+    "TRAIN_CHECKPOINT": [
+        "models",
+        "root_results_dir",
+        "checkpoint_path",
+>       "labelmap_path",
     ],
 }
 
