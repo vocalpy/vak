@@ -253,11 +253,11 @@ def learning_curve(
             train(
                 model_config_map,
                 this_train_dur_this_replicate_csv_path,
-                labelset,
                 window_size,
                 batch_size,
                 num_epochs,
                 num_workers,
+                labelset=labelset,
                 results_path=this_train_dur_this_replicate_results_path,
                 spect_key=spect_key,
                 timebins_key=timebins_key,
