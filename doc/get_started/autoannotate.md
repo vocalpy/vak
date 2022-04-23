@@ -18,6 +18,15 @@ Below is an example of some annotated Bengalese finch song, which is what we'll 
 :scale: 50 %
 ```
 
+:::{hint}
+`vak` has built-in support for widely-used annotation formats.
+Even if your data is not annotated with one of these formats, 
+you can use `vak` by converting your annotations to a simple `.csv` format 
+that is easy to create with Python libraries like `pandas`.
+For more information, please see:  
+{ref}`howto-user-annot`
+:::
+
 The tutorial is aimed at beginners: you don't need to know how to code.
 To work with `vak` you will use simple configuration files that you run from the command line.
 If you're not sure what is meant by "configuration file" or "command line",
