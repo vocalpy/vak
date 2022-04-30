@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Help
+    url: https://forum.vocalpy.org/c/help
+    about: Ask questions and get help.
+  - name: Showcase
+    url: https://forum.vocalpy.org/c/showcase
+    about: Show off something you have made.
