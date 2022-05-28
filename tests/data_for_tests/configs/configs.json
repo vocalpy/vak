@@ -57,6 +57,30 @@
       "annot_format": "yarden"
     },
     {
+      "filename": "tweetynet_train_continue_audio_cbin_annot_notmat.toml",
+      "model": "tweetynet",
+      "config_type": "train_continue",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "tweetynet_train_continue_audio_wav_annot_birdsongrec.toml",
+      "model": "tweetynet",
+      "config_type": "train_continue",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "birdsong-recognition-dataset"
+    },
+    {
+      "filename": "tweetynet_train_continue_spect_mat_annot_yarden.toml",
+      "model": "tweetynet",
+      "config_type": "train_continue",
+      "audio_format": null,
+      "spect_format": "mat",
+      "annot_format": "yarden"
+    },
+    {
       "filename": "teenytweetynet_eval_audio_cbin_annot_notmat.toml",
       "model": "teenytweetynet",
       "config_type": "eval",
@@ -108,6 +132,30 @@
       "filename": "teenytweetynet_train_spect_mat_annot_yarden.toml",
       "model": "teenytweetynet",
       "config_type": "train",
+      "audio_format": null,
+      "spect_format": "mat",
+      "annot_format": "yarden"
+    },
+    {
+      "filename": "teenytweetynet_train_continue_audio_cbin_annot_notmat.toml",
+      "model": "teenytweetynet",
+      "config_type": "train_continue",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat"
+    },
+    {
+      "filename": "teenytweetynet_train_continue_audio_wav_annot_birdsongrec.toml",
+      "model": "teenytweetynet",
+      "config_type": "train_continue",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "birdsong-recognition-dataset"
+    },
+    {
+      "filename": "teenytweetynet_train_continue_spect_mat_annot_yarden.toml",
+      "model": "teenytweetynet",
+      "config_type": "train_continue",
       "audio_format": null,
       "spect_format": "mat",
       "annot_format": "yarden"
