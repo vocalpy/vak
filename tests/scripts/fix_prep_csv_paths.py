@@ -1,3 +1,7 @@
+"""This script gets run by continuous integration 
+(in ./github/workflows/ci-{os}.yml files)
+so that all the paths are correct on the virtual machines
+"""
 from pathlib import Path
 
 import pandas as pd
