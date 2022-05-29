@@ -55,6 +55,15 @@ class TrainConfig:
         number of validation steps to wait without performance on the
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
+    checkpoint_path : str
+        path to directory with checkpoint files saved by Torch, to reload model. 
+        Default is None, in which case a new model is initialized. 
+    spect_scaler_path : str
+        path to a saved SpectScaler object used to normalize spectrograms.
+        If spectrograms were normalized and this is not provided, will give
+        incorrect results. Default is None.
+    labelmap_path : str
+        path to 'labelmap.json' file. Default is None.
     """
 
     # required
@@ -106,5 +115,20 @@ class TrainConfig:
     patience = attr.ib(
         converter=converters.optional(int),
         validator=validators.optional(instance_of(int)),
+        default=None,
+    )
+    checkpoint_path = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_file),
+        default=None,
+    )
+    spect_scaler_path = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_file),
+        default=None,
+    )
+    labelmap_path = attr.ib(
+        converter=converters.optional(expanded_user_path),
+        validator=validators.optional(is_a_file),
         default=None,
     )

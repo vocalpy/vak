@@ -211,15 +211,27 @@ def fix_options_in_configs(config_paths, command):
         # these are the only options whose values we need to change
         # and they are the same for both predict and eval
         checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
-        spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
+        if train_config_toml['TRAIN']['normalize_spectrograms']:
+            spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
+        else:
+            spect_scaler_path = None
         labelmap_path = sorted(results_dir.glob("labelmap.json"))[0]
 
         # now add these values to corresponding options in predict / eval config
         with config_to_fix.open("r") as fp:
             config_toml = toml.load(fp)
-        config_toml[command.upper()]["checkpoint_path"] = str(checkpoint_path)
-        config_toml[command.upper()]["spect_scaler_path"] = str(spect_scaler_path)
-        config_toml[command.upper()]["labelmap_path"] = str(labelmap_path)
+        if command == 'train_continue':
+            section = 'TRAIN'
+        else:
+            section = command.upper()
+        config_toml[section]["checkpoint_path"] = str(checkpoint_path)
+        if spect_scaler_path:
+            config_toml[section]["spect_scaler_path"] = str(spect_scaler_path)
+        else:
+            if 'spect_scaler_path' in config_toml[section]:
+                # remove any existing 'spect_scaler_path' option
+                del config_toml[section]["spect_scaler_path"]
+        config_toml[section]["labelmap_path"] = str(labelmap_path)
         with config_to_fix.open("w") as fp:
             toml.dump(config_toml, fp)
 
@@ -231,6 +243,7 @@ COMMANDS = (
     "learncurve",
     "eval",
     "predict",
+    "train_continue",
 )
 
 
@@ -300,8 +313,20 @@ def main():
                 for config_path in config_paths
                 if config_path.name.startswith(model) and command in config_path.name
             ]
+            if command == "train":
+                # need to remove 'train_continue' configs
+                command_config_paths = [
+                    config_path for config_path in command_config_paths 
+                    if 'continue' not in config_path.name
+                ]
+            elif command == "train_continue":
+                # only keep 'train_continue' configs
+                command_config_paths = [
+                    config_path for config_path in command_config_paths 
+                    if 'continue' in config_path.name
+                ]
             print(f"using the following configs:\n{command_config_paths}")
-            if command == "predict" or command == "eval":
+            if command in ("predict", "eval", "train_continue"):
                 # fix values for required options in predict / eval configs
                 # using results from running the corresponding train configs.
                 # this only works if we ran the train configs already,
@@ -313,8 +338,12 @@ def main():
                 ]
                 fix_options_in_configs(copied_config_paths_this_model, command)
 
-            for config_path in command_config_paths:
-                vak.cli.cli.cli(command, config_path)
+            if command == 'train' or command == 'learncurve':
+                # we run `train` to get results needed for `eval', 'predict' and continuing 'train';
+                # we run `learncurve` so there's a `previous_run_path` to test;
+                # skip all other commands
+                for config_path in command_config_paths:
+                    vak.cli.cli.cli(command, config_path)
 
 
 if __name__ == "__main__":

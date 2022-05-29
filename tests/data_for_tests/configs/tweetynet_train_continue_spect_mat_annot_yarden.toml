@@ -1,0 +1,36 @@
+[PREP]
+data_dir = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/spect"
+output_dir = "./tests/data_for_tests/generated/prep/train/spect_mat_annot_yarden"
+spect_format = "mat"
+annot_format = "yarden"
+annot_file = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/llb3_annot_subset.mat"
+labelset = "range: 1-3,6-14,17-19"
+train_dur = 213
+val_dur = 213
+
+[SPECT_PARAMS]
+fft_size = 512
+step_size = 64
+freq_cutoffs = [ 500, 10000,]
+thresh = 6.25
+transform_type = "log_spect"
+
+[DATALOADER]
+window_size = 88
+
+[TRAIN]
+models = "TweetyNet"
+normalize_spectrograms = false
+batch_size = 11
+num_epochs = 2
+val_step = 50
+ckpt_step = 200
+patience = 4
+num_workers = 4
+device = "cuda"
+root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/tweetynet"
+checkpoint_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+labelmap_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
+
+[TweetyNet.optimizer]
+lr = 0.001

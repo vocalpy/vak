@@ -50,13 +50,16 @@ def train(toml_path):
     model_config_map = config.models.map_from_path(toml_path, cfg.train.models)
 
     core.train(
-        model_config_map,
-        cfg.train.csv_path,
-        cfg.prep.labelset,
-        cfg.dataloader.window_size,
-        cfg.train.batch_size,
-        cfg.train.num_epochs,
-        cfg.train.num_workers,
+        model_config_map=model_config_map,
+        csv_path=cfg.train.csv_path,
+        labelset=cfg.prep.labelset,
+        window_size=cfg.dataloader.window_size,
+        batch_size=cfg.train.batch_size,
+        num_epochs=cfg.train.num_epochs,
+        num_workers=cfg.train.num_workers,
+        checkpoint_path=cfg.train.checkpoint_path,
+        spect_scaler_path=cfg.train.spect_scaler_path,
+        labelmap_path=cfg.train.labelmap_path,
         results_path=results_path,
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
