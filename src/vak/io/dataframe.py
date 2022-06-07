@@ -1,10 +1,12 @@
 from datetime import datetime
 
+import attrs
 import crowsetta
 import numpy as np
 
 from . import audio, spect
 from .. import annotation
+from ..config.spect_params import SpectParamsConfig
 from ..converters import expanded_user_path, labelset_to_set
 from ..logging import log_or_print
 
@@ -167,6 +169,12 @@ def from_files(
             logger=logger,
             level="info",
         )
+
+    if spect_params: # get relevant keys for accessing arrays from array files
+        if isinstance(spect_params, SpectParamsConfig):
+            spect_params = attrs.asdict(spect_params)
+        for key in ['freqbins_key', 'timebins_key', 'spect_key', 'audio_path_key']:
+            to_dataframe_kwargs[key] = spect_params[key]
 
     vak_df = spect.to_dataframe(**to_dataframe_kwargs, logger=logger)
     return vak_df
