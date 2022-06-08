@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#505](https://github.com/NickleDave/vak/pull/505).
   Fixes [#5](https://github.com/NickleDave/vak/issues/5).
 
+## Changed
+- change minimum required Python to 3.8, 
+  to adhere to [NEP-29](https://numpy.org/neps/nep-0029-deprecation_policy.html), in 
+  [#513](https://github.com/NickleDave/vak/pull/513).
+  Fixes [#512](https://github.com/NickleDave/vak/issues/512).
+
 ## [0.4.2](https://github.com/NickleDave/vak/releases/tag/0.4.2) -- 2022-03-29
 ### Added
 - add a [Code of Conduct](https://github.com/NickleDave/vak/blob/main/CODE_OF_CONDUCT.md), 
