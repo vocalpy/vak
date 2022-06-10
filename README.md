@@ -11,9 +11,9 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Build Status](https://github.com/NickleDave/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/NickleDave/vak/actions/workflows/ci-linux.yml/badge.svg)
-[![Build Status](https://github.com/NickleDave/vak/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/NickleDave/vak/actions/workflows/ci-macos.yml/badge.svg)
-[![codecov](https://codecov.io/gh/NickleDave/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/NickleDave/vak)
+[![Build Status](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)
+[![Build Status](https://github.com/vocalpy/vak/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/vocalpy/vak/actions/workflows/ci-macos.yml/badge.svg)
+[![codecov](https://codecov.io/gh/vocalpy/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/vocalpy/vak)
 
 `vak` is a library for researchers studying animal vocalizations--such as 
 birdsong, bat calls, and even human speech--although it may be useful 
@@ -66,7 +66,7 @@ https://vak.readthedocs.io/en/latest/get_started/installation.html
 We test `vak` on Ubuntu and MacOS. We have run on Windows and 
 know of other users successfully running `vak` on that operating system, 
 but installation on Windows may require some troubleshooting.
-A good place to start is by searching the [issues](https://github.com/NickleDave/vak/issues).
+A good place to start is by searching the [issues](https://github.com/vocalpy/vak/issues).
 
 ### Usage
 #### Tutorial
@@ -76,16 +76,16 @@ Currently the easiest way to work with `vak` is through the command line.
 You run it with configuration files, using one of a handful of commands.
 
 For more details, please see the "autoannotate" tutorial here:  
-https://vak.readthedocs.io/en/latest/tutorial/autoannotate.html
+https://vak.readthedocs.io/en/latest/get_started/autoannotate.html
 
 #### How can I use my data with `vak`?
 
 Please see the How-To Guides in the documentation here:
-https://vak.readthedocs.io/en/latest/howto/howto.html
+https://vak.readthedocs.io/en/latest/howto/index.html
 
 ### Support / Contributing
 We handle support through the issue tracker on GitHub:  
-https://github.com/NickleDave/vak/issues  
+https://github.com/vocalpy/vak/issues  
 Please raise an issue there if you run into trouble.  
 That would be a great place to start if you are interested in contributing, as well.
 

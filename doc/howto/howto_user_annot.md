@@ -30,13 +30,42 @@ The first method is to convert your annotations to a format named `'simple-seq'`
 This method will work for a wide array of annotation formats 
 that all can be mapped to a sequence of segments, 
 with each segment having an onset time, offset time, and label.
-The one assumption the `'simple-seq'` format makes is that you have one annotation file 
-per audio file or spectrogram file.
+**The one assumption the `'simple-seq'` format makes is that you have one annotation file 
+per file that is annotated, that is, 
+one annotation file per audio file or per array file containing a spectrogram.**
 This is likely to be the case if you are using apps like Praat or Audacity.
 An example of such a format is the Audacity 
 [standard label track format](https://manual.audacityteam.org/man/importing_and_exporting_labels.html#Standard_.28default.29_format), 
 exported to `.txt` files, that you would get if you were to annotate with  
 [region labels](https://manual.audacityteam.org/man/label_tracks.html#type).
+
+```{admonition} Naming convention
+
+For vak to be able to find the annotation file 
+and the corresponding file that it annotates, 
+you will need to follow a naming convention: 
+the annotation file should have the same name 
+as the file that it annotates, but with the
+extension of the annotation format added. 
+So, for example, if you have an audio file named 
+"BB_SGP16-1___20160521_214723.wav", 
+then the file with its annotations 
+in `'simple-seq'` format should 
+be named "BB_SGP16-1___20160521_214723.wav.csv".
+
+This is also true for any built-in annotation format 
+where there's a one-to-one relationship 
+from annotation file to the file it annotates, 
+like Audacity .txt files, or Praat .TextGrid files.
+
+It is *not* the case for any format where there's 
+a single annotation file for many files that are annotated 
+(like the `'generic-seq'` format discussed below). 
+That's because such formats need to include the names 
+of the files that they annotate within the single file 
+of annotations, so that each annotation 
+can be linked to a specific annotated file.
+```
 
 Below we provide an example of how you would write 
 a very small Python script to convert your annotations 
@@ -96,17 +125,28 @@ After running the script,
 we will have a `.csv` file for each `.txt` file in our directory, as shown:
 
 ```console
-BB_SGP16-1___20160521_214723.csv
 BB_SGP16-1___20160521_214723.txt
 BB_SGP16-1___20160521_214723.wav
-BBY15-4___20150907_211645.csv
+BB_SGP16-1___20160521_214723.wav.csv
 BBY15-4___20150907_211645.txt
 BBY15-4___20150907_211645.wav
+BBY15-4___20150907_211645.wav.csv
 ... # more files here
-DB_1-WWS16-2___20160822_203501.csv
 DB_1-WWS16-2___20160822_203501.txt
+DB_1-WWS16-2___20160822_203501.wav.csv
 DB_1-WWS16-2___20160822_203501.wav
 ```
+
+Notice that we write our script 
+so that it names the new annotation files 
+following the naming convention.  
+For each audio file, 
+it creates an annotation file with the same name, 
+including the audio extension,
+and the annotation extension added after that. 
+For example,  
+the script creates an annotation file named "DB_1-WWS16-2___20160822_203501.wav.csv" 
+for the audio file named "DB_1-WWS16-2___20160822_203501.wav".
 
 ### Example script for converting `.txt` files to the `'simple-seq'` format
 
@@ -128,7 +168,9 @@ def main():
     for txt_file in txt_files:
         txt_df = pd.read_csv(txt_file, sep='\t', header=None)  # sep='\t' because tab-separated
         txt_df.columns = COLUMNS
-        csv_name = txt_file.parent / (txt_file.stem + '.csv')
+        # in next line, use `txt_file.name` to get the entire file name with audio extension
+        # and then add the `.csv` extension to it, to follow naming convention
+        csv_name = txt_file.parent / (txt_file.name + '.csv')
         txt_df.to_csv(csv_name)
 
 if __name__ == '__main__':
