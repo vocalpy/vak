@@ -125,6 +125,16 @@
         "bug",
         "doc"
       ]
+    },
+    {
+      "login": "neuronalX",
+      "name": "neuronalX",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9768731?v=4",
+      "profile": "http://www.xavierhinaut.com",
+      "contributions": [
+        "bug",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
