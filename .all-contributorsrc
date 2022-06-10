@@ -115,6 +115,16 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "ymk12345",
+      "name": "ymk12345",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47306876?v=4",
+      "profile": "https://github.com/ymk12345",
+      "contributions": [
+        "bug",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
