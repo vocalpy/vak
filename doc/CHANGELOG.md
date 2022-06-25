@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.5.0 -- 2022-06-25
 ### Added
 - add ability to continue training from an existing checkpoint 
   [#505](https://github.com/NickleDave/vak/pull/505).
@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on using annotation formats
   [#517](https://github.com/NickleDave/vak/pull/517).
   Fixes [#516](https://github.com/NickleDave/vak/issues/516).
+- fix links to images in README so they show up on PyPI
+  [db98c30](https://github.com/vocalpy/vak/commit/db98c304db9c380086ef60f9a530cbcfd2a96330)
 
 ## [0.4.2](https://github.com/NickleDave/vak/releases/tag/0.4.2) -- 2022-03-29
 ### Added
