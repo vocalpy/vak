@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- Put upper bound on `crowsetta` dependency
+  [89ee7b03](https://github.com/vocalpy/vak/commit/89ee7b03bade2c20da6d4c480cf8c799eacee9fb)
+
 ## 0.5.0 -- 2022-06-25
 ### Added
 - add ability to continue training from an existing checkpoint 
