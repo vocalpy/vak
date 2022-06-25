@@ -62,7 +62,7 @@ doc = [
 ]
 
 [project.urls]
-Source = "https://github.com/NickleDave/vak"
+Source = "https://github.com/vocalpy/vak"
 Documentation = "https://vak.readthedocs.io"
 
 [project.scripts]

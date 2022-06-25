@@ -22,7 +22,7 @@ Ways to Contribute Feedback
 ---------------------------
 
 * Provide feedback about how we can improve the project or about your particular use
-  case. Open an `issue <https://github.com/NickleDave/vakt/issues>`_ with
+  case. Open an `issue <https://github.com/vocalpy/vak/issues>`_ with
   feature requests or bug fixes.
 * Help triage issues, or give a "thumbs up" on issues that others reported which are
   relevant to you (using the
@@ -32,19 +32,19 @@ Ways to Contribute to Community Building
 ----------------------------------------
 
 * Cite ``vak`` when using the project.
-  Please see `the CITATION.cff <https://github.com/NickleDave/vak/blob/main/CITATION.cff>`_ file for details.
+  Please see `the CITATION.cff <https://github.com/vocalpy/vak/blob/main/CITATION.cff>`_ file for details.
   To obtain a citation in APA or BibTEX format, click on "Cite this repository" on the
-  `GitHub repository <https://github.com/NickleDave/vak>`_.
+  `GitHub repository <https://github.com/vocalpy/vak>`_.
 * Spread the word about ``vak`` and star the project on GitHub!
 
 Providing Feedback
 ==================
 
 Two of the main ways to contribute are to report a bug or to request a feature.
-Both can be done by opening an `Issue <https://github.com/NickleDave/vak/issues>`_
+Both can be done by opening an `Issue <https://github.com/vocalpy/vak/issues>`_
 on GitHub and filling out the template.
 
-* Find the `Issues <https://github.com/NickleDave/vak/issues>`_ tab on the
+* Find the `Issues <https://github.com/vocalpy/vak/issues>`_ tab on the
   top of the GitHub repository and click *New Issue*.
 * Choose a template based on the type of feedback
 
@@ -129,7 +129,7 @@ Clone the repository from Github using ``git``
 
 .. code-block:: shell
 
-   git clone https://github.com/NickleDave/vak
+   git clone https://github.com/vocalpy/vak
 
 2. Create a virtual environment
 ###############################

@@ -13,7 +13,7 @@ These are some of the many ways to contribute:
 * :people_holding_hands: Community engagement and outreach
 
 If you get stuck at any point you can create an
-[issue](https://github.com/NickleDave/vak/issues) on GitHub or contact
+[issue](https://github.com/vocalpy/vak/issues) on GitHub or contact
 us at one of the channels mentioned in the
  [Contributing Guide](https://vak.readthedocs.io/en/latest/development/index.html)
 
