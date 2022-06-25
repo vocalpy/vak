@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#513](https://github.com/NickleDave/vak/pull/513).
   Fixes [#512](https://github.com/NickleDave/vak/issues/512).
 
+## Fixed
+- fix explanation of naming convention for `'simple-seq'` format in how-to
+  on using annotation formats
+  [#517](https://github.com/NickleDave/vak/pull/517).
+  Fixes [#516](https://github.com/NickleDave/vak/issues/516).
+
 ## [0.4.2](https://github.com/NickleDave/vak/releases/tag/0.4.2) -- 2022-03-29
 ### Added
 - add a [Code of Conduct](https://github.com/NickleDave/vak/blob/main/CODE_OF_CONDUCT.md), 
