@@ -1,5 +1,7 @@
 <br>
-<div align="center"><img src="./doc/images/logo/vak-logo-primary.png" width="400"></div>
+<div align="center">
+<img src="https://github.com/vocalpy/vak/blob/main/doc/images/logo/vak-logo-primary.png?raw=True" width="400">
+</div>
 
 <hr>
 
@@ -27,7 +29,10 @@ network algorithms on tasks related to animal vocalizations
 
 Currently the main use is automated **annotation** of vocalizations and other animal sounds.
 By **annotation**, we mean something like the example of annotated birdsong shown below:  
-<p align="center">"<img src="./doc/images/annotation-example.png" alt="spectrogram of birdsong with syllables annotated" width="400"></p>
+<p align="center">
+<img src="https://github.com/vocalpy/vak/blob/main/doc/images/annotation-example.png?raw=True" 
+alt="spectrogram of birdsong with syllables annotated" width="400">
+</p>
 
 You give `vak` training data in the form of audio or spectrogram files with annotations, 
 and then `vak` helps you train neural network models 
@@ -71,7 +76,7 @@ A good place to start is by searching the [issues](https://github.com/vocalpy/va
 ### Usage
 #### Tutorial
 Currently the easiest way to work with `vak` is through the command line.
-![terminal showing vak help command output](./doc/images/terminalizer/vak-help.gif)
+![terminal showing vak help command output](https://github.com/vocalpy/vak/blob/main/doc/images/terminalizer/vak-help.gif?raw=True)
 
 You run it with configuration files, using one of a handful of commands.
 
