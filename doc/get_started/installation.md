@@ -54,37 +54,53 @@ sudo apt-get install libsndfile1
 
 ### with `conda`
 
-#### on macOS and Linux
-
 To create a new virtual environment that contains `vak` 
 and all the libraries it depends on, open your terminal and run:
 
 ```shell
-conda create --name vak-env vak -c conda-forge
+conda create --name vak-env python=3.8 vak=0.5.0 -c pytorch -c conda-forge
 ```
+
+Notice that we specify the Python version and the `vak` version.
+This makes the install faster because the package manager has to do less work. 
+You can specify newer versions of Python,
+and you should specify the latest version of `vak`.
+Notice also that you need to make 
+sure the pytorch channel is specified first
+(by writing `-c pytorch` before `-c conda-forge`),
+because `vak` is built on top of `pytorch` 
+and `torchvision`,
+and you want their channel to take precedence 
+for installing those two libraries.
 
 To install `vak` into an existing environment, run:
 
 ```shell
-conda install vak -c conda-forge
+conda install vak=0.5.0 -c pytorch -c conda-forge
 ```
 
-#### on Windows
+Again you should specify the latest version of `vak`, 
+and make sure the pytorch channel is specified first,
+so that it takes precedence.
 
-On Windows, you need to add an additional channel, `pytorch`.
-You can do this by repeating the `-c` option more than once.
+#### Troubleshooting `conda` installations on Windows
 
-E.g, to create a new environment with `vak` installed on Windows, do
+If you encounter cryptic errors like on Windows, 
+like a `WinError` or a `BrokenPipeError`, 
+it may help to create a new `conda` environment,
+and first install `pytorch` and `torchvision` 
+according to the instructions on [pytorch.org](https://pytorch.org/),
+before installing `vak`. For example:  
 
-```shell
-conda create --name vak-env vak -c conda-forge -c pytorch
+```console
+C:\You> conda create -n vak-env python==3.8
+C:\You> conda activate vak-env
+(vak-env) C:\You> pip install torch===1.10.2 torchvision===0.11.3 -f https://download.pytorch.org/whl/torch_stable.html
+(vak-env) C:\You> pip install vak==0.5.0
+(vak-env) C:\You> pip install tweetynet
 ```
 
-and to install `vak` into an existing environment on Windows
-
-```powershell
-conda install vak -c conda-forge -c pytorch
-```
+(but again make sure you are installing the latest versions -- the numbers above may be out of date).
 
 ### with `pip`
 
@@ -116,6 +132,13 @@ conda install tweetynet -c conda-forge
 ```shell
 pip install tweetynet
 ```
+
+## Getting help
+
+If you need help or have questions about installation, 
+please create a new topic in the 
+[VocalPy](https://forum.vocalpy.org/) forum,
+using the "Q&A" category and adding the `vak` tag.
 
 (why-conda)=
 
