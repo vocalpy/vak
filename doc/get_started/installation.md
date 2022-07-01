@@ -133,6 +133,13 @@ conda install tweetynet -c conda-forge
 pip install tweetynet
 ```
 
+## Getting help
+
+If you need help or have questions about installation, 
+please create a new topic in the 
+[VocalPy](https://forum.vocalpy.org/) forum,
+using the "Q&A" category and adding the `vak` tag.
+
 (why-conda)=
 
 ## Why do we recommend `conda`?
