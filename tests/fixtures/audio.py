@@ -13,6 +13,7 @@ def default_spect_params():
         freqbins_key="f",
         timebins_key="t",
         spect_key="s",
+        audio_path_key="audio_path",
     )
 
 
