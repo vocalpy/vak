@@ -1,5 +1,4 @@
 (config)=
-
 # Configuration files
 
 This document contains the specification
@@ -43,18 +42,21 @@ has a set of option names
 that are considered valid.
 Valid options for each section are presented below.
 
+(ref-config-prep)=
 ### `[PREP]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.prep.PrepConfig
 ```
 
+(ref-config-spect-params)=
 ### `[SPECT_PARAMS]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.spect_params.SpectParamsConfig
 ```
 
+(ref-config-dataloader)=
 ### `[DATALOADER]` section
 
 ```{eval-rst}
@@ -62,24 +64,28 @@ Valid options for each section are presented below.
 
 ```
 
+(ref-config-train)=
 ### `[TRAIN]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.train.TrainConfig
 ```
 
+(ref-config-eval)=
 ### `[EVAL]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.eval.EvalConfig
 ```
 
+(ref-config-predict)=
 ### `[PREDICT]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.predict.PredictConfig
 ```
 
+(ref-config-learncurve)=
 ### `[LEARNCURVE]` section
 
 ```{eval-rst}
