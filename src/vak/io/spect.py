@@ -85,7 +85,7 @@ def to_dataframe(
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
     audio_path_key : str
-        key for accessing path to source audio file for spectogram in files.
+        key for accessing path to source audio file for spectrogram in files.
         Default is 'audio_path'.
 
     Other Parameters
