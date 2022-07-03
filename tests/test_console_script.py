@@ -18,6 +18,5 @@ def test_cli_help():
     command = ["vak", "-h"]
     out, err, returncode = capture(command)
     assert returncode == 0
-    breakpoint()
     assert out.startswith('usage: vak ')
     assert err == ''
