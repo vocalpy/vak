@@ -17,12 +17,11 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: excitedleigh/setup-nox@v2.1.0
       - name: install libsndfile1 on ubuntu
         run: sudo apt install libsndfile1
       - name: run tests
         run: |
-          make test-data-download-source
-          make test-data-download-generated-ci
-          pip install '.[test]'
-          python ./tests/scripts/fix_prep_csv_paths.py
-          pytest --models teenytweetynet  --cov=./ --cov-report=xml
+          nox -s test-data-download-source
+          nox -s test-data-download-generated-ci
+          nox -s coverage -- fix-prep-csv-paths running-on-ci
