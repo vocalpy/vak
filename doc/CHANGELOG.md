@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#528](https://github.com/NickleDave/vak/pull/528).
   Fixes [#527](https://github.com/NickleDave/vak/issues/527).
 
+### Fixed
+- Fix bug that prevented creating spectrogram files with non-default keys
+  (e.g. 'spect' instead of the default 's'). Needed to pass keys from `spect_params` 
+  into `spect.to_dataframe` inside `vak.io.dataframe.from_files`. 
+  [#531](https://github.com/NickleDave/vak/pull/531).
+  Fixes [#412](https://github.com/NickleDave/vak/issues/412).
+
 ## 0.5.0.post1 -- 2022-06-25
 ### Fixed
 - Put upper bound on `crowsetta` dependency
