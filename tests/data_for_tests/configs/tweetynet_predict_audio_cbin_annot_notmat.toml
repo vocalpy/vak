@@ -1,15 +1,15 @@
 [PREP]
 data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032412"
-output_dir = "./tests/data_for_tests/generated/prep/predict/audio_cbin_annot_notmat"
+output_dir = "./tests/data_for_tests/generated/prep/predict/audio_cbin_annot_notmat/tweetynet"
 audio_format = "cbin"
-spect_output_dir = "./tests/data_for_tests/generated/prep/predict/audio_cbin_annot_notmat"
+spect_output_dir = "./tests/data_for_tests/generated/prep/predict/audio_cbin_annot_notmat/tweetynet"
 
 [SPECT_PARAMS]
 fft_size = 512
 step_size = 64
-freq_cutoffs = [ 500, 10000 ]
+freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
-transform_type = 'log_spect'
+transform_type = "log_spect"
 
 [DATALOADER]
 window_size = 88
