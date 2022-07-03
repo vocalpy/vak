@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - better document `conda` install 
   [#528](https://github.com/NickleDave/vak/pull/528).
   Fixes [#527](https://github.com/NickleDave/vak/issues/527).
+- Add tests for console script, i.e., the command-line interface 
+  [#533](https://github.com/NickleDave/vak/pull/533).
+  Fixes [#369](https://github.com/NickleDave/vak/issues/369).
 
 ### Changed
 - switch from using `make` to `nox` for running tasks 
