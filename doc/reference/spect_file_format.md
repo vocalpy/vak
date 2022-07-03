@@ -39,20 +39,32 @@ Regardless of whether they are `.npz` files or `.mat` files,
 
 ### Content
 
-A spectrogram array files should contain (at least) four items.
-Other arrays can be in the file, but they will be ignored.
+A spectrogram array files should contain (at least) three items.
 
 1. The spectrogram, an *m x n* matrix
 2. A vector of *m* frequency bins,
    where the value of each element is the frequency at the center of the bin
 3. A vector of *n* time bins,
    where the value each element is the time at the center of the bin
+
+A fourth item is not required, but is suggested.
+
 4. A string path to the audio file from which the spectrogram was generated.
+
+Other arrays can be in the file, but they will be ignored.
 
 ### Array naming
 
-By convention each should be associated with a string key: 's', 'f', 't', and 'audio_path'.
-If you are using Matlab then you will need to save your workspace variables with these names.
+By convention each item should be associated with a string key.
+The defaults built into vak are: 's', 'f', 't', and 'audio_path'.
+These defaults can be changed when preparing a dataset 
+by changing the corresponding options in the {ref}`[SPECT_PARAMS] <ref-config-spect-params>` section 
+of a .toml configuration file.
+If you are using Matlab to generate the spectrogram files,
+then you will need to either save your workspace variables with the default names, 
+or tell `vak` what names you used by changing the {ref}`[SPECT_PARAMS] <ref-config-spect-params>` options.
+As noted above, the `audio_path` is not required, 
+but it is added by `vak.prep` when generating a dataset of spectrogram files from audio.
 
 ### Spectrogram file naming
 
