@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#528](https://github.com/NickleDave/vak/pull/528).
   Fixes [#527](https://github.com/NickleDave/vak/issues/527).
 
+### Changed
+- switch from using `make` to `nox` for running tasks 
+  [#532](https://github.com/NickleDave/vak/pull/532).
+  Fixes [#440](https://github.com/NickleDave/vak/issues/440).
+
 ### Fixed
 - Fix bug that prevented creating spectrogram files with non-default keys
   (e.g. 'spect' instead of the default 's'). Needed to pass keys from `spect_params` 
