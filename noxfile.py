@@ -177,7 +177,7 @@ def test_data_download_generated_all(session) -> None:
         tf.extractall(path='.')
 
 
-GENERATED_TEST_DATA_CI_URL = 'https://osf.io/qprcu/download'
+GENERATED_TEST_DATA_CI_URL = 'https://osf.io/p6wyh/download'
 
 
 @nox.session(name='test-data-download-generated-ci')
