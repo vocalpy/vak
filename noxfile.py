@@ -134,14 +134,14 @@ def make_tarfile(name: str, to_add: list):
 CONFIGS_DIR = f'{GENERATED_TEST_DATA_DIR}configs'
 PREP_DIR = f'{GENERATED_TEST_DATA_DIR}prep/'
 RESULTS_DIR = f'{GENERATED_TEST_DATA_DIR}results/'
-RESULTS_CI = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/teenytweetynet'))
 
+PREP_CI = sorted(pathlib.Path(PREP_DIR).glob('*/*/teenytweetynet'))
+RESULTS_CI = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/teenytweetynet'))
 GENERATED_TEST_DATA_CI_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data.ci.tar.gz'
-GENERATED_TEST_DATA_CI_DIRS = [CONFIGS_DIR, PREP_DIR] + RESULTS_CI
+GENERATED_TEST_DATA_CI_DIRS = [CONFIGS_DIR] + PREP_CI + RESULTS_CI
 
 GENERATED_TEST_DATA_ALL_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data.tar.gz'
-RESULTS_TWEETYNET = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/tweetynet'))
-GENERATED_TEST_DATA_ALL_DIRS = GENERATED_TEST_DATA_CI_DIRS + RESULTS_TWEETYNET
+GENERATED_TEST_DATA_ALL_DIRS = [CONFIGS_DIR, PREP_DIR, RESULTS_DIR]
 
 
 @nox.session(name='test-data-tar-generated-all')
