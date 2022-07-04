@@ -3,64 +3,73 @@ import datetime
 import logging
 from pathlib import Path
 import sys
+import warnings
+
+from . import timenow
 
 
-def get_logger(log_dst, caller, logger_name, timestamp=None, level="INFO"):
-    """get a logger
+logger = logging.getLogger('vak')  # 'base' logger
+
+
+def config_logging_for_cli(log_dst: str,
+                           log_stem: str,
+                           level='info',
+                           timestamp=None,
+                           force=False):
+    """Configure logging for a run of the cli.
+
+    Called by `vak.cli` functions. Allows logging
+    to also be configured differently by a user
+    that interacts directly with the library through e.g. `vak.core`.
 
     Parameters
     ----------
     log_dst : str, Path
-        destination directory where log file should be saved
-    caller : str
-        function that called get_logger, e.g. 'train' or 'prep'.
-        Included in log file name.
-    timestamp : str
-        time stamp, included in log file name.
-        If None, defaults to `datetime.now().strftime('%y%m%d_%H%M%S')`.
-    logger_name : str
-        name to give logger when instantiating.
+        Destination directory where log file should be saved
+    log_stem : str
+        The "stem" of the filename for the log file.
+        A timestamp is added to this stem,
+        so that the final filename is ``f"{caller}_{timestamp}.log"``.
+        Usually set to the name of the function that called this one,
+        e.g. 'train' or 'prep'.
     level : str
-        logging level. Default is 'INFO'.
-
-    Returns
-    -------
-    logger : logging.Logger
-        as returned by logging.getLogger.
-        Will save logs to file as well as log to stdout.
+        Logging level, e.g. "INFO". Passed in to ``logger.setLevel``.
+    timestamp : str
+        Time stamp, included in log file name.
+        If None, defaults to `datetime.now().strftime('%y%m%d_%H%M%S')`.
+    force : bool
+        If True, forces this function to remove the old handlers
+        and add new handlers. If False, this function will raise an
+        error when the logger already has handlers,
+        to avoid silent failures.
     """
     log_dst = Path(log_dst)
     if not log_dst.is_dir():
         raise NotADirectoryError(
             f"destination for log file is not a directory: {log_dst}"
         )
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
 
     if timestamp is None:
-        timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-    logfile_name = log_dst.joinpath(f"{caller}_{timestamp}.log")
-    logger.addHandler(logging.FileHandler(logfile_name))
-    logger.addHandler(logging.StreamHandler(sys.stdout))
-    return logger
+        timestamp = timenow.get_timenow_as_str()
+    logfile_name = log_dst.joinpath(f"{log_stem}_{timestamp}.log")
 
+    if logger.hasHandlers():
+        if force:
+            logger.handlers.clear()
+        else:
+            warnings.warn(
+                f"Logger already has handlers attached:\n{logger.handlers}."
+                f"Will not add new handlers, to avoid duplicate messages "
+                f"and corrupted logs. To override, set ``force=True`` "
+                f"when calling this function."
+            )
+            return
 
-def log_or_print(msg, logger=None, level=None):
-    """helper function to either send a message to the logger,
-    or print the message if no logger is being used
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler = logging.FileHandler(logfile_name)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    for handler in (file_handler, stream_handler):
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
 
-    Parameters
-    ----------
-    msg : str
-        message to either log or print
-    logger : logging.Logger
-        default is None, in which case the message is printed with print function.
-    level : str
-        name of logging level. If logger is not None, the corresponding
-        method of the logger will be used to log the message
-    """
-    if logger is None:
-        print(msg)
-    else:
-        log_method = getattr(logger, level)
-        log_method(msg)
+    logger.setLevel(level)

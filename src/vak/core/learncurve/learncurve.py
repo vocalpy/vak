@@ -1,3 +1,4 @@
+import logging
 import re
 
 import numpy as np
@@ -9,8 +10,10 @@ from ..train import train
 from ...io import dataframe
 from ... import csv, labels
 from ...converters import expanded_user_path
-from ...logging import log_or_print
 from ...paths import generate_results_dir_name_as_path
+
+
+logger = logging.getLogger(__name__)
 
 
 def learning_curve(
@@ -34,7 +37,6 @@ def learning_curve(
     ckpt_step=None,
     patience=None,
     device=None,
-    logger=None,
 ):
     """generate learning curve, by training models on training sets across a
     range of sizes and then measure accuracy of those models on a test set.
@@ -111,11 +113,6 @@ def learning_curve(
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
 
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by ``vak.logging.get_logger``. Default is None.
-
     Returns
     -------
     None
@@ -127,7 +124,7 @@ def learning_curve(
     if not csv_path.exists():
         raise FileNotFoundError(f"csv_path not found: {csv_path}")
 
-    log_or_print(f"Using dataset from .csv: {csv_path}", logger=logger, level="info")
+    logger.info(f"Using dataset from .csv: {csv_path}")
     dataset_df = pd.read_csv(csv_path)
 
     if previous_run_path:
@@ -154,13 +151,11 @@ def learning_curve(
         results_path = generate_results_dir_name_as_path(root_results_dir)
         results_path.mkdir()
 
-    log_or_print(f"Saving results to: {results_path}", logger=logger, level="info")
+    logger.info(f"Saving results to: {results_path}")
 
     timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
-    log_or_print(
+    logger.info(
         f"Size of each timebin in spectrogram, in seconds: {timebin_dur}",
-        logger=logger,
-        level="info",
     )
 
     # ---- get training set subsets ------------------------------------------------------------------------------------
@@ -172,10 +167,8 @@ def learning_curve(
     labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
 
     if previous_run_path:
-        log_or_print(
+        logger.info(
             f"Loading previous training subsets from:\n{previous_run_path}",
-            logger=logger,
-            level="info",
         )
         train_dur_csv_paths = _train_dur_csv_paths.from_dir(
             previous_run_path,
@@ -189,10 +182,8 @@ def learning_curve(
             labelmap,
         )
     else:
-        log_or_print(
+        logger.info(
             f"Creating data sets of specified durations: {train_set_durs}",
-            logger=logger,
-            level="info",
         )
         # do all subsetting before training, so that we fail early if subsetting is going to fail
         train_dur_csv_paths = _train_dur_csv_paths.from_df(
@@ -207,35 +198,28 @@ def learning_curve(
             spect_key,
             timebins_key,
             labelmap,
-            logger,
         )
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
-    log_or_print(f"Starting training for learning curve.", logger=logger, level="info")
+    logger.info(f"Starting training for learning curve.")
     for train_dur, csv_paths in train_dur_csv_paths.items():
-        log_or_print(
+        logger.info(
             f"Training replicates for training set of size: {train_dur}s",
-            logger=logger,
-            level="info",
         )
 
         for replicate_num, this_train_dur_this_replicate_csv_path in enumerate(
             csv_paths
         ):
             replicate_num += 1  # so log statements below match replicate nums returned by train_dur_csv_paths
-            log_or_print(
+            logger.info(
                 f"Training replicate {replicate_num} "
                 f"using dataset from .csv file: {this_train_dur_this_replicate_csv_path}",
-                logger=logger,
-                level="info",
             )
             this_train_dur_this_replicate_results_path = (
                 this_train_dur_this_replicate_csv_path.parent
             )
-            log_or_print(
+            logger.info(
                 f"Saving results to: {this_train_dur_this_replicate_results_path}",
-                logger=logger,
-                level="info",
             )
 
             window_dataset_kwargs = {}
@@ -267,19 +251,16 @@ def learning_curve(
                 ckpt_step=ckpt_step,
                 patience=patience,
                 device=device,
-                logger=logger,
                 **window_dataset_kwargs,
             )
 
-            log_or_print(
+            logger.info(
                 f"Evaluating models from replicate {replicate_num} "
                 f"using dataset from .csv file: {this_train_dur_this_replicate_results_path}",
-                logger=logger,
-                level="info",
             )
             for model_name in model_config_map.keys():
-                log_or_print(
-                    f"Evaluating model: {model_name}", logger=logger, level="info"
+                logger.info(
+                    f"Evaluating model: {model_name}"
                 )
                 results_model_root = (
                     this_train_dur_this_replicate_results_path.joinpath(model_name)
@@ -303,14 +284,14 @@ def learning_curve(
                             f"did not find a single checkpoint path, instead found:\n{ckpt_paths}"
                         )
                     ckpt_path = ckpt_paths[0]
-                log_or_print(
-                    f"Using checkpoint: {ckpt_path}", logger=logger, level="info"
+                logger.info(
+                    f"Using checkpoint: {ckpt_path}"
                 )
                 labelmap_path = this_train_dur_this_replicate_results_path.joinpath(
                     "labelmap.json"
                 )
-                log_or_print(
-                    f"Using labelmap: {labelmap_path}", logger=logger, level="info"
+                logger.info(
+                    f"Using labelmap: {labelmap_path}"
                 )
                 if normalize_spectrograms:
                     spect_scaler_path = (
@@ -318,10 +299,8 @@ def learning_curve(
                             "StandardizeSpect"
                         )
                     )
-                    log_or_print(
+                    logger.info(
                         f"Using spect scaler to normalize: {spect_scaler_path}",
-                        logger=logger,
-                        level="info",
                     )
                 else:
                     spect_scaler_path = None
@@ -339,7 +318,6 @@ def learning_curve(
                     spect_key=spect_key,
                     timebins_key=timebins_key,
                     device=device,
-                    logger=logger,
                 )
 
     # ---- make a csv for analysis -------------------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 import pprint
 import re
 import shutil
@@ -9,7 +10,9 @@ import pandas as pd
 from ... import split
 from ...converters import expanded_user_path
 from ...datasets.window_dataset import WindowDataset
-from ...logging import log_or_print
+
+
+logger = logging.getLogger(__name__)
 
 
 # pattern used by path.glob to find all training data subset csvs within previous_run_path
@@ -84,7 +87,6 @@ def from_dir(
     spect_key,
     timebins_key,
     labelmap,
-    logger=None,
 ):
     """return a ``dict`` mapping training dataset durations to dataset csv paths
     from a previous run of `vak.core.learncurve.learning_curve`.
@@ -126,11 +128,6 @@ def from_dir(
     labelmap : dict
         that maps labelset to consecutive integers
 
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by ``vak.logging.get_logger``. Default is None.
-
     Returns
     -------
     train_dur_csv_paths : dict
@@ -171,11 +168,9 @@ def from_dir(
             f"Found the following:\n{pprint.pformat(train_dur_csv_paths, indent=4)}"
         )
 
-    log_or_print(
+    logger.info(
         f"Using the following training subsets from previous run path:\n"
         f"{pprint.pformat(train_dur_csv_paths, indent=4)}",
-        logger=logger,
-        level="info",
     )
 
     # need to copy .csv files, and change path in train_dur_csv_paths to point to copies
@@ -263,7 +258,6 @@ def from_df(
     spect_key,
     timebins_key,
     labelmap,
-    logger=None,
 ):
     """return a ``dict`` mapping training dataset durations to dataset csv paths.
 
@@ -320,10 +314,8 @@ def from_df(
     """
     train_dur_csv_paths = defaultdict(list)
     for train_dur in train_set_durs:
-        log_or_print(
-            f"subsetting training set for training set of duration: {train_dur}",
-            logger=logger,
-            level="info",
+        logger.info(
+            f"Subsetting training set for training set of duration: {train_dur}",
         )
         results_path_this_train_dur = results_path.joinpath(
             train_dur_dirname(train_dur)

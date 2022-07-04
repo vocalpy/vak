@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 import shutil
 
@@ -6,17 +7,21 @@ import joblib
 import pandas as pd
 import torch.utils.data
 
-from .. import csv
-from .. import labels
-from .. import models
-from .. import tensorboard
-from .. import transforms
+from .. import (
+    csv,
+    labels,
+    models,
+    tensorboard,
+    transforms
+)
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
 from ..device import get_default as get_default_device
 from ..io import dataframe
-from ..logging import log_or_print
 from ..paths import generate_results_dir_name_as_path
+
+
+logger = logging.getLogger(__name__)
 
 
 def train(
@@ -43,7 +48,6 @@ def train(
     ckpt_step=None,
     patience=None,
     device=None,
-    logger=None,
 ):
     """Train models and save results.
 
@@ -143,14 +147,9 @@ def train(
         number of validation steps to wait without performance on the
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
-
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by vak.logging.get_logger. Default is None.
     """
-    log_or_print(
-        f"Loading dataset from .csv path: {csv_path}", logger=logger, level="info"
+    logger.info(
+        f"Loading dataset from .csv path: {csv_path}",
     )
     dataset_df = pd.read_csv(csv_path)
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
@@ -172,23 +171,19 @@ def train(
         results_path.mkdir()
 
     timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
-    log_or_print(
+    logger.info(
         f"Size of timebin in spectrograms from dataset, in seconds: {timebin_dur}",
-        logger=logger,
-        level="info",
     )
 
     # ---------------- load training data  -----------------------------------------------------------------------------
-    log_or_print(f"using training dataset from {csv_path}", logger=logger, level="info")
+    logger.info(f"using training dataset from {csv_path}")
     # below, if we're going to train network to predict unlabeled segments, then
     # we need to include a class for those unlabeled segments in labelmap,
     # the mapping from labelset provided by user to a set of consecutive
     # integers that the network learns to predict
     train_dur = dataframe.split_dur(dataset_df, "train")
-    log_or_print(
+    logger.info(
         f"Total duration of training split from dataset (in s): {train_dur}",
-        logger=logger,
-        level="info",
     )
 
     if labelset is None and labelmap_path is None:
@@ -202,15 +197,15 @@ def train(
         else:
             map_unlabeled = False
         labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
-        log_or_print(
-            f"number of classes in labelmap: {len(labelmap)}", logger=logger, level="info"
+        logger.info(
+            f"number of classes in labelmap: {len(labelmap)}",
         )
         # save labelmap in case we need it later
         with open(results_path.joinpath("labelmap.json"), "w") as f:
             json.dump(labelmap, f)
     elif labelmap_path:
-        log_or_print(
-            f"loading labelmap from path: {labelmap_path}", logger=logger, level="info"
+        logger.info(
+            f"loading labelmap from path: {labelmap_path}"
         )
         with labelmap_path.open("r") as f:
             labelmap = json.load(f)
@@ -219,20 +214,17 @@ def train(
             json.dump(labelmap, f)
 
     if spect_scaler_path is not None and normalize_spectrograms:
-        log_or_print(
-            f"loading spect scaler from path: {spect_scaler_path}",
-            logger=logger,
-            level="info")
+        logger.info(
+            f"loading spect scaler from path: {spect_scaler_path}"
+        )
         spect_standardizer = joblib.load(spect_scaler_path)
         shutil.copy(spect_scaler_path, results_path)
     # get transforms just before creating datasets with them
     elif normalize_spectrograms and spect_scaler_path is None:
-        log_or_print(
+        logger.info(
             f"no spect_scaler_path provided, not loading",
-            logger=logger,
-            level="info",
         )
-        log_or_print("will normalize spectrograms", logger=logger, level="info")
+        logger.info("will normalize spectrograms")
         spect_standardizer = transforms.StandardizeSpect.fit_df(
             dataset_df, spect_key=spect_key
         )
@@ -241,9 +233,10 @@ def train(
         raise ValueError('spect_scaler_path provided but normalize_spectrograms was False, these options conflict')
     else: 
         #not normalize_spectrograms and spect_scaler_path is None:
-        log_or_print(
-            "normalize_spectrograms is False and no spect_scaler_path was provided, will not standardize spectrograms",
-            logger=logger, level="info")
+        logger.info(
+            "normalize_spectrograms is False and no spect_scaler_path was provided, "
+            "will not standardize spectrograms",
+            )
         spect_standardizer = None
     transform, target_transform = transforms.get_defaults("train", spect_standardizer)
 
@@ -260,10 +253,8 @@ def train(
         transform=transform,
         target_transform=target_transform,
     )
-    log_or_print(
+    logger.info(
         f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration()}",
-        logger=logger,
-        level="info",
     )
     train_data = torch.utils.data.DataLoader(
         dataset=train_dataset,
@@ -296,16 +287,12 @@ def train(
             num_workers=num_workers,
         )
         val_dur = dataframe.split_dur(dataset_df, "val")
-        log_or_print(
+        logger.info(
             f"Total duration of validation split from dataset (in s): {val_dur}",
-            logger=logger,
-            level="info",
         )
 
-        log_or_print(
+        logger.info(
             f"will measure error on validation set every {val_step} steps of training",
-            logger=logger,
-            level="info",
         )
     else:
         val_data = None
@@ -317,14 +304,11 @@ def train(
         model_config_map,
         num_classes=len(labelmap),
         input_shape=train_dataset.shape,
-        logger=logger,
     )
     for model_name, model in models_map.items():
         if checkpoint_path is not None:
-            log_or_print(
+            logger.info(
                 f"loading checkpoint for {model_name} from path: {checkpoint_path}",
-                logger=logger,
-                level="info",
             )
             model.load(checkpoint_path, device=device)
 
@@ -332,7 +316,7 @@ def train(
         results_model_root.mkdir()
         ckpt_root = results_model_root.joinpath("checkpoints")
         ckpt_root.mkdir()
-        log_or_print(f"training {model_name}", logger=logger, level="info")
+        logger.info(f"training {model_name}")
         writer = tensorboard.get_summary_writer(
             log_dir=results_model_root, filename_suffix=model_name
         )

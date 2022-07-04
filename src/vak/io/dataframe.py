@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 
 import attrs
 import crowsetta
@@ -8,7 +9,9 @@ from . import audio, spect
 from .. import annotation
 from ..config.spect_params import SpectParamsConfig
 from ..converters import expanded_user_path, labelset_to_set
-from ..logging import log_or_print
+
+
+logger = logging.getLogger(__name__)
 
 
 def from_files(
@@ -20,7 +23,6 @@ def from_files(
     spect_format=None,
     spect_params=None,
     spect_output_dir=None,
-    logger=None,
 ):
     """create a pandas DataFrame representing a dataset for machine learning
     from a set of files in a directory
@@ -69,11 +71,6 @@ def from_files(
         Default is None, in which case it defaults to ``data_dir``.
         A new directory will be created in ``spect_output_dir`` with
         the name 'spectrograms_generated_{time stamp}'.
-
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -124,10 +121,8 @@ def from_files(
 
     # ------ if making dataset from audio files, need to make into array files first! ----------------------------------
     if audio_format:
-        log_or_print(
+        logger.info(
             f"making array files containing spectrograms from audio files in: {data_dir}",
-            logger=logger,
-            level="info",
         )
         audio_files = audio.files_from_dir(data_dir, audio_format)
 
@@ -157,17 +152,13 @@ def from_files(
 
     if spect_files:  # because we just made them, and put them in spect_output_dir
         to_dataframe_kwargs["spect_files"] = spect_files
-        log_or_print(
+        logger.info(
             f"creating dataset from spectrogram files in: {spect_output_dir}",
-            logger=logger,
-            level="info",
         )
     else:
         to_dataframe_kwargs["spect_dir"] = data_dir
-        log_or_print(
+        logger.info(
             f"creating dataset from spectrogram files in: {data_dir}",
-            logger=logger,
-            level="info",
         )
 
     if spect_params: # get relevant keys for accessing arrays from array files
@@ -176,7 +167,7 @@ def from_files(
         for key in ['freqbins_key', 'timebins_key', 'spect_key', 'audio_path_key']:
             to_dataframe_kwargs[key] = spect_params[key]
 
-    vak_df = spect.to_dataframe(**to_dataframe_kwargs, logger=logger)
+    vak_df = spect.to_dataframe(**to_dataframe_kwargs)
     return vak_df
 
 

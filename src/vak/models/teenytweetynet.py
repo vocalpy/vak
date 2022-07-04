@@ -119,7 +119,7 @@ class TeenyTweetyNet(nn.Module):
 
 class TeenyTweetyNetModel(Model):
     @classmethod
-    def from_config(cls, config, logger=None):
+    def from_config(cls, config):
         network = TeenyTweetyNet(**config["network"])
         loss = nn.CrossEntropyLoss(**config["loss"])
         optimizer = torch.optim.Adam(params=network.parameters(), **config["optimizer"])
@@ -134,5 +134,4 @@ class TeenyTweetyNetModel(Model):
             optimizer=optimizer,
             loss=loss,
             metrics=metrics,
-            logger=logger,
         )

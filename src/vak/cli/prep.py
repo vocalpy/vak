@@ -1,14 +1,19 @@
 from pathlib import Path
-from datetime import datetime
+import logging
 import warnings
 
 import toml
 
-from .. import config
-from .. import core
-from .. import logging
+from .. import (
+    config,
+    core
+)
 from ..config.parse import _load_toml_from_path
 from ..config.validators import are_sections_valid
+from ..logging import config_logging_for_cli
+
+
+logger = logging.getLogger(__name__)
 
 
 def purpose_from_toml(config_toml, toml_path=None):
@@ -39,7 +44,7 @@ SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS")
 
 
 def prep(toml_path):
-    """prepare datasets from vocalizations.
+    """Prepare datasets from vocalizations.
     Function called by command-line interface.
 
     Parameters
@@ -47,10 +52,6 @@ def prep(toml_path):
     toml_path : str, Path
         path to a configuration file in TOML format.
         Used to rewrite file with options determined by this function and needed for other functions
-
-    Returns
-    -------
-    None
 
     Notes
     -----
@@ -115,18 +116,17 @@ def prep(toml_path):
             cfg.prep.labelset = None
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
-    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-    logger = logging.get_logger(
+    config_logging_for_cli(
         log_dst=cfg.prep.output_dir,
-        caller="prep",
-        timestamp=timenow,
-        logger_name=__name__,
+        log_stem="prep",
+        level="INFO",
+        force=True
     )
 
     section = purpose.upper()
     logger.info(
-        f"determined that purpose of config file is: {purpose}\n"
-        f"will add 'csv_path' option to '{section}' section"
+        f"Determined that purpose of config file is: {purpose}.\n"
+        f"Will add 'csv_path' option to '{section}' section."
     )
 
     vak_df, csv_path = core.prep(
@@ -143,7 +143,6 @@ def prep(toml_path):
         train_dur=cfg.prep.train_dur,
         val_dur=cfg.prep.val_dur,
         test_dur=cfg.prep.test_dur,
-        logger=logger,
     )
 
     # use config and section from above to add csv_path to config.toml file

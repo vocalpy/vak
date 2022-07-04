@@ -1,28 +1,29 @@
+import logging
 from pathlib import Path
 import shutil
 
-from .. import config
-from .. import core
-from .. import logging
+from .. import (
+    config,
+    core
+)
+from ..logging import config_logging_for_cli
 from ..paths import generate_results_dir_name_as_path
-from ..timenow import get_timenow_as_str
+
+
+logger = logging.getLogger(__name__)
 
 
 def train(toml_path):
     """train models using training set specified in config.toml file.
     Function called by command-line interface.
 
+    Trains models, saves results in new directory within root_results_dir specified
+    in config.toml file, and adds path to that new directory to config.toml file.
+
     Parameters
     ----------
     toml_path : str, Path
         path to a configuration file in TOML format.
-
-    Returns
-    -------
-    None
-
-    Trains models, saves results in new directory within root_results_dir specified
-    in config.toml file, and adds path to that new directory to config.toml file.
     """
     toml_path = Path(toml_path)
     cfg = config.parse.from_toml_path(toml_path)
@@ -39,11 +40,11 @@ def train(toml_path):
     shutil.copy(toml_path, results_path)
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
-    logger = logging.get_logger(
+    config_logging_for_cli(
         log_dst=results_path,
-        caller="train",
-        timestamp=get_timenow_as_str(),
-        logger_name=__name__,
+        log_stem="train",
+        level="INFO",
+        force=True
     )
     logger.info("Logging results to {}".format(results_path))
 
@@ -69,5 +70,4 @@ def train(toml_path):
         ckpt_step=cfg.train.ckpt_step,
         patience=cfg.train.patience,
         device=cfg.train.device,
-        logger=logger,
     )

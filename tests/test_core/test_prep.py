@@ -88,7 +88,6 @@ def test_prep(
         train_dur=cfg.prep.train_dur,
         val_dur=cfg.prep.val_dur,
         test_dur=cfg.prep.test_dur,
-        logger=None,
     )
 
     assert prep_output_matches_expected(csv_path, vak_df)
@@ -158,7 +157,6 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
         train_dur=cfg.prep.train_dur,
         val_dur=cfg.prep.val_dur,
         test_dur=cfg.prep.test_dur,
-        logger=None,
     )
 
     assert len(vak_df) == 1
@@ -217,7 +215,6 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
         train_dur=cfg.prep.train_dur,
         val_dur=cfg.prep.val_dur,
         test_dur=cfg.prep.test_dur,
-        logger=None,
     )
 
     assert len(vak_df) == 1

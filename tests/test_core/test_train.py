@@ -73,7 +73,6 @@ def test_train(
         ckpt_step=cfg.train.ckpt_step,
         patience=cfg.train.patience,
         device=cfg.train.device,
-        logger=None,
     )
 
     assert train_output_matches_expected(cfg, model_config_map, results_path)
@@ -122,7 +121,6 @@ def test_continue_training(
         ckpt_step=cfg.train.ckpt_step,
         patience=cfg.train.patience,
         device=cfg.train.device,
-        logger=None,
     )
 
     assert train_output_matches_expected(cfg, model_config_map, results_path)

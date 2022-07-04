@@ -1,9 +1,14 @@
-from datetime import datetime
+import logging
 from pathlib import Path
 
-from .. import config
-from .. import core
-from .. import logging
+from .. import (
+    config,
+    core,
+)
+from ..logging import config_logging_for_cli
+
+
+logger = logging.getLogger(__name__)
 
 
 def eval(toml_path):
@@ -27,14 +32,14 @@ def eval(toml_path):
             f"eval called with a config.toml file that does not have a EVAL section: {toml_path}"
         )
 
-    # ---- set up logging ----------------------------------------------------------------------------------------------
-    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-    logger = logging.get_logger(
+    # ---- set up logging ---------------------------------------------------------------------------------------------
+    config_logging_for_cli(
         log_dst=cfg.eval.output_dir,
-        caller="eval",
-        timestamp=timenow,
-        logger_name=__name__,
+        log_stem="eval",
+        level="INFO",
+        force=True
     )
+
     logger.info("Logging results to {}".format(cfg.eval.output_dir))
 
     model_config_map = config.models.map_from_path(toml_path, cfg.eval.models)
@@ -51,5 +56,4 @@ def eval(toml_path):
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         device=cfg.eval.device,
-        logger=logger,
     )

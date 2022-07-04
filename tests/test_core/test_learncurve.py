@@ -88,7 +88,6 @@ def test_learncurve(specific_config, tmp_path, model, device):
         ckpt_step=cfg.learncurve.ckpt_step,
         patience=cfg.learncurve.patience,
         device=cfg.learncurve.device,
-        logger=None,
     )
 
     assert learncurve_output_matches_expected(cfg, model_config_map, results_path)
@@ -139,7 +138,6 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
         ckpt_step=cfg.learncurve.ckpt_step,
         patience=cfg.learncurve.patience,
         device=cfg.learncurve.device,
-        logger=None,
     )
 
     results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))

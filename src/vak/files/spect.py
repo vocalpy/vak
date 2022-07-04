@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -5,9 +6,11 @@ from dask import bag as db
 from dask.diagnostics import ProgressBar
 
 from .. import constants
-from ..logging import log_or_print
 from .files import find_fname
 from ..timebins import timebin_dur_from_vec
+
+
+logger = logging.getLogger(__name__)
 
 
 def find_audio_fname(spect_path, audio_ext=None):
@@ -120,7 +123,6 @@ def is_valid_set_of_spect_files(
     timebins_key="t",
     spect_key="s",
     n_decimals_trunc=5,
-    logger=None,
 ):
     """validate a set of spectrogram files that will be used as a dataset.
     Validates that:
@@ -190,7 +192,7 @@ def is_valid_set_of_spect_files(
 
     spect_paths_bag = db.from_sequence(spect_paths)
 
-    log_or_print("validating set of spectrogram files", logger=logger, level="info")
+    logger.info("validating set of spectrogram files")
 
     with ProgressBar():
         path_freqbins_timebin_dur_tups = list(spect_paths_bag.map(_validate))

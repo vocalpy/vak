@@ -1,11 +1,14 @@
 from datetime import datetime
+import logging
 from pathlib import Path
 import warnings
 
 from .. import split
 from ..converters import expanded_user_path, labelset_to_set
 from ..io import dataframe
-from ..logging import log_or_print
+
+
+logger = logging.getLogger(__name__)
 
 
 VALID_PURPOSES = frozenset(
@@ -32,11 +35,35 @@ def prep(
     train_dur=None,
     val_dur=None,
     test_dur=None,
-    logger=None,
 ):
-    """prepare datasets from vocalizations.
+    """Prepare datasets of vocalizations for use with neural network models.
+
     High-level function that prepares datasets to be used by other
     high-level functions like vak.train, vak.predict, and vak.learncurve
+
+    Saves a .csv file representing the dataset generated from data_dir.
+
+    Datasets are used to train neural networks that segment audio files into
+    vocalizations, and then predict labels for those segments.
+    The function also prepares datasets so neural networks can predict the
+    segmentation and annotation of vocalizations in them.
+    It can also split a dataset into training, validation, and test sets,
+    e.g. for benchmarking different neural network architectures.
+
+    If the 'purpose' is set to 'train' or 'learncurve', and/or
+    the duration of either the training or test set is provided,
+    then the function attempts to split the dataset into training and test sets.
+    A duration can also be specified for a validation set
+    (used to measure performance during training).
+    In these cases, the 'split' column in the .csv
+    identifies which files (rows) belong to the training, test, and
+    validation sets created from that Dataset.
+
+    If the 'purpose' is set to 'predict' or 'eval',
+    or no durations for any of the training sets are specified,
+    then the function assumes all the vocalizations constitute a single
+    dataset, and for all rows the 'split' columns for that dataset
+    will be 'predict' or 'test' (respectively).
 
     Parameters
     ----------
@@ -80,43 +107,12 @@ def prep(
     test_dur : float
         total duration of test set, in seconds. Default is None.
 
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by vak.logging.get_logger. Default is None.
-
     Returns
     -------
     vak_df : pandas.DataFrame
         that represents a dataset of vocalizations
     csv_path : Path
         to csv saved from vak_df
-
-    Notes
-    -----
-    Saves a .csv file representing the dataset generated from data_dir.
-
-    Datasets are used to train neural networks that segment audio files into
-    vocalizations, and then predict labels for those segments.
-    The function also prepares datasets so neural networks can predict the
-    segmentation and annotation of vocalizations in them.
-    It can also split a dataset into training, validation, and test sets,
-    e.g. for benchmarking different neural network architectures.
-
-    If the 'purpose' is set to 'train' or 'learncurve', and/or
-    the duration of either the training or test set is provided,
-    then the function attempts to split the dataset into training and test sets.
-    A duration can also be specified for a validation set
-    (used to measure performance during training).
-    In these cases, the 'split' column in the .csv
-    identifies which files (rows) belong to the training, test, and
-    validation sets created from that Dataset.
-
-    If the 'purpose' is set to 'predict' or 'eval',
-    or no durations for any of the training sets are specified,
-    then the function assumes all the vocalizations constitute a single
-    dataset, and for all rows the 'split' columns for that dataset
-    will be 'predict' or 'test' (respectively).
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if purpose not in VALID_PURPOSES:
@@ -164,7 +160,7 @@ def prep(
                 "Setting labelset to None."
             )
             labelset = None
-    log_or_print(msg=f"purpose for dataset: {purpose}", logger=logger, level="info")
+    logger.info(f"purpose for dataset: {purpose}")
     # ---- figure out file name ----------------------------------------------------------------------------------------
     data_dir_name = data_dir.name
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
@@ -190,7 +186,7 @@ def prep(
         "predict",
     ):
         # then we're not going to split
-        log_or_print(msg="will not split dataset", logger=logger, level="info")
+        logger.info("will not split dataset")
         do_split = False
     else:
         if val_dur is not None and train_dur is None and test_dur is None:
@@ -198,7 +194,7 @@ def prep(
                 "cannot specify only val_dur, unclear how to split dataset into training and test sets"
             )
         else:
-            log_or_print(msg="will split dataset", logger=logger, level="info")
+            logger.info("will split dataset")
             do_split = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
@@ -211,7 +207,6 @@ def prep(
         spect_format=spect_format,
         spect_output_dir=spect_output_dir,
         spect_params=spect_params,
-        logger=logger,
     )
 
     if do_split:
@@ -223,7 +218,6 @@ def prep(
             train_dur=train_dur,
             val_dur=val_dur,
             test_dur=test_dur,
-            logger=logger,
         )
 
     elif (
@@ -238,8 +232,8 @@ def prep(
 
         vak_df = dataframe.add_split_col(vak_df, split=split_name)
 
-    log_or_print(
-        msg=f"saving dataset as a .csv file: {csv_path}", logger=logger, level="info"
+    logger.info(
+        f"saving dataset as a .csv file: {csv_path}"
     )
     vak_df.to_csv(
         csv_path, index=False

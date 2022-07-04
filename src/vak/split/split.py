@@ -1,9 +1,13 @@
+import logging
+
 import numpy as np
 
 from .algorithms import brute_force
 from .algorithms.validate import validate_split_durations
 from ..labels import from_df as labels_from_df
-from ..logging import log_or_print
+
+
+logger = logging.getLogger(__name__)
 
 
 def train_test_dur_split_inds(
@@ -14,7 +18,6 @@ def train_test_dur_split_inds(
     test_dur,
     val_dur=None,
     algo="brute_force",
-    logger=None,
 ):
     """return indices to split a dataset into training, test, and validation sets of specified durations.
 
@@ -75,11 +78,9 @@ def train_test_dur_split_inds(
             f"training, test, and (if specified) validation sets: {total_target_dur}"
         )
 
-    log_or_print(
+    logger.info(
         f"Total target duration of splits: {total_target_dur} seconds. "
         f"Will be drawn from dataset with total duration: {total_dur:.3f}.",
-        logger=logger,
-        level="info",
     )
 
     if algo == "brute_force":
@@ -93,7 +94,7 @@ def train_test_dur_split_inds(
 
 
 def dataframe(
-    vak_df, labelset, train_dur=None, test_dur=None, val_dur=None, logger=None
+    vak_df, labelset, train_dur=None, test_dur=None, val_dur=None
 ):
     """split a dataset of vocalizations into training, test, and (optionally) validation subsets,
     specified by their duration.
@@ -145,7 +146,6 @@ def dataframe(
         train_dur=train_dur,
         test_dur=test_dur,
         val_dur=val_dur,
-        logger=logger,
     )
 
     # start off with all elements set to 'None'
