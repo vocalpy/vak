@@ -185,8 +185,11 @@ def test_data_download_generated_ci(session) -> None:
     """
     Download and extract a .tar.gz file of just the 'generated' test data used to run tests on CI
     """
-    session.run("wget", "-q", f"{GENERATED_TEST_DATA_CI_URL}", "-O", f"{GENERATED_TEST_DATA_CI_TAR}")
-    session.run("tar", "-xzf", f"{GENERATED_TEST_DATA_CI_TAR}")
+    session.log(f'Downloading: {GENERATED_TEST_DATA_CI_URL}')
+    copy_url(url=GENERATED_TEST_DATA_CI_URL, path=GENERATED_TEST_DATA_CI_TAR)
+    session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_CI_TAR}')
+    with tarfile.open(GENERATED_TEST_DATA_CI_TAR, "r:gz") as tf:
+        tf.extractall(path='.')
 
 
 @nox.session
