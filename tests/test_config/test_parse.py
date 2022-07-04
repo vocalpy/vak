@@ -251,9 +251,17 @@ def test_from_toml(all_generated_configs_toml_path_pairs, default_model):
 
 def test_from_toml_parse_prep_with_sections_not_none(
     all_generated_configs_toml_path_pairs,
+    default_model,
 ):
     """test that we get only the sections we want when we pass in a sections list to
     ``from_toml``. Specifically test ``PREP`` since that's what this will be used for."""
+    # only use configs from 'default_model') (teenytweetynet)
+    # so we are sure paths exist, to avoid NotADirectoryErrors that give spurious test failures
+    all_generated_configs_toml_path_pairs = [
+        (config_toml, toml_path)
+        for config_toml, toml_path in all_generated_configs_toml_path_pairs
+        if toml_path.name.startswith(default_model)
+    ]
     for config_toml, toml_path in all_generated_configs_toml_path_pairs:
         config_obj = vak.config.parse.from_toml(
             config_toml, toml_path, sections=["PREP", "SPECT_PARAMS"]
