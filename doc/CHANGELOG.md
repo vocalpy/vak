@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - switch from using `make` to `nox` for running tasks 
   [#532](https://github.com/NickleDave/vak/pull/532).
   Fixes [#440](https://github.com/NickleDave/vak/issues/440).
+- Refactor logging so that it can be configured by `cli` functions
+  when running `vak` through command-line interface, and by users 
+  that are working with the API directly
+  [#535](https://github.com/NickleDave/vak/pull/535).
 
 ### Fixed
 - Fix bug that prevented creating spectrogram files with non-default keys
@@ -24,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   into `spect.to_dataframe` inside `vak.io.dataframe.from_files`. 
   [#531](https://github.com/NickleDave/vak/pull/531).
   Fixes [#412](https://github.com/NickleDave/vak/issues/412).
+- Fix logging so a single message is not logged multiple times. 
+  [#535](https://github.com/NickleDave/vak/pull/535).
+  Fixes [#258](https://github.com/NickleDave/vak/issues/258).
 
 ## 0.5.0.post1 -- 2022-06-25
 ### Fixed
