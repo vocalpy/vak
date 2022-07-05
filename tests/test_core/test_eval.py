@@ -58,7 +58,6 @@ def test_eval(
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         device=cfg.eval.device,
-        logger=None,
     )
 
     assert eval_output_matches_expected(model_config_map, output_dir)

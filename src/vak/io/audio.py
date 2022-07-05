@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -5,13 +6,17 @@ import numpy as np
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from .. import constants
-from .. import files
+from .. import (
+    constants,
+    files
+)
 from ..annotation import source_annot_map
 from ..converters import labelset_to_set
 from ..config.spect_params import SpectParamsConfig
-from ..logging import log_or_print
 from ..spect import spectrogram
+
+
+logger = logging.getLogger(__name__)
 
 
 def files_from_dir(audio_dir, audio_format):
@@ -46,7 +51,6 @@ def to_spect(
     annot_list=None,
     audio_annot_map=None,
     labelset=None,
-    logger=None,
 ):
     """makes spectrograms from audio files and saves in array files
 
@@ -79,11 +83,6 @@ def to_spect(
         If not None, skip files where the associated annotations contain labels not in ``labelset``.
         ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
         See help for that function for details on how to specify labelset.
-
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -179,7 +178,7 @@ def to_spect(
         if annot_list:
             audio_annot_map = source_annot_map(audio_files, annot_list)
 
-    log_or_print("creating array files with spectrograms", logger=logger, level="info")
+    logger.info("creating array files with spectrograms")
 
     # use mapping (if generated/supplied) with labelset, if supplied, to filter
     if audio_annot_map:
@@ -195,11 +194,9 @@ def to_spect(
                     # because there's some label in labels that's not in labelset
                     audio_annot_map.pop(audio_file)
                     extra_labels = annot_labelset - labelset
-                    log_or_print(
+                    logger.info(
                         f"Found labels, {extra_labels}, in {Path(audio_file).name}, "
                         "that are not in labels_mapping. Skipping file.",
-                        logger=logger,
-                        level="info",
                     )
         audio_files = sorted(list(audio_annot_map.keys()))
 

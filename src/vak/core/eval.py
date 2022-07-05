@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from datetime import datetime
 import json
+import logging
 
 import joblib
 import pandas as pd
@@ -9,7 +10,9 @@ import torch.utils.data
 from .. import models
 from .. import transforms
 from ..datasets.vocal_dataset import VocalDataset
-from ..logging import log_or_print
+
+
+logger = logging.getLogger(__name__)
 
 
 def eval(
@@ -25,9 +28,8 @@ def eval(
     spect_key="s",
     timebins_key="t",
     device=None,
-    logger=None,
 ):
-    """evaluate a trained model
+    """Evaluate a trained model.
 
     Parameters
     ----------
@@ -66,38 +68,19 @@ def eval(
     device : str
         Device on which to work with model + data.
         Defaults to 'cuda' if torch.cuda.is_available is True.
-
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by vak.logging.get_logger. Default is None.
-
-    Returns
-    -------
-    None
     """
     # ---- get time for .csv file --------------------------------------------------------------------------
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------
     if spect_scaler_path:
-        log_or_print(
-            f"loading spect scaler from path: {spect_scaler_path}",
-            logger=logger,
-            level="info",
-        )
+        logger.info(f"loading spect scaler from path: {spect_scaler_path}")
         spect_standardizer = joblib.load(spect_scaler_path)
     else:
-        log_or_print(
-            f"not using a spect scaler",
-            logger=logger,
-            level="info",
-        )
+        logger.info(f"not using a spect scaler")
         spect_standardizer = None
 
-    log_or_print(
-        f"loading labelmap from path: {labelmap_path}", logger=logger, level="info"
-    )
+    logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
@@ -107,11 +90,7 @@ def eval(
         window_size=window_size,
         return_padding_mask=True,
     )
-    log_or_print(
-        f"creating dataset for evaluation from: {csv_path}",
-        logger=logger,
-        level="info",
-    )
+    logger.info(f"creating dataset for evaluation from: {csv_path}")
     val_dataset = VocalDataset.from_csv(
         csv_path=csv_path,
         split=split,
@@ -140,9 +119,7 @@ def eval(
     )
 
     for model_name, model in models_map.items():
-        log_or_print(
-            f"running evaluation for model: {model_name}", logger=logger, level="info"
-        )
+        logger.info(f"running evaluation for model: {model_name}")
         model.load(checkpoint_path, device=device)
         metric_vals = model.evaluate(eval_data=val_data, device=device)
         # create a "DataFrame" with just one row which we will save as a csv;
@@ -165,11 +142,7 @@ def eval(
         # throw away index below when saving to avoid extra column
         eval_df = pd.DataFrame(row, index=[0])
         eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
-        log_or_print(
-            f"saving csv with evaluation metrics at: {eval_csv_path}",
-            logger=logger,
-            level="info",
-        )
+        logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
         eval_df.to_csv(
             eval_csv_path, index=False
         )  # index is False to avoid having "Unnamed: 0" column when loading

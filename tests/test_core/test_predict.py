@@ -73,7 +73,6 @@ def test_predict(
         min_segment_dur=cfg.predict.min_segment_dur,
         majority_vote=cfg.predict.majority_vote,
         save_net_outputs=cfg.predict.save_net_outputs,
-        logger=None,
     )
 
     assert predict_output_matches_expected(output_dir, cfg.predict.annot_csv_filename)

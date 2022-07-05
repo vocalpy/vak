@@ -4,6 +4,7 @@ into a pandas DataFrame that represents a dataset used by ``vak``
 the returned DataFrame has columns as specified by vak.io.spect.DF_COLUMNS
 """
 from glob import glob
+import logging
 import os
 from pathlib import Path
 
@@ -16,7 +17,9 @@ from .. import constants
 from .. import files
 from ..annotation import source_annot_map
 from ..converters import labelset_to_set
-from ..logging import log_or_print
+
+
+logger = logging.getLogger(__name__)
 
 
 # constant, used for names of columns in DataFrame below
@@ -43,7 +46,6 @@ def to_dataframe(
     timebins_key="t",
     spect_key="s",
     audio_path_key="audio_path",
-    logger=None,
 ):
     """convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
     Spectrogram files are array in .npz files created by numpy or in .mat files created by Matlab.
@@ -87,11 +89,6 @@ def to_dataframe(
     audio_path_key : str
         key for accessing path to source audio file for spectrogram in files.
         Default is 'audio_path'.
-
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by vak.logging.get_logger. Default is None.
 
     Returns
     -------
@@ -184,11 +181,9 @@ def to_dataframe(
                 extra_labels = labels_set - set(labelset)
                 # because there's some label in labels
                 # that's not in labels_mapping
-                log_or_print(
+                logger.info(
                     f"Found labels, {extra_labels}, in {Path(spect_path).name}, "
                     "that are not in labels_mapping. Skipping file.",
-                    logger=logger,
-                    level="info",
                 )
                 spect_annot_map.pop(spect_path)
                 continue
@@ -203,7 +198,6 @@ def to_dataframe(
         timebins_key,
         spect_key,
         n_decimals_trunc,
-        logger=logger,
     )
 
     # now that we have validated that duration of time bins is consistent across files, we can just open one file
@@ -259,10 +253,8 @@ def to_dataframe(
         return record
 
     spect_path_annot_tuples = db.from_sequence(spect_annot_map.items())
-    log_or_print(
+    logger.info(
         "creating pandas.DataFrame representing dataset from spectrogram files",
-        logger=logger,
-        level="info",
     )
     with ProgressBar():
         records = list(spect_path_annot_tuples.map(_to_record))

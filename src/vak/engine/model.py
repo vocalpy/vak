@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 
 import torch
 import torch.nn.modules.loss
@@ -7,7 +8,9 @@ from tqdm import tqdm
 
 from ..device import get_default as get_default_device
 from ..labeled_timebins import lbl_tb2labels
-from ..logging import log_or_print
+
+
+logger = logging.getLogger(__name__)
 
 
 class Model:
@@ -68,7 +71,6 @@ class Model:
         loss,
         optimizer,
         metrics,
-        logger=None,
         summary_writer=None,
         global_step=0,
     ):
@@ -77,7 +79,6 @@ class Model:
         self.loss = loss
         self.metrics = metrics
 
-        self.logger = logger
         self.summary_writer = summary_writer
         self.global_step = global_step  # used for summary writer
 
@@ -128,23 +129,19 @@ class Model:
 
             if val_data is not None:
                 if self.global_step % val_step == 0:
-                    log_or_print(
+                    logger.info(
                         f"Step {self.global_step} is a validation step; computing metrics on validation set",
-                        logger=self.logger,
-                        level="info",
                     )
                     metric_vals = self._eval(val_data)
                     self.network.train()  # because _eval calls network.eval()
-                    log_or_print(
-                        msg=", ".join(
+                    logger.info(
+                        ", ".join(
                             [
                                 f"{metric_name}: {metric_value:.4f}"
                                 for metric_name, metric_value in metric_vals.items()
                                 if metric_name.startswith("avg_")
                             ]
                         ),
-                        logger=self.logger,
-                        level="info",
                     )
 
                     if self.summary_writer is not None:
@@ -157,10 +154,8 @@ class Model:
                     current_val_acc = metric_vals["avg_acc"]
                     if current_val_acc > self.max_val_acc:
                         self.max_val_acc = current_val_acc
-                        log_or_print(
-                            msg=f"Accuracy on validation set improved. Saving max-val-acc checkpoint.",
-                            logger=self.logger,
-                            level="info",
+                        logger.info(
+                            f"Accuracy on validation set improved. Saving max-val-acc checkpoint.",
                         )
                         self.save(
                             self.max_val_acc_ckpt_path,
@@ -173,11 +168,9 @@ class Model:
                         if self.patience:
                             self.patience_counter += 1
                             if self.patience_counter > self.patience:
-                                log_or_print(
+                                logger.info(
                                     "Stopping training early, "
                                     f"accuracy has not improved in {self.patience} validation steps.",
-                                    logger=self.logger,
-                                    level="info",
                                 )
                                 # save "backup" checkpoint upon stopping; don't save over "max-val-acc" checkpoint
                                 self.save(
@@ -188,26 +181,20 @@ class Model:
                                 progress_bar.close()
                                 break
                             else:
-                                log_or_print(
+                                logger.info(
                                     f"Accuracy has not improved in {self.patience_counter} validation steps. "
                                     f"Not saving max-val-acc checkpoint for this validation step.",
-                                    logger=self.logger,
-                                    level="info",
                                 )
                         else:  # patience is None. We still log that we are not saving checkpoint.
-                            log_or_print(
+                            logger.info(
                                 "Accuracy is less than maximum validation accuracy so far. "
                                 "Not saving max-val-acc checkpoint.",
-                                logger=self.logger,
-                                level="info",
                             )
 
             # below can be true regardless of whether we have val_data and/or current epoch is a val_epoch
             if self.global_step % ckpt_step == 0:
-                log_or_print(
+                logger.info(
                     f"Step {self.global_step} is a checkpoint step.",
-                    logger=self.logger,
-                    level="info",
                 )
                 self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
 
@@ -376,8 +363,8 @@ class Model:
             "optimizer_state_dict": self.optimizer.state_dict(),
         }
         ckpt.update(**kwargs)
-        log_or_print(
-            f"Saving checkpoint at:\n{ckpt_path} ", logger=self.logger, level="info"
+        logger.info(
+            f"Saving checkpoint at:\n{ckpt_path} "
         )
         torch.save(ckpt, ckpt_path)
 
@@ -396,8 +383,8 @@ class Model:
         if device is None:
             device = get_default_device()
 
-        log_or_print(
-            f"Loading checkpoint from:\n{ckpt_path} ", logger=self.logger, level="info"
+        logger.info(
+            f"Loading checkpoint from:\n{ckpt_path} "
         )
         ckpt = torch.load(ckpt_path, map_location=device)
         self.network.load_state_dict(ckpt["network_state_dict"])
@@ -448,8 +435,8 @@ class Model:
 
         # ---- actually do fitting ----------
         for epoch in range(1, num_epochs + 1):
-            log_or_print(
-                f"epoch {epoch} / {num_epochs}", logger=self.logger, level="info"
+            logger.info(
+                f"epoch {epoch} / {num_epochs}"
             )
             self._train(train_data, epoch, val_data, val_step, ckpt_step)
             if patience is not None:
@@ -460,7 +447,7 @@ class Model:
         if (
             epoch == num_epochs
         ):  # save at end, if we complete all epochs (not if we stopped because of patience)
-            log_or_print("Completed last epoch.", logger=self.logger, level="info")
+            logger.info("Completed last epoch.")
             self.save(self.ckpt_path, epoch=epoch, global_step=self.global_step)
 
     def evaluate(self, eval_data, device=None):
@@ -478,7 +465,7 @@ class Model:
         return self._predict(pred_data)
 
     @classmethod
-    def from_config(cls, config, logger=None):
+    def from_config(cls, config):
         """any model that inherits from this class should do whatever it needs to
         in this factory method to create the network, optimizer, and loss, and
         then pass those to the init function
@@ -489,9 +476,6 @@ class Model:
             presumably mapping 'network', 'optimizer' and 'loss' to kwargs that
             determine parameters for each of those, e.g. dropout rate for the
             network, learning rate for the optimizer, etc.
-        logger : logging.Logger
-            instance returned by vak.logging.get_logger.
-            Default is None, in which case messages are just sent to print function.
 
         Returns
         -------

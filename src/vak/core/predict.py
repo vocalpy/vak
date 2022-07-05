@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -15,11 +16,13 @@ from .. import (
     io,
     labeled_timebins,
 )
-from ..logging import log_or_print
 from .. import models
 from .. import transforms
 from ..datasets import VocalDataset
 from ..device import get_default as get_default_device
+
+
+logger = logging.getLogger(__name__)
 
 
 def predict(
@@ -38,10 +41,8 @@ def predict(
     min_segment_dur=None,
     majority_vote=False,
     save_net_outputs=False,
-    logger=None,
 ):
-    """make predictions on dataset with trained model specified in config.toml file.
-     Function called by command-line interface.
+    """Make predictions on a dataset with a trained model.
 
      Parameters
      ----------
@@ -101,15 +102,6 @@ def predict(
          spectrogram with `spect_path` filename `gy6or6_032312_081416.npz`,
          and the network is `TweetyNet`, then the net output file
          will be `gy6or6_032312_081416.tweetynet.output.npz`.
-
-     Other Parameters
-     ----------------
-     logger : logging.Logger
-         instance created by vak.logging.get_logger. Default is None.
-
-     Returns
-     -------
-     None
     """
     if output_dir is None:
         output_dir = Path(os.getcwd())
@@ -126,18 +118,10 @@ def predict(
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
     if spect_scaler_path:
-        log_or_print(
-            f"loading SpectScaler from path: {spect_scaler_path}",
-            logger=logger,
-            level="info",
-        )
+        logger.info(f"loading SpectScaler from path: {spect_scaler_path}")
         spect_standardizer = joblib.load(spect_scaler_path)
     else:
-        log_or_print(
-            f"Not loading SpectScaler, no path was specified",
-            logger=logger,
-            level="info",
-        )
+        logger.info(f"Not loading SpectScaler, no path was specified")
         spect_standardizer = None
 
     item_transform = transforms.get_defaults(
@@ -147,17 +131,11 @@ def predict(
         return_padding_mask=True,
     )
 
-    log_or_print(
-        f"loading labelmap from path: {labelmap_path}", logger=logger, level="info"
-    )
+    logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    log_or_print(
-        f"loading dataset to predict from csv path: {csv_path}",
-        logger=logger,
-        level="info",
-    )
+    logger.info(f"loading dataset to predict from csv path: {csv_path}")
     pred_dataset = VocalDataset.from_csv(
         csv_path=csv_path,
         split="predict",
@@ -179,19 +157,11 @@ def predict(
     if annot_csv_filename is None:
         annot_csv_filename = Path(csv_path).stem + constants.ANNOT_CSV_SUFFIX
     annot_csv_path = Path(output_dir).joinpath(annot_csv_filename)
-    log_or_print(
-        f"will save annotations in .csv file: {annot_csv_path}",
-        logger=logger,
-        level="info",
-    )
+    logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
     dataset_df = pd.read_csv(csv_path)
     timebin_dur = io.dataframe.validate_and_get_timebin_dur(dataset_df)
-    log_or_print(
-        f"dataset has timebins with duration: {timebin_dur}",
-        logger=logger,
-        level="info",
-    )
+    logger.info(f"dataset has timebins with duration: {timebin_dur}")
 
     # ---------------- do the actual predicting + converting to annotations --------------------------------------------
     input_shape = pred_dataset.shape
@@ -199,40 +169,24 @@ def predict(
     # throw out the window dimension; just want to tell network (channels, height, width) shape
     if len(input_shape) == 4:
         input_shape = input_shape[1:]
-    log_or_print(
-        f"shape of input to networks used for predictions: {input_shape}",
-        logger=logger,
-        level="info",
-    )
+    logger.info(f"shape of input to networks used for predictions: {input_shape}")
 
-    log_or_print(
-        f"instantiating models from model-config map:/n{model_config_map}",
-        logger=logger,
-        level="info",
-    )
+    logger.info(f"instantiating models from model-config map:/n{model_config_map}")
     models_map = models.from_model_config_map(
         model_config_map, num_classes=len(labelmap), input_shape=input_shape
     )
     for model_name, model in models_map.items():
         # ---------------- do the actual predicting --------------------------------------------------------------------
-        log_or_print(
-            f"loading checkpoint for {model_name} from path: {checkpoint_path}",
-            logger=logger,
-            level="info",
-        )
+        logger.info(f"loading checkpoint for {model_name} from path: {checkpoint_path}")
         model.load(checkpoint_path, device=device)
-        log_or_print(
-            f"running predict method of {model_name}", logger=logger, level="info"
-        )
+        logger.info(f"running predict method of {model_name}")
         pred_dict = model.predict(pred_data=pred_data, device=device)
 
         # ----------------  converting to annotations ------------------------------------------------------------------
         progress_bar = tqdm(pred_data)
 
         annots = []
-        log_or_print(
-            "converting predictions to annotations", logger=logger, level="info"
-        )
+        logger.info("converting predictions to annotations")
         for ind, batch in enumerate(progress_bar):
             padding_mask, spect_path = batch["padding_mask"], batch["spect_path"]
             padding_mask = np.squeeze(padding_mask)

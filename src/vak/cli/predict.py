@@ -1,9 +1,14 @@
-from datetime import datetime
+import logging
 from pathlib import Path
 
-from .. import config
-from .. import core
-from .. import logging
+from .. import (
+    config,
+    core
+)
+from ..logging import config_logging_for_cli
+
+
+logger = logging.getLogger(__name__)
 
 
 def predict(toml_path):
@@ -14,10 +19,6 @@ def predict(toml_path):
     ----------
     toml_path : str, Path
         path to a configuration file in TOML format.
-
-    Returns
-    -------
-    None
     """
     toml_path = Path(toml_path)
     cfg = config.parse.from_toml_path(toml_path)
@@ -28,12 +29,11 @@ def predict(toml_path):
         )
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
-    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-    logger = logging.get_logger(
+    config_logging_for_cli(
         log_dst=cfg.predict.output_dir,
-        caller="predict",
-        timestamp=timenow,
-        logger_name=__name__,
+        log_stem="predict",
+        level="INFO",
+        force=True
     )
     logger.info("Logging results to {}".format(cfg.prep.output_dir))
 
@@ -55,5 +55,4 @@ def predict(toml_path):
         min_segment_dur=cfg.predict.min_segment_dur,
         majority_vote=cfg.predict.majority_vote,
         save_net_outputs=cfg.predict.save_net_outputs,
-        logger=logger,
     )
