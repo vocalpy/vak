@@ -134,14 +134,14 @@ def make_tarfile(name: str, to_add: list):
 CONFIGS_DIR = f'{GENERATED_TEST_DATA_DIR}configs'
 PREP_DIR = f'{GENERATED_TEST_DATA_DIR}prep/'
 RESULTS_DIR = f'{GENERATED_TEST_DATA_DIR}results/'
-RESULTS_CI = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/teenytweetynet'))
 
+PREP_CI = sorted(pathlib.Path(PREP_DIR).glob('*/*/teenytweetynet'))
+RESULTS_CI = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/teenytweetynet'))
 GENERATED_TEST_DATA_CI_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data.ci.tar.gz'
-GENERATED_TEST_DATA_CI_DIRS = [CONFIGS_DIR, PREP_DIR] + RESULTS_CI
+GENERATED_TEST_DATA_CI_DIRS = [CONFIGS_DIR] + PREP_CI + RESULTS_CI
 
 GENERATED_TEST_DATA_ALL_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data.tar.gz'
-RESULTS_TWEETYNET = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/tweetynet'))
-GENERATED_TEST_DATA_ALL_DIRS = GENERATED_TEST_DATA_CI_DIRS + RESULTS_TWEETYNET
+GENERATED_TEST_DATA_ALL_DIRS = [CONFIGS_DIR, PREP_DIR, RESULTS_DIR]
 
 
 @nox.session(name='test-data-tar-generated-all')
@@ -162,7 +162,7 @@ def test_data_tar_generated_ci(session) -> None:
     make_tarfile(GENERATED_TEST_DATA_CI_TAR, GENERATED_TEST_DATA_CI_DIRS)
 
 
-GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/jz6da/download'
+GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/7uz6r/download'
 
 
 @nox.session(name='test-data-download-generated-all')
@@ -177,7 +177,7 @@ def test_data_download_generated_all(session) -> None:
         tf.extractall(path='.')
 
 
-GENERATED_TEST_DATA_CI_URL = 'https://osf.io/qprcu/download'
+GENERATED_TEST_DATA_CI_URL = 'https://osf.io/p6wyh/download'
 
 
 @nox.session(name='test-data-download-generated-ci')
@@ -185,8 +185,11 @@ def test_data_download_generated_ci(session) -> None:
     """
     Download and extract a .tar.gz file of just the 'generated' test data used to run tests on CI
     """
-    session.run("wget", "-q", f"{GENERATED_TEST_DATA_CI_URL}", "-O", f"{GENERATED_TEST_DATA_CI_TAR}")
-    session.run("tar", "-xzf", f"{GENERATED_TEST_DATA_CI_TAR}")
+    session.log(f'Downloading: {GENERATED_TEST_DATA_CI_URL}')
+    copy_url(url=GENERATED_TEST_DATA_CI_URL, path=GENERATED_TEST_DATA_CI_TAR)
+    session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_CI_TAR}')
+    with tarfile.open(GENERATED_TEST_DATA_CI_TAR, "r:gz") as tf:
+        tf.extractall(path='.')
 
 
 @nox.session

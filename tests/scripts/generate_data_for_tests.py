@@ -119,21 +119,11 @@ def make_subdirs_in_generated(config_paths):
                 ):
                     continue  # no need to make this dir
 
-                if top_level_dir == "prep":
+                for model in MODELS:
                     subdir_to_make = (
-                        GENERATED_TEST_DATA / top_level_dir / command_dir / data_dir
+                        GENERATED_TEST_DATA / top_level_dir / command_dir / data_dir / model
                     )
                     subdir_to_make.mkdir(parents=True)
-                else:
-                    for model in MODELS:
-                        subdir_to_make = (
-                            GENERATED_TEST_DATA
-                            / top_level_dir
-                            / command_dir
-                            / data_dir
-                            / model
-                        )
-                        subdir_to_make.mkdir(parents=True)
 
 
 def copy_config_files():
@@ -262,46 +252,14 @@ def main():
     )
     make_subdirs_in_generated(config_paths)
 
-    # ---- only need to run prep once, since prep'd data is the same regardless of model ----
-    prep_config_paths = [
-        config_path
-        for config_path in config_paths
-        if config_path.name.startswith(MODELS[0])
-    ]
-    run_prep(config_paths=prep_config_paths)
-    # now add the prep csv from those configs to the corresponding config
-    # from all the other models
-    for model in MODELS[1:]:
-        model_config_paths = [
-            config_path
-            for config_path in config_paths
-            if config_path.name.startswith(model)
-        ]
-        for model_config_path in model_config_paths:
-            # we want the same prep config for MODEL[0] which will have the
-            # exact same name, but with a different model name as the "prefix"
-            stem_minus_model = model_config_path.stem.replace(model, "")
-            prep_config_path = [
-                prep_config_path
-                for prep_config_path in prep_config_paths
-                if prep_config_path.stem.endswith(stem_minus_model)
-            ]
-            assert len(prep_config_path) == 1
-            prep_config_path = prep_config_path[0]
-            with prep_config_path.open("r") as fp:
-                prep_config_toml = toml.load(fp)
-            with model_config_path.open("r") as fp:
-                model_config_toml = toml.load(fp)
-            # find the section that `vak prep` added the `csv_path` to,
-            # and set `csv_path` for model config to the same value in
-            # the same section for this model config
-            for section_name, options_dict in prep_config_toml.items():
-                if "csv_path" in options_dict:
-                    model_config_toml[section_name]["csv_path"] = options_dict[
-                        "csv_path"
-                    ]
-            with model_config_path.open("w") as fp:
-                toml.dump(model_config_toml, fp)
+    # need to run `prep` before we run other commands
+    for model in MODELS:
+        config_paths_this_model = [
+                    config_path
+                    for config_path in config_paths
+                    if config_path.name.startswith(model)
+                ]
+        run_prep(config_paths=config_paths_this_model)
 
     for model in MODELS:
         for command in COMMANDS:

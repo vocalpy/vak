@@ -1,37 +1,37 @@
 [PREP]
-data_dir = './tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032312'
-output_dir = './tests/data_for_tests/generated/prep/learncurve/audio_cbin_annot_notmat'
-audio_format = 'cbin'
-annot_format = 'notmat'
-spect_output_dir = "./tests/data_for_tests/generated/prep/learncurve/audio_cbin_annot_notmat"
-labelset = 'iabcdefghjk'
+data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032312"
+output_dir = "./tests/data_for_tests/generated/prep/learncurve/audio_cbin_annot_notmat/teenytweetynet"
+audio_format = "cbin"
+annot_format = "notmat"
+spect_output_dir = "./tests/data_for_tests/generated/prep/learncurve/audio_cbin_annot_notmat/teenytweetynet"
+labelset = "iabcdefghjk"
 train_dur = 50
 val_dur = 15
 test_dur = 30
 
 [SPECT_PARAMS]
-fft_size = 512
+fft_size = 256
 step_size = 64
-freq_cutoffs = [ 500, 10000 ]
+freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
-transform_type = 'log_spect'
+transform_type = "log_spect"
 
 [DATALOADER]
 window_size = 44
 
 [LEARNCURVE]
-models = 'TeenyTweetyNet'
+models = "TeenyTweetyNet"
 normalize_spectrograms = true
 batch_size = 4
 num_epochs = 2
 val_step = 50
 ckpt_step = 200
 patience = 3
-num_workers = 4
-train_set_durs = [ 4, 6 ]
+num_workers = 2
+train_set_durs = [ 4, 6,]
 num_replicates = 2
 device = "cuda"
-root_results_dir = './tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/teenytweetynet'
+root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/teenytweetynet"
 
-[TeenyTweetyNet]
-optimizer.lr = 0.001
+[TeenyTweetyNet.optimizer]
+lr = 0.001

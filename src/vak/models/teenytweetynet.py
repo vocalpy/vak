@@ -18,11 +18,11 @@ class TeenyTweetyNet(nn.Module):
         conv2_filters=16,
         conv2_kernel_size=(5, 5),
         conv2_padding=(0, 2),
-        pool1_size=(8, 1),
-        pool1_stride=(8, 1),
-        pool2_size=(8, 1),
-        pool2_stride=(8, 1),
-        hidden_size=64,
+        pool1_size=(4, 1),
+        pool1_stride=(4, 1),
+        pool2_size=(4, 1),
+        pool2_stride=(4, 1),
+        hidden_size=32,
     ):
         """TeenyTweetyNet model
 
@@ -43,13 +43,16 @@ class TeenyTweetyNet(nn.Module):
         conv2_kernel_size : tuple
             Size of kernels, i.e. filters, in second convolutional layer. Default is (5, 5).
         pool1_size : two element tuple of ints
-            Size of sliding window for first max pooling layer. Default is (1, 8)
+            Size of sliding window for first max pooling layer. Default is (8, 1)
         pool1_stride : two element tuple of ints
-            Step size for sliding window of first max pooling layer. Default is (1, 8)
+            Step size for sliding window of first max pooling layer. Default is (8, 1)
         pool2_size : two element tuple of ints
-            Size of sliding window for second max pooling layer. Default is (1, 8),
+            Size of sliding window for second max pooling layer. Default is (4, 1),
         pool2_stride : two element tuple of ints
-            Step size for sliding window of second max pooling layer. Default is (1, 8)
+            Step size for sliding window of second max pooling layer. Default is (4, 1)
+        hidden_size : int
+            Size of hidden state in recurrent neural network; dimensionality of vector.
+            Default is 32.
         """
         super().__init__()
         self.num_classes = num_classes

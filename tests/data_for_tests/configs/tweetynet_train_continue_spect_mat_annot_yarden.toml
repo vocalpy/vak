@@ -1,12 +1,13 @@
 [PREP]
 data_dir = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/spect"
-output_dir = "./tests/data_for_tests/generated/prep/train/spect_mat_annot_yarden"
+output_dir = "./tests/data_for_tests/generated/prep/train/spect_mat_annot_yarden/tweetynet"
 spect_format = "mat"
 annot_format = "yarden"
 annot_file = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/llb3_annot_subset.mat"
 labelset = "range: 1-3,6-14,17-19"
 train_dur = 213
 val_dur = 213
+spect_output_dir = "./tests/data_for_tests/generated/prep/train/spect_mat_annot_yarden/tweetynet"
 
 [SPECT_PARAMS]
 fft_size = 512

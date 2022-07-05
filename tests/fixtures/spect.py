@@ -13,7 +13,7 @@ def spect_dir_mat(source_test_data_root):
 def spect_dir_npz(generated_test_data_root):
     return sorted(
         generated_test_data_root.joinpath(
-            "prep", "train", "audio_cbin_annot_notmat"
+            "prep", "train", "audio_cbin_annot_notmat", "teenytweetynet"
         ).glob("spectrograms_generated*")
     )[0]
 

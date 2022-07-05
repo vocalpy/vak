@@ -269,6 +269,32 @@ def all_generated_configs_toml_path_pairs(all_generated_configs):
 
 
 @pytest.fixture
+def configs_toml_path_pairs_by_model_factory(all_generated_configs_toml_path_pairs):
+    """
+    factory fixture that returns all generated configs and their paths for a specified model
+    """
+
+    def _wrapped(model,
+                 section_name=None):
+        out = []
+        unzipped = list(all_generated_configs_toml_path_pairs)
+        for config_toml, toml_path in unzipped:
+            if toml_path.name.startswith(model):
+                if section_name:
+                    if section_name.lower() in toml_path.name:
+                        out.append(
+                            (config_toml, toml_path)
+                        )
+                else:
+                    out.append(
+                     (config_toml, toml_path)
+                    )
+        return out
+
+    return _wrapped
+
+
+@pytest.fixture
 def all_generated_train_configs_toml_path_pairs(all_generated_train_configs):
     """zip of tuple pairs: (dict, pathlib.Path)
     where ``Path`` is path to .toml config file and ``dict`` is
