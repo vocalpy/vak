@@ -51,19 +51,14 @@ $ pip install vak
 ```
 
 #### with `conda`
-##### on Mac and Linux
-
 ```console
-$ conda install vak -c conda-forge
+$ conda install vak -c pytorch -c conda-forge
+$ #                  ^ notice additional channel!
 ```
 
-##### on Windows
-On Windows, you need to add an additional channel, `pytorch`.  
-You can do this by repeating the `-c` option more than once.
-```console
-$ conda install vak -c conda-forge -c pytorch
-$ #                                 ^ notice additional channel!
-```
+Notice that for `conda` you specify two channels, 
+and that the `pytorch` channel should come first, 
+so it takes priority when installing the dependencies `pytorch` and `torchvision`.
 
 For more details, please see:
 https://vak.readthedocs.io/en/latest/get_started/installation.html
