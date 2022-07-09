@@ -25,3 +25,10 @@ jobs:
           nox -s test-data-download-source
           nox -s test-data-download-generated-ci
           nox -s coverage -- fix-prep-csv-paths running-on-ci
+      - name: upload code coverage
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          name: vak
+          flags: unittests
+          env_vars: OS,PYTHON
