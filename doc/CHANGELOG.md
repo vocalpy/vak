@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add unit tests for `csv.has_unlabled`
   [#541](https://github.com/NickleDave/vak/pull/541).
   Fixes [#102](https://github.com/NickleDave/vak/issues/102).
+- Add unit tests for `__main__`
+  [#542](https://github.com/NickleDave/vak/pull/542).
+  Fixes [#337](https://github.com/NickleDave/vak/issues/337).
 
 ## 0.6.0 -- 2022-07-07
 ### Added
