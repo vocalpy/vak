@@ -5,12 +5,13 @@ Example: python -m vak --help
 import argparse
 from pathlib import Path
 
+from .cli import cli
+
 
 def get_parser():
     """returns ArgumentParser instance used by main()"""
-    from .cli import cli  # avoid circular import
-
     parser = argparse.ArgumentParser(
+        prog='vak',
         description="vak command-line interface",
         formatter_class=argparse.RawTextHelpFormatter,
     )
@@ -32,16 +33,18 @@ def get_parser():
     return parser
 
 
-def main():
-    """main function, called when package is run with `python -m vak` or
-    alternatively just calling `vak` at the command line (because this
-    function is installed under just `vak` as a console script entry point,
-    see setup.py)
-    """
-    from .cli import cli  # avoid circular import
+def main(args=None):
+    """Main function called when run as script or through command-line interface
 
-    parser = get_parser()
-    args = parser.parse_args()
+    called when package is run with `python -m vak` or
+    alternatively just calling `vak` at the command line (because this
+    function is installed under just `vak` as a console script)
+
+    ``args`` is used for unit testing only
+    """
+    if args is None:
+        parser = get_parser()
+        args = parser.parse_args()
     cli.cli(command=args.command, config_file=args.configfile)
 
 

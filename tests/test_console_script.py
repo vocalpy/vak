@@ -9,7 +9,7 @@ def capture(command):
 def test_cli_just_vak():
     command = ["vak"]
     out, err, returncode = capture(command)
-    assert returncode == 2
+    assert returncode > 0
     assert out == ''
     assert err.startswith('usage: vak ')
 
