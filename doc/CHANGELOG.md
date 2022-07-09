@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- Add unit tests for `csv.has_unlabled`
+  [#541](https://github.com/NickleDave/vak/pull/541).
+  Fixes [#102](https://github.com/NickleDave/vak/issues/102).
+
 ## 0.6.0 -- 2022-07-07
 ### Added
 - better document `conda` install 
