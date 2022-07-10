@@ -120,6 +120,9 @@ def specific_config(generated_test_configs_root, list_of_schematized_configs, tm
         options_to_change : list, dict
             list of dicts with keys 'section', 'option', and 'value'.
             Can be a single dict, in which case only that option is changed.
+            If the 'value' is set to 'DELETE-OPTION',
+            the option will be removed from the config.
+            This can be used to test behavior when the option is not set.
 
         Returns
         -------
@@ -166,7 +169,11 @@ def specific_config(generated_test_configs_root, list_of_schematized_configs, tm
                 config_toml = toml.load(fp)
 
             for opt_dict in options_to_change:
-                config_toml[opt_dict["section"]][opt_dict["option"]] = opt_dict["value"]
+                if opt_dict["value"] == 'DELETE-OPTION':
+                    # e.g., to test behavior of config without this option
+                    del config_toml[opt_dict["section"]][opt_dict["option"]]
+                else:
+                    config_toml[opt_dict["section"]][opt_dict["option"]] = opt_dict["value"]
 
             with config_copy_path.open("w") as fp:
                 toml.dump(config_toml, fp)
