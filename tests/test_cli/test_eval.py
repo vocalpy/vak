@@ -1,4 +1,6 @@
 """tests for vak.cli.eval module"""
+from unittest import mock
+
 import pytest
 
 import vak.cli.eval
@@ -7,7 +9,6 @@ import vak.constants
 import vak.paths
 
 from . import cli_asserts
-from ..test_core.test_eval import eval_output_matches_expected
 
 
 @pytest.mark.parametrize(
@@ -39,10 +40,9 @@ def test_eval(
     )
 
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
 
-    vak.cli.eval.eval(toml_path)
-
-    assert eval_output_matches_expected(model_config_map, output_dir)
+    with mock.patch('vak.core.eval', autospec=True) as mock_core_eval:
+        vak.cli.eval.eval(toml_path)
+        assert mock_core_eval.called
 
     assert cli_asserts.log_file_created(command="eval", output_path=output_dir)
