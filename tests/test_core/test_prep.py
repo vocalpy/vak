@@ -93,6 +93,76 @@ def test_prep(
     assert prep_output_matches_expected(csv_path, vak_df)
 
 
+@pytest.mark.parametrize(
+    "config_type, audio_format, spect_format, annot_format",
+    [
+        ("eval", "cbin", None, "notmat"),
+        ("learncurve", "cbin", None, "notmat"),
+        ("train", "cbin", None, "notmat"),
+        ("train", "wav", None, "birdsong-recognition-dataset"),
+        ("train", None, "mat", "yarden"),
+    ],
+)
+def test_prep_raises_when_labelset_required_but_is_none(
+    config_type,
+    audio_format,
+    spect_format,
+    annot_format,
+    specific_config,
+    default_model,
+    tmp_path,
+):
+    """Test that `prep` raises a ValueError when the config
+    requires a `labelset`,
+    i.e., is one of {'train','learncurve', 'eval'},
+    but it is left as None.
+
+    Regression test for https://github.com/vocalpy/vak/issues/468.
+    """
+    output_dir = tmp_path.joinpath(
+        f"test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}"
+    )
+    output_dir.mkdir()
+
+    options_to_change = [
+        {"section": "PREP",
+         "option": "output_dir",
+         "value": str(output_dir),
+         },
+        {"section": "PREP",
+         "option": "labelset",
+         "value": "DELETE-OPTION",
+         },
+    ]
+    toml_path = specific_config(
+        config_type=config_type,
+        model=default_model,
+        audio_format=audio_format,
+        annot_format=annot_format,
+        spect_format=spect_format,
+        options_to_change=options_to_change,
+    )
+    cfg = vak.config.parse.from_toml_path(toml_path)
+
+    purpose = config_type.lower()
+    with pytest.raises(ValueError):
+        vak.core.prep(
+            data_dir=cfg.prep.data_dir,
+            purpose=purpose,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_output_dir=cfg.prep.spect_output_dir,
+            spect_params=cfg.spect_params,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            output_dir=cfg.prep.output_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+        )
+
+
 def test_prep_with_single_audio_and_annot(source_test_data_root,
                                           specific_config,
                                           default_model,

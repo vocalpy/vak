@@ -153,13 +153,23 @@ def prep(
     if purpose == "predict":
         if labelset is not None:
             warnings.warn(
-                "purpose set to 'predict', but a labelset was provided."
+                ".toml config file has a 'predict' section, but a labelset was provided."
                 "This would cause an error because the dataframe.from_files section will attempt to "
                 f"check whether the files in the data_dir ({data_dir}) have labels in "
                 "labelset, even though those files don't have annotation.\n"
                 "Setting labelset to None."
             )
             labelset = None
+    else:  # if purpose is not predict
+        if labelset is None:
+            raise ValueError(
+                f".toml config file has a '{purpose}' section, but no labelset was provided."
+                "This will cause an error when trying to split the dataset, "
+                "e.g. into training and test splits, "
+                "or a silent error, e.g. when calculating metrics with an evaluation set. "
+                "Please add a 'labelset' option to the [PREP] section of the .toml config file."
+            )
+
     logger.info(f"purpose for dataset: {purpose}")
     # ---- figure out file name ----------------------------------------------------------------------------------------
     data_dir_name = data_dir.name
