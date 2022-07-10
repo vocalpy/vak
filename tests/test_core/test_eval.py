@@ -61,3 +61,46 @@ def test_eval(
     )
 
     assert eval_output_matches_expected(model_config_map, output_dir)
+
+
+def test_eval_invalid_csv_path_raises(
+    specific_config, tmp_path, device
+):
+    """Test that core.eval raises FileNotFoundError
+    when `csv_path` does not exist."""
+    output_dir = tmp_path.joinpath(
+        f"test_eval_cbin_notmat_invalid_csv_path"
+    )
+    output_dir.mkdir()
+
+    options_to_change = [
+        {"section": "EVAL", "option": "output_dir", "value": str(output_dir)},
+        {"section": "EVAL", "option": "device", "value": device},
+    ]
+
+    toml_path = specific_config(
+        config_type="eval",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=options_to_change,
+    )
+    cfg = vak.config.parse.from_toml_path(toml_path)
+    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
+
+    invalid_csv_path = '/obviously/doesnt/exist/dataset.csv'
+    with pytest.raises(FileNotFoundError):
+        vak.core.eval(
+            invalid_csv_path,
+            model_config_map,
+            checkpoint_path=cfg.eval.checkpoint_path,
+            labelmap_path=cfg.eval.labelmap_path,
+            output_dir=cfg.eval.output_dir,
+            window_size=cfg.dataloader.window_size,
+            num_workers=cfg.eval.num_workers,
+            spect_scaler_path=cfg.eval.spect_scaler_path,
+            spect_key=cfg.spect_params.spect_key,
+            timebins_key=cfg.spect_params.timebins_key,
+            device=cfg.eval.device,
+        )

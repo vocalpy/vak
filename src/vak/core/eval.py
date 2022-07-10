@@ -7,8 +7,11 @@ import joblib
 import pandas as pd
 import torch.utils.data
 
-from .. import models
-from .. import transforms
+from .. import (
+    models,
+    transforms,
+    validators
+)
 from ..datasets.vocal_dataset import VocalDataset
 
 
@@ -69,6 +72,11 @@ def eval(
         Device on which to work with model + data.
         Defaults to 'cuda' if torch.cuda.is_available is True.
     """
+    if not validators.is_a_file(csv_path):
+        raise FileNotFoundError(
+            f'value for csv_path not recognized as a file: {csv_path}'
+        )
+
     # ---- get time for .csv file --------------------------------------------------------------------------
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 

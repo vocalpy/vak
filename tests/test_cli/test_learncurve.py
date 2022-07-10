@@ -83,3 +83,27 @@ def test_learncurve_previous_run_path(
 
     assert cli_asserts.toml_config_file_copied_to_results_path(results_path, toml_path)
     assert cli_asserts.log_file_created(command="learncurve", output_path=results_path)
+
+
+def test_learning_curve_csv_path_none_raises(
+        specific_config, tmp_path,
+):
+    """Test that cli.learncurve.learning_curve
+    raises ValueError when csv_path is None
+    (presumably because `vak prep` was not run yet)
+    """
+    options_to_change = [
+        {"section": "LEARNCURVE", "option": "csv_path", "value": "DELETE-OPTION"},
+    ]
+
+    toml_path = specific_config(
+        config_type="learncurve",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=options_to_change,
+    )
+
+    with pytest.raises(ValueError):
+        vak.cli.learncurve.learning_curve(toml_path)

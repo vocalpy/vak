@@ -124,3 +124,44 @@ def test_continue_training(
     )
 
     assert train_output_matches_expected(cfg, model_config_map, results_path)
+
+
+def test_train_invalid_csv_path_raises(
+    specific_config, tmp_path, device
+):
+    options_to_change = [
+        {"section": "TRAIN", "option": "device", "value": device}
+    ]
+    toml_path = specific_config(
+        config_type="train",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=options_to_change,
+    )
+    cfg = vak.config.parse.from_toml_path(toml_path)
+    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
+    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path.mkdir()
+
+    invalid_csv_path = '/obviously/doesnt/exist/dataset.csv'
+    with pytest.raises(FileNotFoundError):
+        vak.core.train(
+            model_config_map,
+            invalid_csv_path,
+            cfg.dataloader.window_size,
+            cfg.train.batch_size,
+            cfg.train.num_epochs,
+            cfg.train.num_workers,
+            labelset=cfg.prep.labelset,
+            results_path=results_path,
+            spect_key=cfg.spect_params.spect_key,
+            timebins_key=cfg.spect_params.timebins_key,
+            normalize_spectrograms=cfg.train.normalize_spectrograms,
+            shuffle=cfg.train.shuffle,
+            val_step=cfg.train.val_step,
+            ckpt_step=cfg.train.ckpt_step,
+            patience=cfg.train.patience,
+            device=cfg.train.device,
+        )
