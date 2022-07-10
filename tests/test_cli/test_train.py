@@ -9,7 +9,6 @@ import vak.paths
 import vak.cli.train
 
 from . import cli_asserts
-from ..test_core.test_train import train_output_matches_expected
 
 
 @pytest.mark.parametrize(
@@ -48,8 +47,6 @@ def test_train(
         vak.cli.train.train(toml_path)
         assert mock_core_train.called
 
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
     results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
     assert len(results_path) == 1
     results_path = results_path[0]

@@ -8,7 +8,6 @@ import vak.constants
 import vak.cli.learncurve
 
 from . import cli_asserts
-from ..test_core.test_learncurve import learncurve_output_matches_expected
 
 
 def test_learncurve(specific_config, tmp_path, model, device):
@@ -78,8 +77,6 @@ def test_learncurve_previous_run_path(
         vak.cli.learncurve.learning_curve(toml_path)
         assert mock_core_learning_curve.called
 
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
     results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
     assert len(results_path) == 1
     results_path = results_path[0]

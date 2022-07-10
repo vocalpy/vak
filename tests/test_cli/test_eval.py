@@ -39,8 +39,6 @@ def test_eval(
         options_to_change=options_to_change,
     )
 
-    cfg = vak.config.parse.from_toml_path(toml_path)
-
     with mock.patch('vak.core.eval', autospec=True) as mock_core_eval:
         vak.cli.eval.eval(toml_path)
         assert mock_core_eval.called

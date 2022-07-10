@@ -8,7 +8,6 @@ import vak.constants
 import vak.paths
 
 from . import cli_asserts
-from ..test_core.test_predict import predict_output_matches_expected
 
 
 @pytest.mark.parametrize(
