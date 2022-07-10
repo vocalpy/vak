@@ -18,6 +18,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#544](https://github.com/NickleDave/vak/pull/544).
   Fixes [#543](https://github.com/NickleDave/vak/issues/543).
 
+### Fixed
+- Fix how `vak.core.prep` handles `labelset` parameter.
+  Add pre-condition that raises a ValueError
+  when `labelset` is `None` but the .toml config is one of 
+  {'train', 'learncurve', 'eval'}
+  [#545](https://github.com/NickleDave/vak/pull/545).
+  Avoids running computationally expensive step of generating 
+  and validating spectrograms *before* crashing when trying to 
+  split the dataset using `labelset`. Also avoids silent 
+  failures for datasets that do not require splitting, 
+  e.g., an 'eval' set that could contain labels not in the 
+  training set.
+  Fixes [#468](https://github.com/NickleDave/vak/issues/468).
+
 ## 0.6.0 -- 2022-07-07
 ### Added
 - better document `conda` install 
