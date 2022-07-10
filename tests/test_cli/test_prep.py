@@ -1,6 +1,9 @@
 """tests for vak.cli.prep module"""
+from unittest import mock
+
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 import vak.config
@@ -64,6 +67,7 @@ def test_prep(
     specific_config,
     default_model,
     tmp_path,
+    dummy_tmpfile_csv,
 ):
     output_dir = tmp_path.joinpath(
         f"test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}"
@@ -88,7 +92,10 @@ def test_prep(
         options_to_change=options_to_change,
     )
 
-    vak.cli.prep.prep(toml_path)
+    with mock.patch('vak.core.prep', autospec=True) as mock_core_prep:
+        mock_core_prep.return_value = (pd.DataFrame(), dummy_tmpfile_csv.name)
+        vak.cli.prep.prep(toml_path)
+        assert mock_core_prep.called
 
     cfg = vak.config.parse.from_toml_path(toml_path)
     command_section = getattr(cfg, config_type)
@@ -120,6 +127,7 @@ def test_prep_csv_path_raises(
     specific_config,
     default_model,
     tmp_path,
+
 ):
     output_dir = tmp_path.joinpath(
         f"test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}"

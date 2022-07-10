@@ -1,4 +1,5 @@
 """tests for vak.cli.predict module"""
+from unittest import mock
 import pytest
 
 import vak.cli.predict
@@ -38,9 +39,8 @@ def test_predict(
         options_to_change=options_to_change,
     )
 
-    vak.cli.predict.predict(toml_path)
-
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    assert predict_output_matches_expected(output_dir, cfg.predict.annot_csv_filename)
+    with mock.patch('vak.core.predict', autospec=True) as mock_core_predict:
+        vak.cli.predict.predict(toml_path)
+        assert mock_core_predict.called
 
     assert cli_asserts.log_file_created(command="predict", output_path=output_dir)

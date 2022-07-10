@@ -1,4 +1,6 @@
 """tests for vak.cli.train module"""
+from unittest import mock
+
 import pytest
 
 import vak.config
@@ -42,15 +44,14 @@ def test_train(
         options_to_change=options_to_change,
     )
 
-    vak.cli.train.train(toml_path)
+    with mock.patch('vak.core.train', autospec=True) as mock_core_train:
+        vak.cli.train.train(toml_path)
+        assert mock_core_train.called
 
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
     results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
     assert len(results_path) == 1
     results_path = results_path[0]
-
-    assert train_output_matches_expected(cfg, model_config_map, results_path)
-
     assert cli_asserts.toml_config_file_copied_to_results_path(results_path, toml_path)
     assert cli_asserts.log_file_created(command="train", output_path=results_path)
