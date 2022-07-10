@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#542](https://github.com/NickleDave/vak/pull/542).
   Fixes [#337](https://github.com/NickleDave/vak/issues/337).
 
+### Changed
+- Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
+  [#544](https://github.com/NickleDave/vak/pull/544).
+  Fixes [#543](https://github.com/NickleDave/vak/issues/543).
+
 ## 0.6.0 -- 2022-07-07
 ### Added
 - better document `conda` install 
