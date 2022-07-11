@@ -149,8 +149,8 @@ def specific_config(generated_test_configs_root, list_of_schematized_configs, tm
         if original_config_path is None:
             raise ValueError(
                 f"did not find a specific config with `config_type`='{config_type}', "
-                f"`annot_format`='{annot_format}', `audio_format`='{audio_format}', "
-                f"and `config_type`='{spect_format}', "
+                f"`model`={model}, `annot_format`='{annot_format}', "
+                f"`audio_format`='{audio_format}', and `spect_type`='{spect_format}'."
             )
         config_copy_path = tmp_path.joinpath(original_config_path.name)
         config_copy_path = shutil.copy(src=original_config_path, dst=config_copy_path)

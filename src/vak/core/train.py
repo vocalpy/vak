@@ -12,7 +12,8 @@ from .. import (
     labels,
     models,
     tensorboard,
-    transforms
+    transforms,
+    validators
 )
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
@@ -148,6 +149,11 @@ def train(
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
     """
+    if not validators.is_a_file(csv_path):
+        raise FileNotFoundError(
+            f'value for csv_path not recognized as a file: {csv_path}'
+        )
+
     logger.info(
         f"Loading dataset from .csv path: {csv_path}",
     )

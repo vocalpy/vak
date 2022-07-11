@@ -9,7 +9,6 @@ import vak.paths
 import vak.cli.train
 
 from . import cli_asserts
-from ..test_core.test_train import train_output_matches_expected
 
 
 @pytest.mark.parametrize(
@@ -48,10 +47,31 @@ def test_train(
         vak.cli.train.train(toml_path)
         assert mock_core_train.called
 
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
     results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
     assert len(results_path) == 1
     results_path = results_path[0]
     assert cli_asserts.toml_config_file_copied_to_results_path(results_path, toml_path)
     assert cli_asserts.log_file_created(command="train", output_path=results_path)
+
+
+def test_train_csv_path_none_raises(
+        specific_config, tmp_path,
+):
+    """Test that cli.train raises ValueError when csv_path is None
+    (presumably because `vak prep` was not run yet)
+    """
+    options_to_change = [
+        {"section": "TRAIN", "option": "csv_path", "value": "DELETE-OPTION"},
+    ]
+
+    toml_path = specific_config(
+        config_type="train",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=options_to_change,
+    )
+
+    with pytest.raises(ValueError):
+        vak.cli.train.train(toml_path)

@@ -39,10 +39,31 @@ def test_eval(
         options_to_change=options_to_change,
     )
 
-    cfg = vak.config.parse.from_toml_path(toml_path)
-
     with mock.patch('vak.core.eval', autospec=True) as mock_core_eval:
         vak.cli.eval.eval(toml_path)
         assert mock_core_eval.called
 
     assert cli_asserts.log_file_created(command="eval", output_path=output_dir)
+
+
+def test_eval_csv_path_none_raises(
+        specific_config, tmp_path,
+):
+    """Test that cli.eval raises ValueError when csv_path is None
+    (presumably because `vak prep` was not run yet)
+    """
+    options_to_change = [
+        {"section": "EVAL", "option": "csv_path", "value": "DELETE-OPTION"},
+    ]
+
+    toml_path = specific_config(
+        config_type="eval",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=options_to_change,
+    )
+
+    with pytest.raises(ValueError):
+        vak.cli.eval.eval(toml_path)

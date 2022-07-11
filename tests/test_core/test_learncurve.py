@@ -214,3 +214,49 @@ def test_learncurve_previous_run_path(
     results_path = results_path[0]
 
     assert learncurve_output_matches_expected(cfg, model_config_map, results_path)
+
+
+def test_learncurve_invalid_csv_path_raises(specific_config, tmp_path, device):
+    """Test that core.eval raises FileNotFoundError
+    when `csv_path` does not exist."""
+    options_to_change = [
+        {"section": "LEARNCURVE", "option": "device", "value": device}
+    ]
+
+    toml_path = specific_config(
+        config_type="learncurve",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        options_to_change=options_to_change,
+    )
+
+    cfg = vak.config.parse.from_toml_path(toml_path)
+    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
+    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path.mkdir()
+
+    invalid_csv_path = '/obviously/doesnt/exist/dataset.csv'
+    with pytest.raises(FileNotFoundError):
+        vak.core.learning_curve(
+            model_config_map,
+            train_set_durs=cfg.learncurve.train_set_durs,
+            num_replicates=cfg.learncurve.num_replicates,
+            csv_path=invalid_csv_path,
+            labelset=cfg.prep.labelset,
+            window_size=cfg.dataloader.window_size,
+            batch_size=cfg.learncurve.batch_size,
+            num_epochs=cfg.learncurve.num_epochs,
+            num_workers=cfg.learncurve.num_workers,
+            root_results_dir=None,
+            results_path=results_path,
+            previous_run_path=cfg.learncurve.previous_run_path,
+            spect_key=cfg.spect_params.spect_key,
+            timebins_key=cfg.spect_params.timebins_key,
+            normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
+            shuffle=cfg.learncurve.shuffle,
+            val_step=cfg.learncurve.val_step,
+            ckpt_step=cfg.learncurve.ckpt_step,
+            patience=cfg.learncurve.patience,
+            device=cfg.learncurve.device,
+        )

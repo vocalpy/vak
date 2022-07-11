@@ -8,7 +8,6 @@ import vak.constants
 import vak.paths
 
 from . import cli_asserts
-from ..test_core.test_predict import predict_output_matches_expected
 
 
 @pytest.mark.parametrize(
@@ -44,3 +43,26 @@ def test_predict(
         assert mock_core_predict.called
 
     assert cli_asserts.log_file_created(command="predict", output_path=output_dir)
+
+
+def test_predict_csv_path_none_raises(
+        specific_config, tmp_path,
+):
+    """Test that cli.predict raises ValueError when csv_path is None
+    (presumably because `vak prep` was not run yet)
+    """
+    options_to_change = [
+        {"section": "PREDICT", "option": "csv_path", "value": "DELETE-OPTION"},
+    ]
+
+    toml_path = specific_config(
+        config_type="predict",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=options_to_change,
+    )
+
+    with pytest.raises(ValueError):
+        vak.cli.predict.predict(toml_path)

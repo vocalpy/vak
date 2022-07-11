@@ -1,8 +1,5 @@
-"""Utilities for input validation
-
-adapted in part from scikit-learn under license
-https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/utils/validation.py
-"""
+"""Functions for input validation"""
+import pathlib
 import warnings
 
 import numpy as np
@@ -20,6 +17,9 @@ def column_or_1d(y, warn=False):
     Returns
     -------
     y : array
+
+    adapted in part from scikit-learn under license
+    https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/utils/validation.py
     """
     shape = np.shape(y)
     if len(shape) == 1:
@@ -64,3 +64,13 @@ def row_or_1d(y, warn=False):
         return np.ravel(y)
 
     raise ValueError("bad input shape {0}".format(shape))
+
+
+def is_a_directory(path):
+    """check if given path is a directory"""
+    return pathlib.Path(path).is_dir()
+
+
+def is_a_file(path):
+    """check if given path is a file"""
+    return pathlib.Path(path).is_file()

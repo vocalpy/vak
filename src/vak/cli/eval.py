@@ -4,6 +4,7 @@ from pathlib import Path
 from .. import (
     config,
     core,
+    validators
 )
 from ..logging import config_logging_for_cli
 
@@ -43,6 +44,13 @@ def eval(toml_path):
     logger.info("Logging results to {}".format(cfg.eval.output_dir))
 
     model_config_map = config.models.map_from_path(toml_path, cfg.eval.models)
+
+    if cfg.eval.csv_path is None:
+        raise ValueError(
+            "No value is specified for 'csv_path' in this .toml config file."
+            f"To generate a .csv file that represents the dataset, "
+            f"please run the following command:\n'vak prep {toml_path}'"
+        )
 
     core.eval(
         cfg.eval.csv_path,

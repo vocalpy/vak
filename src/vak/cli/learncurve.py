@@ -51,6 +51,13 @@ def learning_curve(toml_path):
 
     model_config_map = config.models.map_from_path(toml_path, cfg.learncurve.models)
 
+    if cfg.learncurve.csv_path is None:
+        raise ValueError(
+            "No value is specified for 'csv_path' in this .toml config file."
+            f"To generate a .csv file that represents the dataset, "
+            f"please run the following command:\n'vak prep {toml_path}'"
+        )
+
     core.learning_curve(
         model_config_map,
         train_set_durs=cfg.learncurve.train_set_durs,

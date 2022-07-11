@@ -50,6 +50,13 @@ def train(toml_path):
 
     model_config_map = config.models.map_from_path(toml_path, cfg.train.models)
 
+    if cfg.train.csv_path is None:
+        raise ValueError(
+            "No value is specified for 'csv_path' in this .toml config file."
+            f"To generate a .csv file that represents the dataset, "
+            f"please run the following command:\n'vak prep {toml_path}'"
+        )
+
     core.train(
         model_config_map=model_config_map,
         csv_path=cfg.train.csv_path,
