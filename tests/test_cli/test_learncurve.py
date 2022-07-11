@@ -56,7 +56,10 @@ def test_learncurve_previous_run_path(
             "option": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"section": "LEARNCURVE", "option": "device", "value": device},
+        {
+            "section": "LEARNCURVE",
+            "option": "device",
+            "value": device},
         {
             "section": "LEARNCURVE",
             "option": "previous_run_path",
@@ -92,8 +95,19 @@ def test_learning_curve_csv_path_none_raises(
     raises ValueError when csv_path is None
     (presumably because `vak prep` was not run yet)
     """
+    root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
+    root_results_dir.mkdir()
+
     options_to_change = [
-        {"section": "LEARNCURVE", "option": "csv_path", "value": "DELETE-OPTION"},
+        {
+            "section": "LEARNCURVE",
+            "option": "root_results_dir",
+            "value": str(root_results_dir),
+        },
+        {
+            "section": "LEARNCURVE",
+            "option": "csv_path",
+            "value": "DELETE-OPTION"},
     ]
 
     toml_path = specific_config(
