@@ -72,12 +72,22 @@ def eval(
         Device on which to work with model + data.
         Defaults to 'cuda' if torch.cuda.is_available is True.
     """
-    if not validators.is_a_file(csv_path):
-        raise FileNotFoundError(
-            f'value for csv_path not recognized as a file: {csv_path}'
+    # ---- pre-conditions ----------------------------------------------------------------------------------------------
+    for path, path_name in zip(
+            (checkpoint_path, csv_path, labelmap_path, spect_scaler_path),
+            ('checkpoint_path', 'csv_path', 'labelmap_path', 'spect_scaler_path'),
+    ):
+        if path is not None:  # because `spect_scaler_path` is optional
+            if not validators.is_a_file(path):
+                raise FileNotFoundError(
+                    f"value for ``{path_name}`` not recognized as a file: {csv_path}"
+                )
+    if not validators.is_a_directory(output_dir):
+        raise NotADirectoryError(
+            f'value for ``output_dir`` not recognized as a directory: {output_dir}'
         )
 
-    # ---- get time for .csv file --------------------------------------------------------------------------
+    # ---- get time for .csv file --------------------------------------------------------------------------------------
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------

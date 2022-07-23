@@ -86,7 +86,7 @@ def specific_config(generated_test_configs_root, list_of_schematized_configs, tm
 
     The factory function actually returns a copy,
     that will be copied into ``tmp_path``,
-    so the original remains umodified.
+    so the original remains unmodified.
 
     If ``root_results_dir`` argument is specified
     when calling the factory function,

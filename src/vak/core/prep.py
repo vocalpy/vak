@@ -150,6 +150,13 @@ def prep(
         if not spect_output_dir.is_dir():
             raise NotADirectoryError(f"spect_output_dir not found: {spect_output_dir}")
 
+    if annot_file is not None:
+        annot_file = expanded_user_path(annot_file)
+        if not annot_file.exists():
+            raise FileNotFoundError(
+                f'annot_file not found: {annot_file}'
+            )
+
     if purpose == "predict":
         if labelset is not None:
             warnings.warn(
