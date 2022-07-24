@@ -260,3 +260,58 @@ def test_learncurve_invalid_csv_path_raises(specific_config, tmp_path, device):
             patience=cfg.learncurve.patience,
             device=cfg.learncurve.device,
         )
+
+
+@pytest.mark.parametrize(
+    'dir_option_to_change',
+    [
+        {"section": "LEARNCURVE", "option": "root_results_dir", "value": '/obviously/does/not/exist/results/'},
+        {"section": "LEARNCURVE", "option": "previous_run_path", "value": '/obviously/does/not/exist/results/results-timestamp'}
+    ]
+)
+def test_learncurve_raises_not_a_directory(dir_option_to_change,
+                                           specific_config,
+                                           tmp_path, device):
+    """Test that core.eval raises NotADirectoryError
+    when the following directories do not exist:
+    results_path, previous_run_path
+    """
+    options_to_change = [
+        {"section": "LEARNCURVE", "option": "device", "value": device},
+        dir_option_to_change
+    ]
+    toml_path = specific_config(
+        config_type="learncurve",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        options_to_change=options_to_change,
+    )
+    cfg = vak.config.parse.from_toml_path(toml_path)
+    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
+    # mock behavior of cli.learncurve, building `results_path` from config option `root_results_dir`
+    results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'
+
+    with pytest.raises(NotADirectoryError):
+        vak.core.learning_curve(
+            model_config_map,
+            train_set_durs=cfg.learncurve.train_set_durs,
+            num_replicates=cfg.learncurve.num_replicates,
+            csv_path=cfg.learncurve.csv_path,
+            labelset=cfg.prep.labelset,
+            window_size=cfg.dataloader.window_size,
+            batch_size=cfg.learncurve.batch_size,
+            num_epochs=cfg.learncurve.num_epochs,
+            num_workers=cfg.learncurve.num_workers,
+            root_results_dir=None,
+            results_path=results_path,
+            previous_run_path=cfg.learncurve.previous_run_path,
+            spect_key=cfg.spect_params.spect_key,
+            timebins_key=cfg.spect_params.timebins_key,
+            normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
+            shuffle=cfg.learncurve.shuffle,
+            val_step=cfg.learncurve.val_step,
+            ckpt_step=cfg.learncurve.ckpt_step,
+            patience=cfg.learncurve.patience,
+            device=cfg.learncurve.device,
+        )

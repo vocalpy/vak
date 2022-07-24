@@ -4,8 +4,6 @@ from attr import converters, validators
 from attr.validators import instance_of
 
 from .validators import (
-    is_a_directory,
-    is_a_file,
     is_audio_format,
     is_annot_format,
     is_spect_format,
@@ -86,19 +84,17 @@ class PrepConfig:
         total duration of test set, in seconds.
     """
 
-    data_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
-    output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
+    data_dir = attr.ib(converter=expanded_user_path)
+    output_dir = attr.ib(converter=expanded_user_path)
 
     audio_format = attr.ib(validator=validators.optional(is_audio_format), default=None)
     spect_format = attr.ib(validator=validators.optional(is_spect_format), default=None)
     spect_output_dir = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_directory),
         default=None,
     )
     annot_file = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_file),
         default=None,
     )
     annot_format = attr.ib(validator=validators.optional(is_annot_format), default=None)

@@ -3,7 +3,7 @@ import attr
 from attr import converters, validators
 from attr.validators import instance_of
 
-from .validators import is_a_directory, is_a_file, is_valid_model_name
+from .validators import is_valid_model_name
 from .. import device
 from ..converters import bool_from_str, comma_separated_list, expanded_user_path
 
@@ -65,7 +65,6 @@ class TrainConfig:
     labelmap_path : str
         path to 'labelmap.json' file. Default is None.
     """
-
     # required
     models = attr.ib(
         converter=comma_separated_list,
@@ -73,20 +72,18 @@ class TrainConfig:
     )
     num_epochs = attr.ib(converter=int, validator=instance_of(int))
     batch_size = attr.ib(converter=int, validator=instance_of(int))
-    root_results_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
+    root_results_dir = attr.ib(converter=expanded_user_path)
 
     # optional
     # csv_path is actually 'required' but we can't enforce that here because cli.prep looks at
     # what sections are defined to figure out where to add csv_path after it creates the csv
     csv_path = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_file),
         default=None,
     )
 
     results_dirname = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_directory),
         default=None,
     )
 
@@ -119,16 +116,13 @@ class TrainConfig:
     )
     checkpoint_path = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_file),
         default=None,
     )
     spect_scaler_path = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_file),
         default=None,
     )
     labelmap_path = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_file),
         default=None,
     )

@@ -1,9 +1,9 @@
 """parses [EVAL] section of config"""
 import attr
-from attr import converters, validators
+from attr import converters
 from attr.validators import instance_of
 
-from .validators import is_a_directory, is_a_file, is_valid_model_name
+from .validators import is_valid_model_name
 from .. import device
 from ..converters import comma_separated_list, expanded_user_path
 
@@ -37,11 +37,10 @@ class EvalConfig:
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     """
-
     # required, external files
-    checkpoint_path = attr.ib(converter=expanded_user_path, validator=is_a_file)
-    labelmap_path = attr.ib(converter=expanded_user_path, validator=is_a_file)
-    output_dir = attr.ib(converter=expanded_user_path, validator=is_a_directory)
+    checkpoint_path = attr.ib(converter=expanded_user_path)
+    labelmap_path = attr.ib(converter=expanded_user_path)
+    output_dir = attr.ib(converter=expanded_user_path)
 
     # required, model / dataloader
     models = attr.ib(
@@ -54,14 +53,12 @@ class EvalConfig:
     # what sections are defined to figure out where to add csv_path after it creates the csv
     csv_path = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_file),
         default=None,
     )
 
     # optional, transform
     spect_scaler_path = attr.ib(
         converter=converters.optional(expanded_user_path),
-        validator=validators.optional(is_a_file),
         default=None,
     )
 

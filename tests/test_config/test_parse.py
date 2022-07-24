@@ -98,66 +98,6 @@ def test_parse_config_section_model_not_installed_raises(
         )
 
 
-@pytest.mark.parametrize(
-    "section_name",
-    [
-        "EVAL",
-        "PREDICT",
-    ],
-)
-def test_parse_config_section_nonexistent_checkpoint_path_raises(
-    section_name, all_generated_configs_toml_path_pairs
-):
-    """test that a FileNotFoundError is raised when checkpoint_path does not exist"""
-    for config_toml, toml_path in all_generated_configs_toml_path_pairs:
-        if section_name.lower() in toml_path.name:
-            break  # use these. Only need to test on one
-
-    config_toml[section_name]["checkpoint_path"] = "obviously/non/existent/dir/check.pt"
-    with pytest.raises(FileNotFoundError):
-        vak.config.parse.parse_config_section(
-            config_toml=config_toml, section_name=section_name, toml_path=toml_path
-        )
-
-
-@pytest.mark.parametrize("section_name", ["LEARNCURVE", "TRAIN"])
-def test_parse_config_section_nonexistent_root_results_dir_raises(
-    section_name, all_generated_configs_toml_path_pairs
-):
-    for config_toml, toml_path in all_generated_configs_toml_path_pairs:
-        if section_name.lower() in toml_path.name:
-            break  # use these. Only need to test on one
-
-    config_toml[section_name]["root_results_dir"] = "obviously/non/existent/dir"
-    with pytest.raises(NotADirectoryError):
-        vak.config.parse.parse_config_section(config_toml, section_name, toml_path)
-
-
-@pytest.mark.parametrize("section_name", ["EVAL", "LEARNCURVE", "PREDICT", "TRAIN"])
-def test_nonexistent_csv_path_raises(
-    section_name, all_generated_configs_toml_path_pairs
-):
-    """test that a FileNotFoundError is raised when csv_path does not exist"""
-    for config_toml, toml_path in all_generated_configs_toml_path_pairs:
-        if section_name.lower() in toml_path.name:
-            break  # use these. Only need to test on one
-
-    config_toml[section_name]["csv_path"] = "obviously/non/existent/dir/predict.csv"
-    with pytest.raises(FileNotFoundError):
-        vak.config.parse.parse_config_section(
-            config_toml=config_toml, section_name=section_name, toml_path=toml_path
-        )
-
-
-def test_parse_prep_section_nonexistent_data_dir_raises_error(
-    all_generated_configs_toml_path_pairs,
-):
-    config_toml, toml_path = next(all_generated_configs_toml_path_pairs)
-    config_toml["PREP"]["data_dir"] = "theres/no/way/this/is/a/dir"
-    with pytest.raises(NotADirectoryError):
-        vak.config.parse.parse_config_section(config_toml, "PREP", toml_path)
-
-
 def test_parse_prep_section_both_audio_and_spect_format_raises(
     all_generated_configs_toml_path_pairs,
 ):
@@ -257,12 +197,14 @@ def test_from_toml_parse_prep_with_sections_not_none(
 
 
 @pytest.mark.parametrize("section_name", ["EVAL", "LEARNCURVE", "PREDICT", "TRAIN"])
-def test_from_toml_parse_prep_with_sections_not_none_does_not_raise(
+def test_from_toml_parse_prep_with_sections_not_none(
     section_name, all_generated_configs_toml_path_pairs, random_path_factory
 ):
-    """test that invalid values in other sections are ignored when we pass in a sections list
-    specifying that we only want to parse ``PREP`` and ``SPECT_PARAMS``, e.g., ignore non-existent
-    csv_path or checkpoint_path"""
+    """Test that ``config.parse.from_toml`` parameter ``sections`` works as expected.
+
+    If we pass in a list of section names
+    specifying that we only want to parse ``PREP`` and ``SPECT_PARAMS``,
+    other sections should be left as None in the return Config instance."""
     for config_toml, toml_path in all_generated_configs_toml_path_pairs:
         if section_name.lower() in toml_path.name:
             break  # use these
@@ -279,11 +221,12 @@ def test_from_toml_parse_prep_with_sections_not_none_does_not_raise(
         else:
             continue
         config_toml[section_name][required_option] = badval
-    config_obj = vak.config.parse.from_toml(
+    cfg = vak.config.parse.from_toml(
         config_toml, toml_path, sections=["PREP", "SPECT_PARAMS"]
     )
-    with pytest.raises((FileNotFoundError, NotADirectoryError)):
-        vak.config.parse.from_toml(config_toml, toml_path, sections=section_name)
+    assert hasattr(cfg, 'prep') and getattr(cfg, 'prep') is not None
+    assert hasattr(cfg, 'spect_params') and getattr(cfg, 'spect_params') is not None
+    assert getattr(cfg, purpose) is None
 
 
 def test_invalid_section_raises(invalid_section_config_path):

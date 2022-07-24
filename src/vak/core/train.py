@@ -66,7 +66,7 @@ def train(
         path to where dataset was saved as a csv.
     window_size : int
         size of windows taken from spectrograms, in number of time bins,
-        shonw to neural networks
+        shown to neural networks
     batch_size : int
         number of samples per batch presented to models during training.
     num_epochs : int
@@ -149,10 +149,15 @@ def train(
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
     """
-    if not validators.is_a_file(csv_path):
-        raise FileNotFoundError(
-            f'value for csv_path not recognized as a file: {csv_path}'
-        )
+    for path, path_name in zip(
+            (checkpoint_path, csv_path, labelmap_path, spect_scaler_path),
+            ('checkpoint_path', 'csv_path', 'labelmap_path', 'spect_scaler_path'),
+    ):
+        if path is not None:
+            if not validators.is_a_file(path):
+                raise FileNotFoundError(
+                    f"value for ``{path_name}`` not recognized as a file: {csv_path}"
+                )
 
     logger.info(
         f"Loading dataset from .csv path: {csv_path}",

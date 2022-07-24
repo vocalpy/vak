@@ -288,3 +288,98 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
     )
 
     assert len(vak_df) == 1
+
+
+@pytest.mark.parametrize(
+    "dir_option_to_change",
+    [
+        {"section": "PREP", "option": "data_dir", "value": '/obviously/does/not/exist/data'},
+        {"section": "PREP", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+        {"section": "PREP", "option": "spect_output_dir", "value": '/obviously/does/not/exist/spect_output'},
+    ],
+)
+def test_prep_raises_not_a_directory(
+    dir_option_to_change,
+    specific_config,
+    default_model,
+    tmp_path,
+):
+    """Test that `core.prep` raise NotADirectory error
+    when one of the following is not a directory:
+    data_dir, output_dir, spect_output_dir
+    """
+    toml_path = specific_config(
+        config_type="train",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=dir_option_to_change,
+    )
+    cfg = vak.config.parse.from_toml_path(toml_path)
+
+    purpose = "train"
+    with pytest.raises(NotADirectoryError):
+        vak.core.prep(
+            data_dir=cfg.prep.data_dir,
+            purpose=purpose,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_output_dir=cfg.prep.spect_output_dir,
+            spect_params=cfg.spect_params,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            output_dir=cfg.prep.output_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+        )
+
+
+@pytest.mark.parametrize(
+    "path_option_to_change",
+    [
+        {"section": "PREP", "option": "annot_file", "value": '/obviously/does/not/exist/annot.mat'},
+    ],
+)
+def test_prep_raises_file_not_found(
+    path_option_to_change,
+    specific_config,
+    default_model,
+    tmp_path,
+):
+    """Test that `core.prep` raise FileNotFound error
+    when one of the following does not exist:
+    annot_file
+
+    Structuring unit test this way in case other path
+    parameters get added.
+    """
+    toml_path = specific_config(
+        config_type="train",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat",
+        spect_format=None,
+        options_to_change=path_option_to_change,
+    )
+    cfg = vak.config.parse.from_toml_path(toml_path)
+
+    purpose = "train"
+    with pytest.raises(FileNotFoundError):
+        vak.core.prep(
+            data_dir=cfg.prep.data_dir,
+            purpose=purpose,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_output_dir=cfg.prep.spect_output_dir,
+            spect_params=cfg.spect_params,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            output_dir=cfg.prep.output_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+        )

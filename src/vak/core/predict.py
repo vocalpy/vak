@@ -104,10 +104,15 @@ def predict(
          and the network is `TweetyNet`, then the net output file
          will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
-    if not validators.is_a_file(csv_path):
-        raise FileNotFoundError(
-            f'value for csv_path not recognized as a file: {csv_path}'
-        )
+    for path, path_name in zip(
+            (checkpoint_path, csv_path, labelmap_path, spect_scaler_path),
+            ('checkpoint_path', 'csv_path', 'labelmap_path', 'spect_scaler_path'),
+    ):
+        if path is not None:
+            if not validators.is_a_file(path):
+                raise FileNotFoundError(
+                    f"value for ``{path_name}`` not recognized as a file: {csv_path}"
+                )
 
     if output_dir is None:
         output_dir = Path(os.getcwd())
