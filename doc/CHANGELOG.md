@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
   [#544](https://github.com/NickleDave/vak/pull/544).
   Fixes [#543](https://github.com/NickleDave/vak/issues/543).
+- It is now possible to load configuration files 
+  and work with them programatically even if the paths 
+  they point to do not exist.
+  The `core` functions handle validation instead.
+  E.g., the `PrepConfig` class does not check whether 
+  `output_dir` exist is a directory, but `vak.core.prep` does.
+  [#550](https://github.com/NickleDave/vak/pull/550).
+  Fixes [#459](https://github.com/NickleDave/vak/issues/459).
 
 ### Fixed
 - Fix how `vak.core.prep` handles `labelset` parameter.
