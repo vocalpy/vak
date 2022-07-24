@@ -5,7 +5,7 @@
 
 <hr>
 
-## a neural network toolbox for animal vocalizations and bioacoustics
+## A neural network toolbox for animal vocalizations and bioacoustics
 
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
@@ -16,26 +16,21 @@
 [![Build Status](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)
 [![codecov](https://codecov.io/gh/vocalpy/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/vocalpy/vak)
 
-`vak` is a library for researchers studying animal vocalizations--such as 
-birdsong, bat calls, and even human speech--although it may be useful 
-to anyone working with bioacoustics data. 
+`vak` is a Python library for bioacoustic researchers studying animal vocalizations such as birdsong, bat calls, and even human speech.
 
 The library has two main goals:  
-1. make it easier for researchers studying animal vocalizations to 
+1. Make it easier for researchers studying animal vocalizations to 
 apply neural network algorithms to their data
-2. provide a common framework that will facilitate benchmarking neural 
+2. Provide a common framework that will facilitate benchmarking neural 
 network algorithms on tasks related to animal vocalizations
 
-Currently the main use is automated **annotation** of vocalizations and other animal sounds.
-By **annotation**, we mean something like the example of annotated birdsong shown below:  
+Currently, the main use is an automatic annotation of vocalizations and other animal sounds. By annotation, we mean something like the example of annotated birdsong shown below:
 <p align="center">
 <img src="https://github.com/vocalpy/vak/blob/main/doc/images/annotation-example.png?raw=True" 
 alt="spectrogram of birdsong with syllables annotated" width="400">
 </p>
 
-You give `vak` training data in the form of audio or spectrogram files with annotations, 
-and then `vak` helps you train neural network models 
-and use the trained models to predict annotations for new files.
+`vak` requires audio files or spectrogram files with annotations as the training data input, and `vak` will help you train and utilize your neural networks to make predicted annotations for new files.
 
 We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).  
 Please see the eLife article here: https://elifesciences.org/articles/63853  
