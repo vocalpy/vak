@@ -199,8 +199,20 @@ def train(
 
     if labelset is None and labelmap_path is None:
         raise ValueError(
-            'Must specify ``labelset`` or provide ``labelmap_path``, but both were None.'
+            'Must specify `labelset` or provide `labelmap_path`, but both were None.'
         )
+
+    if labelset is not None and labelmap_path is not None:
+        raise ValueError(
+            '`vak.core.train` should be called either with `labelset` '
+            'or with `labelmap_path`, but not both.\n'
+            'If training a new model, pass in `labelset`. '
+            'If continuing training, either pass in a new `labelset` '
+            '(for adapting pre-trained weights to a new dataset), or pass in '
+            'the path to the `labelmap_path` created when '
+            'training the first time (to train on the same dataset longer).'
+        )
+
     if labelset:
         has_unlabeled = csv.has_unlabeled(csv_path, labelset, timebins_key)
         if has_unlabeled:
