@@ -24,13 +24,15 @@ apply neural network algorithms to their data
 2. Provide a common framework that will facilitate benchmarking neural 
 network algorithms on tasks related to animal vocalizations
 
-Currently, the main use is an automatic annotation of vocalizations and other animal sounds. By annotation, we mean something like the example of annotated birdsong shown below:
+Currently, the main use is an automatic *annotation* of vocalizations and other animal sounds. By *annotation*, we mean something like the example of annotated birdsong shown below:
 <p align="center">
 <img src="https://github.com/vocalpy/vak/blob/main/doc/images/annotation-example.png?raw=True" 
 alt="spectrogram of birdsong with syllables annotated" width="400">
 </p>
 
-`vak` requires audio files or spectrogram files with annotations as the training data input, and `vak` will help you train and utilize your neural networks to make predicted annotations for new files.
+You give `vak` training data in the form of audio or spectrogram files with annotations, 
+and then `vak` helps you train neural network models 
+and use the trained models to predict annotations for new files.
 
 We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).  
 Please see the eLife article here: https://elifesciences.org/articles/63853  
