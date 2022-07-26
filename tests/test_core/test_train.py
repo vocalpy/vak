@@ -229,3 +229,55 @@ def test_train_raises_not_a_directory(
             patience=cfg.train.patience,
             device=cfg.train.device,
         )
+
+
+@pytest.mark.parametrize(
+    "audio_format, spect_format, annot_format",
+    [
+        ("cbin", None, "notmat"),
+        ("wav", None, "birdsong-recognition-dataset"),
+        (None, "mat", "yarden"),
+    ],
+)
+def test_both_labelset_and_labelmap_raises(
+    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+):
+    """Test that ``core.train`` raises a ValueError when
+    we pass in arguments for both the ``labelset`` parameter
+    and the ``labelmap_path`` parameter.
+    """
+    options_to_change = {"section": "TRAIN", "option": "device", "value": device}
+    toml_path = specific_config(
+        config_type="train_continue",
+        model=model,
+        audio_format=audio_format,
+        annot_format=annot_format,
+        spect_format=spect_format,
+        options_to_change=options_to_change,
+    )
+    cfg = vak.config.parse.from_toml_path(toml_path)
+    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
+    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path.mkdir()
+
+    with pytest.raises(ValueError):
+        vak.core.train(
+            model_config_map=model_config_map,
+            csv_path=cfg.train.csv_path,
+            window_size=cfg.dataloader.window_size,
+            batch_size=cfg.train.batch_size,
+            num_epochs=cfg.train.num_epochs,
+            num_workers=cfg.train.num_workers,
+            labelset=cfg.prep.labelset,
+            labelmap_path=cfg.train.labelmap_path,
+            spect_scaler_path=cfg.train.spect_scaler_path,
+            results_path=results_path,
+            spect_key=cfg.spect_params.spect_key,
+            timebins_key=cfg.spect_params.timebins_key,
+            normalize_spectrograms=cfg.train.normalize_spectrograms,
+            shuffle=cfg.train.shuffle,
+            val_step=cfg.train.val_step,
+            ckpt_step=cfg.train.ckpt_step,
+            patience=cfg.train.patience,
+            device=cfg.train.device,
+        )
