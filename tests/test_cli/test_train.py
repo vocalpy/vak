@@ -75,3 +75,50 @@ def test_train_csv_path_none_raises(
 
     with pytest.raises(ValueError):
         vak.cli.train.train(toml_path)
+
+
+@pytest.mark.parametrize(
+    "config_type, audio_format, spect_format, annot_format",
+    [
+        ("train", "cbin", None, "notmat"),
+        ("train", "wav", None, "birdsong-recognition-dataset"),
+        ("train", None, "mat", "yarden"),
+        ("train_continue", "cbin", None, "notmat"),
+        ("train_continue", "wav", None, "birdsong-recognition-dataset"),
+        ("train_continue", None, "mat", "yarden"),
+    ],
+)
+def test_train_passes_correct_labelset_and_labelmap_path(
+    config_type, audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+):
+    """Test that ``cli.train`` passes in the expected arguments to ``core.train``,
+    depending on whether ``labelmap_path`` is specified in the [TRAIN] section
+    of the config file or not.
+    """
+    root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
+    root_results_dir.mkdir()
+
+    options_to_change = [
+        {"section": "TRAIN", "option": "root_results_dir", "value": str(root_results_dir)},
+        {"section": "TRAIN", "option": "device", "value": device},
+    ]
+
+    toml_path = specific_config(
+        config_type=config_type,
+        model=model,
+        audio_format=audio_format,
+        annot_format=annot_format,
+        spect_format=spect_format,
+        options_to_change=options_to_change,
+    )
+
+    cfg = vak.config.parse.from_toml_path(toml_path)
+
+    with mock.patch('vak.core.train', autospec=True) as mock_core_train:
+        vak.cli.train.train(toml_path)
+        if config_type == "train":
+            assert mock_core_train.call_args[1]['labelset'] == cfg.prep.labelset
+            assert mock_core_train.call_args[1]['labelmap_path'] is None
+        elif config_type == "train_continue":
+            assert mock_core_train.call_args[1]['labelset'] is None
+            assert mock_core_train.call_args[1]['labelmap_path'] == cfg.train.labelmap_path
