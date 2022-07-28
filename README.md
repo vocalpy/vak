@@ -9,7 +9,7 @@
 
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
@@ -128,6 +128,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/kaiyaprovost"><img src="https://avatars.githubusercontent.com/u/17089935?v=4?s=100" width="100px;" alt=""/><br /><sub><b>kaiyaprovost</b></sub></a><br /><a href="https://github.com/vocalpy/vak/commits?author=kaiyaprovost" title="Code">💻</a> <a href="#ideas-kaiyaprovost" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/ymk12345"><img src="https://avatars.githubusercontent.com/u/47306876?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ymk12345</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Aymk12345" title="Bug reports">🐛</a> <a href="https://github.com/vocalpy/vak/commits?author=ymk12345" title="Documentation">📖</a></td>
     <td align="center"><a href="http://www.xavierhinaut.com"><img src="https://avatars.githubusercontent.com/u/9768731?v=4?s=100" width="100px;" alt=""/><br /><sub><b>neuronalX</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3AneuronalX" title="Bug reports">🐛</a> <a href="https://github.com/vocalpy/vak/commits?author=neuronalX" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/akn0717"><img src="https://avatars.githubusercontent.com/u/59268707?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Khoa</b></sub></a><br /><a href="https://github.com/vocalpy/vak/commits?author=akn0717" title="Documentation">📖</a></td>
   </tr>
 </table>
 

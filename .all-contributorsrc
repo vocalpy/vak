@@ -135,6 +135,15 @@
         "bug",
         "doc"
       ]
+    },
+    {
+      "login": "akn0717",
+      "name": "Khoa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/59268707?v=4",
+      "profile": "https://github.com/akn0717",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
