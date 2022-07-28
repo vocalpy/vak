@@ -226,6 +226,13 @@ def prep(
         spect_params=spect_params,
     )
 
+    if vak_df.empty:
+        raise ValueError(
+            "Calling `vak.io.dataframe.from_files` with arguments passed to `vak.core.prep` "
+            "returned an empty dataframe.\n"
+            "Please double-check arguments to `vak.core.prep` function."
+        )
+
     if do_split:
         # save before splitting, jic duration args are not valid (we can't know until we make dataset)
         vak_df.to_csv(csv_path)
