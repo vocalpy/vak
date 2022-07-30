@@ -18,8 +18,9 @@ def format_from_df(vak_df):
 
     Parameters
     ----------
-    vak_df : DataFrame
-        representating a dataset of vocalizations, with column 'annot_format'.
+    vak_df : pandas.DataFrame
+        Representing a dataset of vocalizations,
+        with column 'annot_format'.
 
     Returns
     -------
