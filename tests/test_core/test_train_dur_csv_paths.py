@@ -5,7 +5,7 @@ import pytest
 
 import vak.converters
 import vak.core.learncurve.train_dur_csv_paths
-import vak.csv
+import vak.datasets.seq
 import vak.io.dataframe
 import vak.labels
 import vak.paths
@@ -119,7 +119,7 @@ def test_from_dir(
     timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(dataset_df)
 
     labelset_notmat = vak.converters.labelset_to_set(labelset_notmat)
-    has_unlabeled = vak.csv.has_unlabeled(csv_path, labelset_notmat, TIMEBINS_KEY)
+    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path, TIMEBINS_KEY)
     if has_unlabeled:
         map_unlabeled = True
     else:
@@ -180,7 +180,7 @@ def test_from_df(
     timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(dataset_df)
 
     labelset_notmat = vak.converters.labelset_to_set(labelset_notmat)
-    has_unlabeled = vak.csv.has_unlabeled(csv_path, labelset_notmat, TIMEBINS_KEY)
+    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path, TIMEBINS_KEY)
     if has_unlabeled:
         map_unlabeled = True
     else:
