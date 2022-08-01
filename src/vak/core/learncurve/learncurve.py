@@ -7,8 +7,11 @@ import pandas as pd
 from . import train_dur_csv_paths as _train_dur_csv_paths
 from ..eval import eval
 from ..train import train
+from ... import (
+    datasets,
+    labels
+)
 from ...io import dataframe
-from ... import csv, labels
 from ...converters import expanded_user_path
 from ...paths import generate_results_dir_name_as_path
 
@@ -159,7 +162,7 @@ def learning_curve(
     )
 
     # ---- get training set subsets ------------------------------------------------------------------------------------
-    has_unlabeled = csv.has_unlabeled(csv_path, labelset, timebins_key)
+    has_unlabeled = datasets.seq.validators.has_unlabeled(csv_path, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:

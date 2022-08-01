@@ -24,14 +24,6 @@ def test_has_unlabeled(config_type,
                                       annot_format,
                                       audio_format,
                                       spect_format)
-    config_toml = specific_config_toml(config_type,
-                                       model,
-                                       annot_format,
-                                       audio_format,
-                                       spect_format)
-    labelset = vak.converters.labelset_to_set(
-        config_toml['PREP']['labelset']
-    )
 
-    has_unlabeled = vak.csv.has_unlabeled(csv_path, labelset)
+    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path)
     assert has_unlabeled == expected_result

@@ -8,7 +8,7 @@ import pandas as pd
 import torch.utils.data
 
 from .. import (
-    csv,
+    datasets,
     labels,
     models,
     tensorboard,
@@ -214,7 +214,7 @@ def train(
         )
 
     if labelset:
-        has_unlabeled = csv.has_unlabeled(csv_path, labelset, timebins_key)
+        has_unlabeled = datasets.seq.validators.has_unlabeled(csv_path, timebins_key)
         if has_unlabeled:
             map_unlabeled = True
         else:

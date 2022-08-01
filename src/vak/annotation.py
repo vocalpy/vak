@@ -18,8 +18,9 @@ def format_from_df(vak_df):
 
     Parameters
     ----------
-    vak_df : DataFrame
-        representating a dataset of vocalizations, with column 'annot_format'.
+    vak_df : pandas.DataFrame
+        Representing a dataset of vocalizations,
+        with column 'annot_format'.
 
     Returns
     -------
@@ -246,3 +247,34 @@ def source_annot_map(source_files, annot_list):
         )
 
     return source_annot_map
+
+
+def has_unlabeled(annot: crowsetta.Annotation,
+                  duration: float):
+    """Returns ``True`` if an annotated sequence has unlabeled segments.
+
+    Tests whether an instance of ``crowsetta.Annotation.seq`` has
+    intervals between the annotated segments with a non-zero duration,
+    or any unannotated periods before or after the annotated segments.
+
+    Parameters
+    ----------
+    annot : crowsetta.Annotation
+        With a ``seq`` attribute that is a ``crowsetta.Sequence``
+    duration : float
+        Total duration of the vocalization
+        that is annotated by ``annot``.
+        Needed to determine whether the duration
+        is greater than the time
+        of the last offset in the annotated segments.
+
+    Returns
+    -------
+    has_unlabeled : bool
+        If True, there are unlabeled periods
+        in the vocalization annotated by ``annot``.
+    """
+    has_unlabeled_intervals = np.any((annot.seq.onsets_s[1:] - annot.seq.offsets_s[:-1]) > 0.)
+    has_unlabeled_before_first_onset = annot.seq.onsets_s[0] > 0.
+    has_unlabeled_after_last_offset = duration - annot.seq.offsets_s[-1] > 0.
+    return has_unlabeled_intervals or has_unlabeled_before_first_onset or has_unlabeled_after_last_offset
