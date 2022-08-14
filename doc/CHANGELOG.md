@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 - Add unit tests for `csv.has_unlabled`
-  [#541](https://github.com/NickleDave/vak/pull/541).
+  [#541](https://github.com/NickleDave/vak/pull/541).55
   Fixes [#102](https://github.com/NickleDave/vak/issues/102).
 - Add unit tests for `__main__`
   [#542](https://github.com/NickleDave/vak/pull/542).
@@ -25,6 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `output_dir` exist is a directory, but `vak.core.prep` does.
   [#550](https://github.com/NickleDave/vak/pull/550).
   Fixes [#459](https://github.com/NickleDave/vak/issues/459).
+- Refactor and speed up logic for determining whether a 
+  dataset with sequence annotations has unlabeled segments 
+  that should be assigned a "background" label
+ [#559](https://github.com/NickleDave/vak/pull/559).
+ Fixes [#243](https://github.com/NickleDave/vak/issues/243).
+  - Adds a new sub-sub-package, `datasets.seq`
+    with a `validators` module, which is where the 
+    re-written `has_unlabeled` function now lives. 
+    Replaces the `vak.csv` module which was not well named.
+  - Also adds a `has_unlabeled` function to `vak.annotation` 
+    that is used by `vak.datasets.seq.validators.has_unlabeled`; 
+    this function handles edge cases outlined in
+    [#243](https://github.com/NickleDave/vak/issues/243).
 
 ### Fixed
 - Fix how `vak.core.prep` handles `labelset` parameter.
