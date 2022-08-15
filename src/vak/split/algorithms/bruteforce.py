@@ -1,7 +1,49 @@
+from __future__ import annotations
 import logging
 import random
 
+import numpy as np
+
 from .validate import validate_split_durations
+
+
+def unique_set_from_labels(labels: list[np.array]):
+    """Helper function to generate the set of unique labels in a list of label arrays.
+
+    Used for comparison with ``labelset``.
+    """
+    all_lbls = [lbl for lbl_arr in labels for lbl in lbl_arr]
+    return set(all_lbls)
+
+
+def validate_labels(labels: list[np.array], labelset: set) -> None:
+    """Validate that the unique set of label classes from ``labels``
+    equals ``labelset``."""
+    uniq_labels = unique_set_from_labels(labels)
+    if not uniq_labels == labelset:
+        if uniq_labels < labelset:
+            missing = labelset - uniq_labels
+            raise ValueError(
+                f'Unable to split using this labelset: {labelset}. '
+                f'The following classes of label do not appear in the list of label arrays: {missing}\n'
+                'To fix, either remove those classes from the labelset, '
+                'or add vocalizations to the dataset containing the missing labels.'
+            )
+        elif uniq_labels > labelset:
+            extra = uniq_labels - labelset
+            raise ValueError(
+                f'Unable to split using this labelset: {labelset}. '
+                f'The following classes of label that are not in labelset are found '
+                f'in the list of label arrays: {extra}\n'
+                'To fix, either add these classes to the labelset, '
+                'or remove the vocalizations from the dataset that contain these labels.'
+            )
+        elif uniq_labels & labelset == set():
+            raise ValueError(
+                f'Unable to split using this labelset: {labelset}. '
+                f'None of the label classes are found in the set of '
+                f'unique labels from the list of label arrays: {uniq_labels}.'
+            )
 
 
 def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5000):
@@ -48,6 +90,8 @@ def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5
     """
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
+
+    validate_labels(labels, labelset)
 
     sum_durs = sum(durs)
     train_dur, val_dur, test_dur = validate_split_durations(
