@@ -1,6 +1,9 @@
 """tests for vak.split.algorithms.bruteforce module"""
 from math import isclose
 
+import numpy as np
+import pytest
+
 from vak.split.algorithms import brute_force
 
 # since the algorithm is random, we test multiple times
@@ -328,4 +331,32 @@ def test_bruteforce_test_mat(spect_mat_annot_yarden_durs_labels, labelset_yarden
             train_inds,
             val_inds,
             test_inds,
+        )
+
+
+@pytest.mark.parametrize(
+    'labels_str',
+    [
+        # missing labels not in labelset
+        'abcd',  # no 'e'
+        # extra labels
+        'abcdef',
+        # none of the labels in labelset
+        'ghijkl',
+    ]
+)
+def test_bruteforce_raises(labels_str):
+    """Test that ``brute_force`` raises an error
+     when ``labels`` does not equal ``labelset``.
+     """
+    train_dur = 2
+    test_dur = 2
+    val_dur = 1
+    durs = (1, 1, 1, 1, 1)
+    labelset = set(list("abcde"))
+    labels = [np.array(list(labels_str)) for _ in range(5)]
+
+    with pytest.raises(ValueError):
+        brute_force(
+            durs, labels, labelset, train_dur, val_dur, test_dur
         )
