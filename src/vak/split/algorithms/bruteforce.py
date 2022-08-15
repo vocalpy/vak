@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 import random
+from typing import Union
 
 import numpy as np
 
@@ -46,12 +47,23 @@ def validate_labels(labels: list[np.array], labelset: set) -> None:
             )
 
 
-def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5000):
-    """finds indices that split (labels, durations) tuples into training,
-    test, and validation sets of specified durations, with the set of unique labels
+def brute_force(durs: list[float],
+                labels: list[np.ndarray],
+                labelset: set,
+                train_dur: Union[int, float],
+                val_dur: Union[int, float],
+                test_dur: Union[int, float],
+                max_iter: int = 5000) -> (list[int], list[int], list[int]):
+    """Generate indices that split a dataset into separate
+    training, validation, and test subsets.
+
+    Finds indices that split (labels, durations) tuples
+    into training, test, and validation sets of specified durations,
+    with the set of unique labels
     in each dataset equal to the specified labelset.
 
-    The durations of the datasets created using the returned indices will be
+    The durations of the datasets created
+    using the returned indices will be
     *greater than* or equal to the durations specified.
 
     Must specify a positive value for one of {train_dur, test_dur}.
@@ -62,11 +74,11 @@ def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5
     Parameters
     ----------
     durs : list
-        of durations of vocalizations
+        Of durations of vocalizations.
     labels : list
-        of labels from vocalizations
+        Of labels from vocalizations.
     labelset : set
-        of labels
+        Of labels.
     train_dur : int, float
         Target duration for training set, in seconds.
     val_dur : int, float
@@ -74,18 +86,23 @@ def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5
     test_dur : int, float
         Target duration for test set, in seconds.
     max_iter : int
-        maximum number of iterations to attempt to find indices. Default is 5000.
+        Maximum number of iterations
+        to attempt to find indices. Default is 5000.
 
     Returns
     -------
     train_inds, val_inds, test_inds : list
-        of int, the indices that will split datasets
+        Of int, the indices that will split dataset
+        into training, validation, and test subsets.
 
     Notes
     -----
-    A 'brute force' algorithm that just randomly assigns indices to a set,
-    and iterates until it finds some partition where each set has instances of all classes of label.
-    Starts by ensuring that each label is represented in each set and then adds files to reach the required
+    This is a "brute force" algorithm that
+    just randomly assigns indices to a set,
+    and iterates until it finds some partition
+    where each set has instances of all classes of label.
+    Starts by ensuring that each label is represented
+    in each set and then adds files to reach the required
     durations.
     """
     logger = logging.getLogger(__name__)
