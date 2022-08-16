@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 - Add unit tests for `csv.has_unlabled`
-  [#541](https://github.com/NickleDave/vak/pull/541).55
+  [#541](https://github.com/NickleDave/vak/pull/541).
   Fixes [#102](https://github.com/NickleDave/vak/issues/102).
 - Add unit tests for `__main__`
   [#542](https://github.com/NickleDave/vak/pull/542).
   Fixes [#337](https://github.com/NickleDave/vak/issues/337).
+- Add validation of `labels` argument to `vak.split.algorithms.brute_force`,
+  to prevent conditions where algorithm can fail to converge 
+  because of bad input 
+  [#562](https://github.com/NickleDave/vak/pull/562).
+  Fixes [#288](https://github.com/NickleDave/vak/issues/288).
 
 ### Changed
 - Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
