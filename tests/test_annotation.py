@@ -36,7 +36,7 @@ def test_source_annot_map(
     else:
         source_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
-    source_annot_map = vak.annotation.source_annot_map(
+    source_annot_map = vak.annotation.map_annotated_to_annot(
         source_files=source_files, annot_list=annot_list
     )
 
@@ -52,9 +52,9 @@ def test_source_annot_map(
 
     # test all mappings are correct
     for source_path, annot in list(source_annot_map.items()):
-        assert vak.annotation.recursive_stem(
+        assert vak.annotation.audio_stem_from_path(
             annot.audio_path
-        ) == vak.annotation.recursive_stem(source_path)
+        ) == vak.annotation.audio_stem_from_path(source_path)
 
 
 @pytest.mark.parametrize(

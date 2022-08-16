@@ -62,7 +62,7 @@ def from_df(vak_df):
     annotations; it determines whether each row has a separate annotation file,
     or if instead there is a single annotation file associated with all rows.
     If the latter, then the function opens that file and makes sure that
-    each row from the dataframe can be paired with an annotation (using `source_annot_map`).
+    each row from the dataframe can be paired with an annotation (using `map_annotated_to_annot`).
     """
     annot_format = format_from_df(vak_df)
     if annot_format is None:
@@ -85,9 +85,9 @@ def from_df(vak_df):
             if isinstance(annots, crowsetta.Annotation):
                 annots = [
                     annots
-                ]  # wrap in list for source_annot_map to iterate over it
+                ]  # wrap in list for map_annotated_to_annot to iterate over it
             # then we can try and map those annotations to the rows
-            audio_annot_map = source_annot_map(vak_df["audio_path"].values, annots)
+            audio_annot_map = map_annotated_to_annot(vak_df["audio_path"].values, annots)
             # sort by row of dataframe
             annots = [
                 audio_annot_map[audio_path]
@@ -134,8 +134,13 @@ def files_from_dir(annot_dir, annot_format):
     return annot_files
 
 
-def recursive_stem(path):
-    """removes extensions from a filename recursively,
+def audio_stem_from_path(path):
+    """Find the name of an audio file within a filename
+    by removing extensions until finding an audio extension,
+    then return the name of that audio file
+    without the extension (i.e., the "stem").
+
+    Removes extensions from a filename recursively,
     by calling `os.path.splitext`,
     until the extension is an audio file format handled by vak.
     Then return the stem, that is, the part that precedes the extension.
@@ -146,11 +151,11 @@ def recursive_stem(path):
 
     Examples
     --------
-    >>> recursive_stem('gy6or6_baseline_230312_0808.138.cbin.not.mat')
+    >>> audio_stem_from_path('gy6or6_baseline_230312_0808.138.cbin.not.mat')
     'gy6or6_baseline_230312_0808.138'
-    >>> recursive_stem('Bird0/spectrograms/0.wav.npz')
+    >>> audio_stem_from_path('Bird0/spectrograms/0.wav.npz')
     '0'
-    >>> recursive_stem('Bird0/Wave/0.wav')
+    >>> audio_stem_from_path('Bird0/Wave/0.wav')
     '0'
 
     Parameters
@@ -176,7 +181,7 @@ def recursive_stem(path):
     return stem
 
 
-def source_annot_map(source_files, annot_list):
+def map_annotated_to_annot(source_files, annot_list):
     """map source files, i.e. audio or spectrogram files, to annotations
 
     returns a ``dict`` where each key is a path to a source audio file
@@ -205,7 +210,7 @@ def source_annot_map(source_files, annot_list):
     # ----> make a dict with audio stems as keys,
     #       so we can look up annotations by stemming source files and using as keys.
     # First check that we don't have duplicate keys that would cause this to fail silently
-    keys = [recursive_stem(annot.audio_path) for annot in annot_list]
+    keys = [audio_stem_from_path(annot.audio_path) for annot in annot_list]
     keys_set = set(keys)
     if len(keys_set) < len(keys):
         duplicates = [item for item, count in Counter(keys).items() if count > 1]
@@ -214,7 +219,7 @@ def source_annot_map(source_files, annot_list):
         )
     del keys, keys_set
     audio_stem_annot_map = {
-        recursive_stem(annot.audio_path): annot for annot in annot_list
+        audio_stem_from_path(annot.audio_path): annot for annot in annot_list
     }
 
     # Make a copy from which we remove source files after mapping them to annotation,
@@ -227,7 +232,7 @@ def source_annot_map(source_files, annot_list):
         # remove stem so we can find .spect files that match with audio files,
         # e.g. find 'llb3_0003_2018_04_23_14_18_54.mat' that should match
         # with 'llb3_0003_2018_04_23_14_18_54.wav'
-        source_file_stem = recursive_stem(source_file)
+        source_file_stem = audio_stem_from_path(source_file)
 
         try:
             annot = audio_stem_annot_map[source_file_stem]

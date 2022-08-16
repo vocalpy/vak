@@ -15,7 +15,7 @@ import pandas as pd
 
 from .. import constants
 from .. import files
-from ..annotation import source_annot_map
+from ..annotation import map_annotated_to_annot
 from ..converters import labelset_to_set
 
 
@@ -162,7 +162,7 @@ def to_dataframe(
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
-            spect_annot_map = source_annot_map(spect_files, annot_list)
+            spect_annot_map = map_annotated_to_annot(spect_files, annot_list)
         else:
             # no annotation, so map spectrogram files to None
             spect_annot_map = dict((spect_path, None) for spect_path in spect_files)
