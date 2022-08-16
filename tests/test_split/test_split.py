@@ -246,14 +246,14 @@ def test_dataframe_specd_dur_gt_raises():
 
 @pytest.mark.parametrize("train_dur, test_dur", [(200, 200), (200, None), (None, 200)])
 def test_split_dataframe_mat(
-    train_dur, test_dur, spect_dir_mat, annot_list_yarden, labelset_yarden
+    train_dur, test_dur, spect_list_mat_all_labels_in_labelset, annot_list_yarden, labelset_yarden
 ):
     labelset_yarden = set(labelset_yarden)
 
     vak_df = vak.io.spect.to_dataframe(
         spect_format="mat",
+        spect_files=spect_list_mat_all_labels_in_labelset,
         annot_format="yarden",
-        spect_dir=spect_dir_mat,
         annot_list=annot_list_yarden,
     )
 
