@@ -197,7 +197,7 @@ def test_from_df(
         timebin_dur,
         cfg.learncurve.num_replicates,
         results_path,
-        labelmap,
+        labelset_notmat,
         window_size,
         SPECT_KEY,
         TIMEBINS_KEY,
