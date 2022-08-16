@@ -1,15 +1,69 @@
+from __future__ import annotations
 import logging
 import random
+from typing import Union
+
+import numpy as np
 
 from .validate import validate_split_durations
 
 
-def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5000):
-    """finds indices that split (labels, durations) tuples into training,
-    test, and validation sets of specified durations, with the set of unique labels
+def unique_set_from_labels(labels: list[np.array]):
+    """Helper function to generate the set of unique labels in a list of label arrays.
+
+    Used for comparison with ``labelset``.
+    """
+    all_lbls = [lbl for lbl_arr in labels for lbl in lbl_arr]
+    return set(all_lbls)
+
+
+def validate_labels(labels: list[np.array], labelset: set) -> None:
+    """Validate that the unique set of label classes from ``labels``
+    equals ``labelset``."""
+    uniq_labels = unique_set_from_labels(labels)
+    if not uniq_labels == labelset:
+        if uniq_labels < labelset:
+            missing = labelset - uniq_labels
+            raise ValueError(
+                f'Unable to split using this labelset: {labelset}. '
+                f'The following classes of label do not appear in the list of label arrays: {missing}\n'
+                'To fix, either remove those classes from the labelset, '
+                'or add vocalizations to the dataset containing the missing labels.'
+            )
+        elif uniq_labels > labelset:
+            extra = uniq_labels - labelset
+            raise ValueError(
+                f'Unable to split using this labelset: {labelset}. '
+                f'The following classes of label that are not in labelset are found '
+                f'in the list of label arrays: {extra}\n'
+                'To fix, either add these classes to the labelset, '
+                'or remove the vocalizations from the dataset that contain these labels.'
+            )
+        elif uniq_labels & labelset == set():
+            raise ValueError(
+                f'Unable to split using this labelset: {labelset}. '
+                f'None of the label classes are found in the set of '
+                f'unique labels from the list of label arrays: {uniq_labels}.'
+            )
+
+
+def brute_force(durs: list[float],
+                labels: list[np.ndarray],
+                labelset: set,
+                train_dur: Union[int, float],
+                val_dur: Union[int, float],
+                test_dur: Union[int, float],
+                max_iter: int = 5000) -> (list[int], list[int], list[int]):
+    """Generate indices that split a dataset into separate
+    training, validation, and test subsets.
+
+    Finds indices that split (labels, durations) tuples
+    into training, test, and validation sets of specified durations,
+    with the set of unique labels
     in each dataset equal to the specified labelset.
 
-    The durations of the datasets created using the returned indices will be
+    The durations of the datasets created
+    using the returned indices will be
     *greater than* or equal to the durations specified.
 
     Must specify a positive value for one of {train_dur, test_dur}.
@@ -20,11 +74,11 @@ def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5
     Parameters
     ----------
     durs : list
-        of durations of vocalizations
+        Of durations of vocalizations.
     labels : list
-        of labels from vocalizations
+        Of labels from vocalizations.
     labelset : set
-        of labels
+        Of labels.
     train_dur : int, float
         Target duration for training set, in seconds.
     val_dur : int, float
@@ -32,22 +86,29 @@ def brute_force(durs, labels, labelset, train_dur, val_dur, test_dur, max_iter=5
     test_dur : int, float
         Target duration for test set, in seconds.
     max_iter : int
-        maximum number of iterations to attempt to find indices. Default is 5000.
+        Maximum number of iterations
+        to attempt to find indices. Default is 5000.
 
     Returns
     -------
     train_inds, val_inds, test_inds : list
-        of int, the indices that will split datasets
+        Of int, the indices that will split dataset
+        into training, validation, and test subsets.
 
     Notes
     -----
-    A 'brute force' algorithm that just randomly assigns indices to a set,
-    and iterates until it finds some partition where each set has instances of all classes of label.
-    Starts by ensuring that each label is represented in each set and then adds files to reach the required
+    This is a "brute force" algorithm that
+    just randomly assigns indices to a set,
+    and iterates until it finds some partition
+    where each set has instances of all classes of label.
+    Starts by ensuring that each label is represented
+    in each set and then adds files to reach the required
     durations.
     """
     logger = logging.getLogger(__name__)
     logger.setLevel("INFO")
+
+    validate_labels(labels, labelset)
 
     sum_durs = sum(durs)
     train_dur, val_dur, test_dur = validate_split_durations(
