@@ -78,12 +78,24 @@ https://vak.readthedocs.io/en/latest/get_started/autoannotate.html
 
 Please see the How-To Guides in the documentation here:
 https://vak.readthedocs.io/en/latest/howto/index.html
-
+faq.html#faq
 ### Support / Contributing
-We handle support through the issue tracker on GitHub:  
-https://github.com/vocalpy/vak/issues  
-Please raise an issue there if you run into trouble.  
-That would be a great place to start if you are interested in contributing, as well.
+
+For help, please begin by checking out the Frequently Asked Questions:  
+https://vak.readthedocs.io/en/latest/faq.html.
+
+To ask a question about vak, discuss its development, 
+or share how you are using it, 
+please start a new "Q&A" topic on the VocalPy forum 
+with the vak tag:  
+<https://forum.vocalpy.org/>
+
+To report a bug, or to request a feature, 
+please use the issue tracker on GitHub:  
+<https://github.com/vocalpy/vak/issues>
+
+For a guide on how you can contribute to `vak`, please see:
+https://vak.readthedocs.io/en/latest/development/index.html
 
 ### Citation
 If you use vak for a publication, please cite its DOI:  

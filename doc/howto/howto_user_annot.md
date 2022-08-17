@@ -65,6 +65,9 @@ That's because such formats need to include the names
 of the files that they annotate within the single file 
 of annotations, so that each annotation 
 can be linked to a specific annotated file.
+
+For more detail on naming conventions, 
+please see {ref}`file-naming-conventions`
 ```
 
 Below we provide an example of how you would write 
@@ -291,6 +294,7 @@ annotation files as if they were a `.csv`,
 which can cause an error.
 :::
 
+(howto-user-annot-format-method-2)=
 ### Using the `'generic-seq'` format with `vak`
 
 If you have written a script that saves all your annotations 
