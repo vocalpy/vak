@@ -15,7 +15,7 @@ vocalizations---such as birdsong, bat calls,
 and even human speech---to work with
 neural network algorithms.
 
-Currently the main use is automated **annotation** of animal vocalizations.
+Currently, the main use is automated **annotation** of animal vocalizations.
 By **annotation**, we mean something like this example of annotated birdsong:
 
 ```{image} images/annotation_example_for_tutorial.png
@@ -35,6 +35,20 @@ and you're looking for installation instructions and a tutorial,
 If there is something specific you're trying to do,
 like use your own spectrogram files or annotation formats with `vak`,
 please check in the {ref}`howto-index`.
+
+### Getting Help
+
+For help, please begin by checking out the {ref}`faq`.
+
+To ask a question about vak, discuss its development, 
+or share how you are using it, 
+please start a new "Q&A" topic on the VocalPy forum 
+with the vak tag:  
+<https://forum.vocalpy.org/>
+
+To report a bug, or to request a feature, 
+please use the issue tracker on GitHub:  
+<https://github.com/vocalpy/vak/issues>
 
 ### {ref}`reference-index`
 
@@ -59,6 +73,7 @@ Not enough open-source research software libraries have poems. We do, here: {ref
 
 get_started/index
 howto/index
+faq
 reference/index
 development/index
 reference/about
