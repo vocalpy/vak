@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   because of bad input 
   [#562](https://github.com/NickleDave/vak/pull/562).
   Fixes [#288](https://github.com/NickleDave/vak/issues/288).
+- Add a "Frequently Asked Questions" page to the documentation, 
+  and a page to the "Reference" section on file naming conventions
+ [#564](https://github.com/NickleDave/vak/pull/564).
+  Fixes [#524](https://github.com/NickleDave/vak/issues/524)
+  and [#424](https://github.com/NickleDave/vak/issues/424).
 
 ### Changed
 - Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
