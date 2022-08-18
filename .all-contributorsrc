@@ -151,7 +151,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/24313958?v=4",
       "profile": "https://github.com/sthaar",
       "contributions": [
-        "doc"
+        "doc",
+        "bug",
+        "ideas"
       ]
     }
   ],
