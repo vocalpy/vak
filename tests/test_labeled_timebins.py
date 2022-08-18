@@ -189,7 +189,7 @@ def test_lbl_tb2segments_recovers_onsets_offsets_labels_from_real_data(
 
     spect_paths = vak_df["spect_path"].values
     annot_list = vak.annotation.from_df(vak_df)
-    spect_annot_map = vak.annotation.source_annot_map(spect_paths, annot_list)
+    spect_annot_map = vak.annotation.map_annotated_to_annot(spect_paths, annot_list)
 
     TIMEBINS_KEY = "t"
 

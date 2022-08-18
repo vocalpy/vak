@@ -674,7 +674,7 @@ class WindowDataset(VisionDataset):
 
         if crop_to_dur:
             lbl_tb = []
-            spect_annot_map = annotation.source_annot_map(spect_paths, annots)
+            spect_annot_map = annotation.map_annotated_to_annot(spect_paths, annots)
             for ind, (spect_path, annot) in enumerate(spect_annot_map.items()):
                 spect_dict = files.spect.load(spect_path)
                 n_tb_spect = spect_dict[spect_key].shape[-1]

@@ -10,7 +10,7 @@ from .. import (
     constants,
     files
 )
-from ..annotation import source_annot_map
+from ..annotation import map_annotated_to_annot
 from ..converters import labelset_to_set
 from ..config.spect_params import SpectParamsConfig
 from ..spect import spectrogram
@@ -170,13 +170,13 @@ def to_spect(
                 )
 
         if annot_list:  # make map we can validate below
-            audio_annot_map = source_annot_map(audio_files, annot_list)
+            audio_annot_map = map_annotated_to_annot(audio_files, annot_list)
 
     # otherwise get audio files using audio dir (won't need to validate audio files)
     if audio_dir:
         audio_files = files_from_dir(audio_dir, audio_format)
         if annot_list:
-            audio_annot_map = source_annot_map(audio_files, annot_list)
+            audio_annot_map = map_annotated_to_annot(audio_files, annot_list)
 
     logger.info("creating array files with spectrograms")
 
