@@ -48,6 +48,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     that is used by `vak.datasets.seq.validators.has_unlabeled`; 
     this function handles edge cases outlined in
     [#243](https://github.com/NickleDave/vak/issues/243).
+- Rename and refactor functions in `vak.annotation` 
+  that map annotations to the files that they annotate, 
+  so that the purpose of the functions is clearer, 
+  and add clearer error messages with links to documentation 
+  about file naming conventions 
+ [#566](https://github.com/NickleDave/vak/pull/566).
+ Fixes [#525](https://github.com/NickleDave/vak/issues/525).
 
 ### Fixed
 - Fix how `vak.core.prep` handles `labelset` parameter.
