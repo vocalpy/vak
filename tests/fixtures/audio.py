@@ -67,19 +67,30 @@ def audio_list_cbin_labels_not_in_labelset(
     return audio_list_labels_in_labelset
 
 
-# TODO: add .WAV from TIMIT
 @pytest.fixture
-def audio_dir_wav(source_test_data_root):
+def audio_dir_wav_birdsongrec(source_test_data_root):
     return source_test_data_root.joinpath("audio_wav_annot_birdsongrec", "Bird0", "Wave")
 
 
 @pytest.fixture
-def audio_list_wav(audio_dir_wav):
-    return sorted(audio_dir_wav.glob("*.wav"))
+def audio_list_wav_birdsongrec(audio_dir_wav_birdsongrec):
+    return sorted(audio_dir_wav_birdsongrec.glob("*.wav"))
 
 
 @pytest.fixture
-def audio_list_factory(audio_list_cbin, audio_list_wav):
+def audio_dir_wav_textgrid(source_test_data_root):
+    return source_test_data_root.joinpath("audio_wav_annot_textgrid", "AGBk")
+
+
+@pytest.fixture
+def audio_list_wav_textgrid(audio_dir_wav_textgrid):
+    return sorted(audio_dir_wav_textgrid.glob("*.WAV"))
+
+
+@pytest.fixture
+def audio_list_factory(audio_list_cbin,
+                       audio_list_wav_birdsongrec,
+                       audio_list_wav_textgrid):
     """factory fixture, returns a function that
     returns a fixture containing a list of Annotation objects,
     given a specified annotation format
@@ -87,11 +98,14 @@ def audio_list_factory(audio_list_cbin, audio_list_wav):
     so that unit tests can be parameterized with annotation format names
     """
     FORMAT_AUDIO_LIST_FIXTURE_MAP = {
-        "cbin": audio_list_cbin,
-        "wav": audio_list_wav,
+        "audio_cbin_annot_notmat": audio_list_cbin,
+        "audio_cbin_annot_simple-seq": audio_list_cbin,
+        "audio_wav_annot_birdsong-recognition-dataset": audio_list_wav_birdsongrec,
+        "audio_wav_annot_textgrid": audio_list_wav_textgrid,
     }
 
-    def _audio_list_factory(format):
-        return FORMAT_AUDIO_LIST_FIXTURE_MAP[format]
+    def _audio_list_factory(audio_format, annot_format):
+        key = f'audio_{audio_format}_annot_{annot_format}'
+        return FORMAT_AUDIO_LIST_FIXTURE_MAP[key]
 
     return _audio_list_factory
