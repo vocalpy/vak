@@ -42,7 +42,12 @@ def train_output_matches_expected(cfg, model_config_map, results_path):
 def test_train(
     audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
 ):
-    options_to_change = {"section": "TRAIN", "option": "device", "value": device}
+    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path.mkdir()
+    options_to_change = [
+        {"section": "TRAIN", "option": "device", "value": device},
+        {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
+    ]
     toml_path = specific_config(
         config_type="train",
         model=model,
@@ -53,8 +58,6 @@ def test_train(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
-    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
-    results_path.mkdir()
 
     vak.core.train(
         model_config_map,
@@ -89,7 +92,12 @@ def test_train(
 def test_continue_training(
     audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
 ):
-    options_to_change = {"section": "TRAIN", "option": "device", "value": device}
+    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path.mkdir()
+    options_to_change = [
+        {"section": "TRAIN", "option": "device", "value": device},
+        {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
+    ]
     toml_path = specific_config(
         config_type="train_continue",
         model=model,
@@ -100,8 +108,6 @@ def test_continue_training(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
-    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
-    results_path.mkdir()
 
     vak.core.train(
         model_config_map=model_config_map,
