@@ -175,6 +175,10 @@ def test_data_download_generated_all(session) -> None:
     session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_ALL_TAR}')
     with tarfile.open(GENERATED_TEST_DATA_ALL_TAR, "r:gz") as tf:
         tf.extractall(path='.')
+    session.log('Fixing paths in .csv files')
+    session.run(
+        "python", "./tests/scripts/fix_prep_csv_paths.py"
+    )
 
 
 GENERATED_TEST_DATA_CI_URL = 'https://osf.io/p6wyh/download'
@@ -185,11 +189,16 @@ def test_data_download_generated_ci(session) -> None:
     """
     Download and extract a .tar.gz file of just the 'generated' test data used to run tests on CI
     """
+    session.install("pandas")
     session.log(f'Downloading: {GENERATED_TEST_DATA_CI_URL}')
     copy_url(url=GENERATED_TEST_DATA_CI_URL, path=GENERATED_TEST_DATA_CI_TAR)
     session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_CI_TAR}')
     with tarfile.open(GENERATED_TEST_DATA_CI_TAR, "r:gz") as tf:
         tf.extractall(path='.')
+    session.log('Fixing paths in .csv files')
+    session.run(
+        "python", "./tests/scripts/fix_prep_csv_paths.py"
+    )
 
 
 @nox.session
@@ -208,10 +217,6 @@ def coverage(session) -> None:
     """
     session.install(".[test]")
     if session.posargs:
-        if "fix-prep-csv-paths" in session.posargs:
-            session.run(
-                "python", "./tests/scripts/fix_prep_csv_paths.py"
-            )
         if "running-on-ci" in session.posargs:
             # on ci, just run `teenytweetynet` model
             session.run(

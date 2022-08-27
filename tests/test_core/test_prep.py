@@ -58,11 +58,23 @@ def test_prep(
     )
     output_dir.mkdir()
 
-    options_to_change = {
-        "section": "PREP",
-        "option": "output_dir",
-        "value": str(output_dir),
-    }
+    spect_output_dir = tmp_path.joinpath(
+        f"spectrograms_test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}"
+    )
+    spect_output_dir.mkdir()
+
+    options_to_change = [
+        {
+            "section": "PREP",
+            "option": "output_dir",
+            "value": str(output_dir),
+        },
+        {
+            "section": "PREP",
+            "option": "spect_output_dir",
+            "value": str(spect_output_dir),
+        },
+    ]
     toml_path = specific_config(
         config_type=config_type,
         model=default_model,
@@ -200,6 +212,11 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
             "option": "output_dir",
             "value": str(output_dir),
         },
+        {
+            "section": "PREP",
+            "option": "spect_output_dir",
+            "value": str(output_dir),
+        },
     ]
 
     toml_path = specific_config(
@@ -256,6 +273,11 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
         {
             "section": "PREP",
             "option": "output_dir",
+            "value": str(output_dir),
+        },
+        {
+            "section": "PREP",
+            "option": "spect_output_dir",
             "value": str(output_dir),
         },
     ]

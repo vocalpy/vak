@@ -60,7 +60,11 @@ def test_train_csv_path_none_raises(
     """Test that cli.train raises ValueError when csv_path is None
     (presumably because `vak prep` was not run yet)
     """
+    root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
+    root_results_dir.mkdir()
+
     options_to_change = [
+        {"section": "TRAIN", "option": "root_results_dir", "value": str(root_results_dir)},
         {"section": "TRAIN", "option": "csv_path", "value": "DELETE-OPTION"},
     ]
 
