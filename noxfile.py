@@ -91,7 +91,7 @@ def copy_url(url: str, path: str) -> None:
     urllib.request.urlretrieve(url, path)
 
 
-SOURCE_TEST_DATA_URL = 'https://osf.io/mjksu/download'
+SOURCE_TEST_DATA_URL = 'https://osf.io/evnk9/download'
 SOURCE_TEST_DATA_TAR = f'{SOURCE_TEST_DATA_DIR}source_test_data.tar.gz'
 
 
@@ -176,7 +176,7 @@ def test_data_tar_generated_ci(session) -> None:
     make_tarfile(GENERATED_TEST_DATA_CI_TAR, GENERATED_TEST_DATA_CI_DIRS)
 
 
-GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/7uz6r/download'
+GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/9qmb4/download'
 
 
 @nox.session(name='test-data-download-generated-all')
@@ -195,7 +195,7 @@ def test_data_download_generated_all(session) -> None:
     )
 
 
-GENERATED_TEST_DATA_CI_URL = 'https://osf.io/p6wyh/download'
+GENERATED_TEST_DATA_CI_URL = 'https://osf.io/36gwp/download'
 
 
 @nox.session(name='test-data-download-generated-ci')
