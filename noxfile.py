@@ -71,6 +71,11 @@ def clean_dir(dir_path):
 
 DATA_FOR_TESTS_DIR = './tests/data_for_tests/'
 SOURCE_TEST_DATA_DIR = f"{DATA_FOR_TESTS_DIR}source/"
+SOURCE_TEST_DATA_DIRS = [
+    dir_ for dir_
+    in sorted(pathlib.Path(SOURCE_TEST_DATA_DIR).glob('*/'))
+    if dir_.is_dir()
+]
 
 
 @nox.session(name='test-data-clean-source')
@@ -88,6 +93,15 @@ def copy_url(url: str, path: str) -> None:
 
 SOURCE_TEST_DATA_URL = 'https://osf.io/mjksu/download'
 SOURCE_TEST_DATA_TAR = f'{SOURCE_TEST_DATA_DIR}source_test_data.tar.gz'
+
+
+@nox.session(name='test-data-tar-source')
+def test_data_tar_source(session) -> None:
+    """
+    Make a .tar.gz file of just the 'generated' test data used to run tests on CI.
+    """
+    session.log(f"Making tarfile with source data: {SOURCE_TEST_DATA_TAR}")
+    make_tarfile(SOURCE_TEST_DATA_TAR, SOURCE_TEST_DATA_DIRS)
 
 
 @nox.session(name='test-data-download-source')
