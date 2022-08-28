@@ -68,9 +68,23 @@ but it is added by `vak.prep` when generating a dataset of spectrogram files fro
 
 ### Spectrogram file naming
 
-The *name* of each spectrogram file *must* be the **same**
-as the name of the audio file it was created from, with the spectrogram file format added.
-E.g., if your audio file is `bird1.wav`, then the spectrogram file should be `bird1.wav.npz`.
+There are two valid ways to name spectrogram files.
+The first is to name each spectrogram file the same
+as the name of the audio file it was created from, 
+with the spectrogram file format added.
+E.g., if your audio file is `bird1.wav`, 
+then the spectrogram file should be `bird1.wav.npz`.
+The second way is to name the spectrogram file 
+by replacing the audio file extension with the array file 
+extension, e.g., the spectrogram from `bird1.wav` 
+would be saved in `bird1.npz`. 
+The second way may be more intuitive, 
+while the first allows for other `.npz` files 
+with the same stem in the same directory, 
+e.g. `day1/bird1.wav.npz` and `day1/bird1.ftr.npz` 
+can be found side by side.
+For more detail, please see the page 
+{ref}`file-naming-conventions`.
 
 (example-spect-file-format)=
 ### Example array files that meet this spectrogram file format specification
