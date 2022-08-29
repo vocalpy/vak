@@ -212,8 +212,15 @@ When you run `prep`, `vak` converts the data from `data_dir` into a special data
 automatically adds the path to that file to the `[TRAIN]` section of the `config.toml` file, as the option
 `csv_path`.
 
-(train-neural-network)=
+You have now prepared a dataset for training a model!  
+You'll probably have more questions about 
+how to do this later, 
+when you start to work with your own data. 
+When that time comes, please see the how-to page: 
+{ref}`howto-prep-annotate`.
+For now, let's move on to training a neural network with this dataset.
 
+(train-neural-network)=
 ## 2. training a neural network
 
 Now that you've prepared the dataset, you can train a neural network with it.

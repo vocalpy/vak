@@ -16,14 +16,158 @@ def test_files_from_dir(annot_dir_notmat, annot_files_notmat):
 
 
 @pytest.mark.parametrize(
+    'path, audio_ext, expected_stem',
+    [
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.cbin.not.mat', None, 'gy6or6_baseline_230312_0808.138'),
+        ('`/gy6or6/032212/gy6or6_baseline_230312_0808.138.cbin.not.mat', 'cbin', 'gy6or6_baseline_230312_0808.138'),
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.cbin.not.mat', '.cbin', 'gy6or6_baseline_230312_0808.138'),
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.cbin', None, 'gy6or6_baseline_230312_0808.138'),
+        ('`/gy6or6/032212/gy6or6_baseline_230312_0808.138.cbin', 'cbin', 'gy6or6_baseline_230312_0808.138'),
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.cbin', '.cbin', 'gy6or6_baseline_230312_0808.138'),
+        ('gy6or6_baseline_230312_0808.138.cbin.not.mat', None, 'gy6or6_baseline_230312_0808.138'),
+        ('gy6or6_baseline_230312_0808.138.cbin.not.mat', 'cbin', 'gy6or6_baseline_230312_0808.138'),
+        ('gy6or6_baseline_230312_0808.138.cbin.not.mat', '.cbin', 'gy6or6_baseline_230312_0808.138'),
+        ('Bird0/spectrograms/0.wav.npz', None, '0'),
+        ('Bird0/spectrograms/0.wav.npz', 'wav', '0'),
+        ('Bird0/spectrograms/0.wav.npz', '.wav', '0'),
+        ('Bird0/spectrograms/0.wav', None, '0'),
+        ('0.wav', None, '0'),
+        ('0.wav', 'wav', '0'),
+        ('0.wav', '.wav', '0'),
+    ]
+)
+def test_audio_stem_from_path(path, audio_ext, expected_stem):
+    stem = vak.annotation.audio_stem_from_path(path, audio_ext)
+    assert stem == expected_stem
+
+
+@pytest.mark.parametrize(
+    'path, audio_ext',
+    [
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.', None),
+        ('`/gy6or6/032212/gy6or6_baseline_230312_0808.138.', 'cbin'),
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.', '.cbin'),
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.', None),
+        ('`/gy6or6/032212/gy6or6_baseline_230312_0808.138.', 'cbin'),
+        ('~/gy6or6/032212/gy6or6_baseline_230312_0808.138.', '.cbin'),
+        ('gy6or6_baseline_230312_0808.138.', None),
+        ('gy6or6_baseline_230312_0808.138.', 'cbin'),
+        ('gy6or6_baseline_230312_0808.138.', '.cbin'),
+        ('Bird0/spectrograms/0', None,),
+        ('Bird0/spectrograms/0.', 'wav'),
+        ('Bird0/spectrograms/0.', '.wav'),
+        ('Bird0/spectrograms/0.', None),
+        ('0.', None),
+        ('0.', 'wav'),
+        ('0.', '.wav'),
+    ]
+)
+def test_audio_stem_from_path_raises(path, audio_ext):
+    with pytest.raises(vak.annotation.AudioFilenameNotFound):
+        vak.annotation.audio_stem_from_path(path, audio_ext)
+
+
+@pytest.mark.parametrize(
+    "source_type, source_format, annot_format, audio_ext",
+    [
+        ("audio", "cbin", "notmat", None),
+        ("audio", "wav", "birdsong-recognition-dataset", None),
+        ("spect", "mat", "yarden", None),
+        ("audio", "cbin", "notmat", "cbin"),
+        ("audio", "wav", "birdsong-recognition-dataset", "wav"),
+        ("spect", "mat", "yarden", "wav"),
+    ],
+)
+def test__map_using_audio_stem_from_path(
+    source_type,
+    source_format,
+    annot_format,
+    audio_ext,
+    audio_list_factory,
+    spect_list_mat,
+    specific_annot_list,
+):
+    if source_type == "audio":
+        annotated_files = audio_list_factory(source_format, annot_format)
+    else:
+        annotated_files = spect_list_mat
+    annot_list = specific_annot_list(annot_format)
+
+    annotated_annot_map = vak.annotation._map_using_audio_stem_from_path(
+        annotated_files=annotated_files, annot_list=annot_list, audio_ext=audio_ext
+    )
+
+    # test all the audio paths made it into the map
+    annotated_files_from_map = list(annotated_annot_map.keys())
+    for source_file in annotated_files:
+        assert source_file in annotated_files_from_map
+
+    # test all the annots made it into the map
+    annot_list_from_map = list(annotated_annot_map.values())
+    for annot in annot_list:
+        assert annot in annot_list_from_map
+
+    # test all mappings are correct
+    for source_path, annot in list(annotated_annot_map.items()):
+        assert vak.annotation.audio_stem_from_path(
+            annot.audio_path
+        ) == vak.annotation.audio_stem_from_path(source_path)
+
+
+@pytest.mark.parametrize(
+    "source_type, source_format, annot_format, annotated_ext",
+    [
+        ("audio", "wav", "textgrid", ".wav"),
+    ],
+)
+def test__map_replacing_ext(
+    source_type,
+    source_format,
+    annot_format,
+    annotated_ext,
+    audio_list_factory,
+    spect_list_mat,
+    specific_annot_list,
+):
+    if source_type == "audio":
+        annotated_files = audio_list_factory(source_format, annot_format)
+    else:
+        annotated_files = spect_list_mat
+    annot_list = specific_annot_list(annot_format)
+
+    annotated_annot_map = vak.annotation._map_replacing_ext(
+        annotated_files=annotated_files, annot_list=annot_list, annotated_ext=annotated_ext
+    )
+
+    # test all the audio paths made it into the map
+    annotated_files_from_map = list(annotated_annot_map.keys())
+    for source_file in annotated_files:
+        assert source_file in annotated_files_from_map
+
+    # test all the annots made it into the map
+    annot_list_from_map = list(annotated_annot_map.values())
+    for annot in annot_list:
+        assert annot in annot_list_from_map
+
+    # test all mappings are correct
+    for source_path, annot in list(annotated_annot_map.items()):
+        assert vak.annotation.audio_stem_from_path(
+            annot.audio_path
+        ) == vak.annotation.audio_stem_from_path(source_path)
+
+
+@pytest.mark.parametrize(
     "source_type, source_format, annot_format",
     [
         ("audio", "cbin", "notmat"),
+        ("audio", "cbin", "simple-seq"),
         ("audio", "wav", "birdsong-recognition-dataset"),
+        ("audio", "wav", "textgrid"),
         ("spect", "mat", "yarden"),
+        ("audio", "wav", "textgrid"),
     ],
 )
-def test_annotated_annot_map(
+def test_map_annotated_to_annot(
     source_type,
     source_format,
     annot_format,
@@ -32,7 +176,7 @@ def test_annotated_annot_map(
     specific_annot_list,
 ):
     if source_type == "audio":
-        annotated_files = audio_list_factory(source_format)
+        annotated_files = audio_list_factory(source_format, annot_format)
     else:
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)

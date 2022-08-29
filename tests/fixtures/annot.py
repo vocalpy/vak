@@ -79,7 +79,45 @@ def annot_list_birdsongrec(annot_file_birdsongrec):
 
 
 @pytest.fixture
-def specific_annot_list(annot_list_notmat, annot_list_yarden, annot_list_birdsongrec):
+def annot_dir_textgrid(source_test_data_root):
+    return source_test_data_root.joinpath("audio_wav_annot_textgrid", "AGBk")
+
+
+@pytest.fixture
+def annot_files_textgrid(annot_dir_textgrid):
+    return sorted(annot_dir_textgrid.glob("*.TextGrid"))
+
+
+@pytest.fixture
+def annot_list_textgrid(annot_files_textgrid):
+    scribe = crowsetta.Transcriber(format="textgrid")
+    annot_list = scribe.from_file(annot_files_textgrid)
+    return annot_list
+
+
+@pytest.fixture
+def annot_dir_simple_seq(source_test_data_root):
+    return source_test_data_root.joinpath("audio_cbin_annot_simple_seq", "gy6or6", "032312")
+
+
+@pytest.fixture
+def annot_files_simple_seq(annot_dir_simple_seq):
+    return sorted(annot_dir_simple_seq.glob("*.cbin.csv"))
+
+
+@pytest.fixture
+def annot_list_simple_seq(annot_files_simple_seq):
+    scribe = crowsetta.Transcriber(format="simple-seq")
+    annot_list = scribe.from_file(annot_files_simple_seq)
+    return annot_list
+
+
+@pytest.fixture
+def specific_annot_list(annot_list_birdsongrec,
+                        annot_list_notmat,
+                        annot_list_simple_seq,
+                        annot_list_textgrid,
+                        annot_list_yarden):
     """factory fixture, returns a function that
     returns a fixture containing a list of Annotation objects,
     given a specified annotation format
@@ -87,9 +125,11 @@ def specific_annot_list(annot_list_notmat, annot_list_yarden, annot_list_birdson
     so that unit tests can be parameterized with annotation format names
     """
     FORMAT_ANNOT_LIST_FIXTURE_MAP = {
-        "notmat": annot_list_notmat,
-        "yarden": annot_list_yarden,
         "birdsong-recognition-dataset": annot_list_birdsongrec,
+        "notmat": annot_list_notmat,
+        "simple-seq": annot_list_simple_seq,
+        "textgrid": annot_list_textgrid,
+        "yarden": annot_list_yarden,
     }
 
     def _annot_list_factory(format):
