@@ -22,13 +22,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  [#564](https://github.com/NickleDave/vak/pull/564).
   Fixes [#524](https://github.com/NickleDave/vak/issues/524)
   and [#424](https://github.com/NickleDave/vak/issues/424).
+- Add a new way for vak to map annotation files to annotated files 
+  when preparing datasets, e.g. for training models. 
+  For annotation formats that have one annotation file per 
+  annotated file, vak can now recognize when
+  the annotation files are named by removing the 
+  annotated file extension (e.g., .wav or .npz) 
+  and replacing it with the annotation format extension, 
+  e.g. .txt or .csv. (Other ways of relating annotations 
+  and annotated files are still valid, e.g. by including 
+  the original source audio file in both filenames.)
+  [#572](https://github.com/NickleDave/vak/pull/572).
+  Fixes [#563](https://github.com/NickleDave/vak/issues/563).
 
 ### Changed
 - Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
   [#544](https://github.com/NickleDave/vak/pull/544).
   Fixes [#543](https://github.com/NickleDave/vak/issues/543).
 - It is now possible to load configuration files 
-  and work with them programatically even if the paths 
+  and work with them programmatically even if the paths 
   they point to do not exist.
   The `core` functions handle validation instead.
   E.g., the `PrepConfig` class does not check whether 
