@@ -1,8 +1,8 @@
 [PREP]
 data_dir = "/PATH/TO/DATA/032212"
 output_dir = "/PATH/TO/DATA/vak/prep/train"
-audio_format = "cbin"
-annot_format = "notmat"
+audio_format = "wav"
+annot_format = "simple-seq"
 labelset = "iabcdefghjk"
 train_dur = 50
 val_dur = 15
