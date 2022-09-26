@@ -1,7 +1,7 @@
 [PREP]
 data_dir = "/PATH/TO/DATA/032312"
 output_dir = "/PATH/TO/DATA/vak/prep/predict"
-audio_format = "cbin"
+audio_format = "wav"
 
 [SPECT_PARAMS]
 fft_size = 512

@@ -36,32 +36,45 @@ don't worry, it will all be explained in the following sections.
 
 Before going through this tutorial, you'll need to:
 
-1. have `vak` installed (following these {ref}`instructions <installation>`).
-2. have a text editor to change a few options in the configuration files
+1. Have `vak` installed (following these {ref}`instructions <installation>`).
+2. Have a text editor to change a few options in the configuration files
    such as [sublime](https://www.sublimetext.com/), [gedit](https://wiki.gnome.org/Apps/Gedit),
    or [notepad++](https://notepad-plus-plus.org/)
-3. download example data (from this dataset: <https://figshare.com/articles/Bengalese_Finch_song_repository/4805749> )
+3. Download example data from this dataset: <https://figshare.com/articles/Bengalese_Finch_song_repository/4805749>
 
    - one day of birdsong, for training data (click to download)  
-     {download}`https://ndownloader.figshare.com/files/9537229`
-   - another day, to use to predict annnotations (click to download)
-     {download}`https://ndownloader.figshare.com/files/9537232`
-   - Be sure to extract the files from these archives!
-     On Windows you can use programs like [WinRAR](https://www.rarlab.com/)
-     or [WinZIP](https://www.winzip.com/win/en/tar-gz-file.html),
-     on mac you can double click the `.tar.gz` file, and on
-     (Ubuntu) linux you can right-click and select the `Extract to` option.
+     {download}`https://figshare.com/ndownloader/files/37509160`
+   - another day, to use to predict annotations (click to download)
+     {download}`https://figshare.com/ndownloader/files/37509172`
+   - Be sure to extract the files from these archives! 
+     Please use the program "tar" to extract the archives, 
+     on either macOS/Linux or Windows.
+     Using other programs like WinZIP on Windows 
+     can corrupt the files when extracting them,
+     causing confusing errors.
+     Tar should be available on newer Windows systems
+     (as described 
+     [here](https://learn.microsoft.com/en-us/virtualization/community/team-blog/2017/20171219-tar-and-curl-come-to-windows)).
+   - Alternatively you can copy the following command and then 
+     paste it into a terminal to run a Python script 
+     that will download and extract the files for you. 
 
-4. download the corresponding configuration files (click to download):
+     :::{eval-rst}
+    
+     .. tabs::
+    
+        .. code-tab:: shell macOS / Linux
+    
+           curl -sSL https://raw.githubusercontent.com/vocalpy/vak/main/src/scripts/download_autoannotate_data.py | python3 -
+     
+        .. code-tab:: shell Windows
+    
+           (Invoke-WebRequest -Uri https://raw.githubusercontent.com/vocalpy/vak/main/src/scripts/download_autoannotate_data.py -UseBasicParsing).Content | py -
+     :::
+
+4. Download the corresponding configuration files (click to download):
    {download}`gy6or6_train.toml <../toml/gy6or6_train.toml>`
    and {download}`gy6or6_predict.toml <../toml/gy6or6_predict.toml>`
-
-:::{note}
-This tutorial uses audio files in a `.cbin` format. 
-The `vak` library can load common audio formats (WAV, FLAC, OGG).
-If you are wondering about the `.cbin` format, 
-please see <https://github.com/NickleDave/evfuncs>.
-:::
 
 ## Overview
 
