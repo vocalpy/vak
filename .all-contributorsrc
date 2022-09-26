@@ -165,6 +165,15 @@
         "bug",
         "ideas"
       ]
+    },
+    {
+      "login": "lmpascual",
+      "name": "lmpascual",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62260534?v=4",
+      "profile": "https://github.com/lmpascual",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
