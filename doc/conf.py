@@ -51,6 +51,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
     'sphinxext.opengraph',
+    'sphinx_tabs.tabs'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
