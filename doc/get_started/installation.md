@@ -58,7 +58,7 @@ To create a new virtual environment that contains `vak`
 and all the libraries it depends on, open your terminal and run:
 
 ```shell
-conda create --name vak-env python=3.8 vak=0.5.0 -c pytorch -c conda-forge
+conda create --name vak-env python=3.8 vak -c pytorch -c conda-forge
 ```
 
 Notice that we specify the Python version and the `vak` version.
@@ -76,7 +76,7 @@ for installing those two libraries.
 To install `vak` into an existing environment, run:
 
 ```shell
-conda install vak=0.5.0 -c pytorch -c conda-forge
+conda install vak -c pytorch -c conda-forge
 ```
 
 Again you should specify the latest version of `vak`, 
@@ -96,7 +96,7 @@ before installing `vak`. For example:
 C:\You> conda create -n vak-env python==3.8
 C:\You> conda activate vak-env
 (vak-env) C:\You> pip install torch===1.10.2 torchvision===0.11.3 -f https://download.pytorch.org/whl/torch_stable.html
-(vak-env) C:\You> pip install vak==0.5.0
+(vak-env) C:\You> pip install vak
 (vak-env) C:\You> pip install tweetynet
 ```
 
