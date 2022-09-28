@@ -3,11 +3,13 @@
 Adapted from
 https://github.com/NickleDave/bfsongrepo/blob/main/src/scripts/download_dataset.py
 """
+from __future__ import annotations
 import argparse
 import pathlib
 import shutil
 import sys
 import time
+from typing import Union
 import urllib.request
 import warnings
 
@@ -26,7 +28,7 @@ DATA_TO_DOWNLOAD = {
 }
 
 
-def reporthook(count, block_size, total_size):
+def reporthook(count: int, block_size: int, total_size: int) -> None:
     """hook for urlretrieve that gives us a simple progress report
     https://blog.shichao.io/2012/10/04/progress_speed_indicator_for_urlretrieve_in_python.html
     """
@@ -79,7 +81,7 @@ def extract_tars(bfsongrepo_dir: pathlib.Path) -> None:
         )
 
 
-def main(dst: str | pathlib.Path) -> None:
+def main(dst: Union[str, pathlib.Path]) -> None:
     """main function that downloads and extracts entire dataset"""
     dst = pathlib.Path(dst).expanduser().resolve()
     if not dst.is_dir():
@@ -110,7 +112,7 @@ def main(dst: str | pathlib.Path) -> None:
     extract_tars(bfsongrepo_dir)
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     """get ArgumentParser used to parse command-line arguments"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
