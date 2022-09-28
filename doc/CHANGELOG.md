@@ -67,6 +67,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   about file naming conventions 
  [#566](https://github.com/NickleDave/vak/pull/566).
  Fixes [#525](https://github.com/NickleDave/vak/issues/525).
+- Revise "autoannotate" tutorial to use .wav audio and .csv 
+  annotation files from new release of Bengalese Finch Song 
+  Repository, and to suggest that Windows users unpack 
+  archives with tar, not other programs such as WinZip
+  [#578](https://github.com/NickleDave/vak/pull/578).
+  Fixes [#560](https://github.com/NickleDave/vak/issues/560)
+  and [#576](https://github.com/NickleDave/vak/issues/576).
 
 ### Fixed
 - Fix how `vak.core.prep` handles `labelset` parameter.
