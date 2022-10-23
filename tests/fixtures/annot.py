@@ -4,6 +4,9 @@ import pytest
 import toml
 
 
+from .test_data import SOURCE_TEST_DATA_ROOT
+
+
 @pytest.fixture
 def annot_file_yarden(source_test_data_root):
     return source_test_data_root.joinpath(
@@ -149,3 +152,21 @@ def specific_labelset(labelset_yarden, labelset_notmat):
             raise ValueError(f"invalid annot_format: {annot_format}")
 
     return _specific_labelset
+
+
+ANNOT_FILES_WITH_NO_SEGMENTS_DIR = SOURCE_TEST_DATA_ROOT / 'audio_cbin_annot_notmat' / 'gy6or6-annotated-with-no-labels'
+ANNOTATED_FILES_NO_SEGMENTS = sorted(ANNOT_FILES_WITH_NO_SEGMENTS_DIR.glob('*.cbin'))
+ANNOT_FILES_WITH_NO_SEGMENTS = sorted(ANNOT_FILES_WITH_NO_SEGMENTS_DIR.glob('*.not.mat'))
+ANNOTATED_ANNOT_NO_SEGMENTS_TUPLES = list(
+    zip(ANNOTATED_FILES_NO_SEGMENTS, ANNOT_FILES_WITH_NO_SEGMENTS)
+)
+
+
+@pytest.fixture(params=ANNOTATED_ANNOT_NO_SEGMENTS_TUPLES)
+def annotated_annot_no_segments(request):
+    """Tuple of (annotated (audio) path, annotation path),
+    where the annotation file has no annotated segments in it.
+    Used to test edge case for `has_unlabeled`,
+    see https://github.com/vocalpy/vak/issues/378
+    """
+    return request.param
