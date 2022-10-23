@@ -1,4 +1,5 @@
 import crowsetta
+import evfuncs
 import numpy as np
 import pytest
 
@@ -249,3 +250,16 @@ def test_has_unlabeled(annot, duration, expected_result):
     """
     has_unlabeled = vak.annotation.has_unlabeled(annot, duration)
     assert has_unlabeled == expected_result
+
+
+def test_has_unlabeled_annotation_with_no_segments(annotated_annot_no_segments):
+    """Test edge case for `has_unlabeled`,
+    see https://github.com/vocalpy/vak/issues/378
+    """
+    audio_path, annot_path = annotated_annot_no_segments
+    data, samp_freq = evfuncs.load_cbin(audio_path)
+    dur = data.shape[0] / samp_freq
+    scribe = crowsetta.Transcriber(format='notmat')
+    annot = scribe.from_file(annot_path)
+
+    assert vak.annotation.has_unlabeled(annot, dur) is True
