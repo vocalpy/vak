@@ -103,6 +103,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to `None`.
   [#552](https://github.com/NickleDave/vak/pull/552).
   Fixes [#547](https://github.com/NickleDave/vak/issues/547).
+- Fix `vak.annotation.has_unlabeled` to handle the edge case where an 
+  annotation file has no annotated segments
+  [#583](https://github.com/NickleDave/vak/pull/583).
+  Fixes [#378](https://github.com/NickleDave/vak/issues/378).
 
 ## 0.6.0 -- 2022-07-07
 ### Added
