@@ -91,7 +91,7 @@ def copy_url(url: str, path: str) -> None:
     urllib.request.urlretrieve(url, path)
 
 
-SOURCE_TEST_DATA_URL = 'https://osf.io/evnk9/download'
+SOURCE_TEST_DATA_URL = 'https://osf.io/hbg4k/download'
 SOURCE_TEST_DATA_TAR = f'{SOURCE_TEST_DATA_DIR}source_test_data.tar.gz'
 
 

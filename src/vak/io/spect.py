@@ -167,25 +167,19 @@ def to_dataframe(
             # no annotation, so map spectrogram files to None
             spect_annot_map = dict((spect_path, None) for spect_path in spect_files)
 
-    # --- filter by labelset -------------------------------------------------------------------------------------------
-    if (
-        labelset
-    ):  # then assume user wants to filter out files where annotation has labels not in labelset
-        for spect_path in list(
-            spect_annot_map.keys()
-        ):  # iterate over keys so we can pop from dict without RuntimeError
-            annot = spect_annot_map[spect_path]
-            labels_set = set(annot.seq.labels)
+    # use labelset if supplied, to filter
+    if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
+        for spect_path, annot in list(spect_annot_map.items()):  # `list` so we can pop from dict without RuntimeError
+            annot_labelset = set(annot.seq.labels)
             # below, set(labels_mapping) is a set of that dict's keys
-            if not labels_set.issubset(set(labelset)):
-                extra_labels = labels_set - set(labelset)
-                # because there's some label in labels
-                # that's not in labels_mapping
+            if not annot_labelset.issubset(set(labelset)):
+                spect_annot_map.pop(spect_path)
+                # because there's some label in labels that's not in labelset
+                extra_labels = annot_labelset - set(labelset)
                 logger.info(
                     f"Found labels, {extra_labels}, in {Path(spect_path).name}, "
                     "that are not in labels_mapping. Skipping file.",
                 )
-                spect_annot_map.pop(spect_path)
                 continue
 
     # ---- validate set of spectrogram files ---------------------------------------------------------------------------

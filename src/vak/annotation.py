@@ -524,6 +524,15 @@ def has_unlabeled(annot: crowsetta.Annotation,
         If True, there are unlabeled periods
         in the vocalization annotated by ``annot``.
     """
+    if duration <= 0:
+        raise ValueError(
+            f"Duration less than or equal to zero passed to `has_unlabeled`.\n"
+            f"Value for `duration`: {duration}.\nValue for `annot`: {annot}"
+        )
+    if duration > 0 and len(annot.seq.segments) < 1:
+        # Handle edge case where there are no annotated segments in annotation file
+        # See https://github.com/vocalpy/vak/issues/378
+        return True
     has_unlabeled_intervals = np.any((annot.seq.onsets_s[1:] - annot.seq.offsets_s[:-1]) > 0.)
     has_unlabeled_before_first_onset = annot.seq.onsets_s[0] > 0.
     has_unlabeled_after_last_offset = duration - annot.seq.offsets_s[-1] > 0.
