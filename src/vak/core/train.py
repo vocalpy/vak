@@ -249,7 +249,7 @@ def train(
         )
         logger.info("will normalize spectrograms")
         spect_standardizer = transforms.StandardizeSpect.fit_df(
-            dataset_df, spect_key=spect_key
+            dataset_df, split='train', spect_key=spect_key
         )
         joblib.dump(spect_standardizer, results_path.joinpath("StandardizeSpect"))
     elif spect_scaler_path is not None and not normalize_spectrograms:
