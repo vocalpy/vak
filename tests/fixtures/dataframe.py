@@ -1,7 +1,7 @@
-from pathlib import Path
-
 import pandas as pd
 import pytest
+
+from .test_data import GENERATED_TEST_DATA_ROOT
 
 
 @pytest.fixture
@@ -26,3 +26,19 @@ def specific_dataframe(specific_prep_csv_path):
         return pd.read_csv(csv_path)
 
     return _specific_dataframe
+
+
+@pytest.fixture
+def train_cbin_notmat_df(specific_dataframe):
+    """Returns a specific dataframe
+    for tests that don't need to use a factory,
+    they just need some dataframe
+    representing a dataset to test on,
+    e.g., the ``SpectStandardize.fit_df`` method
+    """
+    return specific_dataframe(
+        config_type="train",
+        model="teenytweetynet",
+        audio_format="cbin",
+        annot_format="notmat"
+    )
