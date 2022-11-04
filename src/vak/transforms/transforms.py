@@ -119,8 +119,6 @@ class StandardizeSpect:
 
         mean_freqs = np.mean(spect, axis=1)
         std_freqs = np.std(spect, axis=1)
-        assert mean_freqs.shape[-1] == spect.shape[0]
-        assert std_freqs.shape[-1] == spect.shape[0]
         non_zero_std = np.argwhere(std_freqs != 0)
         return cls(mean_freqs, std_freqs, non_zero_std)
 
