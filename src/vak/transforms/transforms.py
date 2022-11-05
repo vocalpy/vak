@@ -65,7 +65,7 @@ class StandardizeSpect:
         self.non_zero_std = non_zero_std
 
     @classmethod
-    def fit_df(cls, df, spect_key="s"):
+    def fit_df(cls, df, split='train', spect_key="s"):
         """fits StandardizeSpect instance, given a pandas DataFrame representing a dataset
 
         Parameters
@@ -81,7 +81,8 @@ class StandardizeSpect:
         standardize_spect : StandardizeSpect
             instance fit to spectrograms in df
         """
-        spect_paths = df["spect_path"]
+        df = df[df['split'] == split].copy()
+        spect_paths = df["spect_path"].values
         spect = files.spect.load(spect_paths[0])[spect_key]
         # in files, spectrograms are in orientation (freq bins, time bins)
         # so we take mean and std across columns, i.e. time bins, i.e. axis 1
@@ -118,8 +119,6 @@ class StandardizeSpect:
 
         mean_freqs = np.mean(spect, axis=1)
         std_freqs = np.std(spect, axis=1)
-        assert mean_freqs.shape[-1] == spect.shape[0]
-        assert std_freqs.shape[-1] == spect.shape[0]
         non_zero_std = np.argwhere(std_freqs != 0)
         return cls(mean_freqs, std_freqs, non_zero_std)
 
