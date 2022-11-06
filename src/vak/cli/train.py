@@ -6,7 +6,7 @@ from .. import (
     config,
     core
 )
-from ..logging import config_logging_for_cli
+from ..logging import config_logging_for_cli, log_version
 from ..paths import generate_results_dir_name_as_path
 
 
@@ -46,6 +46,7 @@ def train(toml_path):
         level="INFO",
         force=True
     )
+    log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
     model_config_map = config.models.map_from_path(toml_path, cfg.train.models)

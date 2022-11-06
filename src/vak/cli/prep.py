@@ -10,7 +10,7 @@ from .. import (
 )
 from ..config.parse import _load_toml_from_path
 from ..config.validators import are_sections_valid
-from ..logging import config_logging_for_cli
+from ..logging import config_logging_for_cli, log_version
 
 
 logger = logging.getLogger(__name__)
@@ -122,6 +122,7 @@ def prep(toml_path):
         level="INFO",
         force=True
     )
+    log_version(logger)
 
     section = purpose.upper()
     logger.info(

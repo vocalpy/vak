@@ -105,6 +105,7 @@ def test_prep(
     assert Path(csv_path).exists()
 
     assert cli_asserts.log_file_created(command="prep", output_path=cfg.prep.output_dir)
+    assert cli_asserts.log_file_contains_version(command="prep", output_path=output_dir)
 
 
 @pytest.mark.parametrize(

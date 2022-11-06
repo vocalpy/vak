@@ -45,6 +45,8 @@ def test_eval(
 
     assert cli_asserts.log_file_created(command="eval", output_path=output_dir)
 
+    assert cli_asserts.log_file_contains_version(command="eval", output_path=output_dir)
+
 
 def test_eval_csv_path_none_raises(
         specific_config, tmp_path,
