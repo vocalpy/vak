@@ -1,8 +1,6 @@
 import pandas as pd
 import pytest
 
-from .test_data import GENERATED_TEST_DATA_ROOT
-
 
 @pytest.fixture
 def specific_dataframe(specific_prep_csv_path):
