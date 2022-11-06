@@ -107,6 +107,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   annotation file has no annotated segments
   [#583](https://github.com/NickleDave/vak/pull/583).
   Fixes [#378](https://github.com/NickleDave/vak/issues/378).
+- Fix `StandardizeSpect` method `fit_df` so that it computes
+  parameters for standardization from a specific
+  split of the dataset--the training split, by default--instead 
+  of using the entire dataset, which could technically give rise 
+  to data leakage
+  [#584](https://github.com/NickleDave/vak/pull/583).
+  Fixes [#575](https://github.com/NickleDave/vak/issues/378).
 
 ## 0.6.0 -- 2022-07-07
 ### Added
