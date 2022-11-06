@@ -41,6 +41,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
 
     assert cli_asserts.toml_config_file_copied_to_results_path(results_path, toml_path)
     assert cli_asserts.log_file_created(command="learncurve", output_path=results_path)
+    assert cli_asserts.log_file_contains_version(command="learncurve", output_path=results_path)
 
 
 @pytest.mark.parametrize("window_size", [44, 88, 176])
@@ -86,6 +87,7 @@ def test_learncurve_previous_run_path(
 
     assert cli_asserts.toml_config_file_copied_to_results_path(results_path, toml_path)
     assert cli_asserts.log_file_created(command="learncurve", output_path=results_path)
+    assert cli_asserts.log_file_contains_version(command="learncurve", output_path=results_path)
 
 
 def test_learning_curve_csv_path_none_raises(

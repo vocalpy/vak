@@ -52,6 +52,7 @@ def test_train(
     results_path = results_path[0]
     assert cli_asserts.toml_config_file_copied_to_results_path(results_path, toml_path)
     assert cli_asserts.log_file_created(command="train", output_path=results_path)
+    assert cli_asserts.log_file_contains_version(command="train", output_path=results_path)
 
 
 def test_train_csv_path_none_raises(

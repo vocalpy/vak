@@ -5,7 +5,7 @@ from .. import (
     config,
     core
 )
-from ..logging import config_logging_for_cli
+from ..logging import config_logging_for_cli, log_version
 
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ def predict(toml_path):
         level="INFO",
         force=True
     )
+    log_version(logger)
     logger.info("Logging results to {}".format(cfg.prep.output_dir))
 
     model_config_map = config.models.map_from_path(toml_path, cfg.predict.models)

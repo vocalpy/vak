@@ -43,6 +43,7 @@ def test_predict(
         assert mock_core_predict.called
 
     assert cli_asserts.log_file_created(command="predict", output_path=output_dir)
+    assert cli_asserts.log_file_contains_version(command="predict", output_path=output_dir)
 
 
 def test_predict_csv_path_none_raises(

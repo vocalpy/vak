@@ -6,7 +6,7 @@ from .. import (
     core,
     validators
 )
-from ..logging import config_logging_for_cli
+from ..logging import config_logging_for_cli, log_version
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,7 @@ def eval(toml_path):
         level="INFO",
         force=True
     )
+    log_version(logger)
 
     logger.info("Logging results to {}".format(cfg.eval.output_dir))
 

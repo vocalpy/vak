@@ -1,11 +1,11 @@
 """utility functions for logging"""
-import datetime
 import logging
 from pathlib import Path
 import sys
 import warnings
 
 from . import timenow
+from .__about__ import __version__
 
 
 logger = logging.getLogger('vak')  # 'base' logger
@@ -73,3 +73,9 @@ def config_logging_for_cli(log_dst: str,
         logger.addHandler(handler)
 
     logger.setLevel(level)
+
+
+def log_version(logger: logging.Logger) -> None:
+    logger.info(
+            f"vak version: {__version__}"
+    )
