@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the original source audio file in both filenames.)
   [#572](https://github.com/NickleDave/vak/pull/572).
   Fixes [#563](https://github.com/NickleDave/vak/issues/563).
+- Have runs from command-line interface log version to logfile
+  [#587](https://github.com/NickleDave/vak/pull/587).
+  Fixes [#216](https://github.com/NickleDave/vak/issues/216).
 
 ### Changed
 - Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
