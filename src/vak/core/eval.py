@@ -80,7 +80,7 @@ def eval(
         if path is not None:  # because `spect_scaler_path` is optional
             if not validators.is_a_file(path):
                 raise FileNotFoundError(
-                    f"value for ``{path_name}`` not recognized as a file: {csv_path}"
+                    f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
     if not validators.is_a_directory(output_dir):
         raise NotADirectoryError(
