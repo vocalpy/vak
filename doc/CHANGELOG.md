@@ -116,8 +116,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of using the entire dataset, which could technically give rise 
   to data leakage
   [#584](https://github.com/NickleDave/vak/pull/583).
-  Fixes [#575](https://github.com/NickleDave/vak/issues/378).
-
+  Fixes [#575](https://github.com/NickleDave/vak/issues/575).
+- Fix error message in `vak.core.eval`
+  [#589](https://github.com/NickleDave/vak/pull/589).
+  Fixes [#588](https://github.com/NickleDave/vak/issues/588).
+ 
 ## 0.6.0 -- 2022-07-07
 ### Added
 - better document `conda` install 
