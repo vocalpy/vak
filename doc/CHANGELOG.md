@@ -148,6 +148,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix logging so a single message is not logged multiple times. 
   [#535](https://github.com/NickleDave/vak/pull/535).
   Fixes [#258](https://github.com/NickleDave/vak/issues/258).
+- Fix section of contributing docs on setting up a development environment. 
+  [#592](https://github.com/NickleDave/vak/pull/592).
+  Fixes [#591](https://github.com/NickleDave/vak/issues/591).
 
 ## 0.5.0.post1 -- 2022-06-25
 ### Fixed
