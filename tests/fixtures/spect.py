@@ -3,19 +3,29 @@ import pytest
 
 import vak.files.spect
 
+from .test_data import GENERATED_TEST_DATA_ROOT, SOURCE_TEST_DATA_ROOT
+
+
+SPECT_DIR_MAT = SOURCE_TEST_DATA_ROOT.joinpath(
+    "spect_mat_annot_yarden", "llb3", "spect"
+)
+
 
 @pytest.fixture
-def spect_dir_mat(source_test_data_root):
-    return source_test_data_root.joinpath("spect_mat_annot_yarden", "llb3", "spect")
+def spect_dir_mat():
+    return SPECT_DIR_MAT
 
 
-@pytest.fixture
-def spect_dir_npz(generated_test_data_root):
-    return sorted(
-        generated_test_data_root.joinpath(
+SPECT_DIR_NPZ = sorted(
+        GENERATED_TEST_DATA_ROOT.joinpath(
             "prep", "train", "audio_cbin_annot_notmat", "teenytweetynet"
         ).glob("spectrograms_generated*")
     )[0]
+
+
+@pytest.fixture
+def spect_dir_npz():
+    return SPECT_DIR_NPZ
 
 
 @pytest.fixture
@@ -31,14 +41,20 @@ def specific_spect_dir(spect_dir_mat, spect_dir_npz):
     return _specific_spect_dir
 
 
-@pytest.fixture
-def spect_list_mat(spect_dir_mat):
-    return sorted(spect_dir_mat.glob("*.mat"))
+SPECT_LIST_MAT = sorted(SPECT_DIR_MAT.glob("*.mat"))
 
 
 @pytest.fixture
-def spect_list_npz(spect_dir_npz):
-    return sorted(spect_dir_npz.glob("*.spect.npz"))
+def spect_list_mat():
+    return SPECT_LIST_MAT
+
+
+SPECT_LIST_NPZ = sorted(SPECT_DIR_NPZ.glob("*.spect.npz"))
+
+
+@pytest.fixture
+def spect_list_npz():
+    return SPECT_LIST_NPZ
 
 
 @pytest.fixture
