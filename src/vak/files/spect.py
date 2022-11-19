@@ -1,5 +1,6 @@
+from __future__ import annotations
 import logging
-from pathlib import Path
+import pathlib
 
 import numpy as np
 from dask import bag as db
@@ -13,7 +14,8 @@ from ..timebins import timebin_dur_from_vec
 logger = logging.getLogger(__name__)
 
 
-def find_audio_fname(spect_path, audio_ext=None):
+def find_audio_fname(spect_path: str | pathlib.Path,
+                     audio_ext: str | None = None):
     """finds name of audio file in a path to a spectrogram file,
     if one is present.
 
@@ -43,13 +45,15 @@ def find_audio_fname(spect_path, audio_ext=None):
     else:
         raise TypeError(f"invalid type for audio_ext: {type(audio_ext)}")
 
+    # We force spect_path to be a pathlib.Path and only use name attribute
+    # so we don't have to worry about handling whitespace elsewhere in the path
+    spect_fname = pathlib.Path(spect_path).name
+
     audio_fnames = []
     for ext in audio_ext:
-        audio_fnames.append(find_fname(str(spect_path), ext))
+        audio_fnames.append(find_fname(spect_fname, ext))
     # remove Nones
-    audio_fnames = [path for path in audio_fnames if path is not None]
-    # keep just file name from spect path
-    audio_fnames = [Path(path).name for path in audio_fnames]
+    audio_fnames = [fname for fname in audio_fnames if fname is not None]
 
     if len(audio_fnames) == 1:
         return audio_fnames[0]
@@ -59,7 +63,8 @@ def find_audio_fname(spect_path, audio_ext=None):
         )
 
 
-def load(spect_path, spect_format=None):
+def load(spect_path: str | pathlib.Path,
+         spect_format: str | None = None):
     """load spectrogram and related arrays from a file,
     return as an object that provides Python dictionary-like
     access
@@ -76,11 +81,11 @@ def load(spect_path, spect_format=None):
     -------
     spect_dict : dict-like
         either a dictionary or dictionary-like object that provides access to arrays
-        from the file via keys, e.g. spect_dict['s'] for the spectrogram.
+        from the filefrom pathlib import Path via keys, e.g. spect_dict['s'] for the spectrogram.
         See docstring for vak.audio.to_spect for default keys for spectrogram
         array files that function creates.
     """
-    spect_path = Path(spect_path)
+    spect_path = pathlib.Path(spect_path)
     if spect_format is None:
         # "replace('.', '')", because suffix returns file extension with period included
         spect_format = spect_path.suffix.replace(".", "")
@@ -88,7 +93,10 @@ def load(spect_path, spect_format=None):
     return spect_dict
 
 
-def timebin_dur(spect_path, spect_format, timebins_key, n_decimals_trunc=5):
+def timebin_dur(spect_path: str | pathlib.Path,
+                spect_format: str,
+                timebins_key: str = 't',
+                n_decimals_trunc: int = 5):
     """get duration of time bins from a spectrogram file
 
     Parameters
@@ -109,7 +117,7 @@ def timebin_dur(spect_path, spect_format, timebins_key, n_decimals_trunc=5):
     timebin_dur : float
 
     """
-    spect_path = Path(spect_path)
+    spect_path = pathlib.Path(spect_path)
     spect_dict = load(spect_path, spect_format)
     time_bins = spect_dict[timebins_key]
     timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
@@ -158,7 +166,7 @@ def is_valid_set_of_spect_files(
     -------
     returns True if all validation checks pass. If not, an error is raised.
     """
-    spect_paths = [Path(spect_path) for spect_path in spect_paths]
+    spect_paths = [pathlib.Path(spect_path) for spect_path in spect_paths]
 
     def _validate(spect_path):
         """validates each spectrogram file, then returns frequency bin array

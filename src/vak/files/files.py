@@ -1,9 +1,10 @@
+from __future__ import annotations
 import fnmatch
 from pathlib import Path
 import re
 
 
-def find_fname(fname, ext):
+def find_fname(fname: str, ext: str) -> str | None:
     """given a file extension, finds a filename with that extension within
     another filename. Useful to find e.g. names of audio files in
     names of spectrogram files.
@@ -21,10 +22,10 @@ def find_fname(fname, ext):
 
     Examples
     --------
-    >>> sub_fname(fname='llb3_0003_2018_04_23_14_18_54.wav.mat', ext='wav')
+    >>> vak.files.find_fname(fname='llb3_0003_2018_04_23_14_18_54.wav.mat', ext='wav')
     'llb3_0003_2018_04_23_14_18_54.wav'
     """
-    m = re.match(f"[\S]*{ext}", fname)
+    m = re.match(f"[\S ]*{ext}", fname)
     if hasattr(m, "group"):
         return m.group()
     elif m is None:
