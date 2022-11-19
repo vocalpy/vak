@@ -174,6 +174,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "ItamarFruchter",
+      "name": "ItamarFruchter",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19908942?v=4",
+      "profile": "https://github.com/ItamarFruchter",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -181,5 +190,6 @@
   "projectOwner": "vocalpy",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular"
 }
