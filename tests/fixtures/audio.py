@@ -1,6 +1,8 @@
 """fixtures relating to audio files"""
 import pytest
 
+from .test_data import SOURCE_TEST_DATA_ROOT
+
 
 @pytest.fixture
 def default_spect_params():
@@ -17,14 +19,20 @@ def default_spect_params():
     )
 
 
-@pytest.fixture
-def audio_dir_cbin(source_test_data_root):
-    return source_test_data_root.joinpath("audio_cbin_annot_notmat", "gy6or6", "032312")
+AUDIO_DIR_CBIN = SOURCE_TEST_DATA_ROOT.joinpath("audio_cbin_annot_notmat", "gy6or6", "032312")
 
 
 @pytest.fixture
-def audio_list_cbin(audio_dir_cbin):
-    return sorted(audio_dir_cbin.glob("*.cbin"))
+def audio_dir_cbin():
+    return AUDIO_DIR_CBIN
+
+
+AUDIO_LIST_CBIN = sorted(AUDIO_DIR_CBIN.glob("*.cbin"))
+
+
+@pytest.fixture
+def audio_list_cbin():
+    return AUDIO_LIST_CBIN
 
 
 @pytest.fixture
@@ -67,24 +75,36 @@ def audio_list_cbin_labels_not_in_labelset(
     return audio_list_labels_in_labelset
 
 
-@pytest.fixture
-def audio_dir_wav_birdsongrec(source_test_data_root):
-    return source_test_data_root.joinpath("audio_wav_annot_birdsongrec", "Bird0", "Wave")
+AUDIO_DIR_WAV_BIRDSONGREC = SOURCE_TEST_DATA_ROOT.joinpath("audio_wav_annot_birdsongrec", "Bird0", "Wave")
 
 
 @pytest.fixture
-def audio_list_wav_birdsongrec(audio_dir_wav_birdsongrec):
-    return sorted(audio_dir_wav_birdsongrec.glob("*.wav"))
+def audio_dir_wav_birdsongrec():
+    return AUDIO_DIR_WAV_BIRDSONGREC
+
+
+AUDIO_LIST_WAV_BIRDSONGREC = sorted(AUDIO_DIR_WAV_BIRDSONGREC.glob("*.wav"))
 
 
 @pytest.fixture
-def audio_dir_wav_textgrid(source_test_data_root):
-    return source_test_data_root.joinpath("audio_wav_annot_textgrid", "AGBk")
+def audio_list_wav_birdsongrec():
+    return AUDIO_LIST_WAV_BIRDSONGREC
+
+
+AUDIO_DIR_WAV_TEXTGRID = SOURCE_TEST_DATA_ROOT.joinpath("audio_wav_annot_textgrid", "AGBk")
 
 
 @pytest.fixture
-def audio_list_wav_textgrid(audio_dir_wav_textgrid):
-    return sorted(audio_dir_wav_textgrid.glob("*.WAV"))
+def audio_dir_wav_textgrid():
+    return AUDIO_DIR_WAV_TEXTGRID
+
+
+AUDIO_LIST_WAV_TEXTGRID = sorted(AUDIO_DIR_WAV_TEXTGRID.glob("*.WAV"))
+
+
+@pytest.fixture
+def audio_list_wav_textgrid():
+    return AUDIO_LIST_WAV_TEXTGRID
 
 
 @pytest.fixture

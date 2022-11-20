@@ -1,14 +1,55 @@
 """tests for vak.files.files.files module"""
+import itertools
+
 import pytest
 
 import vak.files.files
 
+from ..fixtures.spect import (
+    SPECT_LIST_MAT,
+    SPECT_LIST_NPZ,
+)
 
-def test_find_fname():
-    fname = "llb3_0003_2018_04_23_14_18_54.wav.mat"
-    ext = "wav"
-    out = vak.files.files.find_fname(fname, ext)
-    assert out == "llb3_0003_2018_04_23_14_18_54.wav"
+SPECT_FNAME_LIST_MAT = [
+    spect_path.name for spect_path in SPECT_LIST_MAT
+] + [
+    # duplicate list but replace underscores in filenames with spaces to test handling spaces
+    spect_path.name.replace('_', ' ') for spect_path in SPECT_LIST_MAT
+]
+
+SPECT_FNAME_LIST_NPZ = [
+    spect_path.name for spect_path in SPECT_LIST_NPZ
+] + [
+    spect_path.name.replace('_', ' ') for spect_path in SPECT_LIST_NPZ
+]
+
+SPECT_FNAME_LIST_MAT_WITH_EXT = list(zip(
+    SPECT_FNAME_LIST_MAT,
+    itertools.repeat('.wav'),
+    itertools.repeat('.mat'),
+))
+
+SPECT_FNAME_LIST_NPZ_WITH_EXT = list(zip(
+    SPECT_FNAME_LIST_NPZ,
+    itertools.repeat('.cbin'),
+    itertools.repeat('.spect.npz'),
+))
+
+TEST_FIND_FNAME_PARAMETRIZE = SPECT_FNAME_LIST_MAT_WITH_EXT + SPECT_FNAME_LIST_NPZ_WITH_EXT
+
+
+@pytest.mark.parametrize(
+    'fname, find_ext, spect_ext',
+    TEST_FIND_FNAME_PARAMETRIZE
+)
+def test_find_fname(fname, find_ext, spect_ext):
+    """Test ``vak.files.files.find_fname`` works as expected."""
+    expected = fname.replace(spect_ext, '')
+
+    out = vak.files.files.find_fname(fname, find_ext)
+
+    assert fname.startswith(out)
+    assert out == expected
 
 
 def test_files_from_dir_with_mat(spect_dir_mat, spect_list_mat):
