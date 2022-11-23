@@ -77,6 +77,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#578](https://github.com/NickleDave/vak/pull/578).
   Fixes [#560](https://github.com/NickleDave/vak/issues/560)
   and [#576](https://github.com/NickleDave/vak/issues/576).
+- Change `vak.files.find_fname` and `vak.files.spect.find_audio_fname` 
+  so they work when spaces are in filename and/or path 
+  [#594](https://github.com/NickleDave/vak/pull/594).
+  Fixes [#589](https://github.com/NickleDave/vak/issues/589).
 
 ### Fixed
 - Fix how `vak.core.prep` handles `labelset` parameter.
