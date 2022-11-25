@@ -71,6 +71,7 @@ vak = 'vak.__main__:main'
 
 [project.entry-points."vak.models"]
 TeenyTweetyNetModel = 'vak.models.teenytweetynet:TeenyTweetyNetModel'
+TweetyNetModel = 'vak.models.tweetynet:TweetyNetModel'
 
 [project.entry-points."vak.metrics"]
 Accuracy = 'vak.metrics.Accuracy'
