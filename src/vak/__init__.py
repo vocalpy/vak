@@ -20,7 +20,6 @@ from . import (
     curvefit,
     datasets,
     device,
-    engine,
     entry_points,
     files,
     io,
@@ -42,8 +41,6 @@ from . import (
     validators,
 )
 
-from .engine.model import Model
-
 
 __all__ = [
     "__main__",
@@ -55,7 +52,6 @@ __all__ = [
     "csv",
     "datasets",
     "device",
-    "engine",
     "entry_points",
     "files",
     "io",
@@ -63,7 +59,6 @@ __all__ = [
     "labels",
     "logging",
     "metrics",
-    "Model",
     "models",
     "nn",
     "paths",
