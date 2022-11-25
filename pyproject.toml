@@ -50,7 +50,6 @@ dev = [
 test = [
     "pytest >=6.2.1",
     "pytest-cov >=2.11.1",
-    "tweetynet >=0.7.0",
 ]
 doc = [
     "furo >=2022.1.2",
