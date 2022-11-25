@@ -32,7 +32,11 @@ def find():
         yield entrypoint.name, entrypoint.load()
 
 
-def from_model_config_map(model_config_map, num_classes, input_shape):
+def from_model_config_map(model_config_map,
+                          # TODO: move num_classes / input_shape into model configs
+                          num_classes,
+                          input_shape,
+                          labelmap):
     """get models that are ready to train, given their names and configurations.
 
     Given a dictionary that maps model names to configurations,
@@ -59,15 +63,18 @@ def from_model_config_map(model_config_map, num_classes, input_shape):
     models_map = {}
     for model_name, model_config in model_config_map.items():
         # pass section dict as kwargs to config parser function
+        # TODO: move num_classes / input_shape into model configs
+        # TODO: add labelmap to config dynamically if needed? outside this function
         model_config["network"].update(
             num_classes=num_classes,
             input_shape=input_shape,
         )
         try:
-            model = MODELS[model_name].from_config(config=model_config)
+            model = MODELS[model_name].from_config(config=model_config, labelmap=labelmap)
         except KeyError:
             model = MODELS[f"{model_name}Model"].from_config(
-                config=model_config
+                config=model_config,
+                labelmap=labelmap
             )
         models_map[model_name] = model
     return models_map
