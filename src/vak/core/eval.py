@@ -182,7 +182,7 @@ def eval(
         post_tfm = None
 
     models_map = models.from_model_config_map(
-        model_config_map, num_classes=len(labelmap), input_shape=input_shape, post_tfm=post_tfm
+        model_config_map, num_classes=len(labelmap), input_shape=input_shape, labelmap=labelmap
     )
 
     for model_name, model in models_map.items():
