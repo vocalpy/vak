@@ -3,7 +3,14 @@ from pathlib import Path
 import toml
 
 from .. import models
-from ..engine.model import Model
+
+
+MODEL_TABLES = [
+        "network",
+        "optimizer",
+        "loss",
+        "metrics",
+    ]
 
 
 def map_from_config_dict(config_dict, model_names):
@@ -71,7 +78,7 @@ def map_from_config_dict(config_dict, model_names):
 
         # check if config declares parameters for required attributes;
         # if not, just put an empty dict that will get passed as the "kwargs"
-        for attr in Model.REQUIRED_SUBCLASS_ATTRIBUTES:
+        for attr in MODEL_TABLES:
             if attr not in model_config_dict:
                 model_config_dict[attr] = {}
 
