@@ -1,10 +1,10 @@
+import functools
+
 import torch
 from torch import nn
 
-from ..engine.model import Model
-
-# absolute import to avoid name clash in model def below
-import vak.metrics
+from .tweetynet import TweetyNetModel
+from .. import labeled_timebins
 
 
 class TeenyTweetyNet(nn.Module):
@@ -117,22 +117,14 @@ class TeenyTweetyNet(nn.Module):
         return logits.permute(0, 2, 1)
 
 
-class TeenyTweetyNetModel(Model):
+class TeenyTweetyNetModel(TweetyNetModel):
     @classmethod
-    def from_config(cls, config, post_tfm=None):
-        network = TeenyTweetyNet(**config["network"])
-        loss = nn.CrossEntropyLoss(**config["loss"])
-        optimizer = torch.optim.Adam(params=network.parameters(), **config["optimizer"])
-        metrics = {
-            "acc": vak.metrics.Accuracy(),
-            "levenshtein": vak.metrics.Levenshtein(),
-            "segment_error_rate": vak.metrics.SegmentErrorRate(),
-            "loss": torch.nn.CrossEntropyLoss(),
-        }
-        return cls(
-            network=network,
-            optimizer=optimizer,
-            loss=loss,
-            metrics=metrics,
-            post_tfm=post_tfm
-        )
+    def from_config(cls, config, labelmap):
+        network = TeenyTweetyNet(**config['network'])
+        loss_func = torch.nn.CrossEntropyLoss(**config['loss'])
+        optimizer_config = config['optimizer']
+        lbl_tb2labels = functools.partial(labeled_timebins.lbl_tb2labels, labels_mapping=labelmap)
+        return cls(network=network,
+                   loss_func=loss_func,
+                   optimizer_config=optimizer_config,
+                   lbl_tb2labels=lbl_tb2labels)
