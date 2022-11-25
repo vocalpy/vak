@@ -327,6 +327,7 @@ def train(
         model_config_map,
         num_classes=len(labelmap),
         input_shape=train_dataset.shape,
+        labelmap=labelmap,
     )
     for model_name, model in models_map.items():
         if checkpoint_path is not None:
