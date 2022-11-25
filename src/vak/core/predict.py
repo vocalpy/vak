@@ -184,7 +184,7 @@ def predict(
 
     logger.info(f"instantiating models from model-config map:/n{model_config_map}")
     models_map = models.from_model_config_map(
-        model_config_map, num_classes=len(labelmap), input_shape=input_shape
+        model_config_map, num_classes=len(labelmap), input_shape=input_shape, labelmap=labelmap
     )
     for model_name, model in models_map.items():
         # ---------------- do the actual predicting --------------------------------------------------------------------
