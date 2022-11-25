@@ -1,9 +1,10 @@
 import json
 import logging
-from pathlib import Path
+import pathlib
 import shutil
 
 import joblib
+
 import pandas as pd
 import torch.utils.data
 
@@ -11,7 +12,6 @@ from .. import (
     datasets,
     labels,
     models,
-    tensorboard,
     transforms,
     validators
 )
@@ -20,6 +20,7 @@ from ..datasets.vocal_dataset import VocalDataset
 from ..device import get_default as get_default_device
 from ..io import dataframe
 from ..paths import generate_results_dir_name_as_path
+from ..trainer import get_default_trainer
 
 
 logger = logging.getLogger(__name__)
@@ -172,7 +173,7 @@ def train(
 
     # ---- set up directory to save output -----------------------------------------------------------------------------
     if results_path:
-        results_path = Path(results_path).expanduser().resolve()
+        results_path = pathlib.Path(results_path).expanduser().resolve()
         if not results_path.is_dir():
             raise NotADirectoryError(
                 f"results_path not recognized as a directory: {results_path}"
@@ -279,7 +280,7 @@ def train(
     logger.info(
         f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration()}",
     )
-    train_data = torch.utils.data.DataLoader(
+    train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,
         shuffle=shuffle,
         batch_size=batch_size,
@@ -302,7 +303,7 @@ def train(
             timebins_key=timebins_key,
             item_transform=item_transform,
         )
-        val_data = torch.utils.data.DataLoader(
+        val_loader = torch.utils.data.DataLoader(
             dataset=val_dataset,
             shuffle=False,
             # batch size 1 because each spectrogram reshaped into a batch of windows
@@ -318,7 +319,7 @@ def train(
             f"will measure error on validation set every {val_step} steps of training",
         )
     else:
-        val_data = None
+        val_loader = None
 
     if device is None:
         device = get_default_device()
@@ -334,24 +335,29 @@ def train(
             logger.info(
                 f"loading checkpoint for {model_name} from path: {checkpoint_path}",
             )
-            model.load(checkpoint_path, device=device)
+            # TODO: make sure this works
+            model.load_from_checkpoint(checkpoint_path)
 
         results_model_root = results_path.joinpath(model_name)
         results_model_root.mkdir()
         ckpt_root = results_model_root.joinpath("checkpoints")
         ckpt_root.mkdir()
         logger.info(f"training {model_name}")
-        writer = tensorboard.get_summary_writer(
-            log_dir=results_model_root, filename_suffix=model_name
-        )
-        model.summary_writer = writer
-        model.fit(
-            train_data=train_data,
-            num_epochs=num_epochs,
-            ckpt_root=ckpt_root,
-            val_data=val_data,
+        max_steps = num_epochs * len(train_loader)
+        default_callback_kwargs = {
+            'ckpt_root': ckpt_root,
+            'ckpt_step': ckpt_step,
+            'patience': patience,
+        }
+        trainer = get_default_trainer(
+            max_steps=max_steps,
+            log_save_dir=results_model_root,
             val_step=val_step,
-            ckpt_step=ckpt_step,
-            patience=patience,
+            default_callback_kwargs=default_callback_kwargs,
             device=device,
+        )
+        trainer.fit(
+            model=model,
+            train_dataloaders=train_loader,
+            val_dataloaders=val_loader,
         )
