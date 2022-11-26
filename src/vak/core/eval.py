@@ -1,9 +1,11 @@
 from collections import OrderedDict
 from datetime import datetime
+import functools
 import json
 import logging
 
 import joblib
+import lightning
 import pandas as pd
 import torch.utils.data
 
@@ -151,7 +153,7 @@ def eval(
         timebins_key=timebins_key,
         item_transform=item_transform,
     )
-    val_data = torch.utils.data.DataLoader(
+    val_loader = torch.utils.data.DataLoader(
         dataset=val_dataset,
         shuffle=False,
         # batch size 1 because each spectrogram reshaped into a batch of windows
@@ -187,14 +189,50 @@ def eval(
 
     for model_name, model in models_map.items():
         logger.info(f"running evaluation for model: {model_name}")
-        model.load(checkpoint_path, device=device)
-        metric_vals = model.evaluate(eval_data=val_data, device=device)
-        logger.info(f"Finished evaluating. Logging computing metrics.")
+        # TODO: move all this logic down into another function
+        # TODO: this should be 'get_windowed_frame_classification_model_from_config(model_name, model_config)`
+        model_config = model_config_map[model_name]
+        num_classes = len(labelmap)
+        model_config['network'].update({'num_classes': num_classes, 'input_shape': input_shape})
+        if model_name == 'TweetyNet':
+            # TODO: make `network` decorator, get these from a namespace it register them in
+            network = models.TweetyNet(**model_config['network'])
+        elif model_name == 'TeenyTweetyNet':
+            network = models.TeenyTweetyNet(**model_config['network'])
+        else:
+            raise ValueError(f'unknown model name: {model_name}')
+        loss_func = torch.nn.CrossEntropyLoss(**model_config['loss'])
+        optimizer_config = model_config['optimizer']
+        lbl_tb2labels = transforms.labeled_timebins.ToLabels(labelmap=labelmap)
+        if model_name == 'TweetyNet':
+            # TODO: make `network` decorator, get these from a namespace it register them in
+            model = models.TweetyNetModel
+        elif model_name == 'TeenyTweetyNet':
+            model = models.TeenyTweetyNetModel
+        model = model.load_from_checkpoint(checkpoint_path,
+                                           network=network,
+                                           loss_func=loss_func,
+                                           optimizer_config=optimizer_config,
+                                           lbl_tb2labels=lbl_tb2labels)
+
+        if device == 'cuda':
+            accelerator = 'gpu'
+        else:
+            accelerator = None
+        trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(
+            save_dir=output_dir
+        )
+        trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
+        # TODO: check for hasattr(model, test_step) and if so run test
+        # below, [0] because validate returns list of dicts, length of no. of val loaders
+        metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
+        metric_vals = {f'avg_{k}': v for k, v in metric_vals.items()}
         for metric_name, metric_val in metric_vals.items():
             if metric_name.startswith('avg_'):
                 logger.info(
                     f'{metric_name}: {metric_val:0.5f}'
                 )
+
         # create a "DataFrame" with just one row which we will save as a csv;
         # the idea is to be able to concatenate csvs from multiple runs of eval
         row = OrderedDict(
@@ -206,6 +244,7 @@ def eval(
                 ("csv_path", csv_path),
             ]
         )
+        # TODO: is this still necessary after switching to Lightning? Stop saying "average"?
         # order metrics by name to be extra sure they will be consistent across runs
         row.update(
             sorted([(k, v) for k, v in metric_vals.items() if k.startswith("avg_")])
