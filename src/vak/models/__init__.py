@@ -1,4 +1,12 @@
 from .models import find, from_model_config_map
-from . import teenytweetynet
+from .teenytweetynet import TeenyTweetyNet, TeenyTweetyNetModel
+from .tweetynet import TweetyNet, TweetyNetModel
 
-__all__ = ["find", "from_model_config_map", "teenytweetynet"]
+__all__ = [
+    "find",
+    "from_model_config_map",
+    "TeenyTweetyNet",
+    "TeenyTweetyNetModel",
+    "TweetyNet",
+    "TweetyNetModel"
+]
