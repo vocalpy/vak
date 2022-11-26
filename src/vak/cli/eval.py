@@ -4,7 +4,6 @@ from pathlib import Path
 from .. import (
     config,
     core,
-    validators
 )
 from ..logging import config_logging_for_cli, log_version
 
