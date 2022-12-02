@@ -38,7 +38,7 @@ def learncurve_output_matches_expected(cfg, model_config_map, results_path):
                 assert model_path.exists()
 
                 tensorboard_log = sorted(
-                    model_path.glob(f"events.out.tfevents.*{model_name}")
+                    replicate_path.glob(f"lightning_logs/**/*events*")
                 )
                 assert len(tensorboard_log) == 1
 
