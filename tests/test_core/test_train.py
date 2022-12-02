@@ -19,7 +19,9 @@ def train_output_matches_expected(cfg, model_config_map, results_path):
         model_path = results_path.joinpath(model_name)
         assert model_path.exists()
 
-        tensorboard_log = sorted(model_path.glob(f"events.out.tfevents.*{model_name}"))
+        tensorboard_log = sorted(
+            model_path.glob(f"lightning_logs/**/*events*")
+        )
         assert len(tensorboard_log) == 1
 
         checkpoints_path = model_path.joinpath("checkpoints")
