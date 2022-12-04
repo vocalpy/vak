@@ -191,6 +191,7 @@ def test_data_download_generated_all(session) -> None:
     with tarfile.open(GENERATED_TEST_DATA_ALL_TAR, "r:gz") as tf:
         tf.extractall(path='.')
     session.log('Fixing paths in .csv files')
+    session.install("pandas")
     session.run(
         "python", "./tests/scripts/fix_prep_csv_paths.py"
     )
