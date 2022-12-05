@@ -28,6 +28,7 @@ from . import (
     logging,
     metrics,
     models,
+    nets,
     nn,
     paths,
     plot,
