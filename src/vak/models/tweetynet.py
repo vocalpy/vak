@@ -224,15 +224,12 @@ class TweetyNetModel(lightning.LightningModule):
                         'segment_error_rate': metrics.SegmentErrorRate(),
                         'loss': loss_func}
 
-    def forward(self, x):
-        return self.network.forward(x)
-
     def configure_optimizers(self):
         return torch.optim.Adam(params=self.network.parameters(), **self.optimizer_config)
 
     def training_step(self, batch, batch_idx):
         x, y = batch[0], batch[1]
-        y_pred = self(x)
+        y_pred = self.network(x)
         loss = self.loss_func(y_pred, y)
         return loss
 
@@ -249,7 +246,7 @@ class TweetyNetModel(lightning.LightningModule):
         else:
             raise ValueError(f"invalid shape for x: {x.shape}")
 
-        out = self.network.forward(x)
+        out = self.network(x)
         # permute and flatten out
         # so that it has shape (1, number classes, number of time bins)
         # ** NOTICE ** just calling out.reshape(1, out.shape(1), -1) does not work, it will change the data
@@ -304,7 +301,7 @@ class TweetyNetModel(lightning.LightningModule):
         if x.ndim == 5:
             if x.shape[0] == 1:
                 x = torch.squeeze(x, dim=0)
-        y_pred = self.network.forward(x)
+        y_pred = self.network(x)
         return {spect_path: y_pred}
 
     @classmethod
