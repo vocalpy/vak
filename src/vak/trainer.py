@@ -1,13 +1,13 @@
 from __future__ import annotations
 import pathlib
 
-import lightning
+import pytorch_lightning as lightning
 
 
 def get_default_train_callbacks(ckpt_root: str | pathlib.Path,
                                 ckpt_step: int,
                                 patience: int, ):
-    ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
+    ckpt_callback = lightning.callbacks.ModelCheckpoint(
         dirpath=ckpt_root,
         filename='checkpoint',
         every_n_train_steps=ckpt_step,
@@ -17,7 +17,7 @@ def get_default_train_callbacks(ckpt_root: str | pathlib.Path,
     ckpt_callback.CHECKPOINT_NAME_LAST = 'checkpoint'
     ckpt_callback.FILE_EXTENSION = '.pt'
 
-    val_ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
+    val_ckpt_callback = lightning.callbacks.ModelCheckpoint(
         monitor="val_acc",
         dirpath=ckpt_root,
         save_top_k=1,
@@ -28,7 +28,7 @@ def get_default_train_callbacks(ckpt_root: str | pathlib.Path,
     )
     val_ckpt_callback.FILE_EXTENSION = '.pt'
 
-    early_stopping = lightning.pytorch.callbacks.EarlyStopping(
+    early_stopping = lightning.callbacks.EarlyStopping(
         mode='max',
         monitor='val_acc',
         patience=patience,
@@ -59,7 +59,7 @@ def get_default_trainer(max_steps: int,
     else:
         accelerator = None
 
-    logger = lightning.pytorch.loggers.TensorBoardLogger(
+    logger = lightning.loggers.TensorBoardLogger(
         save_dir=log_save_dir
     )
 
