@@ -6,7 +6,7 @@ import inspect
 from typing import Callable, ClassVar, Type
 
 import torch
-import lightning
+import pytorch_lightning as lightning
 
 from .definition import ModelDefinition
 from .definition import validate as validate_definition

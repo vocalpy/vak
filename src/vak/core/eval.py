@@ -5,7 +5,7 @@ import json
 import logging
 
 import joblib
-import lightning
+import pytorch_lightning as lightning
 import pandas as pd
 import torch.utils.data
 
@@ -219,7 +219,8 @@ def eval(
             accelerator = 'gpu'
         else:
             accelerator = None
-        trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(
+
+        trainer_logger = lightning.loggers.TensorBoardLogger(
             save_dir=output_dir
         )
         trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
