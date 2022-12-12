@@ -6,7 +6,7 @@ from pathlib import Path
 
 import crowsetta
 import joblib
-import lightning
+import pytorch_lightning as lightning
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
