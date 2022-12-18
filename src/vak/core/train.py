@@ -335,8 +335,7 @@ def train(
             logger.info(
                 f"loading checkpoint for {model_name} from path: {checkpoint_path}",
             )
-            # TODO: make sure this works
-            model.load_from_checkpoint(checkpoint_path)
+            model.load_state_dict_from_path(checkpoint_path)
 
         results_model_root = results_path.joinpath(model_name)
         results_model_root.mkdir()
