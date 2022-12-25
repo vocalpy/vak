@@ -65,7 +65,7 @@ Getting Help
 ------------
 
 Discussion often happens on GitHub issues and pull requests. In addition, there is a
-`Discourse forum <https://forum.vocles.org/>`_ for
+`Discourse forum <https://forum.vocalpy.org/>`_ for
 the project where you can ask questions.
 
 .. _dev-workflow:
