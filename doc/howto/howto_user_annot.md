@@ -221,7 +221,7 @@ this name will be removed in the next version of `crowsetta`).
    in the `crowsetta` library.
 
    E.g., the `notmat` module:
-   <https://github.com/NickleDave/crowsetta/blob/main/src/crowsetta/notmat.py>
+   <https://github.com/vocalpy/crowsetta/blob/main/src/crowsetta/notmat.py>
 
    That module parses annotations from this dataset:
    <https://figshare.com/articles/dataset/Bengalese_Finch_song_repository/4805749>
