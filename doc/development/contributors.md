@@ -1,14 +1,10 @@
-.. _contributing:
+(contributing)=
 
-==================
-Contributors Guide
-==================
+# Contributors Guide
 
-Ways to Contribute
-==================
+## Ways to Contribute
 
-Ways to Contribute Documentation and/or Code
---------------------------------------------
+### Ways to Contribute Documentation and/or Code
 
 * Tackle any issue that you wish! Some issues are labeled as **"good first issues"** to
   indicate that they are beginner friendly, meaning that they don't require extensive
@@ -18,33 +14,30 @@ Ways to Contribute Documentation and/or Code
 * Contribute code! This can be code that you already have and it doesn't need to be
   perfect! We will help you clean things up, test it, etc.
 
-Ways to Contribute Feedback
----------------------------
+### Ways to Contribute Feedback
 
 * Provide feedback about how we can improve the project or about your particular use
-  case. Open an `issue <https://github.com/vocalpy/vak/issues>`_ with
+  case. Open an [issue](https://github.com/vocalpy/vak/issues) with
   feature requests or bug fixes.
 * Help triage issues, or give a "thumbs up" on issues that others reported which are
   relevant to you (using the
-  `"Add Your Reaction" icon <https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/>`_).
+  ["Add Your Reaction" icon](https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/)).
 
-Ways to Contribute to Community Building
-----------------------------------------
+### Ways to Contribute to Community Building
 
-* Cite ``vak`` when using the project.
-  Please see `the CITATION.cff <https://github.com/vocalpy/vak/blob/main/CITATION.cff>`_ file for details.
+* Cite vak when using the project.
+  Please see [the CITATION.cff](https://github.com/vocalpy/vak/blob/main/CITATION.cff) file for details.
   To obtain a citation in APA or BibTEX format, click on "Cite this repository" on the
-  `GitHub repository <https://github.com/vocalpy/vak>`_.
-* Spread the word about ``vak`` and star the project on GitHub!
+  [GitHub repository](https://github.com/vocalpy/vak).
+* Spread the word about vak and star the project on GitHub!
 
-Providing Feedback
-==================
+## Providing Feedback
 
 Two of the main ways to contribute are to report a bug or to request a feature.
-Both can be done by opening an `Issue <https://github.com/vocalpy/vak/issues>`_
+Both can be done by opening an [Issue](https://github.com/vocalpy/vak/issues)
 on GitHub and filling out the template.
 
-* Find the `Issues <https://github.com/vocalpy/vak/issues>`_ tab on the
+* Find the [Issues](https://github.com/vocalpy/vak/issues) tab on the
   top of the GitHub repository and click *New Issue*.
 * Choose a template based on the type of feedback
 
@@ -56,71 +49,65 @@ on GitHub and filling out the template.
 * After submitting your bug report or feature request,
   try to answer any follow up questions as best as you can.
 
-General Guidelines
-==================
+## General Guidelines
 
-.. _getting-help:
+(getting-help)=
 
-Getting Help
-------------
+### Getting Help
 
 Discussion often happens on GitHub issues and pull requests. In addition, there is a
-`Discourse forum <https://forum.vocalpy.org/>`_ for
+[Discourse forum](https://forum.vocalpy.org/) for
 the project where you can ask questions.
 
-.. _dev-workflow:
+(dev-workflow)=
 
-Workflow for Contributing
--------------------------
+### Workflow for Contributing
 
-We follow the `GitHub pull request workflow <http://www.asmeurer.com/git-workflow>`_
+We follow the [GitHub pull request workflow](http://www.asmeurer.com/git-workflow)
 to make changes to our codebase. Every change made goes through a pull request, even
 our own, so that our
-`continuous integration <https://the-turing-way.netlify.app/reproducible-research/ci.html>`_
+[continuous integration](https://the-turing-way.netlify.app/reproducible-research/ci.html)
 services have a chance to check that the code is up to standards and passes all
 our tests. This way, the *main* branch is always stable.
 
-For New Contributors
-####################
+#### For New Contributors
 
 Please take a look at these resources to learn about Git and pull requests:
 
-* `How to Contribute to Open Source <https://opensource.guide/how-to-contribute/>`_.
-* `Git Workflow Tutorial <http://www.asmeurer.com/git-workflow/>`_ by Aaron Meurer.
-* `How to Contribute to an Open Source Project on GitHub <https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github>`_.
+* [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/).
+* [Git Workflow Tutorial](http://www.asmeurer.com/git-workflow/) by Aaron Meurer.
+* [How to Contribute to an Open Source Project on GitHub](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
 
-And please don't hesitate to :ref:`ask questions <getting-help>`.
+And please don't hesitate to {ref}`ask questions <getting-help>`.
 
+#### Writing commit messages
 
-Writing commit messages
-#######################
-
-We follow the convention of beginning a ``git`` commit message
+We follow the convention of beginning a git commit message
 with an abbreviation that indicates the reason for the commit.
 This convention is used by several Python data science libraries.
 The standard abbreviations we use to start the commit message with are
 
-    .. include:: commit-abbreviations.rst
+```{eval-rst}
+.. include:: commit-abbreviations.rst
+```
 
-.. _dev-env:
+(dev-env)=
 
-Setting up a development environment
-====================================
+## Setting up a development environment
 
 This section describes how to set up an environment for development.
 This is the steps the maintainers follow, and it can also be used by contributors.
 
-You will need:
---------------
-1. the version control tool ``git``
+### You will need:
+1. git, for version control
 
-(you can install ``git`` from `Github <https://help.github.com/en/github/getting-started-with-github/set-up-git>`_,
-with your operating system package manager, or using ``conda``.)
+(you can install git from [Github](https://help.github.com/en/github/getting-started-with-github/set-up-git),
+with your operating system package manager, or using conda.)
 
-2. ``nox``
+2. nox, for running tests and other tasks
 
-This project uses the library `nox <https://nox.thea.codes/en/stable/>`_
-as a `task runner <https://scikit-hep.org/developer/tasks>`_,
+This project uses the library [nox](https://nox.thea.codes/en/stable/)
+as a [task runner](https://scikit-hep.org/developer/tasks),
 to automate tasks like setting up a development environment.
 Each task is represented as what nox calls a "session",
 and you can run a session by invoking nox
@@ -128,63 +115,59 @@ at the command-line with the name of the session.
 So, to set up a virtual environment for development
 with vak installed in "editable" mode,
 you would run the "dev" session, as explained below
-in :ref:`Steps to set up a development environment`.
+in {ref}`Steps to set up a development environment`.
 
-We suggest using `pipx <https://github.com/pypa/pipx>`_
-to install nox in an isolated environment,
+We suggest using [pipx](https://github.com/pypa/pipx)
+to install nox in its own isolated environment,
 so that nox can be accessed system-wide without affecting
 anything else on your machine.
 
 To install nox this way:
 
-1. Install pipx, e.g. with `brew <https://github.com/pypa/pipx#on-macos>`_
-(and `brew works on Linux too <https://docs.brew.sh/Homebrew-on-Linux>`_)
+1. Install pipx, e.g. with the package manager [brew](https://github.com/pypa/pipx#on-macos)
+(and [brew works on Linux too](https://docs.brew.sh/Homebrew-on-Linux))
 
-2. Install nox with pipx: ``pipx install nox``
+2. Install nox with pipx: `pipx install nox`
 
 For other ways to install nox, please see:
 https://nox.thea.codes/en/stable/tutorial.html#installation
 
-Steps to set up a development environment
------------------------------------------
+### Steps to set up a development environment
 
-1. Clone the repository
-#######################
+#### 1. Clone the repository
 
-Clone the repository from Github using ``git``
+Clone the repository from Github using git
 
-.. code-block:: shell
+```shell
+git clone https://github.com/vocalpy/vak
+```
 
-   git clone https://github.com/vocalpy/vak
-
-2. Create a virtual environment with the development dependencies
-#################################################################
+#### 2. Create a virtual environment with the development dependencies
 
 The repository includes code that automates setting up a development environment,
 using nox as described above.
 
 To create a virtual environment, run the following:
 
-.. code-block:: shell
-
-   nox -s dev
+```shell
+nox -s dev
+```
 
 You can then activate the virtual environment by executing:
 
-.. code-block:: shell
-
-   . ./.venv/activate
+```shell
+. ./.venv/activate
+```
 
 on MacOS and Linux, or
 
-.. code-block:: shell
-
-   ./.venv/activate.bat
+```shell
+./.venv/activate.bat
+```
 
 on Windows.
 
-3. Download test data
-#####################
+#### 3. Download test data
 
 There are three types of data of needed for tests.
 
@@ -197,100 +180,97 @@ so you will already have them when you clone the repository.
 The other two types of data are made up of files
 that are too large to keep in a GitHub repository.
 Instead, the files are kept on a public
-`Open Science Framework <https://osf.io>`_ project, here:
-https://osf.io/vz48c/
+[Open Science Framework](https://osf.io) project, here:
+<https://osf.io/vz48c/>
 There are `nox` sessions that download this data.
 Next we define these two other types of test data.
 
-Source test data
-~~~~~~~~~~~~~~~~
+##### Source test data
 
-The source data consists of files used as input to ``vak``
+The source data consists of files used as input to vak
 such as audio and annotation files. These files are less likely to change
-as ``vak`` develops, so they are kept separate.
+as vak develops, so they are kept separate.
 
 To download these files, run:
 
-.. code-block:: shell
+```shell
+nox -s test-data-download-source
+```
 
-   nox -s test-data-download-source
+##### Generated test data
 
-Generated test data
-~~~~~~~~~~~~~~~~~~~
-
-Generated test data consists of files created by ``vak``,
+Generated test data consists of files created by vak,
 such as .csv files that represent datasets,
 and saved neural network checkpoints.
 
-This test data set is generated by a script: ``./tests/scripts/generate_data_for_tests.py``.
+This test data set is generated by a script: `./tests/scripts/generate_data_for_tests.py`.
 Generally speaking, the core maintainers are the only ones that should need
 to run this script.
 
 To download these files, run:
 
-.. code-block:: shell
+```shell
+nox -s test-data-download-generated-all
+```
 
-   nox -s test-data-download-generated-all
-
-4. Proceed with development
-###########################
+#### 4. Proceed with development
 
 After completing these steps, you are ready for development!
 
-Contributing Code
-=================
+## Contributing Code
 
-``vak`` Code Overview
----------------------
+### vak Code Overview
 
-The source code for ``vak`` is located in the directory ``./src/vak``. When contributing
+
+The source code for vak is located in the directory `./src/vak`. When contributing
 code, be sure to follow the general guidelines in the
-:ref:`dev-workflow` section.
+{ref}`dev-workflow` section.
 
-Code Style
-----------
+### Code Style
 
-In general, ``vak`` code should
+In general, vak code should
 
-* follow the `Zen of Python <https://www.python.org/dev/peps/pep-0020/#id2>`_ in terms of implementation
-* follow the `PEP8 style guide <https://www.python.org/dev/peps/pep-0008/>`_ for code
-* follow the `numpy standard for docstrings <https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard>`_
+In general, crowsetta code should
 
-We also use the tool `Black <https://github.com/psf/black>`_ to format the code, so we don't have to think about it.
+* follow the [Zen of Python](https://www.python.org/dev/peps/pep-0020/#id2) in terms of implementation
+* follow the [PEP8 style guide](https://www.python.org/dev/peps/pep-0008/) for code
+* follow the [numpy standard for docstrings](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
 
-Testing your Code
------------------
+We also use the tool [Black](https://github.com/psf/black) to format the code, so we don't have to think about it.
+
+### Testing your Code
 
 Automated testing helps ensure that our code is as free of bugs as it can be.
 It also lets us know immediately if a change we make breaks any other part of the code.
 
-All of our test code and data are stored in the directory ``./tests``,
+All of our test code and data are stored in the directory `./tests`,
 that is set up as if it were a Python package.
-We use the `pytest <https://pytest.org>`_ framework to run the test suite.
+We use the [pytest](https://pytest.org) framework to run the test suite.
 While developing, you can run the entire test suite inside an
-activated virtual environment by running ``pytest`` from the command line:
+activated virtual environment by running `pytest` from the command line:
 
-.. code-block:: shell
-
-   pytest
+```shell
+pytest
+```
 
 You can also run tests in just one test script using:
 
-.. code-block:: shell
-
-   pytest ./tests/NAME_OF_TEST_FILE.py
+```shell
+pytest ./tests/NAME_OF_TEST_FILE.py
+```
 
 For more on specifying which test to run with pytest, see
-https://docs.pytest.org/en/7.1.x/how-to/usage.html#specifying-which-tests-to-run.
+[this page](https://docs.pytest.org/en/7.1.x/how-to/usage.html#specifying-which-tests-to-run) 
+in their documentation.
 
 When you are ready to make a pull request,
 it is good practice to run the entire test suite
 in a newly-created virtual environment.
 There is a command in the `nox` file that automates this for you.
 
-.. code-block:: shell
-
-   nox -s test
+```shell
+nox -s test
+```
 
 Please write tests for your code so that we can be sure that it won't break any of the
 existing functionality.
