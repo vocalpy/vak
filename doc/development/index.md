@@ -2,7 +2,7 @@
 
 # Development
 
-## Contributing to `vak`
+## Contributing to vak
 
 This is a community driven project and everyone is welcome to contribute.
 
@@ -23,6 +23,7 @@ contributors
 This development documentation is adapted from the exemplary guides provided by
 [numpy](https://numpy.org), [pandas](https://pandas.pydata.org),
 and [PyGMT](https://www.pygmt.org).
-`vak` is built on `numpy` and `pandas` (among other libraries) ---
-please cite them also if you use `vak` in your own work,
-and consider contributing to their development.
+vak is built on packages from [Scientific Python](https://scientific-python.org/>),
+[pyOpenSci](https://www.pyopensci.org/), [Executable Books project](https://executablebooks.org/en/latest/),
+and many other excellent Python libraries.
+Please consider also contributing to their development.
