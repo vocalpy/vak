@@ -113,7 +113,26 @@ def test_data_download_source(session) -> None:
     copy_url(url=SOURCE_TEST_DATA_URL, path=SOURCE_TEST_DATA_TAR)
     session.log(f'Extracting downloaded tar: {SOURCE_TEST_DATA_TAR}')
     with tarfile.open(SOURCE_TEST_DATA_TAR, "r:gz") as tf:
-        tf.extractall(path='.')
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner) 
+            
+        
+        safe_extract(tf, path=".")
 
 
 TEST_DATA_GENERATE_SCRIPT = './tests/scripts/generate_data_for_tests.py'
@@ -188,7 +207,26 @@ def test_data_download_generated_all(session) -> None:
     copy_url(url=GENERATED_TEST_DATA_ALL_URL, path=GENERATED_TEST_DATA_ALL_TAR)
     session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_ALL_TAR}')
     with tarfile.open(GENERATED_TEST_DATA_ALL_TAR, "r:gz") as tf:
-        tf.extractall(path='.')
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner) 
+            
+        
+        safe_extract(tf, path=".")
     session.log('Fixing paths in .csv files')
     session.run(
         "python", "./tests/scripts/fix_prep_csv_paths.py"
@@ -208,7 +246,26 @@ def test_data_download_generated_ci(session) -> None:
     copy_url(url=GENERATED_TEST_DATA_CI_URL, path=GENERATED_TEST_DATA_CI_TAR)
     session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_CI_TAR}')
     with tarfile.open(GENERATED_TEST_DATA_CI_TAR, "r:gz") as tf:
-        tf.extractall(path='.')
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner) 
+            
+        
+        safe_extract(tf, path=".")
     session.log('Fixing paths in .csv files')
     session.run(
         "python", "./tests/scripts/fix_prep_csv_paths.py"
