@@ -1,7 +1,10 @@
 """parses [PREP] section of config"""
+import inspect
+
 import attr
 from attr import converters, validators
 from attr.validators import instance_of
+import dask.bag
 
 from .validators import (
     is_audio_format,
@@ -35,6 +38,26 @@ def is_valid_duration(instance, attribute, value):
     if not value >= 0:
         raise ValueError(
             f"value specified for {attribute} of {instance} must be greater than or equal to zero, was {value}"
+        )
+
+
+def are_valid_dask_bag_kwargs(instance, attribute, value):
+    """validator for ``audio_dask_bag_kwargs``"""
+    if not isinstance(value, dict):
+        raise TypeError(
+            f"Option ``audio_dask_bag_kwargs`` should be a dict but was a {type(value)}.\n"
+            "So that it parses as a dict, please specify this option "
+            "as an inline table in the .toml file, e.g.\n"
+            "`audio_dask_bag_kwargs = { npartitions = 20}`"
+        )
+    kwargs = list(value.keys())
+    valid_bag_kwargs = list(
+        inspect.signature(dask.bag.from_sequence).parameters.keys()
+    )
+    if not all([kwarg in valid_bag_kwargs for kwarg in kwargs]):
+        invalid_kwargs = [kwarg for kwarg in kwargs if kwarg not in valid_bag_kwargs]
+        print(
+            f'Invalid keyword arguments specified in ``audio_dask_bag_kwargs``: {invalid_kwargs}'
         )
 
 
@@ -74,6 +97,14 @@ class PrepConfig:
         Value for ``labelset`` is converted to a Python ``set``
         using ``vak.config.converters.labelset_from_toml_value``.
         See help for that function for details on how to specify labelset.
+    audio_dask_bag_kwargs : dict
+        Keyword arguments used when calling ``dask.bag.from_sequence``
+        inside ``vak.io.audio``, where it is used to parallelize
+        the conversion of audio files into spectrograms.
+        Option should be specified in config.toml file as an inline table,
+        e.g., ``audio_dask_bag_kwargs = { npartitions = 20 }``.
+        Allows for finer-grained control
+        when needed to process files of different sizes.
     train_dur : float
         total duration of training set, in seconds. When creating a learning curve,
         training subsets of shorter duration (specified by the 'train_set_durs' option
@@ -83,7 +114,6 @@ class PrepConfig:
     test_dur : float
         total duration of test set, in seconds.
     """
-
     data_dir = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
 
@@ -104,6 +134,8 @@ class PrepConfig:
         validator=validators.optional(instance_of(set)),
         default=None,
     )
+
+    audio_dask_bag_kwargs = attr.ib(validator=validators.optional(are_valid_dask_bag_kwargs), default=None)
 
     train_dur = attr.ib(
         converter=converters.optional(duration_from_toml_value),
