@@ -32,6 +32,7 @@ def prep(
     annot_format=None,
     annot_file=None,
     labelset=None,
+    audio_dask_bag_kwargs=None,
     train_dur=None,
     val_dur=None,
     test_dur=None,
@@ -99,6 +100,14 @@ def prep(
         contains labels not found in ``labelset``.
         ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
         See help for that function for details on how to specify labelset.
+    audio_dask_bag_kwargs : dict
+        Keyword arguments used when calling ``dask.bag.from_sequence``
+        inside ``vak.io.audio``, where it is used to parallelize
+        the conversion of audio files into spectrograms.
+        Option should be specified in config.toml file as an inline table,
+        e.g., ``audio_dask_bag_kwargs = { npartitions = 20 }``.
+        Allows for finer-grained control
+        when needed to process files of different sizes.
     train_dur : float
         total duration of training set, in seconds. When creating a learning curve,
         training subsets of shorter duration will be drawn from this set. Default is None.
@@ -222,8 +231,9 @@ def prep(
         annot_file=annot_file,
         audio_format=audio_format,
         spect_format=spect_format,
-        spect_output_dir=spect_output_dir,
         spect_params=spect_params,
+        spect_output_dir=spect_output_dir,
+        audio_dask_bag_kwargs=audio_dask_bag_kwargs,
     )
 
     if vak_df.empty:
