@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 import os
 from pathlib import Path
@@ -7,6 +8,7 @@ import dask.bag as db
 from dask.diagnostics import ProgressBar
 
 from .. import (
+    config,
     constants,
     files
 )
@@ -43,14 +45,15 @@ def files_from_dir(audio_dir, audio_format):
 
 
 def to_spect(
-    audio_format,
-    spect_params,
-    output_dir,
-    audio_dir=None,
-    audio_files=None,
-    annot_list=None,
-    audio_annot_map=None,
-    labelset=None,
+    audio_format: str,
+    spect_params: dict | config.spect_params.SpectParamsConfig,
+    output_dir: str,
+    audio_dir: list | None = None,
+    audio_files: list | None = None,
+    annot_list: list | None = None,
+    audio_annot_map: dict | None = None,
+    labelset: str | list | None = None,
+    dask_bag_kwargs: dict | None = None,
 ):
     """makes spectrograms from audio files and saves in array files
 
@@ -58,13 +61,13 @@ def to_spect(
     ----------
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}
-    spect_params : dict or vak.config.spectrogram.SpectConfig
+    spect_params : dict or config.spect_params.SpectParamsConfig
         parameters for computing spectrogram, from .toml file.
         To see all related parameters, run:
-        >>> help(vak.config.spect_params.SpectParamConfig)
+        >>> help(vak.config.spect_params.SpectParamsConfig)
         To get a default configuration, create a SpectParamConfig
         with no arguments and then pass that to `to_spect`:
-        >>> default_spect_params = vak.config.spect_params.SpectParamConfig()
+        >>> default_spect_params = vak.config.spect_params.SpectParamsConfig()
         >>> to_spect(audio_format='wav', spect_params=default_spect_params, output_dir='.')
     audio_dir : str
         path to directory containing audio files from which to make spectrograms
@@ -83,6 +86,10 @@ def to_spect(
         If not None, skip files where the associated annotations contain labels not in ``labelset``.
         ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
         See help for that function for details on how to specify labelset.
+    dask_bag_kwargs : dict
+        Keyword arguments used when calling ``dask.bag.from_sequence``.
+        E.g., ``{npartitions=20}``. Allows for finer-grained control
+        when needed to process files of different sizes.
 
     Returns
     -------
@@ -145,6 +152,9 @@ def to_spect(
         )
     if type(spect_params) is dict:
         spect_params = SpectParamsConfig(**spect_params)
+
+    if dask_bag_kwargs is None:
+        dask_bag_kwargs = {}  # so ``db.bag(**dask_bag_kwargs)`` works below
 
     # validate audio files if supplied by user
     if audio_files:
@@ -224,7 +234,7 @@ def to_spect(
         np.savez(npz_fname, **spect_dict)
         return npz_fname
 
-    bag = db.from_sequence(audio_files)
+    bag = db.from_sequence(audio_files, **dask_bag_kwargs)
     with ProgressBar():
         spect_files = list(bag.map(_spect_file))
     # sort because ordering from Dask not guaranteed
