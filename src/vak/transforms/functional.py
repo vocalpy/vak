@@ -61,13 +61,14 @@ def pad_to_window(arr, window_size, padval=0.0, return_padding_mask=True):
     Returns
     -------
     padded : numpy.ndarray
-        padded with padval
-    padding_mask : np.bool
-        has size equal to width of padded, i.e. original size
-        plus padding at the end. Has values of 1 where
-        columns in padded are from the original array,
-        and values of 0 where columns were added for padding.
-        Only returned if return_padding_mask is True.
+        Padded with ``padval``
+    padding_mask : numpy.ndarray
+        Boolean vector with size equal to width of padded,
+        i.e. original size plus padding at the end.
+        Has values of ``True`` where columns in ``padded``
+        are from the original array, and values of ``False``
+        where columns were added for padding.
+        Only returned if ``return_padding_mask`` is ``True``.
     """
     if arr.ndim == 1:
         width = arr.shape[0]
@@ -88,7 +89,7 @@ def pad_to_window(arr, window_size, padval=0.0, return_padding_mask=True):
         padded[:, :width] = arr
 
     if return_padding_mask:
-        padding_mask = np.zeros((target_width,), dtype=np.bool)
+        padding_mask = np.zeros((target_width,), dtype=bool)
         padding_mask[:width] = True
         return padded, padding_mask
     else:
