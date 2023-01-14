@@ -350,7 +350,7 @@ def majority_vote_transform(lbl_tb, segment_inds_list):
     """
     for segment_inds in segment_inds_list:
         segment = lbl_tb[segment_inds]
-        majority = scipy.stats.mode(segment)[0].item()
+        majority = scipy.stats.mode(segment, keepdims=False)[0].item()
         lbl_tb[segment_inds] = majority
 
     return lbl_tb
