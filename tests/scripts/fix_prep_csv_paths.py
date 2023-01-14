@@ -26,7 +26,10 @@ def main():
             for path in paths:
                 if path == "nan":
                     continue
-                before, aft = path.split("vak/")
+                try:
+                    before, aft = path.split("vak/")
+                except ValueError:  # used different name for directory locally
+                    before, aft = path.split("vak-vocalpy/")
                 new_path = PROJ_ROOT_ABS.joinpath(aft)
                 new_column.append(str(new_path))
             vak_df[path_column_name] = pd.Series(new_column)
