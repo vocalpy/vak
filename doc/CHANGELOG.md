@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#598](https://github.com/NickleDave/vak/pull/598).
   Fixes [#597](https://github.com/NickleDave/vak/issues/597).
   See discussion in [#359](https://github.com/NickleDave/vak/issues/359).
+- Make it easier to make an instance of a model
+  [#605](https://github.com/NickleDave/vak/pull/605).
+  Fixes [#362](https://github.com/NickleDave/vak/issues/362).
+- Add ways to define models and families of models
+  [#605](https://github.com/NickleDave/vak/pull/605).
+  Fixes [#406](https://github.com/NickleDave/vak/issues/406),
+  [#536](https://github.com/NickleDave/vak/issues/536), and 
+  [#603](https://github.com/NickleDave/vak/issues/603).
+- Add built-in TweetyNet model
+  [#605](https://github.com/NickleDave/vak/pull/605).
+  Fixes [#596](https://github.com/NickleDave/vak/issues/596).
 
 ## 0.8.1 -- 2023-03-02
 ### Fixed
