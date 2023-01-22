@@ -7,7 +7,7 @@ import torch.optim
 from tqdm import tqdm
 
 from ..device import get_default as get_default_device
-from ..labeled_timebins import lbl_tb2labels
+from .. import transforms
 
 
 logger = logging.getLogger(__name__)
@@ -267,10 +267,10 @@ class Model:
                         for metric_name in self.metrics.keys()
                     ]
                 ):
-                    y_labels = lbl_tb2labels(
+                    y_labels = transforms.labeled_timebins.lbl_tb2labels(
                         y.cpu().numpy(), eval_data.dataset.labelmap
                     )
-                    y_pred_labels = lbl_tb2labels(
+                    y_pred_labels = transforms.labeled_timebins.lbl_tb2labels(
                         y_pred.cpu().numpy(), eval_data.dataset.labelmap
                     )
                 else:

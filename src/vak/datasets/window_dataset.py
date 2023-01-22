@@ -4,11 +4,13 @@ import random
 import torch
 from torchvision.datasets.vision import VisionDataset
 
-from .. import annotation
-from .. import files
-from .. import io
-from .. import labeled_timebins
-from .. import validators
+from .. import (
+    annotation,
+    files,
+    io,
+    transforms,
+    validators
+)
 
 
 class WindowDataset(VisionDataset):
@@ -206,7 +208,7 @@ class WindowDataset(VisionDataset):
             spect_id
         ]  # "annot id" == spect_id if both were taken from rows of DataFrame
         lbls_int = [self.labelmap[lbl] for lbl in annot.seq.labels]
-        lbl_tb = labeled_timebins.label_timebins(
+        lbl_tb = transforms.labeled_timebins.from_segments(
             lbls_int,
             annot.seq.onsets_s,
             annot.seq.offsets_s,
@@ -694,7 +696,7 @@ class WindowDataset(VisionDataset):
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
                 timebins = spect_dict[timebins_key]
                 lbl_tb.append(
-                    labeled_timebins.label_timebins(
+                    transforms.labeled_timebins.from_segments(
                         lbls_int,
                         annot.seq.onsets_s,
                         annot.seq.offsets_s,
