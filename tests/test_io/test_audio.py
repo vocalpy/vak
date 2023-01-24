@@ -392,3 +392,44 @@ def test_both_annot_list_and_audio_annot_map_raises(
             audio_annot_map=audio_annot_map,
             labelset=labelset_notmat,
         )
+
+
+@pytest.mark.parametrize(
+    'dask_bag_kwargs',
+    [
+        None,
+        dict(npartitions=20),
+    ]
+)
+def test_dask_bag_kwargs(
+    dask_bag_kwargs,
+    default_spect_params,
+    tmp_path,
+    audio_dir_cbin,
+    annot_list_notmat,
+    labelset_notmat,
+    audio_list_cbin_all_labels_in_labelset,
+    audio_list_cbin_labels_not_in_labelset,
+
+):
+    """Test the ``dask_bag_kwargs`` parameter.
+
+    This is a smoke test, it does not carefully test different parameters.
+    It's the test above ``test_to_spect_audio_dir_annot_cbin_with_labelset``
+    with the parameter ``dask_bag_kwargs`` added."""
+    spect_files = vak.io.audio.to_spect(
+        audio_format="cbin",
+        spect_params=default_spect_params,
+        output_dir=tmp_path,
+        audio_dir=audio_dir_cbin,
+        audio_files=None,
+        annot_list=annot_list_notmat,
+        audio_annot_map=None,
+        labelset=labelset_notmat,
+        dask_bag_kwargs=dask_bag_kwargs
+    )
+    assert expected_spect_files_returned(
+        spect_files,
+        audio_list_cbin_all_labels_in_labelset,
+        audio_list_cbin_labels_not_in_labelset,
+    )

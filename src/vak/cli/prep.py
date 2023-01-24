@@ -140,6 +140,7 @@ def prep(toml_path):
         annot_format=cfg.prep.annot_format,
         annot_file=cfg.prep.annot_file,
         labelset=cfg.prep.labelset,
+        audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
         output_dir=cfg.prep.output_dir,
         train_dur=cfg.prep.train_dur,
         val_dur=cfg.prep.val_dur,

@@ -23,6 +23,7 @@ def from_files(
     spect_format=None,
     spect_params=None,
     spect_output_dir=None,
+    audio_dask_bag_kwargs=None,
 ):
     """create a pandas DataFrame representing a dataset for machine learning
     from a set of files in a directory
@@ -71,6 +72,14 @@ def from_files(
         Default is None, in which case it defaults to ``data_dir``.
         A new directory will be created in ``spect_output_dir`` with
         the name 'spectrograms_generated_{time stamp}'.
+    audio_dask_bag_kwargs : dict
+        Keyword arguments used when calling ``dask.bag.from_sequence``
+        inside ``vak.io.audio``, where it is used to parallelize
+        the conversion of audio files into spectrograms.
+        Option should be specified in config.toml file as an inline table,
+        e.g., ``audio_dask_bag_kwargs = { npartitions = 20 }``.
+        Allows for finer-grained control
+        when needed to process files of different sizes.
 
     Returns
     -------
@@ -138,6 +147,7 @@ def from_files(
             audio_files=audio_files,
             annot_list=annot_list,
             labelset=labelset,
+            dask_bag_kwargs=audio_dask_bag_kwargs,
         )
         spect_format = "npz"
     else:  # if audio format is None
