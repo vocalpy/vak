@@ -183,6 +183,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "kalleknast",
+      "name": "Hjalmar K. Turesson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12412777?v=4",
+      "profile": "https://github.com/kalleknast",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
