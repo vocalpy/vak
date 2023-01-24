@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Have runs from command-line interface log version to logfile
   [#587](https://github.com/NickleDave/vak/pull/587).
   Fixes [#216](https://github.com/NickleDave/vak/issues/216).
+- Add options for how `audio.to_spect` calls `dask.bag`, 
+  to help with memory issues when processing large files
+  [#611](https://github.com/NickleDave/vak/pull/611).
+  Fixes [#580](https://github.com/NickleDave/vak/issues/580).
 
 ### Changed
 - Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
