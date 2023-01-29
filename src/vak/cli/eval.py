@@ -4,7 +4,6 @@ from pathlib import Path
 from .. import (
     config,
     core,
-    validators
 )
 from ..logging import config_logging_for_cli, log_version
 
@@ -65,4 +64,5 @@ def eval(toml_path):
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         device=cfg.eval.device,
+        post_tfm_kwargs=cfg.eval.post_tfm_kwargs,
     )

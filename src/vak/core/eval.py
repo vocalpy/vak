@@ -8,11 +8,14 @@ import pandas as pd
 import torch.utils.data
 
 from .. import (
+    files,
     models,
+    timebins,
     transforms,
     validators
 )
 from ..datasets.vocal_dataset import VocalDataset
+from ..labels import multi_char_labels_to_single_char
 
 
 logger = logging.getLogger(__name__)
@@ -28,6 +31,7 @@ def eval(
     num_workers,
     split="test",
     spect_scaler_path=None,
+    post_tfm_kwargs=None,
     spect_key="s",
     timebins_key="t",
     device=None,
@@ -64,6 +68,18 @@ def eval(
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
         Default is None.
+    post_tfm_kwargs : dict
+        Keyword arguments to post-processing transform.
+        If None, then no additional clean-up is applied
+        when transforming labeled timebins to segments,
+        the default behavior. The transform used is
+        ``vak.transforms.labeled_timebins.ToSegmentsWithPostProcessing`.
+        Valid keyword argument names are 'majority_vote'
+        and 'min_segment_dur', and should be appropriate
+        values for those arguments: Boolean for ``majority_vote``,
+        a float value for ``min_segment_dur``.
+        See the docstring of the transform for more details on
+        these arguments and how they work.
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
@@ -71,6 +87,15 @@ def eval(
     device : str
         Device on which to work with model + data.
         Defaults to 'cuda' if torch.cuda.is_available is True.
+
+    Notes
+    -----
+    Note that unlike ``core.predict``, this function
+    can modify ``labelmap`` so that metrics like edit distance
+    are correctly computed, by converting any string labels
+    in ``labelmap`` with multiple characters
+    to (mock) single-character labels,
+    with ``vak.labels.multi_char_labels_to_single_char``.
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
@@ -102,6 +127,15 @@ def eval(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
+    # replace any multiple character labels in mapping
+    # with dummy single-character labels
+    # so that we do not affect edit distance computation
+    # see https://github.com/NickleDave/vak/issues/373
+    labelmap_keys = [lbl for lbl in labelmap.keys() if lbl != 'unlabeled']
+    if any([len(label) > 1 for label in labelmap_keys]):  # only re-map if necessary
+        # (to minimize chance of knock-on bugs)
+        labelmap = multi_char_labels_to_single_char(labelmap)
+
     item_transform = transforms.get_defaults(
         "eval",
         spect_standardizer,
@@ -132,8 +166,23 @@ def eval(
     if len(input_shape) == 4:
         input_shape = input_shape[1:]
 
+    if post_tfm_kwargs:
+        dataset_df = pd.read_csv(csv_path)
+        # we use the timebins vector from the first spect path to get timebin dur.
+        # this is less careful than calling io.dataframe.validate_and_get_timebin_dur
+        # but it's also much faster, and we can assume dataframe was validated when it was made
+        spect_dict = files.spect.load(dataset_df['spect_path'].values[0])
+        timebin_dur = timebins.timebin_dur_from_vec(spect_dict[timebins_key])
+
+        post_tfm = transforms.labeled_timebins.PostProcess(
+            timebin_dur=timebin_dur,
+            **post_tfm_kwargs,
+        )
+    else:
+        post_tfm = None
+
     models_map = models.from_model_config_map(
-        model_config_map, num_classes=len(labelmap), input_shape=input_shape
+        model_config_map, num_classes=len(labelmap), input_shape=input_shape, post_tfm=post_tfm
     )
 
     for model_name, model in models_map.items():

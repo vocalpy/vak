@@ -16,6 +16,26 @@ def eval_output_matches_expected(model_config_map, output_dir):
     return True
 
 
+# -- we do eval with all possible configurations of post_tfm_kwargs
+POST_TFM_KWARGS = [
+    # default, will use ToLabels
+    None,
+    # no cleanup but uses ToLabelsWithPostprocessing
+    {'majority_vote': False, 'min_segment_dur': None},
+    # use ToLabelsWithPostprocessing with *just* majority_vote
+    {'majority_vote': True, 'min_segment_dur': None},
+    # use ToLabelsWithPostprocessing with *just* min_segment_dur
+    {'majority_vote': False, 'min_segment_dur': 0.002},
+    # use ToLabelsWithPostprocessing with majority_vote *and* min_segment_dur
+    {'majority_vote': True, 'min_segment_dur': 0.002},
+]
+
+
+@pytest.fixture(params=POST_TFM_KWARGS)
+def post_tfm_kwargs(request):
+    return request.param
+
+
 @pytest.mark.parametrize(
     "audio_format, spect_format, annot_format",
     [
@@ -23,7 +43,14 @@ def eval_output_matches_expected(model_config_map, output_dir):
     ],
 )
 def test_eval(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+        audio_format,
+        spect_format,
+        annot_format,
+        specific_config,
+        tmp_path,
+        model,
+        device,
+        post_tfm_kwargs
 ):
     output_dir = tmp_path.joinpath(
         f"test_eval_{audio_format}_{spect_format}_{annot_format}"
@@ -58,6 +85,7 @@ def test_eval(
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         device=cfg.eval.device,
+        post_tfm_kwargs=post_tfm_kwargs,
     )
 
     assert eval_output_matches_expected(model_config_map, output_dir)

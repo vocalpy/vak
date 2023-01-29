@@ -19,6 +19,7 @@ from ...paths import generate_results_dir_name_as_path
 logger = logging.getLogger(__name__)
 
 
+# TODO: add post_tfm_kwargs here
 def learning_curve(
     model_config_map,
     train_set_durs,
@@ -32,6 +33,7 @@ def learning_curve(
     root_results_dir=None,
     results_path=None,
     previous_run_path=None,
+    post_tfm_kwargs=None,
     spect_key="s",
     timebins_key="t",
     normalize_spectrograms=True,
@@ -86,6 +88,18 @@ def learning_curve(
         Typically directory will have a name like ``results_{timestamp}``
         and the actual .csv splits will be in sub-directories with names
         corresponding to the training set duration
+    post_tfm_kwargs : dict
+        Keyword arguments to post-processing transform.
+        If None, then no additional clean-up is applied
+        when transforming labeled timebins to segments,
+        the default behavior. The transform used is
+        ``vak.transforms.labeled_timebins.ToSegmentsWithPostProcessing`.
+        Valid keyword argument names are 'majority_vote'
+        and 'min_segment_dur', and should be appropriate
+        values for those arguments: Boolean for ``majority_vote``,
+        a float value for ``min_segment_dur``.
+        See the docstring of the transform for more details on
+        these arguments and how they work.
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
@@ -318,6 +332,7 @@ def learning_curve(
                     num_workers=num_workers,
                     split="test",
                     spect_scaler_path=spect_scaler_path,
+                    post_tfm_kwargs=post_tfm_kwargs,
                     spect_key=spect_key,
                     timebins_key=timebins_key,
                     device=device,

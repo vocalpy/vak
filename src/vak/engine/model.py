@@ -30,6 +30,14 @@ class Model:
     metrics : dict
         where keys are metric names, and values are callables that compute that a metric,
         e.g. accuracy. Metrics should accept arguments y_pred and y_true.
+    post_tfm : callable
+        Post-processing transform that models applies to network output
+        during evaluation. Default is None, in which case no post-processing
+        is applied, and network outputs are converted directly to string labels
+        with ``vak.transforms.labeled_timebins.ToLabels`` (that does not
+        apply any post-processing clean-ups).
+        To be valid, ``post_tfm`` must be an instance of
+        ``vak.transforms.labeled_timebins.PostProcess``.
 
     Attributes
     ----------
@@ -71,6 +79,7 @@ class Model:
         loss,
         optimizer,
         metrics,
+        post_tfm=None,
         summary_writer=None,
         global_step=0,
     ):
@@ -78,6 +87,13 @@ class Model:
         self.optimizer = optimizer
         self.loss = loss
         self.metrics = metrics
+
+        if post_tfm and not isinstance(post_tfm, transforms.labeled_timebins.PostProcess):
+            raise TypeError(
+                "post_tfm must be an instance of transforms.labeled_timebins.PostProcess, "
+                f"but type was: {type(post_tfm)}"
+            )
+        self.post_tfm = post_tfm
 
         self.summary_writer = summary_writer
         self.global_step = global_step  # used for summary writer
@@ -256,40 +272,44 @@ class Model:
                     out = out[:, :, padding_mask]
                     y_pred = y_pred[:, padding_mask]
 
-                if any(
-                    [
-                        "levenshtein" in metric_name
-                        for metric_name in self.metrics.keys()
-                    ]
-                ) or any(
-                    [
-                        "segment_error_rate" in metric_name
-                        for metric_name in self.metrics.keys()
-                    ]
-                ):
-                    y_labels = transforms.labeled_timebins.lbl_tb2labels(
-                        y.cpu().numpy(), eval_data.dataset.labelmap
+                y_labels = transforms.labeled_timebins.to_labels(
+                    y.cpu().numpy(), eval_data.dataset.labelmap
                     )
-                    y_pred_labels = transforms.labeled_timebins.lbl_tb2labels(
-                        y_pred.cpu().numpy(), eval_data.dataset.labelmap
+                y_pred_labels = transforms.labeled_timebins.to_labels(
+                    y_pred.cpu().numpy(), eval_data.dataset.labelmap
+                )
+
+                # need to keep y_pred as tensor for acc metric;
+                # TODO: compute metrics with **and** without transforms
+                if self.post_tfm:
+                    y_pred_tfm = self.post_tfm(
+                        lbl_tb=y_pred.cpu().numpy(),
                     )
-                else:
-                    y_labels = None
-                    y_pred_labels = None
+                    y_pred_tfm_labels = transforms.labeled_timebins.to_labels(
+                        y_pred_tfm, eval_data.dataset.labelmap
+                    )
+                    # convert back to tensor so we can compute accuracy
+                    y_pred_tfm = torch.from_numpy(y_pred_tfm).to(self.device)
 
                 for metric_name, metric_callable in self.metrics.items():
                     if metric_name == "loss":
                         metric_vals[metric_name].append(metric_callable(out, y))
                     elif metric_name == "acc":
                         metric_vals[metric_name].append(metric_callable(y_pred, y))
+                        if self.post_tfm:
+                            metric_vals[f'{metric_name}_tfm'].append(metric_callable(y_pred_tfm, y))
                     elif metric_name == "levenshtein":
                         metric_vals[metric_name].append(
                             metric_callable(y_pred_labels, y_labels)
                         )
+                        if self.post_tfm:
+                            metric_vals[f'{metric_name}_tfm'].append(metric_callable(y_pred_tfm_labels, y_labels))
                     elif metric_name == "segment_error_rate":
                         metric_vals[metric_name].append(
                             metric_callable(y_pred_labels, y_labels)
                         )
+                        if self.post_tfm:
+                            metric_vals[f'{metric_name}_tfm'].append(metric_callable(y_pred_tfm_labels, y_labels))
                     else:
                         raise NotImplementedError(
                             f"calculation of metric not yet implemented for {metric_name}"
@@ -300,8 +320,9 @@ class Model:
 
         # ---- compute metrics averaged across batches -----------------------------------------------------------------
         # iterate over list of keys, to avoid "dictionary changed size" error when adding average metrics
-        for metric_name in list(metric_vals):
-            if metric_name in ["loss", "acc", "levenshtein", "segment_error_rate"]:
+        for metric_name in list(metric_vals.keys()):
+            if any([metric_name.startswith(name_stem)
+                    for name_stem in ("loss", "acc", "levenshtein", "segment_error_rate")]):
                 avg_metric_val = (
                     torch.tensor(metric_vals[metric_name]).sum().cpu().numpy()
                     / n_batches
@@ -465,7 +486,7 @@ class Model:
         return self._predict(pred_data)
 
     @classmethod
-    def from_config(cls, config):
+    def from_config(cls, config, post_tfm=None):
         """any model that inherits from this class should do whatever it needs to
         in this factory method to create the network, optimizer, and loss, and
         then pass those to the init function
