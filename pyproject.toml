@@ -80,3 +80,6 @@ SegmentErrorRate = 'vak.metrics.SegmentErrorRate'
 exclude = [
     "tests/data_for_tests"
 ]
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore:::.*torch.utils.tensorboard",]
