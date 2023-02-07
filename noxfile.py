@@ -176,7 +176,7 @@ def test_data_tar_generated_ci(session) -> None:
     make_tarfile(GENERATED_TEST_DATA_CI_TAR, GENERATED_TEST_DATA_CI_DIRS)
 
 
-GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/9qmb4/download'
+GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/532cs/download'
 
 
 @nox.session(name='test-data-download-generated-all')
@@ -195,7 +195,7 @@ def test_data_download_generated_all(session) -> None:
     )
 
 
-GENERATED_TEST_DATA_CI_URL = 'https://osf.io/7wngz/download'
+GENERATED_TEST_DATA_CI_URL = 'https://osf.io/g79sx/download'
 
 
 @nox.session(name='test-data-download-generated-ci')
