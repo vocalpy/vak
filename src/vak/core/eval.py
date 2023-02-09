@@ -189,6 +189,12 @@ def eval(
         logger.info(f"running evaluation for model: {model_name}")
         model.load(checkpoint_path, device=device)
         metric_vals = model.evaluate(eval_data=val_data, device=device)
+        logger.info(f"Finished evaluating. Logging computing metrics.")
+        for metric_name, metric_val in metric_vals.items():
+            if metric_name.startswith('avg_'):
+                logger.info(
+                    f'{metric_name}: {metric_val:0.5f}'
+                )
         # create a "DataFrame" with just one row which we will save as a csv;
         # the idea is to be able to concatenate csvs from multiple runs of eval
         row = OrderedDict(
