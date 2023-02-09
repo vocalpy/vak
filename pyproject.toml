@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "vak"
 description = "a neural network toolbox for animal vocalizations and bioacoustics"
-version = "0.7.0"
+version = "0.8.0"
 authors = [
     {name = "David Nicholson", email = "nickledave@users.noreply.github.com"}
 ]
