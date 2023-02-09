@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- Add options for how `audio.to_spect` calls `dask.bag`, 
+  to help with memory issues when processing large files
+  [#611](https://github.com/NickleDave/vak/pull/611).
+  Fixes [#580](https://github.com/NickleDave/vak/issues/580).
+- Add ability to run evaluation of models with and without post-processing 
+  transforms. This is done by specifying an option `post_tfm_kwargs` in the 
+  `[EVAL]` or `[LEARNCURVE]` sections of a .toml configuration file.
+  If the option is not specified, then models are evaluated as they were
+  previously, by converting the predicted label for each time bin 
+  to a label for each continuous segment, represented as a string.
+  If the option *is* specified, then the post-processing is applied 
+  to the model predictions before converting to strings.
+  Metrics are computed for outputs with *and* without post-processing,
+  to be able to compare the two.
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixes [#472](https://github.com/NickleDave/vak/issues/472).
+- `vak.core.eval` now logs computed evaluation metrics so they can be 
+  quickly inspected in the terminal or log files before full analysis
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixes [#471](https://github.com/NickleDave/vak/issues/471).
+
+### Changed
+- Rewrite post-processing transforms applied to network outputs 
+  as transforms, with functional and class implementations,
+  to make it possible to compose these transforms, and more easily 
+  evaluate model performance with and without them
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixes [#537](https://github.com/NickleDave/vak/issues/537).
+
 ## 0.7.0 -- 2022-11-23
 ### Added
 - Add unit tests for `csv.has_unlabled`
@@ -37,10 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Have runs from command-line interface log version to logfile
   [#587](https://github.com/NickleDave/vak/pull/587).
   Fixes [#216](https://github.com/NickleDave/vak/issues/216).
-- Add options for how `audio.to_spect` calls `dask.bag`, 
-  to help with memory issues when processing large files
-  [#611](https://github.com/NickleDave/vak/pull/611).
-  Fixes [#580](https://github.com/NickleDave/vak/issues/580).
 
 ### Changed
 - Rewrite unit tests in `tests/test_cli/` to use mocks for `vak.core` functions
