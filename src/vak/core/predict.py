@@ -14,7 +14,6 @@ from .. import (
     constants,
     files,
     io,
-    labeled_timebins,
     validators
 )
 from .. import models
@@ -223,12 +222,19 @@ def predict(
 
             spect_dict = files.spect.load(spect_path)
             t = spect_dict[timebins_key]
-            labels, onsets_s, offsets_s = labeled_timebins.lbl_tb2segments(
+
+            if majority_vote or min_segment_dur:
+                y_pred = transforms.labeled_timebins.postprocess(
+                    y_pred,
+                    timebin_dur=timebin_dur,
+                    min_segment_dur=min_segment_dur,
+                    majority_vote=majority_vote,
+                )
+
+            labels, onsets_s, offsets_s = transforms.labeled_timebins.to_segments(
                 y_pred,
                 labelmap=labelmap,
                 t=t,
-                min_segment_dur=min_segment_dur,
-                majority_vote=majority_vote,
             )
             if labels is None and onsets_s is None and offsets_s is None:
                 # handle the case when all time bins are predicted to be unlabeled

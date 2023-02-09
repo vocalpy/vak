@@ -1,8 +1,9 @@
 """parses [LEARNCURVE] section of config"""
 import attr
-from attr import converters
+from attr import converters, validators
 from attr.validators import instance_of
 
+from .eval import are_valid_post_tfm_kwargs, convert_post_tfm_kwargs
 from .train import TrainConfig
 from ..converters import expanded_user_path
 
@@ -49,10 +50,29 @@ class LearncurveConfig(TrainConfig):
     previous_run_path : str
         path to results directory from a previous run.
         Used for training if use_train_subsets_from_previous_run is True.
+    post_tfm_kwargs : dict
+        Keyword arguments to post-processing transform.
+        If None, then no additional clean-up is applied
+        when transforming labeled timebins to segments,
+        the default behavior.
+        The transform used is
+        ``vak.transforms.labeled_timebins.ToSegmentsWithPostProcessing`.
+        Valid keyword argument names are 'majority_vote'
+        and 'min_segment_dur', and should be appropriate
+        values for those arguments: Boolean for ``majority_vote``,
+        a float value for ``min_segment_dur``.
+        See the docstring of the transform for more details on
+        these arguments and how they work.
     """
     train_set_durs = attr.ib(validator=instance_of(list), kw_only=True)
     num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
     previous_run_path = attr.ib(
         converter=converters.optional(expanded_user_path),
         default=None,
+    )
+
+    post_tfm_kwargs = attr.ib(
+        validator=validators.optional(are_valid_post_tfm_kwargs),
+        converter=converters.optional(convert_post_tfm_kwargs),
+        default={},  # empty dict so we can pass into transform with **kwargs expansion
     )

@@ -5,6 +5,8 @@ import shutil
 import pytest
 import toml
 
+from .test_data import GENERATED_TEST_DATA_ROOT
+
 
 @pytest.fixture
 def test_configs_root(test_data_root):
@@ -65,9 +67,12 @@ def invalid_option_config_path(test_configs_root):
     return test_configs_root.joinpath("invalid_option_config.toml")
 
 
+GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA_ROOT.joinpath("configs")
+
+
 @pytest.fixture
-def generated_test_configs_root(generated_test_data_root):
-    return generated_test_data_root.joinpath("configs")
+def generated_test_configs_root():
+    return GENERATED_TEST_CONFIGS_ROOT
 
 
 # ---- path to config files ----
