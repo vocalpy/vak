@@ -68,15 +68,6 @@ Documentation = "https://vak.readthedocs.io"
 [project.scripts]
 vak = 'vak.__main__:main'
 
-[project.entry-points."vak.models"]
-TeenyTweetyNetModel = 'vak.models.teenytweetynet:TeenyTweetyNet'
-TweetyNetModel = 'vak.models.tweetynet:TweetyNet'
-
-[project.entry-points."vak.metrics"]
-Accuracy = 'vak.metrics.Accuracy'
-Levenshtein = 'vak.metrics.Levenshtein'
-SegmentErrorRate = 'vak.metrics.SegmentErrorRate'
-
 [tool.flit.sdist]
 exclude = [
     "tests/data_for_tests"

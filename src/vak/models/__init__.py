@@ -4,7 +4,7 @@ from . import (
     definition,
 )
 from .base import Model
-from .models import find, from_model_config_map
+from .models import from_model_config_map
 from .teenytweetynet import TeenyTweetyNet
 from .tweetynet import TweetyNet
 from .windowed_frame_classification_model import WindowedFrameClassificationModel
@@ -14,7 +14,6 @@ __all__ = [
     "base",
     "decorator",
     "definition",
-    "find",
     "from_model_config_map",
     "Model",
     "TeenyTweetyNet",

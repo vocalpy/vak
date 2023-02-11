@@ -26,11 +26,11 @@ def is_a_file(instance, attribute, value):
 
 
 def is_valid_model_name(instance, attribute, value):
-    MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
+    MODEL_NAMES = list(models.models.BUILTIN_MODELS.keys())
     for model_name in value:
-        if model_name not in MODEL_NAMES and f"{model_name}Model" not in MODEL_NAMES:
+        if model_name not in MODEL_NAMES:
             raise ValueError(
-                f"Model {model_name} not found when importing installed models."
+                f"Invalid model name: {model_name}.\nValid model names are: {MODEL_NAMES}"
             )
 
 
@@ -91,7 +91,7 @@ def are_sections_valid(config_dict, toml_path=None):
             f"Please use just one command besides `prep` per .toml configuration file"
         )
 
-    MODEL_NAMES = [model_name for model_name, model_builder in models.find()]
+    MODEL_NAMES = list(models.models.BUILTIN_MODELS.keys())
     # add model names to valid sections so users can define model config in sections
     valid_sections = VALID_SECTIONS + MODEL_NAMES
     for section in sections:

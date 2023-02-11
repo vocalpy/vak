@@ -8,16 +8,6 @@ import vak.models
 from .test_tweetynet import TEST_INIT_ARGVALS
 
 
-def test_installed():
-    # makes sure the entry point loads properly
-    if "vak" in sys.modules:
-        sys.modules.pop("vak")
-    import vak
-
-    models = [name for name, class_ in sorted(vak.models.find())]
-    assert "TeenyTweetyNetModel" in models
-
-
 class TestTeenyTweetyNet:
     def test_model_is_decorated(self):
         assert issubclass(vak.models.TeenyTweetyNet,
