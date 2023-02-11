@@ -3,14 +3,13 @@ where a model predicts a label for each frame
 in a window, e.g., each time bin in
 a window from a spectrogram."""
 from __future__ import annotations
-import functools
 from typing import Callable, ClassVar, Mapping, Type
 
 import torch
 
 from . import base
 from .definition import ModelDefinition
-from .. import labeled_timebins
+from .. import transforms
 
 
 class WindowedFrameClassificationModel(base.Model):
@@ -75,8 +74,7 @@ class WindowedFrameClassificationModel(base.Model):
         """
         super().__init__(network=network, loss=loss,
                          optimizer=optimizer, metrics=metrics)
-        lbl_tb2labels = functools.partial(labeled_timebins.lbl_tb2labels,
-                                          labels_mapping=labelmap)
+        lbl_tb2labels = transforms.labeled_timebins.ToLabels(labelmap=labelmap)
         self.lbl_tb2labels = lbl_tb2labels
         self.post_tfm = post_tfm
 
