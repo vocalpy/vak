@@ -184,6 +184,7 @@ def test_data_download_generated_all(session) -> None:
     """
     Download and extract a .tar.gz file of all 'generated' test data
     """
+    session.install("pandas")
     session.log(f'Downloading: {GENERATED_TEST_DATA_ALL_URL}')
     copy_url(url=GENERATED_TEST_DATA_ALL_URL, path=GENERATED_TEST_DATA_ALL_TAR)
     session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_ALL_TAR}')
