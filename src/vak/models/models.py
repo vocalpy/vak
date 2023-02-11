@@ -1,43 +1,25 @@
-"""module that contains helper function to load models
+"""Helper function to load models"""
+from __future__ import annotations
 
-Models in separate packages should make themselves available to vak by including
-'vak.models' in the entry_points of their setup.py file.
-
-For example, if you had a package `grunet` containing a model
-that was instantiated by a function `GRUnet`,
-then that package would include the following in its setup.py file:
-
-setup(
-    ...
-    entry_points={'vak.models': 'GRUnet = grunet:GRUnet'},
-    ...
-)
-
-For more detail on entry points in Python, see:
-https://packaging.python.org/guides/creating-and-discovering-plugins/#using-package-metadata
-https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins
-https://amir.rachum.com/blog/2017/07/28/python-entry-points/
-"""
-from .. import entry_points
-
-MODELS_ENTRY_POINT = "vak.models"
+from .tweetynet import TweetyNet
+from .teenytweetynet import TeenyTweetyNet
 
 
-def find():
-    """find installed vak.models
+# TODO: Replace constant with decorator that registers models, https://github.com/vocalpy/vak/issues/623
+BUILTIN_MODELS = {
+    'TweetyNet': TweetyNet,
+    'TeenyTweetyNet': TeenyTweetyNet
+}
 
-    returns generator that yields model name and function for loading
-    """
-    for entrypoint in entry_points._iter(MODELS_ENTRY_POINT):
-        yield entrypoint.name, entrypoint.load()
+MODEL_NAMES = list(BUILTIN_MODELS.keys())
 
 
-def from_model_config_map(model_config_map,
+def from_model_config_map(model_config_map: dict[str: dict],
                           # TODO: move num_classes / input_shape into model configs
-                          num_classes,
-                          input_shape,
-                          labelmap):
-    """get models that are ready to train, given their names and configurations.
+                          num_classes: int,
+                          input_shape: tuple[int, int, int],
+                          labelmap: dict) -> dict:
+    """Get models that are ready to train, given their names and configurations.
 
     Given a dictionary that maps model names to configurations,
     along with the number of classes they should be trained to discriminate and their input shape,
@@ -66,7 +48,7 @@ def from_model_config_map(model_config_map,
     models_map : dict
         where keys are model names and values are instances of the models, ready for training
     """
-    MODELS = {model_name: model_builder for model_name, model_builder in find()}
+    import vak.models
 
     models_map = {}
     for model_name, model_config in model_config_map.items():
@@ -77,12 +59,15 @@ def from_model_config_map(model_config_map,
             num_classes=num_classes,
             input_shape=input_shape,
         )
+
         try:
-            model = MODELS[model_name].from_config(config=model_config, labelmap=labelmap)
-        except KeyError:
-            model = MODELS[f"{model_name}Model"].from_config(
-                config=model_config,
-                labelmap=labelmap
-            )
+            model_class = getattr(vak.models, model_name)
+        except AttributeError as e:
+            raise ValueError(
+                f"Invalid model name: '{model_name}'.\nValid model names are: {MODEL_NAMES}"
+            ) from e
+
+        model = model_class.from_config(config=model_config, labelmap=labelmap)
         models_map[model_name] = model
+
     return models_map
