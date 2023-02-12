@@ -14,7 +14,7 @@ import vak.io.spect
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_prep.py
-def prep_output_matches_expected(csv_path, df_returned_by_prep):
+def assert_prep_output_matches_expected(csv_path, df_returned_by_prep):
     assert Path(csv_path).exists()
     df_from_csv_path = pd.read_csv(csv_path)
 
@@ -28,8 +28,6 @@ def prep_output_matches_expected(csv_path, df_returned_by_prep):
             df_returned_by_prep[column],
             check_exact=check_exact,
         )
-
-    return True
 
 
 @pytest.mark.parametrize(
@@ -102,7 +100,7 @@ def test_prep(
         test_dur=cfg.prep.test_dur,
     )
 
-    assert prep_output_matches_expected(csv_path, vak_df)
+    assert_prep_output_matches_expected(csv_path, vak_df)
 
 
 @pytest.mark.parametrize(
