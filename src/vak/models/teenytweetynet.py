@@ -2,7 +2,6 @@
 """
 import torch
 
-from . import windowed_frame_classification_model
 from .. import metrics
 from .. import nets
 
