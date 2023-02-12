@@ -70,6 +70,8 @@ class TestWindowedFrameClassificationModel:
                 assert callable(model_attr)
                 assert model_attr is definition_attr
 
+    MOCK_INPUT_SHAPE = torch.Size([1, 128, 44])
+
     @pytest.mark.parametrize(
         'definition',
         [
@@ -91,18 +93,6 @@ class TestWindowedFrameClassificationModel:
 
         # stuff we need just to be able to instantiate network
         labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
-        transform, target_transform = vak.transforms.get_defaults("train")
-        train_dataset = vak.datasets.WindowDataset.from_csv(
-            csv_path=cfg.train.csv_path,
-            split="train",
-            labelmap=labelmap,
-            window_size=cfg.dataloader.window_size,
-            spect_key='s',
-            timebins_key='t',
-            transform=transform,
-            target_transform=target_transform,
-        )
-        input_shape = train_dataset.shape
 
         monkeypatch.setattr(
             vak.models.WindowedFrameClassificationModel, 'definition', definition, raising=False
@@ -112,7 +102,7 @@ class TestWindowedFrameClassificationModel:
         model_name, config = list(model_config_map.items())[0]
         config["network"].update(
             num_classes=len(labelmap),
-            input_shape=input_shape,
+            input_shape=self.MOCK_INPUT_SHAPE,
         )
 
         model = vak.models.WindowedFrameClassificationModel.from_config(config=config, labelmap=labelmap)

@@ -168,15 +168,13 @@ class TestModel:
         with pytest.raises(expected_exception):
             vak.models.base.Model.validate_init(**kwargs)
 
-    @pytest.mark.parametrize(
-        'definition',
-        [
-            TweetyNetDefinition,
-            TeenyTweetyNetDefinition,
-        ]
-    )
+    MODEL_DEFINITION_MAP = {
+        'tweetynet': TweetyNetDefinition,
+        'teenytweetynet': TeenyTweetyNetDefinition,
+    }
+
     def test_load_state_dict_from_path(self,
-                                       definition,
+                                       model,
                                        # our fixtures
                                        specific_config,
                                        # pytest fixtures
@@ -187,6 +185,7 @@ class TestModel:
 
         We use actual model definitions here so we can test with real checkpoints.
         """
+        definition = self.MODEL_DEFINITION_MAP[model]
         model_name = definition.__name__.replace('Definition', '').lower()
         train_toml_path = specific_config('train', model_name, audio_format='cbin', annot_format='notmat')
         train_cfg = vak.config.parse.from_toml_path(train_toml_path)
