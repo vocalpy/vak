@@ -91,7 +91,7 @@ def test_parse_config_section_model_not_installed_raises(
         if section_name.lower() in toml_path.name:
             break  # use these. Only need to test on one
 
-    config_toml[section_name]["models"] = "NotInstalledNet, OtherNotInstalledNet"
+    config_toml[section_name]["model"] = "NotInstalledNet"
     with pytest.raises(ValueError):
         vak.config.parse.parse_config_section(
             config_toml=config_toml, section_name=section_name, toml_path=toml_path

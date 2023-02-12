@@ -34,7 +34,7 @@ audio_path_key = 'audio_path'
 window_size = 88
 
 [TRAIN]
-models = 'TweetyNet'
+model = 'TweetyNet'
 root_results_dir = './tests/test_data/results/train'
 csv_path = 'tests/test_data/prep/train/032312_prep_191224_225912.csv'
 num_workers = 4
@@ -57,7 +57,7 @@ csv_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 output_dir = './tests/test_data/prep/learncurve'
-models = 'TweetyNet'
+model = 'TweetyNet'
 batch_size = 11
 num_workers = 4
 device = 'cuda'
@@ -65,7 +65,7 @@ spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 
 [LEARNCURVE]
-models = 'TweetyNet'
+model = 'TweetyNet'
 root_results_dir = './tests/test_data/results/learncurve'
 batch_size = 11
 num_epochs = 2
@@ -90,7 +90,7 @@ checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 annot_csv_filename = '032312_prep_191224_225910.annot.csv'
 output_dir = './tests/test_data/prep/learncurve'
-models = 'TweetyNet'
+model = 'TweetyNet'
 batch_size = 11
 num_workers = 4
 device = 'cuda'

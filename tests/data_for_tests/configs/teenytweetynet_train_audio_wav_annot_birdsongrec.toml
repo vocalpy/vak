@@ -21,7 +21,7 @@ transform_type = "log_spect"
 window_size = 44
 
 [TRAIN]
-models = "TeenyTweetyNet"
+model = "TeenyTweetyNet"
 normalize_spectrograms = true
 batch_size = 4
 num_epochs = 2

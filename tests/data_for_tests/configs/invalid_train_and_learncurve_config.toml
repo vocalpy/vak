@@ -21,7 +21,7 @@ window_size = 88
 # this .toml file should cause 'vak.config.parse.from_toml' to raise a ValueError
 # because it defines both a TRAIN and a LEARNCURVE section
 [TRAIN]
-models = "TweetyNet"
+model = "TweetyNet"
 normalize_spectrograms = true
 batch_size = 11
 num_epochs = 2
@@ -33,7 +33,7 @@ device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat"
 
 [LEARNCURVE]
-models = 'TweetyNet'
+model = 'TweetyNet'
 normalize_spectrograms = true
 batch_size = 11
 num_epochs = 2
