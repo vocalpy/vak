@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 def train(
-    model_config_map,
+    model_name,
+    model_config,
     csv_path,
     window_size,
     batch_size,
@@ -51,9 +52,9 @@ def train(
     patience=None,
     device=None,
 ):
-    """Train models and save results.
+    """Train a model and save results.
 
-    Saves checkpoint files for models,
+    Saves checkpoint files for model,
     label map, and spectrogram scaler.
     These are saved either in ``results_path``
     if specified, or a new directory
@@ -61,8 +62,12 @@ def train(
 
     Parameters
     ----------
-    model_config_map : dict
-        where each key-value pair is model name : dict of config parameters
+    model_name : str
+        Model name, must be one of vak.models.MODEL_NAMES.
+    model_config : dict
+        Model configuration in a ``dict``,
+        as loaded from a .toml file,
+        and used by the model method ``from_config``.
     csv_path : str
         path to where dataset was saved as a csv.
     window_size : int
@@ -324,39 +329,40 @@ def train(
     if device is None:
         device = get_default_device()
 
-    models_map = models.from_model_config_map(
-        model_config_map,
+    model = models.get(
+        model_name,
+        model_config,
         num_classes=len(labelmap),
         input_shape=train_dataset.shape,
         labelmap=labelmap,
     )
-    for model_name, model in models_map.items():
-        if checkpoint_path is not None:
-            logger.info(
-                f"loading checkpoint for {model_name} from path: {checkpoint_path}",
-            )
-            model.load_state_dict_from_path(checkpoint_path)
 
-        results_model_root = results_path.joinpath(model_name)
-        results_model_root.mkdir()
-        ckpt_root = results_model_root.joinpath("checkpoints")
-        ckpt_root.mkdir()
-        logger.info(f"training {model_name}")
-        max_steps = num_epochs * len(train_loader)
-        default_callback_kwargs = {
-            'ckpt_root': ckpt_root,
-            'ckpt_step': ckpt_step,
-            'patience': patience,
-        }
-        trainer = get_default_trainer(
-            max_steps=max_steps,
-            log_save_dir=results_model_root,
-            val_step=val_step,
-            default_callback_kwargs=default_callback_kwargs,
-            device=device,
+    if checkpoint_path is not None:
+        logger.info(
+            f"loading checkpoint for {model_name} from path: {checkpoint_path}",
         )
-        trainer.fit(
-            model=model,
-            train_dataloaders=train_loader,
-            val_dataloaders=val_loader,
-        )
+        model.load_state_dict_from_path(checkpoint_path)
+
+    results_model_root = results_path.joinpath(model_name)
+    results_model_root.mkdir()
+    ckpt_root = results_model_root.joinpath("checkpoints")
+    ckpt_root.mkdir()
+    logger.info(f"training {model_name}")
+    max_steps = num_epochs * len(train_loader)
+    default_callback_kwargs = {
+        'ckpt_root': ckpt_root,
+        'ckpt_step': ckpt_step,
+        'patience': patience,
+    }
+    trainer = get_default_trainer(
+        max_steps=max_steps,
+        log_save_dir=results_model_root,
+        val_step=val_step,
+        default_callback_kwargs=default_callback_kwargs,
+        device=device,
+    )
+    trainer.fit(
+        model=model,
+        train_dataloaders=train_loader,
+        val_dataloaders=val_loader,
+    )

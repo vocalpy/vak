@@ -8,12 +8,9 @@ import vak.core.eval
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
-def eval_output_matches_expected(model_config_map, output_dir):
-    for model_name in model_config_map.keys():
-        eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
-        assert len(eval_csv) == 1
-
-    return True
+def assert_eval_output_matches_expected(model_name, output_dir):
+    eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
+    assert len(eval_csv) == 1
 
 
 # -- we do eval with all possible configurations of post_tfm_kwargs
@@ -71,11 +68,12 @@ def test_eval(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
     vak.core.eval(
-        cfg.eval.csv_path,
-        model_config_map,
+        model_name=cfg.eval.model,
+        model_config=model_config,
+        csv_path=cfg.eval.csv_path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
@@ -88,7 +86,7 @@ def test_eval(
         post_tfm_kwargs=post_tfm_kwargs,
     )
 
-    assert eval_output_matches_expected(model_config_map, output_dir)
+    assert_eval_output_matches_expected(cfg.eval.model, output_dir)
 
 
 @pytest.mark.parametrize(
@@ -130,11 +128,12 @@ def test_eval_raises_file_not_found(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
         vak.core.eval(
+            model_name=cfg.eval.model,
+            model_config=model_config,
             csv_path=cfg.eval.csv_path,
-            model_config_map=model_config_map,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
@@ -168,11 +167,12 @@ def test_eval_raises_not_a_directory(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
         vak.core.eval(
+            model_name=cfg.eval.model,
+            model_config=model_config,
             csv_path=cfg.eval.csv_path,
-            model_config_map=model_config_map,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,

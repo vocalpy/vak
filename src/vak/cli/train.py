@@ -49,7 +49,8 @@ def train(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
-    model_config_map = config.models.map_from_path(toml_path, cfg.train.models)
+    model_name = cfg.train.model
+    model_config = config.model.config_from_toml_path(toml_path, model_name)
 
     if cfg.train.csv_path is None:
         raise ValueError(
@@ -64,7 +65,8 @@ def train(toml_path):
         labelset, labelmap_path = cfg.prep.labelset, None
 
     core.train(
-        model_config_map=model_config_map,
+        model_name=model_name,
+        model_config=model_config,
         csv_path=cfg.train.csv_path,
         labelset=labelset,
         window_size=cfg.dataloader.window_size,
