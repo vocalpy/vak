@@ -49,16 +49,12 @@ def map_from_config_dict(config_dict, model_names):
     # to avoid circular dependencies
     # (user would be unable to import models in other packages
     # if the module in the other package needed to `import vak`)
-    MODELS = {model_name: model_builder for model_name, model_builder in models.find()}
+    MODEL_NAMES = list(models.models.BUILTIN_MODELS.keys())
     for model_name in model_names:
-        if model_name not in MODELS:
-            # try appending 'Model' to name
-            tmp_model_name = f"{model_name}Model"
-            if tmp_model_name not in MODELS:
-                raise ValueError(
-                    f"Did not find an installed model named {model_name} or {tmp_model_name}. "
-                    f"Installed models are: {list(MODELS.keys())}"
-                )
+        if model_name not in MODEL_NAMES:
+            raise ValueError(
+                f"Invalid model name: {model_name}.\nValid model names are: {MODEL_NAMES}"
+            )
 
     # now see if we can find corresponding sections in config
     sections = list(config_dict.keys())
