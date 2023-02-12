@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased (1.0.0)
-### Enhancement
+### Added
 - Use `lightning` framework as back end, replaces
   `vak.engine.Model`
   [#598](https://github.com/NickleDave/vak/pull/598).
@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#605](https://github.com/NickleDave/vak/pull/605).
   Fixes [#596](https://github.com/NickleDave/vak/issues/596).
 
+### Removed
+- Remove entry points since they are not being unused
+  outside the project but require maintenance and testing
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixes [#601](https://github.com/NickleDave/vak/issues/601).
+
+
 ## 0.8.1 -- 2023-03-02
 ### Fixed
 - Fix transform that converts labeled timebins to segments
@@ -33,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Bug introduced in
   [#621](https://github.com/NickleDave/vak/pull/621).
   Fixes [#634](https://github.com/NickleDave/vak/issues/634).
+
 
 ## 0.8.0 -- 2023-02-09
 ### Added
