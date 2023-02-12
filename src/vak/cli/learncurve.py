@@ -50,7 +50,8 @@ def learning_curve(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
-    model_config_map = config.models.map_from_path(toml_path, cfg.learncurve.models)
+    model_name = cfg.learncurve.model
+    model_config = config.model.config_from_toml_path(toml_path, model_name)
 
     if cfg.learncurve.csv_path is None:
         raise ValueError(
@@ -60,7 +61,8 @@ def learning_curve(toml_path):
         )
 
     core.learning_curve(
-        model_config_map,
+        model_name=model_name,
+        model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
         csv_path=cfg.learncurve.csv_path,

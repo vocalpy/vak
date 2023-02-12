@@ -14,8 +14,8 @@ class LearncurveConfig(TrainConfig):
 
     Attributes
     ----------
-    models : list
-        of model names. e.g., 'models = TweetyNet, GRUNet, ConvNet'
+    model : str
+        Model name, e.g., ``model = "TweetyNet"``
     csv_path : str
         path to where dataset was saved as a csv.
     num_epochs : int

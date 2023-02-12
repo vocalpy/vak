@@ -5,7 +5,7 @@ from attr.validators import instance_of
 
 from .validators import is_valid_model_name
 from .. import device
-from ..converters import bool_from_str, comma_separated_list, expanded_user_path
+from ..converters import bool_from_str, expanded_user_path
 
 
 @attr.s
@@ -14,9 +14,8 @@ class TrainConfig:
 
     Attributes
     ----------
-    models : list
-        comma-separated list of model names.
-        e.g., 'models = TweetyNet, GRUNet, ConvNet'
+    model : str
+        Model name, e.g., ``model = "TweetyNet"``
     csv_path : str
         path to where dataset was saved as a csv.
     num_epochs : int
@@ -66,9 +65,8 @@ class TrainConfig:
         path to 'labelmap.json' file. Default is None.
     """
     # required
-    models = attr.ib(
-        converter=comma_separated_list,
-        validator=[instance_of(list), is_valid_model_name],
+    model = attr.ib(
+        validator=[instance_of(str), is_valid_model_name],
     )
     num_epochs = attr.ib(converter=int, validator=instance_of(int))
     batch_size = attr.ib(converter=int, validator=instance_of(int))

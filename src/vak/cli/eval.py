@@ -43,7 +43,8 @@ def eval(toml_path):
 
     logger.info("Logging results to {}".format(cfg.eval.output_dir))
 
-    model_config_map = config.models.map_from_path(toml_path, cfg.eval.models)
+    model_name = cfg.eval.model
+    model_config = config.model.config_from_toml_path(toml_path, model_name)
 
     if cfg.eval.csv_path is None:
         raise ValueError(
@@ -53,8 +54,9 @@ def eval(toml_path):
         )
 
     core.eval(
-        cfg.eval.csv_path,
-        model_config_map,
+        model_name=model_name,
+        model_config=model_config,
+        csv_path=cfg.eval.csv_path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,

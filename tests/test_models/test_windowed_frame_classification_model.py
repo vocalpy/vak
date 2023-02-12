@@ -98,8 +98,7 @@ class TestWindowedFrameClassificationModel:
             vak.models.WindowedFrameClassificationModel, 'definition', definition, raising=False
         )
 
-        model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
-        model_name, config = list(model_config_map.items())[0]
+        config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
         config["network"].update(
             num_classes=len(labelmap),
             input_shape=self.MOCK_INPUT_SHAPE,

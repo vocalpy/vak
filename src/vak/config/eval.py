@@ -5,7 +5,7 @@ from attr.validators import instance_of
 
 from .validators import is_valid_model_name
 from .. import device
-from ..converters import comma_separated_list, expanded_user_path
+from ..converters import expanded_user_path
 
 
 def convert_post_tfm_kwargs(post_tfm_kwargs: dict) -> dict:
@@ -72,8 +72,8 @@ class EvalConfig:
         Path to location where .csv files with evaluation metrics should be saved.
     labelmap_path : str
         path to 'labelmap.json' file.
-    models : list
-        of model names. e.g., 'models = TweetyNet, GRUNet, ConvNet'
+    model : str
+        Model name, e.g., ``model = "TweetyNet"``
     batch_size : int
         number of samples per batch presented to models during training.
     num_workers : int
@@ -106,9 +106,8 @@ class EvalConfig:
     output_dir = attr.ib(converter=expanded_user_path)
 
     # required, model / dataloader
-    models = attr.ib(
-        converter=comma_separated_list,
-        validator=[instance_of(list), is_valid_model_name],
+    model = attr.ib(
+        validator=[instance_of(str), is_valid_model_name],
     )
     batch_size = attr.ib(converter=int, validator=instance_of(int))
 
