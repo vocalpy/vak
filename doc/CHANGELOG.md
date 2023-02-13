@@ -33,6 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#625](https://github.com/NickleDave/vak/pull/625).
   Fixes [#538](https://github.com/NickleDave/vak/issues/538).
 
+### Fixed
+- Fix functionality to evaluate model with and without
+  post-processing transform that was added in 
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixed in [#626](https://github.com/NickleDave/vak/pull/626).
+
 ## 0.8.0 -- 2023-02-09
 ### Added
 - Add options for how `audio.to_spect` calls `dask.bag`, 
