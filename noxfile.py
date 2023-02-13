@@ -197,7 +197,7 @@ def test_data_download_generated_all(session) -> None:
     )
 
 
-GENERATED_TEST_DATA_CI_URL = 'https://osf.io/wye5u/download'
+GENERATED_TEST_DATA_CI_URL = 'https://osf.io/un2zs/download'
 
 
 @nox.session(name='test-data-download-generated-ci')
