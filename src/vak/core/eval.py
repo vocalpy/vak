@@ -79,7 +79,7 @@ def eval(
         If None, then no additional clean-up is applied
         when transforming labeled timebins to segments,
         the default behavior. The transform used is
-        ``vak.transforms.labeled_timebins.ToSegmentsWithPostProcessing`.
+        ``vak.transforms.labeled_timebins.PostProcess`.
         Valid keyword argument names are 'majority_vote'
         and 'min_segment_dur', and should be appropriate
         values for those arguments: Boolean for ``majority_vote``,
@@ -193,6 +193,7 @@ def eval(
         num_classes=len(labelmap),
         input_shape=input_shape,
         labelmap=labelmap,
+        post_tfm=post_tfm,
     )
 
     logger.info(f"running evaluation for model: {model_name}")
