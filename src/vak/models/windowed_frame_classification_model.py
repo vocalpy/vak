@@ -70,12 +70,11 @@ class WindowedFrameClassificationModel(base.Model):
             to ``Callable`` functions, used to measure
             performance of the model.
         post_tfm : callable
-            Post-processing transform applied to prediClassVarctions.
+            Post-processing transform applied to predictions.
         """
         super().__init__(network=network, loss=loss,
                          optimizer=optimizer, metrics=metrics)
-        lbl_tb2labels = transforms.labeled_timebins.ToLabels(labelmap=labelmap)
-        self.lbl_tb2labels = lbl_tb2labels
+        self.to_labels = transforms.labeled_timebins.ToLabels(labelmap=labelmap)
         self.post_tfm = post_tfm
 
     def configure_optimizers(self):
@@ -184,15 +183,16 @@ class WindowedFrameClassificationModel(base.Model):
             out = out[:, :, padding_mask]
             y_pred = y_pred[:, padding_mask]
 
-        if self.post_tfm:
-            y_pred = self.post_tfm(y_pred)
+        y_labels = self.to_labels(y.cpu().numpy())
+        y_pred_labels = self.to_labels(y_pred.cpu().numpy())
 
-        y_labels = self.lbl_tb2labels(
-            y.cpu().numpy(),
-        )
-        y_pred_labels = self.lbl_tb2labels(
-            y_pred.cpu().numpy()
-        )
+        if self.post_tfm:
+            y_pred_tfm = self.post_tfm(
+                lbl_tb=y_pred.cpu().numpy(),
+            )
+            y_pred_tfm_labels = self.to_labels(y_pred_tfm)
+            # convert back to tensor so we can compute accuracy
+            y_pred_tfm = torch.from_numpy(y_pred_tfm).to(self.device)
 
         # TODO: figure out smarter way to do this
         for metric_name, metric_callable in self.metrics.items():
@@ -200,8 +200,16 @@ class WindowedFrameClassificationModel(base.Model):
                 self.log(f'val_{metric_name}', metric_callable(out, y), batch_size=1)
             elif metric_name == "acc":
                 self.log(f'val_{metric_name}', metric_callable(y_pred, y), batch_size=1)
+                if self.post_tfm:
+                    self.log(f'val_{metric_name}_tfm',
+                             metric_callable(y_pred_tfm, y),
+                             batch_size=1)
             elif metric_name == "levenshtein" or metric_name == "segment_error_rate":
                 self.log(f'val_{metric_name}', metric_callable(y_pred_labels, y_labels), batch_size=1)
+                if self.post_tfm:
+                    self.log(f'val_{metric_name}_tfm',
+                             metric_callable(y_pred_tfm_labels, y_labels),
+                             batch_size=1)
 
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
