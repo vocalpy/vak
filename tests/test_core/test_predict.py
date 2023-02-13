@@ -10,11 +10,9 @@ import vak.core.predict
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_predict.py
-def predict_output_matches_expected(output_dir, annot_csv_filename):
+def assert_predict_output_matches_expected(output_dir, annot_csv_filename):
     annot_csv = output_dir.joinpath(annot_csv_filename)
     assert annot_csv.exists()
-
-    return True
 
 
 @pytest.mark.parametrize(
@@ -55,13 +53,14 @@ def test_predict(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
 
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.predict.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     vak.core.predict(
+        model_name=cfg.predict.model,
+        model_config=model_config,
         csv_path=cfg.predict.csv_path,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
-        model_config_map=model_config_map,
         window_size=cfg.dataloader.window_size,
         num_workers=cfg.predict.num_workers,
         spect_key=cfg.spect_params.spect_key,
@@ -75,7 +74,7 @@ def test_predict(
         save_net_outputs=cfg.predict.save_net_outputs,
     )
 
-    assert predict_output_matches_expected(output_dir, cfg.predict.annot_csv_filename)
+    assert_predict_output_matches_expected(output_dir, cfg.predict.annot_csv_filename)
     if save_net_outputs:
         net_outputs = sorted(
             Path(output_dir).glob(f"*{vak.constants.NET_OUTPUT_SUFFIX}")
@@ -127,14 +126,15 @@ def test_predict_raises_file_not_found(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
 
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.predict.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(FileNotFoundError):
         vak.core.predict(
+            model_name=cfg.predict.model,
+            model_config=model_config,
             csv_path=cfg.predict.csv_path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
-            model_config_map=model_config_map,
             window_size=cfg.dataloader.window_size,
             num_workers=cfg.predict.num_workers,
             spect_key=cfg.spect_params.spect_key,
@@ -168,14 +168,15 @@ def test_predict_raises_not_a_directory(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.predict.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(NotADirectoryError):
         vak.core.predict(
+            model_name=cfg.predict.model,
+            model_config=model_config,
             csv_path=cfg.predict.csv_path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
-            model_config_map=model_config_map,
             window_size=cfg.dataloader.window_size,
             num_workers=cfg.predict.num_workers,
             spect_key=cfg.spect_params.spect_key,

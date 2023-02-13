@@ -7,7 +7,7 @@ import vak.paths
 import vak.core.train
 
 
-def train_output_matches_expected(cfg, model_config_map, results_path):
+def assert_train_output_matches_expected(cfg, model_name, results_path):
     assert results_path.joinpath("labelmap.json").exists()
 
     if cfg.train.normalize_spectrograms or cfg.train.spect_scaler_path:
@@ -15,22 +15,19 @@ def train_output_matches_expected(cfg, model_config_map, results_path):
     else:
         assert not results_path.joinpath("StandardizeSpect").exists()
 
-    for model_name in model_config_map.keys():
-        model_path = results_path.joinpath(model_name)
-        assert model_path.exists()
+    model_path = results_path.joinpath(model_name)
+    assert model_path.exists()
 
-        tensorboard_log = sorted(
-            model_path.glob(f"lightning_logs/**/*events*")
-        )
-        assert len(tensorboard_log) == 1
+    tensorboard_log = sorted(
+        model_path.glob(f"lightning_logs/**/*events*")
+    )
+    assert len(tensorboard_log) == 1
 
-        checkpoints_path = model_path.joinpath("checkpoints")
-        assert checkpoints_path.exists()
-        assert checkpoints_path.joinpath("checkpoint.pt").exists()
-        if cfg.train.val_step is not None:
-            assert checkpoints_path.joinpath("max-val-acc-checkpoint.pt").exists()
-
-    return True
+    checkpoints_path = model_path.joinpath("checkpoints")
+    assert checkpoints_path.exists()
+    assert checkpoints_path.joinpath("checkpoint.pt").exists()
+    if cfg.train.val_step is not None:
+        assert checkpoints_path.joinpath("max-val-acc-checkpoint.pt").exists()
 
 
 @pytest.mark.parametrize(
@@ -59,10 +56,11 @@ def test_train(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     vak.core.train(
-        model_config_map,
+        cfg.train.model,
+        model_config,
         cfg.train.csv_path,
         cfg.dataloader.window_size,
         cfg.train.batch_size,
@@ -80,7 +78,7 @@ def test_train(
         device=cfg.train.device,
     )
 
-    assert train_output_matches_expected(cfg, model_config_map, results_path)
+    assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
 
 
 @pytest.mark.parametrize(
@@ -109,10 +107,11 @@ def test_continue_training(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     vak.core.train(
-        model_config_map=model_config_map,
+        model_name=cfg.train.model,
+        model_config=model_config,
         csv_path=cfg.train.csv_path,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.train.batch_size,
@@ -131,7 +130,7 @@ def test_continue_training(
         device=cfg.train.device,
     )
 
-    assert train_output_matches_expected(cfg, model_config_map, results_path)
+    assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
 
 
 @pytest.mark.parametrize(
@@ -163,13 +162,14 @@ def test_train_raises_file_not_found(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):
         vak.core.train(
-            model_config_map=model_config_map,
+            model_name=cfg.train.model,
+            model_config=model_config,
             csv_path=cfg.train.csv_path,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
@@ -210,14 +210,15 @@ def test_train_raises_not_a_directory(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     # mock behavior of cli.train, building `results_path` from config option `root_results_dir`
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
         vak.core.train(
-            model_config_map=model_config_map,
+            model_name=cfg.train.model,
+            model_config=model_config,
             csv_path=cfg.train.csv_path,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
@@ -264,13 +265,14 @@ def test_both_labelset_and_labelmap_raises(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.train.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     with pytest.raises(ValueError):
         vak.core.train(
-            model_config_map=model_config_map,
+            model_name=cfg.train.model,
+            model_config=model_config,
             csv_path=cfg.train.csv_path,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,

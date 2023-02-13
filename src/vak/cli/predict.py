@@ -38,7 +38,8 @@ def predict(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(cfg.prep.output_dir))
 
-    model_config_map = config.models.map_from_path(toml_path, cfg.predict.models)
+    model_name = cfg.predict.model
+    model_config = config.model.config_from_toml_path(toml_path, model_name)
 
     if cfg.predict.csv_path is None:
         raise ValueError(
@@ -48,10 +49,11 @@ def predict(toml_path):
         )
 
     core.predict(
+        model_name=model_name,
+        model_config=model_config,
         csv_path=cfg.predict.csv_path,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
-        model_config_map=model_config_map,
         window_size=cfg.dataloader.window_size,
         num_workers=cfg.predict.num_workers,
         spect_key=cfg.spect_params.spect_key,

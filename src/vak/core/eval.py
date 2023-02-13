@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from datetime import datetime
-import functools
 import json
 import logging
 
@@ -24,8 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 def eval(
+    model_name: str,
+    model_config: dict,
     csv_path,
-    model_config_map,
     checkpoint_path,
     labelmap_path,
     output_dir,
@@ -42,10 +42,14 @@ def eval(
 
     Parameters
     ----------
+    model_name : str
+        Model name, must be one of vak.models.MODEL_NAMES.
+    model_config : dict
+        Model configuration in a ``dict``,
+        as loaded from a .toml file,
+        and used by the model method ``from_config``.
     csv_path : str, pathlib.Path
         path to where dataset was saved as a csv.
-    model_config_map : dict
-        where each key-value pair is model name : dict of config parameters
     checkpoint_path : str, pathlib.Path
         path to directory with checkpoint files saved by Torch, to reload model
     output_dir : str, pathlib.Path
@@ -183,56 +187,59 @@ def eval(
     else:
         post_tfm = None
 
-    models_map = models.from_model_config_map(
-        model_config_map, num_classes=len(labelmap), input_shape=input_shape, labelmap=labelmap
+    model = models.get(
+        model_name,
+        model_config,
+        num_classes=len(labelmap),
+        input_shape=input_shape,
+        labelmap=labelmap,
     )
 
-    for model_name, model in models_map.items():
-        logger.info(f"running evaluation for model: {model_name}")
+    logger.info(f"running evaluation for model: {model_name}")
 
-        model.load_state_dict_from_path(checkpoint_path)
+    model.load_state_dict_from_path(checkpoint_path)
 
-        if device == 'cuda':
-            accelerator = 'gpu'
-        else:
-            accelerator = None
+    if device == 'cuda':
+        accelerator = 'gpu'
+    else:
+        accelerator = None
 
-        trainer_logger = lightning.loggers.TensorBoardLogger(
-            save_dir=output_dir
-        )
-        trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
-        # TODO: check for hasattr(model, test_step) and if so run test
-        # below, [0] because validate returns list of dicts, length of no. of val loaders
-        metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
-        metric_vals = {f'avg_{k}': v for k, v in metric_vals.items()}
-        for metric_name, metric_val in metric_vals.items():
-            if metric_name.startswith('avg_'):
-                logger.info(
-                    f'{metric_name}: {metric_val:0.5f}'
-                )
+    trainer_logger = lightning.loggers.TensorBoardLogger(
+        save_dir=output_dir
+    )
+    trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
+    # TODO: check for hasattr(model, test_step) and if so run test
+    # below, [0] because validate returns list of dicts, length of no. of val loaders
+    metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
+    metric_vals = {f'avg_{k}': v for k, v in metric_vals.items()}
+    for metric_name, metric_val in metric_vals.items():
+        if metric_name.startswith('avg_'):
+            logger.info(
+                f'{metric_name}: {metric_val:0.5f}'
+            )
 
-        # create a "DataFrame" with just one row which we will save as a csv;
-        # the idea is to be able to concatenate csvs from multiple runs of eval
-        row = OrderedDict(
-            [
-                ("model_name", model_name),
-                ("checkpoint_path", checkpoint_path),
-                ("labelmap_path", labelmap_path),
-                ("spect_scaler_path", spect_scaler_path),
-                ("csv_path", csv_path),
-            ]
-        )
-        # TODO: is this still necessary after switching to Lightning? Stop saying "average"?
-        # order metrics by name to be extra sure they will be consistent across runs
-        row.update(
-            sorted([(k, v) for k, v in metric_vals.items() if k.startswith("avg_")])
-        )
+    # create a "DataFrame" with just one row which we will save as a csv;
+    # the idea is to be able to concatenate csvs from multiple runs of eval
+    row = OrderedDict(
+        [
+            ("model_name", model_name),
+            ("checkpoint_path", checkpoint_path),
+            ("labelmap_path", labelmap_path),
+            ("spect_scaler_path", spect_scaler_path),
+            ("csv_path", csv_path),
+        ]
+    )
+    # TODO: is this still necessary after switching to Lightning? Stop saying "average"?
+    # order metrics by name to be extra sure they will be consistent across runs
+    row.update(
+        sorted([(k, v) for k, v in metric_vals.items() if k.startswith("avg_")])
+    )
 
-        # pass index into dataframe, needed when using all scalar values (a single row)
-        # throw away index below when saving to avoid extra column
-        eval_df = pd.DataFrame(row, index=[0])
-        eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
-        logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
-        eval_df.to_csv(
-            eval_csv_path, index=False
-        )  # index is False to avoid having "Unnamed: 0" column when loading
+    # pass index into dataframe, needed when using all scalar values (a single row)
+    # throw away index below when saving to avoid extra column
+    eval_df = pd.DataFrame(row, index=[0])
+    eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
+    logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
+    eval_df.to_csv(
+        eval_csv_path, index=False
+    )  # index is False to avoid having "Unnamed: 0" column when loading

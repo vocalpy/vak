@@ -151,10 +151,10 @@ RESULTS_DIR = f'{GENERATED_TEST_DATA_DIR}results/'
 
 PREP_CI = sorted(pathlib.Path(PREP_DIR).glob('*/*/teenytweetynet'))
 RESULTS_CI = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/teenytweetynet'))
-GENERATED_TEST_DATA_CI_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-0.x.ci.tar.gz'
+GENERATED_TEST_DATA_CI_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-1.x.ci.tar.gz'
 GENERATED_TEST_DATA_CI_DIRS = [CONFIGS_DIR] + PREP_CI + RESULTS_CI
 
-GENERATED_TEST_DATA_ALL_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-0.x.tar.gz'
+GENERATED_TEST_DATA_ALL_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-1.x.tar.gz'
 GENERATED_TEST_DATA_ALL_DIRS = [CONFIGS_DIR, PREP_DIR, RESULTS_DIR]
 
 
@@ -196,7 +196,7 @@ def test_data_download_generated_all(session) -> None:
     )
 
 
-GENERATED_TEST_DATA_CI_URL = 'https://osf.io/wye5u/download'
+GENERATED_TEST_DATA_CI_URL = 'https://osf.io/un2zs/download'
 
 
 @nox.session(name='test-data-download-generated-ci')

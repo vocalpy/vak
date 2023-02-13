@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 # TODO: add post_tfm_kwargs here
 def learning_curve(
-    model_config_map,
+    model_name: str,
+    model_config: dict,
     train_set_durs,
     num_replicates,
     csv_path,
@@ -43,13 +44,20 @@ def learning_curve(
     patience=None,
     device=None,
 ):
-    """generate learning curve, by training models on training sets across a
-    range of sizes and then measure accuracy of those models on a test set.
+    """Generate a learning curve.
+
+    Trains a class of model with a range of dataset sizes,
+    and then evaluates each trained model
+    with a test set that is held constant (unlike the training sets).
 
     Parameters
     ----------
-    model_config_map : dict
-        where each key-value pair is model name : dict of config parameters
+    model_name : str
+        Model name, must be one of vak.models.MODEL_NAMES.
+    model_config : dict
+        Model configuration in a ``dict``,
+        as loaded from a .toml file,
+        and used by the model method ``from_config``.
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
         to create a learning curve, e.g. [5, 10, 15, 20].
@@ -252,7 +260,8 @@ def learning_curve(
                 )
 
             train(
-                model_config_map,
+                model_name,
+                model_config,
                 this_train_dur_this_replicate_csv_path,
                 window_size,
                 batch_size,
@@ -272,71 +281,68 @@ def learning_curve(
             )
 
             logger.info(
-                f"Evaluating models from replicate {replicate_num} "
+                f"Evaluating model from replicate {replicate_num} "
                 f"using dataset from .csv file: {this_train_dur_this_replicate_results_path}",
             )
-            for model_name in model_config_map.keys():
-                logger.info(
-                    f"Evaluating model: {model_name}"
-                )
-                results_model_root = (
-                    this_train_dur_this_replicate_results_path.joinpath(model_name)
-                )
-                ckpt_root = results_model_root.joinpath("checkpoints")
-                ckpt_paths = sorted(ckpt_root.glob("*.pt"))
-                if any(["max-val-acc" in str(ckpt_path) for ckpt_path in ckpt_paths]):
-                    ckpt_paths = [
-                        ckpt_path
-                        for ckpt_path in ckpt_paths
-                        if "max-val-acc" in str(ckpt_path)
-                    ]
-                    if len(ckpt_paths) != 1:
-                        raise ValueError(
-                            f"did not find a single max-val-acc checkpoint path, instead found:\n{ckpt_paths}"
-                        )
-                    ckpt_path = ckpt_paths[0]
-                else:
-                    if len(ckpt_paths) != 1:
-                        raise ValueError(
-                            f"did not find a single checkpoint path, instead found:\n{ckpt_paths}"
-                        )
-                    ckpt_path = ckpt_paths[0]
-                logger.info(
-                    f"Using checkpoint: {ckpt_path}"
-                )
-                labelmap_path = this_train_dur_this_replicate_results_path.joinpath(
-                    "labelmap.json"
-                )
-                logger.info(
-                    f"Using labelmap: {labelmap_path}"
-                )
-                if normalize_spectrograms:
-                    spect_scaler_path = (
-                        this_train_dur_this_replicate_results_path.joinpath(
-                            "StandardizeSpect"
-                        )
+            results_model_root = (
+                this_train_dur_this_replicate_results_path.joinpath(model_name)
+            )
+            ckpt_root = results_model_root.joinpath("checkpoints")
+            ckpt_paths = sorted(ckpt_root.glob("*.pt"))
+            if any(["max-val-acc" in str(ckpt_path) for ckpt_path in ckpt_paths]):
+                ckpt_paths = [
+                    ckpt_path
+                    for ckpt_path in ckpt_paths
+                    if "max-val-acc" in str(ckpt_path)
+                ]
+                if len(ckpt_paths) != 1:
+                    raise ValueError(
+                        f"did not find a single max-val-acc checkpoint path, instead found:\n{ckpt_paths}"
                     )
-                    logger.info(
-                        f"Using spect scaler to normalize: {spect_scaler_path}",
+                ckpt_path = ckpt_paths[0]
+            else:
+                if len(ckpt_paths) != 1:
+                    raise ValueError(
+                        f"did not find a single checkpoint path, instead found:\n{ckpt_paths}"
                     )
-                else:
-                    spect_scaler_path = None
+                ckpt_path = ckpt_paths[0]
+            logger.info(
+                f"Using checkpoint: {ckpt_path}"
+            )
+            labelmap_path = this_train_dur_this_replicate_results_path.joinpath(
+                "labelmap.json"
+            )
+            logger.info(
+                f"Using labelmap: {labelmap_path}"
+            )
+            if normalize_spectrograms:
+                spect_scaler_path = (
+                    this_train_dur_this_replicate_results_path.joinpath(
+                        "StandardizeSpect"
+                    )
+                )
+                logger.info(
+                    f"Using spect scaler to normalize: {spect_scaler_path}",
+                )
+            else:
+                spect_scaler_path = None
 
-                eval(
-                    this_train_dur_this_replicate_csv_path,
-                    model_config_map,
-                    checkpoint_path=ckpt_path,
-                    labelmap_path=labelmap_path,
-                    output_dir=this_train_dur_this_replicate_results_path,
-                    window_size=window_size,
-                    num_workers=num_workers,
-                    split="test",
-                    spect_scaler_path=spect_scaler_path,
-                    post_tfm_kwargs=post_tfm_kwargs,
-                    spect_key=spect_key,
-                    timebins_key=timebins_key,
-                    device=device,
-                )
+            eval(
+                model_name,
+                model_config,
+                this_train_dur_this_replicate_csv_path,
+                checkpoint_path=ckpt_path,
+                labelmap_path=labelmap_path,
+                output_dir=this_train_dur_this_replicate_results_path,
+                window_size=window_size,
+                num_workers=num_workers,
+                split="test",
+                spect_scaler_path=spect_scaler_path,
+                post_tfm_kwargs=post_tfm_kwargs,
+                spect_key=spect_key,
+                timebins_key=timebins_key,
+                device=device,
+            )
 
     # ---- make a csv for analysis -------------------------------------------------------------------------------------
     reg_exp_num = re.compile(
