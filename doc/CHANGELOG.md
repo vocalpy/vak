@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#625](https://github.com/NickleDave/vak/pull/625).
   Fixes [#538](https://github.com/NickleDave/vak/issues/538).
 
+### Fixed
+- Fix functionality to evaluate model with and without
+  post-processing transform that was added in 
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixed in [#626](https://github.com/NickleDave/vak/pull/626).
 
 ## 0.8.1 -- 2023-03-02
 ### Fixed
@@ -43,7 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Bug introduced in
   [#621](https://github.com/NickleDave/vak/pull/621).
   Fixes [#634](https://github.com/NickleDave/vak/issues/634).
-
 
 ## 0.8.0 -- 2023-02-09
 ### Added
@@ -75,7 +79,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   evaluate model performance with and without them
   [#621](https://github.com/NickleDave/vak/pull/621).
   Fixes [#537](https://github.com/NickleDave/vak/issues/537).
-
 
 ## 0.7.0 -- 2022-11-23
 ### Added
@@ -126,8 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor and speed up logic for determining whether a 
   dataset with sequence annotations has unlabeled segments 
   that should be assigned a "background" label
- [#559](https://github.com/NickleDave/vak/pull/559).
- Fixes [#243](https://github.com/NickleDave/vak/issues/243).
+  [#559](https://github.com/NickleDave/vak/pull/559).
+  Fixes [#243](https://github.com/NickleDave/vak/issues/243).
   - Adds a new sub-sub-package, `datasets.seq`
     with a `validators` module, which is where the 
     re-written `has_unlabeled` function now lives. 
@@ -141,8 +144,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so that the purpose of the functions is clearer, 
   and add clearer error messages with links to documentation 
   about file naming conventions 
- [#566](https://github.com/NickleDave/vak/pull/566).
- Fixes [#525](https://github.com/NickleDave/vak/issues/525).
+  [#566](https://github.com/NickleDave/vak/pull/566).
+  Fixes [#525](https://github.com/NickleDave/vak/issues/525).
 - Revise "autoannotate" tutorial to use .wav audio and .csv 
   annotation files from new release of Bengalese Finch Song 
   Repository, and to suggest that Windows users unpack 
