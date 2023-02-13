@@ -1,6 +1,7 @@
 """Function that gets an instance of a model,
 given its name and a configuration as a dict."""
 from __future__ import annotations
+from typing import Callable
 
 from ._api import MODEL_NAMES
 
@@ -10,7 +11,8 @@ def get(name: str,
         # TODO: move num_classes / input_shape into model configs
         num_classes: int,
         input_shape: tuple[int, int, int],
-        labelmap: dict):
+        labelmap: dict,
+        post_tfm: Callable | None = None):
     """Get a model instance, given its name and
     a configuration as a ``dict``.
 
@@ -34,8 +36,7 @@ def get(name: str,
         ``vak.transforms.labeled_timebins.ToLabels`` (that does not
         apply any post-processing clean-ups).
         To be valid, ``post_tfm`` must be either an instance of
-        ``vak.transforms.labeled_timebins.ToLabels`` or
-        ``vak.transforms.labeled_timebins.ToLabelsWithPostprocessing``.
+        ``vak.transforms.labeled_timebins.PostProcess``.
 
     Returns
     -------
@@ -59,6 +60,6 @@ def get(name: str,
             f"Invalid model name: '{name}'.\nValid model names are: {MODEL_NAMES}"
         ) from e
 
-    model = model_class.from_config(config=config, labelmap=labelmap)
+    model = model_class.from_config(config=config, labelmap=labelmap, post_tfm=post_tfm)
 
     return model
