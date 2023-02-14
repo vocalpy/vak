@@ -26,7 +26,7 @@ def build(session: nox.Session) -> None:
     session.run("flit", "build")
 
 
-@nox.session
+@nox.session(python="3.10.7")
 def dev(session: nox.Session) -> None:
     """
     Sets up a python development environment for the project.
@@ -119,7 +119,7 @@ def test_data_download_source(session) -> None:
 TEST_DATA_GENERATE_SCRIPT = './tests/scripts/generate_data_for_tests.py'
 
 
-@nox.session(name='test-data-generate')
+@nox.session(name='test-data-generate', python="3.10")
 def test_data_generate(session) -> None:
     """
     Produced 'generated' test data, by running TEST_DATA_GENERATE_SCRIPT on 'source' test data.
