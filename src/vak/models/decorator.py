@@ -9,6 +9,7 @@ The subclass can then be instantiated
 and have all model methods.
 """
 from __future__ import annotations
+import functools
 from typing import Type
 
 from .base import Model
@@ -80,6 +81,7 @@ def model(family: Type[Model]):
         attributes.update({'definition': definition})
         subclass_name = definition.__name__
         subclass = type(subclass_name, (family,), attributes)
+        subclass.__module__ = definition.__module__
 
         return subclass
 
