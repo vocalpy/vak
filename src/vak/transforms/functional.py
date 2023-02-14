@@ -36,6 +36,66 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     return tfm
 
 
+def is_spect(tensor: torch.Tensor):
+    return tensor.ndim >= 2
+
+
+def validate_spect(tensor: torch.Tensor):
+    if not is_spect(tensor):
+        raise ValueError(
+            f'Expected a spectrogram with 2 or more dimensions, but spect.ndim was {tensor.ndim}'
+        )
+
+
+def get_spect_size(spect: torch.Tensor) -> tuple[int, int]:
+    """Get size of spectrogram.
+
+    Parameters
+    ----------
+    spect : torch.Tensor
+        A spectrogram loaded into a ``torch.Tensor``.
+
+    Returns
+    -------
+    size : tuple
+        Of int, the number of frequency bins ("height") and time bins ("width")
+    """
+    validate_spect(spect)
+    return spect.shape[-2], spect.shape[-1]
+
+
+def random_window(spect: torch.Tensor, window_size: int) -> torch.Tensor:
+    """Return a random window from a spectrogram,
+    where the window size is specified in number of time bins.
+
+    Parameters
+    ----------
+    spect : torch.Tensor
+        A spectrogram loaded into a ``torch.Tensor``.
+        Should have at least two dimensions (width, height);
+        can optionally have "channels" as the first dimension
+        (if treating as an image).
+    window_size : int
+        Size of random window taken from spectrogram.
+
+    Returns
+    -------
+    window : torch.Tensor
+        Random window from spectrogram of size ``window_size``.
+    """
+    f, t = get_spect_size(spect)
+
+    if t + 1 < window_size:
+        raise ValueError(f"Required window size, {window_size}, is larger then "
+                         f"the number of time bins in the spectrogram, {t}")
+
+    if t == window_size:
+        return spect
+
+    start_ind = torch.randint(0, t - window_size + 1, size=(1,)).item()
+    return spect[..., start_ind:start_ind + window_size]
+
+
 def pad_to_window(arr, window_size, padval=0.0, return_padding_mask=True):
     """pad a 1d or 2d array so that it can be reshaped
     into consecutive windows of specified size
