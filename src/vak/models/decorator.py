@@ -9,7 +9,6 @@ The subclass can then be instantiated
 and have all model methods.
 """
 from __future__ import annotations
-import functools
 from typing import Type
 
 from .base import Model
