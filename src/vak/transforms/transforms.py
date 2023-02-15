@@ -174,8 +174,12 @@ class RandomWindow:
     def __init__(self, window_size: int):
         self.window_size = window_size
 
-    def __call__(self, spect: torch.Tensor) -> torch.Tensor:
-        return F.random_window(spect, self.window_size)
+    def __call__(
+            self,
+            spect: torch.Tensor,
+            lbl_tb: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        return F.random_window(spect, lbl_tb, self.window_size)
 
 
 class PadToWindow:
