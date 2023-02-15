@@ -120,7 +120,7 @@ class WindowedFrameClassificationModel(base.Model):
             Scalar loss value computed by
             the loss function, ``self.loss``.
         """
-        x, y = batch[0], batch[1]
+        x, y = batch["spect"], batch["annot"]
         y_pred = self.network(x)
         loss = self.loss(y_pred, y)
         return loss
@@ -144,7 +144,7 @@ class WindowedFrameClassificationModel(base.Model):
         """
         # TODO: rename "source" -> "spect"
         # TODO: a sample can have "spect", "audio", "annot", optionally other things ("padding"?)
-        x, y = batch["source"], batch["annot"]
+        x, y = batch["spect"], batch["annot"]
         # remove "batch" dimension added by collate_fn to x
         # we keep for y because loss still expects the first dimension to be batch
         # TODO: fix this weirdness. Diff't collate_fn?
@@ -232,7 +232,7 @@ class WindowedFrameClassificationModel(base.Model):
             containing the spectrogram
             for which a prediction was generated.
         """
-        x, spect_path = batch["source"].to(self.device), batch["spect_path"]
+        x, spect_path = batch["spect"].to(self.device), batch["spect_path"]
         if isinstance(spect_path, list) and len(spect_path) == 1:
             spect_path = spect_path[0]
         if x.ndim == 5:
