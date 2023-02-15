@@ -65,7 +65,11 @@ def get_spect_size(spect: torch.Tensor) -> tuple[int, int]:
     return spect.shape[-2], spect.shape[-1]
 
 
-def random_window(spect: torch.Tensor, window_size: int) -> torch.Tensor:
+def random_window(
+        spect: torch.Tensor,
+        lbl_tb: torch.Tensor,
+        window_size: int
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Return a random window from a spectrogram,
     where the window size is specified in number of time bins.
 
@@ -90,11 +94,17 @@ def random_window(spect: torch.Tensor, window_size: int) -> torch.Tensor:
         raise ValueError(f"Required window size, {window_size}, is larger then "
                          f"the number of time bins in the spectrogram, {t}")
 
+    if not spect.shape[-1] != lbl_tb.shape[-1]:
+        raise ValueError(
+            'Parameters spect and lbl_tb are not equal in last dimension. '
+            f'spect shape: {spect.shape}, lbl_tb shape: {lbl_tb.shape}'
+        )
+
     if t == window_size:
-        return spect
+        return spect, lbl_tb
 
     start_ind = torch.randint(0, t - window_size + 1, size=(1,)).item()
-    return spect[..., start_ind:start_ind + window_size]
+    return spect[..., start_ind:start_ind + window_size], lbl_tb[..., start_ind:start_ind + window_size]
 
 
 def pad_to_window(arr, window_size, padval=0.0, return_padding_mask=True):
