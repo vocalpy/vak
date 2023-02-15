@@ -278,9 +278,9 @@ def train(
                                           spect_key=spect_key,
                                           timebins_key=timebins_key)
 
-    logger.info(
-        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration()}",
-    )
+#    logger.info(
+#        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration()}",
+#    )
     train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,
         shuffle=shuffle,
