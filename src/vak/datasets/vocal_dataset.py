@@ -67,7 +67,7 @@ class VocalDataset:
         tmp_item = self.__getitem__(tmp_x_ind)
         # used by vak functions that need to determine size of input,
         # e.g. when initializing a neural network model
-        self.shape = tmp_item["source"].shape
+        self.shape = tmp_item["spect"].shape
 
     def __getitem__(self, idx):
         spect_path = self.spect_paths[idx]
