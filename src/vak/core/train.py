@@ -267,21 +267,17 @@ def train(
             "will not standardize spectrograms",
             )
         spect_standardizer = None
-    transform, target_transform = transforms.get_defaults("train", spect_standardizer)
+    transform = transforms.get_defaults("train",
+                                        spect_standardizer=spect_standardizer,
+                                        window_size=window_size)
 
-    train_dataset = WindowDataset.from_csv(
-        csv_path=csv_path,
-        x_inds=x_inds,
-        spect_id_vector=spect_id_vector,
-        spect_inds_vector=spect_inds_vector,
-        split="train",
-        labelmap=labelmap,
-        window_size=window_size,
-        spect_key=spect_key,
-        timebins_key=timebins_key,
-        transform=transform,
-        target_transform=target_transform,
-    )
+    train_dataset = VocalDataset.from_csv(csv_path=csv_path,
+                                          split='train',
+                                          labelmap=labelmap,
+                                          item_transform=transform,
+                                          spect_key=spect_key,
+                                          timebins_key=timebins_key)
+
     logger.info(
         f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration()}",
     )
