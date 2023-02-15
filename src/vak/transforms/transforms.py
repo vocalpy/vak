@@ -1,13 +1,17 @@
 import numpy as np
 
+import torch
+
 from .. import files
 from ..validators import column_or_1d
 
 from . import functional as F
 
+
 __all__ = [
     "AddChannel",
     "PadToWindow",
+    "RandomWindow",
     "StandardizeSpect",
     "ToFloatTensor",
     "ToLongTensor",
@@ -164,6 +168,14 @@ class StandardizeSpect:
     def __repr__(self):
         args = f"(mean_freqs={self.mean_freqs}, std_freqs={self.std_freqs}, non_zero_std={self.non_zero_std})"
         return self.__class__.__name__ + args
+
+
+class RandomWindow:
+    def __init__(self, window_size: int):
+        self.window_size = window_size
+
+    def __call__(self, spect: torch.Tensor) -> torch.Tensor:
+        return F.random_window(spect, self.window_size)
 
 
 class PadToWindow:
