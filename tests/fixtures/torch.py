@@ -24,3 +24,12 @@ TEST_DTYPES: Dict[str, torch.dtype] = get_test_dtypes()
 @pytest.fixture()
 def dtype(dtype_name) -> torch.dtype:
     return TEST_DTYPES[dtype_name]
+
+
+TORCH_SEED = 42
+
+
+@pytest.fixture()
+def torch_seed():
+    """Value for seed used in tests"""
+    return TORCH_SEED
