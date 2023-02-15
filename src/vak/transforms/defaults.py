@@ -140,7 +140,7 @@ class EvalItemTransform:
         annot = self.annot_transform(annot)
 
         item = {
-            "source": source,
+            "spect": source,
             "annot": annot,
         }
 
