@@ -8,50 +8,81 @@ coupling the VocalDataset __getitem__ implementation to the transforms
 needed for specific neural network models, e.g., whether the returned
 output includes a mask to crop off padding that was added.
 """
+from __future__ import annotations
+from typing import Optional
+
+import torch
 import torchvision.transforms
 
 from . import transforms as vak_transforms
 
 
-class TrainItemTransform:
-    """default transform used when training models"""
+class DefaultSpectAnnotTransform:
+    """Default transform for a VocalDataset that returns
+    an item consisting of a spectrogram paired with its annotations.
+    """
 
     def __init__(
         self,
-        spect_standardizer=None,
+        spect_standardizer: Optional[vak_transforms.StandardizeSpect] = None,
+        channel_dim: int = 0,
+        item_transform=None,
     ):
         if spect_standardizer is not None:
-            if isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
-                source_transform = [spect_standardizer]
-            else:
+            if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
                 raise TypeError(
                     f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
                     "Should be an instance of vak.transforms.StandardizeSpect"
                 )
+            transform_list = [spect_standardizer]
         else:
-            source_transform = []
+            transform_list = []
+        self.spect_standardizer = spect_standardizer
 
-        source_transform.extend(
+        transform_list.extend(
             [
                 vak_transforms.ToFloatTensor(),
-                vak_transforms.AddChannel(),
+                vak_transforms.AddChannel(channel_dim=channel_dim),
             ]
         )
-        self.source_transform = torchvision.transforms.Compose(source_transform)
-        self.annot_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, source, annot, spect_path=None):
-        source = self.source_transform(source)
+        self.source_transform = torchvision.transforms.Compose(
+            transform_list
+        )
+
+        # TODO: make annot in __call__ be a crowsetta.Annotation and convert to lbl_tb
+        # TODO: and
+        self.annot_transform = vak_transforms.ToLongTensor()
+        self.item_transform = item_transform
+
+    def __call__(self, spect: torch.Tensor, annot: torch.Tensor, spect_path="None"):
+        source = self.source_transform(spect)
         annot = self.annot_transform(annot)
+
+        if self.item_transform is not None:
+            source, annot = self.item_transform(source, annot)
+
         item = {
-            "source": source,
+            "spect": source,
             "annot": annot,
         }
 
-        if spect_path is not None:
-            item["spect_path"] = spect_path
+        if spect_path:
+            item['spect_path'] = spect_path
 
         return item
+
+
+class TrainItemTransform(DefaultSpectAnnotTransform):
+    """default transform used when training models"""
+    def __init__(
+        self,
+        window_size: int,
+        spect_standardizer=None,
+        channel_dim: int = 0,
+    ):
+        item_transform = vak_transforms.RandomWindow(window_size=window_size)
+        super().__init__(spect_standardizer, channel_dim, item_transform)
 
 
 class EvalItemTransform:
@@ -230,21 +261,16 @@ def get_defaults(
             )
 
     if mode == "train":
-        if spect_standardizer is not None:
-            transform = [spect_standardizer]
-        else:
-            transform = []
+        if window_size is None:
+            raise ValueError(
+                'window_size is required for train but was None'
+            )
 
-        transform.extend(
-            [
-                vak_transforms.ToFloatTensor(),
-                vak_transforms.AddChannel(),
-            ]
+        item_transform = TrainItemTransform(
+            spect_standardizer=spect_standardizer,
+            window_size=window_size
         )
-        transform = torchvision.transforms.Compose(transform)
-
-        target_transform = vak_transforms.ToLongTensor()
-        return transform, target_transform
+        return item_transform
 
     elif mode == "predict":
         item_transform = PredictItemTransform(
