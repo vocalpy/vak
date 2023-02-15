@@ -96,7 +96,7 @@ def random_window(
         raise ValueError(f"Required window size, {window_size}, is larger then "
                          f"the number of time bins in the spectrogram, {t}")
 
-    if not spect.shape[-1] != lbl_tb.shape[-1]:
+    if spect.shape[-1] != lbl_tb.shape[-1]:
         raise ValueError(
             'Parameters spect and lbl_tb are not equal in last dimension. '
             f'spect shape: {spect.shape}, lbl_tb shape: {lbl_tb.shape}'
