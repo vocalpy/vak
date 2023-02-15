@@ -85,8 +85,10 @@ def random_window(
 
     Returns
     -------
-    window : torch.Tensor
+    spect_window : torch.Tensor
         Random window from spectrogram of size ``window_size``.
+    lbl_tb_window : torch.Tensor
+        Random window from ``lbl_tb``, taken from same index used for ``spect``.
     """
     f, t = get_spect_size(spect)
 
