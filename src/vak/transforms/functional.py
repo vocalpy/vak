@@ -3,6 +3,7 @@ import torch
 
 __all__ = [
     "pad_to_window",
+    "random_window",
     "standardize_spect",
     "to_floattensor",
     "to_longtensor",
