@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unused/incomplete functionality for training multiple models
   [#625](https://github.com/NickleDave/vak/pull/625).
   Fixes [#538](https://github.com/NickleDave/vak/issues/538).
+- Remove `engine` with `Model` class
+  [#627](https://github.com/NickleDave/vak/pull/627).
+  No longer used after switching to Lightning as backend in 
+
 
 ### Fixed
 - Fix functionality to evaluate model with and without
