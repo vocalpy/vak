@@ -15,7 +15,6 @@ from .. import (
     transforms,
     validators
 )
-from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
 from ..device import get_default as get_default_device
 from ..io import dataframe
