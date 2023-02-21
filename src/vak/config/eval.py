@@ -127,7 +127,7 @@ class EvalConfig:
     post_tfm_kwargs = attr.ib(
         validator=validators.optional(are_valid_post_tfm_kwargs),
         converter=converters.optional(convert_post_tfm_kwargs),
-        default={},  # empty dict so we can pass into transform with **kwargs expansion
+        default=None,
     )
 
     # optional, data loader
