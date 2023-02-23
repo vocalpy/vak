@@ -2,6 +2,7 @@ import json
 import logging
 import pathlib
 import shutil
+import datetime
 
 import joblib
 
@@ -361,8 +362,20 @@ def train(
         default_callback_kwargs=default_callback_kwargs,
         device=device,
     )
+    train_time_start = datetime.datetime.now()
+    logger.info(
+        f"Training start time: {train_time_start.isoformat()}"
+    )
     trainer.fit(
         model=model,
         train_dataloaders=train_loader,
         val_dataloaders=val_loader,
+    )
+    train_time_stop = datetime.datetime.now()
+    logger.info(
+        f"Training stop time: {train_time_stop.isoformat()}"
+    )
+    elapsed = train_time_stop - train_time_start
+    logger.info(
+        f"Elapsed training time: {elapsed}"
     )
