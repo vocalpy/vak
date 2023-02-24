@@ -90,11 +90,11 @@ def test_learncurve_previous_run_path(
     assert cli_asserts.log_file_contains_version(command="learncurve", output_path=results_path)
 
 
-def test_learning_curve_csv_path_none_raises(
+def test_learning_curve_dataset_path_none_raises(
         specific_config, tmp_path,
 ):
     """Test that cli.learncurve.learning_curve
-    raises ValueError when csv_path is None
+    raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
     """
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
@@ -108,7 +108,7 @@ def test_learning_curve_csv_path_none_raises(
         },
         {
             "section": "LEARNCURVE",
-            "option": "csv_path",
+            "option": "dataset_path",
             "value": "DELETE-OPTION"},
     ]
 
