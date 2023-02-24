@@ -136,15 +136,15 @@ TweetyNet and vak have been used in both neuroscience [^6][^7][^8] and bioacoust
 For additional background and papers that have used `vak`, 
 please see: https://vak.readthedocs.io/en/latest/reference/about.html
 
-[1] https://www.frontiersin.org/articles/10.3389/fnbeh.2021.811737/full 
-[2] https://peerj.com/articles/13152/ 
-[3] https://www.jneurosci.org/content/42/45/8514 
-[4] https://elifesciences.org/articles/63853 
-[5] https://github.com/yardencsGitHub/tweetynet
-[6] https://www.nature.com/articles/s41586-020-2397-3 
-[7] https://elifesciences.org/articles/67855
-[8] https://elifesciences.org/articles/75691
-[9] https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0278522
+[^1]: https://www.frontiersin.org/articles/10.3389/fnbeh.2021.811737/full 
+[^2]: https://peerj.com/articles/13152/ 
+[^3]: https://www.jneurosci.org/content/42/45/8514 
+[^4]: https://elifesciences.org/articles/63853 
+[^5]: https://github.com/yardencsGitHub/tweetynet
+[^6]: https://www.nature.com/articles/s41586-020-2397-3 
+[^7]: https://elifesciences.org/articles/67855
+[^8]: https://elifesciences.org/articles/75691
+[^9]: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0278522
 
 #### "Why this name, vak?"
 It has only three letters, so it is quick to type,
