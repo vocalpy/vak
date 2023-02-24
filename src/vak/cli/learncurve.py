@@ -53,9 +53,9 @@ def learning_curve(toml_path):
     model_name = cfg.learncurve.model
     model_config = config.model.config_from_toml_path(toml_path, model_name)
 
-    if cfg.learncurve.csv_path is None:
+    if cfg.learncurve.dataset_path is None:
         raise ValueError(
-            "No value is specified for 'csv_path' in this .toml config file."
+            "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
             f"please run the following command:\n'vak prep {toml_path}'"
         )
@@ -65,7 +65,7 @@ def learning_curve(toml_path):
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
-        csv_path=cfg.learncurve.csv_path,
+        dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,

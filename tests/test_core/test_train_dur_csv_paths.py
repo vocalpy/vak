@@ -114,7 +114,7 @@ def test_from_dir(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
 
-    csv_path = cfg.learncurve.csv_path
+    csv_path = cfg.learncurve.dataset_path
     dataset_df = pd.read_csv(csv_path)
     timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(dataset_df)
 
@@ -175,7 +175,7 @@ def test_from_df(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
 
-    csv_path = cfg.learncurve.csv_path
+    csv_path = cfg.learncurve.dataset_path
     dataset_df = pd.read_csv(csv_path)
     timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(dataset_df)
 

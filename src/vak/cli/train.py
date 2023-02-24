@@ -52,9 +52,9 @@ def train(toml_path):
     model_name = cfg.train.model
     model_config = config.model.config_from_toml_path(toml_path, model_name)
 
-    if cfg.train.csv_path is None:
+    if cfg.train.dataset_path is None:
         raise ValueError(
-            "No value is specified for 'csv_path' in this .toml config file."
+            "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
             f"please run the following command:\n'vak prep {toml_path}'"
         )
@@ -67,7 +67,7 @@ def train(toml_path):
     core.train(
         model_name=model_name,
         model_config=model_config,
-        csv_path=cfg.train.csv_path,
+        dataset_path=cfg.train.dataset_path,
         labelset=labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.train.batch_size,

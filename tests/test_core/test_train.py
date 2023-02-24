@@ -61,7 +61,7 @@ def test_train(
     vak.core.train(
         cfg.train.model,
         model_config,
-        cfg.train.csv_path,
+        cfg.train.dataset_path,
         cfg.dataloader.window_size,
         cfg.train.batch_size,
         cfg.train.num_epochs,
@@ -112,7 +112,7 @@ def test_continue_training(
     vak.core.train(
         model_name=cfg.train.model,
         model_config=model_config,
-        csv_path=cfg.train.csv_path,
+        dataset_path=cfg.train.dataset_path,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
@@ -138,7 +138,7 @@ def test_continue_training(
     [
         {"section": "TRAIN", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "TRAIN", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "TRAIN", "option": "csv_path", "value": '/obviously/doesnt/exist/dataset.csv'},
+        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "TRAIN", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -147,7 +147,7 @@ def test_train_raises_file_not_found(
 ):
     """Test that pre-conditions in `vak.core.train` raise FileNotFoundError
     when one of the following does not exist:
-    checkpoint_path, labelmap_path, csv_path, spect_scaler_path
+    checkpoint_path, labelmap_path, dataset_path, spect_scaler_path
     """
     options_to_change = [
         {"section": "TRAIN", "option": "device", "value": device},
@@ -170,7 +170,7 @@ def test_train_raises_file_not_found(
         vak.core.train(
             model_name=cfg.train.model,
             model_config=model_config,
-            csv_path=cfg.train.csv_path,
+            dataset_path=cfg.train.dataset_path,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
@@ -219,7 +219,7 @@ def test_train_raises_not_a_directory(
         vak.core.train(
             model_name=cfg.train.model,
             model_config=model_config,
-            csv_path=cfg.train.csv_path,
+            dataset_path=cfg.train.dataset_path,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
@@ -273,7 +273,7 @@ def test_both_labelset_and_labelmap_raises(
         vak.core.train(
             model_name=cfg.train.model,
             model_config=model_config,
-            csv_path=cfg.train.csv_path,
+            dataset_path=cfg.train.dataset_path,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,

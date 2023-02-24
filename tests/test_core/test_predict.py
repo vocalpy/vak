@@ -58,7 +58,7 @@ def test_predict(
     vak.core.predict(
         model_name=cfg.predict.model,
         model_config=model_config,
-        csv_path=cfg.predict.csv_path,
+        dataset_path=cfg.predict.dataset_path,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
         window_size=cfg.dataloader.window_size,
@@ -80,7 +80,7 @@ def test_predict(
             Path(output_dir).glob(f"*{vak.constants.NET_OUTPUT_SUFFIX}")
         )
 
-        vak_df = pd.read_csv(cfg.predict.csv_path)
+        vak_df = pd.read_csv(cfg.predict.dataset_path)
         for spect_path in vak_df.spect_path.values:
             net_output_spect_path = [
                 net_output
@@ -95,7 +95,7 @@ def test_predict(
     [
         {"section": "PREDICT", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "PREDICT", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "PREDICT", "option": "csv_path", "value": '/obviously/doesnt/exist/dataset.csv'},
+        {"section": "PREDICT", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "PREDICT", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -106,9 +106,9 @@ def test_predict_raises_file_not_found(
     device
 ):
     """Test that core.eval raises FileNotFoundError
-    when `csv_path` does not exist."""
+    when `dataset_path` does not exist."""
     output_dir = tmp_path.joinpath(
-        f"test_predict_cbin_notmat_invalid_csv_path"
+        f"test_predict_cbin_notmat_invalid_dataset_path"
     )
     output_dir.mkdir()
 
@@ -132,7 +132,7 @@ def test_predict_raises_file_not_found(
         vak.core.predict(
             model_name=cfg.predict.model,
             model_config=model_config,
-            csv_path=cfg.predict.csv_path,
+            dataset_path=cfg.predict.dataset_path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             window_size=cfg.dataloader.window_size,
@@ -174,7 +174,7 @@ def test_predict_raises_not_a_directory(
         vak.core.predict(
             model_name=cfg.predict.model,
             model_config=model_config,
-            csv_path=cfg.predict.csv_path,
+            dataset_path=cfg.predict.dataset_path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             window_size=cfg.dataloader.window_size,

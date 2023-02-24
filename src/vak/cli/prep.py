@@ -81,18 +81,18 @@ def prep(toml_path):
     """
     toml_path = Path(toml_path)
 
-    # open here because need to check for `csv_path` in this function, see #314 & #333
+    # open here because need to check for `dataset_path` in this function, see #314 & #333
     config_toml = _load_toml_from_path(toml_path)
     # ---- figure out purpose of config file from sections; will save csv path in that section -------------------------
     purpose = purpose_from_toml(config_toml, toml_path)
     if (
-        "csv_path" in config_toml[purpose.upper()]
-        and config_toml[purpose.upper()]["csv_path"] is not None
+        "dataset_path" in config_toml[purpose.upper()]
+        and config_toml[purpose.upper()]["dataset_path"] is not None
     ):
         raise ValueError(
-            f"config .toml file already has a 'csv_path' option in the '{purpose.upper()}' section, "
+            f"config .toml file already has a 'dataset_path' option in the '{purpose.upper()}' section, "
             f"and running `prep` would overwrite that value. To `prep` a new dataset, please remove "
-            f"the 'csv_path' option from the '{purpose.upper()}' section in the config file:\n{toml_path}"
+            f"the 'dataset_path' option from the '{purpose.upper()}' section in the config file:\n{toml_path}"
         )
 
     # now that we've checked that, go ahead and parse the sections we want
@@ -127,10 +127,10 @@ def prep(toml_path):
     section = purpose.upper()
     logger.info(
         f"Determined that purpose of config file is: {purpose}.\n"
-        f"Will add 'csv_path' option to '{section}' section."
+        f"Will add 'dataset_path' option to '{section}' section."
     )
 
-    vak_df, csv_path = core.prep(
+    vak_df, dataset_path = core.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -147,8 +147,8 @@ def prep(toml_path):
         test_dur=cfg.prep.test_dur,
     )
 
-    # use config and section from above to add csv_path to config.toml file
-    config_toml[section]["csv_path"] = str(csv_path)
+    # use config and section from above to add dataset_path to config.toml file
+    config_toml[section]["dataset_path"] = str(dataset_path)
 
     with toml_path.open("w") as fp:
         toml.dump(config_toml, fp)

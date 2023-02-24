@@ -14,9 +14,9 @@ import vak.io.spect
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_prep.py
-def assert_prep_output_matches_expected(csv_path, df_returned_by_prep):
-    assert Path(csv_path).exists()
-    df_from_csv_path = pd.read_csv(csv_path)
+def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
+    assert Path(dataset_path).exists()
+    df_from_dataset_path = pd.read_csv(dataset_path)
 
     for column in vak.io.spect.DF_COLUMNS:
         if column == "duration":
@@ -24,7 +24,7 @@ def assert_prep_output_matches_expected(csv_path, df_returned_by_prep):
         else:
             check_exact = True
         assert_series_equal(
-            df_from_csv_path[column],
+            df_from_dataset_path[column],
             df_returned_by_prep[column],
             check_exact=check_exact,
         )
@@ -84,7 +84,7 @@ def test_prep(
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = config_type.lower()
-    vak_df, csv_path = vak.core.prep(
+    vak_df, dataset_path = vak.core.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -100,7 +100,7 @@ def test_prep(
         test_dur=cfg.prep.test_dur,
     )
 
-    assert_prep_output_matches_expected(csv_path, vak_df)
+    assert_prep_output_matches_expected(dataset_path, vak_df)
 
 
 @pytest.mark.parametrize(
@@ -228,7 +228,7 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    vak_df, csv_path = vak.core.prep(
+    vak_df, dataset_path = vak.core.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -291,7 +291,7 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    vak_df, csv_path = vak.core.prep(
+    vak_df, dataset_path = vak.core.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,

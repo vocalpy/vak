@@ -73,7 +73,7 @@ def test_eval(
     vak.core.eval(
         model_name=cfg.eval.model,
         model_config=model_config,
-        csv_path=cfg.eval.csv_path,
+        dataset_path=cfg.eval.dataset_path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
@@ -94,7 +94,7 @@ def test_eval(
     [
         {"section": "EVAL", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "EVAL", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "EVAL", "option": "csv_path", "value": '/obviously/doesnt/exist/dataset.csv'},
+        {"section": "EVAL", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "EVAL", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -106,10 +106,10 @@ def test_eval_raises_file_not_found(
 ):
     """Test that core.eval raises FileNotFoundError
     when one of the following does not exist:
-    checkpoint_path, labelmap_path, csv_path, spect_scaler_path
+    checkpoint_path, labelmap_path, dataset_path, spect_scaler_path
     """
     output_dir = tmp_path.joinpath(
-        f"test_eval_cbin_notmat_invalid_csv_path"
+        f"test_eval_cbin_notmat_invalid_dataset_path"
     )
     output_dir.mkdir()
 
@@ -133,7 +133,7 @@ def test_eval_raises_file_not_found(
         vak.core.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
-            csv_path=cfg.eval.csv_path,
+            dataset_path=cfg.eval.dataset_path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
@@ -172,7 +172,7 @@ def test_eval_raises_not_a_directory(
         vak.core.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
-            csv_path=cfg.eval.csv_path,
+            dataset_path=cfg.eval.dataset_path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
