@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add built-in TweetyNet model
   [#605](https://github.com/NickleDave/vak/pull/605).
   Fixes [#596](https://github.com/NickleDave/vak/issues/596).
+- Add logging of training time
+  [#628](https://github.com/NickleDave/vak/pull/628).
+  Fixes [#2](https://github.com/NickleDave/vak/issues/2).
 
 ### Removed
 - Remove entry points since they are not being unused
