@@ -5,7 +5,7 @@
 
 <hr>
 
-## A neural network toolbox for animal vocalizations and bioacoustics
+## A neural network framework for animal acoustic communication and bioacoustics
 
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
@@ -16,7 +16,12 @@
 [![Build Status](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)
 [![codecov](https://codecov.io/gh/vocalpy/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/vocalpy/vak)
 
-`vak` is a Python library for bioacoustic researchers studying animal vocalizations such as birdsong, bat calls, and even human speech.
+`vak` is a Python framework for neural network models, 
+designed for researchers studying animal acoustic communication and bioacoustics.
+Many people will be familiar with work in this area on 
+animal vocalizations such as birdsong, bat calls, and even human speech.
+Neural network models have provided a powerful new tool for researchers in this area, 
+as in many other fields.
 
 The library has two main goals:  
 1. Make it easier for researchers studying animal vocalizations to 
@@ -24,7 +29,8 @@ apply neural network algorithms to their data
 2. Provide a common framework that will facilitate benchmarking neural 
 network algorithms on tasks related to animal vocalizations
 
-Currently, the main use is an automatic *annotation* of vocalizations and other animal sounds. By *annotation*, we mean something like the example of annotated birdsong shown below:
+Currently, the main use is an automatic *annotation* of vocalizations and other animal sounds. 
+By *annotation*, we mean something like the example of annotated birdsong shown below:
 <p align="center">
 <img src="https://github.com/vocalpy/vak/blob/main/doc/images/annotation-example.png?raw=True" 
 alt="spectrogram of birdsong with syllables annotated" width="400">
@@ -36,6 +42,11 @@ and use the trained models to predict annotations for new files.
 
 We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).  
 Please see the eLife article here: https://elifesciences.org/articles/63853  
+
+For more background on animal acoustic communication and deep learning, 
+and how these intersect with related fields like 
+computational ethology and neuroscience,
+please see the ["About"](#About) section below.
 
 ### Installation
 Short version:
@@ -106,7 +117,34 @@ If you use vak for a publication, please cite its DOI:
 is [here](./LICENSE).
 
 ### About
-For more on the history of `vak` please see: https://vak.readthedocs.io/en/latest/reference/about.html
+
+Are humans unique among animals? 
+We speak languages, but is speech somehow like other animal behaviors, such as birdsong? 
+Questions like these are answered by studying how animals communicate with sound. 
+This research requires cutting edge computational methods and big team science across a wide range of disciplines, 
+including ecology, ethology, bioacoustics, psychology, neuroscience, linguistics, and genomics [^1][^2][^3]. 
+As in many other domains, this research is being revolutionized by deep learning algorithms [^1][^2][^3]. 
+Deep neural network models enable answering questions that were previously impossible to address, 
+in part because these models automate analysis of very large datasets. 
+Within the study of animal acoustic communication, multiple models have been proposed for similar tasks, 
+often implemented as research code with different libraries, such as Keras and Pytorch. 
+This situation has created a real need for a framework that allows researchers to easily benchmark models 
+and apply trained models to their own data. To address this need, we developed vak.
+We originally developed vak to benchmark a neural network model, TweetyNet [^4][^5], 
+that automates annotation of birdsong by segmenting spectrograms. 
+TweetyNet and vak have been used in both neuroscience [^6][^7][^8] and bioacoustics [^9]. 
+For additional background and papers that have used `vak`, 
+please see: https://vak.readthedocs.io/en/latest/reference/about.html
+
+[1] https://www.frontiersin.org/articles/10.3389/fnbeh.2021.811737/full 
+[2] https://peerj.com/articles/13152/ 
+[3] https://www.jneurosci.org/content/42/45/8514 
+[4] https://elifesciences.org/articles/63853 
+[5] https://github.com/yardencsGitHub/tweetynet
+[6] https://www.nature.com/articles/s41586-020-2397-3 
+[7] https://elifesciences.org/articles/67855
+[8] https://elifesciences.org/articles/75691
+[9] https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0278522
 
 #### "Why this name, vak?"
 It has only three letters, so it is quick to type,
