@@ -71,7 +71,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
-        csv_path=cfg.learncurve.csv_path,
+        dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
@@ -122,7 +122,7 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
-        csv_path=cfg.learncurve.csv_path,
+        dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
@@ -190,7 +190,7 @@ def test_learncurve_previous_run_path(
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
-        csv_path=cfg.learncurve.csv_path,
+        dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
@@ -216,9 +216,9 @@ def test_learncurve_previous_run_path(
     assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
 
 
-def test_learncurve_invalid_csv_path_raises(specific_config, tmp_path, device):
+def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, device):
     """Test that core.eval raises FileNotFoundError
-    when `csv_path` does not exist."""
+    when `dataset_path` does not exist."""
     options_to_change = [
         {"section": "LEARNCURVE", "option": "device", "value": device}
     ]
@@ -243,7 +243,7 @@ def test_learncurve_invalid_csv_path_raises(specific_config, tmp_path, device):
             model_config=model_config,
             train_set_durs=cfg.learncurve.train_set_durs,
             num_replicates=cfg.learncurve.num_replicates,
-            csv_path=invalid_csv_path,
+            dataset_path=invalid_csv_path,
             labelset=cfg.prep.labelset,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.learncurve.batch_size,
@@ -299,7 +299,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
             model_config=model_config,
             train_set_durs=cfg.learncurve.train_set_durs,
             num_replicates=cfg.learncurve.num_replicates,
-            csv_path=cfg.learncurve.csv_path,
+            dataset_path=cfg.learncurve.dataset_path,
             labelset=cfg.prep.labelset,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.learncurve.batch_size,

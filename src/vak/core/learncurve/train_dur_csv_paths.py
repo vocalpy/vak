@@ -40,12 +40,12 @@ def _dict_from_dir(previous_run_path):
 
     Returns
     -------
-    train_dur_csv_paths : dict
+    train_dur_dataset_paths : dict
         where keys are duration in seconds of subsets taken from training data,
         and corresponding values are lists of paths to .csv files containing
         those subsets
     """
-    train_dur_csv_paths = {}
+    train_dur_dataset_paths = {}
     train_dur_dirs = previous_run_path.glob("train_dur_*s")
     for train_dur_dir in train_dur_dirs:
         train_dur = re.findall(TRAIN_DUR_PAT, train_dur_dir.name)
@@ -72,9 +72,9 @@ def _dict_from_dir(previous_run_path):
                 )
             train_subset_path = train_subset_path[0]
             train_subset_paths.append(train_subset_path)
-        train_dur_csv_paths[train_dur] = train_subset_paths
+        train_dur_dataset_paths[train_dur] = train_subset_paths
 
-    return train_dur_csv_paths
+    return train_dur_dataset_paths
 
 
 def from_dir(
@@ -130,7 +130,7 @@ def from_dir(
 
     Returns
     -------
-    train_dur_csv_paths : dict
+    train_dur_dataset_paths : dict
         where keys are duration in seconds of subsets taken from training data,
         and corresponding values are lists of paths to .csv files containing
         those subsets
@@ -148,10 +148,10 @@ def from_dir(
             f"previous_run_path not recognized as a directory:\n{previous_run_path}"
         )
 
-    train_dur_csv_paths = _dict_from_dir(previous_run_path)
+    train_dur_dataset_paths = _dict_from_dir(previous_run_path)
 
     # validate results
-    found_train_set_durs = sorted(train_dur_csv_paths.keys())
+    found_train_set_durs = sorted(train_dur_dataset_paths.keys())
     if not found_train_set_durs == sorted(train_set_durs):
         raise ValueError(
             f"training set durations found in {previous_run_path} did not match "
@@ -161,41 +161,41 @@ def from_dir(
         )
 
     if not all(
-        [len(csv_paths) == num_replicates for csv_paths in train_dur_csv_paths.values()]
+        [len(dataset_paths) == num_replicates for dataset_paths in train_dur_dataset_paths.values()]
     ):
         raise ValueError(
             "did not find correct number of replicates for all training set durations."
-            f"Found the following:\n{pprint.pformat(train_dur_csv_paths, indent=4)}"
+            f"Found the following:\n{pprint.pformat(train_dur_dataset_paths, indent=4)}"
         )
 
     logger.info(
         f"Using the following training subsets from previous run path:\n"
-        f"{pprint.pformat(train_dur_csv_paths, indent=4)}",
+        f"{pprint.pformat(train_dur_dataset_paths, indent=4)}",
     )
 
-    # need to copy .csv files, and change path in train_dur_csv_paths to point to copies
+    # need to copy .csv files, and change path in train_dur_dataset_paths to point to copies
     # so that `vak.train` doesn't try to write over existing results dir, causing a crash
     for (
         train_dur
-    ) in train_dur_csv_paths.keys():  # use keys so we can modify dict inside loop
+    ) in train_dur_dataset_paths.keys():  # use keys so we can modify dict inside loop
         results_path_this_train_dur = results_path.joinpath(f"train_dur_{train_dur}s")
         results_path_this_train_dur.mkdir()
-        csv_paths = train_dur_csv_paths[train_dur]
-        new_csv_paths = []
-        for replicate_num, csv_path in zip(range(1, len(csv_paths) + 1), csv_paths):
+        dataset_paths = train_dur_dataset_paths[train_dur]
+        new_dataset_paths = []
+        for replicate_num, dataset_path in zip(range(1, len(dataset_paths) + 1), dataset_paths):
             results_path_this_replicate = results_path_this_train_dur.joinpath(
                 f"replicate_{replicate_num}"
             )
             results_path_this_replicate.mkdir()
             # copy csv using Path.rename() method, append returned new path to list
-            new_csv_paths.append(
+            new_dataset_paths.append(
                 shutil.copy(
-                    src=csv_path,
-                    dst=results_path_this_replicate.joinpath(csv_path.name),
+                    src=dataset_path,
+                    dst=results_path_this_replicate.joinpath(dataset_path.name),
                 )
             )
 
-            subset_df = pd.read_csv(csv_path)
+            subset_df = pd.read_csv(dataset_path)
             (
                 spect_id_vector,
                 spect_inds_vector,
@@ -216,9 +216,9 @@ def from_dir(
             ):
                 np.save(results_path_this_replicate.joinpath(f"{vec_name}.npy"), vec)
 
-        train_dur_csv_paths[train_dur] = new_csv_paths
+        train_dur_dataset_paths[train_dur] = new_dataset_paths
 
-    return train_dur_csv_paths
+    return train_dur_dataset_paths
 
 
 def train_dur_dirname(train_dur):
@@ -239,7 +239,7 @@ def replicate_dirname(replicate_num):
 
 
 def subset_csv_filename(csv_path, train_dur, replicate_num):
-    """ "helper function that returns name of directory for a replicate
+    """helper function that returns name of directory for a replicate
 
     factored out as function so we can test and use in fixtures
     """

@@ -48,14 +48,14 @@ def test_eval(
     assert cli_asserts.log_file_contains_version(command="eval", output_path=output_dir)
 
 
-def test_eval_csv_path_none_raises(
+def test_eval_dataset_path_none_raises(
         specific_config, tmp_path,
 ):
-    """Test that cli.eval raises ValueError when csv_path is None
+    """Test that cli.eval raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
     """
     options_to_change = [
-        {"section": "EVAL", "option": "csv_path", "value": "DELETE-OPTION"},
+        {"section": "EVAL", "option": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
     toml_path = specific_config(

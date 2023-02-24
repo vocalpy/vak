@@ -25,7 +25,7 @@ def learning_curve(
     model_config: dict,
     train_set_durs,
     num_replicates,
-    csv_path,
+    dataset_path,
     labelset,
     window_size,
     batch_size,
@@ -66,7 +66,7 @@ def learning_curve(
         to better estimate metrics for a training set of that size.
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
-    csv_path : str
+    dataset_path : str
         path to where dataset was saved as a csv.
     labelset : set
         of str or int, the set of labels that correspond to annotated segments
@@ -145,12 +145,12 @@ def learning_curve(
     Trains models, saves results in new directory within root_results_dir
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    csv_path = expanded_user_path(csv_path)
-    if not csv_path.exists():
-        raise FileNotFoundError(f"csv_path not found: {csv_path}")
+    dataset_path = expanded_user_path(dataset_path)
+    if not dataset_path.exists():
+        raise FileNotFoundError(f"dataset_path not found: {dataset_path}")
 
-    logger.info(f"Using dataset from .csv: {csv_path}")
-    dataset_df = pd.read_csv(csv_path)
+    logger.info(f"Using dataset from .csv: {dataset_path}")
+    dataset_df = pd.read_csv(dataset_path)
 
     if previous_run_path:
         previous_run_path = expanded_user_path(previous_run_path)
@@ -184,7 +184,7 @@ def learning_curve(
     )
 
     # ---- get training set subsets ------------------------------------------------------------------------------------
-    has_unlabeled = datasets.seq.validators.has_unlabeled(csv_path, timebins_key)
+    has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_path, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:
@@ -195,7 +195,7 @@ def learning_curve(
         logger.info(
             f"Loading previous training subsets from:\n{previous_run_path}",
         )
-        train_dur_csv_paths = _train_dur_csv_paths.from_dir(
+        train_dur_dataset_paths = _train_dur_csv_paths.from_dir(
             previous_run_path,
             train_set_durs,
             timebin_dur,
@@ -211,9 +211,9 @@ def learning_curve(
             f"Creating data sets of specified durations: {train_set_durs}",
         )
         # do all subsetting before training, so that we fail early if subsetting is going to fail
-        train_dur_csv_paths = _train_dur_csv_paths.from_df(
+        train_dur_dataset_paths = _train_dur_csv_paths.from_df(
             dataset_df,
-            csv_path,
+            dataset_path,
             train_set_durs,
             timebin_dur,
             num_replicates,
@@ -227,21 +227,21 @@ def learning_curve(
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
     logger.info(f"Starting training for learning curve.")
-    for train_dur, csv_paths in train_dur_csv_paths.items():
+    for train_dur, dataset_paths in train_dur_dataset_paths.items():
         logger.info(
             f"Training replicates for training set of size: {train_dur}s",
         )
 
-        for replicate_num, this_train_dur_this_replicate_csv_path in enumerate(
-            csv_paths
+        for replicate_num, this_train_dur_this_replicate_dataset_path in enumerate(
+            dataset_paths
         ):
-            replicate_num += 1  # so log statements below match replicate nums returned by train_dur_csv_paths
+            replicate_num += 1  # so log statements below match replicate nums returned by train_dur_dataset_paths
             logger.info(
                 f"Training replicate {replicate_num} "
-                f"using dataset from .csv file: {this_train_dur_this_replicate_csv_path}",
+                f"using dataset from .csv file: {this_train_dur_this_replicate_dataset_path}",
             )
             this_train_dur_this_replicate_results_path = (
-                this_train_dur_this_replicate_csv_path.parent
+                this_train_dur_this_replicate_dataset_path.parent
             )
             logger.info(
                 f"Saving results to: {this_train_dur_this_replicate_results_path}",
@@ -262,7 +262,7 @@ def learning_curve(
             train(
                 model_name,
                 model_config,
-                this_train_dur_this_replicate_csv_path,
+                this_train_dur_this_replicate_dataset_path,
                 window_size,
                 batch_size,
                 num_epochs,
@@ -330,7 +330,7 @@ def learning_curve(
             eval(
                 model_name,
                 model_config,
-                this_train_dur_this_replicate_csv_path,
+                this_train_dur_this_replicate_dataset_path,
                 checkpoint_path=ckpt_path,
                 labelmap_path=labelmap_path,
                 output_dir=this_train_dur_this_replicate_results_path,

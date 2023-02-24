@@ -76,10 +76,10 @@ def test_prep(
 
     options_to_change = [
         {"section": "PREP", "option": "output_dir", "value": str(output_dir)},
-        # need to remove csv_path option from configs we already ran prep on to avoid error
+        # need to remove dataset_path option from configs we already ran prep on to avoid error
         {
             "section": config_type.upper(),
-            "option": "csv_path",
+            "option": "dataset_path",
             "value": None,
         },
     ]
@@ -99,10 +99,10 @@ def test_prep(
 
     cfg = vak.config.parse.from_toml_path(toml_path)
     command_section = getattr(cfg, config_type)
-    csv_path = getattr(command_section, "csv_path")
+    dataset_path = getattr(command_section, "dataset_path")
     # we don't bother checking whether csv is as expected
     # because that's already tested by `test_io.test_spect`, `test_io.test_dataframe`, etc.
-    assert Path(csv_path).exists()
+    assert Path(dataset_path).exists()
 
     assert cli_asserts.log_file_created(command="prep", output_path=cfg.prep.output_dir)
     assert cli_asserts.log_file_contains_version(command="prep", output_path=output_dir)
@@ -120,7 +120,7 @@ def test_prep(
         ("train", None, "mat", "yarden"),
     ],
 )
-def test_prep_csv_path_raises(
+def test_prep_dataset_path_raises(
     config_type,
     audio_format,
     spect_format,

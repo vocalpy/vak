@@ -46,14 +46,14 @@ def test_predict(
     assert cli_asserts.log_file_contains_version(command="predict", output_path=output_dir)
 
 
-def test_predict_csv_path_none_raises(
+def test_predict_dataset_path_none_raises(
         specific_config, tmp_path,
 ):
-    """Test that cli.predict raises ValueError when csv_path is None
+    """Test that cli.predict raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
     """
     options_to_change = [
-        {"section": "PREDICT", "option": "csv_path", "value": "DELETE-OPTION"},
+        {"section": "PREDICT", "option": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
     toml_path = specific_config(

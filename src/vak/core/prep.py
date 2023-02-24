@@ -119,9 +119,9 @@ def prep(
     Returns
     -------
     vak_df : pandas.DataFrame
-        that represents a dataset of vocalizations
-    csv_path : Path
-        to csv saved from vak_df
+        That represents a dataset of vocalizations
+    dataset_path : Path
+        Path to csv saved from ``vak_df``.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if purpose not in VALID_PURPOSES:
@@ -191,7 +191,7 @@ def prep(
     data_dir_name = data_dir.name
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
     csv_fname_stem = f"{data_dir_name}_prep_{timenow}"
-    csv_path = output_dir.joinpath(f"{csv_fname_stem}.csv")
+    dataset_path = output_dir.joinpath(f"{csv_fname_stem}.csv")
 
     # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
     # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
@@ -245,7 +245,7 @@ def prep(
 
     if do_split:
         # save before splitting, jic duration args are not valid (we can't know until we make dataset)
-        vak_df.to_csv(csv_path)
+        vak_df.to_csv(dataset_path)
         vak_df = split.dataframe(
             vak_df,
             labelset=labelset,
@@ -267,10 +267,10 @@ def prep(
         vak_df = dataframe.add_split_col(vak_df, split=split_name)
 
     logger.info(
-        f"saving dataset as a .csv file: {csv_path}"
+        f"saving dataset as a .csv file: {dataset_path}"
     )
     vak_df.to_csv(
-        csv_path, index=False
+        dataset_path, index=False
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
-    return vak_df, csv_path
+    return vak_df, dataset_path
