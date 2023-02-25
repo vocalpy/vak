@@ -26,6 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#628](https://github.com/NickleDave/vak/pull/628).
   Fixes [#2](https://github.com/NickleDave/vak/issues/2).
 
+### Changed
+- Rename config file option `csv_path` to `dataset_path`, 
+  since it is more specific and allows for the possibility 
+  that a dataset is not always a csv file
+  [#632](https://github.com/NickleDave/vak/pull/632).
+  Fixes [#549](https://github.com/NickleDave/vak/issues/549).
+
 ### Removed
 - Remove entry points since they are not being unused
   outside the project but require maintenance and testing
@@ -37,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `engine` with `Model` class
   [#627](https://github.com/NickleDave/vak/pull/627).
   No longer used after switching to Lightning as backend in 
-
+  [#598](https://github.com/NickleDave/vak/pull/598).
 
 ### Fixed
 - Fix functionality to evaluate model with and without
