@@ -48,10 +48,19 @@ def get(name: str,
 
     # TODO: move num_classes / input_shape into model configs
     # TODO: add labelmap to config dynamically if needed? outside this function
-    config["network"].update(
-        num_classes=num_classes,
-        input_shape=input_shape,
-    )
+    if name == 'das':
+        n_audio_channels = input_shape[0]
+        num_samples = input_shape[1]
+        config["network"].update(
+            num_classes=num_classes,
+            n_audio_channels=n_audio_channels,
+            num_samples=num_samples
+        )
+    else:
+        config["network"].update(
+            num_classes=num_classes,
+            input_shape=input_shape,
+        )
 
     try:
         model_class = getattr(vak.models, name)
