@@ -26,6 +26,9 @@ def source_test_data_root(test_data_root):
     return SOURCE_TEST_DATA_ROOT
 
 
+NETS_TEST_DATA_ROOT = SOURCE_TEST_DATA_ROOT / "nets"
+
+
 GENERATED_TEST_DATA_ROOT = TEST_DATA_ROOT.joinpath("generated")
 
 
