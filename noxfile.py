@@ -91,8 +91,8 @@ def copy_url(url: str, path: str) -> None:
     urllib.request.urlretrieve(url, path)
 
 
-SOURCE_TEST_DATA_URL = 'https://osf.io/hbg4k/download'
-SOURCE_TEST_DATA_TAR = f'{SOURCE_TEST_DATA_DIR}source_test_data.tar.gz'
+SOURCE_TEST_DATA_URL = 'https://osf.io/2ehbp/download'
+SOURCE_TEST_DATA_TAR = f'{SOURCE_TEST_DATA_DIR}source_test_data-version-1.x.tar.gz'
 
 
 @nox.session(name='test-data-tar-source')
