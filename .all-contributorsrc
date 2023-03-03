@@ -193,6 +193,15 @@
         "bug",
         "ideas"
       ]
+    },
+    {
+      "login": "nhoglen",
+      "name": "nhoglen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13972140?v=4",
+      "profile": "https://github.com/nhoglen",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
