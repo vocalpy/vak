@@ -188,7 +188,7 @@ def to_segments(
         # see https://github.com/NickleDave/vak/issues/383
         uniq_lbl_tb = np.unique(lbl_tb)
         if len(uniq_lbl_tb) == 1 and uniq_lbl_tb[0] == labelmap["unlabeled"]:
-            return '', None, None
+            return None, None, None
 
     # used to find onsets/offsets below; compute here so if we fail we do so early
     timebin_dur = timebin_dur_from_vec(t, n_decimals_trunc)
@@ -208,7 +208,7 @@ def to_segments(
 
     # handle case where removing 'unlabeled' leaves no segments
     if all([len(vec) == 0 for vec in (labels, onset_inds, offset_inds)]):
-        return "", None, None
+        return None, None, None
 
     inverse_labelmap = dict((v, k) for k, v in labelmap.items())
     labels = labels.tolist()
