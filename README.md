@@ -9,7 +9,7 @@
 
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-18-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-19-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
@@ -187,6 +187,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/lmpascual"><img src="https://avatars.githubusercontent.com/u/62260534?v=4?s=100" width="100px;" alt="lmpascual"/><br /><sub><b>lmpascual</b></sub></a><br /><a href="https://github.com/vocalpy/vak/commits?author=lmpascual" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ItamarFruchter"><img src="https://avatars.githubusercontent.com/u/19908942?v=4?s=100" width="100px;" alt="ItamarFruchter"/><br /><sub><b>ItamarFruchter</b></sub></a><br /><a href="https://github.com/vocalpy/vak/commits?author=ItamarFruchter" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/kalleknast"><img src="https://avatars.githubusercontent.com/u/12412777?v=4?s=100" width="100px;" alt="Hjalmar K. Turesson"/><br /><sub><b>Hjalmar K. Turesson</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Akalleknast" title="Bug reports">🐛</a> <a href="#ideas-kalleknast" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/nhoglen"><img src="https://avatars.githubusercontent.com/u/13972140?v=4?s=100" width="100px;" alt="nhoglen"/><br /><sub><b>nhoglen</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Anhoglen" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
