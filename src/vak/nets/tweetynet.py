@@ -6,6 +6,18 @@ from torch import nn
 from torch.nn import functional as F
 
 
+
+# NOTE: added 2023-03-04
+# I am adding *another* implementation of the tensorflow 'SAME' padding
+# in  the ``vak.nets.das.kapre`` module,
+# taken from https://github.com/pytorch/pytorch/issues/67551#issuecomment-954972351.
+# This class *is* equivalent to what that function does;
+# in this class, we detect when one extra pixel should be added on the bottom or right
+# and specifically pad those, see line 75, ``if rows_odd or cols_odd:``.
+# I am not going to elevate either the function in ``vak.nets.das.kapre``
+# or this class to a ``vak.nn.`` function or ``torch.nn.Module``
+# because of the issues with 'SAME' described here
+# https://gist.github.com/Yangqing/47772de7eb3d5dbbff50ffb0d7a98964
 class Conv2dTF(nn.Conv2d):
 
     PADDING_METHODS = ('VALID', 'SAME')
