@@ -163,7 +163,7 @@ class WindowedFrameClassificationModel(base.Model):
 
         Returns
         -------
-        y : torch.Tensor
+        out : torch.Tensor
             Output from network.
         """
         return self.network(x)
@@ -187,8 +187,8 @@ class WindowedFrameClassificationModel(base.Model):
             the loss function, ``self.loss``.
         """
         x, y = batch[0], batch[1]
-        y_pred = self.network(x)
-        loss = self.loss(y_pred, y)
+        out = self.network(x)
+        loss = self.loss(out, y)
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
