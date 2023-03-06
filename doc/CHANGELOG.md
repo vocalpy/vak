@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Fixes [#549](https://github.com/NickleDave/vak/issues/549).
 
 ### Removed
-- Remove entry points since they are not being unused
+- Remove entry points since they are not being used
   outside the project but require maintenance and testing
   [#621](https://github.com/NickleDave/vak/pull/621).
   Fixes [#601](https://github.com/NickleDave/vak/issues/601).
