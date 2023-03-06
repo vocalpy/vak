@@ -16,6 +16,9 @@
 [![Build Status](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)
 [![codecov](https://codecov.io/gh/vocalpy/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/vocalpy/vak)
 
+<h3>🚧 vak version 1.0.0 is in development! 🚧 📣 Test out the alpha release: <code>pip install vak==1.0.0a1</code>. 📣 For more info, please see <a href="https://forum.vocalpy.org/t/vak-1-0-0a1-released/55"> this forum post<a>.</h3>
+
+
 `vak` is a Python framework for neural network models, 
 designed for researchers studying animal acoustic communication and bioacoustics.
 Many people will be familiar with work in this area on 
@@ -67,7 +70,7 @@ Notice that for `conda` you specify two channels,
 and that the `pytorch` channel should come first, 
 so it takes priority when installing the dependencies `pytorch` and `torchvision`.
 
-For more details, please see:
+For more details, please see:  
 https://vak.readthedocs.io/en/latest/get_started/installation.html
 
 We test `vak` on Ubuntu and MacOS. We have run on Windows and 
@@ -87,9 +90,9 @@ https://vak.readthedocs.io/en/latest/get_started/autoannotate.html
 
 #### How can I use my data with `vak`?
 
-Please see the How-To Guides in the documentation here:
+Please see the How-To Guides in the documentation here:  
 https://vak.readthedocs.io/en/latest/howto/index.html
-faq.html#faq
+
 ### Support / Contributing
 
 For help, please begin by checking out the Frequently Asked Questions:  
