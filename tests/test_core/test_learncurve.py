@@ -7,7 +7,7 @@ import vak.core.learncurve
 import vak.paths
 
 
-def learncurve_output_matches_expected(cfg, model_config_map, results_path):
+def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
     assert results_path.joinpath("learning_curve.csv").exists()
 
     for train_set_dur in cfg.learncurve.train_set_durs:
@@ -30,27 +30,24 @@ def learncurve_output_matches_expected(cfg, model_config_map, results_path):
             if cfg.learncurve.normalize_spectrograms:
                 assert replicate_path.joinpath("StandardizeSpect").exists()
 
-            for model_name in model_config_map.keys():
-                eval_csv = sorted(replicate_path.glob(f"eval_{model_name}*csv"))
-                assert len(eval_csv) == 1
+            eval_csv = sorted(replicate_path.glob(f"eval_{model_name}*csv"))
+            assert len(eval_csv) == 1
 
-                model_path = replicate_path.joinpath(model_name)
-                assert model_path.exists()
+            model_path = replicate_path.joinpath(model_name)
+            assert model_path.exists()
 
-                tensorboard_log = sorted(
-                    model_path.glob(f"events.out.tfevents.*{model_name}")
-                )
-                assert len(tensorboard_log) == 1
+            tensorboard_log = sorted(
+                replicate_path.glob(f"lightning_logs/**/*events*")
+            )
+            assert len(tensorboard_log) == 1
 
-                checkpoints_path = model_path.joinpath("checkpoints")
-                assert checkpoints_path.exists()
-                assert checkpoints_path.joinpath("checkpoint.pt").exists()
-                if cfg.learncurve.val_step is not None:
-                    assert checkpoints_path.joinpath(
-                        "max-val-acc-checkpoint.pt"
-                    ).exists()
-
-    return True
+            checkpoints_path = model_path.joinpath("checkpoints")
+            assert checkpoints_path.exists()
+            assert checkpoints_path.joinpath("checkpoint.pt").exists()
+            if cfg.learncurve.val_step is not None:
+                assert checkpoints_path.joinpath(
+                    "max-val-acc-checkpoint.pt"
+                ).exists()
 
 
 def test_learncurve(specific_config, tmp_path, model, device):
@@ -65,15 +62,16 @@ def test_learncurve(specific_config, tmp_path, model, device):
     )
 
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     vak.core.learning_curve(
-        model_config_map,
+        model_name=cfg.learncurve.model,
+        model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
-        csv_path=cfg.learncurve.csv_path,
+        dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
@@ -92,7 +90,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
         device=cfg.learncurve.device,
     )
 
-    assert learncurve_output_matches_expected(cfg, model_config_map, results_path)
+    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
 
 
 def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
@@ -117,13 +115,14 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     )
 
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
 
     vak.core.learning_curve(
-        model_config_map,
+        model_name=cfg.learncurve.model,
+        model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
-        csv_path=cfg.learncurve.csv_path,
+        dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
@@ -146,7 +145,7 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     assert len(results_path) == 1
     results_path = results_path[0]
 
-    assert learncurve_output_matches_expected(cfg, model_config_map, results_path)
+    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
 
 
 @pytest.mark.parametrize("window_size",
@@ -184,13 +183,14 @@ def test_learncurve_previous_run_path(
     )
 
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
 
     vak.core.learning_curve(
-        model_config_map,
+        model_name=cfg.learncurve.model,
+        model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
         num_replicates=cfg.learncurve.num_replicates,
-        csv_path=cfg.learncurve.csv_path,
+        dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
@@ -213,12 +213,12 @@ def test_learncurve_previous_run_path(
     assert len(results_path) == 1
     results_path = results_path[0]
 
-    assert learncurve_output_matches_expected(cfg, model_config_map, results_path)
+    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
 
 
-def test_learncurve_invalid_csv_path_raises(specific_config, tmp_path, device):
+def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, device):
     """Test that core.eval raises FileNotFoundError
-    when `csv_path` does not exist."""
+    when `dataset_path` does not exist."""
     options_to_change = [
         {"section": "LEARNCURVE", "option": "device", "value": device}
     ]
@@ -232,17 +232,18 @@ def test_learncurve_invalid_csv_path_raises(specific_config, tmp_path, device):
     )
 
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     invalid_csv_path = '/obviously/doesnt/exist/dataset.csv'
     with pytest.raises(FileNotFoundError):
         vak.core.learning_curve(
-            model_config_map,
+            model_name=cfg.learncurve.model,
+            model_config=model_config,
             train_set_durs=cfg.learncurve.train_set_durs,
             num_replicates=cfg.learncurve.num_replicates,
-            csv_path=invalid_csv_path,
+            dataset_path=invalid_csv_path,
             labelset=cfg.prep.labelset,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.learncurve.batch_size,
@@ -288,16 +289,17 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.learncurve.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
     # mock behavior of cli.learncurve, building `results_path` from config option `root_results_dir`
     results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
         vak.core.learning_curve(
-            model_config_map,
+            model_name=cfg.learncurve.model,
+            model_config=model_config,
             train_set_durs=cfg.learncurve.train_set_durs,
             num_replicates=cfg.learncurve.num_replicates,
-            csv_path=cfg.learncurve.csv_path,
+            dataset_path=cfg.learncurve.dataset_path,
             labelset=cfg.prep.labelset,
             window_size=cfg.dataloader.window_size,
             batch_size=cfg.learncurve.batch_size,

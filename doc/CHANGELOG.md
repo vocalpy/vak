@@ -4,6 +4,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased (1.0.0)
+### Added
+- Use `lightning` framework as back end, replaces
+  `vak.engine.Model`
+  [#598](https://github.com/NickleDave/vak/pull/598).
+  Fixes [#597](https://github.com/NickleDave/vak/issues/597).
+  See discussion in [#359](https://github.com/NickleDave/vak/issues/359).
+- Make it easier to make an instance of a model
+  [#605](https://github.com/NickleDave/vak/pull/605).
+  Fixes [#362](https://github.com/NickleDave/vak/issues/362).
+- Add ways to define models and families of models
+  [#605](https://github.com/NickleDave/vak/pull/605).
+  Fixes [#406](https://github.com/NickleDave/vak/issues/406),
+  [#536](https://github.com/NickleDave/vak/issues/536), and 
+  [#603](https://github.com/NickleDave/vak/issues/603).
+- Add built-in TweetyNet model
+  [#605](https://github.com/NickleDave/vak/pull/605).
+  Fixes [#596](https://github.com/NickleDave/vak/issues/596).
+- Add logging of training time
+  [#628](https://github.com/NickleDave/vak/pull/628).
+  Fixes [#2](https://github.com/NickleDave/vak/issues/2).
+
+### Changed
+- Rename config file option `csv_path` to `dataset_path`, 
+  since it is more specific and allows for the possibility 
+  that a dataset is not always a csv file
+  [#632](https://github.com/NickleDave/vak/pull/632).
+  Fixes [#549](https://github.com/NickleDave/vak/issues/549).
+
+### Removed
+- Remove entry points since they are not being unused
+  outside the project but require maintenance and testing
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixes [#601](https://github.com/NickleDave/vak/issues/601).
+- Remove unused/incomplete functionality for training multiple models
+  [#625](https://github.com/NickleDave/vak/pull/625).
+  Fixes [#538](https://github.com/NickleDave/vak/issues/538).
+- Remove `engine` with `Model` class
+  [#627](https://github.com/NickleDave/vak/pull/627).
+  No longer used after switching to Lightning as backend in 
+  [#598](https://github.com/NickleDave/vak/pull/598).
+
+### Fixed
+- Fix functionality to evaluate model with and without
+  post-processing transform that was added in 
+  [#621](https://github.com/NickleDave/vak/pull/621).
+  Fixed in [#626](https://github.com/NickleDave/vak/pull/626).
+
 ## 0.8.1 -- 2023-03-02
 ### Fixed
 - Fix transform that converts labeled timebins to segments
@@ -95,8 +143,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor and speed up logic for determining whether a 
   dataset with sequence annotations has unlabeled segments 
   that should be assigned a "background" label
- [#559](https://github.com/NickleDave/vak/pull/559).
- Fixes [#243](https://github.com/NickleDave/vak/issues/243).
+  [#559](https://github.com/NickleDave/vak/pull/559).
+  Fixes [#243](https://github.com/NickleDave/vak/issues/243).
   - Adds a new sub-sub-package, `datasets.seq`
     with a `validators` module, which is where the 
     re-written `has_unlabeled` function now lives. 
@@ -110,8 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   so that the purpose of the functions is clearer, 
   and add clearer error messages with links to documentation 
   about file naming conventions 
- [#566](https://github.com/NickleDave/vak/pull/566).
- Fixes [#525](https://github.com/NickleDave/vak/issues/525).
+  [#566](https://github.com/NickleDave/vak/pull/566).
+  Fixes [#525](https://github.com/NickleDave/vak/issues/525).
 - Revise "autoannotate" tutorial to use .wav audio and .csv 
   annotation files from new release of Bengalese Finch Song 
   Repository, and to suggest that Windows users unpack 

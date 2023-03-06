@@ -28,6 +28,7 @@ dependencies = [
     "dask >=2.10.1",
     "evfuncs >=0.3.4",
     "joblib >=0.14.1",
+    "pytorch-lightning >=1.8.4.post0",
     "matplotlib >=3.3.3",
     "numpy >=1.18.1",
     "scipy >=1.4.1",
@@ -49,7 +50,6 @@ dev = [
 test = [
     "pytest >=6.2.1",
     "pytest-cov >=2.11.1",
-    "tweetynet >=0.7.0",
 ]
 doc = [
     "furo >=2022.1.2",
@@ -67,14 +67,6 @@ Documentation = "https://vak.readthedocs.io"
 
 [project.scripts]
 vak = 'vak.__main__:main'
-
-[project.entry-points."vak.models"]
-TeenyTweetyNetModel = 'vak.models.teenytweetynet:TeenyTweetyNetModel'
-
-[project.entry-points."vak.metrics"]
-Accuracy = 'vak.metrics.Accuracy'
-Levenshtein = 'vak.metrics.Levenshtein'
-SegmentErrorRate = 'vak.metrics.SegmentErrorRate'
 
 [tool.flit.sdist]
 exclude = [

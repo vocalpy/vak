@@ -43,18 +43,20 @@ def eval(toml_path):
 
     logger.info("Logging results to {}".format(cfg.eval.output_dir))
 
-    model_config_map = config.models.map_from_path(toml_path, cfg.eval.models)
+    model_name = cfg.eval.model
+    model_config = config.model.config_from_toml_path(toml_path, model_name)
 
-    if cfg.eval.csv_path is None:
+    if cfg.eval.dataset_path is None:
         raise ValueError(
-            "No value is specified for 'csv_path' in this .toml config file."
+            "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
     core.eval(
-        cfg.eval.csv_path,
-        model_config_map,
+        model_name=model_name,
+        model_config=model_config,
+        dataset_path=cfg.eval.dataset_path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,

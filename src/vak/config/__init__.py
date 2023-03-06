@@ -4,7 +4,7 @@ from . import (
     dataloader,
     eval,
     learncurve,
-    models,
+    model,
     parse,
     predict,
     prep,

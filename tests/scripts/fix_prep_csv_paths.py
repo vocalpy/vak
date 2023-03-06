@@ -23,18 +23,26 @@ def main():
             paths = vak_df[path_column_name].values.tolist()
             paths = [str(path) for path in paths]
             new_column = []
-            for path in paths:
-                if path == "nan":
+            for path_str in paths:
+                if path_str == "nan":
+                    new_column.append(path_str)
                     continue
-                try:
-                    before, aft = path.split("vak/")
-                except ValueError:  # used different name for directory locally
-                    before, aft = path.split("vak-vocalpy/")
-                new_path = PROJ_ROOT_ABS.joinpath(aft)
+                tests_root_ind = path_str.find('tests/data_for_tests')
+                if (tests_root_ind == -1
+                    and path_column_name == 'audio_path'
+                    and 'spect_mat_annot_yarden' in str(prep_csv)):
+                    # prep somehow gives root to audio -- from annotation?; we don't need these to exist though
+                    new_column.append(path_str)
+                    continue
+                new_path_str = path_str[tests_root_ind:]  # get rid of parent directories
+                new_path = PROJ_ROOT_ABS / new_path_str
+                if not new_path.exists():
+                    raise FileNotFoundError(
+                        f"New path does not exist:\n{new_path}"
+                    )
                 new_column.append(str(new_path))
-            vak_df[path_column_name] = pd.Series(new_column)
+            vak_df[path_column_name] = new_column
         vak_df.to_csv(prep_csv)
 
 
-if __name__ == "__main__":
-    main()
+main()

@@ -29,10 +29,10 @@ REQUIRED_OPTIONS = {
         "checkpoint_path",
         "labelmap_path",
         "output_dir",
-        "models",
+        "model",
     ],
     "LEARNCURVE": [
-        "models",
+        "model",
         "root_results_dir",
         "train_set_durs",
         "num_replicates",
@@ -40,7 +40,7 @@ REQUIRED_OPTIONS = {
     "PREDICT": [
         "checkpoint_path",
         "labelmap_path",
-        "models",
+        "model",
     ],
     "PREP": [
         "data_dir",
@@ -48,7 +48,7 @@ REQUIRED_OPTIONS = {
     ],
     "SPECT_PARAMS": None,
     "TRAIN": [
-        "models",
+        "model",
         "root_results_dir",
     ],
 }

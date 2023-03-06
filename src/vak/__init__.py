@@ -20,8 +20,6 @@ from . import (
     curvefit,
     datasets,
     device,
-    engine,
-    entry_points,
     files,
     io,
     labeled_timebins,
@@ -29,6 +27,7 @@ from . import (
     logging,
     metrics,
     models,
+    nets,
     nn,
     paths,
     plot,
@@ -37,12 +36,11 @@ from . import (
     tensorboard,
     timebins,
     timenow,
+    trainer,
     transforms,
     typing,
     validators,
 )
-
-from .engine.model import Model
 
 
 __all__ = [
@@ -55,15 +53,12 @@ __all__ = [
     "csv",
     "datasets",
     "device",
-    "engine",
-    "entry_points",
     "files",
     "io",
     "labeled_timebins",
     "labels",
     "logging",
     "metrics",
-    "Model",
     "models",
     "nn",
     "paths",
@@ -73,6 +68,7 @@ __all__ = [
     "tensorboard",
     "timebins",
     "timenow",
+    "trainer",
     "transforms",
     "typing",
     "validators",

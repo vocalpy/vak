@@ -5,11 +5,14 @@ import shutil
 import pytest
 import toml
 
-from .test_data import GENERATED_TEST_DATA_ROOT
+from .test_data import GENERATED_TEST_DATA_ROOT, TEST_DATA_ROOT
+
+
+TEST_CONFIGS_ROOT = TEST_DATA_ROOT.joinpath("configs")
 
 
 @pytest.fixture
-def test_configs_root(test_data_root):
+def test_configs_root():
     """Path that points to data_for_tests/configs
 
     Two types of config files in this directory:
@@ -20,7 +23,7 @@ def test_configs_root(test_data_root):
 
     This fixture facilitates access to type (2), e.g. in test_config/test_parse
     """
-    return test_data_root.joinpath("configs")
+    return TEST_CONFIGS_ROOT
 
 
 @pytest.fixture
@@ -75,10 +78,13 @@ def generated_test_configs_root():
     return GENERATED_TEST_CONFIGS_ROOT
 
 
+ALL_GENERATED_CONFIGS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("*toml"))
+
+
 # ---- path to config files ----
 @pytest.fixture
-def all_generated_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("*toml"))
+def all_generated_configs():
+    return ALL_GENERATED_CONFIGS
 
 
 @pytest.fixture
@@ -241,9 +247,12 @@ def specific_config_toml(specific_config):
     return _specific_config_toml
 
 
+ALL_GENERATED_CONFIGS_TOML = [_return_toml(config) for config in ALL_GENERATED_CONFIGS]
+
+
 @pytest.fixture
-def all_generated_configs_toml(all_generated_configs):
-    return [_return_toml(config) for config in all_generated_configs]
+def all_generated_configs_toml():
+    return ALL_GENERATED_CONFIGS_TOML
 
 
 @pytest.fixture
@@ -266,17 +275,26 @@ def all_generated_predict_configs_toml(all_generated_predict_configs):
     return [_return_toml(config) for config in all_generated_predict_configs]
 
 
+ALL_GENERATED_CONFIGS_TOML_PATH_PAIRS = list(zip(
+    [_return_toml(config) for config in ALL_GENERATED_CONFIGS],
+    ALL_GENERATED_CONFIGS,
+))
+
+
 # ---- config toml + path pairs ----
 @pytest.fixture
-def all_generated_configs_toml_path_pairs(all_generated_configs):
+def all_generated_configs_toml_path_pairs():
     """zip of tuple pairs: (dict, pathlib.Path)
     where ``Path`` is path to .toml config file and ``dict`` is
     the .toml config from that path
     loaded into a dict with the ``toml`` library
     """
+    # we duplicate the constant above because we need to remake
+    # the variables for each unit test. Otherwise tests that modify values
+    # for config options cause other tests to fail
     return zip(
-        [_return_toml(config) for config in all_generated_configs],
-        all_generated_configs,
+        [_return_toml(config) for config in ALL_GENERATED_CONFIGS],
+        ALL_GENERATED_CONFIGS
     )
 
 

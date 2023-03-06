@@ -8,12 +8,9 @@ import vak.core.eval
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
-def eval_output_matches_expected(model_config_map, output_dir):
-    for model_name in model_config_map.keys():
-        eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
-        assert len(eval_csv) == 1
-
-    return True
+def assert_eval_output_matches_expected(model_name, output_dir):
+    eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
+    assert len(eval_csv) == 1
 
 
 # -- we do eval with all possible configurations of post_tfm_kwargs
@@ -71,11 +68,12 @@ def test_eval(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
     vak.core.eval(
-        cfg.eval.csv_path,
-        model_config_map,
+        model_name=cfg.eval.model,
+        model_config=model_config,
+        dataset_path=cfg.eval.dataset_path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
@@ -88,7 +86,7 @@ def test_eval(
         post_tfm_kwargs=post_tfm_kwargs,
     )
 
-    assert eval_output_matches_expected(model_config_map, output_dir)
+    assert_eval_output_matches_expected(cfg.eval.model, output_dir)
 
 
 @pytest.mark.parametrize(
@@ -96,7 +94,7 @@ def test_eval(
     [
         {"section": "EVAL", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "EVAL", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "EVAL", "option": "csv_path", "value": '/obviously/doesnt/exist/dataset.csv'},
+        {"section": "EVAL", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "EVAL", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -108,10 +106,10 @@ def test_eval_raises_file_not_found(
 ):
     """Test that core.eval raises FileNotFoundError
     when one of the following does not exist:
-    checkpoint_path, labelmap_path, csv_path, spect_scaler_path
+    checkpoint_path, labelmap_path, dataset_path, spect_scaler_path
     """
     output_dir = tmp_path.joinpath(
-        f"test_eval_cbin_notmat_invalid_csv_path"
+        f"test_eval_cbin_notmat_invalid_dataset_path"
     )
     output_dir.mkdir()
 
@@ -130,11 +128,12 @@ def test_eval_raises_file_not_found(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
         vak.core.eval(
-            csv_path=cfg.eval.csv_path,
-            model_config_map=model_config_map,
+            model_name=cfg.eval.model,
+            model_config=model_config,
+            dataset_path=cfg.eval.dataset_path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
@@ -168,11 +167,12 @@ def test_eval_raises_not_a_directory(
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config_map = vak.config.models.map_from_path(toml_path, cfg.eval.models)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
         vak.core.eval(
-            csv_path=cfg.eval.csv_path,
-            model_config_map=model_config_map,
+            model_name=cfg.eval.model,
+            model_config=model_config,
+            dataset_path=cfg.eval.dataset_path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,

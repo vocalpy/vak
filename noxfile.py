@@ -26,7 +26,7 @@ def build(session: nox.Session) -> None:
     session.run("flit", "build")
 
 
-@nox.session
+@nox.session(python="3.10.7")
 def dev(session: nox.Session) -> None:
     """
     Sets up a python development environment for the project.
@@ -119,7 +119,7 @@ def test_data_download_source(session) -> None:
 TEST_DATA_GENERATE_SCRIPT = './tests/scripts/generate_data_for_tests.py'
 
 
-@nox.session(name='test-data-generate')
+@nox.session(name='test-data-generate', python="3.10")
 def test_data_generate(session) -> None:
     """
     Produced 'generated' test data, by running TEST_DATA_GENERATE_SCRIPT on 'source' test data.
@@ -151,10 +151,10 @@ RESULTS_DIR = f'{GENERATED_TEST_DATA_DIR}results/'
 
 PREP_CI = sorted(pathlib.Path(PREP_DIR).glob('*/*/teenytweetynet'))
 RESULTS_CI = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/teenytweetynet'))
-GENERATED_TEST_DATA_CI_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-0.x.ci.tar.gz'
+GENERATED_TEST_DATA_CI_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-1.x.ci.tar.gz'
 GENERATED_TEST_DATA_CI_DIRS = [CONFIGS_DIR] + PREP_CI + RESULTS_CI
 
-GENERATED_TEST_DATA_ALL_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-0.x.tar.gz'
+GENERATED_TEST_DATA_ALL_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-1.x.tar.gz'
 GENERATED_TEST_DATA_ALL_DIRS = [CONFIGS_DIR, PREP_DIR, RESULTS_DIR]
 
 
@@ -176,7 +176,7 @@ def test_data_tar_generated_ci(session) -> None:
     make_tarfile(GENERATED_TEST_DATA_CI_TAR, GENERATED_TEST_DATA_CI_DIRS)
 
 
-GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/532cs/download'
+GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/uvgjt/download'
 
 
 @nox.session(name='test-data-download-generated-all')
@@ -191,12 +191,13 @@ def test_data_download_generated_all(session) -> None:
     with tarfile.open(GENERATED_TEST_DATA_ALL_TAR, "r:gz") as tf:
         tf.extractall(path='.')
     session.log('Fixing paths in .csv files')
+    session.install("pandas")
     session.run(
         "python", "./tests/scripts/fix_prep_csv_paths.py"
     )
 
 
-GENERATED_TEST_DATA_CI_URL = 'https://osf.io/g79sx/download'
+GENERATED_TEST_DATA_CI_URL = 'https://osf.io/un2zs/download'
 
 
 @nox.session(name='test-data-download-generated-ci')
