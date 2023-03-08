@@ -17,6 +17,7 @@ build/
 
 # Sphinx
 doc/_build/
+doc/api/generated
 
 # test data
 tests/data_for_tests/source/
