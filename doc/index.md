@@ -76,6 +76,7 @@ howto/index
 faq
 reference/index
 development/index
+api/index
 reference/about
 poems/index
 ```
