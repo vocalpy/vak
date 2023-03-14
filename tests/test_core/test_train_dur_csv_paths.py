@@ -10,9 +10,6 @@ import vak.io.dataframe
 import vak.labels
 import vak.paths
 
-SPECT_KEY = "s"
-TIMEBINS_KEY = "t"
-
 
 @pytest.fixture
 def tmp_previous_run_path_factory(tmp_path):
@@ -119,7 +116,7 @@ def test_from_dir(
     timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(dataset_df)
 
     labelset_notmat = vak.converters.labelset_to_set(labelset_notmat)
-    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path, TIMEBINS_KEY)
+    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path)
     if has_unlabeled:
         map_unlabeled = True
     else:
@@ -139,8 +136,6 @@ def test_from_dir(
         cfg.learncurve.num_replicates,
         results_path,
         window_size,
-        SPECT_KEY,
-        TIMEBINS_KEY,
         labelmap,
     )
     assert isinstance(train_dur_csv_paths, dict)
@@ -180,7 +175,7 @@ def test_from_df(
     timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(dataset_df)
 
     labelset_notmat = vak.converters.labelset_to_set(labelset_notmat)
-    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path, TIMEBINS_KEY)
+    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path)
     if has_unlabeled:
         map_unlabeled = True
     else:
@@ -199,7 +194,5 @@ def test_from_df(
         results_path,
         labelset_notmat,
         window_size,
-        SPECT_KEY,
-        TIMEBINS_KEY,
         labelmap,
     )

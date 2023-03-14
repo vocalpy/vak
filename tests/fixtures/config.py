@@ -199,9 +199,11 @@ def all_generated_train_configs(generated_test_configs_root):
     return sorted(generated_test_configs_root.glob("test_train*toml"))
 
 
+ALL_GENERATED_LEARNCURVE_CONFIGS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("test_learncurve*toml"))
+
 @pytest.fixture
 def all_generated_learncurve_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("test_learncurve*toml"))
+    return ALL_GENERATED_LEARNCURVE_CONFIGS
 
 
 @pytest.fixture

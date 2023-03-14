@@ -252,9 +252,9 @@ def learning_curve(
 
             window_dataset_kwargs = {}
             for window_dataset_kwarg in [
-                "spect_id_vector",
-                "spect_inds_vector",
-                "x_inds",
+                "source_ids",
+                "source_inds",
+                "window_inds",
             ]:
                 window_dataset_kwargs[window_dataset_kwarg] = np.load(
                     this_train_dur_this_replicate_results_path.joinpath(

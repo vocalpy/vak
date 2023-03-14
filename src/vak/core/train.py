@@ -44,9 +44,9 @@ def train(
     spect_key="s",
     timebins_key="t",
     normalize_spectrograms=True,
-    spect_id_vector=None,
-    spect_inds_vector=None,
-    x_inds=None,
+    source_ids=None,
+    source_inds=None,
+    window_inds=None,
     shuffle=True,
     val_step=None,
     ckpt_step=None,
@@ -124,21 +124,21 @@ def train(
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    spect_id_vector : numpy.ndarray
+    source_ids : numpy.ndarray
         Parameter for WindowDataset. Represents the 'id' of any spectrogram,
         i.e., the index into spect_paths that will let us load it.
         Default is None.
-    spect_inds_vector : numpy.ndarray
-        Parameter for WindowDataset. Same length as spect_id_vector
+    source_inds : numpy.ndarray
+        Parameter for WindowDataset. Same length as source_ids
         but values represent indices within each spectrogram.
         Default is None.
-    x_inds : numpy.ndarray
+    window_inds : numpy.ndarray
         Parameter for WindowDataset.
         Indices of each window in the dataset. The value at x[0]
         represents the start index of the first window; using that
-        value, we can index into spect_id_vector to get the path
+        value, we can index into source_ids to get the path
         of the spectrogram file to load, and we can index into
-        spect_inds_vector to index into the spectrogram itself
+        source_inds to index into the spectrogram itself
         and get the window.
         Default is None.
     val_step : int
@@ -272,9 +272,9 @@ def train(
 
     train_dataset = WindowDataset.from_csv(
         csv_path=dataset_path,
-        x_inds=x_inds,
-        spect_id_vector=spect_id_vector,
-        spect_inds_vector=spect_inds_vector,
+        window_inds=window_inds,
+        source_ids=source_ids,
+        source_inds=source_inds,
         split="train",
         labelmap=labelmap,
         window_size=window_size,

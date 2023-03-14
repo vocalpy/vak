@@ -9,7 +9,7 @@ import pandas as pd
 
 from ... import split
 from ...converters import expanded_user_path
-from ...datasets.window_dataset import WindowDataset
+from ...datasets import window_dataset
 
 
 logger = logging.getLogger(__name__)
@@ -196,12 +196,14 @@ def from_dir(
             )
 
             subset_df = pd.read_csv(dataset_path)
+
             (
-                spect_id_vector,
-                spect_inds_vector,
-                x_inds,
-            ) = WindowDataset.spect_vectors_from_df(
+                source_ids,
+                source_inds,
+                window_inds,
+            ) = window_dataset.helper.vectors_from_df(
                 subset_df,
+                "spect",
                 "train",
                 window_size,
                 spect_key,
@@ -211,8 +213,8 @@ def from_dir(
                 labelmap=labelmap,
             )
             for vec_name, vec in zip(
-                ["spect_id_vector", "spect_inds_vector", "x_inds"],
-                [spect_id_vector, spect_inds_vector, x_inds],
+                ["source_ids", "source_inds", "window_inds"],
+                [source_ids, source_inds, window_inds],
             ):
                 np.save(results_path_this_replicate.joinpath(f"{vec_name}.npy"), vec)
 
@@ -337,11 +339,12 @@ def from_df(
             ]  # remove rows where split set to 'None'
             # ---- use *just* train subset to get spect vectors for WindowDataset
             (
-                spect_id_vector,
-                spect_inds_vector,
-                x_inds,
-            ) = WindowDataset.spect_vectors_from_df(
+                source_ids,
+                source_inds,
+                window_inds,
+            ) = window_dataset.helper.vectors_from_df(
                 train_split_df,
+                "spect",
                 "train",
                 window_size,
                 spect_key,
@@ -351,8 +354,8 @@ def from_df(
                 labelmap=labelmap,
             )
             for vec_name, vec in zip(
-                ["spect_id_vector", "spect_inds_vector", "x_inds"],
-                [spect_id_vector, spect_inds_vector, x_inds],
+                ["source_ids", "source_inds", "window_inds"],
+                [source_ids, source_inds, window_inds],
             ):
                 np.save(results_path_this_replicate.joinpath(f"{vec_name}.npy"), vec)
             # keep the same validation and test set by concatenating them with the train subset
