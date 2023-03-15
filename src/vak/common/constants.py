@@ -10,6 +10,7 @@ from scipy.io import loadmat
 import soundfile
 
 
+# ---- audio files ----
 AUDIO_FORMAT_FUNC_MAP = {
     "cbin": load_cbin,
     "flac": soundfile.read,
@@ -25,6 +26,9 @@ SPECT_FORMAT_LOAD_FUNCTION_MAP = {
     "npz": np.load,
 }
 VALID_SPECT_FORMATS = list(SPECT_FORMAT_LOAD_FUNCTION_MAP.keys())
+
+# ---- valid types of training data, the $x$ that goes into a network
+VALID_X_SOURCES = {'audio', 'spect'}
 
 # ---- annotation files ----
 VALID_ANNOT_FORMATS = crowsetta.formats.as_list()
