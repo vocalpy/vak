@@ -3,9 +3,10 @@ import pathlib
 import warnings
 
 import numpy as np
+import numpy.typing as npt
 
 
-def column_or_1d(y, warn=False):
+def column_or_1d(y: npt.NDArray, warn: bool = False) -> npt.NDArray:
     """ravel column or 1d numpy array, else raise an error
 
     Parameters
