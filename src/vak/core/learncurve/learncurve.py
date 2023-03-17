@@ -227,10 +227,13 @@ def learning_curve(
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
     logger.info(f"Starting training for learning curve.")
-    for train_dur, dataset_paths in train_dur_dataset_paths.items():
+    # ``sorted(keys)`` to ensure we run in ascending size of training set,
+    # even for previous run paths. Fixes
+    for train_dur in sorted(train_dur_dataset_paths.keys()):
         logger.info(
             f"Training replicates for training set of size: {train_dur}s",
         )
+        dataset_paths = train_dur_dataset_paths[train_dur]
 
         for replicate_num, this_train_dur_this_replicate_dataset_path in enumerate(
             dataset_paths
