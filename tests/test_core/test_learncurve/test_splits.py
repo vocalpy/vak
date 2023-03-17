@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import vak.converters
-import vak.core.learncurve.train_dur_csv_paths
+import vak.core.learncurve.splits
 import vak.datasets.seq
 import vak.io.dataframe
 import vak.labels
@@ -22,18 +22,18 @@ def tmp_previous_run_path_factory(tmp_path):
 
         for train_set_dur in train_set_durs:
             path_this_train_dur = results_path.joinpath(
-                vak.core.learncurve.train_dur_csv_paths.train_dur_dirname(train_set_dur)
+                vak.core.learncurve.splits.train_dur_dirname(train_set_dur)
             )
             path_this_train_dur.mkdir()
             for replicate_num in range(1, num_replicates + 1):
                 path_this_replicate = path_this_train_dur.joinpath(
-                    vak.core.learncurve.train_dur_csv_paths.replicate_dirname(
+                    vak.core.learncurve.splits.replicate_dirname(
                         replicate_num
                     )
                 )
                 path_this_replicate.mkdir()
                 fake_subset_csv_path = path_this_replicate.joinpath(
-                    vak.core.learncurve.train_dur_csv_paths.subset_csv_filename(
+                    vak.core.learncurve.splits.subset_csv_filename(
                         csv_path, train_set_dur, replicate_num
                     )
                 )
@@ -60,17 +60,17 @@ def test_dict_from_dir(tmp_previous_run_path_factory, train_set_durs, num_replic
     not alphabetically.
     See https://github.com/NickleDave/vak/issues/340
 
-    this is the main reason for factoring out the helper function ``_dict_from_dir``
+    this is the main reason for factoring out the helper function ``from_previous_run_path``
     """
     previous_run_path = tmp_previous_run_path_factory(train_set_durs, num_replicates)
 
-    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths._dict_from_dir(
+    splits = vak.core.learncurve.splits.from_previous_run_path(
         previous_run_path
     )
 
-    assert isinstance(train_dur_csv_paths, dict)
-    assert sorted(train_dur_csv_paths.keys()) == train_set_durs
-    for train_set_dur, csv_list in train_dur_csv_paths.items():
+    assert isinstance(splits, dict)
+    assert sorted(splits.keys()) == train_set_durs
+    for train_set_dur, csv_list in splits.items():
         replicate_nums = [int(csv.parent.name.split("_")[-1]) for csv in csv_list]
         assert replicate_nums == list(range(1, num_replicates + 1))
 
@@ -129,7 +129,7 @@ def test_from_dir(
     previous_run_path = previous_run_path_factory(default_model)
     previous_run_path = vak.converters.expanded_user_path(previous_run_path)
 
-    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths.from_dir(
+    splits = vak.core.learncurve.splits.from_dir(
         previous_run_path,
         cfg.learncurve.train_set_durs,
         timebin_dur,
@@ -138,9 +138,9 @@ def test_from_dir(
         window_size,
         labelmap,
     )
-    assert isinstance(train_dur_csv_paths, dict)
-    assert sorted(train_dur_csv_paths.keys()) == sorted(cfg.learncurve.train_set_durs)
-    for train_set_dur, csv_list in train_dur_csv_paths.items():
+    assert isinstance(splits, dict)
+    assert sorted(splits.keys()) == sorted(cfg.learncurve.train_set_durs)
+    for train_set_dur, csv_list in splits.items():
         replicate_nums = [int(csv.parent.name.split("_")[-1]) for csv in csv_list]
         assert replicate_nums == list(range(1, cfg.learncurve.num_replicates + 1))
 
@@ -185,7 +185,7 @@ def test_from_df(
     results_path = tmp_path.joinpath("test_from_df")
     results_path.mkdir()
 
-    train_dur_csv_paths = vak.core.learncurve.train_dur_csv_paths.from_df(
+    splits = vak.core.learncurve.splits.from_df(
         dataset_df,
         csv_path,
         cfg.learncurve.train_set_durs,

@@ -23,9 +23,9 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
 
             assert replicate_path.joinpath("labelmap.json").exists()
 
-            assert replicate_path.joinpath("spect_id_vector.npy").exists()
-            assert replicate_path.joinpath("spect_inds_vector.npy").exists()
-            assert replicate_path.joinpath("x_inds.npy").exists()
+            assert replicate_path.joinpath("source_ids.npy").exists()
+            assert replicate_path.joinpath("source_inds.npy").exists()
+            assert replicate_path.joinpath("window_inds.npy").exists()
 
             if cfg.learncurve.normalize_spectrograms:
                 assert replicate_path.joinpath("StandardizeSpect").exists()
