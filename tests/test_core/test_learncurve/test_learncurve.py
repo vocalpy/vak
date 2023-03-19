@@ -66,7 +66,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
-    vak.core.learning_curve(
+    vak.core.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
@@ -117,7 +117,7 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
 
-    vak.core.learning_curve(
+    vak.core.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
@@ -185,7 +185,7 @@ def test_learncurve_previous_run_path(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
 
-    vak.core.learning_curve(
+    vak.core.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,
@@ -217,7 +217,7 @@ def test_learncurve_previous_run_path(
 
 
 def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, device):
-    """Test that core.eval raises FileNotFoundError
+    """Test that core.learncurve.learning_curve raises FileNotFoundError
     when `dataset_path` does not exist."""
     options_to_change = [
         {"section": "LEARNCURVE", "option": "device", "value": device}
@@ -238,7 +238,7 @@ def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, devic
 
     invalid_csv_path = '/obviously/doesnt/exist/dataset.csv'
     with pytest.raises(FileNotFoundError):
-        vak.core.learning_curve(
+        vak.core.learncurve.learning_curve(
             model_name=cfg.learncurve.model,
             model_config=model_config,
             train_set_durs=cfg.learncurve.train_set_durs,
@@ -273,7 +273,7 @@ def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, devic
 def test_learncurve_raises_not_a_directory(dir_option_to_change,
                                            specific_config,
                                            tmp_path, device):
-    """Test that core.eval raises NotADirectoryError
+    """Test that core.learncurve.learning_curve raises NotADirectoryError
     when the following directories do not exist:
     results_path, previous_run_path
     """
@@ -294,7 +294,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
     results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.core.learning_curve(
+        vak.core.learncurve.learning_curve(
             model_name=cfg.learncurve.model,
             model_config=model_config,
             train_set_durs=cfg.learncurve.train_set_durs,

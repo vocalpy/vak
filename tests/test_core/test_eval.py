@@ -70,7 +70,7 @@ def test_eval(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
-    vak.core.eval(
+    vak.core.eval.eval(
         model_name=cfg.eval.model,
         model_config=model_config,
         dataset_path=cfg.eval.dataset_path,
@@ -130,7 +130,7 @@ def test_eval_raises_file_not_found(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
-        vak.core.eval(
+        vak.core.eval.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,
@@ -169,7 +169,7 @@ def test_eval_raises_not_a_directory(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
-        vak.core.eval(
+        vak.core.eval.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,

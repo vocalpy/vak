@@ -60,7 +60,7 @@ def learning_curve(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    core.learning_curve(
+    core.learncurve.learning_curve(
         model_name=model_name,
         model_config=model_config,
         train_set_durs=cfg.learncurve.train_set_durs,

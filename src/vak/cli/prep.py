@@ -114,7 +114,7 @@ def prep(toml_path):
 
     section = purpose.upper()
 
-    vak_df, dataset_path = core.prep(
+    vak_df, dataset_path = core.prep.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,

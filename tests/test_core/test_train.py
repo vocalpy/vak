@@ -58,7 +58,7 @@ def test_train(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.core.train(
+    vak.core.train.train(
         cfg.train.model,
         model_config,
         cfg.train.dataset_path,
@@ -109,7 +109,7 @@ def test_continue_training(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.core.train(
+    vak.core.train.train(
         model_name=cfg.train.model,
         model_config=model_config,
         dataset_path=cfg.train.dataset_path,
@@ -167,7 +167,7 @@ def test_train_raises_file_not_found(
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):
-        vak.core.train(
+        vak.core.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
@@ -216,7 +216,7 @@ def test_train_raises_not_a_directory(
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.core.train(
+        vak.core.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
@@ -270,7 +270,7 @@ def test_both_labelset_and_labelmap_raises(
     results_path.mkdir()
 
     with pytest.raises(ValueError):
-        vak.core.train(
+        vak.core.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
