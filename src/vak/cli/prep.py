@@ -1,5 +1,6 @@
+# note NO LOGGING -- we configure logger inside `core.prep`
+# so we can save log file inside dataset directory
 from pathlib import Path
-import logging
 import warnings
 
 import toml
@@ -10,10 +11,6 @@ from .. import (
 )
 from ..config.parse import _load_toml_from_path
 from ..config.validators import are_sections_valid
-from ..logging import config_logging_for_cli, log_version
-
-
-logger = logging.getLogger(__name__)
 
 
 def purpose_from_toml(config_toml, toml_path=None):
@@ -115,20 +112,7 @@ def prep(toml_path):
             )
             cfg.prep.labelset = None
 
-    # ---- set up logging ----------------------------------------------------------------------------------------------
-    config_logging_for_cli(
-        log_dst=cfg.prep.output_dir,
-        log_stem="prep",
-        level="INFO",
-        force=True
-    )
-    log_version(logger)
-
     section = purpose.upper()
-    logger.info(
-        f"Determined that purpose of config file is: {purpose}.\n"
-        f"Will add 'dataset_path' option to '{section}' section."
-    )
 
     vak_df, dataset_path = core.prep(
         data_dir=cfg.prep.data_dir,
