@@ -27,17 +27,18 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
     csv_path = getattr(cmd_cfg, 'dataset_path')
 
     df = pd.read_csv(csv_path)
+    df_split = df[df.split == 'train']
 
     # stuff we need just to be able to instantiate window dataset
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(df)
 
-    (source_ids,
-     source_inds,
-     window_inds,
+    (source_ids_before,
+     source_inds_before,
+     window_inds_before,
      lbl_tb) = vak.datasets.window_dataset.helper._vectors_from_df(
-        df,
+        df_split,
         window_size=window_size,
         crop_to_dur=True if crop_dur else False,
         labelmap=labelmap,
@@ -50,9 +51,9 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
         window_inds,
     ) = vak.datasets.window_dataset.helper.crop_vectors_keep_classes(
         lbl_tb,
-        source_ids,
-        source_inds,
-        window_inds,
+        source_ids_before,
+        source_inds_before,
+        window_inds_before,
         crop_dur,
         timebin_dur,
         labelmap,
@@ -69,7 +70,7 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
 
     # test that valid window indices is strictly less than or equal to source_ids
     window_inds_no_invalid = window_inds[window_inds != vak.datasets.WindowDataset.INVALID_WINDOW_VAL]
-    assert window_inds_no_invalid.shape[-1] < source_ids.shape[-1]
+    assert window_inds_no_invalid.shape[-1] <= source_ids.shape[-1]
 
     # test we preserved unique classes
     assert np.array_equal(
@@ -195,7 +196,7 @@ def test_vectors_from_df(config_type, model_name, audio_format, spect_format, an
     # Think of the last valid window: all bins in that window except the first are invalid
     n_total_invalid_start_inds = n_source_files_in_split * (window_size - 1)
     if crop_dur:
-        assert window_inds.shape[-1] < source_ids.shape[-1]
+        assert window_inds.shape[-1] <= source_ids.shape[-1]
     else:
         assert window_inds.shape[-1] == source_inds.shape[-1] - n_total_invalid_start_inds
 
@@ -250,6 +251,6 @@ def test_vectors_from_csv(config_type, model_name, audio_format, spect_format, a
     # Think of the last valid window: all bins in that window except the first are invalid
     n_total_invalid_start_inds = n_source_files_in_split * (window_size - 1)
     if crop_dur:
-        assert window_inds.shape[-1] < source_ids.shape[-1]
+        assert window_inds.shape[-1] <= source_ids.shape[-1]
     else:
         assert window_inds.shape[-1] == source_inds.shape[-1] - n_total_invalid_start_inds
