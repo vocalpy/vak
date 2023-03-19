@@ -1,24 +1,19 @@
-from datetime import datetime
 import logging
-from pathlib import Path
+import pathlib
 import warnings
 
-from .. import split
-from ..converters import expanded_user_path, labelset_to_set
-from ..io import dataframe
+from . import prep_helper
+
+from ... import split
+from ...converters import expanded_user_path, labelset_to_set
+from ...datasets.metadata import Metadata
+from ...io import dataframe
+from ...logging import config_logging_for_cli, log_version
+from ...timenow import get_timenow_as_str
 
 
 logger = logging.getLogger(__name__)
 
-
-VALID_PURPOSES = frozenset(
-    [
-        "eval",
-        "learncurve",
-        "predict",
-        "train",
-    ]
-)
 
 
 def prep(
@@ -112,15 +107,16 @@ def prep(
 
     Returns
     -------
-    vak_df : pandas.DataFrame
+    dataset_df : pandas.DataFrame
         That represents a dataset of vocalizations
-    dataset_path : Path
-        Path to csv saved from ``vak_df``.
+    dataset_path : pathlib.Path
+        Path to csv saved from ``dataset_df``.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
-    if purpose not in VALID_PURPOSES:
+    if purpose not in prep_helper.VALID_PURPOSES:
         raise ValueError(
-            f"purpose must be one of: {VALID_PURPOSES}\nValue for purpose was: {purpose}"
+            f"purpose must be one of: {prep_helper.VALID_PURPOSES}\n"
+            f"Value for purpose was: {purpose}"
         )
 
     if audio_format is None and spect_format is None:
@@ -176,11 +172,27 @@ def prep(
             )
 
     logger.info(f"purpose for dataset: {purpose}")
-    # ---- figure out file name ----------------------------------------------------------------------------------------
+    # ---- set up directory that will contain dataset, and csv file name -----------------------------------------------
     data_dir_name = data_dir.name
-    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-    csv_fname_stem = f"{data_dir_name}_prep_{timenow}"
-    dataset_path = output_dir.joinpath(f"{csv_fname_stem}.csv")
+    timenow = get_timenow_as_str()
+    # TODO: add 'dataset_name' parameter that overrides this default
+    # TODO: different default?
+    dataset_path = output_dir / f'{data_dir_name}-vak-dataset-generated-{timenow}'
+    dataset_path.mkdir()
+
+    # NOTE we set up logging here (instead of cli) so the prep log is included in the dataset
+    config_logging_for_cli(
+        log_dst=dataset_path,
+        log_stem="prep",
+        level="INFO",
+        force=True
+    )
+    log_version(logger)
+
+    dataset_csv_path = prep_helper.get_dataset_csv_path(dataset_path, data_dir_name, timenow)
+    logger.info(
+        f"Will prepare dataset as directory: {dataset_path}"
+    )
 
     # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
     # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
@@ -213,7 +225,7 @@ def prep(
             do_split = True
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    vak_df = dataframe.from_files(
+    dataset_df = dataframe.from_files(
         labelset=labelset,
         data_dir=data_dir,
         annot_format=annot_format,
@@ -221,11 +233,11 @@ def prep(
         audio_format=audio_format,
         spect_format=spect_format,
         spect_params=spect_params,
-        spect_output_dir=output_dir,
+        spect_output_dir=dataset_path,
         audio_dask_bag_kwargs=audio_dask_bag_kwargs,
     )
 
-    if vak_df.empty:
+    if dataset_df.empty:
         raise ValueError(
             "Calling `vak.io.dataframe.from_files` with arguments passed to `vak.core.prep` "
             "returned an empty dataframe.\n"
@@ -234,9 +246,9 @@ def prep(
 
     if do_split:
         # save before splitting, jic duration args are not valid (we can't know until we make dataset)
-        vak_df.to_csv(dataset_path)
-        vak_df = split.dataframe(
-            vak_df,
+        dataset_df.to_csv(dataset_csv_path)
+        dataset_df = split.dataframe(
+            dataset_df,
             labelset=labelset,
             train_dur=train_dur,
             val_dur=val_dur,
@@ -253,13 +265,27 @@ def prep(
         elif purpose == "predict":
             split_name = "predict"
 
-        vak_df = dataframe.add_split_col(vak_df, split=split_name)
+        dataset_df = prep_helper.add_split_col(dataset_df, split=split_name)
+
+    prep_helper.move_files_into_split_subdirs(
+        dataset_df,
+        dataset_path,
+        purpose
+    )
 
     logger.info(
-        f"saving dataset as a .csv file: {dataset_path}"
+        f"Saving dataset csv file: {dataset_csv_path}"
     )
-    vak_df.to_csv(
-        dataset_path, index=False
+    dataset_df.to_csv(
+        dataset_csv_path, index=False
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
-    return vak_df, dataset_path
+    timebin_dur = prep_helper.validate_and_get_timebin_dur(dataset_df)
+
+    metadata = Metadata(
+        dataset_csv_filename=str(dataset_csv_path.name),
+        timebin_dur=timebin_dur
+    )
+    metadata.to_json(dataset_path)
+
+    return dataset_df, dataset_path

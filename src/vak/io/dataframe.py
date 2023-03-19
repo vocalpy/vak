@@ -189,63 +189,6 @@ def from_files(
     return dataset_df
 
 
-def add_split_col(df, split):
-    """add a 'split' column to a pandas DataFrame.
-    Useful for assigning an entire dataset to the same "split",
-    e.g. 'train' or 'predict'.
-    All rows in the 'split' column will have the value specified.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        that represents a dataset of vocalizations
-    split : str
-        string that will be assigned to every row in the added "split" column.
-        One of {'train', 'val', 'test', 'predict'}.
-    """
-    if split not in {"train", "val", "test", "predict"}:
-        raise ValueError(
-            f"value for split should be one of {{'train', 'val', 'test', 'predict'}}, but was {split}"
-        )
-    split_col = np.asarray([split for _ in range(len(df))], dtype="object")
-    df["split"] = split_col
-    return df
-
-
-def validate_and_get_timebin_dur(df, expected_timebin_dur=None):
-    """validate timebin duration for a dataset represented by a pandas DataFrame
-
-    checks that there is a single, unique value for the time bin duration of all
-    spectrograms in the dataset, and if so, returns it
-
-    Parameters
-    ----------
-    df : pandas.Dataframe
-        created by dataframe.from_files or spect.to_dataframe
-    expected_timebin_dur : float
-
-    Returns
-    -------
-    timebin_dur : float
-        duration of time bins for all spectrograms in the dataset
-    """
-    timebin_dur = df["timebin_dur"].unique()
-    if len(timebin_dur) > 1:
-        raise ValueError(
-            f"found more than one time bin duration in dataset: {timebin_dur}"
-        )
-    elif len(timebin_dur) == 1:
-        timebin_dur = timebin_dur.item()
-
-    if expected_timebin_dur:
-        if timebin_dur != expected_timebin_dur:
-            raise ValueError(
-                "timebin duration from dataset, {}, did not match expected timebin duration"
-            )
-
-    return timebin_dur
-
-
 def split_dur(df, split):
     """get duration of a split in the dataset"""
     return df[df["split"] == split]["duration"].sum()
