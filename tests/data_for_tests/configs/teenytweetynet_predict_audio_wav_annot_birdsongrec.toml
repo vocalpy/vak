@@ -2,7 +2,6 @@
 data_dir = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0"
 output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_birdsongrec/teenytweetynet"
 audio_format = "wav"
-spect_output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_birdsongrec/teenytweetynet"
 
 [SPECT_PARAMS]
 fft_size = 256

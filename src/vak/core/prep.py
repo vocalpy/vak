@@ -28,7 +28,6 @@ def prep(
     audio_format=None,
     spect_format=None,
     spect_params=None,
-    spect_output_dir=None,
     annot_format=None,
     annot_file=None,
     labelset=None,
@@ -83,11 +82,6 @@ def prep(
         Default is None, but either audio_format or spect_format must be specified.
     spect_params : dict, vak.config.SpectParams
         parameters for creating spectrograms. Default is None.
-    spect_output_dir : str
-        path to location where spectrogram files should be saved.
-        Default is None, in which case it defaults to ``data_dir``.
-        A new directory will be created in ``spect_output_dir`` with
-        the name 'spectrograms_generated_{time stamp}'.
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid. Default is None.
@@ -153,11 +147,6 @@ def prep(
 
     if not output_dir.is_dir():
         raise NotADirectoryError(f"output_dir not found: {output_dir}")
-
-    if spect_output_dir:
-        spect_output_dir = expanded_user_path(spect_output_dir)
-        if not spect_output_dir.is_dir():
-            raise NotADirectoryError(f"spect_output_dir not found: {spect_output_dir}")
 
     if annot_file is not None:
         annot_file = expanded_user_path(annot_file)
@@ -232,7 +221,7 @@ def prep(
         audio_format=audio_format,
         spect_format=spect_format,
         spect_params=spect_params,
-        spect_output_dir=spect_output_dir,
+        spect_output_dir=output_dir,
         audio_dask_bag_kwargs=audio_dask_bag_kwargs,
     )
 

@@ -77,11 +77,6 @@ class PrepConfig:
     spect_format : str
         format of files containg spectrograms as 2-d matrices.
         One of {'mat', 'npy'}.
-    spect_output_dir : str
-        path to directory where array files containing spectrograms
-        should be saved, when generated from audio files.
-        Default is None, in which case the spectrogram files
-        are saved in ``data_dir`` by ``vak.io.dataframe.from_files``.
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid.
@@ -119,10 +114,6 @@ class PrepConfig:
 
     audio_format = attr.ib(validator=validators.optional(is_audio_format), default=None)
     spect_format = attr.ib(validator=validators.optional(is_spect_format), default=None)
-    spect_output_dir = attr.ib(
-        converter=converters.optional(expanded_user_path),
-        default=None,
-    )
     annot_file = attr.ib(
         converter=converters.optional(expanded_user_path),
         default=None,
