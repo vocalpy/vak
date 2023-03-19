@@ -1,22 +1,34 @@
 """tests for vak.core.prep module"""
-from pathlib import Path
+import json
+import pathlib
 import shutil
 
 import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
-import vak.config
-import vak.constants
-import vak.core.train
-import vak.paths
-import vak.io.spect
+import vak
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_prep.py
 def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
-    assert Path(dataset_path).exists()
-    df_from_dataset_path = pd.read_csv(dataset_path)
+    dataset_path = pathlib.Path(dataset_path)
+    assert dataset_path.exists()
+    assert dataset_path.is_dir()
+
+    log_path = sorted(dataset_path.glob('*log'))
+    assert len(log_path) == 1
+
+    meta_json_path = dataset_path / vak.datasets.metadata.Metadata.METADATA_JSON_FILENAME
+    assert meta_json_path.exists()
+
+    with meta_json_path.open('r') as fp:
+        meta_json = json.load(fp)
+
+    dataset_csv_path = dataset_path / meta_json['dataset_csv']
+    assert dataset_csv_path.exists()
+
+    df_from_dataset_path = pd.read_csv(dataset_csv_path)
 
     for column in vak.io.spect.DF_COLUMNS:
         if column == "duration":
