@@ -1,15 +1,21 @@
+"""Functions that return a dict mapping training set durations to csv paths,
+used by ``vak.core.learncurve``"""
+from __future__ import annotations
+
 from collections import defaultdict
 import logging
+import pathlib
 import pprint
 import re
 import shutil
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
 
 from ... import split
 from ...converters import expanded_user_path
-from ...datasets.window_dataset import WindowDataset
+from ...datasets import window_dataset
 
 
 logger = logging.getLogger(__name__)
@@ -21,29 +27,39 @@ CSV_GLOB = "**/*prep*csv"
 TRAIN_DUR_PAT = r"train_dur_(\d+\.\d+|\d+)s"
 
 
-def _dict_from_dir(previous_run_path):
-    """
-    build dictionary that maps training set durations to a list of
-    training subset csv paths, ordered by replicate number
+def from_previous_run_path(previous_run_path: str | pathlib.Path) -> dict:
+    """Given the path to a previous run of
+    ``vak.core.learncurve.learning_curve``, return a dict
+    that maps training set durations used in that run
+    to a list of csvs representing randomly drawn subsets of the
+    specified duration, one csv for each training replicate.
 
-    factored out as helper function so we can test this works correctly
+    Note that the true duration of all files in a subset
+    will usually be slightly larger
+    than the target duration,
+    and this dataset is cropped to the target
+    by loading into a ``WindowDataset``
+    with vectors that represent valid windows
+    within the target duration.
+
+    ``previous_run_path`` should have  like ``results_{timestamp}``,
+    and the actual .csv splits will be in sub-directories with names
+    corresponding to the training set duration.
 
     Parameters
     ----------
-    previous_run_path : str, Path
-        path to directory containing dataset .csv files
-        that represent subsets of training set, created by
-        a previous run of ``vak.core.learncurve.learning_curve``.
-        Typically directory will have a name like ``results_{timestamp}``
-        and the actual .csv splits will be in sub-directories with names
-        corresponding to the training set duration
+    previous_run_path : str, pathlib.Path
+        Path to results from a previous run of
+        ``vak.core.learncurve.learning_curve``.
 
     Returns
     -------
     train_dur_dataset_paths : dict
-        where keys are duration in seconds of subsets taken from training data,
-        and corresponding values are lists of paths to .csv files containing
-        those subsets
+        Dict with keys that are duration in seconds
+        of training sets,
+        and corresponding values are lists of paths
+        to .csv files containing randomly drawn subsets
+        of training data with the specified duration.
     """
     train_dur_dataset_paths = {}
     train_dur_dirs = previous_run_path.glob("train_dur_*s")
@@ -78,30 +94,31 @@ def _dict_from_dir(previous_run_path):
 
 
 def from_dir(
-    previous_run_path,
-    train_set_durs,
-    timebin_dur,
-    num_replicates,
-    results_path,
-    window_size,
-    spect_key,
-    timebins_key,
-    labelmap,
-):
-    """return a ``dict`` mapping training dataset durations to dataset csv paths
-    from a previous run of `vak.core.learncurve.learning_curve`.
+    previous_run_path: str | pathlib.Path,
+    train_set_durs: Sequence[float],
+    timebin_dur: float,
+    num_replicates: int,
+    results_path: str | pathlib.Path,
+    window_size: int,
+    labelmap: dict,
+    spect_key: str = "s",
+    timebins_key: str = "t",
+) -> dict:
+    """Return a ``dict`` mapping training set durations to dataset csv paths
+    from a previous run of ``vak.core.learncurve.learning_curve``.
 
-    Recovers the previous subsets of the total training set, so that
-    they can be used to re-run a different experiment on the same subsets for comparison.
+    Recovers the previous subsets of the total training set,
+    so that they can be used to re-run a different experiment
+    on the same subsets for comparison.
 
     Parameters
     ----------
-    previous_run_path : str, Path
-        path to directory containing dataset .csv files
+    previous_run_path : str, pathlib.Path
+        Path to directory containing dataset csv files
         that represent subsets of training set, created by
         a previous run of ``vak.core.learncurve.learning_curve``.
         Typically directory will have a name like ``results_{timestamp}``
-        and the actual .csv splits will be in sub-directories with names
+        and the actual csv splits will be in sub-directories with names
         corresponding to the training set duration
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
@@ -148,7 +165,7 @@ def from_dir(
             f"previous_run_path not recognized as a directory:\n{previous_run_path}"
         )
 
-    train_dur_dataset_paths = _dict_from_dir(previous_run_path)
+    train_dur_dataset_paths = from_previous_run_path(previous_run_path)
 
     # validate results
     found_train_set_durs = sorted(train_dur_dataset_paths.keys())
@@ -196,23 +213,24 @@ def from_dir(
             )
 
             subset_df = pd.read_csv(dataset_path)
+
             (
-                spect_id_vector,
-                spect_inds_vector,
-                x_inds,
-            ) = WindowDataset.spect_vectors_from_df(
+                source_ids,
+                source_inds,
+                window_inds,
+            ) = window_dataset.helper.vectors_from_df(
                 subset_df,
                 "train",
                 window_size,
-                spect_key,
-                timebins_key,
+                spect_key=spect_key,
+                timebins_key=timebins_key,
                 crop_dur=train_dur,
                 timebin_dur=timebin_dur,
                 labelmap=labelmap,
             )
             for vec_name, vec in zip(
-                ["spect_id_vector", "spect_inds_vector", "x_inds"],
-                [spect_id_vector, spect_inds_vector, x_inds],
+                ["source_ids", "source_inds", "window_inds"],
+                [source_ids, source_inds, window_inds],
             ):
                 np.save(results_path_this_replicate.joinpath(f"{vec_name}.npy"), vec)
 
@@ -221,44 +239,41 @@ def from_dir(
     return train_dur_dataset_paths
 
 
-def train_dur_dirname(train_dur):
-    """helper function that returns name of directory for all replicates
-    trained with a training set of a specified duration
-
-    factored out as function so we can test and use in fixtures
+def train_dur_dirname(train_dur: int) -> str:
+    """Returns name of directory for all replicates
+    trained with a training set of a specified duration,
+    ``f"train_dur_{train_dur}s"``.
     """
     return f"train_dur_{train_dur}s"
 
 
-def replicate_dirname(replicate_num):
-    """ "helper function that returns name of directory for a replicate
-
-    factored out as function so we can test and use in fixtures
+def replicate_dirname(replicate_num: int) -> str:
+    """Returns name of directory for a replicate,
+    ``f"replicate_{replicate_num}``.
     """
     return f"replicate_{replicate_num}"
 
 
-def subset_csv_filename(csv_path, train_dur, replicate_num):
-    """helper function that returns name of directory for a replicate
-
-    factored out as function so we can test and use in fixtures
+def subset_csv_filename(csv_path: pathlib.Path, train_dur: int, replicate_num: int) -> str:
+    """Extracts the name of directory for one replicate with one training set duration
+    from a csv path: ``f"{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv"``
     """
     return f"{csv_path.stem}_train_dur_{train_dur}s_replicate_{replicate_num}.csv"
 
 
 def from_df(
-    dataset_df,
-    csv_path,
-    train_set_durs,
-    timebin_dur,
-    num_replicates,
-    results_path,
-    labelset,
-    window_size,
-    spect_key,
-    timebins_key,
-    labelmap,
-):
+    dataset_df: pd.DataFrame,
+    csv_path: str | pathlib.Path,
+    train_set_durs: Sequence[float],
+    timebin_dur: float,
+    num_replicates: int,
+    results_path: str | pathlib.Path,
+    labelset: dict,
+    window_size: int,
+    labelmap: dict,
+    spect_key: str = "s",
+    timebins_key: str = "t",
+) -> dict:
     """return a ``dict`` mapping training dataset durations to dataset csv paths.
 
     csv paths representing subsets of the training data are generated using ``vak.split``.
@@ -337,10 +352,10 @@ def from_df(
             ]  # remove rows where split set to 'None'
             # ---- use *just* train subset to get spect vectors for WindowDataset
             (
-                spect_id_vector,
-                spect_inds_vector,
-                x_inds,
-            ) = WindowDataset.spect_vectors_from_df(
+                source_ids,
+                source_inds,
+                window_inds,
+            ) = window_dataset.helper.vectors_from_df(
                 train_split_df,
                 "train",
                 window_size,
@@ -351,8 +366,8 @@ def from_df(
                 labelmap=labelmap,
             )
             for vec_name, vec in zip(
-                ["spect_id_vector", "spect_inds_vector", "x_inds"],
-                [spect_id_vector, spect_inds_vector, x_inds],
+                ["source_ids", "source_inds", "window_inds"],
+                [source_ids, source_inds, window_inds],
             ):
                 np.save(results_path_this_replicate.joinpath(f"{vec_name}.npy"), vec)
             # keep the same validation and test set by concatenating them with the train subset

@@ -1,5 +1,13 @@
 import pytest
 
+# this constant defined "by hand" declares all the models for which there are fixtures,
+# instead of computing something dynamically e.g. from ``vak.models``.
+# Should be used throughout fixtures when we need to get things "by model"
+MODELS = [
+    "tweetynet",
+    "teenytweetynet",
+]
+
 
 @pytest.fixture
 def default_model():

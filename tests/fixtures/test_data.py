@@ -41,6 +41,8 @@ def generated_prep_data_root(generated_test_data_root):
     return GENERATED_TEST_DATA_ROOT / "prep"
 
 
+GENERATED_RESULTS_DATA_ROOT = GENERATED_TEST_DATA_ROOT / "results"
+
 @pytest.fixture
 def generated_results_data_root(generated_test_data_root):
-    return GENERATED_TEST_DATA_ROOT / "results"
+    return GENERATED_RESULTS_DATA_ROOT

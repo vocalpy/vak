@@ -4,7 +4,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from . import train_dur_csv_paths as _train_dur_csv_paths
+from . import splits
 from ..eval import eval
 from ..train import train
 from ... import (
@@ -195,23 +195,23 @@ def learning_curve(
         logger.info(
             f"Loading previous training subsets from:\n{previous_run_path}",
         )
-        train_dur_dataset_paths = _train_dur_csv_paths.from_dir(
+        train_dur_dataset_paths = splits.from_dir(
             previous_run_path,
             train_set_durs,
             timebin_dur,
             num_replicates,
             results_path,
             window_size,
+            labelmap,
             spect_key,
             timebins_key,
-            labelmap,
         )
     else:
         logger.info(
             f"Creating data sets of specified durations: {train_set_durs}",
         )
         # do all subsetting before training, so that we fail early if subsetting is going to fail
-        train_dur_dataset_paths = _train_dur_csv_paths.from_df(
+        train_dur_dataset_paths = splits.from_df(
             dataset_df,
             dataset_path,
             train_set_durs,
@@ -220,9 +220,9 @@ def learning_curve(
             results_path,
             labelset,
             window_size,
+            labelmap,
             spect_key,
             timebins_key,
-            labelmap,
         )
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
@@ -252,9 +252,9 @@ def learning_curve(
 
             window_dataset_kwargs = {}
             for window_dataset_kwarg in [
-                "spect_id_vector",
-                "spect_inds_vector",
-                "x_inds",
+                "source_ids",
+                "source_inds",
+                "window_inds",
             ]:
                 window_dataset_kwargs[window_dataset_kwarg] = np.load(
                     this_train_dur_this_replicate_results_path.joinpath(
