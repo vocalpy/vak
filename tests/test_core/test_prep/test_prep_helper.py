@@ -105,3 +105,7 @@ def test_add_split_col(audio_dir_cbin,
     assert "split" in vak_df.columns
 
     assert vak_df["split"].unique().item() == "train"
+
+
+def test_validate_and_get_timebin_dur():
+    assert False

@@ -64,8 +64,8 @@ def test_to_set(labels_list, expected_labelset):
         ('train', 'teenytweetynet', None, 'mat', 'yarden'),
     ]
 )
-def test_from_df(config_type, model_name, audio_format, spect_format, annot_format, specific_dataframe):
-    df = specific_dataframe(config_type, model_name, annot_format, audio_format, spect_format)
+def test_from_df(config_type, model_name, audio_format, spect_format, annot_format, specific_dataset_df):
+    df = specific_dataset_df(config_type, model_name, annot_format, audio_format, spect_format)
     out = vak.labels.from_df(df)
     assert isinstance(out, list)
     assert all([isinstance(labels, np.ndarray) for labels in out])
