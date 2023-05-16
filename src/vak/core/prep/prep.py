@@ -31,22 +31,27 @@ def prep(
     val_dur=None,
     test_dur=None,
 ):
-    """Prepare datasets of vocalizations for use with neural network models.
+    """Prepare datasets for use with neural network models.
 
-    High-level function that prepares datasets to be used by other
-    high-level functions like vak.train, vak.predict, and vak.learncurve
+    Datasets are used to train and evaluate neural networks.
+    The function also prepares datasets to generate predictions
+    with trained neural networks, and to train a series of models
+    with varying sizes of dataset so that performance
+    can be evaluated as a function of dataset size,
+    with a learning curve.
 
-    Saves a .csv file representing the dataset generated from data_dir.
+    When :func:`vak.core.prep` runs, it builds the dataset in
+    ``data_dir`` containing the data itself as
+    well as additional metadata.
 
-    Datasets are used to train neural networks that segment audio files into
-    vocalizations, and then predict labels for those segments.
-    The function also prepares datasets so neural networks can predict the
-    segmentation and annotation of vocalizations in them.
+    This is a high-level function that prepares datasets to be used by other
+    high-level functions like :func:`vak.core.train`,
+    :func:`vak.core.predict`, and :func:`vak.core.learncurve`.
+
     It can also split a dataset into training, validation, and test sets,
     e.g. for benchmarking different neural network architectures.
-
-    If the 'purpose' is set to 'train' or 'learncurve', and/or
-    the duration of either the training or test set is provided,
+    If the ``purpose`` argument is set to 'train' or 'learncurve',
+    and/or the duration of either the training or test set is provided,
     then the function attempts to split the dataset into training and test sets.
     A duration can also be specified for a validation set
     (used to measure performance during training).
@@ -54,7 +59,7 @@ def prep(
     identifies which files (rows) belong to the training, test, and
     validation sets created from that Dataset.
 
-    If the 'purpose' is set to 'predict' or 'eval',
+    If the ``purpose`` is set to 'predict' or 'eval',
     or no durations for any of the training sets are specified,
     then the function assumes all the vocalizations constitute a single
     dataset, and for all rows the 'split' columns for that dataset
@@ -63,52 +68,62 @@ def prep(
     Parameters
     ----------
     data_dir : str, Path
-        path to directory with files from which to make dataset
+        Path to directory with files from which to make dataset.
     purpose : str
-        one of {'train', 'predict', 'learncurve'}
+        Purpose of the dataset.
+        One of {'train', 'eval', 'predict', 'learncurve'}.
+        These correspond to commands of the vak command-line interface.
     output_dir : str
         Path to location where data sets should be saved.
-        Default is None, in which case data sets to `data_dir`.
+        Default is ``None``, in which case it defaults to ``data_dir``.
     audio_format : str
-        format of audio files. One of {'wav', 'cbin'}.
-        Default is None, but either audio_format or spect_format must be specified.
+        Format of audio files. One of {'wav', 'cbin'}.
+        Default is ``None``, but either ``audio_format`` or ``spect_format``
+        must be specified.
     spect_format : str
-        format of files containing spectrograms as 2-d matrices. One of {'mat', 'npz'}.
+        Format of files containing spectrograms as 2-d matrices. One of {'mat', 'npz'}.
         Default is None, but either audio_format or spect_format must be specified.
     spect_params : dict, vak.config.SpectParams
-        parameters for creating spectrograms. Default is None.
+        Parameters for creating spectrograms. Default is ``None``.
     annot_format : str
-        format of annotations. Any format that can be used with the
-        crowsetta library is valid. Default is None.
+        Format of annotations. Any format that can be used with the
+        :module:`crowsetta` library is valid. Default is ``None``.
     annot_file : str
-        Path to a single annotation file. Default is None.
-        Used when a single file contains annotations for multiple audio files.
+        Path to a single annotation file. Default is ``None``.
+        Used when a single file contains annotates multiple audio
+        or spectrogram files.
     labelset : str, list, set
-        of str or int, set of unique labels for vocalizations. Default is None.
-        If not None, then files will be skipped where the associated annotation
+        Set of unique labels for vocalizations. Strings or integers.
+        Default is ``None``. If not ``None``, then files will be skipped
+        where the associated annotation
         contains labels not found in ``labelset``.
-        ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
-        See help for that function for details on how to specify labelset.
+        ``labelset`` is converted to a Python ``set`` using
+        :func:`vak.converters.labelset_to_set`.
+        See help for that function for details on how to specify ``labelset``.
     audio_dask_bag_kwargs : dict
-        Keyword arguments used when calling ``dask.bag.from_sequence``
-        inside ``vak.io.audio``, where it is used to parallelize
+        Keyword arguments used when calling :func:`dask.bag.from_sequence`
+        inside :func:`vak.io.audio`, where it is used to parallelize
         the conversion of audio files into spectrograms.
         Option should be specified in config.toml file as an inline table,
         e.g., ``audio_dask_bag_kwargs = { npartitions = 20 }``.
         Allows for finer-grained control
         when needed to process files of different sizes.
     train_dur : float
-        total duration of training set, in seconds. When creating a learning curve,
-        training subsets of shorter duration will be drawn from this set. Default is None.
+        Total duration of training set, in seconds.
+        When creating a learning curve,
+        training subsets of shorter duration
+        will be drawn from this set. Default is None.
     val_dur : float
-        total duration of validation set, in seconds. Default is None.
+        Total duration of validation set, in seconds.
+        Default is None.
     test_dur : float
-        total duration of test set, in seconds. Default is None.
+        Total duration of test set, in seconds.
+        Default is None.
 
     Returns
     -------
     dataset_df : pandas.DataFrame
-        That represents a dataset of vocalizations
+        That represents a dataset.
     dataset_path : pathlib.Path
         Path to csv saved from ``dataset_df``.
     """
@@ -194,7 +209,27 @@ def prep(
         f"Will prepare dataset as directory: {dataset_path}"
     )
 
-    # ---- figure out if we're going to split into train / val / test sets ---------------------------------------------
+    # ---- actually make the dataset -----------------------------------------------------------------------------------
+    dataset_df = dataframe.from_files(
+        labelset=labelset,
+        data_dir=data_dir,
+        annot_format=annot_format,
+        annot_file=annot_file,
+        audio_format=audio_format,
+        spect_format=spect_format,
+        spect_params=spect_params,
+        spect_output_dir=dataset_path,
+        audio_dask_bag_kwargs=audio_dask_bag_kwargs,
+    )
+
+    if dataset_df.empty:
+        raise ValueError(
+            "Calling `vak.io.dataframe.from_files` with arguments passed to `vak.core.prep` "
+            "returned an empty dataframe.\n"
+            "Please double-check arguments to `vak.core.prep` function."
+        )
+
+    # ---- (possibly) split into train / val / test sets ---------------------------------------------
     # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
     if (purpose == "train" or purpose == "learncurve") and (
         (train_dur is not None and train_dur > 0)
@@ -223,26 +258,6 @@ def prep(
         else:
             logger.info("will split dataset")
             do_split = True
-
-    # ---- actually make the dataset -----------------------------------------------------------------------------------
-    dataset_df = dataframe.from_files(
-        labelset=labelset,
-        data_dir=data_dir,
-        annot_format=annot_format,
-        annot_file=annot_file,
-        audio_format=audio_format,
-        spect_format=spect_format,
-        spect_params=spect_params,
-        spect_output_dir=dataset_path,
-        audio_dask_bag_kwargs=audio_dask_bag_kwargs,
-    )
-
-    if dataset_df.empty:
-        raise ValueError(
-            "Calling `vak.io.dataframe.from_files` with arguments passed to `vak.core.prep` "
-            "returned an empty dataframe.\n"
-            "Please double-check arguments to `vak.core.prep` function."
-        )
 
     if do_split:
         # save before splitting, jic duration args are not valid (we can't know until we make dataset)
