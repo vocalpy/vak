@@ -436,7 +436,6 @@ class WindowDataset(VisionDataset):
         target_transform : callable
             Callable that applies pre-processing to each "target" :math:`y_i`
             in the training set.
-
         source_ids : numpy.ndarray
             represents the 'id' of any spectrogram,
             i.e., the index into source_paths that will let us load it
