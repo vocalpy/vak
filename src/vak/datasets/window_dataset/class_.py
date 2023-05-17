@@ -13,10 +13,10 @@ from torchvision.datasets.vision import VisionDataset
 from ... import (
     annotation,
     files,
-    io,
     transforms,
     validators
 )
+from ...core.prep.prep_helper import validate_and_get_timebin_dur
 
 from .helper import vectors_from_df
 
@@ -516,7 +516,7 @@ class WindowDataset(VisionDataset):
             )
 
         annots = annotation.from_df(df)
-        timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
+        timebin_dur = validate_and_get_timebin_dur(df)
 
         # note that we set "root" to csv path
         return cls(
