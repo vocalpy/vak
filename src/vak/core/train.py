@@ -22,6 +22,7 @@ from ..device import get_default as get_default_device
 from ..io import dataframe
 from ..paths import generate_results_dir_name_as_path
 from ..trainer import get_default_trainer
+from .prep.prep_helper import validate_and_get_timebin_dur
 
 
 logger = logging.getLogger(__name__)
@@ -157,8 +158,8 @@ def train(
         Default is None, in which case training only stops after the specified number of epochs.
     """
     for path, path_name in zip(
-            (checkpoint_path, dataset_path, labelmap_path, spect_scaler_path),
-            ('checkpoint_path', 'dataset_path', 'labelmap_path', 'spect_scaler_path'),
+            (checkpoint_path, labelmap_path, spect_scaler_path),
+            ('checkpoint_path', 'labelmap_path', 'spect_scaler_path'),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -166,10 +167,18 @@ def train(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
+    dataset_path = pathlib.Path(dataset_path)
+    if not dataset_path.exists() or not dataset_path.is_dir():
+        raise NotADirectoryError(
+            f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+        )
+
     logger.info(
-        f"Loading dataset from .csv path: {dataset_path}",
+        f"Loading dataset from path: {dataset_path}",
     )
-    dataset_df = pd.read_csv(dataset_path)
+    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+    dataset_df = pd.read_csv(dataset_csv_path)
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
     if val_step and not dataset_df["split"].str.contains("val").any():
         raise ValueError(
@@ -188,7 +197,7 @@ def train(
         results_path = generate_results_dir_name_as_path(root_results_dir)
         results_path.mkdir()
 
-    timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
+    timebin_dur = validate_and_get_timebin_dur(dataset_df)
     logger.info(
         f"Size of timebin in spectrograms from dataset, in seconds: {timebin_dur}",
     )
@@ -221,7 +230,7 @@ def train(
         )
 
     if labelset:
-        has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_path, timebins_key)
+        has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
         if has_unlabeled:
             map_unlabeled = True
         else:
@@ -271,7 +280,7 @@ def train(
     transform, target_transform = transforms.get_defaults("train", spect_standardizer)
 
     train_dataset = WindowDataset.from_csv(
-        csv_path=dataset_path,
+        csv_path=dataset_csv_path,
         window_inds=window_inds,
         source_ids=source_ids,
         source_inds=source_inds,
@@ -284,7 +293,7 @@ def train(
         target_transform=target_transform,
     )
     logger.info(
-        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration()}",
+        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration}",
     )
     train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,
@@ -302,7 +311,7 @@ def train(
             return_padding_mask=True,
         )
         val_dataset = VocalDataset.from_csv(
-            csv_path=dataset_path,
+            csv_path=dataset_csv_path,
             split="val",
             labelmap=labelmap,
             spect_key=spect_key,
