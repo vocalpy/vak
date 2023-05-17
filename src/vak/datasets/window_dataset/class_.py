@@ -343,6 +343,7 @@ class WindowDataset(VisionDataset):
         """number of batches"""
         return len(self.window_inds)
 
+    @property
     def duration(self):
         """duration of WindowDataset, in seconds"""
         return self.source_inds.shape[-1] * self.timebin_dur
