@@ -56,6 +56,7 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
     The ``DataFrame`` is modified in place
     as the files are moved, so nothing is returned.
     """
+    # ---- first move all the spectrograms; we need to handle annotations separately -----------------------------------
     moved_spect_paths = []  # to clean up after moving -- may be empty if we copy all spects (e.g., user generated)
     # ---- copy/move files into split sub-directories inside dataset directory
     for split_name in sorted(dataset_df.split.unique()):
@@ -97,21 +98,43 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
         new_spect_paths = [str(new_spect_path) for new_spect_path in new_spect_paths]
         dataset_df.loc[split_df.index, 'spect_path'] = new_spect_paths
 
-        if purpose != 'predict':
-            split_annot_paths = split_df['annot_path'].values.tolist()
-            copied_annot_paths = []
-            for annot_path in split_annot_paths:
-                annot_path = pathlib.Path(annot_path)
-                copied_annot_paths.append(
-                    shutil.copy(
-                        src=annot_path, dst=split_subdir
-                    )
-                )
-            # cast to str before rewrite so that type doesn't silently change for some rows
-            copied_annot_paths = [str(copied_annot_path) for copied_annot_path in copied_annot_paths]
-            dataset_df.loc[split_df.index, 'annot_path'] = copied_annot_paths
+    if purpose != 'predict':
+        if len(dataset_df["annot_path"].unique()) == 1:
+            # --> there is a single annotation file associated with all rows
+            # in this case we copy the single annotation file to the root of the dataset directory
+            annot_path = pathlib.Path(
+                dataset_df["annot_path"].unique().item()
+            )
+            copied_annot_path = dataset_path / annot_path.name
+            shutil.copy(src=annot_path, dst=copied_annot_path)
+            dataset_df["annot_path"] = str(copied_annot_path)  # same path for all rows
 
-    # ---- clean up after moving/copying
+        elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
+            # --> there is a unique annotation file (path) for each row, i.e. a 1:1 mapping from spect:annotation
+            # in this case we copy each annotation file to the split directory with its spectrogram file
+            for split_name in sorted(dataset_df.split.unique()):
+                split_subdir = dataset_path / split_name  # we already made this dir when moving spects
+                split_df = dataset_df[dataset_df.split == split_name].copy()
+                split_annot_paths = split_df['annot_path'].values.tolist()
+                copied_annot_paths = []
+                for annot_path in split_annot_paths:
+                    annot_path = pathlib.Path(annot_path)
+                    copied_annot_paths.append(
+                        shutil.copy(
+                            src=annot_path, dst=split_subdir
+                        )
+                    )
+                # cast to str before rewrite so that type doesn't silently change for some rows
+                copied_annot_paths = [str(copied_annot_path) for copied_annot_path in copied_annot_paths]
+                dataset_df.loc[split_df.index, 'annot_path'] = copied_annot_paths
+
+        else:
+            raise ValueError(
+                "Unable to load labels from dataframe; did not find an annotation file for each row or "
+                "a single annotation file associated with all rows."
+            )
+
+    # ---- clean up after moving/copying -------------------------------------------------------------------------------
     # remove any directories that we just emptied
     if moved_spect_paths:
         unique_parents = set([
