@@ -106,7 +106,7 @@ class Metadata:
                 f'dataset_path not recognized as a directory: {dataset_path}'
             )
 
-        json_dict = asdict(self)
+        json_dict = attr.asdict(self)
         json_path = dataset_path / self.METADATA_JSON_FILENAME
         with json_path.open('w') as fp:
             json.dump(json_dict, fp, indent=4)
