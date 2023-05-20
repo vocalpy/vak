@@ -2,6 +2,7 @@ from collections import OrderedDict
 from datetime import datetime
 import json
 import logging
+import pathlib
 
 import joblib
 import pytorch_lightning as lightning
@@ -9,6 +10,7 @@ import pandas as pd
 import torch.utils.data
 
 from .. import (
+    datasets,
     files,
     models,
     timebins,
@@ -17,6 +19,7 @@ from .. import (
 )
 from ..datasets.vocal_dataset import VocalDataset
 from ..labels import multi_char_labels_to_single_char
+from .prep.prep_helper import validate_and_get_timebin_dur
 
 
 logger = logging.getLogger(__name__)
@@ -105,14 +108,21 @@ def eval(
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
-            (checkpoint_path, dataset_path, labelmap_path, spect_scaler_path),
-            ('checkpoint_path', 'dataset_path', 'labelmap_path', 'spect_scaler_path'),
+            (checkpoint_path, labelmap_path, spect_scaler_path),
+            ('checkpoint_path', 'labelmap_path', 'spect_scaler_path'),
     ):
         if path is not None:  # because `spect_scaler_path` is optional
             if not validators.is_a_file(path):
                 raise FileNotFoundError(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
+
+    dataset_path = pathlib.Path(dataset_path)
+    if not dataset_path.exists() or not dataset_path.is_dir():
+        raise NotADirectoryError(
+            f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+        )
+
     if not validators.is_a_directory(output_dir):
         raise NotADirectoryError(
             f'value for ``output_dir`` not recognized as a directory: {output_dir}'
@@ -142,15 +152,18 @@ def eval(
         # (to minimize chance of knock-on bugs)
         labelmap = multi_char_labels_to_single_char(labelmap)
 
+    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+
     item_transform = transforms.get_defaults(
         "eval",
         spect_standardizer,
         window_size=window_size,
         return_padding_mask=True,
     )
-    logger.info(f"creating dataset for evaluation from: {dataset_path}")
+    logger.info(f"creating dataset for evaluation from: {dataset_csv_path}")
     val_dataset = VocalDataset.from_csv(
-        csv_path=dataset_path,
+        csv_path=dataset_csv_path,
         split=split,
         labelmap=labelmap,
         spect_key=spect_key,
@@ -174,11 +187,7 @@ def eval(
 
     if post_tfm_kwargs:
         dataset_df = pd.read_csv(dataset_path)
-        # we use the timebins vector from the first spect path to get timebin dur.
-        # this is less careful than calling io.dataframe.validate_and_get_timebin_dur
-        # but it's also much faster, and we can assume dataframe was validated when it was made
-        spect_dict = files.spect.load(dataset_df['spect_path'].values[0])
-        timebin_dur = timebins.timebin_dur_from_vec(spect_dict[timebins_key])
+        timebin_dur = validate_and_get_timebin_dur(dataset_df)
 
         post_tfm = transforms.labeled_timebins.PostProcess(
             timebin_dur=timebin_dur,
