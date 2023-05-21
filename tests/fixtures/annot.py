@@ -20,7 +20,7 @@ def annot_file_yarden():
 
 
 scribe_yarden = crowsetta.Transcriber(format="yarden")
-ANNOT_LIST_YARDEN = scribe_yarden.from_file(ANNOT_FILE_YARDEN)
+ANNOT_LIST_YARDEN = scribe_yarden.from_file(ANNOT_FILE_YARDEN).to_annot()
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def annot_files_notmat():
 
 
 scribe_notmat = crowsetta.Transcriber(format="notmat")
-ANNOT_LIST_NOTMAT = scribe_notmat.from_file(ANNOT_FILES_NOTMAT)
+ANNOT_LIST_NOTMAT = [scribe_notmat.from_file(notmat).to_annot() for notmat in ANNOT_FILES_NOTMAT]
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ def annot_file_birdsongrec():
 
 
 scribe_birdsongrec = crowsetta.Transcriber(format="birdsong-recognition-dataset")
-ANNOT_LIST_BIRDSONGREC = scribe_birdsongrec.from_file(ANNOT_FILE_BIRDSONGREC)
+ANNOT_LIST_BIRDSONGREC = scribe_birdsongrec.from_file(ANNOT_FILE_BIRDSONGREC).to_annot()
 
 
 @pytest.fixture
@@ -123,7 +123,8 @@ def annot_files_textgrid():
 
 
 scribe_textgrid = crowsetta.Transcriber(format="textgrid")
-ANNOT_LIST_TEXTGRID = scribe_textgrid.from_file(ANNOT_FILES_TEXTGRID)
+ANNOT_LIST_TEXTGRID = [scribe_textgrid.from_file(textgrid).to_annot()
+                       for textgrid in ANNOT_FILES_TEXTGRID]
 
 
 @pytest.fixture
@@ -150,7 +151,8 @@ def annot_files_simple_seq():
 
 
 scribe_simple_seq = crowsetta.Transcriber(format="simple-seq")
-ANNOT_LIST_SIMPLE_SEQ = scribe_simple_seq.from_file(ANNOT_FILES_SIMPLE_SEQ)
+ANNOT_LIST_SIMPLE_SEQ = [scribe_simple_seq.from_file(simpleseq)
+                         for simpleseq in ANNOT_FILES_SIMPLE_SEQ]
 
 
 @pytest.fixture
