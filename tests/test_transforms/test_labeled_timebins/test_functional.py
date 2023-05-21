@@ -47,18 +47,18 @@ audio_paths_from_spect_list = [
 ]
 ANNOT_LIST_NOTMAT = [
     annot for annot in ANNOT_LIST_NOTMAT
-    if annot.audio_path.name in audio_paths_from_spect_list
+    if annot.notated_path.name in audio_paths_from_spect_list
 ]
 
 
 # define here because we re-use to parametrize multiple tests
 # and because we import in .test_transforms
 FROM_SEGMENTS_PARAMETRIZE_ARGVALS = list(zip(
-    sorted(ANNOT_LIST_YARDEN, key=lambda annot: annot.audio_path.name),
+    sorted(ANNOT_LIST_YARDEN, key=lambda annot: annot.notated_path.name),
     sorted(SPECT_LIST_MAT, key=lambda spect_path: spect_path.name),
     itertools.repeat(LABELSET_YARDEN)
 )) + list(zip(
-    sorted(ANNOT_LIST_NOTMAT, key=lambda annot: annot.audio_path.name),
+    sorted(ANNOT_LIST_NOTMAT, key=lambda annot: annot.notated_path.name),
     sorted(SPECT_LIST_NPZ, key=lambda spect_path: spect_path.name),
     itertools.repeat(LABELSET_NOTMAT)
 ))
