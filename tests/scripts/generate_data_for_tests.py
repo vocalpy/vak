@@ -237,7 +237,7 @@ COMMANDS = (
 )
 
 
-def main():
+def generate_test_data():
     print(
         "copying config files run to generate test data from ./tests/data_for_tests/configs to "
         "./tests/data_for_tests/generated/configs"
@@ -305,4 +305,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    generate_test_data()
