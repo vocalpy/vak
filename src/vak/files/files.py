@@ -25,6 +25,8 @@ def find_fname(fname: str, ext: str) -> str | None:
     >>> vak.files.find_fname(fname='llb3_0003_2018_04_23_14_18_54.wav.mat', ext='wav')
     'llb3_0003_2018_04_23_14_18_54.wav'
     """
+    if ext.startswith('.'):
+        ext = ext[1:]
     m = re.match(f"[\S ]*{ext}", fname)
     if hasattr(m, "group"):
         return m.group()
@@ -66,6 +68,9 @@ def from_dir(dir_path, ext):
     dir_path = Path(dir_path)
     if not dir_path.is_dir():
         raise NotADirectoryError(f"dir_path not recognized as a directory: {dir_path}")
+
+    if ext.startswith('.'):
+        ext = ext[1:]
 
     # use fnmatch + re to make search case-insensitive
     # adopted from:
