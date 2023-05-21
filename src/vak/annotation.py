@@ -79,7 +79,7 @@ def from_df(vak_df):
         # (1) many rows, all have the same file
         # (2) only one row, so there's only one annotation file (which may contain annotation for multiple source files)
         annot_path = vak_df["annot_path"].unique().item()
-        annots = scribe.from_file(annot_path)
+        annots = scribe.from_file(annot_path).to_annot()
 
         # as long as we have at least as many annotations as there are rows in the dataframe
         if (isinstance(annots, list) and len(annots) >= len(vak_df)) or (  # case 1
@@ -108,7 +108,7 @@ def from_df(vak_df):
     elif len(vak_df["annot_path"].unique()) == len(vak_df):
         # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
         annots = [
-            scribe.from_file(annot_path) for annot_path in vak_df["annot_path"].values
+            scribe.from_file(annot_path).to_annot() for annot_path in vak_df["annot_path"].values
         ]
 
     else:
@@ -131,9 +131,8 @@ def files_from_dir(annot_dir, annot_format):
             f"Valid formats are: {constants.VALID_ANNOT_FORMATS}"
         )
 
-    format_module = getattr(crowsetta.formats, annot_format)
-    ext = format_module.meta.ext
-    annot_files = files.from_dir(annot_dir, ext)
+    format_class = crowsetta.formats.by_name(annot_format)
+    annot_files = files.from_dir(annot_dir, format_class.ext)
     return annot_files
 
 
@@ -181,7 +180,7 @@ def audio_stem_from_path(path: PathLike,
         Path to a file that contains an audio filename in its name.
     audio_ext : str
         Extension corresponding to format of audio file.
-        Must be one of ``vak.contsants.VALID_AUDIO_FORMATS``.
+        Must be one of ``vak.constants.VALID_AUDIO_FORMATS``.
         Default is None, in which case the function looks
         removes extensions until it finds any valid audio
         format extension.
@@ -258,7 +257,7 @@ def _map_using_audio_stem_from_path(annotated_files: list[PathLike],
     keys = []
     for annot in annot_list:
         try:
-            stem = audio_stem_from_path(annot.audio_path, audio_ext)
+            stem = audio_stem_from_path(annot.notated_path, audio_ext)
         except AudioFilenameNotFound as e:
             # Do this as a loop with a super verbose error
             # instead of e.g. a single-line list comprehension
@@ -285,7 +284,7 @@ def _map_using_audio_stem_from_path(annotated_files: list[PathLike],
     audio_stem_annot_map = {
         # NOTE HERE WE GET STEMS FROM EACH annot.audio_path,
         # BELOW we get stems from each annotated_file
-        audio_stem_from_path(annot.audio_path): annot for annot in annot_list
+        audio_stem_from_path(annot.notated_path): annot for annot in annot_list
     }
 
     # Make a copy of ``annotated_files`` from which
