@@ -28,7 +28,7 @@ dependencies = [
     "dask >=2.10.1",
     "evfuncs >=0.3.4",
     "joblib >=0.14.1",
-    "pytorch-lightning >=1.8.4.post0",
+    "pytorch-lightning >=1.8.4.post0, <2.0",
     "matplotlib >=3.3.3",
     "numpy >=1.18.1",
     "scipy >=1.4.1",
@@ -36,7 +36,7 @@ dependencies = [
     "pandas >=1.0.1",
     "tensorboard >=2.8.0",
     "toml >=0.10.2",
-    "torch >=1.7.1",
+    "torch >=1.7.1, <2.0.0",
     "torchvision >=0.5.0",
     "tqdm >=4.42.1",
 ]
