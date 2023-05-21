@@ -117,10 +117,10 @@ def from_files(
                 annot_dir=data_dir, annot_format=annot_format
             )
             scribe = crowsetta.Transcriber(format=annot_format)
-            annot_list = scribe.from_file(annot_files)
+            annot_list = [scribe.from_file(annot_file).to_annot() for annot_file in annot_files]
         else:
             scribe = crowsetta.Transcriber(format=annot_format)
-            annot_list = scribe.from_file(annot_file)
+            annot_list = scribe.from_file(annot_file).to_annot()
         if isinstance(annot_list, crowsetta.Annotation):
             # if e.g. only one annotated audio file in directory, wrap in a list to make iterable
             # fixes https://github.com/NickleDave/vak/issues/467
