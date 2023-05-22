@@ -13,7 +13,7 @@ from . import constants
 from .typing import PathLike
 
 
-def format_from_df(vak_df):
+def format_from_df(dataset_df):
     """determine annotation format of a Vak DataFrame.
     Returns string name of annotation format.
     If no annotation format is specified, returns None.
@@ -21,7 +21,7 @@ def format_from_df(vak_df):
 
     Parameters
     ----------
-    vak_df : pandas.DataFrame
+    dataset_df : pandas.DataFrame
         Representing a dataset of vocalizations,
         with column 'annot_format'.
 
@@ -30,7 +30,7 @@ def format_from_df(vak_df):
     annot_format : str
         format of annotations for vocalizations.
     """
-    annot_format = vak_df["annot_format"].unique()
+    annot_format = dataset_df["annot_format"].unique()
     if len(annot_format) == 1:
         annot_format = annot_format.item()
         if annot_format is None or annot_format == constants.NO_ANNOTATION_FORMAT:
@@ -43,15 +43,15 @@ def format_from_df(vak_df):
     return annot_format
 
 
-def from_df(vak_df):
+def from_df(dataset_df):
     """get list of annotations from a vak DataFrame.
     If no annotation format is specified for the DataFrame
     (in the 'annot_format' column), returns None.
 
     Parameters
     ----------
-    vak_df : DataFrame
-        representating a dataset of vocalizations, with column 'annot_format'.
+    dataset_df : DataFrame
+        representing a dataset of vocalizations, with column 'annot_format'.
 
     Returns
     -------
@@ -67,34 +67,34 @@ def from_df(vak_df):
     If the latter, then the function opens that file and makes sure that
     each row from the dataframe can be paired with an annotation (using `map_annotated_to_annot`).
     """
-    annot_format = format_from_df(vak_df)
+    annot_format = format_from_df(dataset_df)
     if annot_format is None:
         return None
 
     scribe = crowsetta.Transcriber(format=annot_format)
 
-    if len(vak_df["annot_path"].unique()) == 1:
+    if len(dataset_df["annot_path"].unique()) == 1:
         # --> there is a single annotation file associated with all rows
         # this can be true in two different cases:
         # (1) many rows, all have the same file
         # (2) only one row, so there's only one annotation file (which may contain annotation for multiple source files)
-        annot_path = vak_df["annot_path"].unique().item()
+        annot_path = dataset_df["annot_path"].unique().item()
         annots = scribe.from_file(annot_path).to_annot()
 
         # as long as we have at least as many annotations as there are rows in the dataframe
-        if (isinstance(annots, list) and len(annots) >= len(vak_df)) or (  # case 1
-            isinstance(annots, crowsetta.Annotation) and len(vak_df) == 1
+        if (isinstance(annots, list) and len(annots) >= len(dataset_df)) or (  # case 1
+            isinstance(annots, crowsetta.Annotation) and len(dataset_df) == 1
         ):  # case 2
             if isinstance(annots, crowsetta.Annotation):
                 annots = [
                     annots
                 ]  # wrap in list for map_annotated_to_annot to iterate over it
             # then we can try and map those annotations to the rows
-            audio_annot_map = map_annotated_to_annot(vak_df["audio_path"].values, annots)
+            audio_annot_map = map_annotated_to_annot(dataset_df["audio_path"].values, annots)
             # sort by row of dataframe
             annots = [
                 audio_annot_map[audio_path]
-                for audio_path in vak_df["audio_path"].values
+                for audio_path in dataset_df["audio_path"].values
             ]
 
         else:
@@ -105,10 +105,10 @@ def from_df(vak_df):
                 f"Loading it returned a {type(annots)}."
             )
 
-    elif len(vak_df["annot_path"].unique()) == len(vak_df):
+    elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
         # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
         annots = [
-            scribe.from_file(annot_path).to_annot() for annot_path in vak_df["annot_path"].values
+            scribe.from_file(annot_path).to_annot() for annot_path in dataset_df["annot_path"].values
         ]
 
     else:
@@ -218,21 +218,15 @@ def audio_stem_from_path(path: PathLike,
     return stem
 
 
-def _map_using_audio_stem_from_path(annotated_files: list[PathLike],
-                                    annot_list: list[crowsetta.Annotation],
-                                    audio_ext: Optional[str] = None) -> dict:
-    """Map a list of annotated files to a list of ``crowsetta.Annotation``s,
-    using the ``audio_path`` attribute of the ``Annotation``s.
+def _map_using_notated_path(annotated_files: list[PathLike],
+                            annot_list: list[crowsetta.Annotation],
+                            audio_ext: Optional[str] = None) -> dict:
+    """Map a list of annotated files to a list of :class:`crowsetta.Annotation`
+    instances, using the ``notated_path`` attribute of the 
+    :class:`~crowsetta.Annotation`.
 
-    One of two helper functions used by ``map_annotated_to_annot``.
-
-    This function assumes each file in ``annotated_files``
-    contains an audio path filename in it, so that
-    the ``audio_stem_from_path`` function can be used to find
-    the stem, and match it with the stem of the
-    ``audio_path`` attribute of an ``Annotation`` instance.
-    In other words, we map by matching the following:
-    stem_from_audio_file(annotation.audio_path) <--> stem_from_audio_file(annotated_file)
+    One of three helper functions used by 
+    :func:`~vak.annotation.map_annotated_to_annot`.
 
     Parameters
     ----------
@@ -264,9 +258,9 @@ def _map_using_audio_stem_from_path(annotated_files: list[PathLike],
             # so we can help users troubleshoot,
             # see https://github.com/vocalpy/vak/issues/525
             raise AudioFilenameNotFound(
-                "The ``audio_path`` attribute of a ``crowsetta.Annotation`` was "
+                "The ``notated_path`` attribute of a ``crowsetta.Annotation`` was "
                 "not recognized as a valid audio filename.\n"
-                f"The ``audio_path`` attribute was:\n{annot.audio_path}\n"
+                f"The ``notated_path`` attribute was:\n{annot.notated_path}\n"
                 f"The annotation was loaded from this path:\n{annot.annot_path}\n"
             ) from e
         keys.append(stem)
@@ -282,7 +276,7 @@ def _map_using_audio_stem_from_path(annotated_files: list[PathLike],
     #       so we can look up annotations
     #       by stemming source files and using as keys.
     audio_stem_annot_map = {
-        # NOTE HERE WE GET STEMS FROM EACH annot.audio_path,
+        # NOTE HERE WE GET STEMS FROM EACH annot.notated_path,
         # BELOW we get stems from each annotated_file
         audio_stem_from_path(annot.notated_path): annot for annot in annot_list
     }
@@ -296,11 +290,97 @@ def _map_using_audio_stem_from_path(annotated_files: list[PathLike],
     annotated_files_copy = copy.deepcopy(annotated_files)
     for annotated_file in annotated_files:
         # stem annotated file so we can find audio OR spect files
-        # that match with stems from each annot.audio_path;
+        # that match with stems from each annot.notated_path;
         # e.g. find '~/path/to/llb3/llb3_0003_2018_04_23_14_18_54.wav.mat' that
-        # should match with ``Annotation(audio_path='llb3_0003_2018_04_23_14_18_54.wav')``
+        # should match with ``Annotation(notated_path='llb3_0003_2018_04_23_14_18_54.wav')``
         annotated_file_stem = audio_stem_from_path(annotated_file)
         annot = audio_stem_annot_map[annotated_file_stem]
+        annotated_annot_map[annotated_file] = annot
+        annotated_files_copy.remove(annotated_file)
+
+    if len(annotated_files_copy) > 0:
+        raise ValueError(
+            "Could not map the following source files to annotations: "
+            f"{annotated_files_copy}"
+        )
+    return annotated_annot_map
+
+
+def _map_removing_ext(annotated_files: list[PathLike],
+                      annot_list: list[crowsetta.Annotation],
+                      annot_format: str) -> dict:
+    """Map a list of annotated files to a list of ``crowsetta.Annotation``s,
+    using the ``notated_path`` attribute of the ``Annotation``s.
+
+    One of three helper functions used by ``map_annotated_to_annot``.
+
+    This function assumes each file in ``annotated_files``
+    contains an audio path filename in it, so that
+    the ``audio_stem_from_path`` function can be used to find
+    the stem, and match it with the stem of the
+    ``notated_path`` attribute of an ``Annotation`` instance.
+    In other words, we map by matching the following:
+    stem_from_audio_file(annotation.notated_path) <--> stem_from_audio_file(annotated_file)
+
+    Parameters
+    ----------
+    annotated_files : list
+        List of paths to the annotated files.
+    annot_list : list
+        List of ``crowsetta.Annotation`` instances.
+    annot_format : str
+        String name of annotation format
+        Valid names are listed in
+        ``vak.constants.VALID_ANNOT_FORMATS``.
+        Default is None, in which case the function
+        looks for any valid format.
+
+    Returns
+    -------
+    annotated_annot_map : dict
+        Where each key is path to annotated file, and
+        its value is the corresponding ``crowsetta.Annotation``.
+    """
+    # First check that we don't have duplicate keys that would cause this to fail silently
+    annot_class = crowsetta.formats.by_name(annot_format)
+
+    # ----> make a dict with audio stems as keys,
+    #       so we can look up annotations
+    #       by stemming source files and using as keys.
+    audio_stem_annot_map = {}
+    for annot in annot_list:
+        stem = None
+        if isinstance(annot_class.ext, str):
+            stem = annot.annot_path.name.replace(annot_class.ext, '')
+        elif isinstance(annot_class.ext, tuple):
+            for ext in annot_class.ext:
+                if annot_class.name.endswith(ext):
+                    stem = annot.annot_path.name.replace(ext, '')
+                    break
+        if stem is None:
+            raise ValueError(
+                f"Could not determine stem for: {annot_path}"
+            )
+
+        audio_stem_annot_map[stem] = annot
+
+    keys = list(audio_stem_annot_map.keys())
+    keys_set = set(keys)
+    if len(keys_set) < len(keys):
+        duplicates = [item for item, count in Counter(keys).items() if count > 1]
+        raise ValueError(
+            f"Found multiple annotations with the same audio filename(s): {duplicates}"
+        )
+
+    # Make a copy of ``annotated_files`` from which
+    # we remove files after mapping them to annotation,
+    # to validate that function worked,
+    # by making sure there are no items left in this copy after the loop.
+    # If there is 1:1 mapping then there should be no items left.
+    annotated_annot_map = {}
+    annotated_files_copy = copy.deepcopy(annotated_files)
+    for annotated_file in annotated_files:
+        annot = audio_stem_annot_map[annotated_file.name]
         annotated_annot_map[annotated_file] = annot
         annotated_files_copy.remove(annotated_file)
 
@@ -334,7 +414,7 @@ def _map_replacing_ext(annotated_files: list[PathLike],
     using an extension
     for the annotated files, ``annotated_ext``.
 
-    One of two helper functions used by ``map_annotated_to_annot``.
+    One of three helper functions used by ``map_annotated_to_annot``.
 
     First, replaces the extension of each
     ``Annotation``s ``annot_path`` attribute
@@ -413,24 +493,37 @@ def _map_replacing_ext(annotated_files: list[PathLike],
 
 def map_annotated_to_annot(annotated_files: Union[list, np.array],
                            annot_list: list[crowsetta.Annotation],
-                           audio_ext: Optional[str] = None,
-                           annotated_ext: Optional[str] = None) -> dict:
+                           annot_format: str) -> dict:
     """Map annotated files,
     i.e. audio or spectrogram files,
     to their corresponding annotations.
 
-    Returns a ``dict`` where each key
+    This function implements the three different ways that
+    vak can map annotated files to their annotations.
+    The first is when a single annotation file contains
+    multiple annotations, and so the format by necessity
+    must include the file annotated by each annotation.
+    The second assumes that the annotated file can be determined
+    programmatically by removing the extension from the annotation file,
+    e.g. 'bird1.wav.csv' -> 'bird1.wav'.
+    The third assumes that the annotated file can be determined
+    by replacing the extension of the annotation file
+    with the extension of the annotated file,
+    e.g. 'bird1.csv' -> 'bird1.wav'.
+
+    Returns a :class:`dict` where each key
     is a path to an annotated file,
     and the value for each key
-    is a ``crowsetta.Annotation``.
+    is a :class:`crowsetta.Annotation`.
 
-    Mapping is done with two helper functions,
-    ``_map_using_audio_stem_from_path`` and
-    ``_map_replacing_ext``. The first assumes
-    that the annotated function contains
+    Mapping is done with three helper functions,
+    :func:`~vak.annotation._map_using_notated_path`,
+    :func:`~vak.annotation._map_removing_ext`, and
+    :func:`~vak.annotation._map_replacing_ext`.
+    The first assumes that the annotated function contains
     the name of the original audio file,
     and that this can be matched with the
-    ``audio_path`` attribute of one of the
+    ``notated_path`` attribute of one of the
     ``Annotation`` instances. The second,
     which is used if the first fails,
     tries replacing the extension of the
@@ -455,21 +548,21 @@ def map_annotated_to_annot(annotated_files: Union[list, np.array],
     Notes
     -----
     The filenames of the ``annotated_files`` must
-    begin with the filename of the ``audio_path``
+    begin with the filename of the ``notated_path``
     attribute of the corresponding
     ``crowsetta.Annotation`` instances.
     E.g., if `annotated_files` includes
     an audio file named
     'bird0-2016-05-04-133027.wav',
     then it will be mapped to an ``Annotation``
-    with an `audio_path` attribute
+    with an `notated_path` attribute
     whose filename matches it.
     Spectrogram files should also include
     the audio file name,
     e.g. 'bird0-2016-05-04-133027.wav.mat'
     or 'bird0-2016-05-04-133027.spect.npz'
     would match an ``Annotation`` with the
-    ``audio_path`` attribute '/some/path/bird0-2016-05-04-133027.wav'.
+    ``notated_path`` attribute '/some/path/bird0-2016-05-04-133027.wav'.
 
     For more detail, please see
     the page on file naming conventions in the
@@ -479,21 +572,20 @@ def map_annotated_to_annot(annotated_files: Union[list, np.array],
     if type(annotated_files) == np.ndarray:  # e.g., vak DataFrame['spect_path'].values
         annotated_files = annotated_files.tolist()
 
-    try:
-        annotated_annot_map = _map_using_audio_stem_from_path(annotated_files,
-                                                              annot_list,
-                                                              audio_ext)
-    except AudioFilenameNotFound:
+    if annot_format in ('birdsong-recognition-dataset', 'yarden', 'generic-seq'):
+        annotated_annot_map = _map_using_notated_path(annotated_files, annot_list)
+    else:
         try:
-            annotated_annot_map = _map_replacing_ext(annotated_files,
-                                                     annot_list,
-                                                     annotated_ext)
-        except AnnotatedFilenameNotFound as e:
-            raise ValueError(
-                'Could not map annotated files to annotations.\n'
-                'Please see this section in the `vak` documentation:\n'
-                'https://vak.readthedocs.io/en/latest/howto/howto_prep_annotate.html#how-does-vak-know-which-annotations-go-with-which-annotated-files'
-            ) from e
+            annotated_annot_map = _map_removing_ext(annotated_files, annot_list, annot_format)
+        except AudioFilenameNotFound:
+            try:
+                annotated_annot_map = _map_replacing_ext(annotated_files, annot_list, annot_format)
+            except AnnotatedFilenameNotFound as e:
+                raise ValueError(
+                    'Could not map annotated files to annotations.\n'
+                    'Please see this section in the `vak` documentation:\n'
+                    'https://vak.readthedocs.io/en/latest/howto/howto_prep_annotate.html#how-does-vak-know-which-annotations-go-with-which-annotated-files'
+                ) from e
 
     return annotated_annot_map
 
