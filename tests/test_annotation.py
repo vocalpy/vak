@@ -79,7 +79,7 @@ def test_audio_stem_from_path_raises(path, audio_ext):
         ("spect", "mat", "yarden", "wav"),
     ],
 )
-def test__map_using_audio_stem_from_path(
+def test__map_using_notated_path(
     source_type,
     source_format,
     annot_format,
@@ -94,7 +94,7 @@ def test__map_using_audio_stem_from_path(
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
 
-    annotated_annot_map = vak.annotation._map_using_audio_stem_from_path(
+    annotated_annot_map = vak.annotation._map_using_notated_path(
         annotated_files=annotated_files, annot_list=annot_list, audio_ext=audio_ext
     )
 
@@ -111,7 +111,7 @@ def test__map_using_audio_stem_from_path(
     # test all mappings are correct
     for source_path, annot in list(annotated_annot_map.items()):
         assert vak.annotation.audio_stem_from_path(
-            annot.audio_path
+            annot.notated_path
         ) == vak.annotation.audio_stem_from_path(source_path)
 
 
@@ -152,9 +152,7 @@ def test__map_replacing_ext(
 
     # test all mappings are correct
     for source_path, annot in list(annotated_annot_map.items()):
-        assert vak.annotation.audio_stem_from_path(
-            annot.audio_path
-        ) == vak.annotation.audio_stem_from_path(source_path)
+        assert annot.annot_path.stem == source_path.stem
 
 
 @pytest.mark.parametrize(
@@ -182,7 +180,7 @@ def test_map_annotated_to_annot(
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
     annotated_annot_map = vak.annotation.map_annotated_to_annot(
-        annotated_files=annotated_files, annot_list=annot_list
+        annotated_files=annotated_files, annot_list=annot_list, annot_format=annot_format
     )
 
     # test all the audio paths made it into the map
@@ -198,7 +196,7 @@ def test_map_annotated_to_annot(
     # test all mappings are correct
     for source_path, annot in list(annotated_annot_map.items()):
         assert vak.annotation.audio_stem_from_path(
-            annot.audio_path
+            annot.notated_path
         ) == vak.annotation.audio_stem_from_path(source_path)
 
 
