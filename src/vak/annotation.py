@@ -218,6 +218,13 @@ def audio_stem_from_path(path: PathLike,
     return stem
 
 
+class MapUsingNotatedPathError(BaseException):
+    """Error raised when :func:`vak.annotation._map_using_notated_path`
+    cannot map the filename of an annotation file to the name
+    of an annotated file"""
+    pass
+
+
 def _map_using_notated_path(annotated_files: list[PathLike],
                             annot_list: list[crowsetta.Annotation],
                             audio_ext: Optional[str] = None) -> dict:
@@ -264,7 +271,7 @@ def _map_using_notated_path(annotated_files: list[PathLike],
             # instead of e.g. a single-line list comprehension
             # so we can help users troubleshoot,
             # see https://github.com/vocalpy/vak/issues/525
-            raise AudioFilenameNotFound(
+            raise MapUsingNotatedPathError(
                 "The ``notated_path`` attribute of a ``crowsetta.Annotation`` was "
                 "not recognized as a valid audio filename.\n"
                 f"The ``notated_path`` attribute was:\n{annot.notated_path}\n"
@@ -306,11 +313,18 @@ def _map_using_notated_path(annotated_files: list[PathLike],
         annotated_files_copy.remove(annotated_file)
 
     if len(annotated_files_copy) > 0:
-        raise ValueError(
+        raise MapUsingNotatedPathError(
             "Could not map the following source files to annotations: "
             f"{annotated_files_copy}"
         )
     return annotated_annot_map
+
+
+class MapUsingExtensionError(BaseException):
+    """Error raised when :func:`vak.annotation._map_using_ext`
+    cannot map the filename of an annotation file to the name
+    of an annotated file"""
+    pass
 
 
 def _map_using_ext(annotated_files: list[PathLike],
@@ -388,6 +402,9 @@ def _map_using_ext(annotated_files: list[PathLike],
         annotated_name = None
 
         if isinstance(annot_class.ext, str):
+            # NOTE that by convention the `ext` attribute
+            # of all Crowsetta annotation format classes
+            # begins with a period
             annotated_name = annot.annot_path.name.replace(annot_class.ext, '')
         elif isinstance(annot_class.ext, tuple):
             for ext in annot_class.ext:
@@ -396,7 +413,7 @@ def _map_using_ext(annotated_files: list[PathLike],
                     break
 
         if annotated_name is None:
-            raise ValueError(
+            raise MapUsingExtensionError(
                 "Could not determine annotated file from annotation path, "
                 f"using extension '{annot_class.ext}' from class '{annot_class.__name__}' "
                 f"associated with format '{annot_format}'. "
@@ -406,9 +423,9 @@ def _map_using_ext(annotated_files: list[PathLike],
         # NOTE we don't have to do anything else for method=='remove'
         # since we just removed the extension
         if method == 'replace':
-            annotated_path = annotated_path.parent / (annotated_path.name + annotated_ext)
+            annotated_name = annotated_name + annotated_ext
 
-        annotated_annot_map[annotated_path] = annot
+        annotated_annot_map[annotated_name] = annot
 
     # Make a copy of ``annotated_files`` from which
     # we remove files after mapping them to annotation,
@@ -419,11 +436,14 @@ def _map_using_ext(annotated_files: list[PathLike],
     for annotated_file in annotated_files:
         try:
             annot = annotated_annot_map[annotated_file.name]
-        except KeyError
-        annotated_files_copy.remove(annotated_file)
+            annotated_files_copy.remove(annotated_file)
+        except KeyError as e:
+            raise MapUsingExtensionError(
+                f"Did not find an annotation that produced annotated file: {annotated_file}"
+            ) from e
 
     if len(annotated_files_copy) > 0:
-        raise ValueError(
+        raise MapUsingExtensionError(
             "Could not map the following source files to annotations: "
             f"{annotated_files_copy}"
         )
