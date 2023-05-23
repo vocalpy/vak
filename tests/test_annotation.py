@@ -38,7 +38,7 @@ def test_files_from_dir(annot_dir_notmat, annot_files_notmat):
     ]
 )
 def test_audio_stem_from_path(path, audio_ext, expected_stem):
-    stem = vak.annotation.audio_stem_from_path(path, audio_ext)
+    stem = vak.annotation.audio_filename_from_path(path, audio_ext)
     assert stem == expected_stem
 
 
@@ -65,7 +65,7 @@ def test_audio_stem_from_path(path, audio_ext, expected_stem):
 )
 def test_audio_stem_from_path_raises(path, audio_ext):
     with pytest.raises(vak.annotation.AudioFilenameNotFound):
-        vak.annotation.audio_stem_from_path(path, audio_ext)
+        vak.annotation.audio_filename_from_path(path, audio_ext)
 
 
 @pytest.mark.parametrize(
@@ -108,9 +108,9 @@ def test__map_using_notated_path(
 
     # test all mappings are correct
     for source_path, annot in list(annotated_annot_map.items()):
-        assert vak.annotation.audio_stem_from_path(
+        assert vak.annotation.audio_filename_from_path(
             annot.notated_path
-        ) == vak.annotation.audio_stem_from_path(source_path)
+        ) == vak.annotation.audio_filename_from_path(source_path)
 
 
 @pytest.mark.parametrize(
@@ -233,9 +233,9 @@ def test_map_annotated_to_annot(
 
     # test all mappings are correct
     for source_path, annot in list(annotated_annot_map.items()):
-        assert vak.annotation.audio_stem_from_path(
+        assert vak.annotation.audio_filename_from_path(
             annot.notated_path
-        ) == vak.annotation.audio_stem_from_path(source_path)
+        ) == vak.annotation.audio_filename_from_path(source_path)
 
 
 @pytest.mark.parametrize(
