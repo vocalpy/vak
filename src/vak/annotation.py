@@ -140,13 +140,13 @@ class AudioFilenameNotFound(Exception):
     """Error raised when a name of an audio filename
     cannot be found within another filename.
 
-    Raised by ``audio_stem_from_path``
+    Raised by ``audio_filename_from_path``
     and ``_map_using_audio_stem_from_path``.
     """
 
 
-def audio_stem_from_path(path: PathLike,
-                         audio_ext: str = None) -> str:
+def audio_filename_from_path(path: PathLike,
+                             audio_ext: str = None) -> str:
     """Find the name of an audio file within a filename
     by removing extensions until finding an audio extension,
     then return the name of that audio file
@@ -167,11 +167,11 @@ def audio_stem_from_path(path: PathLike,
 
     Examples
     --------
-    >>> audio_stem_from_path('gy6or6_baseline_230312_0808.138.cbin.not.mat')
+    >>> audio_filename_from_path('gy6or6_baseline_230312_0808.138.cbin.not.mat')
     'gy6or6_baseline_230312_0808.138'
-    >>> audio_stem_from_path('Bird0/spectrograms/0.wav.npz')
+    >>> audio_filename_from_path('Bird0/spectrograms/0.wav.npz')
     '0'
-    >>> audio_stem_from_path('Bird0/Wave/0.wav')
+    >>> audio_filename_from_path('Bird0/Wave/0.wav')
     '0'
 
     Parameters
@@ -265,7 +265,7 @@ def _map_using_notated_path(annotated_files: list[PathLike],
     keys = []
     for annot in annot_list:
         try:
-            stem = audio_stem_from_path(annot.notated_path, audio_ext)
+            stem = audio_filename_from_path(annot.notated_path, audio_ext)
         except AudioFilenameNotFound as e:
             # Do this as a loop with a super verbose error
             # instead of e.g. a single-line list comprehension
@@ -292,7 +292,7 @@ def _map_using_notated_path(annotated_files: list[PathLike],
     audio_stem_annot_map = {
         # NOTE HERE WE GET STEMS FROM EACH annot.notated_path,
         # BELOW we get stems from each annotated_file
-        audio_stem_from_path(annot.notated_path): annot for annot in annot_list
+        audio_filename_from_path(annot.notated_path): annot for annot in annot_list
     }
 
     # Make a copy of ``annotated_files`` from which
@@ -307,7 +307,7 @@ def _map_using_notated_path(annotated_files: list[PathLike],
         # that match with stems from each annot.notated_path;
         # e.g. find '~/path/to/llb3/llb3_0003_2018_04_23_14_18_54.wav.mat' that
         # should match with ``Annotation(notated_path='llb3_0003_2018_04_23_14_18_54.wav')``
-        annotated_file_stem = audio_stem_from_path(annotated_file)
+        annotated_file_stem = audio_filename_from_path(annotated_file)
         annot = audio_stem_annot_map[annotated_file_stem]
         annotated_annot_map[annotated_file] = annot
         annotated_files_copy.remove(annotated_file)
