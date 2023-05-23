@@ -71,10 +71,8 @@ def test_audio_stem_from_path_raises(path, audio_ext):
 @pytest.mark.parametrize(
     "source_type, source_format, annot_format, audio_ext",
     [
-        ("audio", "cbin", "notmat", None),
         ("audio", "wav", "birdsong-recognition-dataset", None),
         ("spect", "mat", "yarden", None),
-        ("audio", "cbin", "notmat", "cbin"),
         ("audio", "wav", "birdsong-recognition-dataset", "wav"),
         ("spect", "mat", "yarden", "wav"),
     ],
@@ -113,6 +111,46 @@ def test__map_using_notated_path(
         assert vak.annotation.audio_stem_from_path(
             annot.notated_path
         ) == vak.annotation.audio_stem_from_path(source_path)
+
+
+@pytest.mark.parametrize(
+    "source_type, source_format, annot_format, annotated_ext",
+    [
+        ("audio", "cbin", "notmat", None),
+    ],
+)
+def test__map_removing_ext(
+    source_type,
+    source_format,
+    annot_format,
+    annotated_ext,
+    audio_list_factory,
+    spect_list_mat,
+    specific_annot_list,
+):
+    if source_type == "audio":
+        annotated_files = audio_list_factory(source_format, annot_format)
+    else:
+        annotated_files = spect_list_mat
+    annot_list = specific_annot_list(annot_format)
+
+    annotated_annot_map = vak.annotation._map_removing_ext(
+        annotated_files=annotated_files, annot_list=annot_list, annotated_ext=annotated_ext
+    )
+
+    # test all the audio paths made it into the map
+    annotated_files_from_map = list(annotated_annot_map.keys())
+    for source_file in annotated_files:
+        assert source_file in annotated_files_from_map
+
+    # test all the annots made it into the map
+    annot_list_from_map = list(annotated_annot_map.values())
+    for annot in annot_list:
+        assert annot in annot_list_from_map
+
+    # test all mappings are correct
+    for source_path, annot in list(annotated_annot_map.items()):
+        assert annot.annot_path.stem == source_path.stem
 
 
 @pytest.mark.parametrize(
