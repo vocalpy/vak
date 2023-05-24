@@ -7,14 +7,17 @@ from typing import Optional, Union
 
 import crowsetta
 import numpy as np
+import pandas as pd
 
 from . import files
 from . import constants
 from .typing import PathLike
 
 
-def format_from_df(dataset_df):
-    """determine annotation format of a Vak DataFrame.
+def format_from_df(dataset_df: pd.DataFrame) -> str:
+    """Get the format of annotations from a dataset,
+    given a dataframe representing that dataset.
+
     Returns string name of annotation format.
     If no annotation format is specified, returns None.
     Raises an error if there are multiple formats.
@@ -43,9 +46,11 @@ def format_from_df(dataset_df):
     return annot_format
 
 
-def from_df(dataset_df):
-    """get list of annotations from a vak DataFrame.
-    If no annotation format is specified for the DataFrame
+def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
+    """Get list of annotations from a dataframe
+    representing a dataset.
+
+    If no annotation format is specified for the dataframe
     (in the 'annot_format' column), returns None.
 
     Parameters
@@ -67,6 +72,12 @@ def from_df(dataset_df):
     If the latter, then the function opens that file and makes sure that
     each row from the dataframe can be paired with an annotation
     (using :func:`vak.annotation.map_annotated_to_annot`).
+    If instead there is a unique annotation file per row in the dataframe,
+    the format of the annotation files is determined with
+    :func:`vak.annotation.format_from_df` and then each file is opened
+    with :module:`crowsetta` -- in other words, we assume the mapping
+    was already done when preparing the dataset, and that each row contains
+    an annotation file paired with the file it annotates.
     """
     annot_format = format_from_df(dataset_df)
     if annot_format is None:
