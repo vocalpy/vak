@@ -65,7 +65,8 @@ def from_df(dataset_df):
     annotations; it determines whether each row has a separate annotation file,
     or if instead there is a single annotation file associated with all rows.
     If the latter, then the function opens that file and makes sure that
-    each row from the dataframe can be paired with an annotation (using `map_annotated_to_annot`).
+    each row from the dataframe can be paired with an annotation
+    (using :func:`vak.annotation.map_annotated_to_annot`).
     """
     annot_format = format_from_df(dataset_df)
     if annot_format is None:
