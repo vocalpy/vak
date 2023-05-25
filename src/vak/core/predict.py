@@ -276,4 +276,5 @@ def predict(
         )
         annots.append(annot)
 
-    crowsetta.csv.annot2csv(annot=annots, csv_filename=annot_csv_path)
+    generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+    generic_seq.to_file(annot_path=annot_csv_path)
