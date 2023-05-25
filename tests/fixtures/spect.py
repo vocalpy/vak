@@ -67,7 +67,7 @@ def spect_list_mat_all_labels_in_labelset(
     for spect_path in spect_list_mat:
         audio_fname = vak.files.spect.find_audio_fname(spect_path)
         annot = [
-            annot for annot in annot_list_yarden if annot.audio_path.name == audio_fname
+            annot for annot in annot_list_yarden if annot.notated_path.name == audio_fname
         ]
         assert len(annot) == 1
         annot = annot[0]
@@ -87,7 +87,7 @@ def spect_list_npz_all_labels_in_labelset(
     for spect_path in spect_list_npz:
         audio_fname = vak.files.spect.find_audio_fname(spect_path)
         annot = [
-            annot for annot in annot_list_notmat if annot.audio_path.name == audio_fname
+            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
         ]
         assert len(annot) == 1
         annot = annot[0]
@@ -107,7 +107,7 @@ def spect_list_mat_labels_not_in_labelset(
     for spect_path in spect_list_mat:
         audio_fname = vak.files.spect.find_audio_fname(spect_path)
         annot = [
-            annot for annot in annot_list_yarden if annot.audio_path.name == audio_fname
+            annot for annot in annot_list_yarden if annot.notated_path.name == audio_fname
         ]
         assert len(annot) == 1
         annot = annot[0]
@@ -130,7 +130,7 @@ def spect_list_npz_labels_not_in_labelset(
     for spect_path in spect_list_npz:
         audio_fname = vak.files.spect.find_audio_fname(spect_path)
         annot = [
-            annot for annot in annot_list_notmat if annot.audio_path.name == audio_fname
+            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
         ]
         assert len(annot) == 1
         annot = annot[0]
