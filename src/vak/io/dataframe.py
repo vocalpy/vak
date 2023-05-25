@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from datetime import datetime
 import logging
+import pathlib
 
 import attrs
 import crowsetta
 import numpy as np
+import pandas as pd
 
 from . import audio, spect
 from .. import annotation
@@ -15,16 +19,16 @@ logger = logging.getLogger(__name__)
 
 
 def from_files(
-    data_dir,
-    annot_format=None,
-    labelset=None,
-    annot_file=None,
-    audio_format=None,
-    spect_format=None,
-    spect_params=None,
-    spect_output_dir=None,
-    audio_dask_bag_kwargs=None,
-):
+    data_dir: str | pathlib.Path,
+    annot_format: str | None = None,
+    labelset: set | None = None,
+    annot_file: str | pathlib.Path | None = None,
+    audio_format: str | None = None,
+    spect_format: str | None = None,
+    spect_params: dict | None = None,
+    spect_output_dir: str | pathlib.Path | None = None,
+    audio_dask_bag_kwargs: dict | None = None,
+) -> pd.DataFrame:
     """create a pandas DataFrame representing a dataset for machine learning
     from a set of files in a directory
 
@@ -83,8 +87,8 @@ def from_files(
 
     Returns
     -------
-    vak_df : pandas.DataFrame
-        the dataset prepared from the directory specified
+    dataset_df : pandas.DataFrame
+        The dataset prepared from the directory specified
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     if labelset is not None:
@@ -146,6 +150,7 @@ def from_files(
             output_dir=spect_output_dir,
             audio_files=audio_files,
             annot_list=annot_list,
+            annot_format=annot_format,
             labelset=labelset,
             dask_bag_kwargs=audio_dask_bag_kwargs,
         )
@@ -177,8 +182,8 @@ def from_files(
         for key in ['freqbins_key', 'timebins_key', 'spect_key', 'audio_path_key']:
             to_dataframe_kwargs[key] = spect_params[key]
 
-    vak_df = spect.to_dataframe(**to_dataframe_kwargs)
-    return vak_df
+    dataset_df = spect.to_dataframe(**to_dataframe_kwargs)
+    return dataset_df
 
 
 def add_split_col(df, split):
