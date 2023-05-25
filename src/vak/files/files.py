@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 import fnmatch
-from pathlib import Path
+import pathlib
 import re
 
 
@@ -34,38 +35,41 @@ def find_fname(fname: str, ext: str) -> str | None:
         return m
 
 
-def from_dir(dir_path, ext):
-    """helper function that gets all files with a given extension
+def from_dir(dir_path: str | pathlib.Path, ext: str) -> list[str]:
+    """Gets all files with a given extension
     from a directory or its sub-directories.
 
-    ``from_dir`` is case insensitive. For example, if you specify the extension
-    as ``wav`` then it will return files that end in ``.wav`` or ``.WAV``.
-    Similarly, if you specify ``TextGrid`` as the extension,
+    :func:`vak.files.from_dir`` is case-insensitive.
+    For example, if you specify the extension
+    as ``'wav'`` then it will return files that
+    end in ``'.wav'`` or ``'.WAV'``.
+    Similarly, if you specify ``'TextGrid'`` as the extension,
     it will return files that end in ``.textgrid`` and ``.TextGrid``.
 
     If no files with the specified extension are found in the directory,
     then the function looks in all directories within ``dir_path``
     and returns any files with the extension in those directories.
-    Currently the function does not recurse, i.e., it does not look
-    any deeper than one level below ``dir_path``.
+    The function does not look any deeper than one level below ``dir_path``.
 
     Parameters
     ----------
     dir_path : str
-        path to target directory
+        Path to target directory
     ext : str
-        file extension to search for. E.g.,
+        File extension to search for. E.g., ``'.wav'``.
 
     Returns
     -------
     files : list
-        of paths to files with specified file extension
+        List of strings,
+        paths to files with specified file extension.
 
     Notes
     -----
-    used by vak.io.audio.files_from_dir and vak.io.annot.files_from_dir
+    This function is used by :func:`vak.io.audio.files_from_dir` and
+    :func:`vak.annotation.files_from_dir`.
     """
-    dir_path = Path(dir_path)
+    dir_path = pathlib.Path(dir_path)
     if not dir_path.is_dir():
         raise NotADirectoryError(f"dir_path not recognized as a directory: {dir_path}")
 
