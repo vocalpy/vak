@@ -39,6 +39,7 @@ def to_dataframe(
     spect_format: str,
     spect_dir: str | pathlib.Path | None = None,
     spect_files: list | None = None,
+    spect_ext: str | None = None,
     annot_list: list | None = None,
     annot_format: str | None = None,
     spect_annot_map: dict | None = None,
@@ -164,7 +165,7 @@ def to_dataframe(
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
-            spect_annot_map = map_annotated_to_annot(spect_files, annot_list, annot_format)
+            spect_annot_map = map_annotated_to_annot(spect_files, annot_list, annot_format, annotated_ext=spect_ext)
         else:
             # no annotation, so map spectrogram files to None
             spect_annot_map = dict((spect_path, None) for spect_path in spect_files)
@@ -247,7 +248,6 @@ def to_dataframe(
             ]
         )
         return record
-
     spect_path_annot_tuples = db.from_sequence(spect_annot_map.items())
     logger.info(
         "creating pandas.DataFrame representing dataset from spectrogram files",
