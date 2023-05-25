@@ -80,6 +80,7 @@ def test_to_spect_audio_dir_annot_cbin_with_labelset(
     when we point it at directory of .cbin files + give it list of annotations"""
     spect_files = vak.io.audio.to_spect(
         audio_format="cbin",
+        annot_format="notmat",
         spect_params=default_spect_params,
         output_dir=tmp_path,
         audio_dir=audio_dir_cbin,
@@ -107,6 +108,7 @@ def test_audio_dir_annot_cbin_no_labelset(
     but do not specify a set of labels"""
     spect_files = vak.io.audio.to_spect(
         audio_format="cbin",
+        annot_format="notmat",
         spect_params=default_spect_params,
         output_dir=tmp_path,
         audio_dir=audio_dir_cbin,
@@ -156,6 +158,7 @@ def test_audio_files_cbin_annot_notmat(
     when we give it a list of .cbin files + give it list of annotations"""
     spect_files = vak.io.audio.to_spect(
         audio_format="cbin",
+        annot_format="notmat",
         spect_params=default_spect_params,
         output_dir=tmp_path,
         audio_dir=None,
@@ -183,6 +186,7 @@ def test_audio_files_annot_cbin_no_labelset(
     but do not specify a set of labels"""
     spect_files = vak.io.audio.to_spect(
         audio_format="cbin",
+        annot_format="notmat",
         spect_params=default_spect_params,
         output_dir=tmp_path,
         audio_dir=None,
@@ -208,6 +212,7 @@ def test_audio_annot_map_cbin(
     audio_annot_map = dict(zip(audio_list_cbin, annot_list_notmat))
     spect_files = vak.io.audio.to_spect(
         audio_format="cbin",
+        annot_format="notmat",
         spect_params=default_spect_params,
         output_dir=tmp_path,
         audio_dir=None,
@@ -236,6 +241,7 @@ def test_audio_annot_map_cbin_no_labelset(
     audio_annot_map = dict(zip(audio_list_cbin, annot_list_notmat))
     spect_files = vak.io.audio.to_spect(
         audio_format="cbin",
+        annot_format="notmat",
         spect_params=default_spect_params,
         output_dir=tmp_path,
         audio_dir=None,
@@ -262,6 +268,7 @@ def test_missing_inputs_raise(
     with pytest.raises(ValueError):
         vak.io.audio.to_spect(
             audio_format="ape",
+            annot_format="notmat",
             spect_params=default_spect_params,
             output_dir=tmp_path,
             audio_dir=None,
@@ -285,6 +292,7 @@ def test_invalid_audio_format_raises(
     with pytest.raises(ValueError):
         vak.io.audio.to_spect(
             audio_format="ape",
+            annot_format="notmat",
             spect_params=default_spect_params,
             output_dir=tmp_path,
             audio_dir=audio_dir_cbin,
@@ -309,6 +317,7 @@ def test_both_audio_dir_and_audio_files_raises(
     with pytest.raises(ValueError):
         vak.io.audio.to_spect(
             audio_format="cbin",
+            annot_format="notmat",
             spect_params=default_spect_params,
             output_dir=tmp_path,
             audio_dir=audio_dir_cbin,
@@ -334,6 +343,7 @@ def test_both_audio_dir_and_audio_annot_map_raises(
     with pytest.raises(ValueError):
         vak.io.audio.to_spect(
             audio_format="cbin",
+            annot_format="notmat",
             spect_params=default_spect_params,
             output_dir=tmp_path,
             audio_dir=audio_dir_cbin,
@@ -359,6 +369,7 @@ def test_both_audio_list_and_audio_annot_map_raises(
     with pytest.raises(ValueError):
         vak.io.audio.to_spect(
             audio_format="cbin",
+            annot_format="notmat",
             spect_params=default_spect_params,
             output_dir=tmp_path,
             audio_dir=None,
@@ -384,6 +395,7 @@ def test_both_annot_list_and_audio_annot_map_raises(
     with pytest.raises(ValueError):
         vak.io.audio.to_spect(
             audio_format="cbin",
+            annot_format="notmat",
             spect_params=default_spect_params,
             output_dir=tmp_path,
             audio_dir=None,
@@ -419,6 +431,7 @@ def test_dask_bag_kwargs(
     with the parameter ``dask_bag_kwargs`` added."""
     spect_files = vak.io.audio.to_spect(
         audio_format="cbin",
+        annot_format="notmat",
         spect_params=default_spect_params,
         output_dir=tmp_path,
         audio_dir=audio_dir_cbin,
