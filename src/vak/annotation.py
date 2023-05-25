@@ -239,7 +239,7 @@ class MapUsingNotatedPathError(BaseException):
 
 def _map_using_notated_path(annotated_files: list[PathLike],
                             annot_list: list[crowsetta.Annotation],
-                            audio_ext: Optional[str] = None) -> dict[pathlib.Path: crowsetta.Annotation]:
+                            audio_ext: Optional[str] = None) -> dict[str: crowsetta.Annotation]:
     """Map a :class:`list` of annotated files to a :class:`list`
     of  :class:`crowsetta.Annotation` instances,
     using the ``notated_path`` attribute of the
@@ -340,7 +340,10 @@ def _map_using_notated_path(annotated_files: list[PathLike],
             "Could not map the following source files to annotations: "
             f"{annotated_files_copy}"
         )
-    return annotated_annot_map
+
+    # we return dict[str: annot] since we will always have paths as strings in DataFrame columns
+    # and we want to use those strings to index into this dictionary
+    return {str(path): annot for path, annot in annotated_annot_map.items()}
 
 
 class MapUsingExtensionError(BaseException):
@@ -354,7 +357,7 @@ def _map_using_ext(annotated_files: list[PathLike],
                    annot_list: list[crowsetta.Annotation],
                    annot_format: str,
                    method: str,
-                   annotated_ext: str | None = None) -> dict[pathlib.Path: crowsetta.Annotation]:
+                   annotated_ext: str | None = None) -> dict[str: crowsetta.Annotation]:
     """Map a list of annotated files to a :class:`list` of
     :class:`crowsetta.Annotation` instances,
     by either removing the extension of the annotation format,
@@ -480,7 +483,9 @@ def _map_using_ext(annotated_files: list[PathLike],
             "Could not map the following source files to annotations: "
             f"{annotated_files_copy}"
         )
-    return annotated_annot_map
+    # we return dict[str: annot] since we will always have paths as strings in DataFrame columns
+    # and we want to use those strings to index into this dictionary
+    return {str(path): annot for path, annot in annotated_annot_map.items()}
 
 
 def map_annotated_to_annot(annotated_files: Union[list, np.array],
