@@ -3,10 +3,12 @@ into a pandas DataFrame that represents a dataset used by ``vak``
 
 the returned DataFrame has columns as specified by vak.io.spect.DF_COLUMNS
 """
+from __future__ import annotations
+
 from glob import glob
 import logging
 import os
-from pathlib import Path
+import pathlib
 
 import dask.bag as db
 from dask.diagnostics import ProgressBar
@@ -34,18 +36,18 @@ DF_COLUMNS = [
 
 
 def to_dataframe(
-    spect_format,
-    spect_dir=None,
-    spect_files=None,
-    annot_list=None,
-    annot_format=None,
-    spect_annot_map=None,
-    labelset=None,
-    n_decimals_trunc=5,
-    freqbins_key="f",
-    timebins_key="t",
-    spect_key="s",
-    audio_path_key="audio_path",
+    spect_format: str,
+    spect_dir: str | pathlib.Path | None = None,
+    spect_files: list | None = None,
+    annot_list: list | None = None,
+    annot_format: str | None = None,
+    spect_annot_map: dict | None = None,
+    labelset: set | None = None,
+    n_decimals_trunc: int = 5,
+    freqbins_key: str = "f",
+    timebins_key: str = "t",
+    spect_key: str = "s",
+    audio_path_key: str = "audio_path",
 ):
     """convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
     Spectrogram files are array in .npz files created by numpy or in .mat files created by Matlab.
@@ -92,8 +94,8 @@ def to_dataframe(
 
     Returns
     -------
-    vak_df : pandas.Dataframe
-        that represents a dataset of vocalizations.
+    dataset_df : pandas.Dataframe
+        Dataframe that represents a dataset of vocalizations.
 
     Notes
     -----
@@ -162,7 +164,7 @@ def to_dataframe(
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
-            spect_annot_map = map_annotated_to_annot(spect_files, annot_list)
+            spect_annot_map = map_annotated_to_annot(spect_files, annot_list, annot_format)
         else:
             # no annotation, so map spectrogram files to None
             spect_annot_map = dict((spect_path, None) for spect_path in spect_files)
@@ -177,7 +179,7 @@ def to_dataframe(
                 # because there's some label in labels that's not in labelset
                 extra_labels = annot_labelset - set(labelset)
                 logger.info(
-                    f"Found labels, {extra_labels}, in {Path(spect_path).name}, "
+                    f"Found labels, {extra_labels}, in {pathlib.Path(spect_path).name}, "
                     "that are not in labels_mapping. Skipping file.",
                 )
                 continue
@@ -229,8 +231,8 @@ def to_dataframe(
             annot_path = np.nan
 
         def abspath(a_path):
-            if isinstance(a_path, str) or isinstance(a_path, Path):
-                return str(Path(a_path).absolute())
+            if isinstance(a_path, str) or isinstance(a_path, pathlib.Path):
+                return str(pathlib.Path(a_path).absolute())
             elif np.isnan(a_path):
                 return a_path
 
