@@ -155,14 +155,17 @@ def from_files(
             dask_bag_kwargs=audio_dask_bag_kwargs,
         )
         spect_format = "npz"
+        spect_ext = ".spect.npz"
     else:  # if audio format is None
         spect_files = None
+        spect_ext = None
 
     to_dataframe_kwargs = {
         "spect_format": spect_format,
         "labelset": labelset,
         "annot_list": annot_list,
         "annot_format": annot_format,
+        "spect_ext": spect_ext,
     }
 
     if spect_files:  # because we just made them, and put them in spect_output_dir
