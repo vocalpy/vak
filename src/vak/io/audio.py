@@ -52,6 +52,7 @@ def to_spect(
     audio_files: list | None = None,
     annot_list: list | None = None,
     audio_annot_map: dict | None = None,
+    annot_format: str | None = None,
     labelset: str | list | None = None,
     dask_bag_kwargs: dict | None = None,
 ):
@@ -184,7 +185,7 @@ def to_spect(
         audio_files = files_from_dir(audio_dir, audio_format)
 
     if annot_list:
-        audio_annot_map = map_annotated_to_annot(audio_files, annot_list)
+        audio_annot_map = map_annotated_to_annot(audio_files, annot_list, annot_format)
 
     logger.info("creating array files with spectrograms")
 
