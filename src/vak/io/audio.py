@@ -228,7 +228,9 @@ def to_spect(
             spect_params.spect_key: s,
             spect_params.freqbins_key: f,
             spect_params.timebins_key: t,
-            spect_params.audio_path_key: audio_file,
+            # cast audio_file to str so that we don't
+            # end up with a pickled pathlib.Path in .npz file
+            spect_params.audio_path_key: str(audio_file),
         }
         basename = os.path.basename(audio_file)
         npz_fname = os.path.join(os.path.normpath(output_dir), basename + ".spect.npz")
