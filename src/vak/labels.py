@@ -79,7 +79,7 @@ def to_set(labels_list: list[np.ndarray | list]) -> set:
     return labelset
 
 
-def from_df(vak_df: pd.DataFrame) -> list[np.ndarray]:
+def from_df(dataset_df: pd.DataFrame) -> list[np.ndarray]:
     """returns labels for each vocalization in a dataset.
     Takes Pandas DataFrame representing the dataset, loads
     annotation for each row in the DataFrame, and then returns
@@ -87,7 +87,7 @@ def from_df(vak_df: pd.DataFrame) -> list[np.ndarray]:
 
     Parameters
     ----------
-    vak_df : pandas.DataFrame
+    dataset_df : pandas.DataFrame
         created by vak.io.dataframe.from_files
 
     Returns
@@ -95,7 +95,7 @@ def from_df(vak_df: pd.DataFrame) -> list[np.ndarray]:
     labels : list
         of array-like, labels for each vocalization in the dataset.
     """
-    annots = annotation.from_df(vak_df)
+    annots = annotation.from_df(dataset_df)
     return [annot.seq.labels for annot in annots]
 
 
