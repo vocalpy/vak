@@ -102,7 +102,7 @@ def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
                     annots
                 ]  # wrap in list for map_annotated_to_annot to iterate over it
             # then we can try and map those annotations to the rows
-            audio_annot_map = map_annotated_to_annot(dataset_df["audio_path"].values, annots)
+            audio_annot_map = map_annotated_to_annot(dataset_df["audio_path"].values, annots, annot_format)
             # sort by row of dataframe
             annots = [
                 audio_annot_map[audio_path]
@@ -353,7 +353,8 @@ class MapUsingExtensionError(BaseException):
 def _map_using_ext(annotated_files: list[PathLike],
                    annot_list: list[crowsetta.Annotation],
                    annot_format: str,
-                   method: str) -> dict[pathlib.Path: crowsetta.Annotation]:
+                   method: str,
+                   annotated_ext: str | None = None) -> dict[pathlib.Path: crowsetta.Annotation]:
     """Map a list of annotated files to a :class:`list` of
     :class:`crowsetta.Annotation` instances,
     by either removing the extension of the annotation format,
@@ -406,14 +407,15 @@ def _map_using_ext(annotated_files: list[PathLike],
     ]
 
     if method == 'replace':
-        annotated_ext_set = set([annotated_file.suffix for annotated_file in annotated_files])
-        if len(annotated_ext_set) > 1:
-            raise ValueError(
-                "Found more than one extension in annotated files, "
-                "unclear which extension to use when mapping to annotations "
-                f"with 'replace' method. Extensions found: {ext_set}"
-            )
-        annotated_ext = annotated_ext_set.pop()
+        if annotated_ext is None:
+            annotated_ext_set = set([annotated_file.suffix for annotated_file in annotated_files])
+            if len(annotated_ext_set) > 1:
+                raise ValueError(
+                    "Found more than one extension in annotated files, "
+                    "unclear which extension to use when mapping to annotations "
+                    f"with 'replace' method. Extensions found: {ext_set}"
+                )
+            annotated_ext = annotated_ext_set.pop()
 
     annot_class = crowsetta.formats.by_name(annot_format)
 
@@ -483,7 +485,8 @@ def _map_using_ext(annotated_files: list[PathLike],
 
 def map_annotated_to_annot(annotated_files: Union[list, np.array],
                            annot_list: list[crowsetta.Annotation],
-                           annot_format: str) -> dict[pathlib.Path : crowsetta.Annotation]:
+                           annot_format: str,
+                           annotated_ext: str | None = None) -> dict[pathlib.Path : crowsetta.Annotation]:
     """Map annotated files,
     i.e. audio or spectrogram files,
     to their corresponding annotations.
@@ -533,8 +536,8 @@ def map_annotated_to_annot(annotated_files: Union[list, np.array],
         Of paths to audio or spectrogram files.
     annot_list : list
         Of Annotations corresponding to files in annotated_files
-    audio_ext : str
-        Extension of audio files.
+    annotated_ext : str
+        Extension of annotated files.
         Default is None, in which case this function will
         look for extensions of any valid audio format
         (listed as ``vak.constants.VALID_AUDIO_FORMAT``).
@@ -557,7 +560,8 @@ def map_annotated_to_annot(annotated_files: Union[list, np.array],
             annotated_annot_map = _map_using_ext(annotated_files, annot_list, annot_format, method='remove')
         except MapUsingExtensionError:
             try:
-                annotated_annot_map = _map_using_ext(annotated_files, annot_list, annot_format, method='replace')
+                annotated_annot_map = _map_using_ext(annotated_files, annot_list, annot_format, method='replace',
+                                                     annotated_ext=annotated_ext)
             except MapUsingExtensionError as e:
                 raise ValueError(
                     'Could not map annotated files to annotations.\n'
