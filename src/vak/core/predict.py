@@ -272,7 +272,7 @@ def predict(
 
         audio_fname = files.spect.find_audio_fname(spect_path)
         annot = crowsetta.Annotation(
-            seq=seq, audio_path=audio_fname, annot_path=annot_csv_path.name
+            seq=seq, notated_path=audio_fname, annot_path=annot_csv_path.name
         )
         annots.append(annot)
 
