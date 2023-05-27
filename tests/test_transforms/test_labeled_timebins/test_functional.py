@@ -47,18 +47,18 @@ audio_paths_from_spect_list = [
 ]
 ANNOT_LIST_NOTMAT = [
     annot for annot in ANNOT_LIST_NOTMAT
-    if annot.audio_path.name in audio_paths_from_spect_list
+    if annot.notated_path.name in audio_paths_from_spect_list
 ]
 
 
 # define here because we re-use to parametrize multiple tests
 # and because we import in .test_transforms
 FROM_SEGMENTS_PARAMETRIZE_ARGVALS = list(zip(
-    sorted(ANNOT_LIST_YARDEN, key=lambda annot: annot.audio_path.name),
+    sorted(ANNOT_LIST_YARDEN, key=lambda annot: annot.notated_path.name),
     sorted(SPECT_LIST_MAT, key=lambda spect_path: spect_path.name),
     itertools.repeat(LABELSET_YARDEN)
 )) + list(zip(
-    sorted(ANNOT_LIST_NOTMAT, key=lambda annot: annot.audio_path.name),
+    sorted(ANNOT_LIST_NOTMAT, key=lambda annot: annot.notated_path.name),
     sorted(SPECT_LIST_NPZ, key=lambda spect_path: spect_path.name),
     itertools.repeat(LABELSET_NOTMAT)
 ))
@@ -118,17 +118,21 @@ def test_to_labels(lbl_tb, labelmap, labels_expected_int):
     assert labels == labels_expected
 
 
-# skip these for now because they cause tests to fail for reasons unrelated
-# to what the test is testing
-SPECT_FILES_TO_SKIP = [
-    "llb3_0071_2018_04_23_17_38_30.wav.mat",  # has zero duration between syllable segments, onsets 54 and 55
-    # these have similar issues, where we can't successfully round trip from labeled timebins to segments
-    # because the timebin duration is pretty big (2.7 ms) and there are silent gap durations very close to that
-    # (e.g. 3 ms), so segments get combined or lost due to rounding error when we do np.min/max below
-    "llb3_0074_2018_04_23_17_41_08.wav.mat",
+# These fail because silent gap durations are too close to the timebin size of the spectrogram
+# to be able to recover the original segments by segmenting the labeled timebins.
+# ALl these have similar issues, where we can't successfully round trip from labeled timebins to segments,
+# because the timebin duration is pretty big (2.7 ms) and there are silent gap durations very close to that
+# (e.g. 3 ms), so segments get combined or lost due to rounding error when we do np.min/max below
+XFAIL_SPECT_FILES = [
     "llb3_0016_2018_04_23_15_18_14.wav.mat",
+    "llb3_0020_2018_04_23_15_30_06.wav.mat",
     "llb3_0053_2018_04_23_17_20_04.wav.mat",
-    "llb3_0054_2018_04_23_17_21_23.wav.mat"
+    "llb3_0054_2018_04_23_17_21_23.wav.mat",
+    "llb3_0068_2018_04_23_17_34_33.wav.mat",
+    "llb3_0071_2018_04_23_17_38_30.wav.mat",  # has zero duration between syllable segments, onsets 54 and 55
+    "llb3_0075_2018_04_23_17_41_08.wav.mat",
+    "llb3_0074_2018_04_23_17_41_08.wav.mat",
+
 ]
 
 
@@ -151,10 +155,10 @@ def test_to_labels_real_data(
     TIMEBINS_KEY = "t"
 
     if any(
-        str(spect_path).endswith(spect_file_to_skip)
-        for spect_file_to_skip in SPECT_FILES_TO_SKIP
+        [str(spect_path).endswith(spect_file_to_skip)
+        for spect_file_to_skip in XFAIL_SPECT_FILES]
     ):
-        pytest.skip(
+        pytest.xfail(
             "Can't round trip segments -> lbl_tb -> segments "
             "because of small silent gap durations + large time bin durations"
         )
@@ -205,11 +209,8 @@ def test_to_segments_real_data(
 
     TIMEBINS_KEY = "t"
 
-    if any(
-        str(spect_path).endswith(spect_file_to_skip)
-        for spect_file_to_skip in SPECT_FILES_TO_SKIP
-    ):
-        pytest.skip(
+    if any([str(spect_path).endswith(spect_file_to_skip) for spect_file_to_skip in XFAIL_SPECT_FILES]):
+        pytest.xfail(
             "Can't round trip segments -> lbl_tb -> segments "
             "because of small silent gap durations + large time bin durations"
         )
@@ -231,13 +232,12 @@ def test_to_segments_real_data(
         unlabeled_label=labelmap["unlabeled"],
     )
 
-    expected_labels = lbl_tb[np.insert(np.diff(lbl_tb).astype(bool), 0, True)]
-
     labels, onsets_s, offsets_s = vak.transforms.labeled_timebins.to_segments(
         lbl_tb, labelmap, timebins
     )
 
     assert np.all(np.char.equal(labels, annot.seq.labels))
+
     # writing the logic of the function here to test wouldn't make sense
     # but to still test on real data, we can test whether onset_inds
     # is the same length as expected_labels. This should be True

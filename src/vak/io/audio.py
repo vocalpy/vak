@@ -52,6 +52,7 @@ def to_spect(
     audio_files: list | None = None,
     annot_list: list | None = None,
     audio_annot_map: dict | None = None,
+    annot_format: str | None = None,
     labelset: str | list | None = None,
     dask_bag_kwargs: dict | None = None,
 ):
@@ -184,7 +185,7 @@ def to_spect(
         audio_files = files_from_dir(audio_dir, audio_format)
 
     if annot_list:
-        audio_annot_map = map_annotated_to_annot(audio_files, annot_list)
+        audio_annot_map = map_annotated_to_annot(audio_files, annot_list, annot_format)
 
     logger.info("creating array files with spectrograms")
 
@@ -227,7 +228,9 @@ def to_spect(
             spect_params.spect_key: s,
             spect_params.freqbins_key: f,
             spect_params.timebins_key: t,
-            spect_params.audio_path_key: audio_file,
+            # cast audio_file to str so that we don't
+            # end up with a pickled pathlib.Path in .npz file
+            spect_params.audio_path_key: str(audio_file),
         }
         basename = os.path.basename(audio_file)
         npz_fname = os.path.join(os.path.normpath(output_dir), basename + ".spect.npz")

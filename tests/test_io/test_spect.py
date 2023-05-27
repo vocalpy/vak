@@ -9,25 +9,25 @@ import vak.files.spect
 
 
 def expected_spect_paths_in_dataframe(
-    vak_df, expected_spect_paths, not_expected_spect_paths=None
+    dataset_df, expected_spect_paths, not_expected_spect_paths=None
 ):
-    """tests that a dataframe ``vak_df`` contains
+    """tests that a dataframe ``dataset_df`` contains
     all paths in ``expected_spect_paths``, and only those paths,
     in its ``spect_path`` column.
     If so, returns True.
 
     Parameters
     ----------
-    vak_df : pandas.Dataframe
+    dataset_df : pandas.Dataframe
         created by vak.io.spect.to_dataframe
     expected_spect_paths : list
-        of paths to spectrogram files, that **should** be in vak_df.spect_path column
+        of paths to spectrogram files, that **should** be in dataset_df.spect_path column
     not_expected_spect_paths : list
-        of paths to spectrogram files, that should **not** be in vak_df.spect_path column
+        of paths to spectrogram files, that should **not** be in dataset_df.spect_path column
     """
-    assert type(vak_df) == pd.DataFrame
+    assert type(dataset_df) == pd.DataFrame
 
-    spect_paths_from_df = [Path(spect_path) for spect_path in vak_df["spect_path"]]
+    spect_paths_from_df = [Path(spect_path) for spect_path in dataset_df["spect_path"]]
 
     for expected_spect_path in list(expected_spect_paths):
         assert expected_spect_path in spect_paths_from_df
@@ -48,15 +48,16 @@ def expected_spect_paths_in_dataframe(
 
 
 @pytest.mark.parametrize(
-    "spect_format, annot_format",
+    "spect_format, annot_format, spect_ext",
     [
-        ("mat", "yarden"),
-        ("npz", "notmat"),
+        ("mat", "yarden", None),
+        ("npz", "notmat", ".spect.npz"),
     ],
 )
 def test_to_dataframe_spect_dir(
     spect_format,
     annot_format,
+    spect_ext,
     specific_spect_dir,
     specific_spect_list,
     specific_annot_list,
@@ -68,12 +69,13 @@ def test_to_dataframe_spect_dir(
     labelset = specific_labelset(annot_format)
     annot_list = specific_annot_list(annot_format)
 
-    vak_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.io.spect.to_dataframe(
         spect_format=spect_format,
         spect_dir=spect_dir,
         labelset=labelset,
         annot_list=annot_list,
         annot_format=annot_format,
+        spect_ext=spect_ext,
     )
 
     spect_list_all_labels_in_labelset = specific_spect_list(
@@ -83,20 +85,21 @@ def test_to_dataframe_spect_dir(
         spect_format, "labels_not_in_labelset"
     )
     assert expected_spect_paths_in_dataframe(
-        vak_df, spect_list_all_labels_in_labelset, spect_list_labels_not_in_labelset
+        dataset_df, spect_list_all_labels_in_labelset, spect_list_labels_not_in_labelset
     )
 
 
 @pytest.mark.parametrize(
-    "spect_format, annot_format",
+    "spect_format, annot_format, spect_ext",
     [
-        ("mat", "yarden"),
-        ("npz", "notmat"),
+        ("mat", "yarden", None),
+        ("npz", "notmat", ".spect.npz"),
     ],
 )
 def test_to_dataframe_spect_dir_no_labelset(
     spect_format,
     annot_format,
+    spect_ext,
     specific_spect_dir,
     specific_spect_list,
     specific_annot_list,
@@ -106,50 +109,52 @@ def test_to_dataframe_spect_dir_no_labelset(
     spect_dir = specific_spect_dir(spect_format)
     annot_list = specific_annot_list(annot_format)
 
-    vak_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.io.spect.to_dataframe(
         spect_format=spect_format,
         spect_dir=spect_dir,
         labelset=None,
         annot_list=annot_list,
         annot_format="yarden",
+        spect_ext=spect_ext,
     )
 
     spect_list = specific_spect_list(spect_format)
-    assert expected_spect_paths_in_dataframe(vak_df, spect_list)
+    assert expected_spect_paths_in_dataframe(dataset_df, spect_list)
 
 
 @pytest.mark.parametrize(
-    "spect_format, annot_format",
+    "spect_format, annot_format, spect_ext",
     [
-        ("mat", "yarden"),
-        ("npz", "notmat"),
+        ("mat", "yarden", None),
+        ("npz", "notmat", ".spect.npz"),
     ],
 )
 def test_to_dataframe_spect_dir_without_annot(
-    spect_format, annot_format, specific_spect_dir, specific_spect_list
+    spect_format, annot_format, spect_ext, specific_spect_dir, specific_spect_list
 ):
     """test ``vak.io.spect.to_dataframe`` works with a dataset from spectrogram files without annotations,
     # e.g. if we're going to predict the annotations using the spectrograms"""
     spect_dir = specific_spect_dir(spect_format)
 
-    vak_df = vak.io.spect.to_dataframe(
-        spect_format=spect_format, spect_dir=spect_dir, annot_list=None
+    dataset_df = vak.io.spect.to_dataframe(
+        spect_format=spect_format, spect_dir=spect_dir, annot_list=None, spect_ext=spect_ext,
     )
 
     spect_list = specific_spect_list(spect_format)
-    assert expected_spect_paths_in_dataframe(vak_df, spect_list)
+    assert expected_spect_paths_in_dataframe(dataset_df, spect_list)
 
 
 @pytest.mark.parametrize(
-    "spect_format, annot_format",
+    "spect_format, annot_format, spect_ext",
     [
-        ("mat", "yarden"),
-        ("npz", "notmat"),
+        ("mat", "yarden", None),
+        ("npz", "notmat", ".spect.npz"),
     ],
 )
 def test_to_dataframe_spect_files(
     spect_format,
     annot_format,
+    spect_ext,
     specific_spect_list,
     specific_annot_list,
     specific_labelset,
@@ -160,12 +165,13 @@ def test_to_dataframe_spect_files(
     labelset = specific_labelset(annot_format)
     annot_list = specific_annot_list(annot_format)
 
-    vak_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.io.spect.to_dataframe(
         spect_format=spect_format,
         spect_files=spect_list,
         labelset=labelset,
         annot_list=annot_list,
         annot_format=annot_format,
+        spect_ext=spect_ext,
     )
 
     spect_list_all_labels_in_labelset = specific_spect_list(
@@ -175,19 +181,19 @@ def test_to_dataframe_spect_files(
         spect_format, "labels_not_in_labelset"
     )
     assert expected_spect_paths_in_dataframe(
-        vak_df, spect_list_all_labels_in_labelset, spect_list_labels_not_in_labelset
+        dataset_df, spect_list_all_labels_in_labelset, spect_list_labels_not_in_labelset
     )
 
 
 @pytest.mark.parametrize(
-    "spect_format, annot_format",
+    "spect_format, annot_format, spect_ext",
     [
-        ("mat", "yarden"),
-        ("npz", "notmat"),
+        ("mat", "yarden", None),
+        ("npz", "notmat", ".spect.npz"),
     ],
 )
 def test_to_dataframe_spect_files_no_labelset(
-    spect_format, annot_format, specific_spect_list, specific_annot_list
+    spect_format, annot_format, spect_ext, specific_spect_list, specific_annot_list
 ):
     """test that ``vak.io.spect.to_dataframe`` works
     when we give it list of spectrogram files and a list of annotations
@@ -195,28 +201,30 @@ def test_to_dataframe_spect_files_no_labelset(
     spect_list = specific_spect_list(spect_format)
     annot_list = specific_annot_list(annot_format)
 
-    vak_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.io.spect.to_dataframe(
         spect_format=spect_format,
         spect_files=spect_list,
         labelset=None,
         annot_list=annot_list,
         annot_format=annot_format,
+        spect_ext=spect_ext,
     )
 
     spect_list = specific_spect_list(spect_format)
-    assert expected_spect_paths_in_dataframe(vak_df, spect_list)
+    assert expected_spect_paths_in_dataframe(dataset_df, spect_list)
 
 
 @pytest.mark.parametrize(
-    "spect_format, annot_format",
+    "spect_format, annot_format, spect_ext",
     [
-        ("mat", "yarden"),
-        ("npz", "notmat"),
+        ("mat", "yarden", None),
+        ("npz", "notmat", ".spect.npz"),
     ],
 )
 def test_to_dataframe_spect_annot_map(
     spect_format,
     annot_format,
+    spect_ext,
     specific_spect_list,
     specific_annot_list,
     specific_labelset,
@@ -229,11 +237,12 @@ def test_to_dataframe_spect_annot_map(
     annot_list = specific_annot_list(annot_format)
 
     spect_annot_map = dict(zip(spect_list, annot_list))
-    vak_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.io.spect.to_dataframe(
         spect_format=spect_format,
         labelset=labelset,
         spect_annot_map=spect_annot_map,
         annot_format=annot_format,
+        spect_ext=spect_ext,
     )
 
     spect_list_all_labels_in_labelset = specific_spect_list(
@@ -243,19 +252,19 @@ def test_to_dataframe_spect_annot_map(
         spect_format, "labels_not_in_labelset"
     )
     assert expected_spect_paths_in_dataframe(
-        vak_df, spect_list_all_labels_in_labelset, spect_list_labels_not_in_labelset
+        dataset_df, spect_list_all_labels_in_labelset, spect_list_labels_not_in_labelset
     )
 
 
 @pytest.mark.parametrize(
-    "spect_format, annot_format",
+    "spect_format, annot_format, spect_ext",
     [
-        ("mat", "yarden"),
-        ("npz", "notmat"),
+        ("mat", "yarden", None),
+        ("npz", "notmat", ".spect.npz"),
     ],
 )
 def test_to_dataframe_spect_annot_map_no_labelset(
-    spect_format, annot_format, specific_spect_list, specific_annot_list
+    spect_format, annot_format, spect_ext, specific_spect_list, specific_annot_list
 ):
     """test that ``vak.io.spect.to_dataframe`` works
     when we give it a dict that maps spectrogram files to annotations
@@ -265,15 +274,16 @@ def test_to_dataframe_spect_annot_map_no_labelset(
 
     spect_annot_map = dict(zip(spect_list, annot_list))
 
-    vak_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.io.spect.to_dataframe(
         spect_format=spect_format,
         labelset=None,
         spect_annot_map=spect_annot_map,
         annot_format=annot_format,
+        spect_ext=spect_ext,
     )
 
     spect_list = specific_spect_list(spect_format)
-    assert expected_spect_paths_in_dataframe(vak_df, spect_list)
+    assert expected_spect_paths_in_dataframe(dataset_df, spect_list)
 
 
 def test_to_dataframe_no_spect_dir_files_or_map_raises(annot_list_yarden):

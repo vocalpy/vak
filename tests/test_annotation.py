@@ -1,3 +1,5 @@
+import pathlib
+
 import crowsetta
 import evfuncs
 import numpy as np
@@ -38,7 +40,7 @@ def test_files_from_dir(annot_dir_notmat, annot_files_notmat):
     ]
 )
 def test_audio_stem_from_path(path, audio_ext, expected_stem):
-    stem = vak.annotation.audio_stem_from_path(path, audio_ext)
+    stem = vak.annotation.audio_filename_from_path(path, audio_ext)
     assert stem == expected_stem
 
 
@@ -64,22 +66,20 @@ def test_audio_stem_from_path(path, audio_ext, expected_stem):
     ]
 )
 def test_audio_stem_from_path_raises(path, audio_ext):
-    with pytest.raises(vak.annotation.AudioFilenameNotFound):
-        vak.annotation.audio_stem_from_path(path, audio_ext)
+    with pytest.raises(vak.annotation.AudioFilenameNotFoundError):
+        vak.annotation.audio_filename_from_path(path, audio_ext)
 
 
 @pytest.mark.parametrize(
     "source_type, source_format, annot_format, audio_ext",
     [
-        ("audio", "cbin", "notmat", None),
         ("audio", "wav", "birdsong-recognition-dataset", None),
         ("spect", "mat", "yarden", None),
-        ("audio", "cbin", "notmat", "cbin"),
         ("audio", "wav", "birdsong-recognition-dataset", "wav"),
         ("spect", "mat", "yarden", "wav"),
     ],
 )
-def test__map_using_audio_stem_from_path(
+def test__map_using_notated_path(
     source_type,
     source_format,
     annot_format,
@@ -94,14 +94,14 @@ def test__map_using_audio_stem_from_path(
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
 
-    annotated_annot_map = vak.annotation._map_using_audio_stem_from_path(
+    annotated_annot_map = vak.annotation._map_using_notated_path(
         annotated_files=annotated_files, annot_list=annot_list, audio_ext=audio_ext
     )
 
-    # test all the audio paths made it into the map
+    # test all the notated paths made it into the map
     annotated_files_from_map = list(annotated_annot_map.keys())
     for source_file in annotated_files:
-        assert source_file in annotated_files_from_map
+        assert str(source_file) in annotated_files_from_map
 
     # test all the annots made it into the map
     annot_list_from_map = list(annotated_annot_map.values())
@@ -110,22 +110,24 @@ def test__map_using_audio_stem_from_path(
 
     # test all mappings are correct
     for source_path, annot in list(annotated_annot_map.items()):
-        assert vak.annotation.audio_stem_from_path(
-            annot.audio_path
-        ) == vak.annotation.audio_stem_from_path(source_path)
+        assert vak.annotation.audio_filename_from_path(
+            annot.notated_path
+        ) == vak.annotation.audio_filename_from_path(source_path)
 
 
 @pytest.mark.parametrize(
-    "source_type, source_format, annot_format, annotated_ext",
+    "source_type, source_format, annot_format, annotated_ext, method",
     [
-        ("audio", "wav", "textgrid", ".wav"),
+        ("audio", "cbin", "notmat", None, "remove"),
+        ("audio", "wav", "textgrid", None, "replace"),
     ],
 )
-def test__map_replacing_ext(
+def test__map_using_ext(
     source_type,
     source_format,
     annot_format,
     annotated_ext,
+    method,
     audio_list_factory,
     spect_list_mat,
     specific_annot_list,
@@ -136,14 +138,15 @@ def test__map_replacing_ext(
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
 
-    annotated_annot_map = vak.annotation._map_replacing_ext(
-        annotated_files=annotated_files, annot_list=annot_list, annotated_ext=annotated_ext
+    annotated_annot_map = vak.annotation._map_using_ext(
+        annotated_files=annotated_files, annot_list=annot_list, annot_format=annot_format,
+        method=method, annotated_ext=annotated_ext
     )
 
     # test all the audio paths made it into the map
     annotated_files_from_map = list(annotated_annot_map.keys())
     for source_file in annotated_files:
-        assert source_file in annotated_files_from_map
+        assert str(source_file) in annotated_files_from_map
 
     # test all the annots made it into the map
     annot_list_from_map = list(annotated_annot_map.values())
@@ -151,27 +154,31 @@ def test__map_replacing_ext(
         assert annot in annot_list_from_map
 
     # test all mappings are correct
+    annot_class = crowsetta.formats.by_name(annot_format)
+    ext = annot_class.ext
     for source_path, annot in list(annotated_annot_map.items()):
-        assert vak.annotation.audio_stem_from_path(
-            annot.audio_path
-        ) == vak.annotation.audio_stem_from_path(source_path)
+        if method == 'remove':
+            assert annot.annot_path.name.replace(ext, '') == pathlib.Path(source_path).name
+        elif method == 'replace':
+            assert annot.annot_path.name.replace(ext, '') == pathlib.Path(source_path).stem
 
 
 @pytest.mark.parametrize(
-    "source_type, source_format, annot_format",
+    "source_type, source_format, annot_format, method",
     [
-        ("audio", "cbin", "notmat"),
-        ("audio", "cbin", "simple-seq"),
-        ("audio", "wav", "birdsong-recognition-dataset"),
-        ("audio", "wav", "textgrid"),
-        ("spect", "mat", "yarden"),
-        ("audio", "wav", "textgrid"),
+        ("audio", "cbin", "notmat", "remove"),
+        ("audio", "cbin", "simple-seq", "remove"),
+        ("audio", "wav", "birdsong-recognition-dataset", None),
+        ("audio", "wav", "textgrid", "replace"),
+        ("spect", "mat", "yarden", None),
+        ("audio", "wav", "textgrid", "replace"),
     ],
 )
 def test_map_annotated_to_annot(
     source_type,
     source_format,
     annot_format,
+    method,
     audio_list_factory,
     spect_list_mat,
     specific_annot_list,
@@ -182,13 +189,13 @@ def test_map_annotated_to_annot(
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
     annotated_annot_map = vak.annotation.map_annotated_to_annot(
-        annotated_files=annotated_files, annot_list=annot_list
+        annotated_files=annotated_files, annot_list=annot_list, annot_format=annot_format
     )
 
     # test all the audio paths made it into the map
     annotated_files_from_map = list(annotated_annot_map.keys())
     for source_file in annotated_files:
-        assert source_file in annotated_files_from_map
+        assert str(source_file) in annotated_files_from_map
 
     # test all the annots made it into the map
     annot_list_from_map = list(annotated_annot_map.values())
@@ -196,10 +203,26 @@ def test_map_annotated_to_annot(
         assert annot in annot_list_from_map
 
     # test all mappings are correct
-    for source_path, annot in list(annotated_annot_map.items()):
-        assert vak.annotation.audio_stem_from_path(
-            annot.audio_path
-        ) == vak.annotation.audio_stem_from_path(source_path)
+    if all([annot.notated_path for annot in annot_list]):
+        for source_path, annot in list(annotated_annot_map.items()):
+            assert vak.annotation.audio_filename_from_path(
+                annot.notated_path
+            ) == vak.annotation.audio_filename_from_path(source_path)
+    else:
+        if annot_format == 'simple-seq':
+            ext = '.csv'
+        else:
+            annot_class = crowsetta.formats.by_name(annot_format)
+            ext = annot_class.ext
+
+        if method == 'remove':
+            for source_path, annot in list(annotated_annot_map.items()):
+                assert annot.annot_path.name.replace(ext, '') == pathlib.Path(source_path).name
+        elif method == 'replace':
+            for source_path, annot in list(annotated_annot_map.items()):
+                assert annot.annot_path.name.replace(ext, '') == pathlib.Path(source_path).stem
+    annot_class = crowsetta.formats.by_name(annot_format)
+    ext = annot_class.ext
 
 
 @pytest.mark.parametrize(
@@ -260,6 +283,6 @@ def test_has_unlabeled_annotation_with_no_segments(annotated_annot_no_segments):
     data, samp_freq = evfuncs.load_cbin(audio_path)
     dur = data.shape[0] / samp_freq
     scribe = crowsetta.Transcriber(format='notmat')
-    annot = scribe.from_file(annot_path)
+    annot = scribe.from_file(annot_path).to_annot()
 
     assert vak.annotation.has_unlabeled(annot, dur) is True

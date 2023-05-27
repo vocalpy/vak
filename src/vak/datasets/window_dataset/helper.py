@@ -416,7 +416,22 @@ def _vectors_from_df(
         # then we need labeled timebins so we can ensure unique labelset is preserved when cropping
         lbl_tb = []
         annots = annotation.from_df(df)
-        source_annot_map = annotation.map_annotated_to_annot(source_paths, annots)
+        annot_format = annotation.format_from_df(df)
+
+        if all([source_path.endswith('.spect.npz') for source_path in source_paths]):
+            annotated_ext = '.spect.npz'
+        else:
+            annotated_ext_set = set([annotated_file.suffix for annotated_file in annotated_files])
+            if len(annotated_ext_set) > 1:
+                raise ValueError(
+                    "Found more than one extension in annotated files, "
+                    "unclear which extension to use when mapping to annotations "
+                    f"with 'replace' method. Extensions found: {ext_set}"
+                )
+            annotated_ext = annotated_ext_set.pop()
+
+        source_annot_map = annotation.map_annotated_to_annot(source_paths, annots, annot_format,
+                                                             annotated_ext=annotated_ext)
         unlabeled_label = labelmap.get('unlabeled', 0)
 
     # this avoids repeating the entire for loop twice, for with cropping or without;
@@ -497,9 +512,6 @@ def vectors_from_df(
         Size of the window, in number of time bins,
         that is taken from the audio array
         or spectrogram to become a training sample.
-    audio_format : str
-        Valid audio file format. One of {"wav", "cbin"}.
-        Defaults to "wav".
     spect_key : str
         Key to access spectograms in array files.
         Default is "s".

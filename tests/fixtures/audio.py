@@ -45,7 +45,7 @@ def audio_list_cbin_all_labels_in_labelset(
     for audio_path in audio_list_cbin:
         audio_fname = audio_path.name
         annot = [
-            annot for annot in annot_list_notmat if annot.audio_path.name == audio_fname
+            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
         ]
         assert len(annot) == 1
         annot = annot[0]
@@ -65,7 +65,7 @@ def audio_list_cbin_labels_not_in_labelset(
     for audio_path in audio_list_cbin:
         audio_fname = audio_path.name
         annot = [
-            annot for annot in annot_list_notmat if annot.audio_path.name == audio_fname
+            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
         ]
         assert len(annot) == 1
         annot = annot[0]
