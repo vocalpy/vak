@@ -7,9 +7,9 @@ import vak
 from .test_functional import (
     FROM_SEGMENTS_PARAMETRIZE_ARGVALS,
     MAX_ABS_DIFF,
-    SPECT_FILES_TO_SKIP,
     TIMEBIN_DUR_FOR_PARAMETRIZE,
     POSTPROCESS_PARAMS_ARGVALS,
+    XFAIL_SPECT_FILES,
 )
 
 
@@ -109,9 +109,9 @@ class TestToLabels:
 
         if any(
             str(spect_path).endswith(spect_file_to_skip)
-            for spect_file_to_skip in SPECT_FILES_TO_SKIP
+            for spect_file_to_skip in XFAIL_SPECT_FILES
         ):
-            pytest.skip(
+            pytest.xfail(
                 "Can't round trip segments -> lbl_tb -> segments "
                 "because of small silent gap durations + large time bin durations"
             )
@@ -174,9 +174,9 @@ class TestToSegments:
 
         if any(
                 str(spect_path).endswith(spect_file_to_skip)
-                for spect_file_to_skip in SPECT_FILES_TO_SKIP
+                for spect_file_to_skip in XFAIL_SPECT_FILES
         ):
-            pytest.skip(
+            pytest.xfail(
                 "Can't round trip segments -> lbl_tb -> segments "
                 "because of small silent gap durations + large time bin durations"
             )
