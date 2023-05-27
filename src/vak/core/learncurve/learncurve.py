@@ -6,6 +6,7 @@ import pandas as pd
 
 from . import splits
 from ..eval import eval
+from ..prep.prep_helper import validate_and_get_timebin_dur
 from ..train import train
 from ... import (
     datasets,
@@ -14,7 +15,6 @@ from ... import (
 from ...io import dataframe
 from ...converters import expanded_user_path
 from ...paths import generate_results_dir_name_as_path
-
 
 logger = logging.getLogger(__name__)
 
@@ -146,11 +146,17 @@ def learning_curve(
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
     dataset_path = expanded_user_path(dataset_path)
-    if not dataset_path.exists():
-        raise FileNotFoundError(f"dataset_path not found: {dataset_path}")
+    if not dataset_path.exists() or not dataset_path.is_dir():
+        raise NotADirectoryError(
+            f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+        )
 
-    logger.info(f"Using dataset from .csv: {dataset_path}")
-    dataset_df = pd.read_csv(dataset_path)
+    logger.info(
+        f"Loading dataset from path: {dataset_path}",
+    )
+    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+    dataset_df = pd.read_csv(dataset_csv_path)
 
     if previous_run_path:
         previous_run_path = expanded_user_path(previous_run_path)
@@ -178,13 +184,13 @@ def learning_curve(
 
     logger.info(f"Saving results to: {results_path}")
 
-    timebin_dur = dataframe.validate_and_get_timebin_dur(dataset_df)
+    timebin_dur = validate_and_get_timebin_dur(dataset_df)
     logger.info(
         f"Size of each timebin in spectrogram, in seconds: {timebin_dur}",
     )
 
     # ---- get training set subsets ------------------------------------------------------------------------------------
-    has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_path, timebins_key)
+    has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
     if has_unlabeled:
         map_unlabeled = True
     else:
@@ -213,7 +219,7 @@ def learning_curve(
         # do all subsetting before training, so that we fail early if subsetting is going to fail
         train_dur_dataset_paths = splits.from_df(
             dataset_df,
-            dataset_path,
+            dataset_csv_path,
             train_set_durs,
             timebin_dur,
             num_replicates,
@@ -235,16 +241,16 @@ def learning_curve(
         )
         dataset_paths = train_dur_dataset_paths[train_dur]
 
-        for replicate_num, this_train_dur_this_replicate_dataset_path in enumerate(
+        for replicate_num, this_train_dur_this_replicate_dataset_csv_path in enumerate(
             dataset_paths
         ):
             replicate_num += 1  # so log statements below match replicate nums returned by train_dur_dataset_paths
             logger.info(
                 f"Training replicate {replicate_num} "
-                f"using dataset from .csv file: {this_train_dur_this_replicate_dataset_path}",
+                f"using dataset from .csv file: {this_train_dur_this_replicate_dataset_csv_path}",
             )
             this_train_dur_this_replicate_results_path = (
-                this_train_dur_this_replicate_dataset_path.parent
+                this_train_dur_this_replicate_dataset_csv_path.parent
             )
             logger.info(
                 f"Saving results to: {this_train_dur_this_replicate_results_path}",
@@ -265,11 +271,12 @@ def learning_curve(
             train(
                 model_name,
                 model_config,
-                this_train_dur_this_replicate_dataset_path,
+                dataset_path,
                 window_size,
                 batch_size,
                 num_epochs,
                 num_workers,
+                dataset_csv_path=this_train_dur_this_replicate_dataset_csv_path,
                 labelset=labelset,
                 results_path=this_train_dur_this_replicate_results_path,
                 spect_key=spect_key,
@@ -333,7 +340,7 @@ def learning_curve(
             eval(
                 model_name,
                 model_config,
-                this_train_dur_this_replicate_dataset_path,
+                this_train_dur_this_replicate_dataset_csv_path,
                 checkpoint_path=ckpt_path,
                 labelmap_path=labelmap_path,
                 output_dir=this_train_dur_this_replicate_results_path,
