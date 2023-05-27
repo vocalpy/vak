@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that a dataset is not always a csv file
   [#632](https://github.com/NickleDave/vak/pull/632).
   Fixes [#549](https://github.com/NickleDave/vak/issues/549).
+- Use [crowsetta 5.0](https://github.com/vocalpy/crowsetta/releases/tag/5.0.0), version released after 
+  [pyOpenSci review](https://github.com/pyOpenSci/software-submission/issues/68).
+  [#628](https://github.com/NickleDave/vak/pull/628).
+  Fixes [#522](https://github.com/vocalpy/vak/issues/526).
 
 ### Removed
 - Remove entry points since they are not being used
