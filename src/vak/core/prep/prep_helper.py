@@ -106,8 +106,14 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
                 dataset_df["annot_path"].unique().item()
             )
             copied_annot_path = dataset_path / annot_path.name
-            shutil.copy(src=annot_path, dst=copied_annot_path)
-            dataset_df["annot_path"] = str(copied_annot_path)  # same path for all rows
+            # next code block:
+            # if we converted some annotation format to normalize it,
+            # e.g., birdsong-recognition-dataset,
+            # and we already saved the converted annotations in dataset_path
+            # we don't need to copy, and this would raise "it's the same file!" error. So we skip in that case
+            if not copied_annot_path.exists():
+                shutil.copy(src=annot_path, dst=copied_annot_path)
+                dataset_df["annot_path"] = str(copied_annot_path)  # same path for all rows
 
         elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
             # --> there is a unique annotation file (path) for each row, i.e. a 1:1 mapping from spect:annotation
