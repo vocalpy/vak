@@ -118,17 +118,21 @@ def test_to_labels(lbl_tb, labelmap, labels_expected_int):
     assert labels == labels_expected
 
 
-# skip these for now because they cause tests to fail for reasons unrelated
-# to what the test is testing
-SPECT_FILES_TO_SKIP = [
-    "llb3_0071_2018_04_23_17_38_30.wav.mat",  # has zero duration between syllable segments, onsets 54 and 55
-    # these have similar issues, where we can't successfully round trip from labeled timebins to segments
-    # because the timebin duration is pretty big (2.7 ms) and there are silent gap durations very close to that
-    # (e.g. 3 ms), so segments get combined or lost due to rounding error when we do np.min/max below
-    "llb3_0074_2018_04_23_17_41_08.wav.mat",
+# These fail because silent gap durations are too close to the timebin size of the spectrogram
+# to be able to recover the original segments by segmenting the labeled timebins.
+# ALl these have similar issues, where we can't successfully round trip from labeled timebins to segments,
+# because the timebin duration is pretty big (2.7 ms) and there are silent gap durations very close to that
+# (e.g. 3 ms), so segments get combined or lost due to rounding error when we do np.min/max below
+XFAIL_SPECT_FILES = [
     "llb3_0016_2018_04_23_15_18_14.wav.mat",
+    "llb3_0020_2018_04_23_15_30_06.wav.mat",
     "llb3_0053_2018_04_23_17_20_04.wav.mat",
-    "llb3_0054_2018_04_23_17_21_23.wav.mat"
+    "llb3_0054_2018_04_23_17_21_23.wav.mat",
+    "llb3_0068_2018_04_23_17_34_33.wav.mat",
+    "llb3_0071_2018_04_23_17_38_30.wav.mat",  # has zero duration between syllable segments, onsets 54 and 55
+    "llb3_0075_2018_04_23_17_41_08.wav.mat",
+    "llb3_0074_2018_04_23_17_41_08.wav.mat",
+
 ]
 
 
@@ -152,9 +156,9 @@ def test_to_labels_real_data(
 
     if any(
         [str(spect_path).endswith(spect_file_to_skip)
-        for spect_file_to_skip in SPECT_FILES_TO_SKIP]
+        for spect_file_to_skip in XFAIL_SPECT_FILES]
     ):
-        pytest.skip(
+        pytest.xfail(
             "Can't round trip segments -> lbl_tb -> segments "
             "because of small silent gap durations + large time bin durations"
         )
@@ -205,8 +209,8 @@ def test_to_segments_real_data(
 
     TIMEBINS_KEY = "t"
 
-    if any([str(spect_path).endswith(spect_file_to_skip) for spect_file_to_skip in SPECT_FILES_TO_SKIP]):
-        pytest.skip(
+    if any([str(spect_path).endswith(spect_file_to_skip) for spect_file_to_skip in XFAIL_SPECT_FILES]):
+        pytest.xfail(
             "Can't round trip segments -> lbl_tb -> segments "
             "because of small silent gap durations + large time bin durations"
         )
