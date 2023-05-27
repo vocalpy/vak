@@ -151,8 +151,8 @@ def test_to_labels_real_data(
     TIMEBINS_KEY = "t"
 
     if any(
-        str(spect_path).endswith(spect_file_to_skip)
-        for spect_file_to_skip in SPECT_FILES_TO_SKIP
+        [str(spect_path).endswith(spect_file_to_skip)
+        for spect_file_to_skip in SPECT_FILES_TO_SKIP]
     ):
         pytest.skip(
             "Can't round trip segments -> lbl_tb -> segments "
@@ -205,10 +205,7 @@ def test_to_segments_real_data(
 
     TIMEBINS_KEY = "t"
 
-    if any(
-        str(spect_path).endswith(spect_file_to_skip)
-        for spect_file_to_skip in SPECT_FILES_TO_SKIP
-    ):
+    if any([str(spect_path).endswith(spect_file_to_skip) for spect_file_to_skip in SPECT_FILES_TO_SKIP]):
         pytest.skip(
             "Can't round trip segments -> lbl_tb -> segments "
             "because of small silent gap durations + large time bin durations"
@@ -231,13 +228,12 @@ def test_to_segments_real_data(
         unlabeled_label=labelmap["unlabeled"],
     )
 
-    expected_labels = lbl_tb[np.insert(np.diff(lbl_tb).astype(bool), 0, True)]
-
     labels, onsets_s, offsets_s = vak.transforms.labeled_timebins.to_segments(
         lbl_tb, labelmap, timebins
     )
 
     assert np.all(np.char.equal(labels, annot.seq.labels))
+
     # writing the logic of the function here to test wouldn't make sense
     # but to still test on real data, we can test whether onset_inds
     # is the same length as expected_labels. This should be True
