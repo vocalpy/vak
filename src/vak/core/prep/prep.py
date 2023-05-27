@@ -2,6 +2,8 @@ import logging
 import pathlib
 import warnings
 
+import crowsetta.formats.seq
+
 from . import prep_helper
 
 from ... import split
@@ -194,6 +196,29 @@ def prep(
     # TODO: different default?
     dataset_path = output_dir / f'{data_dir_name}-vak-dataset-generated-{timenow}'
     dataset_path.mkdir()
+
+    if annot_file and annot_format == 'birdsong-recognition-dataset':
+        # we do this normalization / canonicalization after we make dataset_path
+        # so that we can put the new annot_file inside of dataset_path, instead of
+        # making new files elsewhere on a user's system
+        logger.info("The `annot_format` argument was set to 'birdsong-recognition-format'; "
+                    "this format requires the audio files for their sampling rate "
+                    "to convert onset and offset times of birdsong syllables to seconds."
+                    "Converting this format to 'generic-seq' now with the times in seconds, "
+                    "so that the dataset prepared by vak will not require the audio files.")
+        birdsongrec = crowsetta.formats.seq.BirdsongRec.from_file(annot_file)
+        annots = birdsongrec.to_annot()
+        # note we point `annot_file` at a new file we're about to make
+        annot_file = dataset_path / f'{annot_file.stem}.converted-to-generic-seq.csv'
+        # and we remake Annotations here so that annot_path points to this new file, not the birdsong-rec Annotation.xml
+        annots = [
+            crowsetta.Annotation(seq=annot.seq, annot_path=annot_file, notated_path=annot.notated_path)
+            for annot in annots
+        ]
+        generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+        generic_seq.to_file(annot_file)
+        # and we now change `annot_format` as well. Both these will get passed to io.dataframe.from_files
+        annot_format = 'generic-seq'
 
     # NOTE we set up logging here (instead of cli) so the prep log is included in the dataset
     config_logging_for_cli(
