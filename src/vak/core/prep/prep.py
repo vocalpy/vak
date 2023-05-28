@@ -6,7 +6,7 @@ import crowsetta.formats.seq
 
 from . import prep_helper
 
-from ... import split
+from ... import datasets, split
 from ...converters import expanded_user_path, labelset_to_set
 from ...datasets.metadata import Metadata
 from ...io import dataframe
@@ -253,6 +253,15 @@ def prep(
             "returned an empty dataframe.\n"
             "Please double-check arguments to `vak.core.prep` function."
         )
+
+    # TODO: determine this here and then save labelmap.json inside dataset_dir
+    # has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
+    # if has_unlabeled:
+    #     map_unlabeled = True
+    # else:
+    #     map_unlabeled = False
+    # labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
+
 
     # ---- (possibly) split into train / val / test sets ---------------------------------------------
     # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
