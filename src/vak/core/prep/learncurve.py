@@ -30,7 +30,7 @@ def make_learncurve_splits_from_dataset_df(
     labelmap: dict,
     spect_key: str = "s",
     timebins_key: str = "t",
-) -> dict[int: dict[int: str]]:
+):
     """Make splits for a learning curve from a dataframe representing the entire dataset.
 
     Uses :func:`vak.split.dataframe` to make splits from ``dataset_df``.
