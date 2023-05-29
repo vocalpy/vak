@@ -1,5 +1,4 @@
-import json
-
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -36,12 +35,14 @@ def test_make_learncurve_splits_from_dataset_df(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
 
-    csv_path = cfg.learncurve.dataset_path
-    dataset_df = pd.read_csv(csv_path)
-    timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(dataset_df)
+    dataset_path = cfg.learncurve.dataset_path
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+    dataset_df = pd.read_csv(dataset_csv_path)
+    timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(dataset_df)
 
     labelset_notmat = vak.converters.labelset_to_set(labelset_notmat)
-    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(csv_path)
+    has_unlabeled = vak.datasets.seq.validators.has_unlabeled(dataset_csv_path)
     if has_unlabeled:
         map_unlabeled = True
     else:
@@ -53,7 +54,7 @@ def test_make_learncurve_splits_from_dataset_df(
 
     vak.core.prep.learncurve.make_learncurve_splits_from_dataset_df(
         dataset_df,
-        csv_path,
+        dataset_csv_path,
         cfg.learncurve.train_set_durs,
         timebin_dur,
         cfg.learncurve.num_replicates,
@@ -66,29 +67,36 @@ def test_make_learncurve_splits_from_dataset_df(
     learncurve_splits_root = dataset_path / 'learncurve'
     assert learncurve_splits_root.exists()
 
-    learncurve_splits_path = learncurve_splits_root / 'learncurve-splits-metadata.json'
+    learncurve_splits_path = learncurve_splits_root / 'learncurve-splits-metadata.csv'
     assert learncurve_splits_path.exists()
 
-    with learncurve_splits_path.open('r') as fp:
-        learncurve_metadata = json.read(fp)
+    splits_df = pd.read_csv(learncurve_splits_path)
 
-    metadata_keys = sorted(learncurve_metadata.keys())
-    assert metadata_keys == cfg.learncurve.train_set_durs
+    assert sorted(splits_df['train_dur'].unique()) == cfg.learncurve.train_set_durs
+    assert sorted(
+        splits_df['replicate_num'].unique()
+    ) == list(range(1, cfg.learncurve.num_replicates + 1))
 
-    for train_dur, replicate_dict in sorted(learncurve_metadata.items()):
-        replicate_keys = sorted(replicate_dict.keys())
-        assert replicate_keys == list(range(1, cfg.learncurve.num_replicates + 1))
+    for train_dur in sorted(splits_df['train_dur'].unique()):
+        train_dur_df = splits_df[np.isclose(splits_df['train_dur'], train_dur)].copy()
+        assert sorted(
+            train_dur_df['replicate_num']
+        ) == list(range(1, cfg.learncurve.num_replicates + 1))
 
-        for replicate_num, splits_vectors_dict in sorted(
-            replicate_dict.items()
-        ):
-            split_csv_path = learncurve_splits_root / splits_vectors_dict["split_csv_filename"]
+        for replicate_num in sorted(train_dur_df['replicate_num']):
+            train_dur_replicate_df = splits_df[
+                (np.isclose(splits_df['train_dur'], train_dur)) &
+                (splits_df['replicate_num'] == replicate_num)
+            ]
+            assert len(train_dur_replicate_df) == 1
+
+            split_csv_path = learncurve_splits_root / train_dur_replicate_df["split_csv_filename"].item()
             assert split_csv_path.exists()
 
             split_df = pd.read_csv(split_csv_path)
             assert split_df[split_df.split == 'train'].duration.sum() >= train_dur
 
             for vec_name in ("source_ids", "source_inds", "window_inds"):
-                vector_path = learncurve_splits_root / f"{vec_name}-train-dur-{train_dur}-replicate-{replicate_num}.npy"
+                vec_filename = train_dur_replicate_df[f'{vec_name}_npy_filename'].item()
+                vector_path = learncurve_splits_root / vec_filename
                 assert vector_path.exists()
-
