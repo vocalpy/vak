@@ -32,15 +32,6 @@ class LearncurveConfig(TrainConfig):
     patience : int
         number of epochs to wait without the error dropping before stopping the
         training. Default is None, in which case training continues for num_epochs
-    train_set_durs : list
-        of int, durations in seconds of subsets taken from training data
-        to create a learning curve, e.g. [5, 10, 15, 20]. Default is None
-        (when training a single model on all available training data).
-    num_replicates : int
-        number of times to replicate training for each training set duration
-        to better estimate mean accuracy for a training set of that size.
-        Each replicate uses a different randomly drawn subset of the training
-        data (but of the same duration).
     save_only_single_checkpoint_file : bool
         if True, save only one checkpoint file instead of separate files every time
         we save. Default is True.
@@ -61,8 +52,6 @@ class LearncurveConfig(TrainConfig):
         See the docstring of the transform for more details on
         these arguments and how they work.
     """
-    train_set_durs = attr.ib(validator=instance_of(list), kw_only=True)
-    num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
     post_tfm_kwargs = attr.ib(
         validator=validators.optional(are_valid_post_tfm_kwargs),
         converter=converters.optional(convert_post_tfm_kwargs),
