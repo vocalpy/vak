@@ -345,18 +345,20 @@ def prep(
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
     # ---- create and save labelmap ------------------------------------------------------------------------------------
-    has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
-    if has_unlabeled:
-        map_unlabeled = True
-    else:
-        map_unlabeled = False
-    labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
-    logger.info(
-        f"number of classes in labelmap: {len(labelmap)}",
-    )
-    # save labelmap in case we need it later
-    with (dataset_path / "labelmap.json").open("w") as fp:
-        json.dump(labelmap, fp)
+    if purpose != 'predict':
+        # TODO -- add option to generate predict using existing dataset, so we can get labelmap from it
+        has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
+        if has_unlabeled:
+            map_unlabeled = True
+        else:
+            map_unlabeled = False
+        labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
+        logger.info(
+            f"number of classes in labelmap: {len(labelmap)}",
+        )
+        # save labelmap in case we need it later
+        with (dataset_path / "labelmap.json").open("w") as fp:
+            json.dump(labelmap, fp)
 
     # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
 
