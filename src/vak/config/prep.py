@@ -108,6 +108,16 @@ class PrepConfig:
         total duration of validation set, in seconds.
     test_dur : float
         total duration of test set, in seconds.
+    train_set_durs : list, optional
+        Durations of datasets to use for a learning curve.
+        Float values, durations in seconds of subsets taken from training data
+        to create a learning curve, e.g. [5., 10., 15., 20.]. Default is None.
+        Required if config file has a learncurve section.
+    num_replicates : int, optional
+        Number of replicates to train for each training set duration
+        in a learning curve. Each replicate uses a different
+        randomly drawn subset of the training data (but of the same duration).
+        Default is None. Required if config file has a learncurve section.
     """
     data_dir = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
@@ -143,6 +153,8 @@ class PrepConfig:
         validator=validators.optional(is_valid_duration),
         default=None,
     )
+    train_set_durs = attr.ib(validator=instance_of(list), kw_only=True)
+    num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
 
     def __attrs_post_init__(self):
         if self.audio_format is not None and self.spect_format is not None:
