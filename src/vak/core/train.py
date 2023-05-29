@@ -182,15 +182,18 @@ def train(
         )
 
     if dataset_csv_path:
+        # when this gets passed in by learncurve
         dataset_csv_path = pathlib.Path(dataset_csv_path)
-        if not dataset_path.exists():
+        if not dataset_csv_path.exists():
             raise FileNotFoundError(
-                f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+                f"`dataset_csv_path` not found or not recognized as a directory: {dataset_csv_path}"
             )
-        if dataset_csv_path.parent != dataset_path:
+        if dataset_csv_path.parents[1] != dataset_path:
             raise ValueError(
-                f"The parent directory of `dataset_csv_path` must be `dataset_path`, "
-                f"to ensure the splits were generated using the dataset created by `vak.prep`.\n"
+                "Dataset csv path is not in the expected location in the dataset directory. "
+                f"A dataset csv passed in through `dataset_csv_path` must be in "
+                f"`dataset_path / learncurve`, to ensure the splits were generated "
+                f"using the dataset created by `vak.prep`.\n"
                 f"Parent directory of `dataset_csv_path`: {dataset_csv_path.parent}\n"
                 f"Value for `dataset_path`: \n{dataset_path}"
             )
