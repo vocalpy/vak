@@ -2,7 +2,6 @@
 used by ``vak.core.learncurve``"""
 from __future__ import annotations
 
-import json
 import logging
 import pathlib
 from typing import Sequence
@@ -10,7 +9,8 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from ... import split
+from .prep_helper import validate_and_get_timebin_dur
+from ... import labels, split
 from ...datasets import window_dataset
 
 
@@ -21,10 +21,8 @@ def make_learncurve_splits_from_dataset_df(
     dataset_df: pd.DataFrame,
     csv_path: str | pathlib.Path,
     train_set_durs: Sequence[float],
-    timebin_dur: float,
     num_replicates: int,
     dataset_path: pathlib.Path,
-    labelset: dict,
     window_size: int,
     labelmap: dict,
     spect_key: str = "s",
@@ -49,8 +47,6 @@ def make_learncurve_splits_from_dataset_df(
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
         to create a learning curve, e.g. [5, 10, 15, 20].
-    timebin_dur : float
-        duration of timebins in spectrograms
     num_replicates : int
         number of times to replicate training for each training set duration
         to better estimate metrics for a training set of that size.
@@ -92,11 +88,13 @@ def make_learncurve_splits_from_dataset_df(
             # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
             train_split_df = dataset_df[dataset_df["split"] == "train"]
+            labelset = [k for k in labelmap.keys() if k != "unlabeled"]
             train_split_df = split.dataframe(
                 train_split_df, train_dur=train_dur, labelset=labelset
             )
             train_split_df = train_split_df[train_split_df.split == "train"]  # remove rows where split set to 'None'
 
+            timebin_dur = validate_and_get_timebin_dur(dataset_df)
             # use *just* train subset to get spect vectors for WindowDataset
             (
                 source_ids,
