@@ -145,8 +145,8 @@ def prep(toml_path):
             train_dur=cfg.prep.train_dur,
             val_dur=cfg.prep.val_dur,
             test_dur=cfg.prep.test_dur,
-            train_set_durs=cfg.learncurve.train_set_durs,
-            num_replicates=cfg.learncurve.num_replicates,
+            train_set_durs=cfg.prep.train_set_durs,
+            num_replicates=cfg.prep.num_replicates,
             window_size=cfg.dataloader.window_size,
         )
 
