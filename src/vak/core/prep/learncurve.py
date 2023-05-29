@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from .prep_helper import validate_and_get_timebin_dur
-from ... import labels, split
+from ... import split
 from ...datasets import window_dataset
 
 
@@ -54,12 +54,6 @@ def make_learncurve_splits_from_dataset_df(
         data (but of the same duration).
     dataset_path : str, pathlib.Path
         Directory where splits will be saved.
-    labelset : set
-        of str or int, the set of labels that correspond to annotated segments
-        that a network should learn to segment and classify. Note that if there
-        are segments that are not annotated, e.g. silent gaps between songbird
-        syllables, then `vak` will assign a dummy label to those segments
-        -- you don't have to give them a label here.
     window_size : int
         Size of windows taken from spectrograms, in number of time bins,
         shown to neural networks
@@ -88,7 +82,7 @@ def make_learncurve_splits_from_dataset_df(
             # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
             train_split_df = dataset_df[dataset_df["split"] == "train"]
-            labelset = [k for k in labelmap.keys() if k != "unlabeled"]
+            labelset = set([k for k in labelmap.keys() if k != "unlabeled"])
             train_split_df = split.dataframe(
                 train_split_df, train_dur=train_dur, labelset=labelset
             )
