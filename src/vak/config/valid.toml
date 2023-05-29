@@ -17,6 +17,8 @@ audio_dask_bag_kwargs = { npartitions = 20}
 train_dur = 50
 val_dur = 15
 test_dur = 30
+train_set_durs = [ 4.5, 6.0 ]
+num_replicates = 2
 
 [SPECT_PARAMS]
 fft_size = 512
@@ -50,7 +52,6 @@ checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 
-
 [EVAL]
 dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
@@ -73,8 +74,6 @@ shuffle = true
 val_step = 1
 ckpt_step = 1
 patience = 4
-train_set_durs = [ 4, 6 ]
-num_replicates = 2
 dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
@@ -96,4 +95,3 @@ spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 min_segment_dur = 0.004
 majority_vote = false
 save_net_outputs = false
-
