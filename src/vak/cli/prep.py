@@ -114,21 +114,40 @@ def prep(toml_path):
 
     section = purpose.upper()
 
-    vak_df, dataset_path = core.prep.prep(
-        data_dir=cfg.prep.data_dir,
-        purpose=purpose,
-        audio_format=cfg.prep.audio_format,
-        spect_format=cfg.prep.spect_format,
-        spect_params=cfg.spect_params,
-        annot_format=cfg.prep.annot_format,
-        annot_file=cfg.prep.annot_file,
-        labelset=cfg.prep.labelset,
-        audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
-        output_dir=cfg.prep.output_dir,
-        train_dur=cfg.prep.train_dur,
-        val_dur=cfg.prep.val_dur,
-        test_dur=cfg.prep.test_dur,
-    )
+    if purpose in ('train', 'eval', 'predict'):
+        vak_df, dataset_path = core.prep.prep(
+            data_dir=cfg.prep.data_dir,
+            purpose=purpose,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_params=cfg.spect_params,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
+            output_dir=cfg.prep.output_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+        )
+    elif purpose == 'learncurve':
+        vak_df, dataset_path = core.prep.prep(
+            data_dir=cfg.prep.data_dir,
+            purpose=purpose,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_params=cfg.spect_params,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
+            output_dir=cfg.prep.output_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+            train_set_durs=cfg.learncurve.train_set_durs,
+            num_replicates=cfg.learncurve.num_replicates,
+        )
 
     # use config and section from above to add dataset_path to config.toml file
     config_toml[section]["dataset_path"] = str(dataset_path)
