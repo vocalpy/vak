@@ -1,3 +1,4 @@
+import json
 import logging
 import pathlib
 import warnings
@@ -5,8 +6,9 @@ import warnings
 import crowsetta.formats.seq
 
 from . import prep_helper
+from .learncurve import make_learncurve_splits_from_dataset_df
 
-from ... import datasets, split
+from ... import split
 from ...converters import expanded_user_path, labelset_to_set
 from ...datasets.metadata import Metadata
 from ...io import dataframe
@@ -19,19 +21,24 @@ logger = logging.getLogger(__name__)
 
 
 def prep(
-    data_dir,
-    purpose,
-    output_dir=None,
-    audio_format=None,
-    spect_format=None,
-    spect_params=None,
-    annot_format=None,
-    annot_file=None,
-    labelset=None,
-    audio_dask_bag_kwargs=None,
-    train_dur=None,
-    val_dur=None,
-    test_dur=None,
+    data_dir: str | pathlib.Path,
+    purpose: str,
+    output_dir: str | pathlib.Path | None = None,
+    audio_format: str | None = None,
+    spect_format: str | None = None,
+    spect_params: dict | None = None,
+    annot_format: str | None = None,
+    annot_file: str | pathlib.Path | None = None,
+    labelset: set | None = None,
+    audio_dask_bag_kwargs: dict | None = None,
+    train_dur: int | None = None,
+    val_dur: int | None =None,
+    test_dur: int | None = None,
+    train_set_durs: list[float] | None = None,
+    num_replicates: int | None = None,
+    window_size: int | None = None,
+    spect_key: str = "s",
+    timebins_key: str = "t",
 ):
     """Prepare datasets for use with neural network models.
 
@@ -121,6 +128,21 @@ def prep(
     test_dur : float
         Total duration of test set, in seconds.
         Default is None.
+    train_set_durs : list
+        of int, durations in seconds of subsets taken from training data
+        to create a learning curve, e.g. [5, 10, 15, 20].
+    num_replicates : int
+        number of times to replicate training for each training set duration
+        to better estimate metrics for a training set of that size.
+        Each replicate uses a different randomly drawn subset of the training
+        data (but of the same duration).
+    window_size : int
+        Size of windows taken from spectrograms, in number of time bins,
+        shown to neural networks
+    spect_key : str
+        key for accessing spectrogram in files. Default is 's'.
+    timebins_key : str
+        key for accessing vector of time bins in files. Default is 't'.
 
     Returns
     -------
@@ -254,15 +276,6 @@ def prep(
             "Please double-check arguments to `vak.core.prep` function."
         )
 
-    # TODO: determine this here and then save labelmap.json inside dataset_dir
-    # has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
-    # if has_unlabeled:
-    #     map_unlabeled = True
-    # else:
-    #     map_unlabeled = False
-    # labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
-
-
     # ---- (possibly) split into train / val / test sets ---------------------------------------------
     # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
     if (purpose == "train" or purpose == "learncurve") and (
@@ -316,12 +329,14 @@ def prep(
 
         dataset_df = prep_helper.add_split_col(dataset_df, split=split_name)
 
+    # ---- move prepared files into sub-directories --------------------------------------------------------------------
     prep_helper.move_files_into_split_subdirs(
         dataset_df,
         dataset_path,
         purpose
     )
 
+    # ---- save csv file representing dataset --------------------------------------------------------------------------
     logger.info(
         f"Saving dataset csv file: {dataset_csv_path}"
     )
@@ -329,6 +344,36 @@ def prep(
         dataset_csv_path, index=False
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
+    # ---- create and save labelmap ------------------------------------------------------------------------------------
+    has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
+    if has_unlabeled:
+        map_unlabeled = True
+    else:
+        map_unlabeled = False
+    labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
+    logger.info(
+        f"number of classes in labelmap: {len(labelmap)}",
+    )
+    # save labelmap in case we need it later
+    with (dataset_path / "labelmap.json").open("w") as fp:
+        json.dump(labelmap, fp)
+
+    # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
+
+    if purpose == 'learncurve':
+        make_learncurve_splits_from_dataset_df(
+            dataset_df,
+            dataset_csv_path,
+            train_set_durs,
+            num_replicates,
+            dataset_path,
+            window_size,
+            labelmap,
+            spect_key,
+            timebins_key,
+        )
+
+    # ---- save metadata -----------------------------------------------------------------------------------------------
     timebin_dur = prep_helper.validate_and_get_timebin_dur(dataset_df)
 
     metadata = Metadata(
