@@ -47,9 +47,6 @@ class LearncurveConfig(TrainConfig):
     use_train_subsets_from_previous_run : bool
         if True, use training subsets saved in a previous run. Default is False.
         Requires setting previous_run_path option in config.toml file.
-    previous_run_path : str
-        path to results directory from a previous run.
-        Used for training if use_train_subsets_from_previous_run is True.
     post_tfm_kwargs : dict
         Keyword arguments to post-processing transform.
         If None, then no additional clean-up is applied
@@ -66,11 +63,6 @@ class LearncurveConfig(TrainConfig):
     """
     train_set_durs = attr.ib(validator=instance_of(list), kw_only=True)
     num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
-    previous_run_path = attr.ib(
-        converter=converters.optional(expanded_user_path),
-        default=None,
-    )
-
     post_tfm_kwargs = attr.ib(
         validator=validators.optional(are_valid_post_tfm_kwargs),
         converter=converters.optional(convert_post_tfm_kwargs),
