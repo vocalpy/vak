@@ -37,7 +37,7 @@ def purpose_from_toml(config_toml, toml_path=None):
 
 
 # see https://github.com/NickleDave/vak/issues/334
-SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS")
+SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS", "DATALOADER")
 
 
 def prep(toml_path):
@@ -147,6 +147,7 @@ def prep(toml_path):
             test_dur=cfg.prep.test_dur,
             train_set_durs=cfg.learncurve.train_set_durs,
             num_replicates=cfg.learncurve.num_replicates,
+            window_size=cfg.dataloader.window_size,
         )
 
     # use config and section from above to add dataset_path to config.toml file
