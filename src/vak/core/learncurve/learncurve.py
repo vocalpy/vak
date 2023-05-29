@@ -296,7 +296,7 @@ def learning_curve(
         eval(
             model_name,
             model_config,
-            results_path_this_replicate,
+            dataset_path,
             checkpoint_path=ckpt_path,
             labelmap_path=labelmap_path,
             output_dir=results_path_this_replicate,
