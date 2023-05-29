@@ -73,25 +73,11 @@ def learning_curve(
         Model configuration in a ``dict``,
         as loaded from a .toml file,
         and used by the model method ``from_config``.
-    train_set_durs : list
-        of int, durations in seconds of subsets taken from training data
-        to create a learning curve, e.g. [5, -10, 15, 20].
-    num_replicates : int
-        number of times to replicate training for each training set duration
-        to better estimate metrics for a training set of that size.
-        Each replicate uses a different randomly drawn subset of the training
-        data (but of the same duration).
     dataset_path : str
         path to where dataset was saved as a csv.
-    labelset : set
-        of str or int, the set of labels that correspond to annotated segments
-        that a network should learn to segment and classify. Note that if there
-        are segments that are not annotated, e.g. silent gaps between songbird
-        syllables, then `vak` will assign a dummy label to those segments
-        -- you don't have to give them a label here.
     window_size : int
         size of windows taken from spectrograms, in number of time bins,
-        shonw to neural networks
+        shown to neural networks
     batch_size : int
         number of samples per batch presented to models during training.
     num_epochs : int
