@@ -3,7 +3,6 @@ used by ``vak.core.learncurve``"""
 from __future__ import annotations
 
 import json
-from collections import defaultdict
 import logging
 import pathlib
 from typing import Sequence
@@ -58,10 +57,7 @@ def make_learncurve_splits_from_dataset_df(
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
     dataset_path : str, pathlib.Path
-        Directory where results will be saved, including
-        files representing subsets of training data that this function makes.
-        Path derived from the ``root_results_dir`` argument
-         to ``vak.core.learncurve.learning_curve``, unless specified by user.
+        Directory where splits will be saved.
     labelset : set
         of str or int, the set of labels that correspond to annotated segments
         that a network should learn to segment and classify. Note that if there
@@ -69,39 +65,29 @@ def make_learncurve_splits_from_dataset_df(
         syllables, then `vak` will assign a dummy label to those segments
         -- you don't have to give them a label here.
     window_size : int
-        size of windows taken from spectrograms, in number of time bins,
-        shonw to neural networks
+        Size of windows taken from spectrograms, in number of time bins,
+        shown to neural networks
+    labelmap : dict
+        that maps labelset to consecutive integers
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
-    labelmap : dict
-        that maps labelset to consecutive integers
-
-    Other Parameters
-    ----------------
-    logger : logging.Logger
-        instance created by ``vak.logging.get_logger``. Default is None.
-
-    Returns
-    -------
-    train_dur_csv_paths : dict
-        where keys are duration in seconds of subsets taken from training data,
-        and corresponding values are lists of paths to .csv files containing
-        those subsets
     """
     dataset_path = pathlib.Path(dataset_path)
     learncurve_splits_root = dataset_path / 'learncurve'
     learncurve_splits_root.mkdir()
 
-    learncurve_metadata = {}
+    splits_records = []  # will use to create dataframe, then save as csv
     for train_dur in train_set_durs:
         logger.info(
             f"Subsetting training set for training set of duration: {train_dur}",
         )
-        learncurve_metadata[train_dur] = {}
         for replicate_num in range(1, num_replicates + 1):
-            learncurve_metadata[train_dur][replicate_num] = {}
+            record = {
+                'train_dur': train_dur,
+                'replicate_num': replicate_num,
+            }  # will add key-val pairs to this, then append to splits_records at end of inner loop
 
             # get just train split, to pass to split.dataframe
             # so we don't end up with other splits in the training set
@@ -135,7 +121,7 @@ def make_learncurve_splits_from_dataset_df(
                 vector_path = learncurve_splits_root / f"{vec_name}-train-dur-{train_dur}-replicate-{replicate_num}.npy"
                 np.save(str(vector_path), vec)  # str so type-checker doesn't complain
                 # save just name, will load relative to dataset_path
-                learncurve_metadata[train_dur][replicate_num][vec_name] = vector_path.name
+                record[f'{vec_name}_npy_filename'] = vector_path.name
 
             # keep the same validation and test set by concatenating them with the train subset
             split_df = pd.concat(
@@ -150,8 +136,10 @@ def make_learncurve_splits_from_dataset_df(
             split_csv_path = learncurve_splits_root / split_csv_filename
             split_df.to_csv(split_csv_path, index=False)
             # save just name, will load relative to dataset_path
-            learncurve_metadata[train_dur][replicate_num]['split_csv_filename'] = split_csv_path.name
+            record['split_csv_filename'] = split_csv_path.name
 
-    learncurve_splits_path = learncurve_splits_root / 'learncurve-splits-metadata.json'
-    with learncurve_splits_path.open('w') as fp:
-        json.dump(learncurve_metadata, fp, indent=4)
+            splits_records.append(record)
+
+    splits_df = pd.DataFrame.from_records(splits_records)
+    splits_path = learncurve_splits_root / 'learncurve-splits-metadata.csv'
+    splits_df.to_csv(splits_path, index=False)
