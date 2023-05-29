@@ -153,8 +153,8 @@ class PrepConfig:
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    train_set_durs = attr.ib(validator=instance_of(list), kw_only=True)
-    num_replicates = attr.ib(validator=instance_of(int), kw_only=True)
+    train_set_durs = attr.ib(validator=validators.optional(instance_of(list)), default=None)
+    num_replicates = attr.ib(validator=validators.optional(instance_of(int)), default=None)
 
     def __attrs_post_init__(self):
         if self.audio_format is not None and self.spect_format is not None:
