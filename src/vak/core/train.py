@@ -188,7 +188,6 @@ def train(
                 f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
             )
         if dataset_csv_path.parent != dataset_path:
-            breakpoint()
             raise ValueError(
                 f"The parent directory of `dataset_csv_path` must be `dataset_path`, "
                 f"to ensure the splits were generated using the dataset created by `vak.prep`.\n"
