@@ -184,7 +184,7 @@ def eval(
         input_shape = input_shape[1:]
 
     if post_tfm_kwargs:
-        dataset_df = pd.read_csv(dataset_path)
+        dataset_df = pd.read_csv(dataset_csv_path)
         timebin_dur = validate_and_get_timebin_dur(dataset_df)
 
         post_tfm = transforms.labeled_timebins.PostProcess(
