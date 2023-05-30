@@ -29,7 +29,7 @@ VALID_PURPOSES = frozenset(
 def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathlib.Path, purpose: str) -> None:
     """Move files in dataset into sub-directories, one for each split in the dataset.
 
-    This is run *after* calling `vak.io.dataframe` to generate ``dataset_df``,
+    This is run *after* calling :func:`vak.io.dataframe.from_files` to generate ``dataset_df``,
     to avoid coupling the generation of the dataframe to organization of the dataset.
 
     Parameters
@@ -59,7 +59,10 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
     # ---- first move all the spectrograms; we need to handle annotations separately -----------------------------------
     moved_spect_paths = []  # to clean up after moving -- may be empty if we copy all spects (e.g., user generated)
     # ---- copy/move files into split sub-directories inside dataset directory
-    for split_name in sorted(dataset_df.split.unique()):
+    # Next line, note we drop any na rows in the split column, since they don't belong to a split anyway
+    split_names = sorted(dataset_df.split.dropna().unique())
+
+    for split_name in split_names:
         split_subdir = dataset_path / split_name
         split_subdir.mkdir()
 
