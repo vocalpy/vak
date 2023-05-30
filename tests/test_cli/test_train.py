@@ -43,7 +43,7 @@ def test_train(
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.train', autospec=True) as mock_core_train:
+    with mock.patch('vak.core.train.train', autospec=True) as mock_core_train:
         vak.cli.train.train(toml_path)
         assert mock_core_train.called
 
@@ -119,7 +119,7 @@ def test_train_passes_correct_labelset_and_labelmap_path(
 
     cfg = vak.config.parse.from_toml_path(toml_path)
 
-    with mock.patch('vak.core.train', autospec=True) as mock_core_train:
+    with mock.patch('vak.core.train.train', autospec=True) as mock_core_train:
         vak.cli.train.train(toml_path)
         if config_type == "train":
             assert mock_core_train.call_args[1]['labelset'] == cfg.prep.labelset
