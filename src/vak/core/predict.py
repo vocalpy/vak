@@ -13,8 +13,8 @@ import torch.utils.data
 
 from .. import (
     constants,
+    datasets,
     files,
-    io,
     validators
 )
 from .. import models
@@ -185,7 +185,7 @@ def predict(
     annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
-    dataset_df = pd.read_csv(dataset_path)
+    dataset_df = pd.read_csv(dataset_csv_path)
     timebin_dur = validate_and_get_timebin_dur(dataset_df)
     logger.info(f"dataset has timebins with duration: {timebin_dur}")
 
