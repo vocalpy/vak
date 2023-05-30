@@ -40,8 +40,11 @@ def window_dataset_from_csv_kwargs_list():
         labelmap = json.load(fp)
 
     for splits_df_row in splits_df.itertuples():
+        metadata = vak.datasets.metadata.Metadata.from_dataset_path(cfg.learncurve.dataset_path)
+        dataset_csv_path = cfg.learncurve.dataset_path / metadata.dataset_csv_filename
+
         window_dataset_kwargs = dict(
-            csv_path=cfg.learncurve.dataset_path,
+            csv_path=dataset_csv_path,
             labelmap=labelmap,
             window_size=cfg.dataloader.window_size,
         )
