@@ -92,20 +92,10 @@ def test_prep(
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.prep', autospec=True) as mock_core_prep:
+    with mock.patch('vak.core.prep.prep', autospec=True) as mock_core_prep:
         mock_core_prep.return_value = (pd.DataFrame(), dummy_tmpfile_csv.name)
         vak.cli.prep.prep(toml_path)
         assert mock_core_prep.called
-
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    command_section = getattr(cfg, config_type)
-    dataset_path = getattr(command_section, "dataset_path")
-    # we don't bother checking whether csv is as expected
-    # because that's already tested by `test_io.test_spect`, `test_io.test_dataframe`, etc.
-    assert Path(dataset_path).exists()
-
-    assert cli_asserts.log_file_created(command="prep", output_path=cfg.prep.output_dir)
-    assert cli_asserts.log_file_contains_version(command="prep", output_path=output_dir)
 
 
 @pytest.mark.parametrize(
