@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from pathlib import Path
+import pathlib
 
 import crowsetta
 import joblib
@@ -127,9 +127,9 @@ def predict(
         )
 
     if output_dir is None:
-        output_dir = Path(os.getcwd())
+        output_dir = pathlib.Path(os.getcwd())
     else:
-        output_dir = Path(output_dir)
+        output_dir = pathlib.Path(output_dir)
 
     if not output_dir.is_dir():
         raise NotADirectoryError(
@@ -181,8 +181,8 @@ def predict(
 
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
     if annot_csv_filename is None:
-        annot_csv_filename = Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
-    annot_csv_path = Path(output_dir).joinpath(annot_csv_filename)
+        annot_csv_filename = pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
+    annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
     dataset_df = pd.read_csv(dataset_path)
@@ -249,7 +249,7 @@ def predict(
             net_output = net_output[:, padding_mask]
             net_output = net_output.cpu().numpy()
             net_output_path = output_dir.joinpath(
-                Path(spect_path).stem + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
+                pathlib.Path(spect_path).stem + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
             )
             np.savez(net_output_path, net_output)
 
