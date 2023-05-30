@@ -24,15 +24,16 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
     # ---- set-up (there's a lot so I'm marking it) ----
     cfg = vak.config.parse.from_toml_path(toml_path)
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    csv_path = getattr(cmd_cfg, 'dataset_path')
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
+    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
 
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(dataset_csv_path)
     df_split = df[df.split == 'train']
 
     # stuff we need just to be able to instantiate window dataset
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
-    timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(df)
+    timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(df)
 
     (source_ids_before,
      source_inds_before,
@@ -106,8 +107,9 @@ def test__vectors_from_df(config_type, model_name, audio_format, spect_format, a
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    csv_path = getattr(cmd_cfg, 'dataset_path')
-    df = pd.read_csv(csv_path)
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
+    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
+    df = pd.read_csv(dataset_csv_path)
     df = df[df.split == 'train']
 
     (source_ids,
@@ -167,11 +169,12 @@ def test_vectors_from_df(config_type, model_name, audio_format, spect_format, an
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    csv_path = getattr(cmd_cfg, 'dataset_path')
-    df = pd.read_csv(csv_path)
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
+    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
+    df = pd.read_csv(dataset_csv_path)
 
     if crop_dur:
-        timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(df)
+        timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(df)
     else:
         timebin_dur = None
 
@@ -223,16 +226,17 @@ def test_vectors_from_csv(config_type, model_name, audio_format, spect_format, a
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    csv_path = getattr(cmd_cfg, 'dataset_path')
-    df = pd.read_csv(csv_path)  # we use ``df`` in asserts below
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
+    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
+    df = pd.read_csv(dataset_csv_path)
 
     if crop_dur:
-        timebin_dur = vak.io.dataframe.validate_and_get_timebin_dur(df)
+        timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(df)
     else:
         timebin_dur = None
 
     source_ids, source_inds, window_inds = vak.datasets.window_dataset.helper.vectors_from_csv_path(
-        csv_path,
+        dataset_csv_path,
         'train',
         window_size,
         crop_dur=crop_dur,
