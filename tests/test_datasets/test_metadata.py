@@ -3,7 +3,7 @@ import pathlib
 
 import pytest
 
-import vak.core.prep.metadata
+import vak.datasets.metadata
 
 
 ARGNAMES = 'dataset_csv_filename, timebin_dur'
@@ -20,8 +20,8 @@ class TestMetadata:
         ARGVALS
     )
     def test_metadata_init(self, dataset_csv_filename, timebin_dur):
-        metadata = vak.core.prep.metadata.Metadata(dataset_csv_filename, timebin_dur)
-        assert isinstance(metadata, vak.core.prep.metadata.Metadata)
+        metadata = vak.datasets.metadata.Metadata(dataset_csv_filename, timebin_dur)
+        assert isinstance(metadata, vak.datasets.metadata.Metadata)
         for attr_name, attr_val in zip(
             ('dataset_csv_filename', 'timebin_dur'),
             (dataset_csv_filename, timebin_dur),
@@ -42,7 +42,7 @@ class TestMetadata:
             'dataset_csv_filename': str(dataset_csv_filename),
             'timebin_dur': timebin_dur,
         }
-        metadata_json_path = tmp_path / vak.core.prep.metadata.Metadata.METADATA_JSON_FILENAME
+        metadata_json_path = tmp_path / vak.datasets.metadata.Metadata.METADATA_JSON_FILENAME
         with metadata_json_path.open('w') as fp:
             json.dump(metadata_dict, fp, indent=4)
 
@@ -51,13 +51,13 @@ class TestMetadata:
         ARGVALS
     )
     def test_metadata_to_json(self, dataset_csv_filename, timebin_dur, tmp_path):
-        metadata_to_json = vak.core.prep.metadata.Metadata(dataset_csv_filename, timebin_dur)
+        metadata_to_json = vak.datasets.metadata.Metadata(dataset_csv_filename, timebin_dur)
         mock_dataset_path = tmp_path / 'mock_dataset'
         mock_dataset_path.mkdir()
 
         metadata_to_json.to_json(dataset_path=mock_dataset_path)
-        expected_json_path = mock_dataset_path / vak.core.prep.metadata.Metadata.METADATA_JSON_FILENAME
+        expected_json_path = mock_dataset_path / vak.datasets.metadata.Metadata.METADATA_JSON_FILENAME
         assert expected_json_path.exists()
 
-        metadata_from_json = vak.core.prep.metadata.Metadata.from_json(expected_json_path)
+        metadata_from_json = vak.datasets.metadata.Metadata.from_json(expected_json_path)
         assert metadata_from_json == metadata_to_json
