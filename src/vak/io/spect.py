@@ -5,7 +5,6 @@ the returned DataFrame has columns as specified by vak.io.spect.DF_COLUMNS
 """
 from __future__ import annotations
 
-from glob import glob
 import logging
 import os
 import pathlib
@@ -161,7 +160,7 @@ def to_dataframe(
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
         # note we already validated format above
-        spect_files = glob(os.path.join(spect_dir, f"*{spect_format}"))
+        spect_files = sorted(pathlib.Path(spect_dir).glob(f"**/*{spect_format}"))
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
