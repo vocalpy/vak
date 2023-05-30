@@ -39,7 +39,6 @@ def test_make_learncurve_splits_from_dataset_df(
     metadata = vak.datasets.metadata.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
-    timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(dataset_df)
 
     labelset_notmat = vak.converters.labelset_to_set(labelset_notmat)
     has_unlabeled = vak.datasets.seq.validators.has_unlabeled(dataset_csv_path)
@@ -55,11 +54,9 @@ def test_make_learncurve_splits_from_dataset_df(
     vak.core.prep.learncurve.make_learncurve_splits_from_dataset_df(
         dataset_df,
         dataset_csv_path,
-        cfg.learncurve.train_set_durs,
-        timebin_dur,
-        cfg.learncurve.num_replicates,
+        cfg.prep.train_set_durs,
+        cfg.prep.num_replicates,
         dataset_path,
-        labelset_notmat,
         window_size,
         labelmap,
     )
@@ -72,16 +69,16 @@ def test_make_learncurve_splits_from_dataset_df(
 
     splits_df = pd.read_csv(learncurve_splits_path)
 
-    assert sorted(splits_df['train_dur'].unique()) == cfg.learncurve.train_set_durs
+    assert sorted(splits_df['train_dur'].unique()) == cfg.prep.train_set_durs
     assert sorted(
         splits_df['replicate_num'].unique()
-    ) == list(range(1, cfg.learncurve.num_replicates + 1))
+    ) == list(range(1, cfg.prep.num_replicates + 1))
 
     for train_dur in sorted(splits_df['train_dur'].unique()):
         train_dur_df = splits_df[np.isclose(splits_df['train_dur'], train_dur)].copy()
         assert sorted(
             train_dur_df['replicate_num']
-        ) == list(range(1, cfg.learncurve.num_replicates + 1))
+        ) == list(range(1, cfg.prep.num_replicates + 1))
 
         for replicate_num in sorted(train_dur_df['replicate_num']):
             train_dur_replicate_df = splits_df[
