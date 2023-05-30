@@ -13,10 +13,10 @@ from torchvision.datasets.vision import VisionDataset
 from ... import (
     annotation,
     files,
-    io,
     transforms,
     validators
 )
+from ...core.prep.prep_helper import validate_and_get_timebin_dur
 
 from .helper import vectors_from_df
 
@@ -343,6 +343,7 @@ class WindowDataset(VisionDataset):
         """number of batches"""
         return len(self.window_inds)
 
+    @property
     def duration(self):
         """duration of WindowDataset, in seconds"""
         return self.source_inds.shape[-1] * self.timebin_dur
@@ -435,7 +436,6 @@ class WindowDataset(VisionDataset):
         target_transform : callable
             Callable that applies pre-processing to each "target" :math:`y_i`
             in the training set.
-
         source_ids : numpy.ndarray
             represents the 'id' of any spectrogram,
             i.e., the index into source_paths that will let us load it
@@ -516,7 +516,7 @@ class WindowDataset(VisionDataset):
             )
 
         annots = annotation.from_df(df)
-        timebin_dur = io.dataframe.validate_and_get_timebin_dur(df)
+        timebin_dur = validate_and_get_timebin_dur(df)
 
         # note that we set "root" to csv path
         return cls(

@@ -19,7 +19,7 @@ def spect_dir_mat():
 SPECT_DIR_NPZ = sorted(
         GENERATED_TEST_DATA_ROOT.joinpath(
             "prep", "train", "audio_cbin_annot_notmat", "teenytweetynet"
-        ).glob("spectrograms_generated*")
+        ).glob("*vak-dataset-generated*")
     )[0]
 
 
@@ -49,7 +49,7 @@ def spect_list_mat():
     return SPECT_LIST_MAT
 
 
-SPECT_LIST_NPZ = sorted(SPECT_DIR_NPZ.glob("*.spect.npz"))
+SPECT_LIST_NPZ = sorted(SPECT_DIR_NPZ.glob("*/*.spect.npz"))
 
 
 @pytest.fixture

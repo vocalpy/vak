@@ -1,5 +1,6 @@
+# note NO LOGGING -- we configure logger inside `core.prep`
+# so we can save log file inside dataset directory
 from pathlib import Path
-import logging
 import warnings
 
 import toml
@@ -10,10 +11,6 @@ from .. import (
 )
 from ..config.parse import _load_toml_from_path
 from ..config.validators import are_sections_valid
-from ..logging import config_logging_for_cli, log_version
-
-
-logger = logging.getLogger(__name__)
 
 
 def purpose_from_toml(config_toml, toml_path=None):
@@ -40,7 +37,7 @@ def purpose_from_toml(config_toml, toml_path=None):
 
 
 # see https://github.com/NickleDave/vak/issues/334
-SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS")
+SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS", "DATALOADER")
 
 
 def prep(toml_path):
@@ -115,37 +112,43 @@ def prep(toml_path):
             )
             cfg.prep.labelset = None
 
-    # ---- set up logging ----------------------------------------------------------------------------------------------
-    config_logging_for_cli(
-        log_dst=cfg.prep.output_dir,
-        log_stem="prep",
-        level="INFO",
-        force=True
-    )
-    log_version(logger)
-
     section = purpose.upper()
-    logger.info(
-        f"Determined that purpose of config file is: {purpose}.\n"
-        f"Will add 'dataset_path' option to '{section}' section."
-    )
 
-    vak_df, dataset_path = core.prep(
-        data_dir=cfg.prep.data_dir,
-        purpose=purpose,
-        audio_format=cfg.prep.audio_format,
-        spect_format=cfg.prep.spect_format,
-        spect_output_dir=cfg.prep.spect_output_dir,
-        spect_params=cfg.spect_params,
-        annot_format=cfg.prep.annot_format,
-        annot_file=cfg.prep.annot_file,
-        labelset=cfg.prep.labelset,
-        audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
-        output_dir=cfg.prep.output_dir,
-        train_dur=cfg.prep.train_dur,
-        val_dur=cfg.prep.val_dur,
-        test_dur=cfg.prep.test_dur,
-    )
+    if purpose in ('train', 'eval', 'predict'):
+        dataset_df, dataset_path = core.prep.prep(
+            data_dir=cfg.prep.data_dir,
+            purpose=purpose,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_params=cfg.spect_params,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
+            output_dir=cfg.prep.output_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+        )
+    elif purpose == 'learncurve':
+        dataset_df, dataset_path = core.prep.prep(
+            data_dir=cfg.prep.data_dir,
+            purpose=purpose,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_params=cfg.spect_params,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
+            output_dir=cfg.prep.output_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+            train_set_durs=cfg.prep.train_set_durs,
+            num_replicates=cfg.prep.num_replicates,
+            window_size=cfg.dataloader.window_size,
+        )
 
     # use config and section from above to add dataset_path to config.toml file
     config_toml[section]["dataset_path"] = str(dataset_path)

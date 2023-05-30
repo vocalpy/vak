@@ -60,11 +60,9 @@ def learning_curve(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    core.learning_curve(
+    core.learncurve.learning_curve(
         model_name=model_name,
         model_config=model_config,
-        train_set_durs=cfg.learncurve.train_set_durs,
-        num_replicates=cfg.learncurve.num_replicates,
         dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
@@ -72,7 +70,6 @@ def learning_curve(toml_path):
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
         results_path=results_path,
-        previous_run_path=cfg.learncurve.previous_run_path,
         post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,

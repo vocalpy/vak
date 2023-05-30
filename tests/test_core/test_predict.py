@@ -55,7 +55,7 @@ def test_predict(
 
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
-    vak.core.predict(
+    vak.core.predict.predict(
         model_name=cfg.predict.model,
         model_config=model_config,
         dataset_path=cfg.predict.dataset_path,
@@ -80,8 +80,11 @@ def test_predict(
             Path(output_dir).glob(f"*{vak.constants.NET_OUTPUT_SUFFIX}")
         )
 
-        vak_df = pd.read_csv(cfg.predict.dataset_path)
-        for spect_path in vak_df.spect_path.values:
+        metadata = vak.datasets.metadata.Metadata.from_dataset_path(cfg.predict.dataset_path)
+        dataset_csv_path = cfg.predict.dataset_path / metadata.dataset_csv_filename
+        dataset_df = pd.read_csv(dataset_csv_path)
+
+        for spect_path in dataset_df.spect_path.values:
             net_output_spect_path = [
                 net_output
                 for net_output in net_outputs
@@ -95,7 +98,6 @@ def test_predict(
     [
         {"section": "PREDICT", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "PREDICT", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "PREDICT", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "PREDICT", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -129,7 +131,7 @@ def test_predict_raises_file_not_found(
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(FileNotFoundError):
-        vak.core.predict(
+        vak.core.predict.predict(
             model_name=cfg.predict.model,
             model_config=model_config,
             dataset_path=cfg.predict.dataset_path,
@@ -149,17 +151,38 @@ def test_predict_raises_file_not_found(
         )
 
 
+@pytest.mark.parametrize(
+    'path_option_to_change',
+    [
+        {"section": "PREDICT", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"section": "PREDICT", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+    ]
+)
 def test_predict_raises_not_a_directory(
+    path_option_to_change,
     specific_config,
-    device
+    device,
+    tmp_path,
 ):
     """Test that core.eval raises NotADirectory
     when ``output_dir`` does not exist
     """
     options_to_change = [
-        {"section": "PREDICT", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+        path_option_to_change,
         {"section": "PREDICT", "option": "device", "value": device},
     ]
+
+    if path_option_to_change["option"] != "output_dir":
+        # need to make sure output_dir *does* exist
+        # so we don't detect spurious NotADirectoryError and assume test passes
+        output_dir = tmp_path.joinpath(
+            f"test_predict_raises_not_a_directory"
+        )
+        output_dir.mkdir()
+        options_to_change.append(
+            {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)}
+        )
+
     toml_path = specific_config(
         config_type="predict",
         model="teenytweetynet",
@@ -171,7 +194,7 @@ def test_predict_raises_not_a_directory(
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(NotADirectoryError):
-        vak.core.predict(
+        vak.core.predict.predict(
             model_name=cfg.predict.model,
             model_config=model_config,
             dataset_path=cfg.predict.dataset_path,

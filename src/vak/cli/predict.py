@@ -48,7 +48,7 @@ def predict(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    core.predict(
+    core.predict.predict(
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.predict.dataset_path,

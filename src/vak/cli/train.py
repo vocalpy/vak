@@ -64,7 +64,7 @@ def train(toml_path):
     else:
         labelset, labelmap_path = cfg.prep.labelset, None
 
-    core.train(
+    core.train.train(
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.train.dataset_path,

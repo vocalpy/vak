@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from pathlib import Path
+import pathlib
 
 import crowsetta
 import joblib
@@ -13,14 +13,15 @@ import torch.utils.data
 
 from .. import (
     constants,
+    datasets,
     files,
-    io,
     validators
 )
 from .. import models
 from .. import transforms
 from ..datasets import VocalDataset
 from ..device import get_default as get_default_device
+from .prep.prep_helper import validate_and_get_timebin_dur
 
 
 logger = logging.getLogger(__name__)
@@ -110,8 +111,8 @@ def predict(
          will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
     for path, path_name in zip(
-            (checkpoint_path, dataset_path, labelmap_path, spect_scaler_path),
-            ('checkpoint_path', 'dataset_path', 'labelmap_path', 'spect_scaler_path'),
+            (checkpoint_path, labelmap_path, spect_scaler_path),
+            ('checkpoint_path', 'labelmap_path', 'spect_scaler_path'),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -119,10 +120,16 @@ def predict(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
+    dataset_path = pathlib.Path(dataset_path)
+    if not dataset_path.exists() or not dataset_path.is_dir():
+        raise NotADirectoryError(
+            f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+        )
+
     if output_dir is None:
-        output_dir = Path(os.getcwd())
+        output_dir = pathlib.Path(os.getcwd())
     else:
-        output_dir = Path(output_dir)
+        output_dir = pathlib.Path(output_dir)
 
     if not output_dir.is_dir():
         raise NotADirectoryError(
@@ -151,9 +158,12 @@ def predict(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    logger.info(f"loading dataset to predict from csv path: {dataset_path}")
+    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+
+    logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
     pred_dataset = VocalDataset.from_csv(
-        csv_path=dataset_path,
+        csv_path=dataset_csv_path,
         split="predict",
         labelmap=labelmap,
         spect_key=spect_key,
@@ -171,12 +181,12 @@ def predict(
 
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
     if annot_csv_filename is None:
-        annot_csv_filename = Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
-    annot_csv_path = Path(output_dir).joinpath(annot_csv_filename)
+        annot_csv_filename = pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
+    annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
-    dataset_df = pd.read_csv(dataset_path)
-    timebin_dur = io.dataframe.validate_and_get_timebin_dur(dataset_df)
+    dataset_df = pd.read_csv(dataset_csv_path)
+    timebin_dur = validate_and_get_timebin_dur(dataset_df)
     logger.info(f"dataset has timebins with duration: {timebin_dur}")
 
     # ---------------- do the actual predicting + converting to annotations --------------------------------------------
@@ -239,7 +249,7 @@ def predict(
             net_output = net_output[:, padding_mask]
             net_output = net_output.cpu().numpy()
             net_output_path = output_dir.joinpath(
-                Path(spect_path).stem + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
+                pathlib.Path(spect_path).stem + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
             )
             np.savez(net_output_path, net_output)
 

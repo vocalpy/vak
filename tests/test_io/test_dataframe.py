@@ -402,29 +402,3 @@ def test_from_files_with_spect_mat_no_labelset(spect_dir_mat,
 
     del default_spect_params['audio_path_key']  # 'audio_path' not strictly required
     assert spect_files_have_correct_keys(vak_df, default_spect_params)
-
-
-def test_add_split_col(audio_dir_cbin,
-                       default_spect_params,
-                       labelset_notmat,
-                       tmp_path):
-    """test that ``add_split_col`` adds a 'split' column
-    to a DataFrame, where all values in the Series are the
-    specified split (a string)"""
-    vak_df = vak.io.dataframe.from_files(
-        data_dir=audio_dir_cbin,
-        labelset=labelset_notmat,
-        annot_format="notmat",
-        audio_format="cbin",
-        spect_output_dir=tmp_path,
-        spect_format=None,
-        annot_file=None,
-        spect_params=default_spect_params,
-    )
-
-    assert "split" not in vak_df.columns
-
-    vak_df = vak.io.dataframe.add_split_col(vak_df, split="train")
-    assert "split" in vak_df.columns
-
-    assert vak_df["split"].unique().item() == "train"

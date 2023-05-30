@@ -10,22 +10,15 @@ import vak.paths
 def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
     assert results_path.joinpath("learning_curve.csv").exists()
 
-    for train_set_dur in cfg.learncurve.train_set_durs:
+    for train_set_dur in cfg.prep.train_set_durs:
         train_set_dur_root = results_path.joinpath(f"train_dur_{train_set_dur}s")
         assert train_set_dur_root.exists()
 
-        for replicate_num in range(1, cfg.learncurve.num_replicates + 1):
+        for replicate_num in range(1, cfg.prep.num_replicates + 1):
             replicate_path = train_set_dur_root.joinpath(f"replicate_{replicate_num}")
             assert replicate_path.exists()
 
-            prep_csv = sorted(replicate_path.glob("*prep*csv"))
-            assert len(prep_csv) == 1
-
             assert replicate_path.joinpath("labelmap.json").exists()
-
-            assert replicate_path.joinpath("source_ids.npy").exists()
-            assert replicate_path.joinpath("source_inds.npy").exists()
-            assert replicate_path.joinpath("window_inds.npy").exists()
 
             if cfg.learncurve.normalize_spectrograms:
                 assert replicate_path.joinpath("StandardizeSpect").exists()
@@ -66,11 +59,9 @@ def test_learncurve(specific_config, tmp_path, model, device):
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
-    vak.core.learning_curve(
+    vak.core.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
-        train_set_durs=cfg.learncurve.train_set_durs,
-        num_replicates=cfg.learncurve.num_replicates,
         dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
@@ -79,7 +70,6 @@ def test_learncurve(specific_config, tmp_path, model, device):
         num_workers=cfg.learncurve.num_workers,
         root_results_dir=None,
         results_path=results_path,
-        previous_run_path=cfg.learncurve.previous_run_path,
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
@@ -117,11 +107,9 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
 
-    vak.core.learning_curve(
+    vak.core.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
-        train_set_durs=cfg.learncurve.train_set_durs,
-        num_replicates=cfg.learncurve.num_replicates,
         dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
@@ -130,7 +118,6 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
         num_workers=cfg.learncurve.num_workers,
         root_results_dir=cfg.learncurve.root_results_dir,
         results_path=None,
-        previous_run_path=cfg.learncurve.previous_run_path,
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
@@ -146,136 +133,21 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     results_path = results_path[0]
 
     assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
-
-
-@pytest.mark.parametrize("window_size",
-                         [
-                             44,
-                         ]
-                         )
-def test_learncurve_previous_run_path(
-    specific_config, tmp_path, model, device, previous_run_path_factory, window_size
-):
-    root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
-    root_results_dir.mkdir()
-
-    options_to_change = [
-        {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
-            "value": str(root_results_dir),
-        },
-        {"section": "LEARNCURVE", "option": "device", "value": device},
-        {
-            "section": "LEARNCURVE",
-            "option": "previous_run_path",
-            "value": str(previous_run_path_factory(model)),
-        },
-        {"section": "DATALOADER", "option": "window_size", "value": window_size},
-    ]
-
-    toml_path = specific_config(
-        config_type="learncurve",
-        model=model,
-        audio_format="cbin",
-        annot_format="notmat",
-        options_to_change=options_to_change,
-    )
-
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
-
-    vak.core.learning_curve(
-        model_name=cfg.learncurve.model,
-        model_config=model_config,
-        train_set_durs=cfg.learncurve.train_set_durs,
-        num_replicates=cfg.learncurve.num_replicates,
-        dataset_path=cfg.learncurve.dataset_path,
-        labelset=cfg.prep.labelset,
-        window_size=cfg.dataloader.window_size,
-        batch_size=cfg.learncurve.batch_size,
-        num_epochs=cfg.learncurve.num_epochs,
-        num_workers=cfg.learncurve.num_workers,
-        root_results_dir=root_results_dir,
-        results_path=None,
-        previous_run_path=cfg.learncurve.previous_run_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
-        normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
-        shuffle=cfg.learncurve.shuffle,
-        val_step=cfg.learncurve.val_step,
-        ckpt_step=cfg.learncurve.ckpt_step,
-        patience=cfg.learncurve.patience,
-        device=cfg.learncurve.device,
-    )
-
-    results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
-    assert len(results_path) == 1
-    results_path = results_path[0]
-
-    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
-
-
-def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, device):
-    """Test that core.eval raises FileNotFoundError
-    when `dataset_path` does not exist."""
-    options_to_change = [
-        {"section": "LEARNCURVE", "option": "device", "value": device}
-    ]
-
-    toml_path = specific_config(
-        config_type="learncurve",
-        model="teenytweetynet",
-        audio_format="cbin",
-        annot_format="notmat",
-        options_to_change=options_to_change,
-    )
-
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
-    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
-    results_path.mkdir()
-
-    invalid_csv_path = '/obviously/doesnt/exist/dataset.csv'
-    with pytest.raises(FileNotFoundError):
-        vak.core.learning_curve(
-            model_name=cfg.learncurve.model,
-            model_config=model_config,
-            train_set_durs=cfg.learncurve.train_set_durs,
-            num_replicates=cfg.learncurve.num_replicates,
-            dataset_path=invalid_csv_path,
-            labelset=cfg.prep.labelset,
-            window_size=cfg.dataloader.window_size,
-            batch_size=cfg.learncurve.batch_size,
-            num_epochs=cfg.learncurve.num_epochs,
-            num_workers=cfg.learncurve.num_workers,
-            root_results_dir=None,
-            results_path=results_path,
-            previous_run_path=cfg.learncurve.previous_run_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
-            normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
-            shuffle=cfg.learncurve.shuffle,
-            val_step=cfg.learncurve.val_step,
-            ckpt_step=cfg.learncurve.ckpt_step,
-            patience=cfg.learncurve.patience,
-            device=cfg.learncurve.device,
-        )
 
 
 @pytest.mark.parametrize(
     'dir_option_to_change',
     [
         {"section": "LEARNCURVE", "option": "root_results_dir", "value": '/obviously/does/not/exist/results/'},
-        {"section": "LEARNCURVE", "option": "previous_run_path", "value": '/obviously/does/not/exist/results/results-timestamp'}
+        {"section": "LEARNCURVE", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
     ]
 )
 def test_learncurve_raises_not_a_directory(dir_option_to_change,
                                            specific_config,
                                            tmp_path, device):
-    """Test that core.eval raises NotADirectoryError
+    """Test that core.learncurve.learning_curve raises NotADirectoryError
     when the following directories do not exist:
-    results_path, previous_run_path
+    results_path, previous_run_path, dataset_path
     """
     options_to_change = [
         {"section": "LEARNCURVE", "option": "device", "value": device},
@@ -294,11 +166,9 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
     results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.core.learning_curve(
+        vak.core.learncurve.learning_curve(
             model_name=cfg.learncurve.model,
             model_config=model_config,
-            train_set_durs=cfg.learncurve.train_set_durs,
-            num_replicates=cfg.learncurve.num_replicates,
             dataset_path=cfg.learncurve.dataset_path,
             labelset=cfg.prep.labelset,
             window_size=cfg.dataloader.window_size,
@@ -307,7 +177,6 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
             num_workers=cfg.learncurve.num_workers,
             root_results_dir=None,
             results_path=results_path,
-            previous_run_path=cfg.learncurve.previous_run_path,
             spect_key=cfg.spect_params.spect_key,
             timebins_key=cfg.spect_params.timebins_key,
             normalize_spectrograms=cfg.learncurve.normalize_spectrograms,

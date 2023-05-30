@@ -53,7 +53,7 @@ def eval(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    core.eval(
+    core.eval.eval(
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.eval.dataset_path,

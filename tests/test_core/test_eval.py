@@ -70,7 +70,7 @@ def test_eval(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
-    vak.core.eval(
+    vak.core.eval.eval(
         model_name=cfg.eval.model,
         model_config=model_config,
         dataset_path=cfg.eval.dataset_path,
@@ -94,7 +94,6 @@ def test_eval(
     [
         {"section": "EVAL", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "EVAL", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "EVAL", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "EVAL", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -130,7 +129,7 @@ def test_eval_raises_file_not_found(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
-        vak.core.eval(
+        vak.core.eval.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,
@@ -146,17 +145,37 @@ def test_eval_raises_file_not_found(
         )
 
 
+@pytest.mark.parametrize(
+    'path_option_to_change',
+    [
+        {"section": "EVAL", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"section": "EVAL", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+    ]
+)
 def test_eval_raises_not_a_directory(
+    path_option_to_change,
     specific_config,
-    device
+    device,
+    tmp_path,
 ):
     """Test that core.eval raises NotADirectory
-    when ``output_dir`` does not exist
+    when directories don't exist
     """
     options_to_change = [
-        {"section": "EVAL", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+        path_option_to_change,
         {"section": "EVAL", "option": "device", "value": device},
     ]
+
+    if path_option_to_change["option"] != "output_dir":
+        # need to make sure output_dir *does* exist
+        # so we don't detect spurious NotADirectoryError and assume test passes
+        output_dir = tmp_path.joinpath(
+            f"test_eval_raises_not_a_directory"
+        )
+        output_dir.mkdir()
+        options_to_change.append(
+            {"section": "EVAL", "option": "output_dir", "value": str(output_dir)}
+        )
 
     toml_path = specific_config(
         config_type="eval",
@@ -169,7 +188,7 @@ def test_eval_raises_not_a_directory(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
-        vak.core.eval(
+        vak.core.eval.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,

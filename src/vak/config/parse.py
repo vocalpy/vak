@@ -34,8 +34,6 @@ REQUIRED_OPTIONS = {
     "LEARNCURVE": [
         "model",
         "root_results_dir",
-        "train_set_durs",
-        "num_replicates",
     ],
     "PREDICT": [
         "checkpoint_path",

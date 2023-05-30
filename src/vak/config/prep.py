@@ -77,11 +77,6 @@ class PrepConfig:
     spect_format : str
         format of files containg spectrograms as 2-d matrices.
         One of {'mat', 'npy'}.
-    spect_output_dir : str
-        path to directory where array files containing spectrograms
-        should be saved, when generated from audio files.
-        Default is None, in which case the spectrogram files
-        are saved in ``data_dir`` by ``vak.io.dataframe.from_files``.
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid.
@@ -113,16 +108,22 @@ class PrepConfig:
         total duration of validation set, in seconds.
     test_dur : float
         total duration of test set, in seconds.
+    train_set_durs : list, optional
+        Durations of datasets to use for a learning curve.
+        Float values, durations in seconds of subsets taken from training data
+        to create a learning curve, e.g. [5., 10., 15., 20.]. Default is None.
+        Required if config file has a learncurve section.
+    num_replicates : int, optional
+        Number of replicates to train for each training set duration
+        in a learning curve. Each replicate uses a different
+        randomly drawn subset of the training data (but of the same duration).
+        Default is None. Required if config file has a learncurve section.
     """
     data_dir = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
 
     audio_format = attr.ib(validator=validators.optional(is_audio_format), default=None)
     spect_format = attr.ib(validator=validators.optional(is_spect_format), default=None)
-    spect_output_dir = attr.ib(
-        converter=converters.optional(expanded_user_path),
-        default=None,
-    )
     annot_file = attr.ib(
         converter=converters.optional(expanded_user_path),
         default=None,
@@ -152,6 +153,8 @@ class PrepConfig:
         validator=validators.optional(is_valid_duration),
         default=None,
     )
+    train_set_durs = attr.ib(validator=validators.optional(instance_of(list)), default=None)
+    num_replicates = attr.ib(validator=validators.optional(instance_of(int)), default=None)
 
     def __attrs_post_init__(self):
         if self.audio_format is not None and self.spect_format is not None:

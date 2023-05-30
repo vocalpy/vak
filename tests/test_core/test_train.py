@@ -58,7 +58,7 @@ def test_train(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.core.train(
+    vak.core.train.train(
         cfg.train.model,
         model_config,
         cfg.train.dataset_path,
@@ -109,7 +109,7 @@ def test_continue_training(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.core.train(
+    vak.core.train.train(
         model_name=cfg.train.model,
         model_config=model_config,
         dataset_path=cfg.train.dataset_path,
@@ -138,7 +138,6 @@ def test_continue_training(
     [
         {"section": "TRAIN", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "TRAIN", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "TRAIN", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -167,7 +166,7 @@ def test_train_raises_file_not_found(
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):
-        vak.core.train(
+        vak.core.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
@@ -191,16 +190,24 @@ def test_train_raises_file_not_found(
         )
 
 
+@pytest.mark.parametrize(
+    'path_option_to_change',
+    [
+        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"section": "TRAIN", "option": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
+    ]
+)
 def test_train_raises_not_a_directory(
-    specific_config, device
+    path_option_to_change, specific_config, device, tmp_path
 ):
     """Test that core.train raises NotADirectory
-    when ``results_path`` does not exist
+    when directory does not exist
     """
     options_to_change = [
-        {"section": "TRAIN", "option": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
+        path_option_to_change,
         {"section": "TRAIN", "option": "device", "value": device},
     ]
+
     toml_path = specific_config(
         config_type="train",
         model="teenytweetynet",
@@ -216,7 +223,7 @@ def test_train_raises_not_a_directory(
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.core.train(
+        vak.core.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
@@ -270,7 +277,7 @@ def test_both_labelset_and_labelmap_raises(
     results_path.mkdir()
 
     with pytest.raises(ValueError):
-        vak.core.train(
+        vak.core.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
