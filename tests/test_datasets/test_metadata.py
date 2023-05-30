@@ -36,7 +36,7 @@ class TestMetadata:
         ARGNAMES,
         ARGVALS
     )
-    def test_metadata_from_json(self, dataset_csv_filename, timebin_dur, tmp_path):
+    def test_metadata_from_path(self, dataset_csv_filename, timebin_dur, tmp_path):
         # we make metadata "by hand"
         metadata_dict = {
             'dataset_csv_filename': str(dataset_csv_filename),
@@ -59,5 +59,5 @@ class TestMetadata:
         expected_json_path = mock_dataset_path / vak.datasets.metadata.Metadata.METADATA_JSON_FILENAME
         assert expected_json_path.exists()
 
-        metadata_from_json = vak.datasets.metadata.Metadata.from_json(expected_json_path)
+        metadata_from_json = vak.datasets.metadata.Metadata.from_path(expected_json_path)
         assert metadata_from_json == metadata_to_json
