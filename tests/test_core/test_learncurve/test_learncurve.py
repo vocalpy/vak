@@ -69,8 +69,6 @@ def test_learncurve(specific_config, tmp_path, model, device):
     vak.core.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
-        train_set_durs=cfg.learncurve.train_set_durs,
-        num_replicates=cfg.learncurve.num_replicates,
         dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
@@ -79,7 +77,6 @@ def test_learncurve(specific_config, tmp_path, model, device):
         num_workers=cfg.learncurve.num_workers,
         root_results_dir=None,
         results_path=results_path,
-        previous_run_path=cfg.learncurve.previous_run_path,
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
@@ -120,8 +117,6 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     vak.core.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
-        train_set_durs=cfg.learncurve.train_set_durs,
-        num_replicates=cfg.learncurve.num_replicates,
         dataset_path=cfg.learncurve.dataset_path,
         labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
@@ -130,75 +125,6 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
         num_workers=cfg.learncurve.num_workers,
         root_results_dir=cfg.learncurve.root_results_dir,
         results_path=None,
-        previous_run_path=cfg.learncurve.previous_run_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
-        normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
-        shuffle=cfg.learncurve.shuffle,
-        val_step=cfg.learncurve.val_step,
-        ckpt_step=cfg.learncurve.ckpt_step,
-        patience=cfg.learncurve.patience,
-        device=cfg.learncurve.device,
-    )
-
-    results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
-    assert len(results_path) == 1
-    results_path = results_path[0]
-
-    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
-
-
-@pytest.mark.parametrize("window_size",
-                         [
-                             44,
-                         ]
-                         )
-def test_learncurve_previous_run_path(
-    specific_config, tmp_path, model, device, previous_run_path_factory, window_size
-):
-    root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
-    root_results_dir.mkdir()
-
-    options_to_change = [
-        {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
-            "value": str(root_results_dir),
-        },
-        {"section": "LEARNCURVE", "option": "device", "value": device},
-        {
-            "section": "LEARNCURVE",
-            "option": "previous_run_path",
-            "value": str(previous_run_path_factory(model)),
-        },
-        {"section": "DATALOADER", "option": "window_size", "value": window_size},
-    ]
-
-    toml_path = specific_config(
-        config_type="learncurve",
-        model=model,
-        audio_format="cbin",
-        annot_format="notmat",
-        options_to_change=options_to_change,
-    )
-
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
-
-    vak.core.learncurve.learning_curve(
-        model_name=cfg.learncurve.model,
-        model_config=model_config,
-        train_set_durs=cfg.learncurve.train_set_durs,
-        num_replicates=cfg.learncurve.num_replicates,
-        dataset_path=cfg.learncurve.dataset_path,
-        labelset=cfg.prep.labelset,
-        window_size=cfg.dataloader.window_size,
-        batch_size=cfg.learncurve.batch_size,
-        num_epochs=cfg.learncurve.num_epochs,
-        num_workers=cfg.learncurve.num_workers,
-        root_results_dir=root_results_dir,
-        results_path=None,
-        previous_run_path=cfg.learncurve.previous_run_path,
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
@@ -241,8 +167,6 @@ def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, devic
         vak.core.learncurve.learning_curve(
             model_name=cfg.learncurve.model,
             model_config=model_config,
-            train_set_durs=cfg.learncurve.train_set_durs,
-            num_replicates=cfg.learncurve.num_replicates,
             dataset_path=invalid_csv_path,
             labelset=cfg.prep.labelset,
             window_size=cfg.dataloader.window_size,
@@ -251,7 +175,6 @@ def test_learncurve_invalid_dataset_path_raises(specific_config, tmp_path, devic
             num_workers=cfg.learncurve.num_workers,
             root_results_dir=None,
             results_path=results_path,
-            previous_run_path=cfg.learncurve.previous_run_path,
             spect_key=cfg.spect_params.spect_key,
             timebins_key=cfg.spect_params.timebins_key,
             normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
@@ -297,8 +220,6 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         vak.core.learncurve.learning_curve(
             model_name=cfg.learncurve.model,
             model_config=model_config,
-            train_set_durs=cfg.learncurve.train_set_durs,
-            num_replicates=cfg.learncurve.num_replicates,
             dataset_path=cfg.learncurve.dataset_path,
             labelset=cfg.prep.labelset,
             window_size=cfg.dataloader.window_size,
@@ -307,7 +228,6 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
             num_workers=cfg.learncurve.num_workers,
             root_results_dir=None,
             results_path=results_path,
-            previous_run_path=cfg.learncurve.previous_run_path,
             spect_key=cfg.spect_params.spect_key,
             timebins_key=cfg.spect_params.timebins_key,
             normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
