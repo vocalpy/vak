@@ -80,8 +80,11 @@ def test_predict(
             Path(output_dir).glob(f"*{vak.constants.NET_OUTPUT_SUFFIX}")
         )
 
-        vak_df = pd.read_csv(cfg.predict.dataset_path)
-        for spect_path in vak_df.spect_path.values:
+        metadata = vak.datasets.metadata.Metadata.from_dataset_path(cfg.predict.dataset_path)
+        dataset_csv_path = cfg.predict.dataset_path / metadata.dataset_csv_filename
+        dataset_df = pd.read_csv(dataset_csv_path)
+
+        for spect_path in dataset_df.spect_path.values:
             net_output_spect_path = [
                 net_output
                 for net_output in net_outputs
