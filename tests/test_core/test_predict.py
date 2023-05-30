@@ -98,7 +98,6 @@ def test_predict(
     [
         {"section": "PREDICT", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "PREDICT", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "PREDICT", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "PREDICT", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -152,17 +151,38 @@ def test_predict_raises_file_not_found(
         )
 
 
+@pytest.mark.parametrize(
+    'path_option_to_change',
+    [
+        {"section": "PREDICT", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"section": "PREDICT", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+    ]
+)
 def test_predict_raises_not_a_directory(
+    path_option_to_change,
     specific_config,
-    device
+    device,
+    tmp_path,
 ):
     """Test that core.eval raises NotADirectory
     when ``output_dir`` does not exist
     """
     options_to_change = [
-        {"section": "PREDICT", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+        path_option_to_change,
         {"section": "PREDICT", "option": "device", "value": device},
     ]
+
+    if path_option_to_change["option"] != "output_dir":
+        # need to make sure output_dir *does* exist
+        # so we don't detect spurious NotADirectoryError and assume test passes
+        output_dir = tmp_path.joinpath(
+            f"test_predict_raises_not_a_directory"
+        )
+        output_dir.mkdir()
+        options_to_change.append(
+            {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)}
+        )
+
     toml_path = specific_config(
         config_type="predict",
         model="teenytweetynet",
