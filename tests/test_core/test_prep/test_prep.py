@@ -25,7 +25,7 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
     with meta_json_path.open('r') as fp:
         meta_json = json.load(fp)
 
-    dataset_csv_path = dataset_path / meta_json['dataset_csv']
+    dataset_csv_path = dataset_path / meta_json['dataset_csv_filename']
     assert dataset_csv_path.exists()
 
     df_from_dataset_path = pd.read_csv(dataset_csv_path)
@@ -86,7 +86,7 @@ def test_prep(
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = config_type.lower()
-    vak_df, dataset_path = vak.core.prep.prep(
+    dataset_df, dataset_path = vak.core.prep.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -99,9 +99,12 @@ def test_prep(
         train_dur=cfg.prep.train_dur,
         val_dur=cfg.prep.val_dur,
         test_dur=cfg.prep.test_dur,
+        train_set_durs=cfg.prep.train_set_durs,
+        num_replicates=cfg.prep.num_replicates,
+        window_size=cfg.dataloader.window_size,
     )
 
-    assert_prep_output_matches_expected(dataset_path, vak_df)
+    assert_prep_output_matches_expected(dataset_path, dataset_df)
 
 
 @pytest.mark.parametrize(
@@ -223,7 +226,7 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    vak_df, dataset_path = vak.core.prep.prep(
+    dataset_df, dataset_path = vak.core.prep.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -238,7 +241,7 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
         test_dur=cfg.prep.test_dur,
     )
 
-    assert len(vak_df) == 1
+    assert len(dataset_df) == 1
 
 
 def test_prep_when_annot_has_single_segment(source_test_data_root,
@@ -280,7 +283,7 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    vak_df, dataset_path = vak.core.prep.prep(
+    dataset_df, dataset_path = vak.core.prep.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -295,7 +298,7 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
         test_dur=cfg.prep.test_dur,
     )
 
-    assert len(vak_df) == 1
+    assert len(dataset_df) == 1
 
 
 @pytest.mark.parametrize(
