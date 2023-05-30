@@ -138,7 +138,6 @@ def test_continue_training(
     [
         {"section": "TRAIN", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"section": "TRAIN", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset.csv'},
         {"section": "TRAIN", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -191,16 +190,24 @@ def test_train_raises_file_not_found(
         )
 
 
+@pytest.mark.parametrize(
+    'path_option_to_change',
+    [
+        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"section": "TRAIN", "option": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
+    ]
+)
 def test_train_raises_not_a_directory(
-    specific_config, device
+    path_option_to_change, specific_config, device, tmp_path
 ):
     """Test that core.train raises NotADirectory
-    when ``results_path`` does not exist
+    when directory does not exist
     """
     options_to_change = [
-        {"section": "TRAIN", "option": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
+        path_option_to_change,
         {"section": "TRAIN", "option": "device", "value": device},
     ]
+
     toml_path = specific_config(
         config_type="train",
         model="teenytweetynet",
