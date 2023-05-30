@@ -115,7 +115,7 @@ def prep(toml_path):
     section = purpose.upper()
 
     if purpose in ('train', 'eval', 'predict'):
-        vak_df, dataset_path = core.prep.prep(
+        dataset_df, dataset_path = core.prep.prep(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
@@ -131,7 +131,7 @@ def prep(toml_path):
             test_dur=cfg.prep.test_dur,
         )
     elif purpose == 'learncurve':
-        vak_df, dataset_path = core.prep.prep(
+        dataset_df, dataset_path = core.prep.prep(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
