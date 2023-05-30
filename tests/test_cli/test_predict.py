@@ -38,7 +38,7 @@ def test_predict(
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.predict', autospec=True) as mock_core_predict:
+    with mock.patch('vak.core.predict.predict', autospec=True) as mock_core_predict:
         vak.cli.predict.predict(toml_path)
         assert mock_core_predict.called
 
