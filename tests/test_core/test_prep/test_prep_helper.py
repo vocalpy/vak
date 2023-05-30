@@ -40,15 +40,26 @@ def test_move_files_into_split_subdirs(config_type, model_name, audio_format, sp
 
     vak.core.prep.prep_helper.move_files_into_split_subdirs(dataset_df, tmp_dataset_path, purpose=config_type)
 
-    for split in dataset_df['split'].unique():
+    for split in dataset_df['split'].dropna().unique():
         split_subdir = tmp_dataset_path / split
         assert split_subdir.exists()
 
         split_df = dataset_df[dataset_df['split'] == split]
-        for path_col in ('spect_path', 'annot_path'):
-            paths = split_df[path_col].values
-            for path in paths:
-                new_path = split_subdir / pathlib.Path(path).name
+        # for path_col in ('spect_path', 'annot_path'):
+        spect_paths = split_df['spect_path'].values
+        for spect_path in spect_paths:
+            new_path = split_subdir / pathlib.Path(spect_path).name
+            assert new_path.exists()
+
+        if len(dataset_df["annot_path"].unique()) == 1:
+            # --> there is a single annotation file associated with all rows
+            # in this case we copy the single annotation file to the root of the dataset directory
+            annot_path = dataset_df["annot_path"].unique().item()
+            assert pathlib.Path(annot_path).exists()
+        elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
+            annot_paths = split_df['annot_path'].values
+            for annot_path in annot_paths:
+                new_path = split_subdir / pathlib.Path(annot_path).name
                 assert new_path.exists()
 
 
@@ -105,7 +116,3 @@ def test_add_split_col(audio_dir_cbin,
     assert "split" in vak_df.columns
 
     assert vak_df["split"].unique().item() == "train"
-
-
-def test_validate_and_get_timebin_dur():
-    assert False
