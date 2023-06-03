@@ -1,6 +1,7 @@
 # note NO LOGGING -- we configure logger inside `core.prep`
 # so we can save log file inside dataset directory
 from pathlib import Path
+import shutil
 import warnings
 
 import toml
@@ -138,3 +139,6 @@ def prep(toml_path):
 
     with toml_path.open("w") as fp:
         toml.dump(config_toml, fp)
+
+    # lastly, copy config to dataset directory root
+    shutil.copy(src=toml_path, dst=dataset_path)
