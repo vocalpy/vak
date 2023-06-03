@@ -311,6 +311,7 @@ def prep(
         dataset_df.to_csv(dataset_csv_path)
         dataset_df = split.dataframe(
             dataset_df,
+            dataset_path,
             labelset=labelset,
             train_dur=train_dur,
             val_dur=val_dur,
