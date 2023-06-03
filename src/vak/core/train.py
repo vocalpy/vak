@@ -174,12 +174,11 @@ def train(
             raise FileNotFoundError(
                 f"`dataset_csv_path` not found or not recognized as a directory: {dataset_csv_path}"
             )
-        if dataset_csv_path.parents[1] != dataset_path:
+        if dataset_csv_path.parent != dataset_path:
             raise ValueError(
-                "Dataset csv path is not in the expected location in the dataset directory. "
-                f"A dataset csv passed in through `dataset_csv_path` must be in "
-                f"`dataset_path / learncurve`, to ensure the splits were generated "
-                f"using the dataset created by `vak.prep`.\n"
+                "Parent of ``dataset_csv_path`` is not ``dataset_path``. "
+                "A dataset csv file must be in the root of the dataset directory "
+                "for other functions to work, e.g. ``vak.transforms.StandardizeSpect.from_csv_path``."
                 f"Parent directory of `dataset_csv_path`: {dataset_csv_path.parent}\n"
                 f"Value for `dataset_path`: \n{dataset_path}"
             )
