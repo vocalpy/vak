@@ -163,7 +163,7 @@ def predict(
 
     logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
     pred_dataset = VocalDataset.from_csv(
-        csv_path=dataset_csv_path,
+        dataset_csv_path=dataset_csv_path,
         split="predict",
         labelmap=labelmap,
         spect_key=spect_key,
