@@ -126,7 +126,10 @@ def make_learncurve_splits_from_dataset_df(
             )
 
             split_csv_filename = f"{csv_path.stem}-train-dur-{train_dur}s-replicate-{replicate_num}.csv"
-            split_csv_path = learncurve_splits_root / split_csv_filename
+            # note that learncurve split csvs are in dataset_path, not dataset_learncurve_dir
+            # this is to avoid changing the semantics of dataset_csv_path to other functions that expect it,
+            # e.g., ``StandardizeSpect.fit_csv_path``; any dataset csv path always has to be in the root
+            split_csv_path = dataset_path / split_csv_filename
             split_df.to_csv(split_csv_path, index=False)
             # save just name, will load relative to dataset_path
             record['split_csv_filename'] = split_csv_path.name
