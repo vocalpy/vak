@@ -84,7 +84,7 @@ def make_learncurve_splits_from_dataset_df(
             train_split_df = dataset_df[dataset_df["split"] == "train"]
             labelset = set([k for k in labelmap.keys() if k != "unlabeled"])
             train_split_df = split.dataframe(
-                train_split_df, train_dur=train_dur, labelset=labelset
+                train_split_df, dataset_path, train_dur=train_dur, labelset=labelset
             )
             train_split_df = train_split_df[train_split_df.split == "train"]  # remove rows where split set to 'None'
 
