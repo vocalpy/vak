@@ -306,7 +306,7 @@ def train(
     transform, target_transform = transforms.get_defaults("train", spect_standardizer)
 
     train_dataset = WindowDataset.from_csv(
-        csv_path=dataset_csv_path,
+        dataset_csv_path=dataset_csv_path,
         window_inds=window_inds,
         source_ids=source_ids,
         source_inds=source_inds,
@@ -337,7 +337,7 @@ def train(
             return_padding_mask=True,
         )
         val_dataset = VocalDataset.from_csv(
-            csv_path=dataset_csv_path,
+            dataset_csv_path=dataset_csv_path,
             split="val",
             labelmap=labelmap,
             spect_key=spect_key,
