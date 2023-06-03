@@ -161,7 +161,7 @@ def eval(
     )
     logger.info(f"creating dataset for evaluation from: {dataset_csv_path}")
     val_dataset = VocalDataset.from_csv(
-        csv_path=dataset_csv_path,
+        dataset_csv_path=dataset_csv_path,
         split=split,
         labelmap=labelmap,
         spect_key=spect_key,
