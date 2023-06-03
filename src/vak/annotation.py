@@ -155,7 +155,7 @@ def files_from_dir(annot_dir, annot_format):
     elif isinstance(format_class.ext, tuple):
         # then we actually have to determine whether there's any files for either format
         for ext_to_test in format_class.ext:
-            if len(pathlib.Path(annot_dir).glob(f'*{ext_to_test}')) > 0:
+            if len(sorted(pathlib.Path(annot_dir).glob(f'*{ext_to_test}'))) > 0:
                 ext = ext_to_test
     if ext is None:
         raise ValueError(
