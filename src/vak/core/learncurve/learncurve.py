@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from ..eval import eval
-from ..prep.prep_helper import validate_and_get_timebin_dur
 from ..train import train
 from ... import (
     datasets,
@@ -172,7 +171,7 @@ def learning_curve(
 
     logger.info(f"Saving results to: {results_path}")
 
-    timebin_dur = validate_and_get_timebin_dur(dataset_df)
+    timebin_dur = metadata.timebin_dur
     logger.info(
         f"Size of each timebin in spectrogram, in seconds: {timebin_dur}",
     )
