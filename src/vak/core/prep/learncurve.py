@@ -96,6 +96,7 @@ def make_learncurve_splits_from_dataset_df(
                 window_inds,
             ) = window_dataset.helper.vectors_from_df(
                 train_split_df,
+                dataset_path,
                 "train",
                 window_size,
                 spect_key,
