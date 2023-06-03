@@ -64,7 +64,6 @@ def learning_curve(toml_path):
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.learncurve.dataset_path,
-        labelset=cfg.prep.labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
