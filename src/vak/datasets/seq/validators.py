@@ -1,19 +1,27 @@
 """Validators for sequence datasets"""
+from __future__ import annotations
+
+import pathlib
+
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from ... import annotation, files
 
 
-def where_unlabeled(csv_path, timebins_key="t"):
+def where_unlabeled(dataset_csv_path: str | pathlib.Path,
+                    timebins_key: str = "t") -> npt.NDArray:
     """Find where there are vocalizations in a dataset
     annotated as sequences that have unlabeled periods
     in those annotations.
 
     Parameters
     ----------
-    csv_path : str, Path
-        Path to .csv file representing dataset.
+    dataset_csv_path : str, Path
+        Path to csv file representing dataset.
+        Saved by ``vak prep`` in the root of a directory
+        that contains the prepared dataset.
     timebins_key : str
         Key used to access timebins vector in spectrogram files.
         Default is 't'.
@@ -26,12 +34,15 @@ def where_unlabeled(csv_path, timebins_key="t"):
         vocalization indexed by this has
         periods that are unlabeled by the annotations.
     """
-    vak_df = pd.read_csv(csv_path)
-    annots = annotation.from_df(vak_df)
+    dataset_csv_path = pathlib.Path(dataset_csv_path)
+    # next line, we assume csv path is in root of dataset dir, so we can use parent for dataset path arg
+    dataset_path = dataset_csv_path.parent
+    dataset_df = pd.read_csv(dataset_csv_path)
+    annots = annotation.from_df(dataset_df, dataset_path=dataset_path)
 
     has_unlabeled_list = []
-    for annot, spect_path in zip(annots, vak_df["spect_path"].values):
-        spect_dict = files.spect.load(spect_path)
+    for annot, spect_path in zip(annots, dataset_df["spect_path"].values):
+        spect_dict = files.spect.load(dataset_path / spect_path)
         timebins = spect_dict[timebins_key]
         duration = timebins[-1]
 
@@ -42,7 +53,8 @@ def where_unlabeled(csv_path, timebins_key="t"):
     return np.array(has_unlabeled_list)
 
 
-def has_unlabeled(csv_path, timebins_key="t"):
+def has_unlabeled(dataset_csv_path: str | pathlib.Path,
+                  timebins_key: str = "t" ) -> bool:
     r"""Determine if a dataset of vocalization
     annotated as sequences has periods that are unlabeled.
 
@@ -53,8 +65,10 @@ def has_unlabeled(csv_path, timebins_key="t"):
 
     Parameters
     ----------
-    csv_path : str, Path
-        Path to .csv file representing dataset.
+    dataset_csv_path : str, Path
+        Path to csv file representing dataset.
+        Saved by ``vak prep`` in the root of a directory
+        that contains the prepared dataset.
     timebins_key : str
         Key used to access timebins vector in spectrogram files.
         Default is 't'.
@@ -66,5 +80,5 @@ def has_unlabeled(csv_path, timebins_key="t"):
         that have unlabeled periods.
     """
     return np.any(
-        where_unlabeled(csv_path, timebins_key)
+        where_unlabeled(dataset_csv_path, timebins_key)
     )
