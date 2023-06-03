@@ -11,7 +11,6 @@ import torch.utils.data
 
 from .. import (
     datasets,
-    labels,
     models,
     transforms,
     validators
@@ -22,7 +21,6 @@ from ..device import get_default as get_default_device
 from ..io import dataframe
 from ..paths import generate_results_dir_name_as_path
 from ..trainer import get_default_trainer
-from .prep.prep_helper import validate_and_get_timebin_dur
 
 
 logger = logging.getLogger(__name__)
@@ -211,7 +209,7 @@ def train(
         results_path = generate_results_dir_name_as_path(root_results_dir)
         results_path.mkdir()
 
-    timebin_dur = validate_and_get_timebin_dur(dataset_df)
+    timebin_dur = metadata.timebin_dur
     logger.info(
         f"Size of timebin in spectrograms from dataset, in seconds: {timebin_dur}",
     )
