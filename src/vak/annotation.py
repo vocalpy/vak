@@ -133,7 +133,7 @@ def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
 
 
 def files_from_dir(annot_dir, annot_format):
-    """get all annotation files of a given format
+    """Get all annotation files of a given format
     from a directory or its sub-directories,
     using the file extension associated with that annotation format.
     """
@@ -144,7 +144,27 @@ def files_from_dir(annot_dir, annot_format):
         )
 
     format_class = crowsetta.formats.by_name(annot_format)
-    annot_files = files.from_dir(annot_dir, format_class.ext)
+    # handle the case where an annotation format can have more than one valid extension,
+    # e.g., simple-seq has ``('.csv', '.txt')`` as extensions
+    ext = None
+    if isinstance(format_class.ext, str):
+        # NOTE that by convention the `ext` attribute
+        # of all Crowsetta annotation format classes
+        # begins with a period
+        ext = format_class.ext
+    elif isinstance(format_class.ext, tuple):
+        # then we actually have to determine whether there's any files for either format
+        for ext_to_test in format_class.ext:
+            if len(pathlib.Path(annot_dir).glob(f'*{ext_to_test}')) > 0:
+                ext = ext_to_test
+    if ext is None:
+        raise ValueError(
+            f"Unable to determine which extension to use for format: {annot_format}. "
+            f"Used extensions from class `{format_class}`, {format_class.ext}, "
+            f"but no files were found with that/those extensions in annot_dir:\n{annot_dir}"
+        )
+
+    annot_files = files.from_dir(annot_dir, ext)
     return annot_files
 
 
