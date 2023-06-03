@@ -361,8 +361,17 @@ def prep(
         with (dataset_path / "labelmap.json").open("w") as fp:
             json.dump(labelmap, fp)
 
-    # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
+    # ---- save metadata -----------------------------------------------------------------------------------------------
+    # we do this before generating learncurve splits because learncurve expects metadata to exist, to get timebin_dur
+    timebin_dur = prep_helper.validate_and_get_timebin_dur(dataset_df)
 
+    metadata = Metadata(
+        dataset_csv_filename=str(dataset_csv_path.name),
+        timebin_dur=timebin_dur
+    )
+    metadata.to_json(dataset_path)
+
+    # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
     if purpose == 'learncurve':
         make_learncurve_splits_from_dataset_df(
             dataset_df,
@@ -375,14 +384,5 @@ def prep(
             spect_key,
             timebins_key,
         )
-
-    # ---- save metadata -----------------------------------------------------------------------------------------------
-    timebin_dur = prep_helper.validate_and_get_timebin_dur(dataset_df)
-
-    metadata = Metadata(
-        dataset_csv_filename=str(dataset_csv_path.name),
-        timebin_dur=timebin_dur
-    )
-    metadata.to_json(dataset_path)
 
     return dataset_df, dataset_path
