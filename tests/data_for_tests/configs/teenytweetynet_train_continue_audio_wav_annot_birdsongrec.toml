@@ -31,7 +31,6 @@ num_workers = 2
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_wav_annot_birdsongrec/teenytweetynet"
 checkpoint_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
-labelmap_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
 spect_scaler_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 
 [TeenyTweetyNet.optimizer]

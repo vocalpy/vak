@@ -30,7 +30,6 @@ num_workers = 4
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/tweetynet"
 checkpoint_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
-labelmap_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
 
 [TweetyNet.optimizer]
 lr = 0.001
