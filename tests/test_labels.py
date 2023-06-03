@@ -66,9 +66,9 @@ def test_to_set(labels_list, expected_labelset):
     ]
 )
 def test_from_df(config_type, model_name, audio_format, spect_format, annot_format,
-                 specific_prep_csv_path, specific_dataset_df):
+                 specific_dataset_csv_path, specific_dataset_df):
     df = specific_dataset_df(config_type, model_name, annot_format, audio_format, spect_format)
-    dataset_csv_path = specific_prep_csv_path(config_type, model_name, annot_format, audio_format, spect_format)
+    dataset_csv_path = specific_dataset_csv_path(config_type, model_name, annot_format, audio_format, spect_format)
     dataset_path = pathlib.Path(dataset_csv_path).parent
 
     out = vak.labels.from_df(df, dataset_path)

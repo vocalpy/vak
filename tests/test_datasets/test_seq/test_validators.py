@@ -18,8 +18,8 @@ def test_has_unlabeled(config_type,
                        expected_result,
                        model,
                        specific_config_toml,
-                       specific_prep_csv_path):
-    csv_path = specific_prep_csv_path(config_type,
+                       specific_dataset_csv_path):
+    csv_path = specific_dataset_csv_path(config_type,
                                       model,
                                       annot_format,
                                       audio_format,

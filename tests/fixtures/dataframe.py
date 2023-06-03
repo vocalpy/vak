@@ -3,7 +3,7 @@ import pytest
 
 
 @pytest.fixture
-def specific_dataset_df(specific_prep_csv_path):
+def specific_dataset_df(specific_dataset_csv_path):
     """returns a function that will return a
     dataframe corresponding to the ``prep``ared dataset
     from a specific configuration file,
@@ -18,7 +18,7 @@ def specific_dataset_df(specific_prep_csv_path):
         audio_format=None,
         spect_format=None,
     ):
-        csv_path = specific_prep_csv_path(
+        csv_path = specific_dataset_csv_path(
             config_type, model, annot_format, audio_format, spect_format
         )
         return pd.read_csv(csv_path)

@@ -7,9 +7,9 @@ import vak
 
 
 @pytest.fixture
-def specific_prep_csv_path(specific_config_toml):
-    """returns a function that will return the
-    ``dataset_path`` corresponding to the ``prep``ared dataset
+def specific_dataset_csv_path(specific_config_toml):
+    """Returns a function that will return the
+    ``dataset_csv_path`` corresponding to the ``prep``ared dataset
     from a specific configuration file,
     determined by characteristics specified by the caller:
     `config_type`, `audio_format`, `spect_format`, `annot_format`
