@@ -9,8 +9,7 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from .prep_helper import validate_and_get_timebin_dur
-from ... import split
+from ... import datasets, split
 from ...datasets import window_dataset
 
 
@@ -88,7 +87,8 @@ def make_learncurve_splits_from_dataset_df(
             )
             train_split_df = train_split_df[train_split_df.split == "train"]  # remove rows where split set to 'None'
 
-            timebin_dur = validate_and_get_timebin_dur(dataset_df)
+            metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+            timebin_dur = metadata.timebin_dur
             # use *just* train subset to get spect vectors for WindowDataset
             (
                 source_ids,
