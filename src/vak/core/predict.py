@@ -21,7 +21,6 @@ from .. import models
 from .. import transforms
 from ..datasets import VocalDataset
 from ..device import get_default as get_default_device
-from .prep.prep_helper import validate_and_get_timebin_dur
 
 
 logger = logging.getLogger(__name__)
@@ -186,8 +185,10 @@ def predict(
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
     dataset_df = pd.read_csv(dataset_csv_path)
-    timebin_dur = validate_and_get_timebin_dur(dataset_df)
-    logger.info(f"dataset has timebins with duration: {timebin_dur}")
+
+    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    timebin_dur = metadata.timebin_dur
+    logger.info(f"Dataset has timebins with duration: {timebin_dur}")
 
     # ---------------- do the actual predicting + converting to annotations --------------------------------------------
     input_shape = pred_dataset.shape
@@ -195,7 +196,7 @@ def predict(
     # throw out the window dimension; just want to tell network (channels, height, width) shape
     if len(input_shape) == 4:
         input_shape = input_shape[1:]
-    logger.info(f"shape of input to networks used for predictions: {input_shape}")
+    logger.info(f"Shape of input to networks used for predictions: {input_shape}")
 
     logger.info(f"instantiating model from config:/n{model_name}")
 
