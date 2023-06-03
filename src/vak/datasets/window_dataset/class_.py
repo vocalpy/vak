@@ -16,8 +16,7 @@ from ... import (
     transforms,
     validators
 )
-from ...core.prep.prep_helper import validate_and_get_timebin_dur
-
+from ..metadata import Metadata
 from .helper import vectors_from_df
 
 
@@ -530,7 +529,8 @@ class WindowDataset(VisionDataset):
             )
 
         annots = annotation.from_df(df, dataset_path)
-        timebin_dur = validate_and_get_timebin_dur(df)
+        metadata = Metadata.from_dataset_path(dataset_path)
+        timebin_dur = metadata.timebin_dur
 
         return cls(
             dataset_path,
