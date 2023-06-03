@@ -61,8 +61,6 @@ class TrainConfig:
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results. Default is None.
-    labelmap_path : str
-        path to 'labelmap.json' file. Default is None.
     """
     # required
     model = attr.ib(
@@ -117,10 +115,6 @@ class TrainConfig:
         default=None,
     )
     spect_scaler_path = attr.ib(
-        converter=converters.optional(expanded_user_path),
-        default=None,
-    )
-    labelmap_path = attr.ib(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
