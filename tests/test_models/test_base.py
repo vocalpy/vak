@@ -196,7 +196,7 @@ class TestModel:
         labelmap = vak.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
         transform, target_transform = vak.transforms.get_defaults("train")
         train_dataset = vak.datasets.WindowDataset.from_csv(
-            csv_path=dataset_csv_path,
+            dataset_csv_path=dataset_csv_path,
             split="train",
             labelmap=labelmap,
             window_size=train_cfg.dataloader.window_size,
