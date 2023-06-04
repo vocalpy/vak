@@ -1,3 +1,5 @@
+import shutil
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -48,15 +50,17 @@ def test_make_learncurve_splits_from_dataset_df(
         map_unlabeled = False
     labelmap = vak.labels.to_map(labelset_notmat, map_unlabeled=map_unlabeled)
 
-    dataset_path = tmp_path / f"test_make_learncurve_splits_from_dataset_df-window-size-{window_size}"
-    dataset_path.mkdir()
+    tmp_dataset_path = tmp_path / f"test_make_learncurve_splits_from_dataset_df-window-size-{window_size}"
+    shutil.copytree(dataset_path, tmp_dataset_path)
+    shutil.rmtree(tmp_dataset_path / 'learncurve')  # since we're about to make this and test it works
+    tmp_dataset_csv_path = tmp_dataset_path / dataset_csv_path.name
 
     vak.core.prep.learncurve.make_learncurve_splits_from_dataset_df(
         dataset_df,
-        dataset_csv_path,
+        tmp_dataset_csv_path,
         cfg.prep.train_set_durs,
         cfg.prep.num_replicates,
-        dataset_path,
+        tmp_dataset_path,
         window_size,
         labelmap,
     )
@@ -87,7 +91,7 @@ def test_make_learncurve_splits_from_dataset_df(
             ]
             assert len(train_dur_replicate_df) == 1
 
-            split_csv_path = learncurve_splits_root / train_dur_replicate_df["split_csv_filename"].item()
+            split_csv_path = tmp_dataset_path / train_dur_replicate_df["split_csv_filename"].item()
             assert split_csv_path.exists()
 
             split_df = pd.read_csv(split_csv_path)
