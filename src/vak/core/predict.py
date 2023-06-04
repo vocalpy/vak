@@ -257,7 +257,7 @@ def predict(
         y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
         y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
 
-        spect_dict = files.spect.load(spect_path)
+        spect_dict = files.spect.load(dataset_path / spect_path)
         t = spect_dict[timebins_key]
 
         if majority_vote or min_segment_dur:
