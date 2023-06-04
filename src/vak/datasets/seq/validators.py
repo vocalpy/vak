@@ -38,7 +38,7 @@ def where_unlabeled(dataset_csv_path: str | pathlib.Path,
     # next line, we assume csv path is in root of dataset dir, so we can use parent for dataset path arg
     dataset_path = dataset_csv_path.parent
     dataset_df = pd.read_csv(dataset_csv_path)
-    annots = annotation.from_df(dataset_df, dataset_path=dataset_path)
+    annots = annotation.from_df(dataset_df, dataset_path)
 
     has_unlabeled_list = []
     for annot, spect_path in zip(annots, dataset_df["spect_path"].values):
