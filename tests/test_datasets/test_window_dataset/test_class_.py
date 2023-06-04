@@ -40,7 +40,7 @@ class TestWindowDataset:
         dataset_csv_path = cfg_command.dataset_path / metadata.dataset_csv_filename
 
         dataset = vak.datasets.WindowDataset.from_csv(
-            csv_path=dataset_csv_path,
+            dataset_csv_path=dataset_csv_path,
             split='train',
             labelmap=labelmap,
             window_size=cfg.dataloader.window_size,
