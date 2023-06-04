@@ -24,8 +24,9 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
     # ---- set-up (there's a lot so I'm marking it) ----
     cfg = vak.config.parse.from_toml_path(toml_path)
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
-    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
+    dataset_path = cmd_cfg.dataset_path
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
 
     df = pd.read_csv(dataset_csv_path)
     df_split = df[df.split == 'train']
@@ -40,6 +41,7 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
      window_inds_before,
      lbl_tb) = vak.datasets.window_dataset.helper._vectors_from_df(
         df_split,
+        dataset_path,
         window_size=window_size,
         crop_to_dur=True if crop_dur else False,
         labelmap=labelmap,
@@ -107,8 +109,9 @@ def test__vectors_from_df(config_type, model_name, audio_format, spect_format, a
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
-    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
+    dataset_path = cmd_cfg.dataset_path
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     df = pd.read_csv(dataset_csv_path)
     df = df[df.split == 'train']
 
@@ -117,6 +120,7 @@ def test__vectors_from_df(config_type, model_name, audio_format, spect_format, a
      window_inds,
      lbl_tb) = vak.datasets.window_dataset.helper._vectors_from_df(
         df,
+        dataset_path,
         window_size=window_size,
         crop_to_dur=True if crop_dur else False,
         labelmap=labelmap,
@@ -169,8 +173,9 @@ def test_vectors_from_df(config_type, model_name, audio_format, spect_format, an
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
-    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
+    dataset_path = cmd_cfg.dataset_path
+    metadata = vak.datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     df = pd.read_csv(dataset_csv_path)
 
     if crop_dur:
@@ -180,6 +185,7 @@ def test_vectors_from_df(config_type, model_name, audio_format, spect_format, an
 
     source_ids, source_inds, window_inds = vak.datasets.window_dataset.helper.vectors_from_df(
         df,
+        dataset_path,
         'train',
         window_size,
         crop_dur=crop_dur,
@@ -193,62 +199,6 @@ def test_vectors_from_df(config_type, model_name, audio_format, spect_format, an
     ):
         assert isinstance(vector, np.ndarray)
 
-    assert source_ids.shape == source_inds.shape
-    n_source_files_in_split = len(df[df.split == 'train'])
-    # For every source file there will be (window_size - 1) invalid indices for a window to start at.
-    # Think of the last valid window: all bins in that window except the first are invalid
-    n_total_invalid_start_inds = n_source_files_in_split * (window_size - 1)
-    if crop_dur:
-        assert window_inds.shape[-1] <= source_ids.shape[-1]
-    else:
-        assert window_inds.shape[-1] == source_inds.shape[-1] - n_total_invalid_start_inds
-
-
-@pytest.mark.parametrize(
-    'config_type, model_name, audio_format, spect_format, annot_format, window_size, crop_dur',
-    [
-        ('learncurve', 'teenytweetynet', 'cbin', None, 'notmat', 22, None),
-        ('learncurve', 'teenytweetynet', 'cbin', None, 'notmat', 22, 4.0),
-        ('learncurve', 'teenytweetynet', 'cbin', None, 'notmat', 44, None),
-        ('learncurve', 'teenytweetynet', 'cbin', None, 'notmat', 44, 4.0),
-    ]
-)
-def test_vectors_from_csv(config_type, model_name, audio_format, spect_format, annot_format,
-                          window_size, crop_dur, specific_config):
-    toml_path = specific_config(config_type,
-                                model_name,
-                                audio_format=audio_format,
-                                spect_format=spect_format,
-                                annot_format=annot_format)
-    cfg = vak.config.parse.from_toml_path(toml_path)
-
-    # stuff we need just to be able to instantiate window dataset
-    labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
-
-    cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
-    metadata = vak.datasets.metadata.Metadata.from_dataset_path(getattr(cmd_cfg, 'dataset_path'))
-    dataset_csv_path = getattr(cmd_cfg, 'dataset_path') / metadata.dataset_csv_filename
-    df = pd.read_csv(dataset_csv_path)
-
-    if crop_dur:
-        timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(df)
-    else:
-        timebin_dur = None
-
-    source_ids, source_inds, window_inds = vak.datasets.window_dataset.helper.vectors_from_csv_path(
-        dataset_csv_path,
-        'train',
-        window_size,
-        crop_dur=crop_dur,
-        timebin_dur=timebin_dur,
-        labelmap=labelmap,
-    )
-
-    for vector_name, vector in zip(
-        ('source_ids', 'source_inds', 'window_inds'),
-        (source_ids, source_inds, window_inds)
-    ):
-        assert isinstance(vector, np.ndarray)
     assert source_ids.shape == source_inds.shape
     n_source_files_in_split = len(df[df.split == 'train'])
     # For every source file there will be (window_size - 1) invalid indices for a window to start at.
