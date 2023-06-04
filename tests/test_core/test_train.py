@@ -116,7 +116,6 @@ def test_continue_training(
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
-        labelmap_path=cfg.train.labelmap_path,
         spect_scaler_path=cfg.train.spect_scaler_path,
         results_path=results_path,
         spect_key=cfg.spect_params.spect_key,
@@ -136,7 +135,6 @@ def test_continue_training(
     'path_option_to_change',
     [
         {"section": "TRAIN", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"section": "TRAIN", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
         {"section": "TRAIN", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
@@ -145,7 +143,7 @@ def test_train_raises_file_not_found(
 ):
     """Test that pre-conditions in `vak.core.train` raise FileNotFoundError
     when one of the following does not exist:
-    checkpoint_path, labelmap_path, dataset_path, spect_scaler_path
+    checkpoint_path, dataset_path, spect_scaler_path
     """
     options_to_change = [
         {"section": "TRAIN", "option": "device", "value": device},
