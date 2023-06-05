@@ -4,7 +4,7 @@ from hashlib import md5
 from time import localtime
 
 
-from vak.constants import RESULTS_DIR_PREFIX
+from vak.common.constants import RESULTS_DIR_PREFIX
 
 
 @pytest.fixture

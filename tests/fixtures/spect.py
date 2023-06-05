@@ -1,7 +1,7 @@
 """fixtures relating to array files containing spectrograms"""
 import pytest
 
-import vak.files.spect
+import vak.common.files.spect
 
 from .test_data import GENERATED_TEST_DATA_ROOT, SOURCE_TEST_DATA_ROOT
 
