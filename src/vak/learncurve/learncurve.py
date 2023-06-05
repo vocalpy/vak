@@ -9,11 +9,18 @@ import pandas as pd
 
 from ..eval import eval
 from ..train import train
-from ... import (
+from .. import (
     datasets,
 )
-from ...converters import expanded_user_path
-from ...paths import generate_results_dir_name_as_path
+from ..converters import expanded_user_path
+from ..paths import generate_results_dir_name_as_path
+
+
+__all__ = [
+    "learning_curve",
+    "replicate_dirname"
+    "train_dur_dirname",
+]
 
 logger = logging.getLogger(__name__)
 
