@@ -14,10 +14,9 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
-from .. import constants
-from .. import files
-from ..annotation import map_annotated_to_annot
-from ..converters import labelset_to_set
+from ..common import constants, files
+from ..common.annotation import map_annotated_to_annot
+from ..common.converters import labelset_to_set
 
 
 logger = logging.getLogger(__name__)
