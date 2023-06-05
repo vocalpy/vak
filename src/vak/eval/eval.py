@@ -13,8 +13,8 @@ from .. import (
     datasets,
     models,
     transforms,
-    validators
 )
+from ..common import validators
 from ..datasets.vocal_dataset import VocalDataset
 from ..prep.prep_helper import validate_and_get_timebin_dur
 
