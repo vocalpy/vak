@@ -5,7 +5,7 @@ import sys
 import warnings
 
 from . import timenow
-from .__about__ import __version__
+from ..__about__ import __version__
 
 
 logger = logging.getLogger('vak')  # 'base' logger

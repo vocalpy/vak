@@ -11,7 +11,7 @@ from .validators import (
     is_annot_format,
     is_spect_format,
 )
-from ..converters import expanded_user_path, labelset_to_set
+from ..common.converters import expanded_user_path, labelset_to_set
 
 
 def duration_from_toml_value(value):

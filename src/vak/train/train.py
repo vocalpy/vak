@@ -17,10 +17,10 @@ from .. import (
 )
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
-from ..device import get_default as get_default_device
+from ..common.device import get_default as get_default_device
 from ..io import dataframe
-from ..paths import generate_results_dir_name_as_path
-from ..trainer import get_default_trainer
+from ..common.paths import generate_results_dir_name_as_path
+from ..common.trainer import get_default_trainer
 
 
 __all__ = [

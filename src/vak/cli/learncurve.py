@@ -3,8 +3,8 @@ from pathlib import Path
 import shutil
 
 from .. import config, learncurve
-from ..logging import config_logging_for_cli, log_version
-from ..paths import generate_results_dir_name_as_path
+from ..common.logging import config_logging_for_cli, log_version
+from ..common.paths import generate_results_dir_name_as_path
 
 
 logger = logging.getLogger(__name__)

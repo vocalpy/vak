@@ -9,7 +9,7 @@ import numpy as np
 
 from .algorithms import brute_force
 from .algorithms.validate import validate_split_durations
-from ..labels import from_df as labels_from_df
+from ..common.labels import from_df as labels_from_df
 
 
 logger = logging.getLogger(__name__)

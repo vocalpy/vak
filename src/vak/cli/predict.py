@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .. import config
 from .. import predict as predict_module
-from ..logging import config_logging_for_cli, log_version
+from ..common.logging import config_logging_for_cli, log_version
 
 
 logger = logging.getLogger(__name__)

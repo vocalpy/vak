@@ -12,8 +12,8 @@ from ..train import train
 from .. import (
     datasets,
 )
-from ..converters import expanded_user_path
-from ..paths import generate_results_dir_name_as_path
+from ..common.converters import expanded_user_path
+from ..common.paths import generate_results_dir_name_as_path
 
 
 __all__ = [

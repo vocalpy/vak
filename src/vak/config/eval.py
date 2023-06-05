@@ -5,7 +5,7 @@ from attr.validators import instance_of
 
 from .validators import is_valid_model_name
 from .. import device
-from ..converters import expanded_user_path
+from ..common.converters import expanded_user_path
 
 
 def convert_post_tfm_kwargs(post_tfm_kwargs: dict) -> dict:

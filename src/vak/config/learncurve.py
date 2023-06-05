@@ -1,11 +1,9 @@
 """parses [LEARNCURVE] section of config"""
 import attr
 from attr import converters, validators
-from attr.validators import instance_of
 
 from .eval import are_valid_post_tfm_kwargs, convert_post_tfm_kwargs
 from .train import TrainConfig
-from ..converters import expanded_user_path
 
 
 @attr.s

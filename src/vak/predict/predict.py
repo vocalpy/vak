@@ -20,7 +20,7 @@ from .. import (
 from .. import models
 from .. import transforms
 from ..datasets import VocalDataset
-from ..device import get_default as get_default_device
+from ..common.device import get_default as get_default_device
 
 
 __all__ = [
