@@ -73,6 +73,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   post-processing transform that was added in 
   [#621](https://github.com/NickleDave/vak/pull/621).
   Fixed in [#626](https://github.com/NickleDave/vak/pull/626).
+- Change label mapping to use single characters
+  for the validation step of WindowedFrameClassificationModel *only*,
+  to avoid affecting the edit distance metric, 
+  instead of modifying the mapping inside the top-level eval function,
+  which can cause a crash because the mapping is used in other places 
+  [#665](https://github.com/NickleDave/vak/pull/665).
+  Fixed in [#664](https://github.com/NickleDave/vak/pull/664).
 
 ## 0.8.1 -- 2023-03-02
 ### Fixed
