@@ -1,10 +1,10 @@
-"""tests for vak.core.eval module"""
+"""tests for vak.eval.eval module"""
 import pytest
 
 import vak.config
 import vak.constants
 import vak.paths
-import vak.core.eval
+import vak.eval.eval
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
@@ -70,7 +70,7 @@ def test_eval(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
-    vak.core.eval.eval(
+    vak.eval.eval(
         model_name=cfg.eval.model,
         model_config=model_config,
         dataset_path=cfg.eval.dataset_path,
@@ -129,7 +129,7 @@ def test_eval_raises_file_not_found(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
-        vak.core.eval.eval(
+        vak.eval.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,
@@ -188,7 +188,7 @@ def test_eval_raises_not_a_directory(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
-        vak.core.eval.eval(
+        vak.eval.eval(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,
