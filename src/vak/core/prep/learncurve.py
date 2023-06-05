@@ -9,8 +9,7 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from .prep_helper import validate_and_get_timebin_dur
-from ... import split
+from ... import datasets, split
 from ...datasets import window_dataset
 
 
@@ -84,11 +83,12 @@ def make_learncurve_splits_from_dataset_df(
             train_split_df = dataset_df[dataset_df["split"] == "train"]
             labelset = set([k for k in labelmap.keys() if k != "unlabeled"])
             train_split_df = split.dataframe(
-                train_split_df, train_dur=train_dur, labelset=labelset
+                train_split_df, dataset_path, train_dur=train_dur, labelset=labelset
             )
             train_split_df = train_split_df[train_split_df.split == "train"]  # remove rows where split set to 'None'
 
-            timebin_dur = validate_and_get_timebin_dur(dataset_df)
+            metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+            timebin_dur = metadata.timebin_dur
             # use *just* train subset to get spect vectors for WindowDataset
             (
                 source_ids,
@@ -96,6 +96,7 @@ def make_learncurve_splits_from_dataset_df(
                 window_inds,
             ) = window_dataset.helper.vectors_from_df(
                 train_split_df,
+                dataset_path,
                 "train",
                 window_size,
                 spect_key,
@@ -125,7 +126,10 @@ def make_learncurve_splits_from_dataset_df(
             )
 
             split_csv_filename = f"{csv_path.stem}-train-dur-{train_dur}s-replicate-{replicate_num}.csv"
-            split_csv_path = learncurve_splits_root / split_csv_filename
+            # note that learncurve split csvs are in dataset_path, not dataset_learncurve_dir
+            # this is to avoid changing the semantics of dataset_csv_path to other functions that expect it,
+            # e.g., ``StandardizeSpect.fit_csv_path``; any dataset csv path always has to be in the root
+            split_csv_path = dataset_path / split_csv_filename
             split_df.to_csv(split_csv_path, index=False)
             # save just name, will load relative to dataset_path
             record['split_csv_filename'] = split_csv_path.name

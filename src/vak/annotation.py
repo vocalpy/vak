@@ -46,7 +46,8 @@ def format_from_df(dataset_df: pd.DataFrame) -> str:
     return annot_format
 
 
-def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
+def from_df(dataset_df: pd.DataFrame,
+            annot_root: str | pathlib.Path | None = None) -> list[crowsetta.Annotation] | None:
     """Get list of annotations from a dataframe
     representing a dataset.
 
@@ -56,7 +57,14 @@ def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
     Parameters
     ----------
     dataset_df : DataFrame
-        representing a dataset of vocalizations, with column 'annot_format'.
+        Dataframe representing a dataset of vocalizations,
+        with columns 'annot_format' and 'annot_path'.
+    annot_root : str or pathlib.Path, optional
+        Path to root of directory where annotation files are located.
+        If specified, then paths in the DataFrame from the 'annot_path' column
+        are constructed relative to ``annot_root``.
+        Default is None, in which case 'annot_paths' are used directly,
+        as if they were absolute paths.
 
     Returns
     -------
@@ -79,6 +87,13 @@ def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
     was already done when preparing the dataset, and that each row contains
     an annotation file paired with the file it annotates.
     """
+    if annot_root:
+        annot_root = pathlib.Path(annot_root)
+        if not annot_root.exists() or not annot_root.is_dir():
+            raise NotADirectoryError(
+                f"`annot_root` not found or not recognized as a directory: {annot_root}"
+            )
+
     annot_format = format_from_df(dataset_df)
     if annot_format is None:
         return None
@@ -91,6 +106,8 @@ def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
         # (1) many rows, all have the same file
         # (2) only one row, so there's only one annotation file (which may contain annotation for multiple source files)
         annot_path = dataset_df["annot_path"].unique().item()
+        if annot_root:
+            annot_path = annot_root / annot_path
         annots = scribe.from_file(annot_path).to_annot()
 
         # as long as we have at least as many annotations as there are rows in the dataframe
@@ -119,8 +136,11 @@ def from_df(dataset_df: pd.DataFrame) -> list[crowsetta.Annotation] | None:
 
     elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
         # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
+        annot_paths = dataset_df["annot_path"].values
+        if annot_root:
+            annot_paths  = [annot_root / annot_path for annot_path in annot_paths]
         annots = [
-            scribe.from_file(annot_path).to_annot() for annot_path in dataset_df["annot_path"].values
+            scribe.from_file(annot_path).to_annot() for annot_path in annot_paths
         ]
 
     else:

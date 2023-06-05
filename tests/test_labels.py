@@ -1,4 +1,5 @@
 import copy
+import pathlib
 
 import numpy as np
 import pytest
@@ -64,9 +65,12 @@ def test_to_set(labels_list, expected_labelset):
         ('train', 'teenytweetynet', None, 'mat', 'yarden'),
     ]
 )
-def test_from_df(config_type, model_name, audio_format, spect_format, annot_format, specific_dataset_df):
+def test_from_df(config_type, model_name, audio_format, spect_format, annot_format,
+                 specific_dataset_path, specific_dataset_df):
     df = specific_dataset_df(config_type, model_name, annot_format, audio_format, spect_format)
-    out = vak.labels.from_df(df)
+    dataset_path = specific_dataset_path(config_type, model_name, annot_format, audio_format, spect_format)
+
+    out = vak.labels.from_df(df, dataset_path)
     assert isinstance(out, list)
     assert all([isinstance(labels, np.ndarray) for labels in out])
 

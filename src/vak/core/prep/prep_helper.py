@@ -68,20 +68,31 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
 
         split_df = dataset_df[dataset_df.split == split_name].copy()
         split_spect_paths = [
+            # this just converts from string to pathlib.Path
             pathlib.Path(spect_path)
             for spect_path in split_df['spect_path'].values
         ]
-        to_move = [
+        is_in_dataset_dir = [
             # if dataset_path is one of the parents of spect_path, we can move; otherwise, we copy
             dataset_path.resolve() in list(spect_path.parents)
             for spect_path in split_spect_paths
         ]
+        if all(is_in_dataset_dir):
+            move_spects = True
+        elif all([not is_in_dir for is_in_dir in is_in_dataset_dir]):
+            move_spects = False
+        else:
+            raise ValueError(
+                "Expected to find either all spectrograms were in dataset directory, "
+                "or all were in some other directory, but found a mixture. "
+                f"Spectrogram paths for split being moved within dataset directory:\n{split_spect_paths}"
+            )
 
         # TODO: rewrite as 'moved_source_paths', etc., when we add audio
         new_spect_paths = []  # to fix DataFrame
-        for spect_path, move_spect in zip(split_spect_paths, to_move):
+        for spect_path in split_spect_paths:
             spect_path = pathlib.Path(spect_path)
-            if move_spect:  # because it's within dataset_path already
+            if move_spects:  # because it's within dataset_path already
                 new_spect_path = spect_path.rename(
                     split_subdir / spect_path.name
                 )
@@ -94,7 +105,8 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
                 )
 
             new_spect_paths.append(
-                new_spect_path
+                # rewrite paths relative to dataset directory's root, so dataset is portable
+                pathlib.Path(new_spect_path).relative_to(dataset_path)
             )
 
         # cast to str before rewrite so that type doesn't silently change for some rows
@@ -116,7 +128,9 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
             # we don't need to copy, and this would raise "it's the same file!" error. So we skip in that case
             if not copied_annot_path.exists():
                 shutil.copy(src=annot_path, dst=copied_annot_path)
-                dataset_df["annot_path"] = str(copied_annot_path)  # same path for all rows
+            # regardless of whether we copy, we want to write annot path relative to dataset directory root
+            copied_annot_path = pathlib.Path(copied_annot_path).relative_to(dataset_path)
+            dataset_df["annot_path"] = str(copied_annot_path)  # ensure string; one file -> same path for all rows
 
         elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
             # --> there is a unique annotation file (path) for each row, i.e. a 1:1 mapping from spect:annotation
@@ -128,13 +142,17 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
                 copied_annot_paths = []
                 for annot_path in split_annot_paths:
                     annot_path = pathlib.Path(annot_path)
-                    copied_annot_paths.append(
-                        shutil.copy(
-                            src=annot_path, dst=split_subdir
-                        )
+                    copied_annot_path = shutil.copy(
+                        src=annot_path, dst=split_subdir
                     )
-                # cast to str before rewrite so that type doesn't silently change for some rows
-                copied_annot_paths = [str(copied_annot_path) for copied_annot_path in copied_annot_paths]
+                    # rewrite paths relative to dataset directory's root, so dataset is portable
+                    copied_annot_path = pathlib.Path(copied_annot_path).relative_to(dataset_path)
+                    copied_annot_paths.append(copied_annot_path)
+
+                # cast back to str before rewrite so that type doesn't silently change for some rows
+                copied_annot_paths = [
+                    str(copied_annot_path) for copied_annot_path in copied_annot_paths
+                ]
                 dataset_df.loc[split_df.index, 'annot_path'] = copied_annot_paths
 
         else:

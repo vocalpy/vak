@@ -3,6 +3,7 @@ from .audio import *
 from .config import *
 from .csv import *
 from .dataframe import *
+from .dataset import *
 from .device import *
 from .model import *
 from .path import *

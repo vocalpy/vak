@@ -41,6 +41,14 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
             check_exact=check_exact,
         )
 
+    for column in ('spect_path', 'annot_path'):
+        paths = df_from_dataset_path[column].values
+        if not all([isinstance(path, str) for path in paths]):
+            continue
+        for path in paths:
+            path = pathlib.Path(path)
+            assert (dataset_path / path).exists()
+
 
 @pytest.mark.parametrize(
     "config_type, audio_format, spect_format, annot_format",

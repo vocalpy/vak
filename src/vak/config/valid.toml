@@ -49,7 +49,6 @@ ckpt_step = 1
 patience = 4
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
-labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 
 [EVAL]

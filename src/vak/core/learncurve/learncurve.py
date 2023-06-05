@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from ..eval import eval
-from ..prep.prep_helper import validate_and_get_timebin_dur
 from ..train import train
 from ... import (
     datasets,
@@ -38,7 +37,6 @@ def learning_curve(
     model_name: str,
     model_config: dict,
     dataset_path: str | pathlib.Path,
-    labelset: set,
     window_size: int,
     batch_size: int,
     num_epochs: int,
@@ -172,7 +170,7 @@ def learning_curve(
 
     logger.info(f"Saving results to: {results_path}")
 
-    timebin_dur = validate_and_get_timebin_dur(dataset_df)
+    timebin_dur = metadata.timebin_dur
     logger.info(
         f"Size of each timebin in spectrogram, in seconds: {timebin_dur}",
     )
@@ -204,7 +202,10 @@ def learning_curve(
         results_path_this_replicate = results_path_this_train_dur / replicate_dirname(replicate_num)
         results_path_this_replicate.mkdir()
 
-        split_csv_path = dataset_learncurve_dir / splits_df_row.split_csv_filename
+        # note that learncurve split csvs are in dataset_path, not dataset_learncurve_dir
+        # this is to avoid changing the semantics of dataset_csv_path to other functions that expect it,
+        # e.g., ``StandardizeSpect.fit_csv_path``; any dataset csv path always has to be in the root
+        split_csv_path = dataset_path / splits_df_row.split_csv_filename
         logger.info(
             f"Training replicate {replicate_num} "
             f"using dataset from .csv file: {split_csv_path}",
@@ -233,7 +234,6 @@ def learning_curve(
             num_epochs,
             num_workers,
             dataset_csv_path=split_csv_path,
-            labelset=labelset,
             results_path=results_path_this_replicate,
             spect_key=spect_key,
             timebins_key=timebins_key,

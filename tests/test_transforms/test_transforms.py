@@ -50,7 +50,23 @@ class TestStandardizeSpect:
             None
         ]
     )
-    def test_fit_df(self, split, train_cbin_notmat_df):
+    def test_fit_csv_path(self, split, train_cbin_notmat_df,
+                          specific_dataset_path, specific_dataset_csv_path):
+        # we need dataset_path since paths in df are relative to it
+        dataset_path = specific_dataset_path(
+            config_type="train",
+            model="teenytweetynet",
+            audio_format="cbin",
+            annot_format="notmat"
+        )
+
+        dataset_csv_path = specific_dataset_csv_path(
+            config_type="train",
+            model="teenytweetynet",
+            audio_format="cbin",
+            annot_format="notmat"
+        )
+
         if split is None:
             split_to_test = 'train'
         else:
@@ -58,12 +74,12 @@ class TestStandardizeSpect:
         # ---- set up
         df_split = train_cbin_notmat_df[train_cbin_notmat_df.split == split_to_test].copy()
         spect_paths = df_split['spect_path'].values
-        spect = vak.files.spect.load(spect_paths[0])['s']
+        spect = vak.files.spect.load(dataset_path / spect_paths[0])['s']
         mean_freqs = np.mean(spect, axis=1)
         std_freqs = np.std(spect, axis=1)
 
         for spect_path in spect_paths[1:]:
-            spect = vak.files.spect.load(spect_path)['s']
+            spect = vak.files.spect.load(dataset_path / spect_path)['s']
             mean_freqs += np.mean(spect, axis=1)
             std_freqs += np.std(spect, axis=1)
         expected_mean_freqs = mean_freqs / len(spect_paths)
@@ -74,11 +90,11 @@ class TestStandardizeSpect:
 
         # ---- actually do fit
         if split:
-            standardizer = vak.transforms.StandardizeSpect.fit_df(train_cbin_notmat_df,
-                                                                  split=split)
+            standardizer = vak.transforms.StandardizeSpect.fit_csv_path(dataset_csv_path,
+                                                                        split=split)
         else:
             # this tests that default value for split 'train' works as expected
-            standardizer = vak.transforms.StandardizeSpect.fit_df(train_cbin_notmat_df)
+            standardizer = vak.transforms.StandardizeSpect.fit_csv_path(dataset_csv_path)
 
         # ---- test
         for attr_name, expected in zip(

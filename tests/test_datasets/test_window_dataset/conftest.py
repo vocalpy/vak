@@ -44,7 +44,7 @@ def window_dataset_from_csv_kwargs_list():
         dataset_csv_path = cfg.learncurve.dataset_path / metadata.dataset_csv_filename
 
         window_dataset_kwargs = dict(
-            csv_path=dataset_csv_path,
+            dataset_csv_path=dataset_csv_path,
             labelmap=labelmap,
             window_size=cfg.dataloader.window_size,
         )

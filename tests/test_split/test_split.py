@@ -246,34 +246,41 @@ def test_dataframe_specd_dur_gt_raises():
 
 @pytest.mark.parametrize("train_dur, test_dur", [(200, 200), (200, None), (None, 200)])
 def test_split_dataframe_mat(
-    train_dur, test_dur, spect_list_mat_all_labels_in_labelset, annot_list_yarden, labelset_yarden
+    train_dur, test_dur, spect_list_mat_all_labels_in_labelset, annot_list_yarden, labelset_yarden,
+    specific_dataset_path
 ):
     labelset_yarden = set(labelset_yarden)
 
-    vak_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.io.spect.to_dataframe(
         spect_format="mat",
         spect_files=spect_list_mat_all_labels_in_labelset,
         annot_format="yarden",
         annot_list=annot_list_yarden,
     )
+    dataset_path = specific_dataset_path(
+        spect_format="mat",
+        annot_format="yarden",
+        config_type="train",
+        model="teenytweetynet"
+    )
 
     train_dur = 200
     test_dur = 200
 
-    vak_df_split = vak.split.split.dataframe(
-        vak_df, labelset=labelset_yarden, train_dur=train_dur, test_dur=test_dur
+    dataset_df_split = vak.split.split.dataframe(
+        dataset_df, dataset_path, labelset=labelset_yarden, train_dur=train_dur, test_dur=test_dur
     )
 
-    assert isinstance(vak_df_split, pd.DataFrame)
+    assert isinstance(dataset_df_split, pd.DataFrame)
 
     if train_dur is not None:
-        train_dur_out = vak_df_split[vak_df_split["split"] == "train"].duration.sum()
+        train_dur_out = dataset_df_split[dataset_df_split["split"] == "train"].duration.sum()
         assert train_dur_out >= train_dur
     else:
-        assert "train" not in vak_df_split["split"].unique().tolist()
+        assert "train" not in dataset_df_split["split"].unique().tolist()
 
     if test_dur is not None:
-        test_dur_out = vak_df_split[vak_df_split["split"] == "test"].duration.sum()
+        test_dur_out = dataset_df_split[dataset_df_split["split"] == "test"].duration.sum()
         assert test_dur_out >= test_dur
     else:
-        assert "test" not in vak_df_split["split"].unique().tolist()
+        assert "test" not in dataset_df_split["split"].unique().tolist()

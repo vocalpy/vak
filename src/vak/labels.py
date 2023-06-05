@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pathlib
+
 import numpy as np
 import pandas as pd
 
@@ -79,8 +81,9 @@ def to_set(labels_list: list[np.ndarray | list]) -> set:
     return labelset
 
 
-def from_df(dataset_df: pd.DataFrame) -> list[np.ndarray]:
-    """returns labels for each vocalization in a dataset.
+def from_df(dataset_df: pd.DataFrame, dataset_path: str | pathlib.Path) -> list[np.ndarray]:
+    """Returns labels for each vocalization in a dataset.
+
     Takes Pandas DataFrame representing the dataset, loads
     annotation for each row in the DataFrame, and then returns
     labels from each annotation.
@@ -95,7 +98,13 @@ def from_df(dataset_df: pd.DataFrame) -> list[np.ndarray]:
     labels : list
         of array-like, labels for each vocalization in the dataset.
     """
-    annots = annotation.from_df(dataset_df)
+    dataset_path = pathlib.Path(dataset_path)
+    if not dataset_path.exists() or not dataset_path.is_dir():
+        raise NotADirectoryError(
+            f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+        )
+
+    annots = annotation.from_df(dataset_df, dataset_path)
     return [annot.seq.labels for annot in annots]
 
 

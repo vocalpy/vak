@@ -221,7 +221,8 @@ def fix_options_in_configs(config_paths, command):
             if 'spect_scaler_path' in config_toml[section]:
                 # remove any existing 'spect_scaler_path' option
                 del config_toml[section]["spect_scaler_path"]
-        config_toml[section]["labelmap_path"] = str(labelmap_path)
+        if command != 'train_continue':  # train always gets labelmap from dataset dir, not from a config option
+            config_toml[section]["labelmap_path"] = str(labelmap_path)
         with config_to_fix.open("w") as fp:
             toml.dump(config_toml, fp)
 

@@ -1,6 +1,7 @@
 # note NO LOGGING -- we configure logger inside `core.prep`
 # so we can save log file inside dataset directory
 from pathlib import Path
+import shutil
 import warnings
 
 import toml
@@ -114,44 +115,30 @@ def prep(toml_path):
 
     section = purpose.upper()
 
-    if purpose in ('train', 'eval', 'predict'):
-        dataset_df, dataset_path = core.prep.prep(
-            data_dir=cfg.prep.data_dir,
-            purpose=purpose,
-            audio_format=cfg.prep.audio_format,
-            spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
-            annot_format=cfg.prep.annot_format,
-            annot_file=cfg.prep.annot_file,
-            labelset=cfg.prep.labelset,
-            audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
-            output_dir=cfg.prep.output_dir,
-            train_dur=cfg.prep.train_dur,
-            val_dur=cfg.prep.val_dur,
-            test_dur=cfg.prep.test_dur,
-        )
-    elif purpose == 'learncurve':
-        dataset_df, dataset_path = core.prep.prep(
-            data_dir=cfg.prep.data_dir,
-            purpose=purpose,
-            audio_format=cfg.prep.audio_format,
-            spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
-            annot_format=cfg.prep.annot_format,
-            annot_file=cfg.prep.annot_file,
-            labelset=cfg.prep.labelset,
-            audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
-            output_dir=cfg.prep.output_dir,
-            train_dur=cfg.prep.train_dur,
-            val_dur=cfg.prep.val_dur,
-            test_dur=cfg.prep.test_dur,
-            train_set_durs=cfg.prep.train_set_durs,
-            num_replicates=cfg.prep.num_replicates,
-            window_size=cfg.dataloader.window_size,
-        )
+    dataset_df, dataset_path = core.prep.prep(
+        data_dir=cfg.prep.data_dir,
+        purpose=purpose,
+        audio_format=cfg.prep.audio_format,
+        spect_format=cfg.prep.spect_format,
+        spect_params=cfg.spect_params,
+        annot_format=cfg.prep.annot_format,
+        annot_file=cfg.prep.annot_file,
+        labelset=cfg.prep.labelset,
+        audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
+        output_dir=cfg.prep.output_dir,
+        train_dur=cfg.prep.train_dur,
+        val_dur=cfg.prep.val_dur,
+        test_dur=cfg.prep.test_dur,
+        train_set_durs=cfg.prep.train_set_durs,
+        num_replicates=cfg.prep.num_replicates,
+        window_size=cfg.dataloader.window_size,
+    )
 
     # use config and section from above to add dataset_path to config.toml file
     config_toml[section]["dataset_path"] = str(dataset_path)
 
     with toml_path.open("w") as fp:
         toml.dump(config_toml, fp)
+
+    # lastly, copy config to dataset directory root
+    shutil.copy(src=toml_path, dst=dataset_path)

@@ -59,23 +59,16 @@ def train(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    if cfg.train.labelmap_path is not None:
-        labelset, labelmap_path = None, cfg.train.labelmap_path
-    else:
-        labelset, labelmap_path = cfg.prep.labelset, None
-
     core.train.train(
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.train.dataset_path,
-        labelset=labelset,
         window_size=cfg.dataloader.window_size,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
         checkpoint_path=cfg.train.checkpoint_path,
         spect_scaler_path=cfg.train.spect_scaler_path,
-        labelmap_path=labelmap_path,
         results_path=results_path,
         spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
