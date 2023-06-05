@@ -5,7 +5,7 @@ import pytest
 
 import vak.common.files.files
 
-from ..fixtures.spect import (
+from ...fixtures.spect import (
     SPECT_LIST_MAT,
     SPECT_LIST_NPZ,
 )
