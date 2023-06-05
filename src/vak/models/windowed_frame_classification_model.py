@@ -3,13 +3,21 @@ where a model predicts a label for each frame
 in a window, e.g., each time bin in
 a window from a spectrogram."""
 from __future__ import annotations
+
+import logging
 from typing import Callable, ClassVar, Mapping, Type
 
 import torch
 
 from . import base
 from .definition import ModelDefinition
-from .. import transforms
+from .. import (
+    labels,
+    transforms
+)
+
+
+logger = logging.getLogger(__name__)
 
 
 class WindowedFrameClassificationModel(base.Model):
@@ -34,7 +42,50 @@ class WindowedFrameClassificationModel(base.Model):
 
     Post-processing can be applied to the vector
     to clean up noisy predictions
-    before recovering the segments."""
+    before recovering the segments.
+
+    Attributes
+    ----------
+    network : torch.nn.Module, dict
+        An instance of a ``torch.nn.Module``
+        that implements a neural network,
+        or a ``dict`` that maps human-readable string names
+        to a set of such instances.
+    loss : torch.nn.Module, callable
+        An instance of a ``torch.nn.Module``
+        that implements a loss function,
+        or a callable Python function that
+        computes a scalar loss.
+    optimizer : torch.optim.Optimizer
+        An instance of a ``torch.optim.Optimizer`` class
+        used with ``loss`` to optimize
+        the parameters of ``network``.
+    metrics : dict
+        A ``dict`` that maps human-readable string names
+        to ``Callable`` functions, used to measure
+        performance of the model.
+    post_tfm : callable
+        Post-processing transform applied to predictions.
+    labelmap : dict-like
+        That maps human-readable labels to integers predicted by network.
+    eval_labelmap : dict-like
+        Mapping from labels to integers predicted by network
+        that is used by ``validation_step``.
+        This is used when mapping from network outputs back to labels
+        to compute metrics that require strings, such as edit distance.
+        If ``labelmap`` contains keys with multiple characters,
+        this will be ``labelmap`` re-mapped so that all labels have
+        single characters (except "unlabeled"), to avoid artificially
+        changing the edit distance.
+        See https://github.com/vocalpy/vak/issues/373 for more detail.
+        If all keys (except "unlabeled") are single-character,
+        then ``eval_labelmap`` will just be ``labelmap``.
+    to_labels_eval : vak.transforms.labeled_timebins.ToLabels
+        Instance of :class:`~vak.transforms.labeled_timebins.ToLabels`
+        that uses ``eval_labelmap`` to convert labeled timebins
+        to string labels inside of ``validation_step``,
+        for computing edit distance.
+    """
     definition: ClassVar[ModelDefinition]
 
     def __init__(self,
@@ -74,7 +125,24 @@ class WindowedFrameClassificationModel(base.Model):
         """
         super().__init__(network=network, loss=loss,
                          optimizer=optimizer, metrics=metrics)
-        self.to_labels = transforms.labeled_timebins.ToLabels(labelmap=labelmap)
+
+        self.labelmap = labelmap
+        # replace any multiple character labels in mapping
+        # with single-character labels
+        # so that we do not affect edit distance computation
+        # see https://github.com/NickleDave/vak/issues/373
+        labelmap_keys = [lbl for lbl in labelmap.keys() if lbl != 'unlabeled']
+        if any([len(label) > 1 for label in labelmap_keys]):  # only re-map if necessary
+            # (to minimize chance of knock-on bugs)
+            logger.info("Detected that labelmap has keys with multiple characters:"
+                        f"\n{labelmap_keys}\n"
+                        "Re-mapping labelmap used with to_labels_eval transform, using "
+                        "function vak.labels.multi_char_labels_to_single_char")
+            self.eval_labelmap = labels.multi_char_labels_to_single_char(labelmap)
+        else:
+            self.eval_labelmap = labelmap
+
+        self.to_labels_eval = transforms.labeled_timebins.ToLabels(self.eval_labelmap)
         self.post_tfm = post_tfm
 
     def configure_optimizers(self):
@@ -183,14 +251,14 @@ class WindowedFrameClassificationModel(base.Model):
             out = out[:, :, padding_mask]
             y_pred = y_pred[:, padding_mask]
 
-        y_labels = self.to_labels(y.cpu().numpy())
-        y_pred_labels = self.to_labels(y_pred.cpu().numpy())
+        y_labels = self.to_labels_eval(y.cpu().numpy())
+        y_pred_labels = self.to_labels_eval(y_pred.cpu().numpy())
 
         if self.post_tfm:
             y_pred_tfm = self.post_tfm(
                 lbl_tb=y_pred.cpu().numpy(),
             )
-            y_pred_tfm_labels = self.to_labels(y_pred_tfm)
+            y_pred_tfm_labels = self.to_labels_eval(y_pred_tfm)
             # convert back to tensor so we can compute accuracy
             y_pred_tfm = torch.from_numpy(y_pred_tfm).to(self.device)
 
