@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 
 from . import audio, spect
-from .. import annotation
 from ..config.spect_params import SpectParamsConfig
-from ..converters import expanded_user_path, labelset_to_set
+from ..common import annotation
+from ..common.converters import expanded_user_path, labelset_to_set
 
 
 logger = logging.getLogger(__name__)
