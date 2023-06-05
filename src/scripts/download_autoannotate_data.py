@@ -9,7 +9,6 @@ import pathlib
 import shutil
 import sys
 import time
-from typing import Union
 import urllib.request
 import warnings
 
@@ -81,7 +80,7 @@ def extract_tars(bfsongrepo_dir: pathlib.Path) -> None:
         )
 
 
-def main(dst: Union[str, pathlib.Path]) -> None:
+def main(dst: str | pathlib.Path) -> None:
     """main function that downloads and extracts entire dataset"""
     dst = pathlib.Path(dst).expanduser().resolve()
     if not dst.is_dir():
