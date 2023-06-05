@@ -4,7 +4,7 @@ from attr import converters, validators
 from attr.validators import instance_of
 
 from .validators import is_valid_model_name
-from .. import device
+from ..common import device
 from ..common.converters import expanded_user_path
 
 
