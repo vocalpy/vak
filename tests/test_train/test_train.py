@@ -1,10 +1,10 @@
-"""tests for vak.core.train module"""
+"""tests for vak.train module"""
 import pytest
 
 import vak.config
 import vak.constants
 import vak.paths
-import vak.core.train
+import vak.train
 
 
 def assert_train_output_matches_expected(cfg, model_name, results_path):
@@ -59,7 +59,7 @@ def test_train(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.core.train.train(
+    vak.train.train(
         cfg.train.model,
         model_config,
         cfg.train.dataset_path,
@@ -110,7 +110,7 @@ def test_continue_training(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.core.train.train(
+    vak.train.train(
         model_name=cfg.train.model,
         model_config=model_config,
         dataset_path=cfg.train.dataset_path,
@@ -143,7 +143,7 @@ def test_continue_training(
 def test_train_raises_file_not_found(
     path_option_to_change, specific_config, tmp_path, device
 ):
-    """Test that pre-conditions in `vak.core.train` raise FileNotFoundError
+    """Test that pre-conditions in `vak.train` raise FileNotFoundError
     when one of the following does not exist:
     checkpoint_path, dataset_path, spect_scaler_path
     """
@@ -165,7 +165,7 @@ def test_train_raises_file_not_found(
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):
-        vak.core.train.train(
+        vak.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
@@ -220,7 +220,7 @@ def test_train_raises_not_a_directory(
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.core.train.train(
+        vak.train.train(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
