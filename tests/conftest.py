@@ -1,5 +1,15 @@
+from _pytest.mark import Mark
+
 from . import fixtures
+# keep this import here, we need it for fixtures
 from .fixtures import *
+
+
+empty_mark = Mark('', [], {})
+
+
+def by_slow_marker(item):
+    return 1 if item.get_closest_marker('slow') is None else 0
 
 
 def pytest_addoption(parser):
@@ -11,6 +21,12 @@ def pytest_addoption(parser):
         help="vak models to test, space-separated list of names",
     )
     parser.addoption('--dtype', action="store", default="float32")
+    parser.addoption('--slow-last', action='store_true', default=False)
+
+
+def pytest_collection_modifyitems(items, config):
+    if config.getoption('--slow-last'):
+        items.sort(key=by_slow_marker, reverse=True)
 
 
 def pytest_generate_tests(metafunc):
