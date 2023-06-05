@@ -2,10 +2,8 @@ import logging
 from pathlib import Path
 import shutil
 
-from .. import (
-    config,
-    core
-)
+from .. import config
+from .. import train as train_module
 from ..logging import config_logging_for_cli, log_version
 from ..paths import generate_results_dir_name_as_path
 
@@ -59,7 +57,7 @@ def train(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    core.train.train(
+    train_module.train(
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.train.dataset_path,
