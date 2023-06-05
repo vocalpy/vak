@@ -1,4 +1,4 @@
-"""tests for vak.core.predict module"""
+"""tests for vak.predict module"""
 from pathlib import Path
 
 import pandas as pd
@@ -6,7 +6,7 @@ import pytest
 
 import vak.config
 import vak.constants
-import vak.core.predict
+import vak.predict
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_predict.py
@@ -55,7 +55,7 @@ def test_predict(
 
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
-    vak.core.predict.predict(
+    vak.predict.predict(
         model_name=cfg.predict.model,
         model_config=model_config,
         dataset_path=cfg.predict.dataset_path,
@@ -131,7 +131,7 @@ def test_predict_raises_file_not_found(
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(FileNotFoundError):
-        vak.core.predict.predict(
+        vak.predict.predict(
             model_name=cfg.predict.model,
             model_config=model_config,
             dataset_path=cfg.predict.dataset_path,
@@ -194,7 +194,7 @@ def test_predict_raises_not_a_directory(
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(NotADirectoryError):
-        vak.core.predict.predict(
+        vak.predict.predict(
             model_name=cfg.predict.model,
             model_config=model_config,
             dataset_path=cfg.predict.dataset_path,
