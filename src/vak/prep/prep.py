@@ -8,12 +8,13 @@ import crowsetta.formats.seq
 from . import prep_helper
 from .learncurve import make_learncurve_splits_from_dataset_df
 
-from .. import datasets, labels, split
+from .. import datasets, split
+from ..common import labels
 from ..common.converters import expanded_user_path, labelset_to_set
-from ..datasets.metadata import Metadata
-from ..io import dataframe
 from ..common.logging import config_logging_for_cli, log_version
 from ..common.timenow import get_timenow_as_str
+from ..datasets.metadata import Metadata
+from ..io import dataframe
 
 
 __all__ = [
