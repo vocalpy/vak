@@ -1,9 +1,9 @@
-"""tests for vak.core.learncurve module"""
+"""tests for vak.learncurve module"""
 import pytest
 
 import vak.config
 import vak.constants
-import vak.core.learncurve
+import vak.learncurve
 import vak.paths
 
 
@@ -60,7 +60,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
     results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
-    vak.core.learncurve.learning_curve(
+    vak.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
         dataset_path=cfg.learncurve.dataset_path,
@@ -108,7 +108,7 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
 
-    vak.core.learncurve.learning_curve(
+    vak.learncurve.learning_curve(
         model_name=cfg.learncurve.model,
         model_config=model_config,
         dataset_path=cfg.learncurve.dataset_path,
@@ -166,7 +166,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
     results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.core.learncurve.learning_curve(
+        vak.learncurve.learning_curve(
             model_name=cfg.learncurve.model,
             model_config=model_config,
             dataset_path=cfg.learncurve.dataset_path,
