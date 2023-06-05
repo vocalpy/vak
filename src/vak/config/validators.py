@@ -3,8 +3,8 @@ from pathlib import Path
 
 import toml
 
-from .. import constants
 from .. import models
+from ..common import constants
 
 
 def is_a_directory(instance, attribute, value):
