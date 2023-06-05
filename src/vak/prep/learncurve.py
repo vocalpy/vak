@@ -9,8 +9,8 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from ... import datasets, split
-from ...datasets import window_dataset
+from .. import datasets, split
+from ..datasets import window_dataset
 
 
 logger = logging.getLogger(__name__)
