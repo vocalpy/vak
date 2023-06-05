@@ -12,13 +12,15 @@ from tqdm import tqdm
 import torch.utils.data
 
 from .. import (
-    constants,
     datasets,
+    models,
+    transforms
+)
+from ..common import (
+    constants,
     files,
     validators
 )
-from .. import models
-from .. import transforms
 from ..datasets import VocalDataset
 from ..common.device import get_default as get_default_device
 
