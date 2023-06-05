@@ -1,4 +1,4 @@
-from train import *
+from .train import *
 
 
 __all__ = [
