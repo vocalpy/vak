@@ -31,7 +31,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.learncurve.learning_curve', autospec=True) as mock_core_learning_curve:
+    with mock.patch('vak.learncurve.learning_curve', autospec=True) as mock_core_learning_curve:
         vak.cli.learncurve.learning_curve(toml_path)
         assert mock_core_learning_curve.called
 

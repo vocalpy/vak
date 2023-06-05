@@ -43,7 +43,7 @@ def test_train(
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.train.train', autospec=True) as mock_core_train:
+    with mock.patch('vak.train.train', autospec=True) as mock_core_train:
         vak.cli.train.train(toml_path)
         assert mock_core_train.called
 

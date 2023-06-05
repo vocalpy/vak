@@ -3,13 +3,13 @@ import shutil
 
 import pytest
 
-import vak.core.prep.prep_helper
+import vak.prep.prep_helper
 
 
 def copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, tmp_path_data_dir):
     """Copy all the files in a dataset DataFrame to a `tmp_path_data_dir`,
     and change the paths in the Dataframe, so that we can then call
-    `vak.core.prep.prep_helper.move_files_into_split_subdirs`."""
+    `vak.prep.prep_helper.move_files_into_split_subdirs`."""
     # TODO: rewrite to handle case where 'source' files of dataset are audio
     for paths_col in ('spect_path', 'annot_path'):
         paths = dataset_df[paths_col].values
@@ -39,7 +39,7 @@ def test_move_files_into_split_subdirs(config_type, model_name, audio_format, sp
     tmp_dataset_path = tmp_path / 'dataset_dir'
     tmp_dataset_path.mkdir()
 
-    vak.core.prep.prep_helper.move_files_into_split_subdirs(dataset_df, tmp_dataset_path, purpose=config_type)
+    vak.prep.prep_helper.move_files_into_split_subdirs(dataset_df, tmp_dataset_path, purpose=config_type)
 
     for split in dataset_df['split'].dropna().unique():
         split_subdir = tmp_dataset_path / split
@@ -71,7 +71,7 @@ def test_move_files_into_split_subdirs(config_type, model_name, audio_format, sp
     ]
 )
 def test_get_dataset_csv_filename(data_dir_name, timestamp):
-    out = vak.core.prep.prep_helper.get_dataset_csv_filename(data_dir_name, timestamp)
+    out = vak.prep.prep_helper.get_dataset_csv_filename(data_dir_name, timestamp)
     assert isinstance(out, str)
     assert out.startswith(data_dir_name)
     assert out.endswith('.csv')
@@ -87,9 +87,9 @@ def test_get_dataset_csv_filename(data_dir_name, timestamp):
     ]
 )
 def test_get_dataset_csv_path(data_dir_name, timestamp, tmp_path):
-    out = vak.core.prep.prep_helper.get_dataset_csv_path(tmp_path, data_dir_name, timestamp)
+    out = vak.prep.prep_helper.get_dataset_csv_path(tmp_path, data_dir_name, timestamp)
     assert isinstance(out, pathlib.Path)
-    assert out.name == vak.core.prep.prep_helper.get_dataset_csv_filename(data_dir_name, timestamp)
+    assert out.name == vak.prep.prep_helper.get_dataset_csv_filename(data_dir_name, timestamp)
     assert out.parent == tmp_path
 
 
@@ -113,7 +113,7 @@ def test_add_split_col(audio_dir_cbin,
 
     assert "split" not in vak_df.columns
 
-    vak_df = vak.core.prep.prep_helper.add_split_col(vak_df, split="train")
+    vak_df = vak.prep.prep_helper.add_split_col(vak_df, split="train")
     assert "split" in vak_df.columns
 
     assert vak_df["split"].unique().item() == "train"

@@ -34,7 +34,7 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
     # stuff we need just to be able to instantiate window dataset
     labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
-    timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(df)
+    timebin_dur = vak.prep.prep_helper.validate_and_get_timebin_dur(df)
 
     (source_ids_before,
      source_inds_before,
@@ -179,7 +179,7 @@ def test_vectors_from_df(config_type, model_name, audio_format, spect_format, an
     df = pd.read_csv(dataset_csv_path)
 
     if crop_dur:
-        timebin_dur = vak.core.prep.prep_helper.validate_and_get_timebin_dur(df)
+        timebin_dur = vak.prep.prep_helper.validate_and_get_timebin_dur(df)
     else:
         timebin_dur = None
 

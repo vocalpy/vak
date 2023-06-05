@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import vak.converters
-import vak.core.prep.learncurve
+import vak.prep.learncurve
 import vak.datasets.seq
 import vak.io.dataframe
 import vak.labels
@@ -55,7 +55,7 @@ def test_make_learncurve_splits_from_dataset_df(
     shutil.rmtree(tmp_dataset_path / 'learncurve')  # since we're about to make this and test it works
     tmp_dataset_csv_path = tmp_dataset_path / dataset_csv_path.name
 
-    vak.core.prep.learncurve.make_learncurve_splits_from_dataset_df(
+    vak.prep.learncurve.make_learncurve_splits_from_dataset_df(
         dataset_df,
         tmp_dataset_csv_path,
         cfg.prep.train_set_durs,
