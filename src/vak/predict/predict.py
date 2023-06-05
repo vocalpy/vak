@@ -23,6 +23,11 @@ from ..datasets import VocalDataset
 from ..device import get_default as get_default_device
 
 
+__all__ = [
+    "predict",
+]
+
+
 logger = logging.getLogger(__name__)
 
 
