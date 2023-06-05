@@ -9,11 +9,10 @@ from dask.diagnostics import ProgressBar
 
 from .. import (
     config,
-    constants,
-    files
 )
-from ..annotation import map_annotated_to_annot
-from ..converters import labelset_to_set
+from ..common import constants, files
+from ..common.annotation import map_annotated_to_annot
+from ..common.converters import labelset_to_set
 from ..config.spect_params import SpectParamsConfig
 from ..spect import spectrogram
 
