@@ -74,6 +74,9 @@ exclude = [
 ]
 
 [tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
 filterwarnings = [
     "ignore:::torch.utils.tensorboard",
     'ignore:Deprecated call to `pkg_resources.declare_namespace',

@@ -16,7 +16,6 @@ from .. import (
     validators
 )
 from ..datasets.vocal_dataset import VocalDataset
-from ..labels import multi_char_labels_to_single_char
 from .prep.prep_helper import validate_and_get_timebin_dur
 
 
@@ -140,15 +139,6 @@ def eval(
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
-
-    # replace any multiple character labels in mapping
-    # with dummy single-character labels
-    # so that we do not affect edit distance computation
-    # see https://github.com/NickleDave/vak/issues/373
-    labelmap_keys = [lbl for lbl in labelmap.keys() if lbl != 'unlabeled']
-    if any([len(label) > 1 for label in labelmap_keys]):  # only re-map if necessary
-        # (to minimize chance of knock-on bugs)
-        labelmap = multi_char_labels_to_single_char(labelmap)
 
     metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename

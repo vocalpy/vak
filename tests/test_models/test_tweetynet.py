@@ -1,10 +1,9 @@
 import itertools
-import sys
 
 import pytest
 import pytorch_lightning as lightning
 
-import vak.models
+import vak
 
 
 LABELSETS = []
@@ -15,12 +14,12 @@ for labelset in (
     'mo', 'po', 'ta',
 ):
     LABELSETS.append(
-        ['unlabeled'] + list(labelset)
+        vak.converters.labelset_to_set(labelset)
     )
 LABELMAPS = []
 for labelset in LABELSETS:
     LABELMAPS.append(
-        dict(zip(labelset, range(len(labelset))))
+        vak.labels.to_map(labelset, map_unlabeled=True)
     )
 
 INPUT_SHAPES = (

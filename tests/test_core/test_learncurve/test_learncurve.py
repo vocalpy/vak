@@ -43,6 +43,7 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
                 ).exists()
 
 
+@pytest.mark.slow
 def test_learncurve(specific_config, tmp_path, model, device):
     options_to_change = {"section": "LEARNCURVE", "option": "device", "value": device}
 
@@ -82,6 +83,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
     assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
 
 
+@pytest.mark.slow
 def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     root_results_dir = tmp_path.joinpath("test_learncurve_no_results_path")
     root_results_dir.mkdir()
