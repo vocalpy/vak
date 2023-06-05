@@ -13,8 +13,8 @@ from .. import (
     datasets,
     models,
     transforms,
-    validators
 )
+from ..common import validators
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
 from ..common.device import get_default as get_default_device
