@@ -16,6 +16,11 @@ from ...logging import config_logging_for_cli, log_version
 from ...timenow import get_timenow_as_str
 
 
+__all__ = [
+    'prep'
+]
+
+
 logger = logging.getLogger(__name__)
 
 

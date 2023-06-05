@@ -9,6 +9,5 @@ from . import (
 __all__ = [
     'learncurve',
     'predict',
-    'prep',
     'train',
 ]
