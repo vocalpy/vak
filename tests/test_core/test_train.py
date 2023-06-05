@@ -30,6 +30,7 @@ def assert_train_output_matches_expected(cfg, model_name, results_path):
         assert checkpoints_path.joinpath("max-val-acc-checkpoint.pt").exists()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "audio_format, spect_format, annot_format",
     [
@@ -80,6 +81,7 @@ def test_train(
     assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "audio_format, spect_format, annot_format",
     [
