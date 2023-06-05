@@ -19,6 +19,12 @@ from ..datasets.vocal_dataset import VocalDataset
 from .prep.prep_helper import validate_and_get_timebin_dur
 
 
+# define this so we can always import * from eval in vak/eval/__init__.py
+__all__ = [
+    'eval'
+]
+
+
 logger = logging.getLogger(__name__)
 
 

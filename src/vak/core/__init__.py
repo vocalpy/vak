@@ -1,5 +1,4 @@
 from . import (
-    eval,
     learncurve,
     predict,
     prep,
@@ -8,7 +7,6 @@ from . import (
 
 
 __all__ = [
-    'eval',
     'learncurve',
     'predict',
     'prep',
