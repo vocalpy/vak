@@ -2,8 +2,8 @@
 import pytest
 
 import vak.config
-import vak.constants
-import vak.paths
+import vak.common.constants
+import vak.common.paths
 import vak.train
 
 
@@ -42,7 +42,7 @@ def assert_train_output_matches_expected(cfg, model_name, results_path):
 def test_train(
     audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
 ):
-    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
     options_to_change = [
         {"section": "TRAIN", "option": "device", "value": device},
@@ -93,7 +93,7 @@ def test_train(
 def test_continue_training(
     audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
 ):
-    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
     options_to_change = [
         {"section": "TRAIN", "option": "device", "value": device},
@@ -161,7 +161,7 @@ def test_train_raises_file_not_found(
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
-    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):

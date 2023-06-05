@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 import vak.config
-import vak.constants
+import vak.common.constants
 import vak.cli.learncurve
 
 from . import cli_asserts
@@ -35,7 +35,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
         vak.cli.learncurve.learning_curve(toml_path)
         assert mock_core_learning_curve.called
 
-    results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
+    results_path = sorted(root_results_dir.glob(f"{vak.common.constants.RESULTS_DIR_PREFIX}*"))
     assert len(results_path) == 1
     results_path = results_path[0]
 

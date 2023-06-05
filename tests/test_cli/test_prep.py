@@ -7,8 +7,8 @@ import pandas as pd
 import pytest
 
 import vak.config
-import vak.constants
-import vak.paths
+import vak.common.constants
+import vak.common.paths
 import vak.io.spect
 
 from . import cli_asserts

@@ -2,8 +2,8 @@
 import pytest
 
 import vak.config
-import vak.constants
-import vak.paths
+import vak.common.constants
+import vak.common.paths
 import vak.eval.eval
 
 

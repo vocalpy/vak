@@ -14,12 +14,12 @@ for labelset in (
     'mo', 'po', 'ta',
 ):
     LABELSETS.append(
-        vak.converters.labelset_to_set(labelset)
+        vak.common.converters.labelset_to_set(labelset)
     )
 LABELMAPS = []
 for labelset in LABELSETS:
     LABELMAPS.append(
-        vak.labels.to_map(labelset, map_unlabeled=True)
+        vak.common.labels.to_map(labelset, map_unlabeled=True)
     )
 
 INPUT_SHAPES = (

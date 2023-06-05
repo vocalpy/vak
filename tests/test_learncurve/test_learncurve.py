@@ -2,9 +2,9 @@
 import pytest
 
 import vak.config
-import vak.constants
+import vak.common.constants
 import vak.learncurve
-import vak.paths
+import vak.common.paths
 
 
 def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
@@ -57,7 +57,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
 
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
-    results_path = vak.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     vak.learncurve.learning_curve(
@@ -128,7 +128,7 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
         device=cfg.learncurve.device,
     )
 
-    results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
+    results_path = sorted(root_results_dir.glob(f"{vak.common.constants.RESULTS_DIR_PREFIX}*"))
     assert len(results_path) == 1
     results_path = results_path[0]
 

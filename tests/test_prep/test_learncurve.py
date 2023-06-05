@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import vak.converters
+import vak.common.converters
 import vak.prep.learncurve
 import vak.datasets.seq
 import vak.io.dataframe
-import vak.labels
-import vak.paths
+import vak.common.labels
+import vak.common.paths
 
 
 @pytest.mark.parametrize("window_size", [44, 88, 176])
@@ -42,13 +42,13 @@ def test_make_learncurve_splits_from_dataset_df(
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
 
-    labelset_notmat = vak.converters.labelset_to_set(labelset_notmat)
+    labelset_notmat = vak.common.converters.labelset_to_set(labelset_notmat)
     has_unlabeled = vak.datasets.seq.validators.has_unlabeled(dataset_csv_path)
     if has_unlabeled:
         map_unlabeled = True
     else:
         map_unlabeled = False
-    labelmap = vak.labels.to_map(labelset_notmat, map_unlabeled=map_unlabeled)
+    labelmap = vak.common.labels.to_map(labelset_notmat, map_unlabeled=map_unlabeled)
 
     tmp_dataset_path = tmp_path / f"test_make_learncurve_splits_from_dataset_df-window-size-{window_size}"
     shutil.copytree(dataset_path, tmp_dataset_path)

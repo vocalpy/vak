@@ -5,12 +5,12 @@ import evfuncs
 import numpy as np
 import pytest
 
-import vak.annotation
+import vak.common.annotation
 import vak.io.audio
 
 
 def test_files_from_dir(annot_dir_notmat, annot_files_notmat):
-    annot_files_from_dir = vak.annotation.files_from_dir(
+    annot_files_from_dir = vak.common.annotation.files_from_dir(
         annot_dir_notmat, annot_format="notmat"
     )
 
@@ -40,7 +40,7 @@ def test_files_from_dir(annot_dir_notmat, annot_files_notmat):
     ]
 )
 def test_audio_stem_from_path(path, audio_ext, expected_stem):
-    stem = vak.annotation.audio_filename_from_path(path, audio_ext)
+    stem = vak.common.annotation.audio_filename_from_path(path, audio_ext)
     assert stem == expected_stem
 
 
@@ -66,8 +66,8 @@ def test_audio_stem_from_path(path, audio_ext, expected_stem):
     ]
 )
 def test_audio_stem_from_path_raises(path, audio_ext):
-    with pytest.raises(vak.annotation.AudioFilenameNotFoundError):
-        vak.annotation.audio_filename_from_path(path, audio_ext)
+    with pytest.raises(vak.common.annotation.AudioFilenameNotFoundError):
+        vak.common.annotation.audio_filename_from_path(path, audio_ext)
 
 
 @pytest.mark.parametrize(
@@ -94,7 +94,7 @@ def test__map_using_notated_path(
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
 
-    annotated_annot_map = vak.annotation._map_using_notated_path(
+    annotated_annot_map = vak.common.annotation._map_using_notated_path(
         annotated_files=annotated_files, annot_list=annot_list, audio_ext=audio_ext
     )
 
@@ -110,9 +110,9 @@ def test__map_using_notated_path(
 
     # test all mappings are correct
     for source_path, annot in list(annotated_annot_map.items()):
-        assert vak.annotation.audio_filename_from_path(
+        assert vak.common.annotation.audio_filename_from_path(
             annot.notated_path
-        ) == vak.annotation.audio_filename_from_path(source_path)
+        ) == vak.common.annotation.audio_filename_from_path(source_path)
 
 
 @pytest.mark.parametrize(
@@ -138,7 +138,7 @@ def test__map_using_ext(
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
 
-    annotated_annot_map = vak.annotation._map_using_ext(
+    annotated_annot_map = vak.common.annotation._map_using_ext(
         annotated_files=annotated_files, annot_list=annot_list, annot_format=annot_format,
         method=method, annotated_ext=annotated_ext
     )
@@ -188,7 +188,7 @@ def test_map_annotated_to_annot(
     else:
         annotated_files = spect_list_mat
     annot_list = specific_annot_list(annot_format)
-    annotated_annot_map = vak.annotation.map_annotated_to_annot(
+    annotated_annot_map = vak.common.annotation.map_annotated_to_annot(
         annotated_files=annotated_files, annot_list=annot_list, annot_format=annot_format
     )
 
@@ -205,9 +205,9 @@ def test_map_annotated_to_annot(
     # test all mappings are correct
     if all([annot.notated_path for annot in annot_list]):
         for source_path, annot in list(annotated_annot_map.items()):
-            assert vak.annotation.audio_filename_from_path(
+            assert vak.common.annotation.audio_filename_from_path(
                 annot.notated_path
-            ) == vak.annotation.audio_filename_from_path(source_path)
+            ) == vak.common.annotation.audio_filename_from_path(source_path)
     else:
         if annot_format == 'simple-seq':
             ext = '.csv'
@@ -268,10 +268,10 @@ def test_map_annotated_to_annot(
     ]
 )
 def test_has_unlabeled(annot, duration, expected_result):
-    """Test ``vak.annotation.has_unlabeled``,
+    """Test ``vak.common.annotation.has_unlabeled``,
     including edge cases as discussed in https://github.com/vocalpy/vak/issues/243
     """
-    has_unlabeled = vak.annotation.has_unlabeled(annot, duration)
+    has_unlabeled = vak.common.annotation.has_unlabeled(annot, duration)
     assert has_unlabeled == expected_result
 
 
@@ -285,4 +285,4 @@ def test_has_unlabeled_annotation_with_no_segments(annotated_annot_no_segments):
     scribe = crowsetta.Transcriber(format='notmat')
     annot = scribe.from_file(annot_path).to_annot()
 
-    assert vak.annotation.has_unlabeled(annot, dur) is True
+    assert vak.common.annotation.has_unlabeled(annot, dur) is True

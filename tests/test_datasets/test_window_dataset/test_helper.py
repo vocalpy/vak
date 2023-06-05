@@ -32,7 +32,7 @@ def test_crop_vectors_keep_classes(config_type, model_name, audio_format, spect_
     df_split = df[df.split == 'train']
 
     # stuff we need just to be able to instantiate window dataset
-    labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
+    labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     timebin_dur = vak.prep.prep_helper.validate_and_get_timebin_dur(df)
 
@@ -106,7 +106,7 @@ def test__vectors_from_df(config_type, model_name, audio_format, spect_format, a
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     # stuff we need just to be able to instantiate window dataset
-    labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
+    labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
     dataset_path = cmd_cfg.dataset_path
@@ -170,7 +170,7 @@ def test_vectors_from_df(config_type, model_name, audio_format, spect_format, an
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     # stuff we need just to be able to instantiate window dataset
-    labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
+    labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
     cmd_cfg = getattr(cfg, config_type)  # "command config", i.e., cli command, [TRAIN] or [LEARNCURVE] section
     dataset_path = cmd_cfg.dataset_path

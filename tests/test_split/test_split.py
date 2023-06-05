@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import vak.io.spect
-import vak.annotation
+import vak.common.annotation
 import vak.split.split
 
 

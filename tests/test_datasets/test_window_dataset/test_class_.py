@@ -32,7 +32,7 @@ class TestWindowDataset:
         cfg_command = getattr(cfg, config_type)
 
         # stuff we need just to be able to instantiate window dataset
-        labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
         transform, target_transform = vak.transforms.get_defaults('train')
 

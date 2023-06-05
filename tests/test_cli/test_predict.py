@@ -4,8 +4,8 @@ import pytest
 
 import vak.cli.predict
 import vak.config
-import vak.constants
-import vak.paths
+import vak.common.constants
+import vak.common.paths
 
 from . import cli_asserts
 

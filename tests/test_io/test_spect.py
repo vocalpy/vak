@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import vak.io.spect
-import vak.files.spect
+import vak.common.files.spect
 
 
 def expected_spect_paths_in_dataframe(

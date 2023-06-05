@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import vak.config
-import vak.constants
+import vak.common.constants
 import vak.predict
 
 
@@ -77,7 +77,7 @@ def test_predict(
     assert_predict_output_matches_expected(output_dir, cfg.predict.annot_csv_filename)
     if save_net_outputs:
         net_outputs = sorted(
-            Path(output_dir).glob(f"*{vak.constants.NET_OUTPUT_SUFFIX}")
+            Path(output_dir).glob(f"*{vak.common.constants.NET_OUTPUT_SUFFIX}")
         )
 
         metadata = vak.datasets.metadata.Metadata.from_dataset_path(cfg.predict.dataset_path)

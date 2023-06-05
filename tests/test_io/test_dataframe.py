@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pandas as pd
 
-import vak.annotation
-import vak.constants
+import vak.common.annotation
+import vak.common.constants
 import vak.io.audio
 import vak.io.dataframe
 import vak.io.spect
@@ -38,10 +38,10 @@ def returned_dataframe_matches_expected(
     if annot_format is not None:
         # test format from dataframe is specified format
         assert annot_format_from_df == annot_format
-        annot_list = vak.annotation.from_df(df_returned)
+        annot_list = vak.common.annotation.from_df(df_returned)
     else:
         # if no annotation format specified, check that `annot_format` is `none`
-        assert annot_format_from_df == vak.constants.NO_ANNOTATION_FORMAT
+        assert annot_format_from_df == vak.common.constants.NO_ANNOTATION_FORMAT
         annot_list = None
 
     if annot_file:
@@ -129,7 +129,7 @@ def spect_files_have_correct_keys(df_returned,
                                   spect_params):
     spect_paths_from_df = [Path(spect_path) for spect_path in df_returned.spect_path]
     for spect_path in spect_paths_from_df:
-        spect_dict = vak.files.spect.load(spect_path)
+        spect_dict = vak.common.files.spect.load(spect_path)
         for key_type in ['freqbins_key', 'timebins_key', 'spect_key', 'audio_path_key']:
             if key_type in spect_params:
                 key = spect_params[key_type]

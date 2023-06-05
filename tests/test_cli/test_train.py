@@ -4,8 +4,8 @@ from unittest import mock
 import pytest
 
 import vak.config
-import vak.constants
-import vak.paths
+import vak.common.constants
+import vak.common.paths
 import vak.cli.train
 
 from . import cli_asserts
@@ -47,7 +47,7 @@ def test_train(
         vak.cli.train.train(toml_path)
         assert mock_core_train.called
 
-    results_path = sorted(root_results_dir.glob(f"{vak.constants.RESULTS_DIR_PREFIX}*"))
+    results_path = sorted(root_results_dir.glob(f"{vak.common.constants.RESULTS_DIR_PREFIX}*"))
     assert len(results_path) == 1
     results_path = results_path[0]
     assert cli_asserts.toml_config_file_copied_to_results_path(results_path, toml_path)

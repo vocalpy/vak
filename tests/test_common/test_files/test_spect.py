@@ -1,11 +1,11 @@
-"""tests for vak.files.spect module"""
+"""tests for vak.common.files.spect module"""
 import itertools
 import pathlib
 
 import pytest
 
-import vak.files
-from vak.constants import VALID_AUDIO_FORMATS
+import vak.common.files
+from vak.common.constants import VALID_AUDIO_FORMATS
 
 
 from ..fixtures.spect import (
@@ -67,10 +67,10 @@ TEST_FIND_AUDIO_FNAME_PARAMETRIZE = SPECT_LIST_MAT_WITH_EXT + SPECT_LIST_NPZ_WIT
     TEST_FIND_AUDIO_FNAME_PARAMETRIZE
 )
 def test_find_audio_fname_with_mat(spect_path, audio_ext, spect_ext):
-    """test ```vak.files.spect.find_audio_fname`` works when we give it a list of """
+    """test ```vak.common.files.spect.find_audio_fname`` works when we give it a list of """
     expected = pathlib.Path(spect_path).name.replace(spect_ext, '')
 
-    out = vak.files.spect.find_audio_fname(spect_path, audio_ext)
+    out = vak.common.files.spect.find_audio_fname(spect_path, audio_ext)
 
     # make sure we gout out a filename that was actually in spect_path
     assert pathlib.Path(spect_path).name.startswith(out)

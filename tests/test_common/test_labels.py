@@ -4,8 +4,8 @@ import pathlib
 import numpy as np
 import pytest
 
-import vak.files.spect
-import vak.labels
+import vak.common.files.spect
+import vak.common.labels
 
 
 @pytest.mark.parametrize(
@@ -30,7 +30,7 @@ import vak.labels
     ]
 )
 def test_to_map(labelset, map_unlabeled):
-    labelmap = vak.labels.to_map(labelset, map_unlabeled=map_unlabeled)
+    labelmap = vak.common.labels.to_map(labelset, map_unlabeled=map_unlabeled)
     assert isinstance(labelmap, dict)
     if map_unlabeled:
         # because map_unlabeled=True
@@ -53,7 +53,7 @@ def test_to_map(labelset, map_unlabeled):
     ]
 )
 def test_to_set(labels_list, expected_labelset):
-    labelset = vak.labels.to_set(labels_list)
+    labelset = vak.common.labels.to_set(labels_list)
     assert isinstance(labelset, set)
     assert labelset == expected_labelset
 
@@ -70,7 +70,7 @@ def test_from_df(config_type, model_name, audio_format, spect_format, annot_form
     df = specific_dataset_df(config_type, model_name, annot_format, audio_format, spect_format)
     dataset_path = specific_dataset_path(config_type, model_name, annot_format, audio_format, spect_format)
 
-    out = vak.labels.from_df(df, dataset_path)
+    out = vak.common.labels.from_df(df, dataset_path)
     assert isinstance(out, list)
     assert all([isinstance(labels, np.ndarray) for labels in out])
 
@@ -94,10 +94,10 @@ DEFAULT_SKIP = ('unlabeled',)
 )
 def test_multi_char_labels_to_single_char(labelmap, skip):
     if skip:
-        out = vak.labels.multi_char_labels_to_single_char(labelmap, skip)
+        out = vak.common.labels.multi_char_labels_to_single_char(labelmap, skip)
     else:
         # test default skip
-        out = vak.labels.multi_char_labels_to_single_char(labelmap)
+        out = vak.common.labels.multi_char_labels_to_single_char(labelmap)
 
     if skip:
         for skiplabel in skip:
