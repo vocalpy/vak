@@ -100,7 +100,7 @@ def test_add_split_col(audio_dir_cbin,
     """test that ``add_split_col`` adds a 'split' column
     to a DataFrame, where all values in the Series are the
     specified split (a string)"""
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=audio_dir_cbin,
         labelset=labelset_notmat,
         annot_format="notmat",
