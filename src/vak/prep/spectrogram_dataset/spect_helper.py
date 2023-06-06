@@ -6,7 +6,6 @@ the returned DataFrame has columns as specified by vak.io.spect.DF_COLUMNS
 from __future__ import annotations
 
 import logging
-import os
 import pathlib
 
 import dask.bag as db
@@ -14,9 +13,9 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
-from ..common import constants, files
-from ..common.annotation import map_annotated_to_annot
-from ..common.converters import labelset_to_set
+from ...common import constants, files
+from ...common.annotation import map_annotated_to_annot
+from ...common.converters import labelset_to_set
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ DF_COLUMNS = [
 ]
 
 
-def to_dataframe(
+def make_dataframe_of_spect_files(
     spect_format: str,
     spect_dir: str | pathlib.Path | None = None,
     spect_files: list | None = None,
@@ -48,7 +47,8 @@ def to_dataframe(
     spect_key: str = "s",
     audio_path_key: str = "audio_path",
 ):
-    """convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
+    """Convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
+
     Spectrogram files are array in .npz files created by numpy or in .mat files created by Matlab.
 
     Parameters

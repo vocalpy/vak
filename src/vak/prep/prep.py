@@ -7,6 +7,7 @@ import crowsetta.formats.seq
 
 from . import prep_helper
 from .learncurve import make_learncurve_splits_from_dataset_df
+from .spectrogram_dataset.prep import prep_spectrogram_dataset
 
 from .. import datasets, split
 from ..common import labels
@@ -14,7 +15,7 @@ from ..common.converters import expanded_user_path, labelset_to_set
 from ..common.logging import config_logging_for_cli, log_version
 from ..common.timenow import get_timenow_as_str
 from ..datasets.metadata import Metadata
-from ..io import dataframe
+
 
 
 __all__ = [
@@ -200,7 +201,7 @@ def prep(
         if labelset is not None:
             warnings.warn(
                 ".toml config file has a 'predict' section, but a labelset was provided."
-                "This would cause an error because the dataframe.from_files section will attempt to "
+                "This would cause an error because the prep_spectrogram_dataset section will attempt to "
                 f"check whether the files in the data_dir ({data_dir}) have labels in "
                 "labelset, even though those files don't have annotation.\n"
                 "Setting labelset to None."
@@ -245,7 +246,7 @@ def prep(
         ]
         generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
         generic_seq.to_file(annot_file)
-        # and we now change `annot_format` as well. Both these will get passed to io.dataframe.from_files
+        # and we now change `annot_format` as well. Both these will get passed to io.prep_spectrogram_dataset
         annot_format = 'generic-seq'
 
     # NOTE we set up logging here (instead of cli) so the prep log is included in the dataset
@@ -263,7 +264,7 @@ def prep(
     )
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    dataset_df = dataframe.from_files(
+    dataset_df = prep_spectrogram_dataset(
         labelset=labelset,
         data_dir=data_dir,
         annot_format=annot_format,
@@ -277,7 +278,8 @@ def prep(
 
     if dataset_df.empty:
         raise ValueError(
-            "Calling `vak.io.dataframe.from_files` with arguments passed to `vak.core.prep` "
+            "Calling `vak.prep.spectrogram_dataset.prep_spectrogram_dataset` "
+            "with arguments passed to `vak.core.prep` "
             "returned an empty dataframe.\n"
             "Please double-check arguments to `vak.core.prep` function."
         )

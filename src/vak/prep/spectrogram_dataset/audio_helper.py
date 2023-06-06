@@ -7,14 +7,14 @@ import numpy as np
 import dask.bag as db
 from dask.diagnostics import ProgressBar
 
-from .. import (
+from ... import (
     config,
 )
-from ..common import constants, files
-from ..common.annotation import map_annotated_to_annot
-from ..common.converters import labelset_to_set
-from ..config.spect_params import SpectParamsConfig
-from ..spect import spectrogram
+from ...common import constants, files
+from ...common.annotation import map_annotated_to_annot
+from ...common.converters import labelset_to_set
+from ...config.spect_params import SpectParamsConfig
+from .spect import spectrogram
 
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ def files_from_dir(audio_dir, audio_format):
     return audio_files
 
 
-def to_spect(
+def make_spectrogram_files_from_audio_files(
     audio_format: str,
     spect_params: dict | config.spect_params.SpectParamsConfig,
     output_dir: str,
@@ -55,7 +55,7 @@ def to_spect(
     labelset: str | list | None = None,
     dask_bag_kwargs: dict | None = None,
 ):
-    """makes spectrograms from audio files and saves in array files
+    """Make spectrograms from audio files and save them in npz array files.
 
     Parameters
     ----------

@@ -6,19 +6,18 @@ import pathlib
 
 import attrs
 import crowsetta
-import numpy as np
 import pandas as pd
 
-from . import audio, spect
-from ..config.spect_params import SpectParamsConfig
-from ..common import annotation
-from ..common.converters import expanded_user_path, labelset_to_set
+from . import audio_helper, spect_helper
+from ...config.spect_params import SpectParamsConfig
+from ...common import annotation
+from ...common.converters import expanded_user_path, labelset_to_set
 
 
 logger = logging.getLogger(__name__)
 
 
-def from_files(
+def prep_spectrogram_dataset(
     data_dir: str | pathlib.Path,
     annot_format: str | None = None,
     labelset: set | None = None,
@@ -29,8 +28,8 @@ def from_files(
     spect_output_dir: str | pathlib.Path | None = None,
     audio_dask_bag_kwargs: dict | None = None,
 ) -> pd.DataFrame:
-    """create a pandas DataFrame representing a dataset for machine learning
-    from a set of files in a directory
+    """Make a dataset of spectrograms,
+    optionally paired with annotations.
 
     Prepares dataset of vocalizations from a directory of audio or spectrogram files,
     and (optionally) annotation for those files. The dataset is returned as a pandas DataFrame.
@@ -137,14 +136,14 @@ def from_files(
         logger.info(
             f"making array files containing spectrograms from audio files in: {data_dir}",
         )
-        audio_files = audio.files_from_dir(data_dir, audio_format)
+        audio_files = audio_helper.files_from_dir(data_dir, audio_format)
 
         timenow = datetime.now().strftime("%y%m%d_%H%M%S")
         spect_dirname = f"spectrograms_generated_{timenow}"
         spect_output_dir = spect_output_dir.joinpath(spect_dirname)
         spect_output_dir.mkdir()
 
-        spect_files = audio.to_spect(
+        spect_files = audio_helper.make_spectrogram_files_from_audio_files(
             audio_format=audio_format,
             spect_params=spect_params,
             output_dir=spect_output_dir,
@@ -160,7 +159,7 @@ def from_files(
         spect_files = None
         spect_ext = None
 
-    to_dataframe_kwargs = {
+    make_dataframe_kwargs = {
         "spect_format": spect_format,
         "labelset": labelset,
         "annot_list": annot_list,
@@ -169,12 +168,12 @@ def from_files(
     }
 
     if spect_files:  # because we just made them, and put them in spect_output_dir
-        to_dataframe_kwargs["spect_files"] = spect_files
+        make_dataframe_kwargs["spect_files"] = spect_files
         logger.info(
             f"creating dataset from spectrogram files in: {spect_output_dir}",
         )
     else:
-        to_dataframe_kwargs["spect_dir"] = data_dir
+        make_dataframe_kwargs["spect_dir"] = data_dir
         logger.info(
             f"creating dataset from spectrogram files in: {data_dir}",
         )
@@ -183,9 +182,9 @@ def from_files(
         if isinstance(spect_params, SpectParamsConfig):
             spect_params = attrs.asdict(spect_params)
         for key in ['freqbins_key', 'timebins_key', 'spect_key', 'audio_path_key']:
-            to_dataframe_kwargs[key] = spect_params[key]
+            make_dataframe_kwargs[key] = spect_params[key]
 
-    dataset_df = spect.to_dataframe(**to_dataframe_kwargs)
+    dataset_df = spect_helper.make_dataframe_of_spect_files(**make_dataframe_kwargs)
     return dataset_df
 
 
