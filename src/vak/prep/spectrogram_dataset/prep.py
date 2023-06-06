@@ -186,8 +186,3 @@ def prep_spectrogram_dataset(
 
     dataset_df = spect_helper.make_dataframe_of_spect_files(**make_dataframe_kwargs)
     return dataset_df
-
-
-def split_dur(df, split):
-    """get duration of a split in the dataset"""
-    return df[df["split"] == split]["duration"].sum()

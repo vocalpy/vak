@@ -18,7 +18,6 @@ from ..common import validators
 from ..datasets.window_dataset import WindowDataset
 from ..datasets.vocal_dataset import VocalDataset
 from ..common.device import get_default as get_default_device
-from ..io import dataframe
 from ..common.paths import generate_results_dir_name_as_path
 from ..common.trainer import get_default_trainer
 
@@ -29,6 +28,11 @@ __all__ = [
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_split_dur(df: pd.DataFrame, split: str) -> float:
+    """Get duration of a split in a dataset from a pandas DataFrame representing the dataset."""
+    return df[df["split"] == split]["duration"].sum()
 
 
 def train(
@@ -224,7 +228,7 @@ def train(
     # we need to include a class for those unlabeled segments in labelmap,
     # the mapping from labelset provided by user to a set of consecutive
     # integers that the network learns to predict
-    train_dur = dataframe.split_dur(dataset_df, "train")
+    train_dur = get_split_dur(dataset_df, "train")
     logger.info(
         f"Total duration of training split from dataset (in s): {train_dur}",
     )
@@ -312,7 +316,7 @@ def train(
             batch_size=1,
             num_workers=num_workers,
         )
-        val_dur = dataframe.split_dur(dataset_df, "val")
+        val_dur = get_split_dur(dataset_df, "val")
         logger.info(
             f"Total duration of validation split from dataset (in s): {val_dur}",
         )
