@@ -5,11 +5,11 @@ import warnings
 
 import crowsetta.formats.seq
 
-from . import prep_helper
+from . import prep_helper, split
 from .learncurve import make_learncurve_splits_from_dataset_df
 from .spectrogram_dataset.prep import prep_spectrogram_dataset
 
-from .. import datasets, split
+from .. import datasets
 from ..common import labels
 from ..common.converters import expanded_user_path, labelset_to_set
 from ..common.logging import config_logging_for_cli, log_version

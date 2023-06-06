@@ -26,7 +26,6 @@ from . import (
     plot,
     predict,
     prep,
-    split,
     train,
     transforms,
 )
@@ -45,7 +44,6 @@ __all__ = [
     "plot",
     "predict",
     "prep",
-    "split",
     "train",
     "transforms",
 ]
