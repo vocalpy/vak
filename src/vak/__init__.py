@@ -15,7 +15,6 @@ from . import (
     cli,
     common,
     config,
-    curvefit,
     datasets,
     eval,
     learncurve,
