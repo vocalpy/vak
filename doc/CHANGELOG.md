@@ -47,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the results directory
   [#658](https://github.com/NickleDave/vak/pull/658).
   Fixes [#651](https://github.com/NickleDave/vak/issues/651).
+- Refactor API so it's more clear what the top-level "public" API should be, 
+  and to clean up spaghetti code that slows down adding new functionality. 
+  Move functions from core up to top-level: eval, learncurve, predict, prep, train.
+  Move `vak.io` into prep, rename `prep_spectrogram_dataset`. Also move `vak.spect` in there.
+  Move `vak.split` into `vak.prep` since that's the only place it's used.
+  Make various other minor clean-ups.
+  [#666](https://github.com/NickleDave/vak/pull/666).
+  Fixes [#663](https://github.com/NickleDave/vak/issues/663).
 
 ### Removed
 - Remove entry points since they are not being used
