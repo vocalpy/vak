@@ -92,7 +92,7 @@ class TestWindowedFrameClassificationModel:
         cfg = vak.config.parse.from_toml_path(toml_path)
 
         # stuff we need just to be able to instantiate network
-        labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
         monkeypatch.setattr(
             vak.models.WindowedFrameClassificationModel, 'definition', definition, raising=False

@@ -3,10 +3,11 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-from .. import files
-from ..validators import column_or_1d
+from ..common import files
+from ..common.validators import column_or_1d
 
 from . import functional as F
+
 
 __all__ = [
     "AddChannel",

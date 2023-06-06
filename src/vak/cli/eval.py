@@ -1,11 +1,9 @@
 import logging
 from pathlib import Path
 
-from .. import (
-    config,
-    core,
-)
-from ..logging import config_logging_for_cli, log_version
+from .. import config
+from .. import eval as eval_module
+from ..common.logging import config_logging_for_cli, log_version
 
 
 logger = logging.getLogger(__name__)
@@ -53,7 +51,7 @@ def eval(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    core.eval.eval(
+    eval_module.eval(
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.eval.dataset_path,

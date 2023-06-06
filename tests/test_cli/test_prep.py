@@ -1,18 +1,12 @@
 """tests for vak.cli.prep module"""
 from unittest import mock
 
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
 import vak.config
-import vak.constants
-import vak.core.train
-import vak.paths
-import vak.io.spect
-
-from . import cli_asserts
+import vak.common.constants
+import vak.common.paths
 
 
 @pytest.mark.parametrize(
@@ -92,7 +86,7 @@ def test_prep(
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.prep.prep', autospec=True) as mock_core_prep:
+    with mock.patch('vak.prep.prep', autospec=True) as mock_core_prep:
         mock_core_prep.return_value = (pd.DataFrame(), dummy_tmpfile_csv.name)
         vak.cli.prep.prep(toml_path)
         assert mock_core_prep.called

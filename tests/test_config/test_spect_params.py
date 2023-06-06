@@ -2,7 +2,6 @@
 import pytest
 
 import vak.config.spect_params
-import vak.split
 
 from .attr_helpers import simple_attr
 

@@ -6,10 +6,8 @@ import warnings
 
 import toml
 
-from .. import (
-    config,
-    core
-)
+from .. import config
+from .. import prep as prep_module
 from ..config.parse import _load_toml_from_path
 from ..config.validators import are_sections_valid
 
@@ -115,7 +113,7 @@ def prep(toml_path):
 
     section = purpose.upper()
 
-    dataset_df, dataset_path = core.prep.prep(
+    dataset_df, dataset_path = prep_module.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,

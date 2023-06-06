@@ -1,9 +1,9 @@
-"""fixtures used to test the vak.split sub-package"""
+"""fixtures used to test the vak.prep.split sub-package"""
 from evfuncs import load_cbin
 from scipy.io import loadmat
 import pytest
 
-from vak.timebins import timebin_dur_from_vec
+from vak.common.timebins import timebin_dur_from_vec
 
 
 @pytest.fixture

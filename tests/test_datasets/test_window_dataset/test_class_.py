@@ -18,9 +18,9 @@ class TestWindowDataset:
         """Test we can get a WindowDataset instance from the classmethod ``from_csv``
 
         This is the way we make ``WindowDataset`` instances
-        inside ``vak.core.train``,
+        inside ``vak.train``,
         as opposed to when we *also* pass in vectors representing the windows,
-        which we do in ``vak.core.learncurve.learning_curve``,
+        which we do in ``vak.learncurve.learning_curve``,
         see next test method.
         """
         toml_path = specific_config(config_type,
@@ -32,7 +32,7 @@ class TestWindowDataset:
         cfg_command = getattr(cfg, config_type)
 
         # stuff we need just to be able to instantiate window dataset
-        labelmap = vak.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
         transform, target_transform = vak.transforms.get_defaults('train')
 
@@ -57,7 +57,7 @@ class TestWindowDataset:
         when we pass in vectors representing windows.
 
         This is the way we make ``WindowDataset`` instances
-        inside ``vak.core.learncurve.learning_curve``.
+        inside ``vak.learncurve.learning_curve``.
 
         We get the vectors "by hand" inside the ``learning_curve``
         function, and then feed them in to the ``from_csv``

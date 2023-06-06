@@ -28,8 +28,8 @@ import itertools
 import numpy as np
 import pytest
 
-import vak.files.spect
-import vak.labels
+import vak.common.files.spect
+import vak.common.labels
 import vak.transforms.labeled_timebins
 
 
@@ -69,10 +69,10 @@ FROM_SEGMENTS_PARAMETRIZE_ARGVALS = list(zip(
     FROM_SEGMENTS_PARAMETRIZE_ARGVALS,
 )
 def test_from_segments(annot, spect_path, labelset):
-    labelset = vak.converters.labelset_to_set(labelset)
-    labelmap = vak.labels.to_map(labelset, True)
+    labelset = vak.common.converters.labelset_to_set(labelset)
+    labelmap = vak.common.labels.to_map(labelset, True)
 
-    spect_dict = vak.files.spect.load(spect_path)
+    spect_dict = vak.common.files.spect.load(spect_path)
     timebins = spect_dict['t']
 
     try:
@@ -108,7 +108,7 @@ def test_to_labels(lbl_tb, labelmap, labels_expected_int):
     # next line, convert all labels to single characters
     # we can easily compare strings we get back with expected;
     # this is what core.eval does
-    labelmap = vak.labels.multi_char_labels_to_single_char(
+    labelmap = vak.common.labels.multi_char_labels_to_single_char(
         labelmap, skip=('unlabeled',)
     )
     labelmap_inv = {v: k for k, v in labelmap.items()}
@@ -144,12 +144,12 @@ def test_to_labels_real_data(
         annot, spect_path, labelset
 ):
     """test that ``to_labels_with_postprocessing`` recovers labels from real data"""
-    labelset = vak.converters.labelset_to_set(labelset)
-    labelmap = vak.labels.to_map(labelset)
+    labelset = vak.common.converters.labelset_to_set(labelset)
+    labelmap = vak.common.labels.to_map(labelset)
     # next line, convert all labels to single characters
     # we can easily compare strings we get back with expected;
     # this is what core.eval does
-    labelmap = vak.labels.multi_char_labels_to_single_char(
+    labelmap = vak.common.labels.multi_char_labels_to_single_char(
         labelmap, skip=('unlabeled',)
     )
     TIMEBINS_KEY = "t"
@@ -170,7 +170,7 @@ def test_to_labels_real_data(
             'Annotation with label not in labelset, would not include in dataset'
         )
 
-    timebins = vak.files.spect.load(spect_path)[TIMEBINS_KEY]
+    timebins = vak.common.files.spect.load(spect_path)[TIMEBINS_KEY]
 
     lbl_tb = vak.transforms.labeled_timebins.from_segments(
         lbls_int,
@@ -204,8 +204,8 @@ def test_to_segments_real_data(
         annot, spect_path, labelset
 ):
     """test that ``to_segments`` recovers onsets, offsets, and labels from real data"""
-    labelset = vak.converters.labelset_to_set(labelset)
-    labelmap = vak.labels.to_map(labelset)
+    labelset = vak.common.converters.labelset_to_set(labelset)
+    labelmap = vak.common.labels.to_map(labelset)
 
     TIMEBINS_KEY = "t"
 
@@ -222,7 +222,7 @@ def test_to_segments_real_data(
             'Annotation with label not in labelset, would not include in dataset'
         )
 
-    timebins = vak.files.spect.load(spect_path)[TIMEBINS_KEY]
+    timebins = vak.common.files.spect.load(spect_path)[TIMEBINS_KEY]
 
     lbl_tb = vak.transforms.labeled_timebins.from_segments(
         lbls_int,

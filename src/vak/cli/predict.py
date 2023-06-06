@@ -1,11 +1,9 @@
 import logging
 from pathlib import Path
 
-from .. import (
-    config,
-    core
-)
-from ..logging import config_logging_for_cli, log_version
+from .. import config
+from .. import predict as predict_module
+from ..common.logging import config_logging_for_cli, log_version
 
 
 logger = logging.getLogger(__name__)
@@ -48,7 +46,7 @@ def predict(toml_path):
             f"please run the following command:\n'vak prep {toml_path}'"
         )
 
-    core.predict.predict(
+    predict_module.predict(
         model_name=model_name,
         model_config=model_config,
         dataset_path=cfg.predict.dataset_path,

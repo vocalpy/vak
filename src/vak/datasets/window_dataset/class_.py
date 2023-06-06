@@ -10,10 +10,10 @@ import pandas as pd
 import torch
 from torchvision.datasets.vision import VisionDataset
 
-from ... import (
+from ... import transforms
+from ...common import (
     annotation,
     files,
-    transforms,
     validators
 )
 from ..metadata import Metadata

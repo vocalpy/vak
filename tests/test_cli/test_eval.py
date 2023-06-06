@@ -5,8 +5,8 @@ import pytest
 
 import vak.cli.eval
 import vak.config
-import vak.constants
-import vak.paths
+import vak.common.constants
+import vak.common.paths
 
 from . import cli_asserts
 
@@ -39,7 +39,7 @@ def test_eval(
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.eval.eval', autospec=True) as mock_core_eval:
+    with mock.patch('vak.eval.eval', autospec=True) as mock_core_eval:
         vak.cli.eval.eval(toml_path)
         assert mock_core_eval.called
 

@@ -3,7 +3,7 @@ import pytest
 
 import vak.transforms
 import vak.transforms.functional
-import vak.validators
+import vak.common.validators
 
 
 class TestStandardizeSpect:
@@ -74,19 +74,19 @@ class TestStandardizeSpect:
         # ---- set up
         df_split = train_cbin_notmat_df[train_cbin_notmat_df.split == split_to_test].copy()
         spect_paths = df_split['spect_path'].values
-        spect = vak.files.spect.load(dataset_path / spect_paths[0])['s']
+        spect = vak.common.files.spect.load(dataset_path / spect_paths[0])['s']
         mean_freqs = np.mean(spect, axis=1)
         std_freqs = np.std(spect, axis=1)
 
         for spect_path in spect_paths[1:]:
-            spect = vak.files.spect.load(dataset_path / spect_path)['s']
+            spect = vak.common.files.spect.load(dataset_path / spect_path)['s']
             mean_freqs += np.mean(spect, axis=1)
             std_freqs += np.std(spect, axis=1)
         expected_mean_freqs = mean_freqs / len(spect_paths)
         expected_std_freqs = std_freqs / len(spect_paths)
         expected_non_zero_std = np.argwhere(expected_std_freqs != 0)
         # we convert to 1d vector in __init__
-        expected_non_zero_std = vak.validators.column_or_1d(expected_non_zero_std)
+        expected_non_zero_std = vak.common.validators.column_or_1d(expected_non_zero_std)
 
         # ---- actually do fit
         if split:
@@ -116,7 +116,7 @@ class TestStandardizeSpect:
         expected_std_freqs = np.std(spect, axis=1)
         expected_non_zero_std = np.argwhere(expected_std_freqs != 0)
         # we convert to 1d vector in __init__
-        expected_non_zero_std = vak.validators.column_or_1d(expected_non_zero_std)
+        expected_non_zero_std = vak.common.validators.column_or_1d(expected_non_zero_std)
 
         for attr_name, expected in zip(
                 ('mean_freqs', 'std_freqs', 'non_zero_std',),

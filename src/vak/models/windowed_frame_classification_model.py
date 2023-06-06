@@ -11,10 +11,8 @@ import torch
 
 from . import base
 from .definition import ModelDefinition
-from .. import (
-    labels,
-    transforms
-)
+from .. import transforms
+from ..common import labels
 
 
 logger = logging.getLogger(__name__)

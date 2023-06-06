@@ -193,7 +193,7 @@ class TestModel:
         # stuff we need just to be able to instantiate network
         metadata = vak.datasets.metadata.Metadata.from_dataset_path(train_cfg.train.dataset_path)
         dataset_csv_path = train_cfg.train.dataset_path / metadata.dataset_csv_filename
-        labelmap = vak.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
         transform, target_transform = vak.transforms.get_defaults("train")
         train_dataset = vak.datasets.WindowDataset.from_csv(
             dataset_csv_path=dataset_csv_path,

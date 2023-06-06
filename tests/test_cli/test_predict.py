@@ -4,8 +4,8 @@ import pytest
 
 import vak.cli.predict
 import vak.config
-import vak.constants
-import vak.paths
+import vak.common.constants
+import vak.common.paths
 
 from . import cli_asserts
 
@@ -38,7 +38,7 @@ def test_predict(
         options_to_change=options_to_change,
     )
 
-    with mock.patch('vak.core.predict.predict', autospec=True) as mock_core_predict:
+    with mock.patch('vak.predict.predict', autospec=True) as mock_core_predict:
         vak.cli.predict.predict(toml_path)
         assert mock_core_predict.called
 

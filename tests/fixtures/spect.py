@@ -1,7 +1,7 @@
 """fixtures relating to array files containing spectrograms"""
 import pytest
 
-import vak.files.spect
+import vak.common.files.spect
 
 from .test_data import GENERATED_TEST_DATA_ROOT, SOURCE_TEST_DATA_ROOT
 
@@ -65,7 +65,7 @@ def spect_list_mat_all_labels_in_labelset(
     labelset_yarden = set(labelset_yarden)
     spect_list_labels_in_labelset = []
     for spect_path in spect_list_mat:
-        audio_fname = vak.files.spect.find_audio_fname(spect_path)
+        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
         annot = [
             annot for annot in annot_list_yarden if annot.notated_path.name == audio_fname
         ]
@@ -85,7 +85,7 @@ def spect_list_npz_all_labels_in_labelset(
     labelset_notmat = set(labelset_notmat)
     spect_list_labels_in_labelset = []
     for spect_path in spect_list_npz:
-        audio_fname = vak.files.spect.find_audio_fname(spect_path)
+        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
         annot = [
             annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
         ]
@@ -105,7 +105,7 @@ def spect_list_mat_labels_not_in_labelset(
     labelset_yarden = set(labelset_yarden)
     spect_list_labels_not_in_labelset = []
     for spect_path in spect_list_mat:
-        audio_fname = vak.files.spect.find_audio_fname(spect_path)
+        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
         annot = [
             annot for annot in annot_list_yarden if annot.notated_path.name == audio_fname
         ]
@@ -128,7 +128,7 @@ def spect_list_npz_labels_not_in_labelset(
     labelset_notmat = set(labelset_notmat)
     spect_list_labels_not_in_labelset = []
     for spect_path in spect_list_npz:
-        audio_fname = vak.files.spect.find_audio_fname(spect_path)
+        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
         annot = [
             annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
         ]

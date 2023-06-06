@@ -1,6 +1,5 @@
 """tests for vak.config.learncurve module"""
 import vak.config.learncurve
-import vak.split
 
 
 def test_learncurve_attrs_class(all_generated_learncurve_configs_toml):

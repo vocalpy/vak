@@ -1,6 +1,5 @@
 """tests for vak.config.predict module"""
 import vak.config.predict
-import vak.split
 
 
 def test_predict_attrs_class(all_generated_predict_configs_toml):

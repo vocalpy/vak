@@ -7,8 +7,7 @@ import crowsetta
 import numpy.typing as npt
 import pandas as pd
 
-from .. import annotation
-from .. import files
+from ..common import annotation, files
 from .. import transforms
 
 
