@@ -1,10 +1,10 @@
-"""tests for ``vak.io.audio`` module"""
+"""tests for ``vak.prep.spectrogram_dataset.audio_helper`` module"""
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-import vak.io.audio
+import vak.prep.spectrogram_dataset.audio_helper
 
 
 def expected_spect_files_returned(
@@ -13,7 +13,7 @@ def expected_spect_files_returned(
     source_audio_files_not_expected=None,
     spect_file_ext=".spect.npz",
 ):
-    """test that ``spect_files`` returned by ``vak.io.audio.to_spect`` matches
+    """test that ``spect_files`` returned by ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` matches
     an expected list of spectrogram files
 
     Parameters
@@ -67,7 +67,7 @@ def expected_spect_files_returned(
     return True  # if all asserts were True
 
 
-def test_to_spect_audio_dir_annot_cbin_with_labelset(
+def test_make_spectrogram_files_from_audio_files_audio_dir_annot_cbin_with_labelset(
     default_spect_params,
     tmp_path,
     audio_dir_cbin,
@@ -76,9 +76,9 @@ def test_to_spect_audio_dir_annot_cbin_with_labelset(
     audio_list_cbin_all_labels_in_labelset,
     audio_list_cbin_labels_not_in_labelset,
 ):
-    """test that ``vak.io.audio.to_spect`` works
+    """test that ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` works
     when we point it at directory of .cbin files + give it list of annotations"""
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         annot_format="notmat",
         spect_params=default_spect_params,
@@ -103,10 +103,10 @@ def test_audio_dir_annot_cbin_no_labelset(
     audio_list_cbin,
     annot_list_notmat,
 ):
-    """test that ``vak.io.audio.to_spect`` works
+    """test that ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` works
     when we point it at directory of .cbin files + give it list of annotations
     but do not specify a set of labels"""
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         annot_format="notmat",
         spect_params=default_spect_params,
@@ -126,13 +126,13 @@ def test_audio_dir_without_annot(
     audio_dir_cbin,
     audio_list_cbin,
 ):
-    """test that ``vak.io.audio.to_spect`` works
+    """test that ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` works
     when we point it at directory of .cbin files
     + give it list of annotations
     but do not specify a set of labels"""
     # make sure we can make a spectrograms from audio files without annotations,
     # e.g. if we're going to predict the annotations using the spectrograms
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         spect_params=default_spect_params,
         output_dir=tmp_path,
@@ -154,9 +154,9 @@ def test_audio_files_cbin_annot_notmat(
     audio_list_cbin_all_labels_in_labelset,
     audio_list_cbin_labels_not_in_labelset,
 ):
-    """test that ``vak.io.audio.to_spect`` works
+    """test that ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` works
     when we give it a list of .cbin files + give it list of annotations"""
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         annot_format="notmat",
         spect_params=default_spect_params,
@@ -180,11 +180,11 @@ def test_audio_files_annot_cbin_no_labelset(
     audio_list_cbin,
     annot_list_notmat,
 ):
-    """test that ``vak.io.audio.to_spect`` works
+    """test that ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` works
     when we give it a list of .cbin files
     + give it list of annotations
     but do not specify a set of labels"""
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         annot_format="notmat",
         spect_params=default_spect_params,
@@ -207,10 +207,10 @@ def test_audio_annot_map_cbin(
     audio_list_cbin_all_labels_in_labelset,
     audio_list_cbin_labels_not_in_labelset,
 ):
-    """test that ``vak.io.audio.to_spect`` works
+    """test that ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` works
     when we give it a dict that maps audio files to annotations"""
     audio_annot_map = dict(zip(audio_list_cbin, annot_list_notmat))
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         annot_format="notmat",
         spect_params=default_spect_params,
@@ -235,11 +235,11 @@ def test_audio_annot_map_cbin_no_labelset(
     annot_list_notmat,
     labelset_notmat,
 ):
-    """test that ``vak.io.audio.to_spect`` works
+    """test that ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` works
     when we give it a dict that maps audio files to annotations
     but do not give it a labelset to filter out files"""
     audio_annot_map = dict(zip(audio_list_cbin, annot_list_notmat))
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         annot_format="notmat",
         spect_params=default_spect_params,
@@ -261,12 +261,12 @@ def test_missing_inputs_raise(
     annot_list_notmat,
     labelset_notmat,
 ):
-    """test that calling ``vak.io.audio.to_spect`` without one of:
+    """test that calling ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` without one of:
     audio files, audio list, or audio files/annotations mapping
     raises a ValueError
     """
     with pytest.raises(ValueError):
-        vak.io.audio.to_spect(
+        vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
             audio_format="ape",
             annot_format="notmat",
             spect_params=default_spect_params,
@@ -287,10 +287,10 @@ def test_invalid_audio_format_raises(
     annot_list_notmat,
     labelset_notmat,
 ):
-    """test that calling ``vak.io.audio.to_spect`` with an invalid audio format
+    """test that calling ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files`` with an invalid audio format
     raises a ValueError"""
     with pytest.raises(ValueError):
-        vak.io.audio.to_spect(
+        vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
             audio_format="ape",
             annot_format="notmat",
             spect_params=default_spect_params,
@@ -311,11 +311,11 @@ def test_both_audio_dir_and_audio_files_raises(
     annot_list_notmat,
     labelset_notmat,
 ):
-    """ "test that calling ``vak.io.audio.to_spect``
+    """ "test that calling ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files``
     with both audio_dir and audio_files
     raises a ValueError"""
     with pytest.raises(ValueError):
-        vak.io.audio.to_spect(
+        vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
             audio_format="cbin",
             annot_format="notmat",
             spect_params=default_spect_params,
@@ -336,12 +336,12 @@ def test_both_audio_dir_and_audio_annot_map_raises(
     annot_list_notmat,
     labelset_notmat,
 ):
-    """ "test that calling ``vak.io.audio.to_spect``
+    """ "test that calling ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files``
     with both audio_dir and audio_annot_map
     raises a ValueError"""
     audio_annot_map = dict(zip(audio_list_cbin, annot_list_notmat))
     with pytest.raises(ValueError):
-        vak.io.audio.to_spect(
+        vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
             audio_format="cbin",
             annot_format="notmat",
             spect_params=default_spect_params,
@@ -362,12 +362,12 @@ def test_both_audio_list_and_audio_annot_map_raises(
     annot_list_notmat,
     labelset_notmat,
 ):
-    """ "test that calling ``vak.io.audio.to_spect``
+    """ "test that calling ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files``
     with both audio_files and audio_annot_map
     raises a ValueError"""
     audio_annot_map = dict(zip(audio_list_cbin, annot_list_notmat))
     with pytest.raises(ValueError):
-        vak.io.audio.to_spect(
+        vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
             audio_format="cbin",
             annot_format="notmat",
             spect_params=default_spect_params,
@@ -388,12 +388,12 @@ def test_both_annot_list_and_audio_annot_map_raises(
     annot_list_notmat,
     labelset_notmat,
 ):
-    """ "test that calling ``vak.io.audio.to_spect``
+    """ "test that calling ``vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files``
     with both audio_annot_map and annot_list
     raises a ValueError"""
     audio_annot_map = dict(zip(audio_list_cbin, annot_list_notmat))
     with pytest.raises(ValueError):
-        vak.io.audio.to_spect(
+        vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
             audio_format="cbin",
             annot_format="notmat",
             spect_params=default_spect_params,
@@ -427,9 +427,9 @@ def test_dask_bag_kwargs(
     """Test the ``dask_bag_kwargs`` parameter.
 
     This is a smoke test, it does not carefully test different parameters.
-    It's the test above ``test_to_spect_audio_dir_annot_cbin_with_labelset``
+    It's the test above ``test_make_spectrogram_files_from_audio_files_audio_dir_annot_cbin_with_labelset``
     with the parameter ``dask_bag_kwargs`` added."""
-    spect_files = vak.io.audio.to_spect(
+    spect_files = vak.prep.spectrogram_dataset.audio_helper.make_spectrogram_files_from_audio_files(
         audio_format="cbin",
         annot_format="notmat",
         spect_params=default_spect_params,

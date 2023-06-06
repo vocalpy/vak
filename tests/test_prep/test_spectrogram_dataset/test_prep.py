@@ -1,13 +1,12 @@
-"""tests for vak.io.dataframe module"""
+"""tests for vak.prep.spectrogram_dataset module"""
 from pathlib import Path
 
 import pandas as pd
 
 import vak.common.annotation
 import vak.common.constants
-import vak.io.audio
-import vak.io.dataframe
-import vak.io.spect
+import vak.prep.spectrogram_dataset.prep
+import vak.prep.spectrogram_dataset.spect_helper
 
 
 def returned_dataframe_matches_expected(
@@ -25,11 +24,11 @@ def returned_dataframe_matches_expected(
     expected_spect_paths=None,
     not_expected_spect_paths=None,
 ):
-    """tests that dataframe returned by ``vak.io.dataframe.from_files``
+    """tests that dataframe returned by ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset``
     matches expected dataframe."""
     assert isinstance(df_returned, pd.DataFrame)
 
-    assert df_returned.columns.values.tolist() == vak.io.spect.DF_COLUMNS
+    assert df_returned.columns.values.tolist() == vak.prep.spectrogram_dataset.spect_helper.DF_COLUMNS
 
     annot_format_from_df = df_returned.annot_format.unique()
     assert len(annot_format_from_df) == 1
@@ -142,7 +141,7 @@ def spect_files_have_correct_keys(df_returned,
     return True
 
 
-def test_from_files_with_audio_cbin_with_labelset(
+def test_prep_spectrogram_dataset_with_audio_cbin_with_labelset(
     audio_dir_cbin,
     default_spect_params,
     labelset_notmat,
@@ -152,10 +151,10 @@ def test_from_files_with_audio_cbin_with_labelset(
     spect_list_npz_labels_not_in_labelset,
     tmp_path,
 ):
-    """test that ``vak.io.dataframe.from_files`` works
+    """test that ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset`` works
     when we point it at directory of .cbin audio files
     and specify an annotation format"""
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=audio_dir_cbin,
         labelset=labelset_notmat,
         annot_format="notmat",
@@ -184,13 +183,13 @@ def test_from_files_with_audio_cbin_with_labelset(
     assert spect_files_have_correct_keys(vak_df, default_spect_params)
 
 
-def test_from_files_with_audio_cbin_no_annot(
+def test_prep_spectrogram_dataset_with_audio_cbin_no_annot(
     audio_dir_cbin, default_spect_params, labelset_notmat, audio_list_cbin, tmp_path
 ):
-    """test that ``vak.io.dataframe.from_files`` works
+    """test that ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset`` works
     when we point it at directory of .cbin audio files
     and  **do not** specify an annotation format"""
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=audio_dir_cbin,
         annot_format=None,
         labelset=None,
@@ -216,13 +215,13 @@ def test_from_files_with_audio_cbin_no_annot(
     assert spect_files_have_correct_keys(vak_df, default_spect_params)
 
 
-def test_from_files_with_audio_cbin_no_labelset(
+def test_prep_spectrogram_dataset_with_audio_cbin_no_labelset(
     audio_dir_cbin, default_spect_params, audio_list_cbin, tmp_path
 ):
-    """test that ``vak.io.dataframe.from_files`` works
+    """test that ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset`` works
     when we point it at directory of .cbin audio files
     and specify an annotation format"""
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=audio_dir_cbin,
         annot_format="notmat",
         labelset=None,
@@ -248,7 +247,7 @@ def test_from_files_with_audio_cbin_no_labelset(
     assert spect_files_have_correct_keys(vak_df, default_spect_params)
 
 
-def test_from_files_with_audio_cbin_non_default_spect_file_keys(
+def test_prep_spectrogram_dataset_with_audio_cbin_non_default_spect_file_keys(
     audio_dir_cbin,
     default_spect_params,
     labelset_notmat,
@@ -258,7 +257,7 @@ def test_from_files_with_audio_cbin_non_default_spect_file_keys(
     spect_list_npz_labels_not_in_labelset,
     tmp_path,
 ):
-    """test that ``vak.io.dataframe.from_files`` works
+    """test that ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset`` works
     when we specify different keys for accessing
     arrays in array files
     """
@@ -271,7 +270,7 @@ def test_from_files_with_audio_cbin_non_default_spect_file_keys(
             audio_path_key="audio_path"
         )
     )
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=audio_dir_cbin,
         labelset=labelset_notmat,
         annot_format="notmat",
@@ -300,7 +299,7 @@ def test_from_files_with_audio_cbin_non_default_spect_file_keys(
     assert spect_files_have_correct_keys(vak_df, spect_params)
 
 
-def test_from_files_with_spect_mat(
+def test_prep_spectrogram_dataset_with_spect_mat(
     spect_dir_mat,
     default_spect_params,
     labelset_yarden,
@@ -308,10 +307,10 @@ def test_from_files_with_spect_mat(
     spect_list_mat_all_labels_in_labelset,
     spect_list_mat_labels_not_in_labelset,
 ):
-    """test that ``vak.io.dataframe.from_files`` works
+    """test that ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset`` works
     when we point it at directory of .mat array files
     and specify an annotation format"""
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=spect_dir_mat,
         labelset=labelset_yarden,
         annot_format="yarden",
@@ -337,13 +336,13 @@ def test_from_files_with_spect_mat(
     assert spect_files_have_correct_keys(vak_df, default_spect_params)
 
 
-def test_from_files_with_spect_mat_no_annot(default_spect_params,
+def test_prep_spectrogram_dataset_with_spect_mat_no_annot(default_spect_params,
                                             spect_dir_mat,
                                             spect_list_mat):
-    """test that ``vak.io.dataframe.from_files`` works
+    """test that ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset`` works
     when we point it at directory of .mat array files
     and **do not** specify an annotation format"""
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=spect_dir_mat,
         labelset=None,
         annot_format=None,
@@ -368,18 +367,18 @@ def test_from_files_with_spect_mat_no_annot(default_spect_params,
     assert spect_files_have_correct_keys(vak_df, default_spect_params)
 
 
-def test_from_files_with_spect_mat_no_labelset(spect_dir_mat, 
+def test_prep_spectrogram_dataset_with_spect_mat_no_labelset(spect_dir_mat,
                                                default_spect_params,
                                                labelset_yarden,
                                                annot_file_yarden,
                                                annot_list_yarden,
                                                spect_list_mat
 ):
-    """test that ``vak.io.dataframe.from_files`` works
+    """test that ``vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset`` works
     when we point it at directory of .mat array files
     and specify an annotation format
     but do not specify a labelset"""
-    vak_df = vak.io.dataframe.from_files(
+    vak_df = vak.prep.spectrogram_dataset.prep.prep_spectrogram_dataset(
         data_dir=spect_dir_mat,
         labelset=None,
         annot_format="yarden",

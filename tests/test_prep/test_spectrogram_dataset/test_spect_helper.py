@@ -1,10 +1,10 @@
-"""tests for ``vak.io.spect`` module"""
+"""tests for ``vak.prep.spectrogram_dataset.spect_helper`` module"""
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-import vak.io.spect
+import vak.prep.spectrogram_dataset.spect_helper
 import vak.common.files.spect
 
 
@@ -19,7 +19,7 @@ def expected_spect_paths_in_dataframe(
     Parameters
     ----------
     dataset_df : pandas.Dataframe
-        created by vak.io.spect.to_dataframe
+        created by vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files
     expected_spect_paths : list
         of paths to spectrogram files, that **should** be in dataset_df.spect_path column
     not_expected_spect_paths : list
@@ -54,7 +54,7 @@ def expected_spect_paths_in_dataframe(
         ("npz", "notmat", ".spect.npz"),
     ],
 )
-def test_to_dataframe_spect_dir(
+def test_make_dataframe_of_spect_files_spect_dir(
     spect_format,
     annot_format,
     spect_ext,
@@ -63,13 +63,13 @@ def test_to_dataframe_spect_dir(
     specific_annot_list,
     specific_labelset,
 ):
-    """test that ``vak.io.spect.to_dataframe`` works
+    """test that ``vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files`` works
     when we point it at directory + give it list of annotations"""
     spect_dir = specific_spect_dir(spect_format)
     labelset = specific_labelset(annot_format)
     annot_list = specific_annot_list(annot_format)
 
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format=spect_format,
         spect_dir=spect_dir,
         labelset=labelset,
@@ -96,7 +96,7 @@ def test_to_dataframe_spect_dir(
         ("npz", "notmat", ".spect.npz"),
     ],
 )
-def test_to_dataframe_spect_dir_no_labelset(
+def test_make_dataframe_of_spect_files_spect_dir_no_labelset(
     spect_format,
     annot_format,
     spect_ext,
@@ -104,12 +104,12 @@ def test_to_dataframe_spect_dir_no_labelset(
     specific_spect_list,
     specific_annot_list,
 ):
-    """test that ``vak.io.spect.to_dataframe`` works when we point it at directory + give it list of annotations
+    """test that ``vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files`` works when we point it at directory + give it list of annotations
     but do not give it a labelset to filter out files"""
     spect_dir = specific_spect_dir(spect_format)
     annot_list = specific_annot_list(annot_format)
 
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format=spect_format,
         spect_dir=spect_dir,
         labelset=None,
@@ -129,14 +129,14 @@ def test_to_dataframe_spect_dir_no_labelset(
         ("npz", "notmat", ".spect.npz"),
     ],
 )
-def test_to_dataframe_spect_dir_without_annot(
+def test_make_dataframe_of_spect_files_spect_dir_without_annot(
     spect_format, annot_format, spect_ext, specific_spect_dir, specific_spect_list
 ):
-    """test ``vak.io.spect.to_dataframe`` works with a dataset from spectrogram files without annotations,
+    """test ``vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files`` works with a dataset from spectrogram files without annotations,
     # e.g. if we're going to predict the annotations using the spectrograms"""
     spect_dir = specific_spect_dir(spect_format)
 
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format=spect_format, spect_dir=spect_dir, annot_list=None, spect_ext=spect_ext,
     )
 
@@ -151,7 +151,7 @@ def test_to_dataframe_spect_dir_without_annot(
         ("npz", "notmat", ".spect.npz"),
     ],
 )
-def test_to_dataframe_spect_files(
+def test_make_dataframe_of_spect_files_spect_files(
     spect_format,
     annot_format,
     spect_ext,
@@ -159,13 +159,13 @@ def test_to_dataframe_spect_files(
     specific_annot_list,
     specific_labelset,
 ):
-    """test that ``vak.io.spect.to_dataframe`` works
+    """test that ``vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files`` works
     when we give it list of spectrogram files and a list of annotations"""
     spect_list = specific_spect_list(spect_format)
     labelset = specific_labelset(annot_format)
     annot_list = specific_annot_list(annot_format)
 
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format=spect_format,
         spect_files=spect_list,
         labelset=labelset,
@@ -192,16 +192,16 @@ def test_to_dataframe_spect_files(
         ("npz", "notmat", ".spect.npz"),
     ],
 )
-def test_to_dataframe_spect_files_no_labelset(
+def test_make_dataframe_of_spect_files_spect_files_no_labelset(
     spect_format, annot_format, spect_ext, specific_spect_list, specific_annot_list
 ):
-    """test that ``vak.io.spect.to_dataframe`` works
+    """test that ``vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files`` works
     when we give it list of spectrogram files and a list of annotations
     but do not give it a labelset to filter out files"""
     spect_list = specific_spect_list(spect_format)
     annot_list = specific_annot_list(annot_format)
 
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format=spect_format,
         spect_files=spect_list,
         labelset=None,
@@ -221,7 +221,7 @@ def test_to_dataframe_spect_files_no_labelset(
         ("npz", "notmat", ".spect.npz"),
     ],
 )
-def test_to_dataframe_spect_annot_map(
+def test_make_dataframe_of_spect_files_spect_annot_map(
     spect_format,
     annot_format,
     spect_ext,
@@ -229,7 +229,7 @@ def test_to_dataframe_spect_annot_map(
     specific_annot_list,
     specific_labelset,
 ):
-    """test that ``vak.io.spect.to_dataframe`` works
+    """test that ``vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files`` works
     when we give it a dict that maps spectrogram files to annotations
     but do not give it a labelset to filter out files"""
     spect_list = specific_spect_list(spect_format)
@@ -237,7 +237,7 @@ def test_to_dataframe_spect_annot_map(
     annot_list = specific_annot_list(annot_format)
 
     spect_annot_map = dict(zip(spect_list, annot_list))
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format=spect_format,
         labelset=labelset,
         spect_annot_map=spect_annot_map,
@@ -263,10 +263,10 @@ def test_to_dataframe_spect_annot_map(
         ("npz", "notmat", ".spect.npz"),
     ],
 )
-def test_to_dataframe_spect_annot_map_no_labelset(
+def test_make_dataframe_of_spect_files_spect_annot_map_no_labelset(
     spect_format, annot_format, spect_ext, specific_spect_list, specific_annot_list
 ):
-    """test that ``vak.io.spect.to_dataframe`` works
+    """test that ``vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files`` works
     when we give it a dict that maps spectrogram files to annotations
     but do not give it a labelset to filter out files"""
     spect_list = specific_spect_list(spect_format)
@@ -274,7 +274,7 @@ def test_to_dataframe_spect_annot_map_no_labelset(
 
     spect_annot_map = dict(zip(spect_list, annot_list))
 
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format=spect_format,
         labelset=None,
         spect_annot_map=spect_annot_map,
@@ -286,12 +286,12 @@ def test_to_dataframe_spect_annot_map_no_labelset(
     assert expected_spect_paths_in_dataframe(dataset_df, spect_list)
 
 
-def test_to_dataframe_no_spect_dir_files_or_map_raises(annot_list_yarden):
-    """test that calling ``to_dataframe`` without one of:
+def test_make_dataframe_of_spect_files_no_spect_dir_files_or_map_raises(annot_list_yarden):
+    """test that calling ``make_dataframe_of_spect_files`` without one of:
     spect dir, spect files, or spect files/annotations mapping
     raises ValueError"""
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat",
             spect_dir=None,
             spect_files=None,
@@ -301,10 +301,10 @@ def test_to_dataframe_no_spect_dir_files_or_map_raises(annot_list_yarden):
         )
 
 
-def test_to_dataframe_invalid_spect_format_raises(spect_dir_mat, annot_list_yarden):
-    """test that calling ``to_dataframe`` with an invalid spect format raises a ValueError"""
+def test_make_dataframe_of_spect_files_invalid_spect_format_raises(spect_dir_mat, annot_list_yarden):
+    """test that calling ``make_dataframe_of_spect_files`` with an invalid spect format raises a ValueError"""
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="npy",  # 'npy' not a valid spect format
             spect_dir=spect_dir_mat,
             annot_list=annot_list_yarden,
@@ -312,12 +312,12 @@ def test_to_dataframe_invalid_spect_format_raises(spect_dir_mat, annot_list_yard
         )
 
 
-def test_to_dataframe_dir_and_list_raises(
+def test_make_dataframe_of_spect_files_dir_and_list_raises(
     spect_dir_mat, spect_list_mat, annot_list_yarden
 ):
-    """test that calling ``to_dataframe`` with both dir and list raises a ValueError"""
+    """test that calling ``make_dataframe_of_spect_files`` with both dir and list raises a ValueError"""
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat",
             spect_dir=spect_dir_mat,
             spect_files=spect_list_mat,
@@ -326,13 +326,13 @@ def test_to_dataframe_dir_and_list_raises(
         )
 
 
-def test_to_dataframe_dir_and_map_raises(
+def test_make_dataframe_of_spect_files_dir_and_map_raises(
     spect_dir_mat, spect_list_mat, annot_list_yarden
 ):
-    """test that calling ``to_dataframe`` with both dir and map raises a ValueError"""
+    """test that calling ``make_dataframe_of_spect_files`` with both dir and map raises a ValueError"""
     spect_annot_map = dict(zip(spect_list_mat, annot_list_yarden))
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat",
             spect_dir=spect_dir_mat,
             spect_annot_map=spect_annot_map,
@@ -340,13 +340,13 @@ def test_to_dataframe_dir_and_map_raises(
         )
 
 
-def test_to_dataframe_list_and_map_raises(
+def test_make_dataframe_of_spect_files_list_and_map_raises(
     spect_dir_mat, spect_list_mat, annot_list_yarden
 ):
-    """test that calling ``to_dataframe`` with both list and map raises a ValueError"""
+    """test that calling ``make_dataframe_of_spect_files`` with both list and map raises a ValueError"""
     spect_annot_map = dict(zip(spect_list_mat, annot_list_yarden))
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat",
             spect_files=spect_list_mat,
             spect_annot_map=spect_annot_map,
@@ -354,13 +354,13 @@ def test_to_dataframe_list_and_map_raises(
         )
 
 
-def test_to_dataframe_annot_list_and_map_raises(
+def test_make_dataframe_of_spect_files_annot_list_and_map_raises(
     spect_dir_mat, spect_list_mat, annot_list_yarden
 ):
-    """test that calling ``to_dataframe`` with both list of annotations and map raises a ValueError"""
+    """test that calling ``make_dataframe_of_spect_files`` with both list of annotations and map raises a ValueError"""
     spect_annot_map = dict(zip(spect_list_mat, annot_list_yarden))
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat",
             spect_annot_map=spect_annot_map,
             annot_list=annot_list_yarden,
@@ -368,23 +368,23 @@ def test_to_dataframe_annot_list_and_map_raises(
         )
 
 
-def test_to_dataframe_annot_list_without_annot_format_raises(
+def test_make_dataframe_of_spect_files_annot_list_without_annot_format_raises(
     spect_dir_mat, spect_list_mat, annot_list_yarden
 ):
-    """test that calling ``to_dataframe`` with a list of annotations but no annot_format raises a ValueError"""
+    """test that calling ``make_dataframe_of_spect_files`` with a list of annotations but no annot_format raises a ValueError"""
     spect_annot_map = dict(zip(spect_list_mat, annot_list_yarden))
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat", annot_list=annot_list_yarden, annot_format=None
         )
 
 
-def test_to_dataframe_spect_annot_map_without_annot_format_raises(
+def test_make_dataframe_of_spect_files_spect_annot_map_without_annot_format_raises(
     spect_dir_mat, spect_list_mat, annot_list_yarden
 ):
-    """test that calling ``to_dataframe`` with a list of annotations but no annot_format raises a ValueError"""
+    """test that calling ``make_dataframe_of_spect_files`` with a list of annotations but no annot_format raises a ValueError"""
     spect_annot_map = dict(zip(spect_list_mat, annot_list_yarden))
     with pytest.raises(ValueError):
-        vak.io.spect.to_dataframe(
+        vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat", spect_annot_map=spect_annot_map, annot_format=None
         )
