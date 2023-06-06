@@ -1,6 +1,6 @@
 import pytest
 
-from vak.split.algorithms.validate import validate_split_durations
+from vak.prep.split.algorithms.validate import validate_split_durations
 
 
 @pytest.mark.parametrize(

@@ -1,10 +1,10 @@
-"""tests for vak.split.algorithms.bruteforce module"""
+"""tests for vak.prep.split.algorithms.bruteforce module"""
 from math import isclose
 
 import numpy as np
 import pytest
 
-from vak.split.algorithms import brute_force
+from vak.prep.split.algorithms import brute_force
 
 # since the algorithm is random, we test multiple times
 # yes, this opens up the possibility of non-deterministic failures

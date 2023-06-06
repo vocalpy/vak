@@ -1,4 +1,4 @@
-"""fixtures used to test the vak.split sub-package"""
+"""fixtures used to test the vak.prep.split sub-package"""
 from evfuncs import load_cbin
 from scipy.io import loadmat
 import pytest

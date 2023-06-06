@@ -5,7 +5,6 @@ import pytest
 
 import vak.config
 import vak.transforms.transforms
-import vak.split
 import vak.models
 
 
