@@ -30,7 +30,7 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
 
     df_from_dataset_path = pd.read_csv(dataset_csv_path)
 
-    for column in vak.io.spect.DF_COLUMNS:
+    for column in vak.prep.spectrogram_dataset.spect_helper.DF_COLUMNS:
         if column == "duration":
             check_exact = False
         else:
