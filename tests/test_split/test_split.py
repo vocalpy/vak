@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import vak.io.spect
 import vak.common.annotation
+import vak.prep.spectrogram_dataset.spect_helper
 import vak.split.split
 
 
@@ -251,7 +251,7 @@ def test_split_dataframe_mat(
 ):
     labelset_yarden = set(labelset_yarden)
 
-    dataset_df = vak.io.spect.to_dataframe(
+    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
         spect_format="mat",
         spect_files=spect_list_mat_all_labels_in_labelset,
         annot_format="yarden",
