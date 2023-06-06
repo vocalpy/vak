@@ -6,7 +6,7 @@ import pytest
 
 import vak.common.annotation
 import vak.prep.spectrogram_dataset.spect_helper
-import vak.split.split
+import vak.prep.split.split
 
 
 NUM_SAMPLES = 10  # number of times to sample behavior of random-number generator
@@ -88,7 +88,7 @@ def test_train_test_dur_split_inds_fake_data(
     durs, labels, labelset, train_dur, val_dur, test_dur
 ):
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = vak.split.split.train_test_dur_split_inds(
+        train_inds, val_inds, test_inds = vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset, train_dur, test_dur, val_dur
         )
 
@@ -114,7 +114,7 @@ def test_train_test_dur_split_inds_fake_data_impossible():
     val_dur = 2
     test_dur = 4
     with pytest.raises(ValueError):
-        vak.split.split.train_test_dur_split_inds(
+        vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset, train_dur, test_dur, val_dur
         )
 
@@ -134,7 +134,7 @@ def test_train_test_dur_split_inds_audio_cbin_annot_notmat(
     durs, labels = audio_cbin_annot_notmat_durs_labels
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = vak.split.split.train_test_dur_split_inds(
+        train_inds, val_inds, test_inds = vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset_notmat, train_dur, test_dur, val_dur
         )
 
@@ -165,7 +165,7 @@ def test_train_test_dur_split_inds_spect_mat(
     test_dur = 200
 
     for _ in range(NUM_SAMPLES):
-        train_inds, val_inds, test_inds = vak.split.split.train_test_dur_split_inds(
+        train_inds, val_inds, test_inds = vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset_yarden, train_dur, test_dur, val_dur
         )
 
@@ -192,7 +192,7 @@ def test_dataframe_None_raises():
     test_dur = None
 
     with pytest.raises(ValueError):
-        vak.split.split.train_test_dur_split_inds(
+        vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset, train_dur, test_dur, val_dur
         )
 
@@ -208,7 +208,7 @@ def test_dataframe_only_val_raises():
 
     # because we only specified duration for validation set
     with pytest.raises(ValueError):
-        vak.split.split.train_test_dur_split_inds(
+        vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset, train_dur, test_dur, val_dur
         )
 
@@ -224,7 +224,7 @@ def test_dataframe_negative_dur_raises():
 
     # because negative duration is invalid
     with pytest.raises(ValueError):
-        vak.split.split.train_test_dur_split_inds(
+        vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset, train_dur, test_dur, val_dur
         )
 
@@ -239,7 +239,7 @@ def test_dataframe_specd_dur_gt_raises():
     val_dur = 100
     # because total splits duration is greater than dataset duration
     with pytest.raises(ValueError):
-        vak.split.split.train_test_dur_split_inds(
+        vak.prep.split.split.train_test_dur_split_inds(
             durs, labels, labelset, train_dur, test_dur, val_dur
         )
 
@@ -267,7 +267,7 @@ def test_split_dataframe_mat(
     train_dur = 200
     test_dur = 200
 
-    dataset_df_split = vak.split.split.dataframe(
+    dataset_df_split = vak.prep.split.split.dataframe(
         dataset_df, dataset_path, labelset=labelset_yarden, train_dur=train_dur, test_dur=test_dur
     )
 
