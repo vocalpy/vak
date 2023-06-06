@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 import vak.common.annotation
-import vak.io.audio
 
 
 def test_files_from_dir(annot_dir_notmat, annot_files_notmat):

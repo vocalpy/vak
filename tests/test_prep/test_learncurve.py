@@ -7,7 +7,6 @@ import pytest
 import vak.common.converters
 import vak.prep.learncurve
 import vak.datasets.seq
-import vak.io.dataframe
 import vak.common.labels
 import vak.common.paths
 

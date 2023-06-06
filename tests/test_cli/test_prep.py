@@ -1,17 +1,12 @@
 """tests for vak.cli.prep module"""
 from unittest import mock
 
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
 import vak.config
 import vak.common.constants
 import vak.common.paths
-import vak.io.spect
-
-from . import cli_asserts
 
 
 @pytest.mark.parametrize(
