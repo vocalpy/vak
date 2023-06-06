@@ -9,7 +9,8 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from .. import datasets, split
+from . import split
+from .. import datasets
 from ..datasets import window_dataset
 
 
