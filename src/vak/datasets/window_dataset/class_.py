@@ -3,21 +3,8 @@ from __future__ import annotations
 import pathlib
 from typing import Callable
 
-import crowsetta
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
-import torch
-from torchvision.datasets.vision import VisionDataset
-
-from ... import transforms
-from ...common import (
-    annotation,
-    files,
-    validators
-)
-from ..metadata import Metadata
-from .helper import vectors_from_df
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int):
@@ -115,9 +102,9 @@ class FrameClassificationWindowDataset:
     ):
         dataset_path = pathlib.Path(dataset_path)
         split_path = dataset_path / split
-        X_path = split_path / 'X_T.npy'
+        X_path = split_path / 'X.npy'
         X = np.load(X_path)
-        Y_path = split_path / 'Y_T.npy'
+        Y_path = split_path / 'Y.npy'
         Y = np.load(Y_path)
         window_inds_path = split_path / 'window_inds.npy'
         if window_inds_path.exists():
