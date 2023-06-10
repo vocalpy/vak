@@ -63,6 +63,9 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
     split_names = sorted(dataset_df.split.dropna().unique())
 
     for split_name in split_names:
+        if split_name == 'None':
+            # these are files that didn't get assigned to a split
+            continue
         split_subdir = dataset_path / split_name
         split_subdir.mkdir()
 
