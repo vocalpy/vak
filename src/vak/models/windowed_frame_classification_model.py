@@ -214,7 +214,7 @@ class WindowedFrameClassificationModel(base.Model):
         # remove "batch" dimension added by collate_fn to x
         # we keep for y because loss still expects the first dimension to be batch
         # TODO: fix this weirdness. Diff't collate_fn?
-        if x.ndim == 5:
+        if x.ndim in (5, 4):
             if x.shape[0] == 1:
                 x = torch.squeeze(x, dim=0)
         else:
