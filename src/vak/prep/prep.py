@@ -284,6 +284,10 @@ def prep(
             "Please double-check arguments to `vak.core.prep` function."
         )
 
+    # save before (possibly) splitting, just in case duration args are not valid
+    # (we can't know until we make dataset)
+    dataset_df.to_csv(dataset_csv_path)
+
     # ---- (possibly) split into train / val / test sets ---------------------------------------------
     # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
     if (purpose == "train" or purpose == "learncurve") and (
@@ -315,8 +319,6 @@ def prep(
             do_split = True
 
     if do_split:
-        # save before splitting, jic duration args are not valid (we can't know until we make dataset)
-        dataset_df.to_csv(dataset_csv_path)
         dataset_df = split.dataframe(
             dataset_df,
             dataset_path,
@@ -338,22 +340,8 @@ def prep(
 
         dataset_df = prep_helper.add_split_col(dataset_df, split=split_name)
 
-    # ---- move prepared files into sub-directories --------------------------------------------------------------------
-    prep_helper.move_files_into_split_subdirs(
-        dataset_df,
-        dataset_path,
-        purpose
-    )
-
-    # ---- save csv file representing dataset --------------------------------------------------------------------------
-    logger.info(
-        f"Saving dataset csv file: {dataset_csv_path}"
-    )
-    dataset_df.to_csv(
-        dataset_csv_path, index=False
-    )  # index is False to avoid having "Unnamed: 0" column when loading
-
     # ---- create and save labelmap ------------------------------------------------------------------------------------
+    # we do this before creating array files since we need to load the labelmap to make frame label vectors
     if purpose != 'predict':
         # TODO -- add option to generate predict using existing dataset, so we can get labelmap from it
         has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
@@ -368,6 +356,21 @@ def prep(
         # save labelmap in case we need it later
         with (dataset_path / "labelmap.json").open("w") as fp:
             json.dump(labelmap, fp)
+
+    # ---- move prepared files into sub-directories --------------------------------------------------------------------
+    prep_helper.move_files_into_split_subdirs(
+        dataset_df,
+        dataset_path,
+        purpose
+    )
+
+    # ---- save csv file representing dataset --------------------------------------------------------------------------
+    logger.info(
+        f"Saving dataset csv file: {dataset_csv_path}"
+    )
+    dataset_df.to_csv(
+        dataset_csv_path, index=False
+    )  # index is False to avoid having "Unnamed: 0" column when loading
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
     # we do this before generating learncurve splits because learncurve expects metadata to exist, to get timebin_dur
