@@ -12,6 +12,7 @@ from __future__ import annotations
 import pathlib
 import shutil
 
+import crowsetta
 import numpy as np
 import pandas as pd
 
@@ -24,6 +25,82 @@ VALID_PURPOSES = frozenset(
         "train",
     ]
 )
+
+def make_arrays_for_each_split(dataset_df: pd.DataFrame,
+                               dataset_path: pathlib.Path,
+                               purpose: str,
+                               labelmap: dict | None = None,
+                               annot_format: str | None = None,
+                               ) -> None:
+    dataset_path = pathlib.Path(dataset_path)
+
+    logger.info(f"Will use labelmap: {labelmap}")
+
+    if annot_format:
+        scribe = crowsetta.Transcriber(format=cfg['PREP']['annot_format'])
+
+    for split in dataset_df.split:
+        print(f"Processing split: {split}")
+        split_dst = dataset_path / split
+        print(f"Will save in: {split}")
+        split_dst.mkdir(exist_ok=True)
+
+        split_df = dataset_df[dataset_df.split == split]
+        audio_paths = split_df['spect_path'].values
+        annot_paths = split_df['annot_path'].values
+
+        print(f"Loading data from {len(audio_paths)} spectrogram files "
+              f"and {len(annot_paths)} annotation files")
+
+        X_T, Y_T, source_id_vec, inds_in_source_vec, annots = [], [], [], [], []
+        for source_id, (audio_path, annot_path) in enumerate(
+            zip(audio_paths, annot_paths)
+        ):
+            # next two lines convert cbin to wav
+            audio, sampfreq = evfuncs.load_cbin(audio_path)
+            audio = audio.astype(np.float64) / 32768.0
+            # make vector of times for labeled timebins
+            t = np.arange(audio.shape[-1]) / sampfreq
+            X_T.append(audio)
+
+            # add to Y_T
+            annot = scribe.from_file(annot_path).to_annot()
+            annots.append(annot)  # we use this to save a .csv below
+            lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
+            lbl_tb = vak.transforms.labeled_timebins.from_segments(
+                lbls_int,
+                annot.seq.onsets_s,
+                annot.seq.offsets_s,
+                t,
+                unlabeled_label=labelmap["unlabeled"],
+            )
+            Y_T.append(lbl_tb)
+
+            # add to source_id and source_inds
+            n_frames = t.shape[-1]  # number of frames
+            source_id_vec.append(
+                np.ones((n_frames,)).astype(np.int32) * source_id
+            )
+            inds_in_source_vec.append(
+                np.arange(n_frames)
+            )
+
+        X_T = np.concatenate(X_T)
+        Y_T = np.concatenate(Y_T)
+        source_id_vec = np.concatenate(source_id_vec)
+        inds_in_source_vec = np.concatenate(inds_in_source_vec)
+        generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+
+        print(f"Saving X_T with size {round(X_T.nbytes * 1e-6, 2)} MB")
+        np.save(split_dst / 'X_T', X_T)
+        print(f"Saving Y_T with size {round(Y_T.nbytes * 1e-6, 2)} MB")
+        np.save(split_dst / 'Y_T', Y_T)
+        print(f"Saving source_id vector with size {round(source_id_vec.nbytes * 1e-6, 2)} MB")
+        np.save(split_dst / 'source_ids', source_id_vec)
+        print(f"Saving inds_in_source_vec vector with size {round(inds_in_source_vec.nbytes * 1e-6, 2)} MB")
+        np.save(split_dst / 'inds_in_source', inds_in_source_vec)
+        print(f"Saving annotations as csv")
+        generic_seq.to_file(split_dst / 'y.csv')
 
 
 def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathlib.Path, purpose: str) -> None:
