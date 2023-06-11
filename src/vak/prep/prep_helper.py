@@ -17,7 +17,10 @@ import crowsetta
 import numpy as np
 import pandas as pd
 
-from .. import transforms
+from .. import (
+    datasets,
+    transforms
+)
 
 
 logger = logging.getLogger(__name__)
@@ -80,35 +83,37 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
 
         split_df = dataset_df[dataset_df.split == split]
         spect_paths = split_df['spect_path'].values
+        # do this outside `if purpose != 'predict'` so we can iterate over
+        # np.nans or Nones even if there's no annotations
         annot_paths = split_df['annot_path'].values
 
         logger.info(f"Loading data from {len(spect_paths)} spectrogram files "
               f"and {len(annot_paths)} annotation files")
 
-        X, source_id_vec, inds_in_source_vec = [], [], []
+        inputs, source_id_vec, inds_in_source_vec = [], [], []
         if purpose != 'predict':
-            Y, annots = [], []
+            frame_labels, annots = [], []
 
         for source_id, (spect_path, annot_path) in enumerate(
                 zip(spect_paths, annot_paths)
         ):
-            # add to X
+            # add to inputs
             d = np.load(spect_path)
-            X.append(d["s"])
+            inputs.append(d["s"])
 
-            # add to Y
+            # add to frame labels
             if purpose != 'predict':
                 annot = scribe.from_file(annot_path).to_annot()
                 annots.append(annot)  # we use this to save a .csv below
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
-                lbl_tb = transforms.labeled_timebins.from_segments(
+                lbls_frame = transforms.labeled_timebins.from_segments(
                     lbls_int,
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
                     d["t"],
                     unlabeled_label=labelmap["unlabeled"],
                 )
-                Y.append(lbl_tb)
+                frame_labels.append(lbls_frame)
 
             # add to source_id and source_inds
             n_frames = d["t"].shape[-1]  # number of frames
@@ -119,24 +124,37 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
                 np.arange(n_frames)
             )
 
-        X = np.concatenate(X, axis=1)
+        inputs = np.concatenate(inputs, axis=1)
         source_id_vec = np.concatenate(source_id_vec)
         inds_in_source_vec = np.concatenate(inds_in_source_vec)
         if purpose != 'predict':
-            Y = np.concatenate(Y)
+            frame_labels = np.concatenate(frame_labels)
             generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
 
-        logger.info(f"Saving X with size {round(X.nbytes * 1e-10, 2)} GB")
-        np.save(split_dst / 'X', X)
-        logger.info(f"Saving source_id vector with size {round(source_id_vec.nbytes * 1e-6, 2)} MB")
-        np.save(split_dst / 'source_ids', source_id_vec)
-        logger.info(f"Saving inds_in_source_vec vector with size {round(inds_in_source_vec.nbytes * 1e-6, 2)} MB")
-        np.save(split_dst / 'inds_in_source', inds_in_source_vec)
+        logger.info(
+            f"Saving ``inputs`` for frame classification dataset with size {round(inputs.nbytes * 1e-10, 2)} GB"
+        )
+        np.save(split_dst / datasets.frame_classification.INPUT_ARRAY_FILENAME, inputs)
+        logger.info(
+            "Saving ``source_id`` vector for frame classification dataset with size "
+            f"{round(source_id_vec.nbytes * 1e-6, 2)} MB"
+        )
+        np.save(split_dst / datasets.frame_classification.SOURCE_IDS_ARRAY_FILENAME, source_id_vec)
+        logger.info(
+            "Saving ``inds_in_source_vec`` vector for frame classification dataset "
+            f"with size {round(inds_in_source_vec.nbytes * 1e-6, 2)} MB"
+        )
+        np.save(split_dst / datasets.frame_classification.INDS_IN_SOURCE_ARRAY_FILENAME, inds_in_source_vec)
         if purpose != 'predict':
-            logger.info(f"Saving Y with size {round(Y.nbytes * 1e-6, 2)} MB")
-            np.save(split_dst / 'Y', Y)
-            logger.info(f"Saving annotations as csv")
-            generic_seq.to_file(split_dst / 'y.csv')
+            logger.info(
+                "Saving frame labels vector (targets) for frame classification dataset "
+                f"with size {round(frame_labels.nbytes * 1e-6, 2)} MB"
+            )
+            np.save(split_dst / datasets.frame_classification.FRAME_LABELS_ARRAY_FILENAME, frame_labels)
+            logger.info(
+                "Saving annotations as csv"
+            )
+            generic_seq.to_file(split_dst / datasets.frame_classification.ANNOTATION_CSV_FILENAME)
 
 
 def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathlib.Path, purpose: str) -> None:
@@ -169,6 +187,7 @@ def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathli
     The ``DataFrame`` is modified in place
     as the files are moved, so nothing is returned.
     """
+
     # ---- first move all the spectrograms; we need to handle annotations separately -----------------------------------
     moved_spect_paths = []  # to clean up after moving -- may be empty if we copy all spects (e.g., user generated)
     # ---- copy/move files into split sub-directories inside dataset directory
