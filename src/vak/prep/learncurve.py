@@ -11,7 +11,7 @@ import pandas as pd
 
 from . import split
 from .. import datasets
-from ..datasets import window_dataset
+from ..datasets.frame_classification import window_dataset
 
 
 logger = logging.getLogger(__name__)

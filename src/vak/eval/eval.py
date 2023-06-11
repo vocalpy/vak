@@ -15,7 +15,7 @@ from .. import (
     transforms,
 )
 from ..common import validators
-from ..datasets.vocal_dataset import FrameClassificationEvalDataset
+from ..datasets.frame_classification import FrameClassificationEvalDataset
 from ..prep.prep_helper import validate_and_get_timebin_dur
 
 

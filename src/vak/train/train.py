@@ -15,8 +15,10 @@ from .. import (
     transforms,
 )
 from ..common import validators
-from ..datasets.window_dataset import FrameClassificationWindowDataset
-from ..datasets.vocal_dataset import FrameClassificationEvalDataset
+from ..datasets.frame_classification import (
+    FrameClassificationWindowDataset,
+    FrameClassificationEvalDataset
+)
 from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
 from ..common.trainer import get_default_trainer
