@@ -90,7 +90,7 @@ def make_learncurve_splits_from_dataset_df(
 
             metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
             timebin_dur = metadata.timebin_dur
-            # use *just* train subset to get spect vectors for WindowDataset
+            # use *just* train subset to get spect vectors for FrameClassificationWindowDataset
             (
                 source_ids,
                 source_inds,
@@ -107,7 +107,7 @@ def make_learncurve_splits_from_dataset_df(
                 labelmap=labelmap,
             )
 
-            # TODO: this is specific to WindowDataset -- flag? separate learncurve split functions for other datasets?
+            # TODO: this is specific to FrameClassificationWindowDataset -- flag? separate learncurve split functions for other datasets?
             for vec_name, vec in zip(
                 ["source_ids", "source_inds", "window_inds"],
                 [source_ids, source_inds, window_inds],

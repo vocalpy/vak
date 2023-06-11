@@ -15,7 +15,7 @@ from .. import (
     transforms,
 )
 from ..common import validators
-from ..datasets.window_dataset import WindowDataset
+from ..datasets.window_dataset import FrameClassificationWindowDataset
 from ..datasets.vocal_dataset import FrameClassificationEvalDataset
 from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
@@ -129,15 +129,15 @@ def train(
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     source_ids : numpy.ndarray
-        Parameter for WindowDataset. Represents the 'id' of any spectrogram,
+        Parameter for FrameClassificationWindowDataset. Represents the 'id' of any spectrogram,
         i.e., the index into spect_paths that will let us load it.
         Default is None.
     source_inds : numpy.ndarray
-        Parameter for WindowDataset. Same length as source_ids
+        Parameter for FrameClassificationWindowDataset. Same length as source_ids
         but values represent indices within each spectrogram.
         Default is None.
     window_inds : numpy.ndarray
-        Parameter for WindowDataset.
+        Parameter for FrameClassificationWindowDataset.
         Indices of each window in the dataset. The value at x[0]
         represents the start index of the first window; using that
         value, we can index into source_ids to get the path
@@ -270,7 +270,7 @@ def train(
         spect_standardizer = None
     transform, target_transform = transforms.get_defaults("train", spect_standardizer)
 
-    train_dataset = WindowDataset.from_csv(
+    train_dataset = FrameClassificationWindowDataset.from_csv(
         dataset_csv_path=dataset_csv_path,
         window_inds=window_inds,
         source_ids=source_ids,
@@ -284,7 +284,7 @@ def train(
         target_transform=target_transform,
     )
     logger.info(
-        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration}",
+        f"Duration of FrameClassificationWindowDataset used for training, in seconds: {train_dataset.duration}",
     )
     train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,

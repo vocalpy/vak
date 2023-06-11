@@ -1,4 +1,4 @@
-"""Helper functions used to create vectors for WindowDataset.
+"""Helper functions used to create vectors for FrameClassificationWindowDataset.
 In a separate module because these are pretty verbose functions.
 """
 from __future__ import annotations
@@ -28,10 +28,10 @@ def crop_vectors_keep_classes(
         labelmap: dict,
         window_size: int,
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
-    r"""Crop vectors representing WindowDataset
+    r"""Crop vectors representing FrameClassificationWindowDataset
     to a target duration.
 
-    This function "crops" a WindowDataset
+    This function "crops" a FrameClassificationWindowDataset
     by shortening the vectors that represent
     valid windows in a way that
     ensures all classes are still present after cropping.
@@ -105,10 +105,10 @@ def crop_vectors_keep_classes(
     window_inds_updated : numpy.ndarray
         ``window_inds_vector`` with indices that are invalid
         after cropping now set to the value
-        ``WindowDataset.INVALID_WINDOW_VAL``,
+        ``FrameClassificationWindowDataset.INVALID_WINDOW_VAL``,
         so that they will be removed.
     """
-    from .class_ import WindowDataset  # avoid circular import
+    from .class_ import FrameClassificationWindowDataset  # avoid circular import
 
     # ---- pre-conditions
     lbl_tb = validators.column_or_1d(lbl_tb)
@@ -152,7 +152,7 @@ def crop_vectors_keep_classes(
     lbl_tb_cropped = lbl_tb[:cropped_length]
 
     if np.array_equal(np.unique(lbl_tb_cropped), classes):
-        window_inds[cropped_length:] = WindowDataset.INVALID_WINDOW_VAL
+        window_inds[cropped_length:] = FrameClassificationWindowDataset.INVALID_WINDOW_VAL
         return (
             source_ids[:cropped_length],
             source_inds[:cropped_length],
@@ -163,12 +163,12 @@ def crop_vectors_keep_classes(
     lbl_tb_cropped = lbl_tb[-cropped_length:]
     if np.array_equal(np.unique(lbl_tb_cropped), classes):
         # set every index *up to but not including* the first valid window start to "invalid"
-        window_inds[:-cropped_length] = WindowDataset.INVALID_WINDOW_VAL
+        window_inds[:-cropped_length] = FrameClassificationWindowDataset.INVALID_WINDOW_VAL
         # also need to 'reset' the indexing so it starts at 0. First find current minimum index value
-        min_x_ind = window_inds[window_inds != WindowDataset.INVALID_WINDOW_VAL].min()
+        min_x_ind = window_inds[window_inds != FrameClassificationWindowDataset.INVALID_WINDOW_VAL].min()
         # Then set min x ind to 0, min x ind + 1 to 1, min ind + 2 to 2, ...
-        window_inds[window_inds != WindowDataset.INVALID_WINDOW_VAL] = (
-                window_inds[window_inds != WindowDataset.INVALID_WINDOW_VAL] - min_x_ind
+        window_inds[window_inds != FrameClassificationWindowDataset.INVALID_WINDOW_VAL] = (
+                window_inds[window_inds != FrameClassificationWindowDataset.INVALID_WINDOW_VAL] - min_x_ind
         )
         return (
             source_ids[-cropped_length:],
@@ -188,7 +188,7 @@ def crop_vectors_keep_classes(
     #    where 'end' means the segment prior to the last ``window_size`` bins in the file,
     #    because those cannot be the start of a training window (we wouldn't have enough bins)
 
-    # assigning WindowDataset.INVALID_WINDOW_VAL to window_inds segments
+    # assigning FrameClassificationWindowDataset.INVALID_WINDOW_VAL to window_inds segments
     # in these 3 cases will cause data to be ignored with
     # durations that depend on whether the segments touch the ends of files
     # because we do not ignore non-silence segments.
@@ -203,7 +203,7 @@ def crop_vectors_keep_classes(
             "unlabeled segments long enough to use to further crop."
         )
     valid_unlabeled = np.logical_and(
-        lbl_tb == unlabeled, window_inds != WindowDataset.INVALID_WINDOW_VAL
+        lbl_tb == unlabeled, window_inds != FrameClassificationWindowDataset.INVALID_WINDOW_VAL
     )
     unlabeled_diff = np.diff(np.concatenate([[0], valid_unlabeled, [0]]))
     unlabeled_onsets = np.where(unlabeled_diff == 1)[0]
@@ -221,17 +221,17 @@ def crop_vectors_keep_classes(
         ]
     # indicate silences in the beginning of files
     border_onsets = (
-            np.concatenate([[WindowDataset.INVALID_WINDOW_VAL], window_inds])[
+            np.concatenate([[FrameClassificationWindowDataset.INVALID_WINDOW_VAL], window_inds])[
                 unlabeled_onsets
             ]
-            == WindowDataset.INVALID_WINDOW_VAL
+            == FrameClassificationWindowDataset.INVALID_WINDOW_VAL
     )
     # indicate silences at the end of files
     border_offsets = (
-            np.concatenate([window_inds, [WindowDataset.INVALID_WINDOW_VAL]])[
+            np.concatenate([window_inds, [FrameClassificationWindowDataset.INVALID_WINDOW_VAL]])[
                 unlabeled_offsets + 1
                 ]
-            == WindowDataset.INVALID_WINDOW_VAL
+            == FrameClassificationWindowDataset.INVALID_WINDOW_VAL
     )
 
     # This is how much data can be ignored from each silence segment
@@ -353,22 +353,22 @@ def crop_vectors_keep_classes(
             ]
         )
 
-    window_inds[bins_to_ignore] = WindowDataset.INVALID_WINDOW_VAL
+    window_inds[bins_to_ignore] = FrameClassificationWindowDataset.INVALID_WINDOW_VAL
 
     # we may still need to crop. Try doing it from the beginning of the dataset
     if (
             crop_more > 0
     ):  # This addition can lead to imprecision but only in cases where we ask for very small datasets
-        if crop_more > sum(window_inds != WindowDataset.INVALID_WINDOW_VAL):
+        if crop_more > sum(window_inds != FrameClassificationWindowDataset.INVALID_WINDOW_VAL):
             raise ValueError(
                 "was not able to crop spect vectors to specified duration "
                 "in a way that maintained all classes in dataset"
             )
-        extra_bins = window_inds[window_inds != WindowDataset.INVALID_WINDOW_VAL][
+        extra_bins = window_inds[window_inds != FrameClassificationWindowDataset.INVALID_WINDOW_VAL][
                      :crop_more
                      ]
         bins_to_ignore = np.concatenate([bins_to_ignore, extra_bins])
-        window_inds[bins_to_ignore] = WindowDataset.INVALID_WINDOW_VAL
+        window_inds[bins_to_ignore] = FrameClassificationWindowDataset.INVALID_WINDOW_VAL
 
     if np.array_equal(
             np.unique(lbl_tb[np.setdiff1d(np.arange(len(lbl_tb)), bins_to_ignore)]),
@@ -391,9 +391,9 @@ def _vectors_from_df(
         spect_key: str = "s",
         timebins_key: str = "t",
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray | None]:
-    """Helper function that generates WindowDataset-related vectors
+    """Helper function that generates FrameClassificationWindowDataset-related vectors
     *without* removing the elements from ``window_inds`` that are set to
-    ``WindowDataset.INVALID_WINDOW_VAL``.
+    ``FrameClassificationWindowDataset.INVALID_WINDOW_VAL``.
 
     This lets us call this method from within tests,
     e.g. in unit tests for ``crop_vectors_keep_classes``
@@ -404,7 +404,7 @@ def _vectors_from_df(
     e.g., the calling function should pass in
     ``vak_df[vak_df.split == 'split_of_interest']``.
     """
-    from .class_ import WindowDataset
+    from .class_ import FrameClassificationWindowDataset
 
     # TODO: when we add `x_source`, use `audio_path` here if `x_source == 'audio'`
     source_paths = df["spect_path"].values
@@ -458,7 +458,7 @@ def _vectors_from_df(
         last_valid_window_ind = total_tb + n_tb - window_size
         valid_window_inds[
             valid_window_inds > last_valid_window_ind
-            ] = WindowDataset.INVALID_WINDOW_VAL
+            ] = FrameClassificationWindowDataset.INVALID_WINDOW_VAL
         window_inds.append(valid_window_inds)
 
         total_tb += n_tb
@@ -503,7 +503,7 @@ def vectors_from_df(
     r"""Get source_ids and spect_ind_vector from a dataframe
     that represents a dataset of vocalizations.
 
-    See ``vak.datasets.WindowDataset`` for a
+    See ``vak.datasets.FrameClassificationWindowDataset`` for a
     detailed explanation of these vectors.
 
     Parameters
@@ -549,7 +549,7 @@ def vectors_from_df(
         Vector of all valid starting indices of all windows in the dataset.
         This vector is what is used by PyTorch to determine
         the number of samples in the dataset, via the
-        ``WindowDataset.__len__`` method.
+        ``FrameClassificationWindowDataset.__len__`` method.
         Without cropping, a dataset with ``t`` total time bins
         across all audio arrays or spectrograms will have
         (``t`` - ``window_size``) possible windows
@@ -557,7 +557,7 @@ def vectors_from_df(
         But cropping with ``crop_dur`` will
         remove some of these indices.
     """
-    from .class_ import WindowDataset  # avoid circular import
+    from .class_ import FrameClassificationWindowDataset  # avoid circular import
 
     dataset_path = pathlib.Path(dataset_path)
     if not dataset_path.exists() or not dataset_path.is_dir():
@@ -571,9 +571,9 @@ def vectors_from_df(
     if crop_dur is not None and labelmap is None:
         raise ValueError("Must provide labelmap when specifying crop_dur")
 
-    if split not in WindowDataset.VALID_SPLITS:
+    if split not in FrameClassificationWindowDataset.VALID_SPLITS:
         raise ValueError(
-            f"Invalid value for split: {split}. Valid split names are: {WindowDataset.VALID_SPLITS}"
+            f"Invalid value for split: {split}. Valid split names are: {FrameClassificationWindowDataset.VALID_SPLITS}"
         )
 
     if crop_dur is not None and timebin_dur is not None:
@@ -621,5 +621,5 @@ def vectors_from_df(
             window_size,
         )
 
-    window_inds = window_inds[window_inds != WindowDataset.INVALID_WINDOW_VAL]
+    window_inds = window_inds[window_inds != FrameClassificationWindowDataset.INVALID_WINDOW_VAL]
     return source_ids, source_inds, window_inds
