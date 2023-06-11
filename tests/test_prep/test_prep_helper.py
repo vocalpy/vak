@@ -22,20 +22,7 @@ def copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, tmp_pat
     return dataset_df
 
 
-ARRAY_FILES_THAT_SHOULD_EXIST =  [
-    'X.npy',
-    'source_ids.npy',
-    'inds_in_source.npy',
-]
 
-PURPOSE_ARRAY_FILES_MAP = {
-    purpose: list(ARRAY_FILES_THAT_SHOULD_EXIST)
-    for purpose in ('eval', 'learncurve', 'predict', 'train')
-}
-for purpose in ('eval', 'learncurve', 'train'):
-    PURPOSE_ARRAY_FILES_MAP[purpose].extend(
-        ['Y.npy', 'y.csv']
-    )
 
 
 @pytest.mark.parametrize(
@@ -67,8 +54,6 @@ def test_make_arrays_for_each_split(config_type, model_name, audio_format, spect
                                                     labelmap,
                                                     annot_format)
 
-    array_files_that_should_exist = PURPOSE_ARRAY_FILES_MAP[purpose]
-
     for split in dataset_df['split'].dropna().unique():
         split_subdir = tmp_dataset_path / split
         if split != 'None':
@@ -76,9 +61,21 @@ def test_make_arrays_for_each_split(config_type, model_name, audio_format, spect
         elif split == 'None':
             assert not split_subdir.exists()
 
-        for array_file_that_should_exist in array_files_that_should_exist:
+        for array_file_that_should_exist in (
+            vak.datasets.frame_classification.INPUT_ARRAY_FILENAME,
+            vak.datasets.frame_classification.SOURCE_IDS_ARRAY_FILENAME,
+            vak.datasets.frame_classification.INDS_IN_SOURCE_ARRAY_FILENAME,
+        ):
             expected_array_path = split_subdir / array_file_that_should_exist
             assert expected_array_path.exists()
+
+        if purpose != 'predict':
+            for file_that_should_exist in (
+                    vak.datasets.frame_classification.FRAME_LABELS_ARRAY_FILENAME,
+                    vak.datasets.frame_classification.ANNOTATION_CSV_FILENAME,
+            ):
+                expected_path = split_subdir / file_that_should_exist
+                assert expected_path.exists()
 
         split_df = dataset_df[dataset_df['split'] == split]
         # for path_col in ('spect_path', 'annot_path'):
