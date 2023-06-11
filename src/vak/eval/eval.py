@@ -15,7 +15,7 @@ from .. import (
     transforms,
 )
 from ..common import validators
-from ..datasets.vocal_dataset import VocalDataset
+from ..datasets.vocal_dataset import FrameClassificationEvalDataset
 from ..prep.prep_helper import validate_and_get_timebin_dur
 
 
@@ -156,7 +156,7 @@ def eval(
         return_padding_mask=True,
     )
     logger.info(f"creating dataset for evaluation from: {dataset_csv_path}")
-    val_dataset = VocalDataset.from_csv(
+    val_dataset = FrameClassificationEvalDataset.from_csv(
         dataset_csv_path=dataset_csv_path,
         split=split,
         labelmap=labelmap,

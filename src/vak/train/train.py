@@ -16,7 +16,7 @@ from .. import (
 )
 from ..common import validators
 from ..datasets.window_dataset import WindowDataset
-from ..datasets.vocal_dataset import VocalDataset
+from ..datasets.vocal_dataset import FrameClassificationEvalDataset
 from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
 from ..common.trainer import get_default_trainer
@@ -301,7 +301,7 @@ def train(
             window_size=window_size,
             return_padding_mask=True,
         )
-        val_dataset = VocalDataset.from_csv(
+        val_dataset = FrameClassificationEvalDataset.from_csv(
             dataset_csv_path=dataset_csv_path,
             split="val",
             labelmap=labelmap,

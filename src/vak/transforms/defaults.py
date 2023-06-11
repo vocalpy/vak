@@ -2,9 +2,9 @@
 
 "item" transforms because they apply transforms to input parameters
 and then return them in an "item" (dictionary)
-that is turn returned by the __getitem__ method of a vak.VocalDataset.
+that is turn returned by the __getitem__ method of a vak.FrameClassificationEvalDataset.
 Having the transform return a dictionary makes it possible to avoid
-coupling the VocalDataset __getitem__ implementation to the transforms
+coupling the FrameClassificationEvalDataset __getitem__ implementation to the transforms
 needed for specific neural network models, e.g., whether the returned
 output includes a mask to crop off padding that was added.
 """
