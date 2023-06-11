@@ -21,7 +21,7 @@ from ..common import (
     files,
     validators
 )
-from ..datasets import FrameClassificationEvalDataset
+from ..datasets.frame_classification import FrameClassificationEvalDataset
 from ..common.device import get_default as get_default_device
 
 
