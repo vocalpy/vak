@@ -17,6 +17,8 @@ import crowsetta
 import numpy as np
 import pandas as pd
 
+from .. import transforms
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,29 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
                                labelmap: dict | None = None,
                                annot_format: str | None = None,
                                ) -> None:
-    """"""
+    """Makes arrays used by dataset classes,
+    one array per split.
+
+    We use arrays instead of loading files
+    to minimize the amount of bookkeeping related to
+    windows and the boundaries imposed by files;
+    windowing becomes easier if we treat a set of files
+    as a single time series since the only invalid indices
+    for grabbing a window's worth of data are at the end
+    of that time series, instead of at the end of
+    every file. This does neglect edge effects
+    that could be induced by where files start and stop
+    in the single array. We assume these are rare
+    in relation to the rest of the dataset.
+
+    Parameters
+    ----------
+    dataset_df : pandas.Dataframe
+    dataset_path : str, pathlib.Path
+    purpose: str
+    labelmap : dict
+    annot_format : str
+    """
     dataset_path = pathlib.Path(dataset_path)
 
     logger.info(f"Will use labelmap: {labelmap}")
@@ -47,6 +71,7 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
 
     for split in dataset_df.split:
         if split == 'None':
+            # these are files that didn't get assigned to a split
             continue
         logger.info(f"Processing split: {split}")
         split_dst = dataset_path / split
@@ -76,7 +101,7 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
                 annot = scribe.from_file(annot_path).to_annot()
                 annots.append(annot)  # we use this to save a .csv below
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
-                lbl_tb = vak.transforms.labeled_timebins.from_segments(
+                lbl_tb = transforms.labeled_timebins.from_segments(
                     lbls_int,
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
