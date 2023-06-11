@@ -1,3 +1,4 @@
+import json
 import pathlib
 import shutil
 
@@ -19,6 +20,84 @@ def copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, tmp_pat
             new_paths.append(new_path)
         dataset_df[paths_col] = new_paths
     return dataset_df
+
+
+ARRAY_FILES_THAT_SHOULD_EXIST =  [
+    'X.npy',
+    'source_ids.npy',
+    'inds_in_source.npy',
+]
+
+PURPOSE_ARRAY_FILES_MAP = {
+    purpose: list(ARRAY_FILES_THAT_SHOULD_EXIST)
+    for purpose in ('eval', 'learncurve', 'predict', 'train')
+}
+for purpose in ('eval', 'learncurve', 'train'):
+    PURPOSE_ARRAY_FILES_MAP[purpose].extend(
+        ['Y.npy', 'y.csv']
+    )
+
+
+@pytest.mark.parametrize(
+    'config_type, model_name, audio_format, spect_format, annot_format',
+    [
+        ('train', 'teenytweetynet', 'cbin', None, 'notmat'),
+        ('train', 'teenytweetynet', None, 'mat', 'yarden'),
+    ]
+)
+def test_make_arrays_for_each_split(config_type, model_name, audio_format, spect_format, annot_format,
+                                    tmp_path, specific_dataset_df, specific_dataset_path):
+    dataset_df = specific_dataset_df(config_type, model_name, annot_format, audio_format, spect_format)
+    dataset_path = specific_dataset_path(config_type, model_name, annot_format, audio_format, spect_format)
+    tmp_path_data_dir = tmp_path / 'data_dir'
+    tmp_path_data_dir.mkdir()
+    copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, tmp_path_data_dir)
+
+    tmp_dataset_path = tmp_path / 'dataset_dir'
+    tmp_dataset_path.mkdir()
+
+    with (dataset_path / 'labelmap.json').open('r') as fp:
+        labelmap = json.load(fp)
+
+    purpose = config_type
+
+    vak.prep.prep_helper.make_arrays_for_each_split(dataset_df,
+                                                    tmp_dataset_path,
+                                                    purpose,
+                                                    labelmap,
+                                                    annot_format)
+
+    array_files_that_should_exist = PURPOSE_ARRAY_FILES_MAP[purpose]
+
+    for split in dataset_df['split'].dropna().unique():
+        split_subdir = tmp_dataset_path / split
+        if split != 'None':
+            assert split_subdir.exists()
+        elif split == 'None':
+            assert not split_subdir.exists()
+
+        for array_file_that_should_exist in array_files_that_should_exist:
+            expected_array_path = split_subdir / array_file_that_should_exist
+            assert expected_array_path.exists()
+
+        split_df = dataset_df[dataset_df['split'] == split]
+        # for path_col in ('spect_path', 'annot_path'):
+        spect_paths = split_df['spect_path'].values
+        for spect_path in spect_paths:
+            new_path = split_subdir / pathlib.Path(spect_path).name
+            assert new_path.exists()
+
+        if len(dataset_df["annot_path"].unique()) == 1:
+            # --> there is a single annotation file associated with all rows
+            # in this case we copy the single annotation file to the root of the dataset directory
+            annot_path = dataset_df["annot_path"].unique().item()
+            assert (tmp_dataset_path / annot_path).exists()
+        elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
+            annot_paths = split_df['annot_path'].values
+            for annot_path in annot_paths:
+                new_path = split_subdir / pathlib.Path(annot_path).name
+                assert new_path.exists()
+
 
 
 @pytest.mark.parametrize(
