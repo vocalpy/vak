@@ -7,4 +7,4 @@ from .constants import (
     WINDOW_INDS_ARRAY_FILENAME
 )
 from .frame_classification_eval_dataset import FrameClassificationEvalDataset
-from .window_dataset import WindowDataset
+from .window_dataset import FrameClassificationWindowDataset
