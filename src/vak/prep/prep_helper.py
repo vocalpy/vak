@@ -154,8 +154,6 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
 
         split_df = dataset_df[dataset_df.split == split]
         spect_paths = split_df['spect_path'].values
-        # do this outside `if purpose != 'predict'` so we can iterate over
-        # np.nans or Nones even if there's no annotations
         if purpose != 'predict':
             annots = common.annotation.from_df(split_df)
         else:
