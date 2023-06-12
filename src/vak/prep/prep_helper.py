@@ -36,26 +36,108 @@ VALID_PURPOSES = frozenset(
 )
 
 
-def make_arrays_for_each_split(dataset_df: pd.DataFrame,
-                               dataset_path: pathlib.Path,
-                               purpose: str,
-                               labelmap: dict | None = None,
-                               annot_format: str | None = None,
-                               ) -> None:
-    """Makes arrays used by dataset classes,
-    one array per split.
+def make_frame_classification_arrays_from_spect_and_annot_paths(
+        spect_paths: list[str],
+        labelmap: dict | None = None,
+        annot_paths: list[str] | None = None,
+        annot_format: str | None = None
+):
+    """Makes arrays used by dataset classes
+    for frame classification task
+    from a list of spectrogram paths
+    and an optional, paired list of annotation paths.
 
-    We use arrays instead of loading files
-    to minimize the amount of bookkeeping related to
-    windows and the boundaries imposed by files;
-    windowing becomes easier if we treat a set of files
-    as a single time series since the only invalid indices
-    for grabbing a window's worth of data are at the end
-    of that time series, instead of at the end of
-    every file. This does neglect edge effects
-    that could be induced by where files start and stop
-    in the single array. We assume these are rare
-    in relation to the rest of the dataset.
+    This is a helper function used by
+    :func:`vak.prep.prep_helper.make_frame_classification_arrays_from_spectrogram_dataset`.
+    We factor it out so we can test
+    that it returns the expected arrays.
+
+    Parameters
+    ----------
+    spect_paths : list
+        Paths to array files containing spectrograms.
+    labelmap : dict
+        Mapping string labels to integer classes predicted by network.
+    annot_paths : list
+        Paths to annotation files that annotate the spectrograms.
+    annot_format : str
+        Annotation format of the files in annotation paths.
+
+    Returns
+    -------
+    inputs : numpy.NDArray
+    source_id_vec : numpy.NDArray
+    inds_in_source_vec : numpy.NDArray
+    frame_labels : numpy.NDArray or None
+    generic_seq : crowsetta.formats.seq.GenericSeq or None
+    """
+    if annot_format:
+        scribe = crowsetta.Transcriber(format=annot_format)
+
+    logger.info(f"Loading data from {len(spect_paths)} spectrogram files "
+                f"and {len(annot_paths)} annotation files")
+
+    inputs, source_id_vec, inds_in_source_vec = [], [], []
+    if annot_paths:
+        frame_labels, annots = [], []
+        to_do = zip(spect_paths, annot_paths)
+    else:
+        to_do = zip(spect_paths, [None] * len(spect_paths))
+
+    for source_id, (spect_path, annot_path) in enumerate(to_do):
+        # add to inputs
+        d = np.load(spect_path)
+        inputs.append(d["s"])
+
+        # add to frame labels
+        if annot_path:
+            annot = scribe.from_file(annot_path).to_annot()
+            annots.append(annot)  # we use this to save a .csv below
+            lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
+            lbls_frame = transforms.labeled_timebins.from_segments(
+                lbls_int,
+                annot.seq.onsets_s,
+                annot.seq.offsets_s,
+                d["t"],
+                unlabeled_label=labelmap["unlabeled"],
+            )
+            frame_labels.append(lbls_frame)
+
+        # add to source_id and source_inds
+        n_frames = d["t"].shape[-1]  # number of frames
+        source_id_vec.append(
+            np.ones((n_frames,)).astype(np.int32) * source_id
+        )
+        inds_in_source_vec.append(
+            np.arange(n_frames)
+        )
+
+    inputs = np.concatenate(inputs, axis=1)
+    source_id_vec = np.concatenate(source_id_vec)
+    inds_in_source_vec = np.concatenate(inds_in_source_vec)
+    if annot_paths:
+        frame_labels = np.concatenate(frame_labels)
+    else:
+        frame_labels = None
+
+    return inputs, source_id_vec, inds_in_source_vec, frame_labels, annots
+
+
+def make_frame_classification_arrays_from_spectrogram_dataset(
+        dataset_df: pd.DataFrame,
+        dataset_path: pathlib.Path,
+        purpose: str,
+        labelmap: dict | None = None,
+        annot_format: str | None = None,
+) -> None:
+    """Makes arrays used by dataset classes
+    for frame classification task
+    from a dataset of spectrograms
+    with annotations.
+
+    Makes one inputs array and one targets array
+    per split in the dataframe that represents
+    the dataset.
 
     Parameters
     ----------
@@ -68,9 +150,6 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
     dataset_path = pathlib.Path(dataset_path)
 
     logger.info(f"Will use labelmap: {labelmap}")
-
-    if annot_format:
-        scribe = crowsetta.Transcriber(format=annot_format)
 
     for split in dataset_df.split:
         if split == 'None':
@@ -85,51 +164,21 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
         spect_paths = split_df['spect_path'].values
         # do this outside `if purpose != 'predict'` so we can iterate over
         # np.nans or Nones even if there's no annotations
-        annot_paths = split_df['annot_path'].values
-
-        logger.info(f"Loading data from {len(spect_paths)} spectrogram files "
-              f"and {len(annot_paths)} annotation files")
-
-        inputs, source_id_vec, inds_in_source_vec = [], [], []
         if purpose != 'predict':
-            frame_labels, annots = [], []
+            annot_paths = split_df['annot_path'].values
+        else:
+            annot_paths = None
 
-        for source_id, (spect_path, annot_path) in enumerate(
-                zip(spect_paths, annot_paths)
-        ):
-            # add to inputs
-            d = np.load(spect_path)
-            inputs.append(d["s"])
-
-            # add to frame labels
-            if purpose != 'predict':
-                annot = scribe.from_file(annot_path).to_annot()
-                annots.append(annot)  # we use this to save a .csv below
-                lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
-                lbls_frame = transforms.labeled_timebins.from_segments(
-                    lbls_int,
-                    annot.seq.onsets_s,
-                    annot.seq.offsets_s,
-                    d["t"],
-                    unlabeled_label=labelmap["unlabeled"],
-                )
-                frame_labels.append(lbls_frame)
-
-            # add to source_id and source_inds
-            n_frames = d["t"].shape[-1]  # number of frames
-            source_id_vec.append(
-                np.ones((n_frames,)).astype(np.int32) * source_id
-            )
-            inds_in_source_vec.append(
-                np.arange(n_frames)
-            )
-
-        inputs = np.concatenate(inputs, axis=1)
-        source_id_vec = np.concatenate(source_id_vec)
-        inds_in_source_vec = np.concatenate(inds_in_source_vec)
-        if purpose != 'predict':
-            frame_labels = np.concatenate(frame_labels)
-            generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+        (inputs,
+         source_id_vec,
+         inds_in_source_vec,
+         frame_labels,
+         annots) = make_frame_classification_arrays_from_spect_and_annot_paths(
+            spect_paths,
+            labelmap,
+            annot_paths,
+            annot_format,
+        )
 
         logger.info(
             f"Saving ``inputs`` for frame classification dataset with size {round(inputs.nbytes * 1e-10, 2)} GB"
@@ -154,6 +203,7 @@ def make_arrays_for_each_split(dataset_df: pd.DataFrame,
             logger.info(
                 "Saving annotations as csv"
             )
+            generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
             generic_seq.to_file(split_dst / datasets.frame_classification.ANNOTATION_CSV_FILENAME)
 
 
