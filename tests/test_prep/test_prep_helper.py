@@ -22,18 +22,17 @@ def copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, tmp_pat
     return dataset_df
 
 
-
-
-
 @pytest.mark.parametrize(
     'config_type, model_name, audio_format, spect_format, annot_format',
     [
         ('train', 'teenytweetynet', 'cbin', None, 'notmat'),
         ('train', 'teenytweetynet', None, 'mat', 'yarden'),
+        ('learncurve', 'teenytweetynet', 'cbin', None, 'notmat'),
     ]
 )
-def test_make_arrays_for_each_split(config_type, model_name, audio_format, spect_format, annot_format,
-                                    tmp_path, specific_dataset_df, specific_dataset_path):
+def test_make_frame_classification_arrays_from_spectrogram_dataset(
+        config_type, model_name, audio_format, spect_format, annot_format,
+        tmp_path, specific_dataset_df, specific_dataset_path):
     dataset_df = specific_dataset_df(config_type, model_name, annot_format, audio_format, spect_format)
     dataset_path = specific_dataset_path(config_type, model_name, annot_format, audio_format, spect_format)
     tmp_path_data_dir = tmp_path / 'data_dir'
@@ -48,11 +47,11 @@ def test_make_arrays_for_each_split(config_type, model_name, audio_format, spect
 
     purpose = config_type
 
-    vak.prep.prep_helper.make_arrays_for_each_split(dataset_df,
-                                                    tmp_dataset_path,
-                                                    purpose,
-                                                    labelmap,
-                                                    annot_format)
+    vak.prep.prep_helper.make_frame_classification_arrays_from_spectrogram_dataset(dataset_df,
+                                                                                   tmp_dataset_path,
+                                                                                   purpose,
+                                                                                   labelmap,
+                                                                                   annot_format)
 
     for split in dataset_df['split'].dropna().unique():
         split_subdir = tmp_dataset_path / split
@@ -76,25 +75,6 @@ def test_make_arrays_for_each_split(config_type, model_name, audio_format, spect
             ):
                 expected_path = split_subdir / file_that_should_exist
                 assert expected_path.exists()
-
-        split_df = dataset_df[dataset_df['split'] == split]
-        # for path_col in ('spect_path', 'annot_path'):
-        spect_paths = split_df['spect_path'].values
-        for spect_path in spect_paths:
-            new_path = split_subdir / pathlib.Path(spect_path).name
-            assert new_path.exists()
-
-        if len(dataset_df["annot_path"].unique()) == 1:
-            # --> there is a single annotation file associated with all rows
-            # in this case we copy the single annotation file to the root of the dataset directory
-            annot_path = dataset_df["annot_path"].unique().item()
-            assert (tmp_dataset_path / annot_path).exists()
-        elif len(dataset_df["annot_path"].unique()) == len(dataset_df):
-            annot_paths = split_df['annot_path'].values
-            for annot_path in annot_paths:
-                new_path = split_subdir / pathlib.Path(annot_path).name
-                assert new_path.exists()
-
 
 
 @pytest.mark.parametrize(
