@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 
 from .. import (
+    common,
     datasets,
     transforms
 )
@@ -39,8 +40,7 @@ VALID_PURPOSES = frozenset(
 def make_frame_classification_arrays_from_spect_and_annot_paths(
         spect_paths: list[str],
         labelmap: dict | None = None,
-        annot_paths: list[str] | None = None,
-        annot_format: str | None = None
+        annots: list[crowsetta.Annotion] | None = None,
 ):
     """Makes arrays used by dataset classes
     for frame classification task
@@ -69,30 +69,24 @@ def make_frame_classification_arrays_from_spect_and_annot_paths(
     source_id_vec : numpy.NDArray
     inds_in_source_vec : numpy.NDArray
     frame_labels : numpy.NDArray or None
-    generic_seq : crowsetta.formats.seq.GenericSeq or None
     """
-    if annot_format:
-        scribe = crowsetta.Transcriber(format=annot_format)
-
     logger.info(f"Loading data from {len(spect_paths)} spectrogram files "
-                f"and {len(annot_paths)} annotation files")
+                f"and {len(annots)} annotations")
 
     inputs, source_id_vec, inds_in_source_vec = [], [], []
-    if annot_paths:
-        frame_labels, annots = [], []
-        to_do = zip(spect_paths, annot_paths)
+    if annots:
+        frame_labels = []
+        to_do = zip(spect_paths, annots)
     else:
         to_do = zip(spect_paths, [None] * len(spect_paths))
 
-    for source_id, (spect_path, annot_path) in enumerate(to_do):
+    for source_id, (spect_path, annot) in enumerate(to_do):
         # add to inputs
         d = np.load(spect_path)
         inputs.append(d["s"])
 
         # add to frame labels
-        if annot_path:
-            annot = scribe.from_file(annot_path).to_annot()
-            annots.append(annot)  # we use this to save a .csv below
+        if annot:
             lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
             lbls_frame = transforms.labeled_timebins.from_segments(
                 lbls_int,
@@ -115,12 +109,12 @@ def make_frame_classification_arrays_from_spect_and_annot_paths(
     inputs = np.concatenate(inputs, axis=1)
     source_id_vec = np.concatenate(source_id_vec)
     inds_in_source_vec = np.concatenate(inds_in_source_vec)
-    if annot_paths:
+    if annots is not None:
         frame_labels = np.concatenate(frame_labels)
     else:
         frame_labels = None
 
-    return inputs, source_id_vec, inds_in_source_vec, frame_labels, annots
+    return inputs, source_id_vec, inds_in_source_vec, frame_labels
 
 
 def make_frame_classification_arrays_from_spectrogram_dataset(
@@ -128,7 +122,6 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         dataset_path: pathlib.Path,
         purpose: str,
         labelmap: dict | None = None,
-        annot_format: str | None = None,
 ) -> None:
     """Makes arrays used by dataset classes
     for frame classification task
@@ -145,7 +138,6 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
     dataset_path : str, pathlib.Path
     purpose: str
     labelmap : dict
-    annot_format : str
     """
     dataset_path = pathlib.Path(dataset_path)
 
@@ -165,19 +157,17 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         # do this outside `if purpose != 'predict'` so we can iterate over
         # np.nans or Nones even if there's no annotations
         if purpose != 'predict':
-            annot_paths = split_df['annot_path'].values
+            annots = common.annotation.from_df(split_df)
         else:
-            annot_paths = None
+            annots = None
 
         (inputs,
          source_id_vec,
          inds_in_source_vec,
-         frame_labels,
-         annots) = make_frame_classification_arrays_from_spect_and_annot_paths(
+         frame_labels) = make_frame_classification_arrays_from_spect_and_annot_paths(
             spect_paths,
             labelmap,
-            annot_paths,
-            annot_format,
+            annots,
         )
 
         logger.info(
