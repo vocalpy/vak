@@ -8,6 +8,8 @@
 [PREP]
 data_dir = './tests/test_data/cbins/gy6or6/032312'
 output_dir = './tests/test_data/prep/learncurve'
+dataset_type = 'frame_classification'
+input_type = 'spect'
 audio_format = 'cbin'
 spect_format = 'npz'
 annot_format = 'notmat'
