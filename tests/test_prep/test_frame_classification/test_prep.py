@@ -94,7 +94,7 @@ def test_prep(
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = config_type.lower()
-    dataset_df, dataset_path = vak.prep.prep(
+    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -168,7 +168,7 @@ def test_prep_raises_when_labelset_required_but_is_none(
 
     purpose = config_type.lower()
     with pytest.raises(ValueError):
-        vak.prep.prep(
+        vak.prep.frame_classification.frame_classification.prep(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
@@ -234,7 +234,7 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    dataset_df, dataset_path = vak.prep.prep(
+    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -291,7 +291,7 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    dataset_df, dataset_path = vak.prep.prep(
+    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -338,7 +338,7 @@ def test_prep_raises_not_a_directory(
 
     purpose = "train"
     with pytest.raises(NotADirectoryError):
-        vak.prep.prep(
+        vak.prep.frame_classification.frame_classification.prep(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
@@ -385,7 +385,7 @@ def test_prep_raises_file_not_found(
 
     purpose = "train"
     with pytest.raises(FileNotFoundError):
-        vak.prep.prep(
+        vak.prep.frame_classification.frame_classification.prep(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
