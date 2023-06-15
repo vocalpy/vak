@@ -5,7 +5,8 @@ import warnings
 
 import crowsetta.formats.seq
 
-from .. import prep_helper, split
+from . import helper
+from .. import split
 from ..learncurve import make_learncurve_splits_from_dataset_df
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 
@@ -142,9 +143,9 @@ def prep(
         Path to csv saved from ``dataset_df``.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
-    if purpose not in prep_helper.VALID_PURPOSES:
+    if purpose not in helper.VALID_PURPOSES:
         raise ValueError(
-            f"purpose must be one of: {prep_helper.VALID_PURPOSES}\n"
+            f"purpose must be one of: {helper.VALID_PURPOSES}\n"
             f"Value for purpose was: {purpose}"
         )
 
@@ -241,7 +242,7 @@ def prep(
     )
     log_version(logger)
 
-    dataset_csv_path = prep_helper.get_dataset_csv_path(dataset_path, data_dir_name, timenow)
+    dataset_csv_path = helper.get_dataset_csv_path(dataset_path, data_dir_name, timenow)
     logger.info(
         f"Will prepare dataset as directory: {dataset_path}"
     )
@@ -321,7 +322,7 @@ def prep(
         elif purpose == "predict":
             split_name = "predict"
 
-        dataset_df = prep_helper.add_split_col(dataset_df, split=split_name)
+        dataset_df = helper.add_split_col(dataset_df, split=split_name)
 
     # ---- create and save labelmap ------------------------------------------------------------------------------------
     # we do this before creating array files since we need to load the labelmap to make frame label vectors
@@ -341,7 +342,7 @@ def prep(
             json.dump(labelmap, fp)
 
     # ---- move prepared files into sub-directories --------------------------------------------------------------------
-    prep_helper.move_files_into_split_subdirs(
+    helper.move_files_into_split_subdirs(
         dataset_df,
         dataset_path,
         purpose
@@ -357,7 +358,7 @@ def prep(
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
     # we do this before generating learncurve splits because learncurve expects metadata to exist, to get timebin_dur
-    timebin_dur = prep_helper.validate_and_get_timebin_dur(dataset_df)
+    timebin_dur = helper.validate_and_get_timebin_dur(dataset_df)
 
     metadata = Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
