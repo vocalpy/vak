@@ -1,11 +1,4 @@
-"""Helper functions for prep module.
-
-There's two reasons for this module:
-1. It lets us `import prep from prep` in vak/core/prep/__init__.py
-so we don't have to write `vak.core.prep.prep.prep()`
-2. It factors out smaller functions to unit test,
-so that ``vak.core.prep.prep.prep` is less of a giant
-imperative script.
+"""Helper functions for frame classification dataset prep.
 """
 from __future__ import annotations
 
@@ -17,7 +10,7 @@ import crowsetta
 import numpy as np
 import pandas as pd
 
-from .. import (
+from ... import (
     common,
     datasets,
     transforms
@@ -40,7 +33,7 @@ VALID_PURPOSES = frozenset(
 def make_frame_classification_arrays_from_spect_and_annot_paths(
         spect_paths: list[str],
         labelmap: dict | None = None,
-        annots: list[crowsetta.Annotion] | None = None,
+        annots: list[crowsetta.Annotation] | None = None,
 ):
     """Makes arrays used by dataset classes
     for frame classification task
