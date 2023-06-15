@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Script that generates the "source" test data
+used to test the implementation of the DAS model.
+
+This script should be run in an environment
+created by the 'das-test-data-env' files
+in ``./tests/scripts/``.
+"""
 import pathlib
 import urllib.request
 
