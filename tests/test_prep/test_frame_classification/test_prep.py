@@ -1,4 +1,4 @@
-"""tests for vak.prep module"""
+"""Tests for vak.prep.frame_classification.frame_classification.prep"""
 import json
 import pathlib
 import shutil
