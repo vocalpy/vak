@@ -201,6 +201,7 @@ def prep(
     if dataset_type == 'frame classification':
         dataset_df, dataset_path = frame_classification.prep(
             data_dir,
+            input_type,
             purpose,
             audio_format,
             spect_format,
