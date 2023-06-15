@@ -2,8 +2,8 @@ import logging
 import pathlib
 
 from . import (
+    constants,
     frame_classification,
-    prep_helper,
 )
 
 
@@ -168,9 +168,9 @@ def prep(
         Path to csv saved from ``dataset_df``.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
-    if purpose not in prep_helper.VALID_PURPOSES:
+    if purpose not in constants.VALID_PURPOSES:
         raise ValueError(
-            f"purpose must be one of: {prep_helper.VALID_PURPOSES}\n"
+            f"purpose must be one of: {constants.VALID_PURPOSES}\n"
             f"Value for purpose was: {purpose}"
         )
 
