@@ -12,6 +12,7 @@ from .validators import (
     is_spect_format,
 )
 from ..common.converters import expanded_user_path, labelset_to_set
+from .. import prep
 
 
 def duration_from_toml_value(value):
@@ -125,22 +126,18 @@ class PrepConfig:
     dataset_type = attr.ib(validator=instance_of(str))
     @dataset_type.validator
     def is_valid_dataset_type(self, attribute, value):
-        if value not in (
-            "frame_classification",
-        ):
+        if value not in prep.constants.DATASET_TYPES:
             raise ValueError(
-                f"Invalid dataset type: {value}"
+                f"Invalid dataset type: {value}. "
+                f"Valid dataset types are: {prep.constants.DATASET_TYPES}"
             )
 
     input_type = attr.ib(validator=instance_of(str))
     @input_type.validator
     def is_valid_input_type(self, attribute, value):
-        if value not in (
-            "audio",
-            "spect"
-        ):
+        if value not in prep.constants.INPUT_TYPES:
             raise ValueError(
-                f"Invalid input type: {value}. Must be one of: {{'audio', 'spect'}}"
+                f"Invalid input type: {value}. Must be one of: {prep.constants.INPUT_TYPES}"
             )
 
     audio_format = attr.ib(validator=validators.optional(is_audio_format), default=None)
