@@ -203,6 +203,7 @@ def prep(
             data_dir,
             input_type,
             purpose,
+            output_dir,
             audio_format,
             spect_format,
             spect_params,
@@ -210,13 +211,14 @@ def prep(
             annot_file,
             labelset,
             audio_dask_bag_kwargs,
-            output_dir,
             train_dur,
             val_dur,
             test_dur,
             train_set_durs,
             num_replicates,
             window_size,
+            spect_key,
+            timebins_key,
         )
         return dataset_df, dataset_path
     else:
