@@ -14,14 +14,6 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-INPUT_TYPES = {'audio', 'spect'}
-
-DATASET_TYPE_FUNCTION_MAP = {
-    'frame_classification': frame_classification.prep,
-}
-
-DATASET_TYPES = tuple(DATASET_TYPE_FUNCTION_MAP.keys())
-
 
 def prep(
     data_dir: str | pathlib.Path,
