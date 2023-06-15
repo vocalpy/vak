@@ -166,15 +166,15 @@ def prep(
             f"Value for purpose was: {purpose}"
         )
 
-    if dataset_type not in DATASET_TYPES:
+    if dataset_type not in constants.DATASET_TYPES:
         raise ValueError(
-            f"``dataset_type`` must be one of: {DATASET_TYPES}\n"
+            f"``dataset_type`` must be one of: {constants.DATASET_TYPES}\n"
             f"Value for ``dataset_type`` was: {dataset_type}"
         )
 
-    if input_type not in INPUT_TYPES:
+    if input_type not in constants.INPUT_TYPES:
         raise ValueError(
-            f"``input_type`` must be one of: {INPUT_TYPES}\n"
+            f"``input_type`` must be one of: {constants.INPUT_TYPES}\n"
             f"Value for ``input_type`` was: {input_type}"
         )
 
