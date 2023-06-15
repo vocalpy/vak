@@ -122,7 +122,7 @@ class PrepConfig:
     data_dir = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
 
-    dataset_type = attr.ib(validator=instance_of(str), default="frame_classification")
+    dataset_type = attr.ib(validator=instance_of(str))
     @dataset_type.validator
     def is_valid_dataset_type(self, attribute, value):
         if value not in (
@@ -132,7 +132,7 @@ class PrepConfig:
                 f"Invalid dataset type: {value}"
             )
 
-    input_type = attr.ib(validator=instance_of(str), default="spect")
+    input_type = attr.ib(validator=instance_of(str))
     @input_type.validator
     def is_valid_input_type(self, attribute, value):
         if value not in (
