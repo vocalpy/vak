@@ -489,6 +489,14 @@ def _vectors_from_df(
     return source_ids, source_inds, window_inds, lbl_tb
 
 
+VALID_SPLITS = (
+    "train",
+    "val",
+    "test",
+    "all"
+)
+
+
 def vectors_from_df(
         df: pd.DataFrame,
         dataset_path: str | pathlib.Path,
@@ -571,9 +579,9 @@ def vectors_from_df(
     if crop_dur is not None and labelmap is None:
         raise ValueError("Must provide labelmap when specifying crop_dur")
 
-    if split not in FrameClassificationWindowDataset.VALID_SPLITS:
+    if split not in VALID_SPLITS:
         raise ValueError(
-            f"Invalid value for split: {split}. Valid split names are: {FrameClassificationWindowDataset.VALID_SPLITS}"
+            f"Invalid value for split: {split}. Valid split names are: {VALID_SPLITS}"
         )
 
     if crop_dur is not None and timebin_dur is not None:
