@@ -1,4 +1,6 @@
 [PREP]
+dataset_type = "frame classification"
+input_type = "spect"
 data_dir = "./tests/data_for_tests/source/cbins/gy6or6/032312"
 output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat"
 audio_format = "cbin"

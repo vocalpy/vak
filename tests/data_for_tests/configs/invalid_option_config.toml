@@ -2,6 +2,8 @@
 # raises a ValueError when passed to
 # vak.config.validators.are_options_valid
 [PREP]
+dataset_type = "frame classification"
+input_type = "spect"
 data_dir = '/home/user/data/subdir/'
 ouput_dir = '/why/do/i/keep/typing/ouput'  # <-- invalid option 'ouput' instead of 'output'
 audio_format = 'cbin'
