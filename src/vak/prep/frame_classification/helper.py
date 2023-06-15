@@ -1,5 +1,4 @@
-"""Helper functions for frame classification dataset prep.
-"""
+"""Helper functions for frame classification dataset prep."""
 from __future__ import annotations
 
 import logging
@@ -18,16 +17,6 @@ from ... import (
 
 
 logger = logging.getLogger(__name__)
-
-
-VALID_PURPOSES = frozenset(
-    [
-        "eval",
-        "learncurve",
-        "predict",
-        "train",
-    ]
-)
 
 
 def make_frame_classification_arrays_from_spect_and_annot_paths(
