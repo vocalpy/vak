@@ -195,7 +195,10 @@ def prep(
             "use pre-computed spectrograms from existing array files."
         )
 
-    if dataset_type == 'frame_classification':
+    # we have to use an if-else here since args may vary across dataset prep functions
+    # but we still define DATASET_TYPE_FUNC_MAP in vak.prep.constants
+    # so that the mapping is made explicit in the code
+    if dataset_type == 'frame classification':
         dataset_df, dataset_path = frame_classification.prep(
             data_dir,
             purpose,
@@ -216,6 +219,8 @@ def prep(
         )
         return dataset_df, dataset_path
     else:
+        # this is in case a dataset type is written wrong
+        # in the if-else statements above, we want to error loudly
         raise ValueError(
             f"Unrecognized dataset type: {dataset_type}"
         )
