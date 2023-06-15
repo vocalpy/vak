@@ -6,7 +6,7 @@ import warnings
 import crowsetta.formats.seq
 
 from . import helper
-from .. import split
+from .. import constants, split
 from ..learncurve import make_learncurve_splits_from_dataset_df
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 
@@ -143,9 +143,9 @@ def prep(
         Path to csv saved from ``dataset_df``.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
-    if purpose not in helper.VALID_PURPOSES:
+    if purpose not in constants.VALID_PURPOSES:
         raise ValueError(
-            f"purpose must be one of: {helper.VALID_PURPOSES}\n"
+            f"purpose must be one of: {constants.VALID_PURPOSES}\n"
             f"Value for purpose was: {purpose}"
         )
 
