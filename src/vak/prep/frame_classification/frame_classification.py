@@ -6,7 +6,7 @@ import warnings
 import crowsetta.formats.seq
 
 from . import helper
-from .. import constants, split
+from .. import split
 from ..learncurve import make_learncurve_splits_from_dataset_df
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 
@@ -142,6 +142,8 @@ def prep(
     dataset_path : pathlib.Path
         Path to csv saved from ``dataset_df``.
     """
+    from .. import constants  # avoid circular import
+
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if purpose not in constants.VALID_PURPOSES:
         raise ValueError(
