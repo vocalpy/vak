@@ -16,7 +16,6 @@ from .. import (
 )
 from ..common import validators
 from ..datasets.frame_classification import FrameClassificationEvalDataset
-from ..prep.prep_helper import validate_and_get_timebin_dur
 
 
 # define this so we can always import * from eval in vak/eval/__init__.py
@@ -180,9 +179,7 @@ def eval(
         input_shape = input_shape[1:]
 
     if post_tfm_kwargs:
-        dataset_df = pd.read_csv(dataset_csv_path)
-        timebin_dur = validate_and_get_timebin_dur(dataset_df)
-
+        timebin_dur = metadata.timebin_dur
         post_tfm = transforms.labeled_timebins.PostProcess(
             timebin_dur=timebin_dur,
             **post_tfm_kwargs,
