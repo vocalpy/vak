@@ -6,6 +6,8 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 
+from .. import constants
+
 
 def get_window_inds(n_frames: int, window_size: int, stride: int):
     return np.arange(stop=n_frames - (window_size - 1), step=stride)
@@ -102,11 +104,11 @@ class FrameClassificationWindowDataset:
     ):
         dataset_path = pathlib.Path(dataset_path)
         split_path = dataset_path / split
-        X_path = split_path / 'X.npy'
+        X_path = split_path / constants.INPUT_ARRAY_FILENAME
         X = np.load(X_path)
-        Y_path = split_path / 'Y.npy'
+        Y_path = split_path / constants.FRAME_LABELS_ARRAY_FILENAME
         Y = np.load(Y_path)
-        window_inds_path = split_path / 'window_inds.npy'
+        window_inds_path = split_path / constants.WINDOW_INDS_ARRAY_FILENAME
         if window_inds_path.exists():
             window_inds = np.load(window_inds_path)
         else:
