@@ -6,12 +6,16 @@ import logging
 import pathlib
 from typing import Sequence
 
+import crowsetta
 import numpy as np
 import pandas as pd
 
 from . import split
-from .. import datasets
-from ..datasets.frame_classification import window_dataset
+from .. import common, datasets
+from .frame_classification.helper import (
+    sort_source_paths_and_annots_by_label_freq,
+    make_frame_classification_arrays_from_spect_and_annot_paths
+)
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +27,6 @@ def make_learncurve_splits_from_dataset_df(
     train_set_durs: Sequence[float],
     num_replicates: int,
     dataset_path: pathlib.Path,
-    window_size: int,
     labelmap: dict,
     spect_key: str = "s",
     timebins_key: str = "t",
@@ -90,32 +93,52 @@ def make_learncurve_splits_from_dataset_df(
 
             metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
             timebin_dur = metadata.timebin_dur
-            # use *just* train subset to get spect vectors for FrameClassificationWindowDataset
-            (
-                source_ids,
-                source_inds,
-                window_inds,
-            ) = window_dataset.helper.vectors_from_df(
-                train_split_df,
-                dataset_path,
-                "train",
-                window_size,
-                spect_key,
-                timebins_key,
-                crop_dur=train_dur,
-                timebin_dur=timebin_dur,
-                labelmap=labelmap,
+
+            source_paths = train_split_df['spect_path'].values
+            annots = common.annotation.from_df(train_split_df)
+
+            source_paths, annots = sort_source_paths_and_annots_by_label_freq(
+                source_paths,
+                annots
             )
 
-            # TODO: this is specific to FrameClassificationWindowDataset -- flag? separate learncurve split functions for other datasets?
-            for vec_name, vec in zip(
-                ["source_ids", "source_inds", "window_inds"],
-                [source_ids, source_inds, window_inds],
-            ):
-                vector_path = learncurve_splits_root / f"{vec_name}-train-dur-{train_dur}-replicate-{replicate_num}.npy"
-                np.save(str(vector_path), vec)  # str so type-checker doesn't complain
-                # save just name, will load relative to dataset_path
-                record[f'{vec_name}_npy_filename'] = vector_path.name
+            (inputs,
+             source_id_vec,
+             frame_labels) = make_frame_classification_arrays_from_spect_and_annot_paths(
+                source_paths,
+                labelmap,
+                annots,
+                train_dur,
+                timebin_dur,
+            )
+
+            train_dur_replicate_root = learncurve_splits_root / f"train-dur-{train_dur}-replicate-{replicate_num}"
+            train_dur_replicate_root.mkdir()
+
+            logger.info(
+                "Saving ``inputs`` vector for frame classification dataset with size "
+                f"{round(inputs.nbytes * 1e-6, 2)} MB."
+            )
+            np.save(train_dur_replicate_root / datasets.frame_classification.constants.INPUT_ARRAY_FILENAME, inputs)
+            logger.info(
+                "Saving ``source_id`` vector for frame classification dataset with size "
+                f"{round(source_id_vec.nbytes * 1e-6, 2)} MB."
+            )
+            np.save(train_dur_replicate_root / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME,
+                    source_id_vec)
+            logger.info(
+                "Saving ``frame_labels`` vector (targets) for frame classification dataset "
+                f"with size {round(frame_labels.nbytes * 1e-6, 2)} MB."
+            )
+            np.save(train_dur_replicate_root / datasets.frame_classification.constants.FRAME_LABELS_ARRAY_FILENAME,
+                    frame_labels)
+            logger.info(
+                "Saving csv file of annotations for frame classification dataset"
+            )
+            generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+            generic_seq.to_file(
+                train_dur_replicate_root / datasets.frame_classification.constants.ANNOTATION_CSV_FILENAME
+            )
 
             # keep the same validation and test set by concatenating them with the train subset
             split_df = pd.concat(
