@@ -15,7 +15,7 @@ import pandas as pd
 
 from ...common import constants, files
 from ...common.annotation import map_annotated_to_annot
-from ...common.converters import labelset_to_set
+from ...common.converters import expanded_user_path, labelset_to_set
 
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ DF_COLUMNS = [
 def make_dataframe_of_spect_files(
     spect_format: str,
     spect_dir: str | pathlib.Path | None = None,
+    spect_output_dir: str | pathlib.Path | None = None,
     spect_files: list | None = None,
     spect_ext: str | None = None,
     annot_list: list | None = None,
@@ -47,9 +48,13 @@ def make_dataframe_of_spect_files(
     spect_key: str = "s",
     audio_path_key: str = "audio_path",
 ):
-    """Convert spectrogram files into a dataset of vocalizations represented as a Pandas DataFrame.
+    """Get a dataset of spectrograms and optional annotations as a Pandas DataFrame.
 
-    Spectrogram files are array in .npz files created by numpy or in .mat files created by Matlab.
+    Spectrogram files are array in npz files created by numpy
+    or in mat files created by Matlab.
+    If files are in npz format, they will be convert to npz
+    with the default keys for arrays, and saved in
+    ``spect_output_dir``.
 
     Parameters
     ----------
@@ -115,6 +120,14 @@ def make_dataframe_of_spect_files(
             f"format '{spect_format}' not recognized."
         )
 
+    if spect_format == 'mat' and spect_output_dir is None:
+        raise ValueError(
+            "Must provide ``spect_output_dir`` when ``spect_format`` is '.mat'."
+            "so that array files can be converted to npz format. "
+            "This is needed so that all datasets are in a standardized, "
+            "canonical format that other functions in the library expect."
+        )
+
     if all([arg is None for arg in (spect_dir, spect_files, spect_annot_map)]):
         raise ValueError("must specify one of: spect_dir, spect_files, spect_annot_map")
 
@@ -155,6 +168,11 @@ def make_dataframe_of_spect_files(
 
     if labelset is not None:
         labelset = labelset_to_set(labelset)
+
+    if spect_output_dir:
+        spect_output_dir = expanded_user_path(spect_output_dir)
+        if not spect_output_dir.is_dir():
+            raise NotADirectoryError(f"spect_output_dir not found: {spect_output_dir}")
 
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
@@ -223,6 +241,16 @@ def make_dataframe_of_spect_files(
             # if we can't, then we'll get back a None
             # (or an error)
             audio_path = files.spect.find_audio_fname(spect_path)
+
+        if spect_format == 'mat':
+            # convert to .npz and save in spect_output_dir
+            spect_dict_npz = {
+                's': spect_dict[spect_key],
+                't': spect_dict[timebins_key],
+                'f': spect_dict[freqbins_key]
+            }
+            spect_path = spect_output_dir / pathlib.Path(spect_path).stem
+            np.savez(spect_path, **spect_dict_npz)
 
         if annot is not None:
             annot_path = annot.annot_path
