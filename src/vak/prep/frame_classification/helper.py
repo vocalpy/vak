@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import collections
+import copy
 import logging
 import pathlib
 import shutil
@@ -22,7 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 def sort_source_paths_and_annots_by_label_freq(
-        source_paths: list[str], annots: list[crowsetta.Annotation]
+        source_paths: list[str] | npt.NDArray,
+        annots: list[crowsetta.Annotation]
 ) -> tuple[list[str], list[crowsetta.Annotation]]:
     """Sort source paths and annotations by frequency of labels
     in annotations.
@@ -34,27 +36,65 @@ def sort_source_paths_and_annots_by_label_freq(
 
     Parameters
     ----------
-    source_paths : list
+    source_paths : list, np.ndarray
     annots: list
 
     Returns
     -------
     source_paths_sorted : list
     annots_sorted: list
-
     """
+    if isinstance(source_paths, np.ndarray):
+        source_paths = source_paths.tolist()
+
+    if not(
+        len(source_paths) == len(annots)
+    ):
+        raise ValueError(
+            f"``source_paths`` and ``annots`` have different lengths:"
+            f"len(source_paths)={len(source_paths)},"
+            f"len(annots)={len(annots)}"
+        )
+
     all_labels = [
         lbl for annot in annots for lbl in annot.seq.labels
     ]
     label_counts = collections.Counter(all_labels)
+
+    # we copy so we can remove items to make sure we append all below
+    source_paths_copy = copy.deepcopy(source_paths)
+    annots_copy = copy.deepcopy(annots)
     source_paths_sorted, annots_sorted = [], []
     for label, _ in reversed(label_counts.most_common()):
-        for source_path, annot in zip(source_paths, annots):
-            if label in annot.seq.label:
+        for source_path, annot in zip(source_paths_copy, annots_copy):
+            if label in annot.seq.labels.tolist():
                 annots_sorted.append(annot)
-                annots.remove(annot)
                 source_paths_sorted.append(source_path)
-                source_paths.remove(source_path)
+                annots_copy.remove(annot)
+                source_paths_copy.remove(source_path)
+
+    # make sure we got all source_paths + annots
+    if len(annots_copy) > 0:
+        for source_path, annot in zip(source_paths_copy, annots_copy):
+            annots_sorted.append(annot)
+            source_paths_sorted.append(source_path)
+            annots_copy.remove(annot)
+            source_paths_copy.remove(source_path)
+
+    if len(annots_copy) > 0:
+        raise ValueError(
+            "Not all ``annots`` were used in sorting."
+            f"Leftover ``annots``: {annots_copy}"
+        )
+
+    if not (
+            len(annots_sorted) == len(source_paths_sorted) == len(annots)
+    ):
+        raise ValueError(
+            "Inconsistent lengths after sorting:"
+            "len(annots_sorted) == len(source_paths_sorted) == len(annots)"
+        )
+
     return source_paths_sorted, annots_sorted
 
 
@@ -148,14 +188,14 @@ def crop_arrays_keep_classes(
             f"The ``inputs`` array must be 1- or 2- dimensional but ``inputs.ndim`` was: {inputs.ndim}"
         )
     source_ids = common.validators.column_or_1d(source_ids)
-    if frame_labels:
+    if frame_labels is not None:
         frame_labels = common.validators.column_or_1d(frame_labels)
 
     lens = [
         inputs.shape[-1],
         source_ids.shape[-1]
     ]
-    if frame_labels:
+    if frame_labels is not None:
         lens.append(frame_labels.shape[-1])
     uniq_lens = set(lens)
     if len(uniq_lens) != 1:
@@ -184,7 +224,7 @@ def crop_arrays_keep_classes(
 
     # ---- Do the cropping ----------------------------------------
     class_labels = set(labelmap.values())
-    if frame_labels:
+    if frame_labels is not None:
         frame_labels_cropped = frame_labels[:cropped_length]
         uniq_frame_labels_cropped = set(np.unique(frame_labels_cropped))
 
@@ -304,7 +344,10 @@ def make_frame_classification_arrays_from_spect_and_annot_paths(
         inputs, source_id_vec, frame_labels = crop_arrays_keep_classes(
             inputs,
             source_id_vec,
-            frame_labels
+            crop_dur,
+            frame_dur,
+            labelmap,
+            frame_labels,
         )
 
     return inputs, source_id_vec, frame_labels
@@ -336,7 +379,7 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
 
     logger.info(f"Will use labelmap: {labelmap}")
 
-    for split in dataset_df.split:
+    for split in sorted(dataset_df.split.unique()):
         if split == 'None':
             # these are files that didn't get assigned to a split
             continue
@@ -361,13 +404,16 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         )
 
         logger.info(
-            f"Saving ``inputs`` for frame classification dataset with size {round(inputs.nbytes * 1e-10, 2)} GB"
+            "Saving ``inputs`` vector for frame classification dataset with size "
+            f"{round(inputs.nbytes * 1e-6, 2)} MB"
         )
         np.save(split_dst / datasets.frame_classification.constants.INPUT_ARRAY_FILENAME, inputs)
         logger.info(
             "Saving ``source_id`` vector for frame classification dataset with size "
             f"{round(source_id_vec.nbytes * 1e-6, 2)} MB"
         )
+        np.save(split_dst / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME,
+                source_id_vec)
         if purpose != 'predict':
             logger.info(
                 "Saving frame labels vector (targets) for frame classification dataset "
