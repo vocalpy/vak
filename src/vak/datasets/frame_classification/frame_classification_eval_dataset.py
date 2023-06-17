@@ -6,6 +6,8 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 
+from . import constants
+
 
 class FrameClassificationEvalDataset:
     """A dataset class used for evaluating
@@ -87,11 +89,11 @@ class FrameClassificationEvalDataset:
     ):
         dataset_path = pathlib.Path(dataset_path)
         split_path = dataset_path / split
-        X_path = split_path / 'X.npy'
+        X_path = split_path / constants.INPUT_ARRAY_FILENAME
         X = np.load(X_path)
-        Y_path = split_path / 'Y.npy'
+        Y_path = split_path / constants.FRAME_LABELS_ARRAY_FILENAME
         Y = np.load(Y_path)
-        sample_ids_path = split_path / 'sample_ids.npy'
+        sample_ids_path = split_path / constants.SOURCE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
         return cls(
             X,
