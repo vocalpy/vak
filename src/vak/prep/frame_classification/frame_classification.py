@@ -43,7 +43,6 @@ def prep(
     test_dur: int | None = None,
     train_set_durs: list[float] | None = None,
     num_replicates: int | None = None,
-    window_size: int | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
 ):
@@ -127,9 +126,6 @@ def prep(
         to better estimate metrics for a training set of that size.
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
-    window_size : int
-        Size of windows taken from spectrograms, in number of time bins,
-        shown to neural networks
     spect_key : str
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
@@ -380,7 +376,6 @@ def prep(
             train_set_durs,
             num_replicates,
             dataset_path,
-            window_size,
             labelmap,
             spect_key,
             timebins_key,
