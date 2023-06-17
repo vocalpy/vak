@@ -343,12 +343,15 @@ def prep(
         # save labelmap in case we need it later
         with (dataset_path / "labelmap.json").open("w") as fp:
             json.dump(labelmap, fp)
+    else:
+        labelmap = None
 
     # ---- move prepared files into sub-directories --------------------------------------------------------------------
-    helper.move_files_into_split_subdirs(
+    helper.make_frame_classification_arrays_from_spectrogram_dataset(
         dataset_df,
         dataset_path,
-        purpose
+        purpose,
+        labelmap,
     )
 
     # ---- save csv file representing dataset --------------------------------------------------------------------------
