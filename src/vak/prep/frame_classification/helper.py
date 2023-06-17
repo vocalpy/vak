@@ -153,28 +153,27 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         logger.info(
             f"Saving ``inputs`` for frame classification dataset with size {round(inputs.nbytes * 1e-10, 2)} GB"
         )
-        np.save(split_dst / datasets.frame_classification.INPUT_ARRAY_FILENAME, inputs)
+        np.save(split_dst / datasets.frame_classification.constants.INPUT_ARRAY_FILENAME, inputs)
         logger.info(
             "Saving ``source_id`` vector for frame classification dataset with size "
             f"{round(source_id_vec.nbytes * 1e-6, 2)} MB"
         )
-        np.save(split_dst / datasets.frame_classification.SOURCE_IDS_ARRAY_FILENAME, source_id_vec)
+        np.save(split_dst / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME, source_id_vec)
         logger.info(
             "Saving ``inds_in_source_vec`` vector for frame classification dataset "
             f"with size {round(inds_in_source_vec.nbytes * 1e-6, 2)} MB"
         )
-        np.save(split_dst / datasets.frame_classification.INDS_IN_SOURCE_ARRAY_FILENAME, inds_in_source_vec)
         if purpose != 'predict':
             logger.info(
                 "Saving frame labels vector (targets) for frame classification dataset "
                 f"with size {round(frame_labels.nbytes * 1e-6, 2)} MB"
             )
-            np.save(split_dst / datasets.frame_classification.FRAME_LABELS_ARRAY_FILENAME, frame_labels)
+            np.save(split_dst / datasets.frame_classification.constants.FRAME_LABELS_ARRAY_FILENAME, frame_labels)
             logger.info(
                 "Saving annotations as csv"
             )
             generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
-            generic_seq.to_file(split_dst / datasets.frame_classification.ANNOTATION_CSV_FILENAME)
+            generic_seq.to_file(split_dst / datasets.frame_classification.constants.ANNOTATION_CSV_FILENAME)
 
 
 def move_files_into_split_subdirs(dataset_df: pd.DataFrame, dataset_path: pathlib.Path, purpose: str) -> None:
