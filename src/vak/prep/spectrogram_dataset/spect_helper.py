@@ -249,7 +249,7 @@ def make_dataframe_of_spect_files(
                 't': spect_dict[timebins_key],
                 'f': spect_dict[freqbins_key]
             }
-            spect_path = spect_output_dir / pathlib.Path(spect_path).stem
+            spect_path = spect_output_dir / (pathlib.Path(spect_path).stem + ".npz")
             np.savez(spect_path, **spect_dict_npz)
 
         if annot is not None:
