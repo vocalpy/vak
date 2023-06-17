@@ -156,7 +156,7 @@ def prep(
 
     if audio_format and spect_format:
         raise ValueError(
-            "Cannot specify both audio_format and spect_format, "
+            "Cannot specify both ``audio_format`` and ``spect_format``, "
             "unclear whether to create spectrograms from audio files or "
             "use already-generated spectrograms from array files"
         )
@@ -166,7 +166,7 @@ def prep(
 
     data_dir = expanded_user_path(data_dir)
     if not data_dir.is_dir():
-        raise NotADirectoryError(f"data_dir not found: {data_dir}")
+        raise NotADirectoryError(f"Path specified for ``data_dir`` not found: {data_dir}")
 
     if output_dir:
         output_dir = expanded_user_path(output_dir)
@@ -174,33 +174,34 @@ def prep(
         output_dir = data_dir
 
     if not output_dir.is_dir():
-        raise NotADirectoryError(f"output_dir not found: {output_dir}")
+        raise NotADirectoryError(f"Path specified for ``output_dir`` not found: {output_dir}")
 
     if annot_file is not None:
         annot_file = expanded_user_path(annot_file)
         if not annot_file.exists():
             raise FileNotFoundError(
-                f'annot_file not found: {annot_file}'
+                f'Path specified for ``annot_file`` not found: {annot_file}'
             )
 
     if purpose == "predict":
         if labelset is not None:
             warnings.warn(
-                ".toml config file has a 'predict' section, but a labelset was provided."
-                "This would cause an error because the prep_spectrogram_dataset section will attempt to "
-                f"check whether the files in the data_dir ({data_dir}) have labels in "
-                "labelset, even though those files don't have annotation.\n"
-                "Setting labelset to None."
+                "The ``purpose`` argument was set to 'predict`, but a ``labelset`` was provided."
+                "This would cause an error because the ``prep_spectrogram_dataset`` section will attempt to "
+                f"check whether the files in the ``data_dir`` have labels in "
+                "``labelset``, even though those files don't have annotation.\n"
+                "Setting ``labelset`` to None."
             )
             labelset = None
     else:  # if purpose is not predict
         if labelset is None:
             raise ValueError(
-                f".toml config file has a '{purpose}' section, but no labelset was provided."
+                f"The ``purpose`` argument was set to '{purpose}', but no ``labelset`` was provided."
                 "This will cause an error when trying to split the dataset, "
                 "e.g. into training and test splits, "
                 "or a silent error, e.g. when calculating metrics with an evaluation set. "
-                "Please add a 'labelset' option to the [PREP] section of the .toml config file."
+                "Please specify a ``labelset`` when calling ``vak.prep.frame_classification.prep`` "
+                f"with ``purpose='{purpose}'."
             )
 
     logger.info(f"purpose for dataset: {purpose}")
@@ -216,7 +217,7 @@ def prep(
         # we do this normalization / canonicalization after we make dataset_path
         # so that we can put the new annot_file inside of dataset_path, instead of
         # making new files elsewhere on a user's system
-        logger.info("The `annot_format` argument was set to 'birdsong-recognition-format'; "
+        logger.info("The ``annot_format`` argument was set to 'birdsong-recognition-format'; "
                     "this format requires the audio files for their sampling rate "
                     "to convert onset and offset times of birdsong syllables to seconds."
                     "Converting this format to 'generic-seq' now with the times in seconds, "
@@ -282,7 +283,7 @@ def prep(
         and (test_dur is None or val_dur == 0)
     ):
         raise ValueError(
-            "duration specified for just training set, but prep function does not currently support creating a "
+            "A duration specified for just training set, but prep function does not currently support creating a "
             "single split of a specified duration. Either remove the train_dur option from the prep section and "
             "rerun, in which case all data will be included in the training set, or specify values greater than "
             "zero for test_dur (and val_dur, if a validation set will be used)"
