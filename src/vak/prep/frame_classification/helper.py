@@ -298,8 +298,10 @@ def make_frame_classification_arrays_from_spect_and_annot_paths(
                          "to ensure that set is preserved when cropping the dataset "
                          "to the duration specified by ``crop_dur``.")
 
-    logger.info(f"Loading data from {len(source_paths)} spectrogram files "
-                f"and {len(annots)} annotations")
+    msg = f"Loading data from {len(source_paths)} spectrogram files"
+    if annots is not None:
+        msg += f" and {len(annots)} annotations"
+    logger.info(msg)
 
     inputs, source_id_vec = [], []
     if annots:
