@@ -114,6 +114,11 @@ def prep_spectrogram_dataset(
     else:
         spect_output_dir = data_dir
 
+    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
+    spect_dirname = f"spectrograms_generated_{timenow}"
+    spect_output_dir = spect_output_dir / spect_dirname
+    spect_output_dir.mkdir()
+
     if annot_format is not None:
         if annot_file is None:
             annot_files = annotation.files_from_dir(
@@ -137,11 +142,6 @@ def prep_spectrogram_dataset(
             f"making array files containing spectrograms from audio files in: {data_dir}",
         )
         audio_files = audio_helper.files_from_dir(data_dir, audio_format)
-
-        timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-        spect_dirname = f"spectrograms_generated_{timenow}"
-        spect_output_dir = spect_output_dir.joinpath(spect_dirname)
-        spect_output_dir.mkdir()
 
         spect_files = audio_helper.make_spectrogram_files_from_audio_files(
             audio_format=audio_format,
