@@ -1,12 +1,14 @@
 """Helper functions for frame classification dataset prep."""
 from __future__ import annotations
 
+import collections
 import logging
 import pathlib
 import shutil
 
 import crowsetta
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from ... import (
@@ -19,48 +21,254 @@ from ... import (
 logger = logging.getLogger(__name__)
 
 
+def sort_source_paths_and_annots_by_label_freq(
+        source_paths: list[str], annots: list[crowsetta.Annotation]
+) -> tuple[list[str], list[crowsetta.Annotation]]:
+    """Sort source paths and annotations by frequency of labels
+    in annotations.
+
+   :func:`vak.prep.frame_classification.helper.make_frame_classification_arrays_from_spect_and_annot_paths`
+   uses this function to sort before cropping a dataset to a specified duration,
+   so that it's less likely that cropping will remove all occurrences of any label class
+   from the total dataset.
+
+    Parameters
+    ----------
+    source_paths : list
+    annots: list
+
+    Returns
+    -------
+    source_paths_sorted : list
+    annots_sorted: list
+
+    """
+    all_labels = [
+        lbl for annot in annots for lbl in annot.seq.labels
+    ]
+    label_counts = collections.Counter(all_labels)
+    source_paths_sorted, annots_sorted = [], []
+    for label, _ in reversed(label_counts.most_common()):
+        for source_path, annot in zip(source_paths, annots):
+            if label in annot.seq.label:
+                annots_sorted.append(annot)
+                annots.remove(annot)
+                source_paths_sorted.append(source_path)
+                source_paths.remove(source_path)
+    return source_paths_sorted, annots_sorted
+
+
+def crop_arrays_keep_classes(
+        inputs: npt.NDArray,
+        source_ids: npt.NDArray,
+        crop_dur: float,
+        frame_dur: float,
+        labelmap: dict | None = None,
+        frame_labels: npt.NDArray | None = None,
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+    r"""Crop vectors representing FrameClassificationWindowDataset
+    to a target duration.
+
+    This function "crops" a FrameClassificationWindowDataset
+    by shortening the vectors that represent
+    valid windows in a way that
+    ensures all classes are still present after cropping.
+    It first tries to crop from the end of the dataset,
+    then from the front,
+    and then finally it tries to remove
+    unlabeled periods that are at least equal to
+    ``window_size`` + 2 time bins, until
+    the total duration reaches the target size.
+    If none of those approaches can preserve all classes
+    in the dataset, the function raises an error.
+
+    Parameters
+    ----------
+    inputs : numpy.ndarray
+        Inputs to neural network that performs
+        frame classification task.
+        Must be 1-D or 2-D, either an array of audio
+        data or spectrograms.
+    source_ids : numpy.ndarray
+        Represents the "ID" of any source file,
+        i.e., the index into ``spect_paths``
+        that will let us load that file.
+        For a dataset with :math:`m` files,
+        this will be an array of length :math:`T`,
+        the total number of time bins across all files,
+        with elements :math:`i in (0, 1, ..., m - 1)`
+        indicating which time bins
+        correspond to which file :math:`m_i`:
+         :math:`(0, 0, 0, ..., 1, 1, ..., m - 1, m -1)`.
+    crop_dur : float
+        Duration to which dataset should be "cropped", in seconds.
+    timebin_dur : float
+        For a dataset of audio,
+        the duration of a single sample,
+        i.e., the inverse of the sampling rate given in classesHertz.
+        For a dataset of spectrograms,
+        the duration of a single time bin in the spectrograms.
+    frame_labels : numpy.ndarray, optional
+        Vector of labels for frames,
+        where labels are from
+        the set of values in ``labelmap``.
+        Optional, default is None.
+        If ``frame_labels`` is specified
+        then ``labelmap`` must also be specified,
+        and a ValueError will be raised
+        if all classes in ``labelmap``
+        are not present after cropping.
+    labelmap : dict, optional
+        Dict that maps labels from dataset
+        to a series of consecutive integers.
+        To create a label map, pass a set of labels
+        to the :func:`vak.common.labels.to_map` function.
+        Optional, default is None.
+        If ``frame_labels`` is specified
+        then ``labelmap`` must also be specified,
+        and a ValueError will be raised
+        if all classes in ``labelmap``
+        are not present after cropping.
+
+    Returns
+    -------
+    inputs_cropped : numpy.ndarray
+        The ``inputs`` array after cropping.
+    sourc_id_cropped : numpy.ndarray
+        The ``source_ids`` vector after cropping.
+    frame_labels_cropped : numpy.ndarray
+        The ``frame_labels`` vector after cropping,
+        if ``frame_labels`` was provided as an argument.
+    """
+    # ---- pre-conditions
+    # check that all are numpy arrays
+    # and check that inputs is 1d or 2d
+    if not inputs.ndim in (1, 2):
+        raise ValueError(
+            f"The ``inputs`` array must be 1- or 2- dimensional but ``inputs.ndim`` was: {inputs.ndim}"
+        )
+    source_ids = common.validators.column_or_1d(source_ids)
+    if frame_labels:
+        frame_labels = common.validators.column_or_1d(frame_labels)
+
+    lens = [
+        inputs.shape[-1],
+        source_ids.shape[-1]
+    ]
+    if frame_labels:
+        lens.append(frame_labels.shape[-1])
+    uniq_lens = set(lens)
+    if len(uniq_lens) != 1:
+        raise ValueError(
+            "``inputs``, ``source_ids``, and ``frame_labels`` (if provided) should all "
+            "have the same length, but ``crop_to_dur`` did not find one unique length. "
+            "Lengths of ``inputs``, ``source_ids``, and ``frame_labels`` (if provided): "
+            f"were: {lens}"
+        )
+    else:
+        length = uniq_lens.pop()
+
+    # ---- compute target length in number of time bins
+    cropped_length = np.round(crop_dur / frame_dur).astype(int)
+
+    if length == cropped_length:
+        # already correct length
+        return inputs, source_ids, frame_labels
+
+    elif length < cropped_length:
+        raise ValueError(
+            f"Arrays have length {length} "
+            f"that is shorter than correct length, {cropped_length}, "
+            f"(= target duration {crop_dur} / duration of a single frame, {frame_dur})."
+        )
+
+    # ---- Do the cropping ----------------------------------------
+    class_labels = set(labelmap.values())
+    if frame_labels:
+        frame_labels_cropped = frame_labels[:cropped_length]
+        uniq_frame_labels_cropped = set(np.unique(frame_labels_cropped))
+
+        if uniq_frame_labels_cropped == class_labels:
+            return inputs[:cropped_length], source_ids[:cropped_length], frame_labels
+        else:
+            raise ValueError(
+                f"Unable to crop dataset of duration {length * frame_dur} to ``crop_dur`` {crop_dur} "
+                f"and maintain occurrence of all labels in ``labelmap``."
+            )
+    else:
+        return inputs[:cropped_length], source_ids[:cropped_length], frame_labels  # frame_labels is None here
+
+
 def make_frame_classification_arrays_from_spect_and_annot_paths(
-        spect_paths: list[str],
+        source_paths: list[str],
         labelmap: dict | None = None,
         annots: list[crowsetta.Annotation] | None = None,
-):
+        crop_dur: float | None = None,
+        frame_dur: float | None = None,
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray | None]:
     """Makes arrays used by dataset classes
     for frame classification task
-    from a list of spectrogram paths
+    from a list of audio or spectrogram paths
     and an optional, paired list of annotation paths.
 
     This is a helper function used by
     :func:`vak.prep.prep_helper.make_frame_classification_arrays_from_spectrogram_dataset`.
-    We factor it out so we can test
-    that it returns the expected arrays.
 
     Parameters
     ----------
-    spect_paths : list
-        Paths to array files containing spectrograms.
+    source_paths : list
+        Paths to audio files or array files containing spectrograms.
     labelmap : dict
         Mapping string labels to integer classes predicted by network.
     annot_paths : list
         Paths to annotation files that annotate the spectrograms.
     annot_format : str
         Annotation format of the files in annotation paths.
+    crop_dur : float, optional
+        Duration to which the entire dataset should be cropped.
+        If specified, then ``frame_dur`` must be specified
+        so that durations can be measured, and ``labelmap``
+        must be specified to ensure that at least one occurrence
+        of all classes in dataset are preserved after cropping.
+    frame_dur : float, optional
+        Duration of a frame, i.e., a single sample in audio
+        or a single timebin in a spectrogram.
+        Only required if ``crop_dur`` is specified.
 
     Returns
     -------
     inputs : numpy.NDArray
+        An array of inputs to the neural network model,
+        concatenated from either audio files
+        or spectrograms in array files.
     source_id_vec : numpy.NDArray
-    inds_in_source_vec : numpy.NDArray
+        A 1-dimensional vector whose size is equal to the
+        width of ``inputs``
     frame_labels : numpy.NDArray or None
     """
-    logger.info(f"Loading data from {len(spect_paths)} spectrogram files "
+    if crop_dur is not None and frame_dur is None:
+        raise ValueError("Must provide ``frame_dur`` when specifying ``crop_dur``, "
+                         "the duration of a single frame is needed to determine the total duration "
+                         "of the dataset and to crop the dataset to the duration specified "
+                         "by ``crop_dur``.")
+
+    if crop_dur is not None and labelmap is None:
+        raise ValueError("Must provide ``labelmap`` when specifying ``crop_dur``, "
+                         "the set of unique class labels for the dataset is needed "
+                         "to ensure that set is preserved when cropping the dataset "
+                         "to the duration specified by ``crop_dur``.")
+
+    logger.info(f"Loading data from {len(source_paths)} spectrogram files "
                 f"and {len(annots)} annotations")
 
-    inputs, source_id_vec, inds_in_source_vec = [], [], []
+    inputs, source_id_vec = [], []
     if annots:
         frame_labels = []
-        to_do = zip(spect_paths, annots)
+        if crop_dur:
+            source_paths, annots = sort_source_paths_and_annots_by_label_freq(source_paths, annots)
+        to_do = zip(source_paths, annots)
     else:
-        to_do = zip(spect_paths, [None] * len(spect_paths))
+        to_do = zip(source_paths, [None] * len(source_paths))
 
     for source_id, (spect_path, annot) in enumerate(to_do):
         # add to inputs
@@ -84,19 +292,22 @@ def make_frame_classification_arrays_from_spect_and_annot_paths(
         source_id_vec.append(
             np.ones((n_frames,)).astype(np.int32) * source_id
         )
-        inds_in_source_vec.append(
-            np.arange(n_frames)
-        )
 
     inputs = np.concatenate(inputs, axis=1)
     source_id_vec = np.concatenate(source_id_vec)
-    inds_in_source_vec = np.concatenate(inds_in_source_vec)
     if annots is not None:
         frame_labels = np.concatenate(frame_labels)
     else:
         frame_labels = None
 
-    return inputs, source_id_vec, inds_in_source_vec, frame_labels
+    if crop_dur:
+        inputs, source_id_vec, frame_labels = crop_arrays_keep_classes(
+            inputs,
+            source_id_vec,
+            frame_labels
+        )
+
+    return inputs, source_id_vec, frame_labels
 
 
 def make_frame_classification_arrays_from_spectrogram_dataset(
@@ -135,7 +346,7 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         split_dst.mkdir(exist_ok=True)
 
         split_df = dataset_df[dataset_df.split == split]
-        spect_paths = split_df['spect_path'].values
+        source_paths = split_df['spect_path'].values
         if purpose != 'predict':
             annots = common.annotation.from_df(split_df)
         else:
@@ -143,9 +354,8 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
 
         (inputs,
          source_id_vec,
-         inds_in_source_vec,
          frame_labels) = make_frame_classification_arrays_from_spect_and_annot_paths(
-            spect_paths,
+            source_paths,
             labelmap,
             annots,
         )
@@ -157,11 +367,6 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         logger.info(
             "Saving ``source_id`` vector for frame classification dataset with size "
             f"{round(source_id_vec.nbytes * 1e-6, 2)} MB"
-        )
-        np.save(split_dst / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME, source_id_vec)
-        logger.info(
-            "Saving ``inds_in_source_vec`` vector for frame classification dataset "
-            f"with size {round(inds_in_source_vec.nbytes * 1e-6, 2)} MB"
         )
         if purpose != 'predict':
             logger.info(
