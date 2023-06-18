@@ -53,9 +53,6 @@ def train(
     spect_key="s",
     timebins_key="t",
     normalize_spectrograms=True,
-    source_ids=None,
-    source_inds=None,
-    window_inds=None,
     shuffle=True,
     val_step=None,
     ckpt_step=None,
@@ -272,16 +269,10 @@ def train(
         spect_standardizer = None
     transform, target_transform = transforms.get_defaults("train", spect_standardizer)
 
-    train_dataset = FrameClassificationWindowDataset.from_csv(
-        dataset_csv_path=dataset_csv_path,
-        window_inds=window_inds,
-        source_ids=source_ids,
-        source_inds=source_inds,
-        split="train",
-        labelmap=labelmap,
+    train_dataset = FrameClassificationWindowDataset.from_dataset_path(
+        dataset_path=dataset_path,
         window_size=window_size,
-        spect_key=spect_key,
-        timebins_key=timebins_key,
+        split="train",
         transform=transform,
         target_transform=target_transform,
     )
