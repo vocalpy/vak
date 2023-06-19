@@ -34,19 +34,18 @@ def make_learncurve_splits_from_dataset_df(
     """Make splits for a learning curve from a dataframe representing the entire dataset.
 
     Uses :func:`vak.split.dataframe` to make splits from ``dataset_df``.
-    Makes a new directory named "learncurve" in the root of the directory ``dataset_path``,
-    and then saves the following in that directory:
-    - A csv file for each split, representing one replicate of one training set duration
-    - Three npy files for each split, the vectors representing the window dataset
-    - A json file that maps training set durations to replicate numbers,
-      and replicate numbers to the path to the csv, relative to dataset_path
+    Then makes a new directory inside ``dataset_path`` for each training set split,
+    one split for each combination of training set duration and replicate number.
+    In each directory, it saves the three array files representing the frame
+    classification dataset, produced by calling
+    :func:`vak.prep.frame_classification.helper.make_frame_classification_arrays_from_spect_and_annot_paths`.
 
     Parameters
     ----------
     dataset_df : pandas.DataFrame
         Representing an entire dataset of vocalizations.
     csv_path : pathlib.Path
-        path to where dataset was saved as a csv.
+        Path to where dataset was saved as a csv file.
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
         to create a learning curve, e.g. [5, 10, 15, 20].
@@ -57,9 +56,6 @@ def make_learncurve_splits_from_dataset_df(
         data (but of the same duration).
     dataset_path : str, pathlib.Path
         Directory where splits will be saved.
-    window_size : int
-        Size of windows taken from spectrograms, in number of time bins,
-        shown to neural networks
     labelmap : dict
         that maps labelset to consecutive integers
     spect_key : str
@@ -68,35 +64,43 @@ def make_learncurve_splits_from_dataset_df(
         key for accessing vector of time bins in files. Default is 't'.
     """
     dataset_path = pathlib.Path(dataset_path)
-    learncurve_splits_root = dataset_path / 'learncurve'
-    learncurve_splits_root.mkdir()
 
-    splits_records = []  # will use to create dataframe, then save as csv
+    # get just train split, to pass to split.dataframe
+    # so we don't end up with other splits in the training set
+    train_split_df = dataset_df[dataset_df["split"] == "train"].copy()
+    labelset = set([k for k in labelmap.keys() if k != "unlabeled"])
+
+    # will concat after loop, then use ``csv_path`` to replace
+    # original dataset df with this one
+    all_train_durs_and_replicates_df = []
     for train_dur in train_set_durs:
         logger.info(
             f"Subsetting training set for training set of duration: {train_dur}",
         )
         for replicate_num in range(1, num_replicates + 1):
-            record = {
-                'train_dur': train_dur,
-                'replicate_num': replicate_num,
-            }  # will add key-val pairs to this, then append to splits_records at end of inner loop
-
-            # get just train split, to pass to split.dataframe
-            # so we don't end up with other splits in the training set
-            train_split_df = dataset_df[dataset_df["split"] == "train"]
-            labelset = set([k for k in labelmap.keys() if k != "unlabeled"])
-            train_split_df = split.dataframe(
-                train_split_df, dataset_path, train_dur=train_dur, labelset=labelset
+            train_dur_replicate_split_name = common.learncurve.get_train_dur_replicate_split_name(
+                train_dur, replicate_num
             )
-            train_split_df = train_split_df[train_split_df.split == "train"]  # remove rows where split set to 'None'
+
+            train_dur_replicate_df = split.dataframe(
+                # copy to avoid mutating original train_split_df
+                train_split_df.copy(), dataset_path, train_dur=train_dur, labelset=labelset
+            )
+            # remove rows where split set to 'None'
+            train_dur_replicate_df = train_dur_replicate_df[train_dur_replicate_df.split == "train"]
+            # next line, make split name in csv math split name used for directory in dataset dir
+            train_dur_replicate_df['split'] = train_dur_replicate_split_name
+            all_train_durs_and_replicates_df.append(
+                train_dur_replicate_df
+            )
 
             metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
             timebin_dur = metadata.timebin_dur
 
-            source_paths = train_split_df['spect_path'].values
-            annots = common.annotation.from_df(train_split_df)
+            source_paths = train_dur_replicate_df['spect_path'].values
+            annots = common.annotation.from_df(train_dur_replicate_df)
 
+            # sort to minimize chance that cropping removes classes
             source_paths, annots = sort_source_paths_and_annots_by_label_freq(
                 source_paths,
                 annots
@@ -112,7 +116,7 @@ def make_learncurve_splits_from_dataset_df(
                 timebin_dur,
             )
 
-            train_dur_replicate_root = learncurve_splits_root / f"train-dur-{train_dur}-replicate-{replicate_num}"
+            train_dur_replicate_root = dataset_path / train_dur_replicate_split_name
             train_dur_replicate_root.mkdir()
 
             logger.info(
@@ -140,26 +144,14 @@ def make_learncurve_splits_from_dataset_df(
                 train_dur_replicate_root / datasets.frame_classification.constants.ANNOTATION_CSV_FILENAME
             )
 
-            # keep the same validation and test set by concatenating them with the train subset
-            split_df = pd.concat(
-                (
-                    train_split_df,
-                    dataset_df[dataset_df.split == "val"],
-                    dataset_df[dataset_df.split == "test"],
-                )
-            )
+    # keep the same validation and test set by concatenating them with the train subset
+    all_train_durs_and_replicates_df = pd.concat(all_train_durs_and_replicates_df)
+    all_train_durs_and_replicates_df = pd.concat(
+        (
+            all_train_durs_and_replicates_df,
+            dataset_df[dataset_df.split == "val"],
+            dataset_df[dataset_df.split == "test"],
+        )
+    )
 
-            split_csv_filename = f"{csv_path.stem}-train-dur-{train_dur}s-replicate-{replicate_num}.csv"
-            # note that learncurve split csvs are in dataset_path, not dataset_learncurve_dir
-            # this is to avoid changing the semantics of dataset_csv_path to other functions that expect it,
-            # e.g., ``StandardizeSpect.fit_csv_path``; any dataset csv path always has to be in the root
-            split_csv_path = dataset_path / split_csv_filename
-            split_df.to_csv(split_csv_path, index=False)
-            # save just name, will load relative to dataset_path
-            record['split_csv_filename'] = split_csv_path.name
-
-            splits_records.append(record)
-
-    splits_df = pd.DataFrame.from_records(splits_records)
-    splits_path = learncurve_splits_root / 'learncurve-splits-metadata.csv'
-    splits_df.to_csv(splits_path, index=False)
+    all_train_durs_and_replicates_df.to_csv(csv_path, index=False)
