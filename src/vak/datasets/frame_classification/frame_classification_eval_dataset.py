@@ -39,6 +39,15 @@ class FrameClassificationEvalDataset:
     indicates for each frame in the total dataset
     which original sample that frame belongs to.
 
+    Attributes
+    ----------
+    X : numpy.ndarray
+    Y : numpy.ndarray
+    frame_dur : float
+        Duration of a single frame, in seconds.
+    duration : float
+        Total duration of the dataset.
+
     Examples
     --------
 
@@ -56,12 +65,18 @@ class FrameClassificationEvalDataset:
         X: npt.NDArray,
         Y: npt.NDArray,
         sample_ids: npt.NDArray,
+        frame_dur: float,
         item_transform: Callable | None = None,
     ):
         self.X = X
         self.Y = Y
         self.sample_ids = sample_ids
+        self.frame_dur = float(frame_dur)
         self.item_transform = item_transform
+
+    @property
+    def duration(self):
+        return self.X.shape[-1] * self.frame_dur
 
     def __getitem__(self, idx):
         is_source_id = self.sample_ids == idx
