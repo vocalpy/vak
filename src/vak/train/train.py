@@ -260,8 +260,8 @@ def train(
             f"no spect_scaler_path provided, not loading",
         )
         logger.info("will normalize spectrograms")
-        spect_standardizer = transforms.StandardizeSpect.fit_csv_path(
-            dataset_csv_path, split='train', spect_key=spect_key
+        spect_standardizer = transforms.StandardizeSpect.fit_dataset_path(
+            dataset_path, split=split,
         )
         joblib.dump(spect_standardizer, results_path.joinpath("StandardizeSpect"))
     elif spect_scaler_path is not None and not normalize_spectrograms:
