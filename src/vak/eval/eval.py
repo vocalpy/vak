@@ -15,7 +15,7 @@ from .. import (
     transforms,
 )
 from ..common import validators
-from ..datasets.frame_classification import FrameClassificationEvalDataset
+from ..datasets.frame_classification import FramesDataset
 
 
 # define this so we can always import * from eval in vak/eval/__init__.py
@@ -152,7 +152,7 @@ def eval(
         return_padding_mask=True,
     )
 
-    val_dataset = FrameClassificationEvalDataset.from_dataset_path(
+    val_dataset = FramesDataset.from_dataset_path(
         dataset_path=dataset_path,
         split=split,
         item_transform=item_transform,

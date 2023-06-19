@@ -21,7 +21,7 @@ from ..common import (
     files,
     validators
 )
-from ..datasets.frame_classification import FrameClassificationEvalDataset
+from ..datasets.frame_classification import FramesDataset
 from ..common.device import get_default as get_default_device
 
 
@@ -168,7 +168,7 @@ def predict(
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
 
     logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
-    pred_dataset = FrameClassificationEvalDataset.from_csv(
+    pred_dataset = FramesDataset.from_csv(
         dataset_csv_path=dataset_csv_path,
         split="predict",
         labelmap=labelmap,

@@ -106,10 +106,10 @@ def crop_arrays_keep_classes(
         labelmap: dict | None = None,
         frame_labels: npt.NDArray | None = None,
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
-    r"""Crop vectors representing FrameClassificationWindowDataset
+    r"""Crop vectors representing WindowDataset
     to a target duration.
 
-    This function "crops" a FrameClassificationWindowDataset
+    This function "crops" a WindowDataset
     by shortening the vectors that represent
     valid windows in a way that
     ensures all classes are still present after cropping.

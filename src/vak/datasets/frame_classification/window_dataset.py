@@ -47,7 +47,7 @@ class WindowDataset:
     or spectrograms of varying lengths.
 
     Unlike
-    :class:`vak.datasets.frame_classification.FrameClassificationEvalDataset`,
+    :class:`vak.datasets.frame_classification.FramesDataset`,
     this class does not return entire samples
     from the source dataset.
     Instead each paired samples :math:`(x_i, y_i)`
@@ -67,7 +67,7 @@ class WindowDataset:
     created by concatenating samples from the source
     data, e.g., audio files or spectrogram arrays.
     (This is true for
-    :class:`vak.datasets.frame_classification.FrameClassificationEvalDataset`
+    :class:`vak.datasets.frame_classification.FramesDataset`
     as well.)
     The dimensions of :math:`X`  will be (channels, ..., frames),
     i.e., audio will have dimensions (channels, samples)
