@@ -145,22 +145,16 @@ def eval(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-
     item_transform = transforms.get_defaults(
         "eval",
         spect_standardizer,
         window_size=window_size,
         return_padding_mask=True,
     )
-    logger.info(f"creating dataset for evaluation from: {dataset_csv_path}")
-    val_dataset = FrameClassificationEvalDataset.from_csv(
-        dataset_csv_path=dataset_csv_path,
+
+    val_dataset = FrameClassificationEvalDataset.from_dataset_path(
+        dataset_path=dataset_path,
         split=split,
-        labelmap=labelmap,
-        spect_key=spect_key,
-        timebins_key=timebins_key,
         item_transform=item_transform,
     )
     val_loader = torch.utils.data.DataLoader(
@@ -179,6 +173,7 @@ def eval(
         input_shape = input_shape[1:]
 
     if post_tfm_kwargs:
+        metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
         timebin_dur = metadata.timebin_dur
         post_tfm = transforms.labeled_timebins.PostProcess(
             timebin_dur=timebin_dur,
