@@ -7,9 +7,36 @@ import numpy as np
 import numpy.typing as npt
 
 from .. import constants
+from ... import metadata
 
 
-def get_window_inds(n_frames: int, window_size: int, stride: int):
+def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
+    """Get indices of windows for a :class:`WindowDataset`,
+    given the number of frames in the dataset,
+    the window size, and the stride.
+
+    This function is used by :class:`WindowDataset`
+    to compute the indices of windows in the dataset.
+    The length of the vector of indices it returns
+    is the number of windows in the dataset,
+    i.e., the number of samples.
+
+    Parameters
+    ----------
+    n_frames : int
+    window_size : int
+    stride : int
+
+    Returns
+    -------
+    window_inds : numpy.ndarray
+        Vector of indices for windows.
+        During training, batches of windows are made
+        by grabbing indices randomly from this vector,
+        then getting windows of the specified size
+        from the arrays representing the input data
+        and targets for the neural network.
+    """
     return np.arange(stop=n_frames - (window_size - 1), step=stride)
 
 
@@ -54,6 +81,16 @@ class FrameClassificationWindowDataset:
     either audio samples or spectrogram time bins,
     and ``Y`` will be the same size, containing
     an integer class label for each frame.
+
+    Attributes
+    ----------
+    X : numpy.ndarray
+    Y : numpy.ndarray
+    window_size : int
+    frame_dur : float
+        Duration of a single frame, in seconds.
+    duration : float
+        Total duration of the dataset.
     """
 
     def __init__(
@@ -61,21 +98,28 @@ class FrameClassificationWindowDataset:
             X: npt.NDArray,
             Y: npt.NDArray,
             window_size: int,
+            frame_dur: float,
             stride: int = 1,
             window_inds: npt.NDArray | None = None,
             transform: Callable | None = None,
             target_transform: Callable | None = None
     ):
-        self.window_size = window_size
-        self.stride = stride
         self.X = X
+        self.Y = Y
+        self.window_size = window_size
+        self.frame_dur = float(frame_dur)
+        self.stride = stride
 
         if window_inds is None:
             window_inds = get_window_inds(X.shape[-1], window_size, stride)
         self.window_inds = window_inds
-        self.Y = Y
+
         self.transform = transform
         self.target_transform = target_transform
+
+    @property
+    def duration(self):
+        return self.X.shape[-1] * self.frame_dur
 
     def __getitem__(self, idx):
         arr_idx = self.window_inds[idx]
@@ -113,6 +157,9 @@ class FrameClassificationWindowDataset:
             window_inds = np.load(window_inds_path)
         else:
             window_inds = None
+        metadata = metadata.Metadata.from_dataset_path(dataset_path)
+        frame_dur = metadata.timebin_dur
+
         return cls(
             X,
             Y,
