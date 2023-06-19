@@ -239,12 +239,14 @@ def crop_arrays_keep_classes(
         return inputs[:cropped_length], source_ids[:cropped_length], frame_labels  # frame_labels is None here
 
 
-def make_frame_classification_arrays_from_spect_and_annot_paths(
+def make_frame_classification_arrays_from_source_paths_and_annots(
         source_paths: list[str],
         labelmap: dict | None = None,
         annots: list[crowsetta.Annotation] | None = None,
         crop_dur: float | None = None,
         frame_dur: float | None = None,
+        spect_key: str = "s",
+        timebins_key: str = "t",
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray | None]:
     """Makes arrays used by dataset classes
     for frame classification task
@@ -315,7 +317,7 @@ def make_frame_classification_arrays_from_spect_and_annot_paths(
     for source_id, (spect_path, annot) in enumerate(to_do):
         # add to inputs
         d = np.load(spect_path)
-        inputs.append(d["s"])
+        inputs.append(d[spect_key])
 
         # add to frame labels
         if annot:
@@ -324,7 +326,7 @@ def make_frame_classification_arrays_from_spect_and_annot_paths(
                 lbls_int,
                 annot.seq.onsets_s,
                 annot.seq.offsets_s,
-                d["t"],
+                d[timebins_key],
                 unlabeled_label=labelmap["unlabeled"],
             )
             frame_labels.append(lbls_frame)
@@ -360,6 +362,8 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         dataset_path: pathlib.Path,
         purpose: str,
         labelmap: dict | None = None,
+        spect_key: str = "s",
+        timebins_key: str = "t",
 ) -> None:
     """Makes arrays used by dataset classes
     for frame classification task
@@ -376,6 +380,10 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
     dataset_path : str, pathlib.Path
     purpose: str
     labelmap : dict
+    spect_key : str
+        Key for accessing spectrogram in files. Default is 's'.
+    timebins_key : str
+        Key for accessing vector of time bins in files. Default is 't'.
     """
     dataset_path = pathlib.Path(dataset_path)
 
@@ -399,10 +407,12 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
 
         (inputs,
          source_id_vec,
-         frame_labels) = make_frame_classification_arrays_from_spect_and_annot_paths(
+         frame_labels) = make_frame_classification_arrays_from_source_paths_and_annots(
             source_paths,
             labelmap,
             annots,
+            spect_key,
+            timebins_key
         )
 
         logger.info(

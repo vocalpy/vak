@@ -1,5 +1,5 @@
-"""Functions that return a dict mapping training set durations to csv paths,
-used by ``vak.core.learncurve``"""
+"""Functionality to prepare splits of frame classification datasets
+to generate a learning curve."""
 from __future__ import annotations
 
 import logging
@@ -10,12 +10,12 @@ import crowsetta
 import numpy as np
 import pandas as pd
 
-from . import split
-from .. import common, datasets
-from .frame_classification.helper import (
+from .helper import (
     sort_source_paths_and_annots_by_label_freq,
-    make_frame_classification_arrays_from_spect_and_annot_paths
+    make_frame_classification_arrays_from_source_paths_and_annots
 )
+from .. import split
+from ... import common, datasets
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ def make_learncurve_splits_from_dataset_df(
     one split for each combination of training set duration and replicate number.
     In each directory, it saves the three array files representing the frame
     classification dataset, produced by calling
-    :func:`vak.prep.frame_classification.helper.make_frame_classification_arrays_from_spect_and_annot_paths`.
+    :func:`vak.prep.frame_classification.helper.make_frame_classification_arrays_from_source_paths_and_annots`.
 
     Parameters
     ----------
@@ -110,12 +110,14 @@ def make_learncurve_splits_from_dataset_df(
 
             (inputs,
              source_id_vec,
-             frame_labels) = make_frame_classification_arrays_from_spect_and_annot_paths(
+             frame_labels) = make_frame_classification_arrays_from_source_paths_and_annots(
                 source_paths,
                 labelmap,
                 annots,
                 train_dur,
                 timebin_dur,
+                spect_key,
+                timebins_key,
             )
 
             train_dur_replicate_root = dataset_path / train_dur_replicate_split_name
