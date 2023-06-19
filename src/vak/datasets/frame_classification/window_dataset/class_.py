@@ -121,6 +121,14 @@ class FrameClassificationWindowDataset:
     def duration(self):
         return self.X.shape[-1] * self.frame_dur
 
+    @property
+    def shape(self):
+        tmp_x_ind = 0
+        one_x, _ = self.__getitem__(tmp_x_ind)
+        # used by vak functions that need to determine size of window,
+        # e.g. when initializing a neural network model
+        return one_x.shape
+
     def __getitem__(self, idx):
         arr_idx = self.window_inds[idx]
         x = self.X[..., arr_idx:arr_idx + self.window_size]
