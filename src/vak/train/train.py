@@ -58,6 +58,7 @@ def train(
     ckpt_step=None,
     patience=None,
     device=None,
+    split='train',
 ):
     """Train a model and save results.
 
@@ -158,6 +159,11 @@ def train(
         number of validation steps to wait without performance on the
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
+    split : str
+        Name of split from dataset found at ``dataset_path`` to use
+        when training model. Default is 'train'. This parameter is used by
+        `vak.learncurve.learncurve` to specify specific subsets of the
+        training set to use when training models for a learning curve.
     """
     for path, path_name in zip(
             (checkpoint_path, spect_scaler_path),
@@ -272,7 +278,7 @@ def train(
     train_dataset = FrameClassificationWindowDataset.from_dataset_path(
         dataset_path=dataset_path,
         window_size=window_size,
-        split="train",
+        split=split,
         transform=transform,
         target_transform=target_transform,
     )
