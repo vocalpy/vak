@@ -7,6 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 from . import constants
+from ..metadata import Metadata
 
 
 class FrameClassificationEvalDataset:
@@ -110,9 +111,13 @@ class FrameClassificationEvalDataset:
         Y = np.load(Y_path)
         sample_ids_path = split_path / constants.SOURCE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
+        metadata = Metadata.from_dataset_path(dataset_path)
+        frame_dur = metadata.timebin_dur
+
         return cls(
             X,
             Y,
             sample_ids,
+            frame_dur,
             item_transform,
         )
