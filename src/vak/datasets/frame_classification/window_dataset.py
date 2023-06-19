@@ -6,8 +6,8 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 
-from .. import constants
-from ...metadata import Metadata
+from . import constants
+from ..metadata import Metadata
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
