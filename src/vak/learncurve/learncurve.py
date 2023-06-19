@@ -318,14 +318,14 @@ def learning_curve(
             )
         eval_csv_path = eval_csv_path[0]
         eval_df = pd.read_csv(eval_csv_path)
-        eval_df["train_set_dur"] = train_dur
+        eval_df["train_dur"] = train_dur
         eval_df["replicate_num"] = replicate_num
         eval_dfs.append(eval_df)
 
     all_eval_df = pd.concat(eval_dfs)
-    all_eval_columns = ["train_set_dur", "replicate_num", *eval_columns]
+    all_eval_columns = ["train_dur", "replicate_num", *eval_columns]
     all_eval_df = all_eval_df[all_eval_columns]
-    all_eval_df.sort_values(by=["train_set_dur", "replicate_num"])
+    all_eval_df.sort_values(by=["train_dur", "replicate_num"])
     learncurve_csv_path = results_path.joinpath("learning_curve.csv")
     all_eval_df.to_csv(
         learncurve_csv_path, index=False
