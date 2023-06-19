@@ -300,12 +300,9 @@ def train(
             window_size=window_size,
             return_padding_mask=True,
         )
-        val_dataset = FrameClassificationEvalDataset.from_csv(
-            dataset_csv_path=dataset_csv_path,
+        val_dataset = FrameClassificationEvalDataset.from_dataset_path(
+            dataset_path=dataset_path,
             split="val",
-            labelmap=labelmap,
-            spect_key=spect_key,
-            timebins_key=timebins_key,
             item_transform=item_transform,
         )
         val_loader = torch.utils.data.DataLoader(
