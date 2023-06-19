@@ -79,6 +79,12 @@ class FrameClassificationEvalDataset:
     def duration(self):
         return self.X.shape[-1] * self.frame_dur
 
+    @property
+    def shape(self):
+        tmp_x_ind = 0
+        tmp_item = self.__getitem__(tmp_x_ind)
+        return tmp_item["source"].shape
+
     def __getitem__(self, idx):
         is_source_id = self.sample_ids == idx
         x = self.X[..., is_source_id]
