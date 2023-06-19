@@ -6,8 +6,12 @@ import warnings
 import crowsetta.formats.seq
 
 from . import helper
+from .learncurve import make_learncurve_splits_from_dataset_df
 from .. import split
-from ..learncurve import make_learncurve_splits_from_dataset_df
+from ..audio_dataset import (
+    prep_audio_dataset,
+    make_frame_classification_arrays_from_audio_dataset
+)
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 
 from ... import datasets
@@ -247,17 +251,25 @@ def prep(
     )
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    dataset_df = prep_spectrogram_dataset(
-        labelset=labelset,
-        data_dir=data_dir,
-        annot_format=annot_format,
-        annot_file=annot_file,
-        audio_format=audio_format,
-        spect_format=spect_format,
-        spect_params=spect_params,
-        spect_output_dir=dataset_path,
-        audio_dask_bag_kwargs=audio_dask_bag_kwargs,
-    )
+    if input_type == 'spect':
+        dataset_df = prep_spectrogram_dataset(
+            labelset=labelset,
+            data_dir=data_dir,
+            annot_format=annot_format,
+            annot_file=annot_file,
+            audio_format=audio_format,
+            spect_format=spect_format,
+            spect_params=spect_params,
+            spect_output_dir=dataset_path,
+            audio_dask_bag_kwargs=audio_dask_bag_kwargs,
+        )
+    elif input_type == 'audio':
+        dataset_df = prep_audio_dataset(
+            audio_format,
+            data_dir,
+            annot_format,
+            labelset,
+        )
 
     if dataset_df.empty:
         raise ValueError(
@@ -343,12 +355,20 @@ def prep(
         labelmap = None
 
     # ---- move prepared files into sub-directories --------------------------------------------------------------------
-    helper.make_frame_classification_arrays_from_spectrogram_dataset(
-        dataset_df,
-        dataset_path,
-        purpose,
-        labelmap,
-    )
+    if input_type == 'spect':
+        helper.make_frame_classification_arrays_from_spectrogram_dataset(
+            dataset_df,
+            dataset_path,
+            purpose,
+            labelmap,
+        )
+    elif input_type == 'audio':
+        make_frame_classification_arrays_from_audio_dataset(
+            dataset_df,
+            dataset_path,
+            purpose,
+            labelmap,
+        )
 
     # ---- save csv file representing dataset --------------------------------------------------------------------------
     logger.info(
