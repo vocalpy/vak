@@ -90,6 +90,8 @@ def make_learncurve_splits_from_dataset_df(
             train_dur_replicate_df = train_dur_replicate_df[train_dur_replicate_df.split == "train"]
             # next line, make split name in csv math split name used for directory in dataset dir
             train_dur_replicate_df['split'] = train_dur_replicate_split_name
+            train_dur_replicate_df['train_dur'] = train_dur
+            train_dur_replicate_df['replicate_num'] = replicate_num
             all_train_durs_and_replicates_df.append(
                 train_dur_replicate_df
             )
