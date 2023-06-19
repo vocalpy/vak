@@ -28,27 +28,22 @@ DF_COLUMNS = [
 ]
 
 
-def make_dataframe_of_audio_files(
+def prep_audio_dataset(
     audio_format: str,
-    audio_dir: list | None = None,
-    annot_list: list | None = None,
+    data_dir: list | None = None,
     annot_format: str | None = None,
     labelset: set | None = None,
-):
+) -> pd.DataFrame:
     """Convert audio files into a dataset of vocalizations
     represented as a Pandas DataFrame.
 
     Parameters
     ----------
-    spect_format : str
+    audio_format : str
         format of files containing spectrograms. One of {'mat', 'npz'}
-    spect_dir : str
+    data_dir : str
         path to directory of files containing spectrograms as arrays.
         Default is None.
-    spect_files : list
-        List of paths to array files. Default is None.
-    annot_list : list
-        of annotations for array files. Default is None
     annot_format : str
         name of annotation format. Added as a column to the DataFrame if specified.
         Used by other functions that open annotation files via their paths from the DataFrame.
@@ -76,30 +71,50 @@ def make_dataframe_of_audio_files(
     if labelset is not None:
         labelset = labelset_to_set(labelset)
 
-    audio_files = files_from_dir(audio_dir, audio_format)
+    data_dir = expanded_user_path(data_dir)
+    if not data_dir.is_dir():
+        raise NotADirectoryError(f"data_dir not found: {data_dir}")
+
+    audio_files = files_from_dir(data_dir, audio_format)
+
+    if annot_format is not None:
+        if annot_file is None:
+            annot_files = annotation.files_from_dir(
+                annot_dir=data_dir, annot_format=annot_format
+            )
+            scribe = crowsetta.Transcriber(format=annot_format)
+            annot_list = [scribe.from_file(annot_file).to_annot() for annot_file in annot_files]
+        else:
+            scribe = crowsetta.Transcriber(format=annot_format)
+            annot_list = scribe.from_file(annot_file).to_annot()
+        if isinstance(annot_list, crowsetta.Annotation):
+            # if e.g. only one annotated audio file in directory, wrap in a list to make iterable
+            # fixes https://github.com/NickleDave/vak/issues/467
+            annot_list = [annot_list]
+    else:  # if annot_format not specified
+        annot_list = None
 
     if annot_list:
         audio_annot_map = map_annotated_to_annot(audio_files, annot_list, annot_format)
+    else:
+        # no annotation, so map spectrogram files to None
+        audio_annot_map = dict((audio_path, None) for audio_path in audio_files)
 
     # use mapping (if generated/supplied) with labelset, if supplied, to filter
-    if audio_annot_map:
-        if labelset:  # then remove annotations with labels not in labelset
-            # note we do this here so it happens regardless of whether
-            # user supplied audio_annot_map *or* we constructed it above
-            for audio_file, annot in list(audio_annot_map.items()):
-                # loop in a verbose way (i.e. not a comprehension)
-                # so we can give user warning when we skip files
-                annot_labelset = set(annot.seq.labels)
-                # below, set(labels_mapping) is a set of that dict's keys
-                if not annot_labelset.issubset(set(labelset)):
-                    # because there's some label in labels that's not in labelset
-                    audio_annot_map.pop(audio_file)
-                    extra_labels = annot_labelset - labelset
-                    logger.info(
-                        f"Found labels, {extra_labels}, in {Path(audio_file).name}, "
-                        "that are not in labels_mapping. Skipping file.",
-                    )
-        audio_files = sorted(list(audio_annot_map.keys()))
+    if labelset:  # then remove annotations with labels not in labelset
+        for audio_file, annot in list(audio_annot_map.items()):
+            # loop in a verbose way (i.e. not a comprehension)
+            # so we can give user warning when we skip files
+            annot_labelset = set(annot.seq.labels)
+            # below, set(labels_mapping) is a set of that dict's keys
+            if not annot_labelset.issubset(set(labelset)):
+                # because there's some label in labels that's not in labelset
+                audio_annot_map.pop(audio_file)
+                extra_labels = annot_labelset - labelset
+                logger.info(
+                    f"Found labels, {extra_labels}, in {pathlib.Path(audio_file).name}, "
+                    "that are not in labels_mapping. Skipping file.",
+                )
 
     # ---- actually make the dataframe ---------------------------------------------------------------------------------
     # this is defined here so all other arguments to 'to_dataframe' are in scope
