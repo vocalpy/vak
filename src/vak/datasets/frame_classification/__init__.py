@@ -1,10 +1,10 @@
 from . import constants
-from .frame_classification_eval_dataset import FrameClassificationEvalDataset
+from .frames_dataset import FramesDataset
 from .window_dataset import WindowDataset
 
 
 __all__ = [
     "constants",
-    "FrameClassificationEvalDataset",
+    "FramesDataset",
     "WindowDataset"
 ]

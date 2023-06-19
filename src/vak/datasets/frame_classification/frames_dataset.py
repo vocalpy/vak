@@ -10,10 +10,10 @@ from . import constants
 from ..metadata import Metadata
 
 
-class FrameClassificationEvalDataset:
-    """A dataset class used for evaluating
+class FramesDataset:
+    """A dataset class used for
     neural network models
-    on the frame classification task,
+    with the frame classification task,
     where the source data consists of audio signals
     or spectrograms of varying lengths.
 
@@ -55,10 +55,10 @@ class FrameClassificationEvalDataset:
     This snippet demonstrates how samples are recovered by array indexing.
     In the snippet we get the first sample using its id number, ``0``
     (because Python uses zero indexing).
-    This is basically what :meth:`FrameClassificationDataset.__getitem__` does
+    This is basically what :meth:`FramesDataset.__getitem__` does
     when called with an ``idx``.
 
-    >>> dataset = FrameClassificationDataset(X, Y, sample_ids)
+    >>> dataset = FramesDataset(X, Y, sample_ids)
     >>> x1, y1 = dataset.X[dataset.sample_ids == 0], dataset.Y[dataset.sample_ids == 0]
     """
     def __init__(
