@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 from .. import constants
-from ... import metadata
+from ...metadata import Metadata
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
@@ -157,13 +157,14 @@ class FrameClassificationWindowDataset:
             window_inds = np.load(window_inds_path)
         else:
             window_inds = None
-        metadata = metadata.Metadata.from_dataset_path(dataset_path)
+        metadata = Metadata.from_dataset_path(dataset_path)
         frame_dur = metadata.timebin_dur
 
         return cls(
             X,
             Y,
             window_size,
+            frame_dur,
             stride,
             window_inds,
             transform,
