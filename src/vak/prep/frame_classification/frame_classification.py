@@ -7,7 +7,7 @@ import crowsetta.formats.seq
 
 from . import helper
 from .learncurve import make_learncurve_splits_from_dataset_df
-from .. import split
+from .. import sequence_dataset, split
 from ..audio_dataset import (
     prep_audio_dataset,
     make_frame_classification_arrays_from_audio_dataset
@@ -358,13 +358,9 @@ def prep(
     # ---- create and save labelmap ------------------------------------------------------------------------------------
     # we do this before creating array files since we need to load the labelmap to make frame label vectors
     if purpose != 'predict':
-        # TODO -- add option to generate predict using existing dataset, so we can get labelmap from it
-        has_unlabeled = datasets.seq.validators.has_unlabeled(dataset_csv_path, timebins_key)
-        if has_unlabeled:
-            map_unlabeled = True
-        else:
-            map_unlabeled = False
-        labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
+        # TODO: add option to generate predict using existing dataset, so we can get labelmap from it
+        map_unlabeled_segments = sequence_dataset.has_unlabeled_segments(dataset_df)
+        labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled_segments)
         logger.info(
             f"Number of classes in labelmap: {len(labelmap)}",
         )
