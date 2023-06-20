@@ -9,9 +9,9 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
-from ..common import constants, files
+from ..common import constants
 from ..common.annotation import map_annotated_to_annot
-from ..common.converters import labelset_to_set
+from ..common.converters import expanded_user_path, labelset_to_set
 from .spectrogram_dataset.audio_helper import files_from_dir
 
 
