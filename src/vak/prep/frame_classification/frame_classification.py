@@ -8,13 +8,9 @@ import crowsetta.formats.seq
 from . import dataset_arrays
 from .learncurve import make_learncurve_splits_from_dataset_df
 from .. import dataset_df_helper, sequence_dataset, split
-from ..audio_dataset import (
-    prep_audio_dataset,
-    make_frame_classification_arrays_from_audio_dataset
-)
+from ..audio_dataset import prep_audio_dataset
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 
-from ... import datasets
 from ...common import labels
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
