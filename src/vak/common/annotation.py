@@ -619,7 +619,7 @@ def map_annotated_to_annot(annotated_files: Union[list, np.array],
 
 
 def has_unlabeled(annot: crowsetta.Annotation,
-                  duration: float):
+                  duration: float) -> bool:
     """Returns ``True`` if an annotated sequence has unlabeled segments.
 
     Tests whether an instance of ``crowsetta.Annotation.seq`` has
@@ -629,7 +629,8 @@ def has_unlabeled(annot: crowsetta.Annotation,
     Parameters
     ----------
     annot : crowsetta.Annotation
-        With a ``seq`` attribute that is a ``crowsetta.Sequence``
+        A :class:`crowsetta.Annotation` with a ``seq`` attribute
+        (that is a :class:`crowsetta.Sequence`).
     duration : float
         Total duration of the vocalization
         that is annotated by ``annot``.
@@ -645,8 +646,8 @@ def has_unlabeled(annot: crowsetta.Annotation,
     """
     if duration <= 0:
         raise ValueError(
-            f"Duration less than or equal to zero passed to `has_unlabeled`.\n"
-            f"Value for `duration`: {duration}.\nValue for `annot`: {annot}"
+            f"Duration less than or equal to zero passed to ``has_unlabeled``.\n"
+            f"Value for ``duration``: {duration}.\nValue for ``annot``: {annot}"
         )
     if duration > 0 and len(annot.seq.segments) < 1:
         # Handle edge case where there are no annotated segments in annotation file
