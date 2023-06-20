@@ -9,8 +9,7 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
-from ..common import constants
-from ..common.annotation import map_annotated_to_annot
+from ..common import annotation, constants
 from ..common.converters import expanded_user_path, labelset_to_set
 from .spectrogram_dataset.audio_helper import files_from_dir
 
@@ -32,6 +31,7 @@ def prep_audio_dataset(
     audio_format: str,
     data_dir: list | None = None,
     annot_format: str | None = None,
+    annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
 ) -> pd.DataFrame:
     """Convert audio files into a dataset of vocalizations
@@ -40,21 +40,25 @@ def prep_audio_dataset(
     Parameters
     ----------
     audio_format : str
-        format of files containing spectrograms. One of {'mat', 'npz'}
+        Format of files containing spectrograms. One of {'mat', 'npz'}
     data_dir : str
-        path to directory of files containing spectrograms as arrays.
+        Path to directory of files containing spectrograms as arrays.
         Default is None.
     annot_format : str
-        name of annotation format. Added as a column to the DataFrame if specified.
+        Name of annotation format. Added as a column to the DataFrame if specified.
         Used by other functions that open annotation files via their paths from the DataFrame.
         Should be a format that the crowsetta library recognizes.
         Default is None.
+    annot_file : str
+        Path to a single annotation file. Default is None.
+        Used when a single file contains annotations for multiple audio files.
     labelset : str, list, set
-        of str or int, set of unique labels for vocalizations. Default is None.
+        Iterable of str or int, set of unique labels for vocalizations. Default is None.
         If not None, then files will be skipped where the associated annotation
         contains labels not found in ``labelset``.
-        ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
-        See help for that function for details on how to specify labelset.
+        ``labelset`` is converted to a Python ``set`` using
+        :func:`vak.common.converters.labelset_to_set`.
+        See docstring of that function for details on how to specify ``labelset``.
 
     Returns
     -------
@@ -95,7 +99,7 @@ def prep_audio_dataset(
         annot_list = None
 
     if annot_list:
-        audio_annot_map = map_annotated_to_annot(audio_files, annot_list, annot_format)
+        audio_annot_map = annotation.map_annotated_to_annot(audio_files, annot_list, annot_format)
     else:
         # no annotation, so map spectrogram files to None
         audio_annot_map = dict((audio_path, None) for audio_path in audio_files)
@@ -160,7 +164,9 @@ def prep_audio_dataset(
 
 
 def make_frame_classification_arrays_from_audio_paths_and_annots(
-
+    audio_paths,
+    annot_paths,
+    labelmap,
 ):
     X_T, Y_T, source_id_vec, inds_in_source_vec, annots = [], [], [], [], []
     for source_id, (audio_path, annot_path) in enumerate(
