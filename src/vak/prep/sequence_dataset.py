@@ -1,19 +1,17 @@
 """Helper functions for datasets annotated as sequences."""
 from __future__ import annotations
 
-import pathlib
-
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from ..common import annotation, files
+from ..common import annotation
 
 
-def where_unlabeled(dataset_df: pd.DataFrame) -> npt.NDArray:
+def where_unlabeled_segments(dataset_df: pd.DataFrame) -> npt.NDArray:
     """Returns a Boolean array that is True where
-    an annotation in a dataset of annotated sequences
-    has a sequence with unlabeled segments.
+    a sequence has unlabeled segments
+    in a dataset of annotated sequences.
 
     Parameters
     ----------
@@ -44,9 +42,9 @@ def where_unlabeled(dataset_df: pd.DataFrame) -> npt.NDArray:
     return np.array(has_unlabeled_list).astype(bool)
 
 
-def has_unlabeled(dataset_df: pd.DataFrame) -> bool:
-    r"""Determine if a dataset of vocalization
-    annotated as sequences has periods that are unlabeled.
+def has_unlabeled_segments(dataset_df: pd.DataFrame) -> bool:
+    r"""Returns True if a dataset annotated as sequences
+    has segments that are unlabeled in any of the sequences.
 
     Used to decide whether an additional class needs to be added
     to the set of labels :math:`Y = {y_1, y_2, \dots, y_n}`,
@@ -68,5 +66,5 @@ def has_unlabeled(dataset_df: pd.DataFrame) -> bool:
         that have unlabeled periods.
     """
     return np.any(
-        where_unlabeled(dataset_df)
+        where_unlabeled_segments(dataset_df)
     )
