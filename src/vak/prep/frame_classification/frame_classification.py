@@ -151,6 +151,28 @@ def prep(
             f"Value for purpose was: {purpose}"
         )
 
+    if input_type not in constants.INPUT_TYPES:
+        raise ValueError(
+            f"``input_type`` must be one of: {constants.INPUT_TYPES}\n"
+            f"Value for ``input_type`` was: {input_type}"
+        )
+
+    if input_type == 'audio' and spect_format is not None:
+        raise ValueError(
+            f"Input type was 'audio' but a ``spect_format`` was specified: '{spect_format}'. "
+            f"Please specify ``audio_format`` only."
+        )
+
+    if input_type == 'audio' and audio_format is None:
+        raise ValueError(
+            f"Input type was 'audio' but no ``audio_format`` was specified. "
+        )
+
+    if input_type == 'spect' and spect_format is None:
+        raise ValueError(
+            f"Input type was 'spect' but no ``spect_format`` was specified. "
+        )
+
     if audio_format is None and spect_format is None:
         raise ValueError("Must specify either audio_format or spect_format")
 
@@ -204,13 +226,11 @@ def prep(
                 f"with ``purpose='{purpose}'."
             )
 
-    logger.info(f"purpose for dataset: {purpose}")
+    logger.info(f"Purpose for frame classification dataset: {purpose}")
     # ---- set up directory that will contain dataset, and csv file name -----------------------------------------------
     data_dir_name = data_dir.name
     timenow = get_timenow_as_str()
-    # TODO: add 'dataset_name' parameter that overrides this default
-    # TODO: different default?
-    dataset_path = output_dir / f'{data_dir_name}-vak-dataset-generated-{timenow}'
+    dataset_path = output_dir / f'{data_dir_name}-vak-frame-classification-dataset-generated-{timenow}'
     dataset_path.mkdir()
 
     if annot_file and annot_format == 'birdsong-recognition-dataset':
@@ -265,10 +285,10 @@ def prep(
         )
     elif input_type == 'audio':
         dataset_df = prep_audio_dataset(
-            audio_format,
-            data_dir,
-            annot_format,
-            labelset,
+            audio_format=audio_format,
+            data_dir=data_dir,
+            annot_format=annot_format,
+            labelset=labelset,
         )
 
     if dataset_df.empty:
@@ -302,7 +322,7 @@ def prep(
         "predict",
     ):
         # then we're not going to split
-        logger.info("will not split dataset")
+        logger.info("Will not split dataset.")
         do_split = False
     else:
         if val_dur is not None and train_dur is None and test_dur is None:
@@ -310,7 +330,7 @@ def prep(
                 "cannot specify only val_dur, unclear how to split dataset into training and test sets"
             )
         else:
-            logger.info("will split dataset")
+            logger.info("Will split dataset.")
             do_split = True
 
     if do_split:
@@ -346,7 +366,7 @@ def prep(
             map_unlabeled = False
         labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled)
         logger.info(
-            f"number of classes in labelmap: {len(labelmap)}",
+            f"Number of classes in labelmap: {len(labelmap)}",
         )
         # save labelmap in case we need it later
         with (dataset_path / "labelmap.json").open("w") as fp:
