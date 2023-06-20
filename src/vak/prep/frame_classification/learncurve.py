@@ -10,9 +10,9 @@ import crowsetta
 import numpy as np
 import pandas as pd
 
-from .helper import (
+from .dataset_arrays import (
     sort_source_paths_and_annots_by_label_freq,
-    make_frame_classification_arrays_from_source_paths_and_annots
+    make_from_source_paths_and_annots
 )
 from .. import split
 from ... import common, datasets
@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 def make_learncurve_splits_from_dataset_df(
     dataset_df: pd.DataFrame,
     csv_path: str | pathlib.Path,
+    input_type: str,
     train_set_durs: Sequence[float],
     num_replicates: int,
     dataset_path: pathlib.Path,
@@ -46,6 +47,9 @@ def make_learncurve_splits_from_dataset_df(
         Representing an entire dataset of vocalizations.
     csv_path : pathlib.Path
         Path to where dataset was saved as a csv file.
+    input_type : str
+        The type of input to the neural network model.
+        One of {'audio', 'spect'}.
     train_set_durs : list
         of int, durations in seconds of subsets taken from training data
         to create a learning curve, e.g. [5, 10, 15, 20].
@@ -110,7 +114,7 @@ def make_learncurve_splits_from_dataset_df(
 
             (inputs,
              source_id_vec,
-             frame_labels) = make_frame_classification_arrays_from_source_paths_and_annots(
+             frame_labels) = make_from_source_paths_and_annots(
                 source_paths,
                 labelmap,
                 annots,
