@@ -7,7 +7,7 @@ import crowsetta.formats.seq
 
 from . import helper
 from .learncurve import make_learncurve_splits_from_dataset_df
-from .. import sequence_dataset, split
+from .. import dataset_df_helper, sequence_dataset, split
 from ..audio_dataset import (
     prep_audio_dataset,
     make_frame_classification_arrays_from_audio_dataset
@@ -265,7 +265,7 @@ def prep(
     )
     log_version(logger)
 
-    dataset_csv_path = helper.get_dataset_csv_path(dataset_path, data_dir_name, timenow)
+    dataset_csv_path = dataset_df_helper.get_dataset_csv_path(dataset_path, data_dir_name, timenow)
     logger.info(
         f"Will prepare dataset as directory: {dataset_path}"
     )
@@ -353,7 +353,7 @@ def prep(
         elif purpose == "predict":
             split_name = "predict"
 
-        dataset_df = helper.add_split_col(dataset_df, split=split_name)
+        dataset_df = dataset_df_helper.add_split_col(dataset_df, split=split_name)
 
     # ---- create and save labelmap ------------------------------------------------------------------------------------
     # we do this before creating array files since we need to load the labelmap to make frame label vectors
@@ -396,7 +396,7 @@ def prep(
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
     # we do this before generating learncurve splits because learncurve expects metadata to exist, to get timebin_dur
-    timebin_dur = helper.validate_and_get_timebin_dur(dataset_df)
+    timebin_dur = dataset_df_helper.validate_and_get_timebin_dur(dataset_df)
 
     metadata = Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
