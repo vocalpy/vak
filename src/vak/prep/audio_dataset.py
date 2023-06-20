@@ -128,7 +128,7 @@ def prep_audio_dataset(
         Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
         and (2) annotation for that file"""
         audio_path, annot = audio_annot_tuple
-        dat, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_file)
+        dat, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_path)
         audio_dur = dat.shape[-1] * (1 / samplerate)
 
         if annot is not None:
