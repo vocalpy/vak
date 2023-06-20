@@ -394,6 +394,7 @@ def make_from_dataset_df(
         One of {'audio', 'spect'}.
     purpose: str
     labelmap : dict
+    audio_format : str
     spect_key : str
         Key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
@@ -426,13 +427,14 @@ def make_from_dataset_df(
 
         (inputs,
          source_id_vec,
-         frame_labels) = make_frame_classification_arrays_from_source_paths_and_annots(
+         frame_labels) = make_from_source_paths_and_annots(
             source_paths,
             input_type,
             labelmap,
             annots,
-            spect_key,
-            timebins_key
+            audio_format=audio_format,
+            spect_key=spect_key,
+            timebins_key=timebins_key
         )
 
         logger.info(
