@@ -5,7 +5,7 @@ import warnings
 
 import crowsetta.formats.seq
 
-from . import helper
+from . import dataset_arrays
 from .learncurve import make_learncurve_splits_from_dataset_df
 from .. import dataset_df_helper, sequence_dataset, split
 from ..audio_dataset import (
@@ -370,23 +370,15 @@ def prep(
     else:
         labelmap = None
 
-    # ---- move prepared files into sub-directories --------------------------------------------------------------------
-    if input_type == 'spect':
-        helper.make_frame_classification_arrays_from_spectrogram_dataset(
-            dataset_df,
-            dataset_path,
-            purpose,
-            labelmap,
-        )
-    elif input_type == 'audio':
-        make_frame_classification_arrays_from_audio_dataset(
-            dataset_df,
-            dataset_path,
-            purpose,
-            labelmap,
-        )
+    # ---- make arrays that represent final dataset --------------------------------------------------------------------
+    dataset_arrays.make_from_dataset_df(
+        dataset_df,
+        dataset_path,
+        purpose,
+        labelmap,
+    )
 
-    # ---- save csv file representing dataset --------------------------------------------------------------------------
+    # ---- save csv file that captures provenance of source data -------------------------------------------------------
     logger.info(
         f"Saving dataset csv file: {dataset_csv_path}"
     )

@@ -5,7 +5,6 @@ import collections
 import copy
 import logging
 import pathlib
-import shutil
 
 import crowsetta
 import numpy as np
@@ -239,12 +238,14 @@ def crop_arrays_keep_classes(
         return inputs[:cropped_length], source_ids[:cropped_length], frame_labels  # frame_labels is None here
 
 
-def make_frame_classification_arrays_from_source_paths_and_annots(
+def make_from_source_paths_and_annots(
         source_paths: list[str],
-        labelmap: dict | None = None,
+        input_type: str,
         annots: list[crowsetta.Annotation] | None = None,
+        labelmap: dict | None = None,
         crop_dur: float | None = None,
         frame_dur: float | None = None,
+        audio_format: str | None = None,
         spect_key: str = "s",
         timebins_key: str = "t",
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray | None]:
@@ -260,12 +261,13 @@ def make_frame_classification_arrays_from_source_paths_and_annots(
     ----------
     source_paths : list
         Paths to audio files or array files containing spectrograms.
+    input_type : str
+        The type of input to the neural network model.
+        One of {'audio', 'spect'}.
+    annots : list
+        List of crowsetta.Annotation instances.
     labelmap : dict
         Mapping string labels to integer classes predicted by network.
-    annot_paths : list
-        Paths to annotation files that annotate the spectrograms.
-    annot_format : str
-        Annotation format of the files in annotation paths.
     crop_dur : float, optional
         Duration to which the entire dataset should be cropped.
         If specified, then ``frame_dur`` must be specified
@@ -314,10 +316,17 @@ def make_frame_classification_arrays_from_source_paths_and_annots(
     else:
         to_do = zip(source_paths, [None] * len(source_paths))
 
-    for source_id, (spect_path, annot) in enumerate(to_do):
-        # add to inputs
-        d = np.load(spect_path)
-        inputs.append(d[spect_key])
+    for source_id, (source_path, annot) in enumerate(to_do):
+        if input_type == 'audio':
+            input_, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[audio_format](source_path)
+            if annot:
+                frames = np.arange(input_.shape[-1]) / samplefreq
+        elif input_type == 'spect':
+            spect_dict = np.load(source_path)
+            input_ = spect_dict[spect_key]
+            if annot:
+                frames = spect_dict[timebins_key]
+        inputs.append(input_)
 
         # add to frame labels
         if annot:
@@ -326,13 +335,13 @@ def make_frame_classification_arrays_from_source_paths_and_annots(
                 lbls_int,
                 annot.seq.onsets_s,
                 annot.seq.offsets_s,
-                d[timebins_key],
+                frames,
                 unlabeled_label=labelmap["unlabeled"],
             )
             frame_labels.append(lbls_frame)
 
-        # add to source_id and source_inds
-        n_frames = d["t"].shape[-1]  # number of frames
+        # add to source_id
+        n_frames = input_.shape[-1]  # number of frames
         source_id_vec.append(
             np.ones((n_frames,)).astype(np.int32) * source_id
         )
@@ -357,11 +366,13 @@ def make_frame_classification_arrays_from_source_paths_and_annots(
     return inputs, source_id_vec, frame_labels
 
 
-def make_frame_classification_arrays_from_spectrogram_dataset(
+def make_from_dataset_df(
         dataset_df: pd.DataFrame,
         dataset_path: pathlib.Path,
+        input_type: str,
         purpose: str,
         labelmap: dict | None = None,
+        audio_format: str | None = None,
         spect_key: str = "s",
         timebins_key: str = "t",
 ) -> None:
@@ -378,6 +389,9 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
     ----------
     dataset_df : pandas.Dataframe
     dataset_path : str, pathlib.Path
+    input_type : str
+        The type of input to the neural network model.
+        One of {'audio', 'spect'}.
     purpose: str
     labelmap : dict
     spect_key : str
@@ -399,7 +413,12 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
         split_dst.mkdir(exist_ok=True)
 
         split_df = dataset_df[dataset_df.split == split]
-        source_paths = split_df['spect_path'].values
+
+        if input_type == 'audio':
+            source_paths = split_df['audio_path'].values
+        elif input_type == 'spect':
+            source_paths = split_df['spect_path'].values
+
         if purpose != 'predict':
             annots = common.annotation.from_df(split_df)
         else:
@@ -409,6 +428,7 @@ def make_frame_classification_arrays_from_spectrogram_dataset(
          source_id_vec,
          frame_labels) = make_frame_classification_arrays_from_source_paths_and_annots(
             source_paths,
+            input_type,
             labelmap,
             annots,
             spect_key,
