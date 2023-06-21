@@ -8,13 +8,12 @@ from ._api import MODEL_NAMES
 
 def get(name: str,
         config: dict,
-        # TODO: move num_classes / input_shape into model configs
         num_classes: int,
         input_shape: tuple[int, int, int],
         labelmap: dict,
         post_tfm: Callable | None = None):
     """Get a model instance, given its name and
-    a configuration as a ``dict``.
+    a configuration as a :class:`dict`.
 
     Parameters
     ----------
@@ -46,9 +45,7 @@ def get(name: str,
     """
     import vak.models
 
-    # TODO: move num_classes / input_shape into model configs
-    # TODO: add labelmap to config dynamically if needed? outside this function
-    if name == 'das':
+    if name == 'DAS':
         n_audio_channels = input_shape[0]
         num_samples = input_shape[1]
         config["network"].update(
@@ -56,10 +53,14 @@ def get(name: str,
             n_audio_channels=n_audio_channels,
             num_samples=num_samples
         )
-    else:
+    elif name in ('TweetyNet', 'TeenyTweetyNet'):
         config["network"].update(
             num_classes=num_classes,
             input_shape=input_shape,
+        )
+    else:
+        raise ValueError(
+            f"Invalid model name: '{name}'.\nValid model names are: {MODEL_NAMES}"
         )
 
     try:
