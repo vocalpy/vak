@@ -440,8 +440,8 @@ def make_from_dataset_df(
          frame_labels) = make_from_source_paths_and_annots(
             source_paths,
             input_type,
-            labelmap,
             annots,
+            labelmap,
             audio_format=audio_format,
             spect_key=spect_key,
             timebins_key=timebins_key
