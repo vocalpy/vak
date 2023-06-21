@@ -106,21 +106,8 @@ def crop_arrays_keep_classes(
         labelmap: dict | None = None,
         frame_labels: npt.NDArray | None = None,
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
-    r"""Crop vectors representing WindowDataset
+    r"""Crop arrays representing a frame classification dataset
     to a target duration.
-
-    This function "crops" a WindowDataset
-    by shortening the vectors that represent
-    valid windows in a way that
-    ensures all classes are still present after cropping.
-    It first tries to crop from the end of the dataset,
-    then from the front,
-    and then finally it tries to remove
-    unlabeled periods that are at least equal to
-    ``window_size`` + 2 time bins, until
-    the total duration reaches the target size.
-    If none of those approaches can preserve all classes
-    in the dataset, the function raises an error.
 
     Parameters
     ----------
@@ -142,12 +129,9 @@ def crop_arrays_keep_classes(
          :math:`(0, 0, 0, ..., 1, 1, ..., m - 1, m -1)`.
     crop_dur : float
         Duration to which dataset should be "cropped", in seconds.
-    timebin_dur : float
-        For a dataset of audio,
-        the duration of a single sample,
-        i.e., the inverse of the sampling rate given in classesHertz.
-        For a dataset of spectrograms,
-        the duration of a single time bin in the spectrograms.
+    frame_dur : float
+        Duration of a frame, i.e., a single sample in audio
+        or a single timebin in a spectrogram.
     frame_labels : numpy.ndarray, optional
         Vector of labels for frames,
         where labels are from
@@ -174,7 +158,7 @@ def crop_arrays_keep_classes(
     -------
     inputs_cropped : numpy.ndarray
         The ``inputs`` array after cropping.
-    sourc_id_cropped : numpy.ndarray
+    source_id_cropped : numpy.ndarray
         The ``source_ids`` vector after cropping.
     frame_labels_cropped : numpy.ndarray
         The ``frame_labels`` vector after cropping,
@@ -279,6 +263,11 @@ def make_from_source_paths_and_annots(
         Duration of a frame, i.e., a single sample in audio
         or a single timebin in a spectrogram.
         Only required if ``crop_dur`` is specified.
+    audio_format : str
+    spect_key : str
+        Key for accessing spectrogram in files. Default is 's'.
+    timebins_key : str
+        Key for accessing vector of time bins in files. Default is 't'.
 
     Returns
     -------
