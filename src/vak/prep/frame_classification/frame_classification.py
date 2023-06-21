@@ -370,8 +370,12 @@ def prep(
     dataset_arrays.make_from_dataset_df(
         dataset_df,
         dataset_path,
+        input_type,
         purpose,
         labelmap,
+        audio_format,
+        spect_key,
+        timebins_key,
     )
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
@@ -397,10 +401,12 @@ def prep(
         make_learncurve_splits_from_dataset_df(
             dataset_df,
             dataset_csv_path,
+            input_type,
             train_set_durs,
             num_replicates,
             dataset_path,
             labelmap,
+            audio_format,
             spect_key,
             timebins_key,
         )
