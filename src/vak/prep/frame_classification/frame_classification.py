@@ -5,7 +5,7 @@ import warnings
 
 import crowsetta.formats.seq
 
-from . import dataset_arrays
+from . import dataset_arrays, validators
 from .learncurve import make_learncurve_splits_from_dataset_df
 from .. import dataset_df_helper, sequence_dataset, split
 from ..audio_dataset import prep_audio_dataset
@@ -387,12 +387,12 @@ def prep(
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
-    # we do this before generating learncurve splits because learncurve expects metadata to exist, to get timebin_dur
-    timebin_dur = dataset_df_helper.validate_and_get_timebin_dur(dataset_df)
+    # we do this before generating learncurve splits because learncurve expects metadata to exist, to get frame_dur
+    frame_dur = validators.validate_and_get_frame_dur(dataset_df, input_type)
 
     metadata = Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
-        timebin_dur=timebin_dur
+        frame_dur=frame_dur
     )
     metadata.to_json(dataset_path)
 
