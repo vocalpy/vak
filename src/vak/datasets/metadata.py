@@ -33,15 +33,16 @@ class Metadata:
         Name of csv file representing the source files in the dataset.
         Csv file will be located in root of directory representing dataset,
         so only the filename is given.
-    timebin_dur: float, optional
-        Duration of a time bin of a spectrogram in the dataset.
+    frame_dur: float, optional
+        Duration of a frame, i.e., a single sample in audio
+        or a single timebin in a spectrogram.
     """
     # declare this as a constant to avoid
     # needing to remember this in multiple places, and to use in unit tests
     METADATA_JSON_FILENAME: ClassVar = 'metadata.json'
 
     dataset_csv_filename: str = attr.field(converter=str, validator=valid_dataset_csv_filename)
-    timebin_dur: float | None = attr.field(default=None)
+    frame_dur: float | None = attr.field(default=None)
 
     @classmethod
     def from_path(cls, json_path: str | pathlib.Path):
