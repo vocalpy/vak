@@ -102,9 +102,16 @@ def make_learncurve_splits_from_dataset_df(
             )
 
             metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-            timebin_dur = metadata.timebin_dur
+            frame_dur = metadata.frame_dur
 
-            source_paths = train_dur_replicate_df['spect_path'].values
+            if input_type == 'audio':
+                source_paths = train_dur_replicate_df['audio_path'].values
+            elif input_type == 'spect':
+                source_paths = train_dur_replicate_df['spect_path'].values
+            else:
+                raise ValueError(
+                    f"Invalid ``input_type``: {input_type}"
+                )
             annots = common.annotation.from_df(train_dur_replicate_df)
 
             # sort to minimize chance that cropping removes classes
@@ -121,7 +128,7 @@ def make_learncurve_splits_from_dataset_df(
                 annots,
                 labelmap,
                 train_dur,
-                timebin_dur,
+                frame_dur,
                 audio_format,
                 spect_key,
                 timebins_key,
