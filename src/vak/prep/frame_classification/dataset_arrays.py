@@ -11,6 +11,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from .. import constants as prep_constants
 from ... import (
     common,
     datasets,
@@ -400,6 +401,12 @@ def make_from_dataset_df(
     timebins_key : str
         Key for accessing vector of time bins in files. Default is 't'.
     """
+    if input_type not in prep_constants.INPUT_TYPES:
+        raise ValueError(
+            f"``input_type`` must be one of: {prep_constants.INPUT_TYPES}\n"
+            f"Value for ``input_type`` was: {input_type}"
+        )
+
     dataset_path = pathlib.Path(dataset_path)
 
     logger.info(f"Will use labelmap: {labelmap}")
@@ -414,11 +421,14 @@ def make_from_dataset_df(
         split_dst.mkdir(exist_ok=True)
 
         split_df = dataset_df[dataset_df.split == split]
-
         if input_type == 'audio':
             source_paths = split_df['audio_path'].values
         elif input_type == 'spect':
             source_paths = split_df['spect_path'].values
+        else:
+            raise ValueError(
+                f"Invalid ``input_type``: {input_type}"
+            )
 
         if purpose != 'predict':
             annots = common.annotation.from_df(split_df)
