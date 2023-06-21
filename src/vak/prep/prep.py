@@ -3,13 +3,8 @@ import pathlib
 
 from . import (
     constants,
-    frame_classification,
 )
-
-
-__all__ = [
-    'prep'
-]
+from .frame_classification import prep_frame_classification_dataset
 
 
 logger = logging.getLogger(__name__)
@@ -195,7 +190,7 @@ def prep(
     # but we still define DATASET_TYPE_FUNC_MAP in vak.prep.constants
     # so that the mapping is made explicit in the code
     if dataset_type == 'frame classification':
-        dataset_df, dataset_path = frame_classification.prep(
+        dataset_df, dataset_path = prep_frame_classification_dataset(
             data_dir,
             input_type,
             purpose,

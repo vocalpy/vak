@@ -18,15 +18,10 @@ from ...common.timenow import get_timenow_as_str
 from ...datasets.metadata import Metadata
 
 
-__all__ = [
-    'prep'
-]
-
-
 logger = logging.getLogger(__name__)
 
 
-def prep(
+def prep_frame_classification_dataset(
     data_dir: str | pathlib.Path,
     input_type: str,
     purpose: str,
