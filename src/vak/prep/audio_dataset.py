@@ -22,8 +22,9 @@ DF_COLUMNS = [
     "audio_path",
     "annot_path",
     "annot_format",
-    "duration",
     "samplerate",
+    "sample_dur",
+    "duration",
 ]
 
 
@@ -129,7 +130,8 @@ def prep_audio_dataset(
         and (2) annotation for that file"""
         audio_path, annot = audio_annot_tuple
         dat, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_path)
-        audio_dur = dat.shape[-1] * (1 / samplerate)
+        sample_dur = 1. / samplerate
+        audio_dur = dat.shape[-1] * sample_dur
 
         if annot is not None:
             annot_path = annot.annot_path
@@ -147,8 +149,9 @@ def prep_audio_dataset(
                 abspath(audio_path),
                 abspath(annot_path),
                 annot_format if annot_format else constants.NO_ANNOTATION_FORMAT,
-                audio_dur,
                 samplerate,
+                sample_dur,
+                audio_dur,
             ]
         )
         return record
