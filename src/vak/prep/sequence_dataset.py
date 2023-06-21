@@ -65,6 +65,10 @@ def has_unlabeled_segments(dataset_df: pd.DataFrame) -> bool:
         If True, there are annotations in the dataset
         that have unlabeled periods.
     """
-    return np.any(
-        where_unlabeled_segments(dataset_df)
-    )
+    # NOTE we cast to `bool` because
+    # np.any returns an instance of <class 'numpy.bool_'>
+    # and `<class 'numpy.bool_'> is True == False`.
+    # Not sure if this is numpy version specific
+    return bool(
+        np.any(where_unlabeled_segments(dataset_df)
+    ))
