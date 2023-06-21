@@ -164,13 +164,8 @@ def prep(
             f"Input type was 'audio' but no ``audio_format`` was specified. "
         )
 
-    if input_type == 'spect' and spect_format is None:
-        raise ValueError(
-            f"Input type was 'spect' but no ``spect_format`` was specified. "
-        )
-
     if audio_format is None and spect_format is None:
-        raise ValueError("Must specify either audio_format or spect_format")
+        raise ValueError("Must specify either ``audio_format`` or ``spect_format``")
 
     if audio_format and spect_format:
         raise ValueError(
