@@ -29,6 +29,7 @@ def make_learncurve_splits_from_dataset_df(
     num_replicates: int,
     dataset_path: pathlib.Path,
     labelmap: dict,
+    audio_format: str | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
 ):
@@ -116,10 +117,12 @@ def make_learncurve_splits_from_dataset_df(
              source_id_vec,
              frame_labels) = make_from_source_paths_and_annots(
                 source_paths,
-                labelmap,
+                input_type,
                 annots,
+                labelmap,
                 train_dur,
                 timebin_dur,
+                audio_format,
                 spect_key,
                 timebins_key,
             )
