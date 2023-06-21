@@ -347,7 +347,11 @@ def make_from_source_paths_and_annots(
             np.ones((n_frames,)).astype(np.int32) * source_id
         )
 
-    inputs = np.concatenate(inputs, axis=1)
+    if input_type == 'audio' and all([input_.ndim == 1 for input_ in inputs]):
+        # all 1-d audio vectors; if we specify `axis=1` here we'd get error
+        inputs = np.concatenate(inputs)
+    else:
+        inputs = np.concatenate(inputs, axis=1)
     source_id_vec = np.concatenate(source_id_vec)
     if annots is not None:
         frame_labels = np.concatenate(frame_labels)
