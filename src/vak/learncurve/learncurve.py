@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import pathlib
-import re
 
 import pandas as pd
 
@@ -177,9 +176,9 @@ def learning_curve(
 
     logger.info(f"Saving results to: {results_path}")
 
-    timebin_dur = metadata.timebin_dur
+    frame_dur = metadata.frame_dur
     logger.info(
-        f"Size of each timebin in spectrogram, in seconds: {timebin_dur}",
+        f"Duration of a frame in dataset, in seconds: {frame_dur}",
     )
 
     # ---- get training set subsets ------------------------------------------------------------------------------------

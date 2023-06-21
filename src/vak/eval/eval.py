@@ -125,6 +125,13 @@ def eval(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
 
+    # we unpack `frame_dur` to log it, regardless of whether we use it with post_tfm below
+    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    frame_dur = metadata.frame_dur
+    logger.info(
+        f"Duration of a frame in dataset, in seconds: {frame_dur}",
+    )
+
     if not validators.is_a_directory(output_dir):
         raise NotADirectoryError(
             f'value for ``output_dir`` not recognized as a directory: {output_dir}'
@@ -173,10 +180,8 @@ def eval(
         input_shape = input_shape[1:]
 
     if post_tfm_kwargs:
-        metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-        timebin_dur = metadata.timebin_dur
         post_tfm = transforms.labeled_timebins.PostProcess(
-            timebin_dur=timebin_dur,
+            timebin_dur=frame_dur,
             **post_tfm_kwargs,
         )
     else:

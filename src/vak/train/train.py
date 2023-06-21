@@ -222,9 +222,9 @@ def train(
         results_path = generate_results_dir_name_as_path(root_results_dir)
         results_path.mkdir()
 
-    timebin_dur = metadata.timebin_dur
+    frame_dur = metadata.frame_dur
     logger.info(
-        f"Size of timebin in spectrograms from dataset, in seconds: {timebin_dur}",
+        f"Duration of a frame in dataset, in seconds: {frame_dur}",
     )
 
     # ---------------- load training data  -----------------------------------------------------------------------------

@@ -191,11 +191,11 @@ def predict(
     annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
-    dataset_df = pd.read_csv(dataset_csv_path)
-
     metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-    timebin_dur = metadata.timebin_dur
-    logger.info(f"Dataset has timebins with duration: {timebin_dur}")
+    frame_dur = metadata.frame_dur
+    logger.info(
+        f"Duration of a frame in dataset, in seconds: {frame_dur}",
+    )
 
     # ---------------- do the actual predicting + converting to annotations --------------------------------------------
     input_shape = pred_dataset.shape
@@ -270,7 +270,7 @@ def predict(
         if majority_vote or min_segment_dur:
             y_pred = transforms.labeled_timebins.postprocess(
                 y_pred,
-                timebin_dur=timebin_dur,
+                frame_dur=frame_dur,
                 min_segment_dur=min_segment_dur,
                 majority_vote=majority_vote,
             )

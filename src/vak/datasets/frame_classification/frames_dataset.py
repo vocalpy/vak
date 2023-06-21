@@ -118,7 +118,7 @@ class FramesDataset:
         sample_ids_path = split_path / constants.SOURCE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
         metadata = Metadata.from_dataset_path(dataset_path)
-        frame_dur = metadata.timebin_dur
+        frame_dur = metadata.frame_dur
 
         return cls(
             X,

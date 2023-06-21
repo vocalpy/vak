@@ -166,7 +166,7 @@ class WindowDataset:
         else:
             window_inds = None
         metadata = Metadata.from_dataset_path(dataset_path)
-        frame_dur = metadata.timebin_dur
+        frame_dur = metadata.frame_dur
 
         return cls(
             X,
