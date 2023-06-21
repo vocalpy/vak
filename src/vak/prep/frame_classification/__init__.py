@@ -3,6 +3,7 @@ from . import (
     dataset_arrays,
     frame_classification,
     learncurve,
+    validators,
 )
 
 
@@ -11,4 +12,5 @@ __all__ = [
     'frame_classification',
     'learncurve',
     'prep',
+    'validators',
 ]
