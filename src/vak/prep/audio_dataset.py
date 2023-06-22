@@ -35,28 +35,28 @@ def prep_audio_dataset(
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
 ) -> pd.DataFrame:
-    """Convert audio files into a dataset of vocalizations
+    """Convert audio files into a dataset
     represented as a Pandas DataFrame.
 
     Parameters
     ----------
     audio_format : str
-        Format of files containing spectrograms. One of {'mat', 'npz'}
+        A :class:`string` representing the format of audio files.
+        One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
     data_dir : str
-        Path to directory of files containing spectrograms as arrays.
-        Default is None.
+        Path to directory containing audio files that should be used in dataset.
     annot_format : str
         Name of annotation format. Added as a column to the DataFrame if specified.
         Used by other functions that open annotation files via their paths from the DataFrame.
-        Should be a format that the crowsetta library recognizes.
+        Should be a format that the :mod:`crowsetta` library recognizes.
         Default is None.
     annot_file : str
         Path to a single annotation file. Default is None.
         Used when a single file contains annotations for multiple audio files.
     labelset : str, list, set
-        Iterable of str or int, set of unique labels for vocalizations. Default is None.
+        Iterable of str or int, set of unique labels for annotations. Default is None.
         If not None, then files will be skipped where the associated annotation
-        contains labels not found in ``labelset``.
+        contains labels *not* found in ``labelset``.
         ``labelset`` is converted to a Python ``set`` using
         :func:`vak.common.converters.labelset_to_set`.
         See docstring of that function for details on how to specify ``labelset``.
@@ -64,7 +64,8 @@ def prep_audio_dataset(
     Returns
     -------
     dataset_df : pandas.Dataframe
-        Dataframe that represents a dataset of vocalizations.
+        Dataframe that represents a dataset of audio files,
+        optionally with annotations.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if audio_format not in constants.VALID_AUDIO_FORMATS:
