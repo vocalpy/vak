@@ -78,29 +78,43 @@ class StandardizeSpect:
         dataset_path : str or pathlib.Path
             Path to a dataset.
         split : str
-            Name of split from dataset to fit .
+            Name of split from dataset to fit.
 
         Returns
         -------
         standardize_spect : StandardizeSpect
             Instance that has been fit to input data from split.
         """
-        import vak.datasets.frame_classification.constants
-        dataset_path = pathlib.Path(dataset_path)
-        split_path = dataset_path / split
-        X_path = split_path / vak.datasets.frame_classification.constants.INPUT_ARRAY_FILENAME
-        X = np.load(X_path)
+        from vak.datasets.metadata import Metadata
+        from vak.datasets import frame_classification
+        from vak.common import files
 
-        # spectrograms are in orientation (freq bins, time bins)
+        dataset_path = pathlib.Path(dataset_path)
+        metadata = Metadata.from_dataset_path(dataset_path)
+        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+        dataset_path = dataset_csv_path.parent
+        df = pd.read_csv(dataset_csv_path)
+        df = df[df['split'] == split].copy()
+        frames_paths = df[frame_classification.constants.FRAMES_NPY_PATH_COL_NAME].values
+        frames = np.load(dataset_path / frames_paths[0])
+
+        # in files, spectrograms are in orientation (freq bins, time bins)
         # so we take mean and std across columns, i.e. time bins, i.e. axis 1
-        mean_freqs = np.mean(X, axis=1)
-        std_freqs = np.std(X, axis=1)
+        mean_freqs = np.mean(frames, axis=1)
+        std_freqs = np.std(frames, axis=1)
+
+        for frames_path in frames_paths[1:]:
+            frames = np.load(dataset_path / frames_path)
+            mean_freqs += np.mean(frames, axis=1)
+            std_freqs += np.std(frames, axis=1)
+        mean_freqs = mean_freqs / len(frames_path)
+        std_freqs = std_freqs / len(frames_path)
         non_zero_std = np.argwhere(std_freqs != 0)
         return cls(mean_freqs, std_freqs, non_zero_std)
 
     @classmethod
     def fit(cls, spect):
-        """fit a StandardizeSpect instance.
+        """Fit a StandardizeSpect instance.
 
         Parameters
         ----------
