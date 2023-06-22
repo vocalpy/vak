@@ -326,12 +326,12 @@ def make_npy_files_for_each_split(
         frame_npy_paths = [
             str(sample.frame_npy_path) for sample in samples
         ]
-        split_df['frame_npy_paths'] = frame_npy_paths
+        split_df[datasets.frame_classification.constants.FRAMES_NPY_PATH_COL_NAME] = frame_npy_paths
 
         frame_labels_npy_paths = [
             str(sample.frame_labels_npy_path) for sample in samples
         ]
-        split_df['frame_label_npy_paths'] = frame_labels_npy_paths
+        split_df[datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 
     dataset_df_out = pd.concat(dataset_df_out)
