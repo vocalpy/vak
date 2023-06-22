@@ -208,9 +208,7 @@ class WindowedFrameClassificationModel(base.Model):
         -------
         None
         """
-        # TODO: rename "source" -> "spect"
-        # TODO: a sample can have "spect", "audio", "annot", optionally other things ("padding"?)
-        x, y = batch["source"], batch["annot"]
+        x, y = batch["frames"], batch["frame_labels"]
         # remove "batch" dimension added by collate_fn to x
         # we keep for y because loss still expects the first dimension to be batch
         # TODO: fix this weirdness. Diff't collate_fn?
