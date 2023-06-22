@@ -240,6 +240,8 @@ def make_npy_files_for_each_split(
 
             if input_type == 'audio':
                 frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[audio_format](source_path)
+                if audio_format == 'cbin':  # convert to ~wav, from int16 to float64
+                    frames = frames.astype(np.float64) / 32768.0
                 if annot:
                     frame_times = np.arange(frames.shape[-1]) / samplefreq
             elif input_type == 'spect':
