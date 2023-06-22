@@ -121,7 +121,7 @@ class WindowDataset:
         self.stride = stride
 
         if window_inds is None:
-            window_inds = get_window_inds(X.shape[-1], window_size, stride)
+            window_inds = get_window_inds(sample_ids.shape[-1], window_size, stride)
         self.window_inds = window_inds
 
         self.transform = transform
@@ -142,11 +142,11 @@ class WindowDataset:
     def __getitem__(self, idx):
         window_idx = self.window_inds[idx]
         sample_ids = self.sample_ids[window_idx:window_idx + self.window_size]
-        uniq_sample_ids = np.uniq(sample_ids)
+        uniq_sample_ids = np.unique(sample_ids)
         if len(uniq_sample_ids) == 1:
             sample_id = uniq_sample_ids[0]
-            frames = np.load(self.dataset_path / self.frames_paths[idx])
-            frame_labels = np.load(self.dataset_path / self.frame_labels_paths[idx])
+            frames = np.load(self.dataset_path / self.frames_paths[sample_id])
+            frame_labels = np.load(self.dataset_path / self.frame_labels_paths[sample_id])
         elif len(uniq_sample_ids) > 1:
             frames = []
             frame_labels = []
