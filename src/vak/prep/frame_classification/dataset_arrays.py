@@ -13,6 +13,7 @@ from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 
+from .. import constants as prep_constants
 from ... import (
     common,
     datasets,
@@ -90,12 +91,19 @@ def argsort_by_label_freq(
 
 
 @attrs.define(frozen=True)
-class SplitRecord:
+class Sample:
+    """Dataclass representing one sample 
+    in a frame classification dataset.
+    
+    Used to add paths for arrays from the sample 
+    to a ``dataset_df``, and to build 
+    the ``sample_ids`` vector and ``inds_in_sample`` vector  
+    for the entire dataset."""
     source_id: int = attrs.field()
     frame_npy_path: str
     frame_labels_npy_path: str
-    source_id_vec: np.ndarray
-    inds_in_source_vec: np.ndarray
+    sample_id_vec: np.ndarray
+    inds_in_sample_vec: np.ndarray
 
 
 def make_npy_files_for_each_split(
@@ -108,6 +116,82 @@ def make_npy_files_for_each_split(
         spect_key: str = 's',
         timebins_key: str = 't',
 ):
+    r"""Make npy files containing arrays
+    for each split of a frame classification dataset.
+
+    For each row in ``dataset_df``, this function creates one npy file
+    with the extension '.frames.npy`, containing the input
+    to the frame classification model, and '.frame_labels.npy',
+    a vector where each element is the target label
+    the network should predict for the corresponding frame.
+    These files are the data for each sample :math:`(x, y)` in the dataset,
+    where :math:`x_t` is the frames and :math:`y_t` is the frame labels.
+
+    This function also creates two "indexing" vectors that
+    are used by :class:`vak.datasets.frame_classification.WindowDataset`
+    and :class:`vak.datasets.frame_classification.FramesDataset`.
+    These vectors make it possible to work with files,
+    to avoid loading the entire dataset into memory
+    or working with memory-mapped arrays.
+    The first is the ``sample_ids`` vector,
+    that represents the "ID" of any sample :math:`(x, y)` in the dataset.
+    We use these IDs to load the array files corresponding to the samples.
+    For a dataset with :math:`m` samples, this will be an array of length :math:`T`,
+    the total number of frames across all samples,
+    with elements :math:`i \in (0, 1, ..., m - 1)`
+    indicating which frames correspond to which sample :math:`m_i`:
+    :math:`(0, 0, 0, ..., 1, 1, ..., m - 1, m -1)`.
+    The second vector is the ``inds_in_sample`` vector.
+    This vector is the same length as ``sample_ids``, but its values represent
+    the indices of frames within each sample :math:`x_t`.
+    For a data set with :math:`T` total frames across all samples,
+    where :math:`t_i` indicates the number of frames in each :math:`x_i`,
+    this vector will look like :math:`(0, 1, ..., t_0, 0, 1, ..., t_1, ... t_m)`.
+
+    Parameters
+    ----------
+    dataset_df : pandas.DataFrame
+        A ``pandas.DataFrame`` returned by :func:`vak.io.dataframe.from_files`
+        with a ``'split'`` column added, as a result of calling
+        :func:`vak.io.dataframe.from_files` or because it was added "manually"
+        by calling :func:`vak.core.prep.prep_helper.add_split_col` (as is done
+        for 'predict' when the entire ``DataFrame`` belongs to this
+        "split").
+    dataset_path : pathlib.Path
+        Path to directory that represents dataset.
+    input_type : str
+        The type of input to the neural network model.
+        One of {'audio', 'spect'}.
+    purpose: str
+        A string indicating what the dataset will be used for.
+        One of {'train', 'eval', 'predict', 'learncurve'}.
+        Determined by :func:`vak.core.prep.prep`
+        using the TOML configuration file.
+    labelmap : dict
+        A :class:`dict` that maps a set of human-readable
+        string labels to the integer classes predicted by a neural
+        network model. As returned by :func:`vak.labels.to_map`.
+    audio_format : str
+        A :class:`string` representing the format of audio files.
+        One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
+    spect_key : str
+        Key for accessing spectrogram in files. Default is 's'.
+    timebins_key : str
+        Key for accessing vector of time bins in files. Default is 't'.
+
+    Returns
+    -------
+    dataset_df_out : pandas.DataFrame
+        The ``dataset_df`` with splits sorted by increasing frequency
+        of labels (see :func:`~vak.prep.frame_classification.dataset_arrays.
+        and with columns added containing the npy files for each row.
+    """
+    if input_type not in prep_constants.INPUT_TYPES:
+        raise ValueError(
+            f"``input_type`` must be one of: {prep_constants.INPUT_TYPES}\n"
+            f"Value for ``input_type`` was: {input_type}"
+        )
+
     dataset_df_out = []
     splits = [
         split
@@ -163,7 +247,9 @@ def make_npy_files_for_each_split(
                 frames = spect_dict[spect_key]
                 if annot:
                     frame_times = spect_dict[timebins_key]
-            frames_npy_path = split_subdir / (source_path.stem + '.frames.npy')
+            frames_npy_path = split_subdir / (
+                    source_path.stem + datasets.frame_classification.constants.FRAMES_ARRAY_EXT
+            )
             np.save(frames, frames_npy_path)
             frames_npy_path = str(
                 # make sure we save path in csv as relative to dataset root
@@ -171,8 +257,8 @@ def make_npy_files_for_each_split(
             )
 
             n_frames = frames.shape[-1]
-            source_id_vec = np.ones((n_frames,)).astype(np.int32) * source_id
-            inds_in_source_vec = np.arange(n_frames)
+            sample_id_vec = np.ones((n_frames,)).astype(np.int32) * source_id
+            inds_in_sample_vec = np.arange(n_frames)
 
             # add to frame labels
             if annot:
@@ -184,7 +270,9 @@ def make_npy_files_for_each_split(
                     frame_times,
                     unlabeled_label=labelmap["unlabeled"],
                 )
-                frame_labels_npy_path = split_subdir / (source_path.stem + '.frame_labels.npy')
+                frame_labels_npy_path = split_subdir / (
+                        source_path.stem + datasets.frame_classification.constants.FRAME_LABELS_EXT
+                )
                 np.save(frame_labels, frame_labels_npy_path)
                 frame_labels_npy_path = str(
                     # make sure we save path in csv as relative to dataset root
@@ -193,12 +281,12 @@ def make_npy_files_for_each_split(
             else:
                 frame_labels_npy_path = None
 
-            return SplitRecord(
+            return Sample(
                 source_id,
                 frames_npy_path,
                 frame_labels_npy_path,
-                source_id_vec,
-                inds_in_source_vec
+                sample_id_vec,
+                inds_in_sample_vec
             )
 
         # ---- make npy files for this split, parallelized with dask
@@ -215,36 +303,33 @@ def make_npy_files_for_each_split(
             ]
 
         source_path_annot_bag = db.from_sequence(source_path_annot_tups)
-        # logger.info(
-        #     "creating pandas.DataFrame representing dataset from audio files",
-        # )
         with ProgressBar():
-            split_records = list(source_path_annot_bag.map(
+            sample = list(source_path_annot_bag.map(
                 _save_dataset_arrays_and_return_index_arrays
             ))
-        split_records = sorted(split_records, key=lambda record: record.source_id)
+        samples = sorted(samples, key=lambda sample: sample.source_id)
 
         # ---- save indexing vectors in split directory
-        source_id_vec = np.concatenate(
-            (record.source_id_vec for record in split_records)
+        sample_id_vec = np.concatenate(
+            (sample.sample_id_vec for sample in samples)
         )
         np.save(
-            source_id_vec, split_subdir / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME
+            sample_id_vec, split_subdir / datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME
         )
-        inds_in_source_vec = np.concatenate(
-            (record.inds_in_source_vec for record in split_records)
+        inds_in_sample_vec = np.concatenate(
+            (sample.inds_in_sample_vec for sample in samples)
         )
         np.save(
-            inds_in_source_vec, split_subdir / datasets.frame_classification.constants.INDS_IN_SOURCE_NPY_FILE
+            inds_in_sample_vec, split_subdir / datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME
         )
 
         frame_npy_paths = [
-            str(record.frame_npy_path) for record in split_records
+            str(sample.frame_npy_path) for sample in samples
         ]
         split_df['frame_npy_paths'] = frame_npy_paths
 
         frame_labels_npy_paths = [
-            str(record.frame_labels_npy_path) for record in split_records
+            str(sample.frame_labels_npy_path) for sample in samples
         ]
         split_df['frame_label_npy_paths'] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
@@ -262,10 +347,10 @@ def make_npy_files_for_each_split(
         # np.save(split_dst / datasets.frame_classification.constants.INPUT_ARRAY_FILENAME, inputs)
         # logger.info(
         #     "Saving ``source_id`` vector for frame classification dataset with size "
-        #     f"{round(source_id_vec.nbytes * 1e-6, 2)} MB"
+        #     f"{round(sample_id_vec.nbytes * 1e-6, 2)} MB"
         # )
         # np.save(split_dst / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME,
-        #         source_id_vec)
+        #         sample_id_vec)
         # if purpose != 'predict':
         #     logger.info(
         #         "Saving frame labels vector (targets) for frame classification dataset "
