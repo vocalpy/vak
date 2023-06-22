@@ -5,6 +5,7 @@ from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 
 from . import constants
 from ..metadata import Metadata
@@ -95,8 +96,10 @@ class WindowDataset:
 
     def __init__(
             self,
-            X: npt.NDArray,
-            Y: npt.NDArray,
+            dataset_path: str | pathlib.Path,
+            dataset_df: pd.DataFrame,
+            sample_ids: npt.NDArray,
+            inds_in_sample: npt.NDArray,
             window_size: int,
             frame_dur: float,
             stride: int = 1,
@@ -104,8 +107,15 @@ class WindowDataset:
             transform: Callable | None = None,
             target_transform: Callable | None = None
     ):
-        self.X = X
-        self.Y = Y
+        self.dataset_path = pathlib.Path(dataset_path)
+
+        self.dataset_df = dataset_df
+        self.frames_paths = dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
+        self.frame_labels_paths = dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+
+        self.sample_ids = sample_ids
+        self.inds_in_sample = inds_in_sample
+
         self.window_size = window_size
         self.frame_dur = float(frame_dur)
         self.stride = stride
@@ -119,7 +129,7 @@ class WindowDataset:
 
     @property
     def duration(self):
-        return self.X.shape[-1] * self.frame_dur
+        return self.sample_ids.shape[-1] * self.frame_dur
 
     @property
     def shape(self):
@@ -130,15 +140,40 @@ class WindowDataset:
         return one_x.shape
 
     def __getitem__(self, idx):
-        arr_idx = self.window_inds[idx]
-        x = self.X[..., arr_idx:arr_idx + self.window_size]
-        y = self.Y[arr_idx:arr_idx + self.window_size]
-        if self.transform:
-            x = self.transform(x)
-        if self.target_transform:
-            y = self.target_transform(y)
+        window_idx = self.window_inds[idx]
+        sample_ids = self.sample_ids[window_idx:window_idx + self.window_size]
+        uniq_sample_ids = np.uniq(sample_ids)
+        if len(uniq_sample_ids) == 1:
+            sample_id = uniq_sample_ids[0]
+            frames = np.load(self.dataset_path / self.frames_paths[idx])
+            frame_labels = np.load(self.dataset_path / self.frame_labels_paths[idx])
+        elif len(uniq_sample_ids) > 1:
+            frames = []
+            frame_labels = []
+            for sample_id in sorted(uniq_sample_ids):
+                frames.append(
+                    np.load(self.dataset_path / self.frames_paths[sample_id])
+                )
+                frame_labels.append(
+                    np.load(self.dataset_path / self.frame_labels_paths[sample_id])
+                )
+            # deal with axis for frames
+            frames = np.concatenate(frames)
+            frame_labels = np.concatenate(frame_labels)
+        else:
+            raise ValueError(
+                f"Unexpected number of ``uniq_sample_ids``: {uniq_sample_ids}"
+            )
 
-        return x, y
+        inds_in_sample = self.inds_in_sample[window_idx]
+        frames = frames[..., inds_in_sample:inds_in_sample + self.window_size]
+        frame_labels = frame_labels[inds_in_sample:inds_in_sample + self.window_size]
+        if self.transform:
+            frames = self.transform(frames)
+        if self.target_transform:
+            frame_labels = self.target_transform(frame_labels)
+
+        return frames, frame_labels
 
     def __len__(self):
         """number of batches"""
@@ -155,22 +190,29 @@ class WindowDataset:
             target_transform: Callable | None = None
     ):
         dataset_path = pathlib.Path(dataset_path)
+        metadata = Metadata.from_dataset_path(dataset_path)
+        frame_dur = metadata.frame_dur
+
+        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+        dataset_df = pd.read_csv(dataset_csv_path)
+
         split_path = dataset_path / split
-        X_path = split_path / constants.INPUT_ARRAY_FILENAME
-        X = np.load(X_path)
-        Y_path = split_path / constants.FRAME_LABELS_ARRAY_FILENAME
-        Y = np.load(Y_path)
+        sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
+        sample_ids = np.load(sample_ids_path)
+        inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+        inds_in_sample = np.load(inds_in_sample_path)
+
         window_inds_path = split_path / constants.WINDOW_INDS_ARRAY_FILENAME
         if window_inds_path.exists():
             window_inds = np.load(window_inds_path)
         else:
             window_inds = None
-        metadata = Metadata.from_dataset_path(dataset_path)
-        frame_dur = metadata.frame_dur
 
         return cls(
-            X,
-            Y,
+            dataset_path,
+            dataset_df,
+            sample_ids,
+            inds_in_sample,
             window_size,
             frame_dur,
             stride,
