@@ -44,8 +44,8 @@ class TrainItemTransform:
         source = self.source_transform(source)
         annot = self.annot_transform(annot)
         item = {
-            "source": source,
-            "annot": annot,
+            "frames": source,
+            "frame_labels": annot,
         }
 
         if spect_path is not None:
@@ -109,8 +109,8 @@ class EvalItemTransform:
         annot = self.annot_transform(annot)
 
         item = {
-            "source": source,
-            "annot": annot,
+            "frames": source,
+            "frame_labels": annot,
         }
 
         if padding_mask is not None:
@@ -173,7 +173,7 @@ class PredictItemTransform:
         source = self.source_transform_after_pad(source)
 
         item = {
-            "source": source,
+            "frames": source,
         }
 
         if padding_mask is not None:
