@@ -250,7 +250,7 @@ def make_npy_files_for_each_split(
             frames_npy_path = split_subdir / (
                     source_path.stem + datasets.frame_classification.constants.FRAMES_ARRAY_EXT
             )
-            np.save(frames, frames_npy_path)
+            np.save(frames_npy_path, frames)
             frames_npy_path = str(
                 # make sure we save path in csv as relative to dataset root
                 frames_npy_path.relative_to(dataset_path)
@@ -273,7 +273,7 @@ def make_npy_files_for_each_split(
                 frame_labels_npy_path = split_subdir / (
                         source_path.stem + datasets.frame_classification.constants.FRAME_LABELS_EXT
                 )
-                np.save(frame_labels, frame_labels_npy_path)
+                np.save(frame_labels_npy_path, frame_labels)
                 frame_labels_npy_path = str(
                     # make sure we save path in csv as relative to dataset root
                     frame_labels_npy_path.relative_to(dataset_path)
@@ -304,23 +304,23 @@ def make_npy_files_for_each_split(
 
         source_path_annot_bag = db.from_sequence(source_path_annot_tups)
         with ProgressBar():
-            sample = list(source_path_annot_bag.map(
+            samples = list(source_path_annot_bag.map(
                 _save_dataset_arrays_and_return_index_arrays
             ))
         samples = sorted(samples, key=lambda sample: sample.source_id)
 
         # ---- save indexing vectors in split directory
         sample_id_vec = np.concatenate(
-            (sample.sample_id_vec for sample in samples)
+            list(sample.sample_id_vec for sample in samples)
         )
         np.save(
-            sample_id_vec, split_subdir / datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME
+            split_subdir / datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME, sample_id_vec
         )
         inds_in_sample_vec = np.concatenate(
-            (sample.inds_in_sample_vec for sample in samples)
+            list(sample.inds_in_sample_vec for sample in samples)
         )
         np.save(
-            inds_in_sample_vec, split_subdir / datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+            split_subdir / datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME, inds_in_sample_vec
         )
 
         frame_npy_paths = [
