@@ -116,7 +116,7 @@ def make_learncurve_splits_from_dataset_df(
             )
 
     all_train_durs_and_replicates_df = pd.concat(all_train_durs_and_replicates_df)
-    dataset_df = make_npy_files_for_each_split(
+    all_train_durs_and_replicates_df = make_npy_files_for_each_split(
         all_train_durs_and_replicates_df,
         dataset_path,
         input_type,
@@ -127,12 +127,11 @@ def make_learncurve_splits_from_dataset_df(
         timebins_key,
     )
 
-    # keep the same validation and test set by concatenating them with the train subset
-    all_train_durs_and_replicates_df = pd.concat(
+    # keep the same validation, test, and total train sets by concatenating them with the train subsets
+    dataset_df = pd.concat(
         (
             all_train_durs_and_replicates_df,
             dataset_df,
         )
     )
-    return all_train_durs_and_replicates_df
-
+    return dataset_df
