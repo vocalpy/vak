@@ -107,8 +107,8 @@ class StandardizeSpect:
             frames = np.load(dataset_path / frames_path)
             mean_freqs += np.mean(frames, axis=1)
             std_freqs += np.std(frames, axis=1)
-        mean_freqs = mean_freqs / len(frames_path)
-        std_freqs = std_freqs / len(frames_path)
+        mean_freqs = mean_freqs / len(frames_paths)
+        std_freqs = std_freqs / len(frames_paths)
         non_zero_std = np.argwhere(std_freqs != 0)
         return cls(mean_freqs, std_freqs, non_zero_std)
 
