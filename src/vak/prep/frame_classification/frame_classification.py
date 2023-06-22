@@ -372,7 +372,6 @@ def prep_frame_classification_dataset(
     if purpose == 'learncurve':
         dataset_df = make_learncurve_splits_from_dataset_df(
             dataset_df,
-            dataset_csv_path,
             input_type,
             train_set_durs,
             num_replicates,
