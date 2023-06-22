@@ -336,29 +336,3 @@ def make_npy_files_for_each_split(
 
     dataset_df_out = pd.concat(dataset_df_out)
     return dataset_df_out
-
-
-
-# TODO: do we want to save annotations as csv still, to be able to get labels?
-        # logger.info(
-        #     "Saving ``inputs`` vector for frame classification dataset with size "
-        #     f"{round(inputs.nbytes * 1e-6, 2)} MB"
-        # )
-        # np.save(split_dst / datasets.frame_classification.constants.INPUT_ARRAY_FILENAME, inputs)
-        # logger.info(
-        #     "Saving ``source_id`` vector for frame classification dataset with size "
-        #     f"{round(sample_id_vec.nbytes * 1e-6, 2)} MB"
-        # )
-        # np.save(split_dst / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME,
-        #         sample_id_vec)
-        # if purpose != 'predict':
-        #     logger.info(
-        #         "Saving frame labels vector (targets) for frame classification dataset "
-        #         f"with size {round(frame_labels.nbytes * 1e-6, 2)} MB"
-        #     )
-        #     np.save(split_dst / datasets.frame_classification.constants.FRAME_LABELS_ARRAY_FILENAME, frame_labels)
-        #     logger.info(
-        #         "Saving annotations as csv"
-        #     )
-        #     generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
-        #     generic_seq.to_file(split_dst / datasets.frame_classification.constants.ANNOTATION_CSV_FILENAME)
