@@ -5,6 +5,7 @@ from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 
 from . import constants
 from ..metadata import Metadata
@@ -42,7 +43,7 @@ class FramesDataset:
 
     Attributes
     ----------
-    X : numpy.ndarray
+    dataset_df
     Y : numpy.ndarray
     frame_dur : float
         Duration of a single frame, in seconds.
@@ -63,39 +64,46 @@ class FramesDataset:
     """
     def __init__(
         self,
-        X: npt.NDArray,
-        Y: npt.NDArray,
+        dataset_path: str | pathlib.Path,
+        dataset_df: pd.DataFrame,
         sample_ids: npt.NDArray,
+        inds_in_sample: npt.NDArray,
         frame_dur: float,
         item_transform: Callable | None = None,
     ):
-        self.X = X
-        self.Y = Y
+        self.dataset_path = pathlib.Path(dataset_path)
+
+        self.dataset_df = dataset_df
+        self.frames_paths = dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
+        self.frame_labels_paths = dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+
         self.sample_ids = sample_ids
+        self.inds_in_sample = inds_in_sample
         self.frame_dur = float(frame_dur)
         self.item_transform = item_transform
 
     @property
     def duration(self):
-        return self.X.shape[-1] * self.frame_dur
+        return self.sample_ids.shape[-1] * self.frame_dur
 
     @property
     def shape(self):
         tmp_x_ind = 0
         tmp_item = self.__getitem__(tmp_x_ind)
-        return tmp_item["source"].shape
+        return tmp_item["frames"].shape
 
     def __getitem__(self, idx):
-        is_source_id = self.sample_ids == idx
-        x = self.X[..., is_source_id]
-        y = self.Y[is_source_id]
+        frames = np.load(self.dataset_path / self.frames_paths[idx])
+        frame_labels = np.load(self.dataset_path / self.frame_labels_paths[idx])
+
         if self.item_transform:
-            item = self.item_transform(x, y)
+            item = self.item_transform(frames, frame_labels)
         else:
             item = {
-                "source": x,
-                "annot": y,
+                "frames": frames,
+                "frame_labels": frame_labels,
             }
+
         return item
 
     def __len__(self):
@@ -110,20 +118,23 @@ class FramesDataset:
         item_transform: Callable | None = None,
     ):
         dataset_path = pathlib.Path(dataset_path)
-        split_path = dataset_path / split
-        X_path = split_path / constants.INPUT_ARRAY_FILENAME
-        X = np.load(X_path)
-        Y_path = split_path / constants.FRAME_LABELS_ARRAY_FILENAME
-        Y = np.load(Y_path)
-        sample_ids_path = split_path / constants.SOURCE_IDS_ARRAY_FILENAME
-        sample_ids = np.load(sample_ids_path)
         metadata = Metadata.from_dataset_path(dataset_path)
         frame_dur = metadata.frame_dur
 
+        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+        dataset_df = pd.read_csv(dataset_csv_path)
+
+        split_path = dataset_path / split
+        sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
+        sample_ids = np.load(sample_ids_path)
+        inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+        inds_in_sample = np.load(inds_in_sample_path)
+
         return cls(
-            X,
-            Y,
+            dataset_path,
+            dataset_df,
             sample_ids,
+            inds_in_sample,
             frame_dur,
             item_transform,
         )
