@@ -66,6 +66,7 @@ class FramesDataset:
         self,
         dataset_path: str | pathlib.Path,
         dataset_df: pd.DataFrame,
+        split: str,
         sample_ids: npt.NDArray,
         inds_in_sample: npt.NDArray,
         frame_dur: float,
@@ -73,9 +74,11 @@ class FramesDataset:
     ):
         self.dataset_path = pathlib.Path(dataset_path)
 
+        self.split = split
+        dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
-        self.frames_paths = dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
-        self.frame_labels_paths = dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+        self.frames_paths = self.dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
+        self.frame_labels_paths = self.dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
 
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
@@ -133,6 +136,7 @@ class FramesDataset:
         return cls(
             dataset_path,
             dataset_df,
+            split,
             sample_ids,
             inds_in_sample,
             frame_dur,
