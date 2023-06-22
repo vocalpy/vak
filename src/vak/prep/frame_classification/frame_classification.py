@@ -357,7 +357,7 @@ def prep_frame_classification_dataset(
         labelmap = None
 
     # ---- make arrays that represent final dataset --------------------------------------------------------------------
-    dataset_arrays.make_from_dataset_df(
+    dataset_df = dataset_arrays.make_npy_files_for_each_split(
         dataset_df,
         dataset_path,
         input_type,
@@ -368,27 +368,9 @@ def prep_frame_classification_dataset(
         timebins_key,
     )
 
-    # ---- save csv file that captures provenance of source data -------------------------------------------------------
-    logger.info(
-        f"Saving dataset csv file: {dataset_csv_path}"
-    )
-    dataset_df.to_csv(
-        dataset_csv_path, index=False
-    )  # index is False to avoid having "Unnamed: 0" column when loading
-
-    # ---- save metadata -----------------------------------------------------------------------------------------------
-    # we do this before generating learncurve splits because learncurve expects metadata to exist, to get frame_dur
-    frame_dur = validators.validate_and_get_frame_dur(dataset_df, input_type)
-
-    metadata = Metadata(
-        dataset_csv_filename=str(dataset_csv_path.name),
-        frame_dur=frame_dur
-    )
-    metadata.to_json(dataset_path)
-
     # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
     if purpose == 'learncurve':
-        make_learncurve_splits_from_dataset_df(
+        dataset_df = make_learncurve_splits_from_dataset_df(
             dataset_df,
             dataset_csv_path,
             input_type,
@@ -400,5 +382,22 @@ def prep_frame_classification_dataset(
             spect_key,
             timebins_key,
         )
+
+    # ---- save csv file that captures provenance of source data -------------------------------------------------------
+    logger.info(
+        f"Saving dataset csv file: {dataset_csv_path}"
+    )
+    dataset_df.to_csv(
+        dataset_csv_path, index=False
+    )  # index is False to avoid having "Unnamed: 0" column when loading
+
+    # ---- save metadata -----------------------------------------------------------------------------------------------
+    frame_dur = validators.validate_and_get_frame_dur(dataset_df, input_type)
+
+    metadata = Metadata(
+        dataset_csv_filename=str(dataset_csv_path.name),
+        frame_dur=frame_dur
+    )
+    metadata.to_json(dataset_path)
 
     return dataset_df, dataset_path
