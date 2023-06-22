@@ -98,6 +98,7 @@ class WindowDataset:
             self,
             dataset_path: str | pathlib.Path,
             dataset_df: pd.DataFrame,
+            split: str,
             sample_ids: npt.NDArray,
             inds_in_sample: npt.NDArray,
             window_size: int,
@@ -109,9 +110,12 @@ class WindowDataset:
     ):
         self.dataset_path = pathlib.Path(dataset_path)
 
+        self.split = split
+        dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
-        self.frames_paths = dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
-        self.frame_labels_paths = dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+
+        self.frames_paths = self.dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
+        self.frame_labels_paths = self.dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
 
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
@@ -157,8 +161,12 @@ class WindowDataset:
                 frame_labels.append(
                     np.load(self.dataset_path / self.frame_labels_paths[sample_id])
                 )
-            # deal with axis for frames
-            frames = np.concatenate(frames)
+
+            if all([frames_.ndim == 1 for frames_ in frames]):
+                # --> all 1-d audio vectors; if we specify `axis=1` here we'd get error
+                frames = np.concatenate(frames)
+            else:
+                frames = np.concatenate(frames, axis=1)
             frame_labels = np.concatenate(frame_labels)
         else:
             raise ValueError(
@@ -211,6 +219,7 @@ class WindowDataset:
         return cls(
             dataset_path,
             dataset_df,
+            split,
             sample_ids,
             inds_in_sample,
             window_size,
