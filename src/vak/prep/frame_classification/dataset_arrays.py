@@ -6,12 +6,13 @@ import copy
 import logging
 import pathlib
 
+import attrs
 import crowsetta
+import dask.bag as db
+from dask.diagnostics import ProgressBar
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 
-from .. import constants as prep_constants
 from ... import (
     common,
     datasets,
@@ -22,398 +23,113 @@ from ... import (
 logger = logging.getLogger(__name__)
 
 
-def sort_source_paths_and_annots_by_label_freq(
-        source_paths: list[str] | npt.NDArray,
+def argsort_by_label_freq(
         annots: list[crowsetta.Annotation]
-) -> tuple[list[str], list[crowsetta.Annotation]]:
-    """Sort source paths and annotations by frequency of labels
-    in annotations.
+) -> list[int]:
+    """Returns indices to sort a list of annotations
+    in order of more frequently appearing labels,
+    i.e., the first annotation will have the label
+    that appears least frequently and the last annotation
+    will have the label that appears most frequently.
 
-   :func:`vak.prep.frame_classification.helper.make_frame_classification_arrays_from_spect_and_annot_paths`
-   uses this function to sort before cropping a dataset to a specified duration,
-   so that it's less likely that cropping will remove all occurrences of any label class
-   from the total dataset.
+   Used to sort a dataframe representing a dataset of annotated audio
+   or spectrograms before cropping that dataset to a specified duration,
+   so that it's less likely that cropping will remove all occurrences
+   of any label class from the total dataset.
 
     Parameters
     ----------
-    source_paths : list, np.ndarray
     annots: list
+        List of :class:`crowsetta.Annotation` instances.
 
     Returns
     -------
-    source_paths_sorted : list
-    annots_sorted: list
+    sort_inds: list
+        Integer values to sort ``annots``.
     """
-    if isinstance(source_paths, np.ndarray):
-        source_paths = source_paths.tolist()
-
-    if not(
-        len(source_paths) == len(annots)
-    ):
-        raise ValueError(
-            f"``source_paths`` and ``annots`` have different lengths:"
-            f"len(source_paths)={len(source_paths)},"
-            f"len(annots)={len(annots)}"
-        )
-
     all_labels = [
         lbl for annot in annots for lbl in annot.seq.labels
     ]
     label_counts = collections.Counter(all_labels)
 
-    # we copy so we can remove items to make sure we append all below
-    source_paths_copy = copy.deepcopy(source_paths)
-    annots_copy = copy.deepcopy(annots)
-    source_paths_sorted, annots_sorted = [], []
+    sort_inds = []
+    # make indices ahead of time so they stay constant as we remove things from the list
+    ind_annot_tuples = list(
+        enumerate(copy.deepcopy(annots))
+    )
     for label, _ in reversed(label_counts.most_common()):
-        for source_path, annot in zip(source_paths_copy, annots_copy):
+        # next line, [:] to make a temporary copy to avoid remove bug
+        for ind_annot_tuple in ind_annot_tuples[:]:
+            ind, annot = ind_annot_tuple
             if label in annot.seq.labels.tolist():
-                annots_sorted.append(annot)
-                source_paths_sorted.append(source_path)
-                annots_copy.remove(annot)
-                source_paths_copy.remove(source_path)
+                sort_inds.append(ind)
+                ind_annot_tuples.remove(ind_annot_tuple)
 
     # make sure we got all source_paths + annots
-    if len(annots_copy) > 0:
-        for source_path, annot in zip(source_paths_copy, annots_copy):
-            annots_sorted.append(annot)
-            source_paths_sorted.append(source_path)
-            annots_copy.remove(annot)
-            source_paths_copy.remove(source_path)
+    if len(ind_annot_tuples) > 0:
+        for ind_annot_tuple in ind_annot_tuples:
+            ind, annot = ind_annot_tuple
+            sort_inds.append(ind)
+            ind_annot_tuples.remove(ind_annot_tuple)
 
-    if len(annots_copy) > 0:
+    if len(ind_annot_tuples) > 0:
         raise ValueError(
             "Not all ``annots`` were used in sorting."
-            f"Leftover ``annots``: {annots_copy}"
+            f"Left over (with indices from list): {ind_annot_tuples}"
         )
 
     if not (
-            len(annots_sorted) == len(source_paths_sorted) == len(annots)
+        sorted(sort_inds) == list(range(len(annots)))
     ):
         raise ValueError(
-            "Inconsistent lengths after sorting:"
-            "len(annots_sorted) == len(source_paths_sorted) == len(annots)"
+            "sorted(sort_inds) does not equal range(len(annots)):"
+            f"sort_inds: {sort_inds}\nrange(len(annots)): {list(range(len(annots)))}"
         )
 
-    return source_paths_sorted, annots_sorted
+    return sort_inds
 
 
-def crop_arrays_keep_classes(
-        inputs: npt.NDArray,
-        source_ids: npt.NDArray,
-        crop_dur: float,
-        frame_dur: float,
-        labelmap: dict | None = None,
-        frame_labels: npt.NDArray | None = None,
-) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
-    r"""Crop arrays representing a frame classification dataset
-    to a target duration.
-
-    Parameters
-    ----------
-    inputs : numpy.ndarray
-        Inputs to neural network that performs
-        frame classification task.
-        Must be 1-D or 2-D, either an array of audio
-        data or spectrograms.
-    source_ids : numpy.ndarray
-        Represents the "ID" of any source file,
-        i.e., the index into ``spect_paths``
-        that will let us load that file.
-        For a dataset with :math:`m` files,
-        this will be an array of length :math:`T`,
-        the total number of time bins across all files,
-        with elements :math:`i in (0, 1, ..., m - 1)`
-        indicating which time bins
-        correspond to which file :math:`m_i`:
-         :math:`(0, 0, 0, ..., 1, 1, ..., m - 1, m -1)`.
-    crop_dur : float
-        Duration to which dataset should be "cropped", in seconds.
-    frame_dur : float
-        Duration of a frame, i.e., a single sample in audio
-        or a single timebin in a spectrogram.
-    frame_labels : numpy.ndarray, optional
-        Vector of labels for frames,
-        where labels are from
-        the set of values in ``labelmap``.
-        Optional, default is None.
-        If ``frame_labels`` is specified
-        then ``labelmap`` must also be specified,
-        and a ValueError will be raised
-        if all classes in ``labelmap``
-        are not present after cropping.
-    labelmap : dict, optional
-        Dict that maps labels from dataset
-        to a series of consecutive integers.
-        To create a label map, pass a set of labels
-        to the :func:`vak.common.labels.to_map` function.
-        Optional, default is None.
-        If ``frame_labels`` is specified
-        then ``labelmap`` must also be specified,
-        and a ValueError will be raised
-        if all classes in ``labelmap``
-        are not present after cropping.
-
-    Returns
-    -------
-    inputs_cropped : numpy.ndarray
-        The ``inputs`` array after cropping.
-    source_id_cropped : numpy.ndarray
-        The ``source_ids`` vector after cropping.
-    frame_labels_cropped : numpy.ndarray
-        The ``frame_labels`` vector after cropping,
-        if ``frame_labels`` was provided as an argument.
-    """
-    # ---- pre-conditions
-    # check that all are numpy arrays
-    # and check that inputs is 1d or 2d
-    if not inputs.ndim in (1, 2):
-        raise ValueError(
-            f"The ``inputs`` array must be 1- or 2- dimensional but ``inputs.ndim`` was: {inputs.ndim}"
-        )
-    source_ids = common.validators.column_or_1d(source_ids)
-    if frame_labels is not None:
-        frame_labels = common.validators.column_or_1d(frame_labels)
-
-    lens = [
-        inputs.shape[-1],
-        source_ids.shape[-1]
-    ]
-    if frame_labels is not None:
-        lens.append(frame_labels.shape[-1])
-    uniq_lens = set(lens)
-    if len(uniq_lens) != 1:
-        raise ValueError(
-            "``inputs``, ``source_ids``, and ``frame_labels`` (if provided) should all "
-            "have the same length, but ``crop_to_dur`` did not find one unique length. "
-            "Lengths of ``inputs``, ``source_ids``, and ``frame_labels`` (if provided): "
-            f"were: {lens}"
-        )
-    else:
-        length = uniq_lens.pop()
-
-    # ---- compute target length in number of time bins
-    cropped_length = np.round(crop_dur / frame_dur).astype(int)
-
-    if length == cropped_length:
-        # already correct length
-        return inputs, source_ids, frame_labels
-
-    elif length < cropped_length:
-        raise ValueError(
-            f"Arrays have length {length} "
-            f"that is shorter than correct length, {cropped_length}, "
-            f"(= target duration {crop_dur} / duration of a single frame, {frame_dur})."
-        )
-
-    # ---- Do the cropping ----------------------------------------
-    class_labels = set(labelmap.values())
-    if frame_labels is not None:
-        frame_labels_cropped = frame_labels[:cropped_length]
-        uniq_frame_labels_cropped = set(np.unique(frame_labels_cropped))
-
-        if uniq_frame_labels_cropped == class_labels:
-            return inputs[:cropped_length], source_ids[:cropped_length], frame_labels
-        else:
-            raise ValueError(
-                f"Unable to crop dataset of duration {length * frame_dur} to ``crop_dur`` {crop_dur} "
-                f"and maintain occurrence of all labels in ``labelmap``."
-            )
-    else:
-        return inputs[:cropped_length], source_ids[:cropped_length], frame_labels  # frame_labels is None here
+@attrs.define(frozen=True)
+class SplitRecord:
+    source_id: int = attrs.field()
+    frame_npy_path: str
+    frame_labels_npy_path: str
+    source_id_vec: np.ndarray
+    inds_in_source_vec: np.ndarray
 
 
-def make_from_source_paths_and_annots(
-        source_paths: list[str],
-        input_type: str,
-        annots: list[crowsetta.Annotation] | None = None,
-        labelmap: dict | None = None,
-        crop_dur: float | None = None,
-        frame_dur: float | None = None,
-        audio_format: str | None = None,
-        spect_key: str = "s",
-        timebins_key: str = "t",
-) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray | None]:
-    """Makes arrays used by dataset classes
-    for frame classification task
-    from a list of audio or spectrogram paths
-    and an optional, paired list of annotation paths.
-
-    This is a helper function used by
-    :func:`vak.prep.prep_helper.make_frame_classification_arrays_from_spectrogram_dataset`.
-
-    Parameters
-    ----------
-    source_paths : list
-        Paths to audio files or array files containing spectrograms.
-    input_type : str
-        The type of input to the neural network model.
-        One of {'audio', 'spect'}.
-    annots : list
-        List of crowsetta.Annotation instances.
-    labelmap : dict
-        Mapping string labels to integer classes predicted by network.
-    crop_dur : float, optional
-        Duration to which the entire dataset should be cropped.
-        If specified, then ``frame_dur`` must be specified
-        so that durations can be measured, and ``labelmap``
-        must be specified to ensure that at least one occurrence
-        of all classes in dataset are preserved after cropping.
-    frame_dur : float, optional
-        Duration of a frame, i.e., a single sample in audio
-        or a single timebin in a spectrogram.
-        Only required if ``crop_dur`` is specified.
-    audio_format : str
-    spect_key : str
-        Key for accessing spectrogram in files. Default is 's'.
-    timebins_key : str
-        Key for accessing vector of time bins in files. Default is 't'.
-
-    Returns
-    -------
-    inputs : numpy.NDArray
-        An array of inputs to the neural network model,
-        concatenated from either audio files
-        or spectrograms in array files.
-    source_id_vec : numpy.NDArray
-        A 1-dimensional vector whose size is equal to the
-        width of ``inputs``
-    frame_labels : numpy.NDArray or None
-    """
-    if crop_dur is not None and frame_dur is None:
-        raise ValueError("Must provide ``frame_dur`` when specifying ``crop_dur``, "
-                         "the duration of a single frame is needed to determine the total duration "
-                         "of the dataset and to crop the dataset to the duration specified "
-                         "by ``crop_dur``.")
-
-    if crop_dur is not None and labelmap is None:
-        raise ValueError("Must provide ``labelmap`` when specifying ``crop_dur``, "
-                         "the set of unique class labels for the dataset is needed "
-                         "to ensure that set is preserved when cropping the dataset "
-                         "to the duration specified by ``crop_dur``.")
-
-    msg = f"Loading data from {len(source_paths)} spectrogram files"
-    if annots is not None:
-        msg += f" and {len(annots)} annotations"
-    logger.info(msg)
-
-    inputs, source_id_vec = [], []
-    if annots:
-        frame_labels = []
-        if crop_dur:
-            source_paths, annots = sort_source_paths_and_annots_by_label_freq(source_paths, annots)
-        to_do = zip(source_paths, annots)
-    else:
-        to_do = zip(source_paths, [None] * len(source_paths))
-
-    for source_id, (source_path, annot) in enumerate(to_do):
-        if input_type == 'audio':
-            input_, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[audio_format](source_path)
-            if annot:
-                frames = np.arange(input_.shape[-1]) / samplefreq
-        elif input_type == 'spect':
-            spect_dict = np.load(source_path)
-            input_ = spect_dict[spect_key]
-            if annot:
-                frames = spect_dict[timebins_key]
-        inputs.append(input_)
-
-        # add to frame labels
-        if annot:
-            lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
-            lbls_frame = transforms.labeled_timebins.from_segments(
-                lbls_int,
-                annot.seq.onsets_s,
-                annot.seq.offsets_s,
-                frames,
-                unlabeled_label=labelmap["unlabeled"],
-            )
-            frame_labels.append(lbls_frame)
-
-        # add to source_id
-        n_frames = input_.shape[-1]  # number of frames
-        source_id_vec.append(
-            np.ones((n_frames,)).astype(np.int32) * source_id
-        )
-
-    if input_type == 'audio' and all([input_.ndim == 1 for input_ in inputs]):
-        # all 1-d audio vectors; if we specify `axis=1` here we'd get error
-        inputs = np.concatenate(inputs)
-    else:
-        inputs = np.concatenate(inputs, axis=1)
-    source_id_vec = np.concatenate(source_id_vec)
-    if annots is not None:
-        frame_labels = np.concatenate(frame_labels)
-    else:
-        frame_labels = None
-
-    if crop_dur:
-        inputs, source_id_vec, frame_labels = crop_arrays_keep_classes(
-            inputs,
-            source_id_vec,
-            crop_dur,
-            frame_dur,
-            labelmap,
-            frame_labels,
-        )
-
-    return inputs, source_id_vec, frame_labels
-
-
-def make_from_dataset_df(
+def make_npy_files_for_each_split(
         dataset_df: pd.DataFrame,
-        dataset_path: pathlib.Path,
+        dataset_path: str | pathlib.Path,
         input_type: str,
         purpose: str,
-        labelmap: dict | None = None,
-        audio_format: str | None = None,
-        spect_key: str = "s",
-        timebins_key: str = "t",
-) -> None:
-    """Makes arrays used by dataset classes
-    for frame classification task
-    from a dataset of spectrograms
-    with annotations.
+        labelmap: dict,
+        audio_format: str,
+        spect_key: str = 's',
+        timebins_key: str = 't',
+):
+    dataset_df_out = []
+    splits = [
+        split
+        for split in sorted(dataset_df.split.dropna().unique())
+        if split != "None"
+    ]
+    for split in splits:
+        split_subdir = dataset_path / split
+        split_subdir.mkdir()
 
-    Makes one inputs array and one targets array
-    per split in the dataframe that represents
-    the dataset.
+        split_df = dataset_df[dataset_df.split == split].copy()
 
-    Parameters
-    ----------
-    dataset_df : pandas.Dataframe
-    dataset_path : str, pathlib.Path
-    input_type : str
-        The type of input to the neural network model.
-        One of {'audio', 'spect'}.
-    purpose: str
-    labelmap : dict
-    audio_format : str
-    spect_key : str
-        Key for accessing spectrogram in files. Default is 's'.
-    timebins_key : str
-        Key for accessing vector of time bins in files. Default is 't'.
-    """
-    if input_type not in prep_constants.INPUT_TYPES:
-        raise ValueError(
-            f"``input_type`` must be one of: {prep_constants.INPUT_TYPES}\n"
-            f"Value for ``input_type`` was: {input_type}"
-        )
+        if purpose != 'predict':
+            annots = common.annotation.from_df(split_df)
+        else:
+            annots = None
 
-    dataset_path = pathlib.Path(dataset_path)
+        if annots:
+            sort_inds = argsort_by_label_freq(annots)
+            split_df['sort_inds'] = sort_inds
+            split_df = split_df.sort_values(by='sort_inds').drop(columns='sort_inds').reset_index()
 
-    logger.info(f"Will use labelmap: {labelmap}")
-
-    for split in sorted(dataset_df.split.unique()):
-        if split == 'None':
-            # these are files that didn't get assigned to a split
-            continue
-        logger.info(f"Processing split: {split}")
-        split_dst = dataset_path / split
-        logger.info(f"Will save in: {split}")
-        split_dst.mkdir(exist_ok=True)
-
-        split_df = dataset_df[dataset_df.split == split]
         if input_type == 'audio':
             source_paths = split_df['audio_path'].values
         elif input_type == 'spect':
@@ -422,43 +138,142 @@ def make_from_dataset_df(
             raise ValueError(
                 f"Invalid ``input_type``: {input_type}"
             )
-
+        # do this *again* after sorting the dataframe
         if purpose != 'predict':
             annots = common.annotation.from_df(split_df)
         else:
             annots = None
 
-        (inputs,
-         source_id_vec,
-         frame_labels) = make_from_source_paths_and_annots(
-            source_paths,
-            input_type,
-            annots,
-            labelmap,
-            audio_format=audio_format,
-            spect_key=spect_key,
-            timebins_key=timebins_key
+        def _save_dataset_arrays_and_return_index_arrays(
+                source_id_path_annot_tup
+        ):
+            """Function we use with dask to parallelize
+
+            Defined in-line so variables are in scope
+            """
+            source_id, source_path, annot = source_id_path_annot_tup
+            source_path = pathlib.Path(source_path)
+
+            if input_type == 'audio':
+                frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[audio_format](source_path)
+                if annot:
+                    frame_times = np.arange(frames.shape[-1]) / samplefreq
+            elif input_type == 'spect':
+                spect_dict = np.load(source_path)
+                frames = spect_dict[spect_key]
+                if annot:
+                    frame_times = spect_dict[timebins_key]
+            frames_npy_path = split_subdir / (source_path.stem + '.frames.npy')
+            np.save(frames, frames_npy_path)
+            frames_npy_path = str(
+                # make sure we save path in csv as relative to dataset root
+                frames_npy_path.relative_to(dataset_path)
+            )
+
+            n_frames = frames.shape[-1]
+            source_id_vec = np.ones((n_frames,)).astype(np.int32) * source_id
+            inds_in_source_vec = np.arange(n_frames)
+
+            # add to frame labels
+            if annot:
+                lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
+                frame_labels = transforms.labeled_timebins.from_segments(
+                    lbls_int,
+                    annot.seq.onsets_s,
+                    annot.seq.offsets_s,
+                    frame_times,
+                    unlabeled_label=labelmap["unlabeled"],
+                )
+                frame_labels_npy_path = split_subdir / (source_path.stem + '.frame_labels.npy')
+                np.save(frame_labels, frame_labels_npy_path)
+                frame_labels_npy_path = str(
+                    # make sure we save path in csv as relative to dataset root
+                    frame_labels_npy_path.relative_to(dataset_path)
+                )
+            else:
+                frame_labels_npy_path = None
+
+            return SplitRecord(
+                source_id,
+                frames_npy_path,
+                frame_labels_npy_path,
+                source_id_vec,
+                inds_in_source_vec
+            )
+
+        # ---- make npy files for this split, parallelized with dask
+        # using nested function just defined
+        if annots:
+            source_path_annot_tups = [
+                (source_id, source_path, annot)
+                for source_id, (source_path, annot) in enumerate(zip(source_paths, annots))
+            ]
+        else:
+            source_path_annot_tups = [
+                (source_id, source_path, None)
+                for source_id, source_path in enumerate(source_paths)
+            ]
+
+        source_path_annot_bag = db.from_sequence(source_path_annot_tups)
+        # logger.info(
+        #     "creating pandas.DataFrame representing dataset from audio files",
+        # )
+        with ProgressBar():
+            split_records = list(source_path_annot_bag.map(
+                _save_dataset_arrays_and_return_index_arrays
+            ))
+        split_records = sorted(split_records, key=lambda record: record.source_id)
+
+        # ---- save indexing vectors in split directory
+        source_id_vec = np.concatenate(
+            (record.source_id_vec for record in split_records)
+        )
+        np.save(
+            source_id_vec, split_subdir / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME
+        )
+        inds_in_source_vec = np.concatenate(
+            (record.inds_in_source_vec for record in split_records)
+        )
+        np.save(
+            inds_in_source_vec, split_subdir / datasets.frame_classification.constants.INDS_IN_SOURCE_NPY_FILE
         )
 
-        logger.info(
-            "Saving ``inputs`` vector for frame classification dataset with size "
-            f"{round(inputs.nbytes * 1e-6, 2)} MB"
-        )
-        np.save(split_dst / datasets.frame_classification.constants.INPUT_ARRAY_FILENAME, inputs)
-        logger.info(
-            "Saving ``source_id`` vector for frame classification dataset with size "
-            f"{round(source_id_vec.nbytes * 1e-6, 2)} MB"
-        )
-        np.save(split_dst / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME,
-                source_id_vec)
-        if purpose != 'predict':
-            logger.info(
-                "Saving frame labels vector (targets) for frame classification dataset "
-                f"with size {round(frame_labels.nbytes * 1e-6, 2)} MB"
-            )
-            np.save(split_dst / datasets.frame_classification.constants.FRAME_LABELS_ARRAY_FILENAME, frame_labels)
-            logger.info(
-                "Saving annotations as csv"
-            )
-            generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
-            generic_seq.to_file(split_dst / datasets.frame_classification.constants.ANNOTATION_CSV_FILENAME)
+        frame_npy_paths = [
+            str(record.frame_npy_path) for record in split_records
+        ]
+        split_df['frame_npy_paths'] = frame_npy_paths
+
+        frame_labels_npy_paths = [
+            str(record.frame_labels_npy_path) for record in split_records
+        ]
+        split_df['frame_label_npy_paths'] = frame_labels_npy_paths
+        dataset_df_out.append(split_df)
+
+    dataset_df_out = pd.concat(dataset_df_out)
+    return dataset_df_out
+
+
+
+# TODO: do we want to save annotations as csv still, to be able to get labels?
+        # logger.info(
+        #     "Saving ``inputs`` vector for frame classification dataset with size "
+        #     f"{round(inputs.nbytes * 1e-6, 2)} MB"
+        # )
+        # np.save(split_dst / datasets.frame_classification.constants.INPUT_ARRAY_FILENAME, inputs)
+        # logger.info(
+        #     "Saving ``source_id`` vector for frame classification dataset with size "
+        #     f"{round(source_id_vec.nbytes * 1e-6, 2)} MB"
+        # )
+        # np.save(split_dst / datasets.frame_classification.constants.SOURCE_IDS_ARRAY_FILENAME,
+        #         source_id_vec)
+        # if purpose != 'predict':
+        #     logger.info(
+        #         "Saving frame labels vector (targets) for frame classification dataset "
+        #         f"with size {round(frame_labels.nbytes * 1e-6, 2)} MB"
+        #     )
+        #     np.save(split_dst / datasets.frame_classification.constants.FRAME_LABELS_ARRAY_FILENAME, frame_labels)
+        #     logger.info(
+        #         "Saving annotations as csv"
+        #     )
+        #     generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+        #     generic_seq.to_file(split_dst / datasets.frame_classification.constants.ANNOTATION_CSV_FILENAME)
