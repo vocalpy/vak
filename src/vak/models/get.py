@@ -46,8 +46,8 @@ def get(name: str,
     import vak.models
 
     if name == 'DAS':
-        n_audio_channels = input_shape[0]
-        num_samples = input_shape[1]
+        n_audio_channels = input_shape[-2]
+        num_samples = input_shape[-1]
         config["network"].update(
             num_classes=num_classes,
             n_audio_channels=n_audio_channels,
