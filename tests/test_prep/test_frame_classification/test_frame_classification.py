@@ -1,4 +1,4 @@
-"""Tests for vak.prep.frame_classification.frame_classification.prep"""
+"""Tests for vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset"""
 import json
 import pathlib
 import shutil
@@ -62,7 +62,7 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
         ("train", None, "mat", "yarden"),
     ],
 )
-def test_prep(
+def test_prep_frame_classification_dataset(
     config_type,
     audio_format,
     spect_format,
@@ -94,7 +94,7 @@ def test_prep(
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = config_type.lower()
-    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep(
+    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -109,7 +109,6 @@ def test_prep(
         test_dur=cfg.prep.test_dur,
         train_set_durs=cfg.prep.train_set_durs,
         num_replicates=cfg.prep.num_replicates,
-        window_size=cfg.dataloader.window_size,
     )
 
     assert_prep_output_matches_expected(dataset_path, dataset_df)
@@ -125,7 +124,7 @@ def test_prep(
         ("train", None, "mat", "yarden"),
     ],
 )
-def test_prep_raises_when_labelset_required_but_is_none(
+def test_prep_frame_classification_dataset_raises_when_labelset_required_but_is_none(
     config_type,
     audio_format,
     spect_format,
@@ -168,7 +167,7 @@ def test_prep_raises_when_labelset_required_but_is_none(
 
     purpose = config_type.lower()
     with pytest.raises(ValueError):
-        vak.prep.frame_classification.frame_classification.prep(
+        vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
@@ -184,13 +183,13 @@ def test_prep_raises_when_labelset_required_but_is_none(
         )
 
 
-def test_prep_with_single_audio_and_annot(source_test_data_root,
+def test_prep_frame_classification_dataset_with_single_audio_and_annot(source_test_data_root,
                                           specific_config,
                                           default_model,
                                           tmp_path):
     """
     regression test, checks that we avoid a repeat of
-    https://github.com/NickleDave/vak/issues/467
+    https://github.com/vocalpy/vak/issues/467
     """
     data_dir = tmp_path / 'data_dir_with_single_audio_and_annot'
     data_dir.mkdir()
@@ -198,7 +197,7 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
     cbins = sorted(source_data_dir.glob('*.cbin'))
     a_cbin = cbins[0]
     shutil.copy(a_cbin, data_dir)
-    a_rec = a_notmat = a_cbin.parent / (a_cbin.stem + '.rec')
+    a_rec = a_cbin.parent / (a_cbin.stem + '.rec')
     assert a_rec.exists()
     shutil.copy(a_rec, data_dir)
     a_notmat = a_cbin.parent / (a_cbin.name + '.not.mat')
@@ -234,7 +233,7 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep(
+    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -252,13 +251,13 @@ def test_prep_with_single_audio_and_annot(source_test_data_root,
     assert len(dataset_df) == 1
 
 
-def test_prep_when_annot_has_single_segment(source_test_data_root,
-                                            specific_config,
-                                            default_model,
-                                            tmp_path):
+def test_prep_frame_classification_dataset_when_annot_has_single_segment(source_test_data_root,
+                                                                         specific_config,
+                                                                         default_model,
+                                                                         tmp_path):
     """
     regression test, checks that we avoid a repeat of
-    https://github.com/NickleDave/vak/issues/466
+    https://github.com/vocalpy/vak/issues/466
     """
     data_dir = source_test_data_root / 'audio_cbin_annot_notmat' / 'gy6or6-song-edited-to-have-single-segment'
 
@@ -291,7 +290,7 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
     cfg = vak.config.parse.from_toml_path(toml_path)
 
     purpose = 'eval'
-    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep(
+    dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
@@ -316,7 +315,7 @@ def test_prep_when_annot_has_single_segment(source_test_data_root,
         {"section": "PREP", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
     ],
 )
-def test_prep_raises_not_a_directory(
+def test_prep_frame_classification_dataset_raises_not_a_directory(
     dir_option_to_change,
     specific_config,
     default_model,
@@ -338,7 +337,7 @@ def test_prep_raises_not_a_directory(
 
     purpose = "train"
     with pytest.raises(NotADirectoryError):
-        vak.prep.frame_classification.frame_classification.prep(
+        vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
@@ -360,7 +359,7 @@ def test_prep_raises_not_a_directory(
         {"section": "PREP", "option": "annot_file", "value": '/obviously/does/not/exist/annot.mat'},
     ],
 )
-def test_prep_raises_file_not_found(
+def test_prep_frame_classification_dataset_raises_file_not_found(
     path_option_to_change,
     specific_config,
     default_model,
@@ -385,7 +384,7 @@ def test_prep_raises_file_not_found(
 
     purpose = "train"
     with pytest.raises(FileNotFoundError):
-        vak.prep.frame_classification.frame_classification.prep(
+        vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
             data_dir=cfg.prep.data_dir,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
