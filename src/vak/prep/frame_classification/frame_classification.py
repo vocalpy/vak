@@ -15,7 +15,7 @@ from ...common import labels
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
-from ...datasets.metadata import Metadata
+from ...datasets.frame_classification import FrameClassificationDatasetMetadata
 
 
 logger = logging.getLogger(__name__)
@@ -393,9 +393,10 @@ def prep_frame_classification_dataset(
     # ---- save metadata -----------------------------------------------------------------------------------------------
     frame_dur = validators.validate_and_get_frame_dur(dataset_df, input_type)
 
-    metadata = Metadata(
+    metadata = FrameClassificationDatasetMetadata(
         dataset_csv_filename=str(dataset_csv_path.name),
-        frame_dur=frame_dur
+        frame_dur=frame_dur,
+        input_type=input_type,
     )
     metadata.to_json(dataset_path)
 
