@@ -116,6 +116,8 @@ def prep(toml_path):
     dataset_df, dataset_path = prep_module.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
+        dataset_type=cfg.prep.dataset_type,
+        input_type=cfg.prep.input_type,
         audio_format=cfg.prep.audio_format,
         spect_format=cfg.prep.spect_format,
         spect_params=cfg.spect_params,
@@ -129,7 +131,6 @@ def prep(toml_path):
         test_dur=cfg.prep.test_dur,
         train_set_durs=cfg.prep.train_set_durs,
         num_replicates=cfg.prep.num_replicates,
-        window_size=cfg.dataloader.window_size,
     )
 
     # use config and section from above to add dataset_path to config.toml file

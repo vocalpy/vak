@@ -1,11 +1,10 @@
-"""TweetyNet model
+"""TweetyNet model [1]_.
 
-as described in
-https://elifesciences.org/articles/63853
-https://github.com/yardencsGitHub/tweetynet
-
-Cohen, Y., Nicholson, D. A., Sanchioni, A., Mallaber, E. K., Skidanova, V., & Gardner, T. J. (2022).
-Automated annotation of birdsong with a neural network that segments spectrograms. Elife, 11, e63853.
+.. [1] TweetyNet was described in:
+   Cohen, Y., Nicholson, D. A., Sanchioni, A., Mallaber, E. K., Skidanova, V., & Gardner, T. J. (2022).
+   Automated annotation of birdsong with a neural network that segments spectrograms. eLife 11: e63853.
+   Paper: https://elifesciences.org/articles/63853
+   Code: https://github.com/yardencsGitHub/tweetynet
 """
 from __future__ import annotations
 
@@ -44,9 +43,18 @@ class TweetyNet:
 
     Notes
     -----
+    TweetyNet was described in [1]_.
+
     ``TweetyNet`` is a type of windowed frame classification model,
     and this version built into ``vak`` relies on the
     ``WindowedFrameClassificationModel`` class.
+
+    References
+    ----------
+    .. [1] Cohen, Y., Nicholson, D. A., Sanchioni, A., Mallaber, E. K., Skidanova, V., & Gardner, T. J. (2022).
+       Automated annotation of birdsong with a neural network that segments spectrograms. eLife 11: e63853.
+       Paper: https://elifesciences.org/articles/63853
+       Code: https://github.com/yardencsGitHub/tweetynet
     """
     network = nets.TweetyNet
     loss = torch.nn.CrossEntropyLoss

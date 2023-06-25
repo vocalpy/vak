@@ -61,8 +61,6 @@ def eval(toml_path):
         window_size=cfg.dataloader.window_size,
         num_workers=cfg.eval.num_workers,
         spect_scaler_path=cfg.eval.spect_scaler_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
         device=cfg.eval.device,
         post_tfm_kwargs=cfg.eval.post_tfm_kwargs,
     )

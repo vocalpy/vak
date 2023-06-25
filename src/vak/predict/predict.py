@@ -1,33 +1,18 @@
-import json
+"""High-level function that generates new inferences from trained models."""
+from __future__ import annotations
+
 import logging
 import os
 import pathlib
 
-import crowsetta
-import joblib
-import pytorch_lightning as lightning
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
-import torch.utils.data
-
+from .frame_classification import predict_with_frame_classification_model
 from .. import (
-    datasets,
-    models,
-    transforms
+    models
 )
 from ..common import (
-    constants,
-    files,
     validators
 )
-from ..datasets import VocalDataset
 from ..common.device import get_default as get_default_device
-
-
-__all__ = [
-    "predict",
-]
 
 
 logger = logging.getLogger(__name__)
@@ -36,25 +21,24 @@ logger = logging.getLogger(__name__)
 def predict(
     model_name: str,
     model_config: dict,
-    dataset_path,
-    checkpoint_path,
-    labelmap_path,
-    window_size,
-    num_workers=2,
-    spect_key="s",
-    timebins_key="t",
-    spect_scaler_path=None,
-    device=None,
-    annot_csv_filename=None,
-    output_dir=None,
-    min_segment_dur=None,
-    majority_vote=False,
-    save_net_outputs=False,
+    dataset_path: str | pathlib.Path,
+    checkpoint_path: str | pathlib.Path,
+    labelmap_path: str | pathlib.Path,
+    window_size: int,
+    num_workers: int = 2,
+    timebins_key: str = "t",
+    spect_scaler_path: str | pathlib.Path | None = None,
+    device: str | None = None,
+    annot_csv_filename: str | None = None,
+    output_dir:  str | pathlib.Path | None = None,
+    min_segment_dur: float | None = None,
+    majority_vote: bool = False,
+    save_net_outputs: bool = False,
 ):
     """Make predictions on a dataset with a trained model.
 
-     Parameters
-     ----------
+    Parameters
+    ----------
     model_name : str
         Model name, must be one of vak.models.MODEL_NAMES.
     model_config : dict
@@ -145,154 +129,31 @@ def predict(
     if device is None:
         device = get_default_device()
 
-    # ---------------- load data for prediction ------------------------------------------------------------------------
-    if spect_scaler_path:
-        logger.info(f"loading SpectScaler from path: {spect_scaler_path}")
-        spect_standardizer = joblib.load(spect_scaler_path)
+    try:
+        model_family = models.MODEL_FAMILY_FROM_NAME[model_name]
+    except KeyError as e:
+        raise ValueError(
+            f"No model family found for the model name specified: {model_name}"
+        ) from e
+    if model_family == "frame classification":
+        predict_with_frame_classification_model(
+            model_name=model_name,
+            model_config=model_config,
+            dataset_path=dataset_path,
+            checkpoint_path=checkpoint_path,
+            labelmap_path=labelmap_path,
+            window_size=window_size,
+            num_workers=num_workers,
+            timebins_key=timebins_key,
+            spect_scaler_path=spect_scaler_path,
+            device=device,
+            annot_csv_filename=annot_csv_filename,
+            output_dir=output_dir,
+            min_segment_dur=min_segment_dur,
+            majority_vote=majority_vote,
+            save_net_outputs=save_net_outputs,
+        )
     else:
-        logger.info(f"Not loading SpectScaler, no path was specified")
-        spect_standardizer = None
-
-    item_transform = transforms.get_defaults(
-        "predict",
-        spect_standardizer,
-        window_size=window_size,
-        return_padding_mask=True,
-    )
-
-    logger.info(f"loading labelmap from path: {labelmap_path}")
-    with labelmap_path.open("r") as f:
-        labelmap = json.load(f)
-
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-
-    logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
-    pred_dataset = VocalDataset.from_csv(
-        dataset_csv_path=dataset_csv_path,
-        split="predict",
-        labelmap=labelmap,
-        spect_key=spect_key,
-        timebins_key=timebins_key,
-        item_transform=item_transform,
-    )
-
-    pred_loader = torch.utils.data.DataLoader(
-        dataset=pred_dataset,
-        shuffle=False,
-        # batch size 1 because each spectrogram reshaped into a batch of windows
-        batch_size=1,
-        num_workers=num_workers,
-    )
-
-    # ---------------- set up to convert predictions to annotation files -----------------------------------------------
-    if annot_csv_filename is None:
-        annot_csv_filename = pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
-    annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
-    logger.info(f"will save annotations in .csv file: {annot_csv_path}")
-
-    dataset_df = pd.read_csv(dataset_csv_path)
-
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-    timebin_dur = metadata.timebin_dur
-    logger.info(f"Dataset has timebins with duration: {timebin_dur}")
-
-    # ---------------- do the actual predicting + converting to annotations --------------------------------------------
-    input_shape = pred_dataset.shape
-    # if dataset returns spectrogram reshaped into windows,
-    # throw out the window dimension; just want to tell network (channels, height, width) shape
-    if len(input_shape) == 4:
-        input_shape = input_shape[1:]
-    logger.info(f"Shape of input to networks used for predictions: {input_shape}")
-
-    logger.info(f"instantiating model from config:/n{model_name}")
-
-    model = models.get(
-        model_name,
-        model_config,
-        num_classes=len(labelmap),
-        input_shape=input_shape,
-        labelmap=labelmap,
-    )
-
-    # ---------------- do the actual predicting --------------------------------------------------------------------
-    logger.info(f"loading checkpoint for {model_name} from path: {checkpoint_path}")
-    model.load_state_dict_from_path(checkpoint_path)
-
-    if device == 'cuda':
-        accelerator = 'gpu'
-    else:
-        accelerator = None
-    trainer_logger = lightning.loggers.TensorBoardLogger(
-        save_dir=output_dir
-    )
-    trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
-
-    logger.info(f"running predict method of {model_name}")
-    results = trainer.predict(model, pred_loader)
-    # TODO: figure out how to overload `on_predict_epoch_end` to return dict
-    pred_dict = {
-        spect_path: y_pred
-        for result in results
-        for spect_path, y_pred in result.items()
-    }
-    # ----------------  converting to annotations ------------------------------------------------------------------
-    progress_bar = tqdm(pred_loader)
-
-    annots = []
-    logger.info("converting predictions to annotations")
-    for ind, batch in enumerate(progress_bar):
-        padding_mask, spect_path = batch["padding_mask"], batch["spect_path"]
-        padding_mask = np.squeeze(padding_mask)
-        if isinstance(spect_path, list) and len(spect_path) == 1:
-            spect_path = spect_path[0]
-        y_pred = pred_dict[spect_path]
-
-        if save_net_outputs:
-            # not sure if there's a better way to get outputs into right shape;
-            # can't just call y_pred.reshape() because that basically flattens the whole array first
-            # meaning we end up with elements in the wrong order
-            # so instead we convert to sequence then stack horizontally, on column axis
-            net_output = torch.hstack(y_pred.unbind())
-            net_output = net_output[:, padding_mask]
-            net_output = net_output.cpu().numpy()
-            net_output_path = output_dir.joinpath(
-                pathlib.Path(spect_path).stem + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
-            )
-            np.savez(net_output_path, net_output)
-
-        y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
-        y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
-
-        spect_dict = files.spect.load(dataset_path / spect_path)
-        t = spect_dict[timebins_key]
-
-        if majority_vote or min_segment_dur:
-            y_pred = transforms.labeled_timebins.postprocess(
-                y_pred,
-                timebin_dur=timebin_dur,
-                min_segment_dur=min_segment_dur,
-                majority_vote=majority_vote,
-            )
-
-        labels, onsets_s, offsets_s = transforms.labeled_timebins.to_segments(
-            y_pred,
-            labelmap=labelmap,
-            t=t,
+        raise ValueError(
+            f"Model family not recognized: {model_family}"
         )
-        if labels is None and onsets_s is None and offsets_s is None:
-            # handle the case when all time bins are predicted to be unlabeled
-            # see https://github.com/NickleDave/vak/issues/383
-            continue
-        seq = crowsetta.Sequence.from_keyword(
-            labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
-        )
-
-        audio_fname = files.spect.find_audio_fname(spect_path)
-        annot = crowsetta.Annotation(
-            seq=seq, notated_path=audio_fname, annot_path=annot_csv_path.name
-        )
-        annots.append(annot)
-
-    generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
-    generic_seq.to_file(annot_path=annot_csv_path)

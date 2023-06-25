@@ -1,4 +1,6 @@
 [PREP]
+dataset_type = "frame classification"
+input_type = "spect"
 labelset = "012345678"
 data_dir = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0"
 output_dir = "./tests/data_for_tests/generated/prep/train/audio_wav_annot_birdsongrec/teenytweetynet"

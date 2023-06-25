@@ -60,7 +60,8 @@ def make_spectrogram_files_from_audio_files(
     Parameters
     ----------
     audio_format : str
-        format of audio files. One of {'wav', 'cbin'}
+        A :class:`string` representing the format of audio files.
+        One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
     spect_params : dict or config.spect_params.SpectParamsConfig
         parameters for computing spectrogram, from .toml file.
         To see all related parameters, run:
@@ -70,7 +71,7 @@ def make_spectrogram_files_from_audio_files(
         >>> default_spect_params = vak.config.spect_params.SpectParamsConfig()
         >>> to_spect(audio_format='wav', spect_params=default_spect_params, output_dir='.')
     audio_dir : str
-        path to directory containing audio files from which to make spectrograms
+        Path to directory containing audio files from which to make spectrograms.
     audio_files : list
         of str, full paths to audio files from which to make spectrograms
     annot_list : list

@@ -3,8 +3,13 @@ from . import (
     decorator,
     definition,
 )
-from ._api import BUILTIN_MODELS, MODEL_NAMES
+from ._api import (
+    BUILTIN_MODELS,
+    MODEL_FAMILY_FROM_NAME,
+    MODEL_NAMES,
+)
 from .base import Model
+from .das import DAS
 from .get import get
 from .teenytweetynet import TeenyTweetyNet
 from .tweetynet import TweetyNet
@@ -13,10 +18,14 @@ from .windowed_frame_classification_model import WindowedFrameClassificationMode
 
 __all__ = [
     "base",
+    "BUILTIN_MODELS",
+    "DAS",
     "decorator",
     "definition",
     "get",
     "Model",
+    "MODEL_FAMILY_FROM_NAME",
+    "MODEL_NAMES",
     "TeenyTweetyNet",
     "TweetyNet",
     "WindowedFrameClassificationModel"

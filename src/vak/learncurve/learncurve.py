@@ -1,43 +1,17 @@
+"""High-level function that generates results for a learning curve for all models."""
 from __future__ import annotations
 
 import logging
 import pathlib
-import re
 
-import numpy as np
-import pandas as pd
-
-from ..eval import eval
-from ..train import train
+from .frame_classification import learning_curve_for_frame_classification_model
 from .. import (
-    datasets,
+    models
 )
 from ..common.converters import expanded_user_path
-from ..common.paths import generate_results_dir_name_as_path
 
-
-__all__ = [
-    "learning_curve",
-    "replicate_dirname"
-    "train_dur_dirname",
-]
 
 logger = logging.getLogger(__name__)
-
-
-def train_dur_dirname(train_dur: int) -> str:
-    """Returns name of directory for all replicates
-    trained with a training set of a specified duration,
-    ``f"train_dur_{train_dur}s"``.
-    """
-    return f"train_dur_{train_dur}s"
-
-
-def replicate_dirname(replicate_num: int) -> str:
-    """Returns name of directory for a replicate,
-    ``f"replicate_{replicate_num}``.
-    """
-    return f"replicate_{replicate_num}"
 
 
 def learning_curve(
@@ -48,11 +22,8 @@ def learning_curve(
     batch_size: int,
     num_epochs: int,
     num_workers: int,
-    root_results_dir: str | pathlib.Path | None = None,
     results_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None =None,
-    spect_key:str = "s",
-    timebins_key: str = "t",
     normalize_spectrograms: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
@@ -91,11 +62,9 @@ def learning_curve(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader.
-    root_results_dir : str, pathlib.Path
-        Root directory in which a new directory will be created where results will be saved.
     results_path : str, pathlib.Path
-        Directory where results will be saved. If specified, this parameter overrides root_results_dir.
-    previous_run_path : str, Path
+        Directory where results will be saved.
+    previous_run_path : str, pathlib.Path
         path to directory containing dataset .csv files
         that represent subsets of training set, created by
         a previous run of ``vak.core.learncurve.learning_curve``.
@@ -107,7 +76,7 @@ def learning_curve(
         If None, then no additional clean-up is applied
         when transforming labeled timebins to segments,
         the default behavior. The transform used is
-        ``vak.transforms.labeled_timebins.ToSegmentsWithPostProcessing`.
+        ``vak.transforms.frame_labels.ToSegmentsWithPostProcessing`.
         Valid keyword argument names are 'majority_vote'
         and 'min_segment_dur', and should be appropriate
         values for those arguments: Boolean for ``majority_vote``,
@@ -151,205 +120,31 @@ def learning_curve(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
 
-    logger.info(
-        f"Loading dataset from path: {dataset_path}",
-    )
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-    dataset_df = pd.read_csv(dataset_csv_path)
-
-    if val_step and not dataset_df["split"].str.contains("val").any():
+    try:
+        model_family = models.MODEL_FAMILY_FROM_NAME[model_name]
+    except KeyError as e:
         raise ValueError(
-            f"val_step set to {val_step} but dataset does not contain a validation set; "
-            f"please run `vak prep` with a config.toml file that specifies a duration for the validation set."
-        )
-
-    # ---- set up directory to save output -----------------------------------------------------------------------------
-    if results_path:
-        results_path = expanded_user_path(results_path)
-        if not results_path.is_dir():
-            raise NotADirectoryError(
-                f"results_path not recognized as a directory: {results_path}"
-            )
-    else:
-        results_path = generate_results_dir_name_as_path(root_results_dir)
-        results_path.mkdir()
-
-    logger.info(f"Saving results to: {results_path}")
-
-    timebin_dur = metadata.timebin_dur
-    logger.info(
-        f"Size of each timebin in spectrogram, in seconds: {timebin_dur}",
-    )
-
-    # ---- get training set subsets ------------------------------------------------------------------------------------
-
-    dataset_learncurve_dir = dataset_path / 'learncurve'
-    splits_path = dataset_learncurve_dir / 'learncurve-splits-metadata.csv'
-    logger.info(
-        f"Loading learncurve splits from: {splits_path}",
-    )
-    splits_df = pd.read_csv(splits_path)
-
-    # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
-    logger.info(f"Starting training for learning curve.")
-    # We iterate over the dataframe here, instead of e.g. filtering by 'train_dur' / 'replicate_num',
-    # because we want to train models using exactly the splits were generated by `prep` and saved in the csv.
-    # Technically this is inefficient, but we are not doing real data processing here, just using pandas
-    # to iterate over a tabular data structure in our main loop. Slightly less annoying then, say, parsing json
-    for splits_df_row in splits_df.itertuples():
-        train_dur, replicate_num = splits_df_row.train_dur, splits_df_row.replicate_num
-        logger.info(
-            f"Training replicates for training set of size: {train_dur}s",
-        )
-        results_path_this_train_dur = results_path / train_dur_dirname(train_dur)
-        if not results_path_this_train_dur.exists():
-            results_path_this_train_dur.mkdir()
-
-        results_path_this_replicate = results_path_this_train_dur / replicate_dirname(replicate_num)
-        results_path_this_replicate.mkdir()
-
-        # note that learncurve split csvs are in dataset_path, not dataset_learncurve_dir
-        # this is to avoid changing the semantics of dataset_csv_path to other functions that expect it,
-        # e.g., ``StandardizeSpect.fit_csv_path``; any dataset csv path always has to be in the root
-        split_csv_path = dataset_path / splits_df_row.split_csv_filename
-        logger.info(
-            f"Training replicate {replicate_num} "
-            f"using dataset from .csv file: {split_csv_path}",
-        )
-        logger.info(
-            f"Saving results to: {results_path_this_replicate}",
-        )
-
-        window_dataset_kwargs = {}
-        for window_dataset_kwarg in [
-            "source_ids",
-            "source_inds",
-            "window_inds",
-        ]:
-            vec_filename = getattr(splits_df_row, f'{window_dataset_kwarg}_npy_filename')
-            window_dataset_kwargs[window_dataset_kwarg] = np.load(
-                dataset_learncurve_dir / vec_filename
-                )
-
-        train(
-            model_name,
-            model_config,
-            dataset_path,
-            window_size,
-            batch_size,
-            num_epochs,
-            num_workers,
-            dataset_csv_path=split_csv_path,
-            results_path=results_path_this_replicate,
-            spect_key=spect_key,
-            timebins_key=timebins_key,
+            f"No model family found for the model name specified: {model_name}"
+        ) from e
+    if model_family == "frame classification":
+        learning_curve_for_frame_classification_model(
+            model_name=model_name,
+            model_config=model_config,
+            dataset_path=dataset_path,
+            window_size=window_size,
+            batch_size=batch_size,
+            num_epochs=num_epochs,
+            num_workers=num_workers,
+            results_path=results_path,
+            post_tfm_kwargs=post_tfm_kwargs,
             normalize_spectrograms=normalize_spectrograms,
             shuffle=shuffle,
             val_step=val_step,
             ckpt_step=ckpt_step,
             patience=patience,
             device=device,
-            **window_dataset_kwargs,
         )
-
-        logger.info(
-            f"Evaluating model from replicate {replicate_num} "
-            f"using dataset from .csv file: {split_csv_path}",
+    else:
+        raise ValueError(
+            f"Model family not recognized: {model_family}"
         )
-        results_model_root = (
-            results_path_this_replicate.joinpath(model_name)
-        )
-        ckpt_root = results_model_root.joinpath("checkpoints")
-        ckpt_paths = sorted(ckpt_root.glob("*.pt"))
-        if any(["max-val-acc" in str(ckpt_path) for ckpt_path in ckpt_paths]):
-            ckpt_paths = [
-                ckpt_path
-                for ckpt_path in ckpt_paths
-                if "max-val-acc" in str(ckpt_path)
-            ]
-            if len(ckpt_paths) != 1:
-                raise ValueError(
-                    f"did not find a single max-val-acc checkpoint path, instead found:\n{ckpt_paths}"
-                )
-            ckpt_path = ckpt_paths[0]
-        else:
-            if len(ckpt_paths) != 1:
-                raise ValueError(
-                    f"did not find a single checkpoint path, instead found:\n{ckpt_paths}"
-                )
-            ckpt_path = ckpt_paths[0]
-        logger.info(
-            f"Using checkpoint: {ckpt_path}"
-        )
-        labelmap_path = results_path_this_replicate.joinpath(
-            "labelmap.json"
-        )
-        logger.info(
-            f"Using labelmap: {labelmap_path}"
-        )
-        if normalize_spectrograms:
-            spect_scaler_path = (
-                results_path_this_replicate.joinpath(
-                    "StandardizeSpect"
-                )
-            )
-            logger.info(
-                f"Using spect scaler to normalize: {spect_scaler_path}",
-            )
-        else:
-            spect_scaler_path = None
-
-        eval(
-            model_name,
-            model_config,
-            dataset_path,
-            checkpoint_path=ckpt_path,
-            labelmap_path=labelmap_path,
-            output_dir=results_path_this_replicate,
-            window_size=window_size,
-            num_workers=num_workers,
-            split="test",
-            spect_scaler_path=spect_scaler_path,
-            post_tfm_kwargs=post_tfm_kwargs,
-            spect_key=spect_key,
-            timebins_key=timebins_key,
-            device=device,
-        )
-
-    # ---- make a csv for analysis -------------------------------------------------------------------------------------
-    reg_exp_num = re.compile(
-        r"[-+]?\d*\.\d+|\d+"
-    )  # to extract train set dur and replicate num from paths
-
-    eval_csv_paths = sorted(results_path.glob("**/eval*.csv"))
-    eval_df_0 = pd.read_csv(eval_csv_paths[0])  # use to just get columns
-    eval_columns = eval_df_0.columns.tolist()  # will use below to re-order
-    eval_dfs = []
-    for eval_csv_path in eval_csv_paths:
-        train_set_dur = reg_exp_num.findall(eval_csv_path.parents[1].name)
-        if len(train_set_dur) != 1:
-            raise ValueError(
-                f"unable to determine training set duration from .csv path: {train_set_dur}"
-            )
-        else:
-            train_set_dur = float(train_set_dur[0])
-        replicate_num = reg_exp_num.findall(eval_csv_path.parents[0].name)
-        if len(replicate_num) != 1:
-            raise ValueError(
-                f"unable to determine replicate number from .csv path: {train_set_dur}"
-            )
-        else:
-            replicate_num = int(replicate_num[0])
-        eval_df = pd.read_csv(eval_csv_path)
-        eval_df["train_set_dur"] = train_set_dur
-        eval_df["replicate_num"] = replicate_num
-        eval_dfs.append(eval_df)
-    all_eval_df = pd.concat(eval_dfs)
-    all_eval_columns = ["train_set_dur", "replicate_num", *eval_columns]
-    all_eval_df = all_eval_df[all_eval_columns]
-    all_eval_df.sort_values(by=["train_set_dur", "replicate_num"])
-    learncurve_csv_path = results_path.joinpath("learning_curve.csv")
-    all_eval_df.to_csv(
-        learncurve_csv_path, index=False
-    )  # index=False to avoid adding "Unnamed: 0" column

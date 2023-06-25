@@ -2,9 +2,9 @@
 
 "item" transforms because they apply transforms to input parameters
 and then return them in an "item" (dictionary)
-that is turn returned by the __getitem__ method of a vak.VocalDataset.
+that is turn returned by the __getitem__ method of a vak.FramesDataset.
 Having the transform return a dictionary makes it possible to avoid
-coupling the VocalDataset __getitem__ implementation to the transforms
+coupling the FramesDataset __getitem__ implementation to the transforms
 needed for specific neural network models, e.g., whether the returned
 output includes a mask to crop off padding that was added.
 """
@@ -44,8 +44,8 @@ class TrainItemTransform:
         source = self.source_transform(source)
         annot = self.annot_transform(annot)
         item = {
-            "source": source,
-            "annot": annot,
+            "frames": source,
+            "frame_labels": annot,
         }
 
         if spect_path is not None:
@@ -95,29 +95,29 @@ class EvalItemTransform:
 
         self.annot_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, source, annot, spect_path=None):
+    def __call__(self, frames, frame_labels, source_path=None):
         if self.spect_standardizer:
-            source = self.spect_standardizer(source)
+            frames = self.spect_standardizer(frames)
 
         if self.pad_to_window.return_padding_mask:
-            source, padding_mask = self.pad_to_window(source)
+            frames, padding_mask = self.pad_to_window(frames)
         else:
-            source = self.pad_to_window(source)
+            frames = self.pad_to_window(frames)
             padding_mask = None
-        source = self.source_transform_after_pad(source)
+        frames = self.source_transform_after_pad(frames)
 
-        annot = self.annot_transform(annot)
+        frame_labels = self.annot_transform(frame_labels)
 
         item = {
-            "source": source,
-            "annot": annot,
+            "frames": frames,
+            "frame_labels": frame_labels,
         }
 
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
 
-        if spect_path is not None:
-            item["spect_path"] = spect_path
+        if source_path is not None:
+            item["source_path"] = source_path
 
         return item
 
@@ -160,27 +160,27 @@ class PredictItemTransform:
             ]
         )
 
-    def __call__(self, source, spect_path=None):
+    def __call__(self, frames, source_path=None):
         if self.spect_standardizer:
-            source = self.spect_standardizer(source)
+            frames = self.spect_standardizer(frames)
 
         if self.pad_to_window.return_padding_mask:
-            source, padding_mask = self.pad_to_window(source)
+            frames, padding_mask = self.pad_to_window(frames)
         else:
-            source = self.pad_to_window(source)
+            frames = self.pad_to_window(frames)
             padding_mask = None
 
-        source = self.source_transform_after_pad(source)
+        frames = self.source_transform_after_pad(frames)
 
         item = {
-            "source": source,
+            "frames": frames,
         }
 
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
 
-        if spect_path is not None:
-            item["spect_path"] = spect_path
+        if source_path is not None:
+            item["source_path"] = source_path
 
         return item
 

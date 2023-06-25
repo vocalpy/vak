@@ -78,8 +78,8 @@ class WindowedFrameClassificationModel(base.Model):
         See https://github.com/vocalpy/vak/issues/373 for more detail.
         If all keys (except "unlabeled") are single-character,
         then ``eval_labelmap`` will just be ``labelmap``.
-    to_labels_eval : vak.transforms.labeled_timebins.ToLabels
-        Instance of :class:`~vak.transforms.labeled_timebins.ToLabels`
+    to_labels_eval : vak.transforms.frame_labels.ToLabels
+        Instance of :class:`~vak.transforms.frame_labels.ToLabels`
         that uses ``eval_labelmap`` to convert labeled timebins
         to string labels inside of ``validation_step``,
         for computing edit distance.
@@ -140,7 +140,7 @@ class WindowedFrameClassificationModel(base.Model):
         else:
             self.eval_labelmap = labelmap
 
-        self.to_labels_eval = transforms.labeled_timebins.ToLabels(self.eval_labelmap)
+        self.to_labels_eval = transforms.frame_labels.ToLabels(self.eval_labelmap)
         self.post_tfm = post_tfm
 
     def configure_optimizers(self):
@@ -163,7 +163,7 @@ class WindowedFrameClassificationModel(base.Model):
 
         Returns
         -------
-        y : torch.Tensor
+        out : torch.Tensor
             Output from network.
         """
         return self.network(x)
@@ -187,8 +187,8 @@ class WindowedFrameClassificationModel(base.Model):
             the loss function, ``self.loss``.
         """
         x, y = batch[0], batch[1]
-        y_pred = self.network(x)
-        loss = self.loss(y_pred, y)
+        out = self.network(x)
+        loss = self.loss(out, y)
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
@@ -208,13 +208,11 @@ class WindowedFrameClassificationModel(base.Model):
         -------
         None
         """
-        # TODO: rename "source" -> "spect"
-        # TODO: a sample can have "spect", "audio", "annot", optionally other things ("padding"?)
-        x, y = batch["source"], batch["annot"]
+        x, y = batch["frames"], batch["frame_labels"]
         # remove "batch" dimension added by collate_fn to x
         # we keep for y because loss still expects the first dimension to be batch
         # TODO: fix this weirdness. Diff't collate_fn?
-        if x.ndim == 5:
+        if x.ndim in (5, 4):
             if x.shape[0] == 1:
                 x = torch.squeeze(x, dim=0)
         else:
@@ -292,20 +290,23 @@ class WindowedFrameClassificationModel(base.Model):
         Returns
         -------
         y_pred : dict
-            Where the key is "spect_path" and the value
+            Where the key is "source_path" and the value
             is the output of the network;
-            "spect_path" is the path to the file
+            "source_path" is the path to the file
             containing the spectrogram
             for which a prediction was generated.
         """
-        x, spect_path = batch["source"].to(self.device), batch["spect_path"]
-        if isinstance(spect_path, list) and len(spect_path) == 1:
-            spect_path = spect_path[0]
-        if x.ndim == 5:
+        x, source_path = batch["frames"].to(self.device), batch["source_path"]
+        if isinstance(source_path, list) and len(source_path) == 1:
+            source_path = source_path[0]
+        # TODO: fix this weirdness. Diff't collate_fn?
+        if x.ndim in (5, 4):
             if x.shape[0] == 1:
                 x = torch.squeeze(x, dim=0)
+        else:
+            raise ValueError(f"invalid shape for x: {x.shape}")
         y_pred = self.network(x)
-        return {spect_path: y_pred}
+        return {source_path: y_pred}
 
     @classmethod
     def from_config(cls, config: dict, labelmap: Mapping, post_tfm: Callable | None = None):

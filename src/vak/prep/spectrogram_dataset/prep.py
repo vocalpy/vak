@@ -56,8 +56,8 @@ def prep_spectrogram_dataset(
         ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
         See help for that function for details on how to specify labelset.
     load_spects : bool
-        if True, load spectrograms. If False, return a VocalDataset without spectograms loaded.
-        Default is True. Set to False when you want to create a VocalDataset for use
+        if True, load spectrograms. If False, return a FramesDataset without spectograms loaded.
+        Default is True. Set to False when you want to create a FramesDataset for use
         later, but don't want to load all the spectrograms into memory yet.
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
@@ -114,6 +114,11 @@ def prep_spectrogram_dataset(
     else:
         spect_output_dir = data_dir
 
+    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
+    spect_dirname = f"spectrograms_generated_{timenow}"
+    spect_output_dir = spect_output_dir / spect_dirname
+    spect_output_dir.mkdir()
+
     if annot_format is not None:
         if annot_file is None:
             annot_files = annotation.files_from_dir(
@@ -138,11 +143,6 @@ def prep_spectrogram_dataset(
         )
         audio_files = audio_helper.files_from_dir(data_dir, audio_format)
 
-        timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-        spect_dirname = f"spectrograms_generated_{timenow}"
-        spect_output_dir = spect_output_dir.joinpath(spect_dirname)
-        spect_output_dir.mkdir()
-
         spect_files = audio_helper.make_spectrogram_files_from_audio_files(
             audio_format=audio_format,
             spect_params=spect_params,
@@ -165,6 +165,7 @@ def prep_spectrogram_dataset(
         "annot_list": annot_list,
         "annot_format": annot_format,
         "spect_ext": spect_ext,
+        "spect_output_dir": spect_output_dir,
     }
 
     if spect_files:  # because we just made them, and put them in spect_output_dir
