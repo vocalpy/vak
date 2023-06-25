@@ -79,7 +79,7 @@ class FrameClassificationDatasetMetadata:
         """Load dataset metadata from a json file.
 
         Class method that returns an instance of
-        :class:`~vak.core.prep.metadata.Metadata`.
+        :class:`~vak.datasets.frame_classification.FrameClassificationDatatsetMetadata`.
 
         Parameters
         ----------
@@ -90,8 +90,8 @@ class FrameClassificationDatasetMetadata:
 
         Returns
         -------
-        metadata : vak.core.prep.metadata.Metadata
-            Instance of :class:`~vak.core.prep.metadata.Metadata`
+        metadata : vak.datasets.frame_classification.FrameClassificationDatatsetMetadata
+            Instance of :class:`~vak.datasets.frame_classification.FrameClassificationDatatsetMetadata`
             with metadata loaded from json file.
         """
         json_path = pathlib.Path(json_path)
@@ -120,7 +120,7 @@ class FrameClassificationDatasetMetadata:
 
         This method is called by :func:`vak.core.prep.prep`
         after it generates a dataset and then creates an
-        instance of :class:`~vak.core.prep.metadata.Metadata`
+        instance of :class:`~vak.datasets.frame_classification.FrameClassificationDatatsetMetadata`
         with metadata about that dataset.
 
         Parameters
