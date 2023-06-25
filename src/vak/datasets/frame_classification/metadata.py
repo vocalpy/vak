@@ -74,6 +74,25 @@ class FrameClassificationDatasetMetadata:
                 f"{attribute.name} should be greater than zero."
             )
 
+    audio_format: str = attr.field(converter=attr.converters.optional(str), default=None)
+    @audio_format.validator
+    def is_valid_audio_format(self, attribute, value):
+        import vak.common.constants
+        if value not in vak.common.constants.VALID_AUDIO_FORMATS:
+            raise ValueError(
+                f"Not a valid audio format: {value}. Valid audio formats are: {vak.common.constants.VALID_AUDIO_FORMATS}"
+            )
+
+    spect_format: str = attr.field(converter=attr.converters.optional(str), default=None)
+    @spect_format.validator
+    def is_valid_audio_format(self, attribute, value):
+        import vak.common.constants
+        if value not in vak.common.constants.VALID_SPECT_FORMATS:
+            raise ValueError(
+                f"Not a valid spectrogram format: {value}. "
+                f"Valid spectrogram formats are: {vak.common.constants.VALID_SPECT_FORMATS}"
+            )
+
     @classmethod
     def from_path(cls, json_path: str | pathlib.Path):
         """Load dataset metadata from a json file.
