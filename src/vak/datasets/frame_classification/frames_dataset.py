@@ -77,7 +77,7 @@ class FramesDataset:
             'frames': frames,
             'source_path': source_path
         }
-        if self.frame_labels is not None:
+        if self.frame_labels_paths is not None:
             frame_labels = np.load(self.dataset_path / self.frame_labels_paths[idx])
             item['frame_labels'] = frame_labels
 
