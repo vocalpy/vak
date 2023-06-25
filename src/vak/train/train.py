@@ -1,64 +1,35 @@
-import json
 import logging
 import pathlib
-import shutil
-import datetime
 
-import joblib
-
-import pandas as pd
-import torch.utils.data
-
+from .frame_classification import train_frame_classification_model
 from .. import (
-    datasets,
     models,
-    transforms,
 )
 from ..common import validators
-from ..datasets.frame_classification import (
-    WindowDataset,
-    FramesDataset
-)
-from ..common.device import get_default as get_default_device
-from ..common.paths import generate_results_dir_name_as_path
-from ..common.trainer import get_default_trainer
-
-
-__all__ = [
-    "train",
-]
 
 
 logger = logging.getLogger(__name__)
 
 
-def get_split_dur(df: pd.DataFrame, split: str) -> float:
-    """Get duration of a split in a dataset from a pandas DataFrame representing the dataset."""
-    return df[df["split"] == split]["duration"].sum()
-
-
 def train(
-    model_name,
-    model_config,
-    dataset_path,
-    window_size,
-    batch_size,
-    num_epochs,
-    num_workers,
-    dataset_csv_path=None,
-    checkpoint_path=None,
-    spect_scaler_path=None,
-    root_results_dir=None,
-    results_path=None,
-    spect_key="s",
-    timebins_key="t",
-    normalize_spectrograms=True,
-    shuffle=True,
-    val_step=None,
-    ckpt_step=None,
-    patience=None,
-    device=None,
-    split='train',
+    model_name: str,
+    model_config: dict,
+    dataset_path: str | pathlib.Path,
+    window_size: int,
+    batch_size: int,
+    num_epochs: int,
+    num_workers: int,
+    checkpoint_path: str | pathlib.Path | None = None,
+    spect_scaler_path: str | pathlib.Path | None = None,
+    root_results_dir: str | pathlib.Path | None = None,
+    results_path: str | pathlib.Path | None = None,
+    normalize_spectrograms: bool = True,
+    shuffle: bool = True,
+    val_step: int | None = None,
+    ckpt_step: int | None = None,
+    patience: int | None = None,
+    device: str | None = None,
+    split: str = 'train',
 ):
     """Train a model and save results.
 
@@ -181,197 +152,33 @@ def train(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
 
-    if dataset_csv_path:
-        # when this gets passed in by learncurve
-        dataset_csv_path = pathlib.Path(dataset_csv_path)
-        if not dataset_csv_path.exists():
-            raise FileNotFoundError(
-                f"`dataset_csv_path` not found or not recognized as a directory: {dataset_csv_path}"
-            )
-        if dataset_csv_path.parent != dataset_path:
-            raise ValueError(
-                "Parent of ``dataset_csv_path`` is not ``dataset_path``. "
-                "A dataset csv file must be in the root of the dataset directory "
-                "for other functions to work, e.g. ``vak.transforms.StandardizeSpect.from_csv_path``."
-                f"Parent directory of `dataset_csv_path`: {dataset_csv_path.parent}\n"
-                f"Value for `dataset_path`: \n{dataset_path}"
-            )
-
-    logger.info(
-        f"Loading dataset from path: {dataset_path}",
-    )
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
-    if not dataset_csv_path:
-        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-    dataset_df = pd.read_csv(dataset_csv_path)
-    # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    if val_step and not dataset_df["split"].str.contains("val").any():
+    try:
+        model_family = models.MODEL_FAMILY_FROM_NAME[model_name]
+    except KeyError as e:
         raise ValueError(
-            f"val_step set to {val_step} but dataset does not contain a validation set; "
-            f"please run `vak prep` with a config.toml file that specifies a duration for the validation set."
-        )
-
-    # ---- set up directory to save output -----------------------------------------------------------------------------
-    if results_path:
-        results_path = pathlib.Path(results_path).expanduser().resolve()
-        if not results_path.is_dir():
-            raise NotADirectoryError(
-                f"results_path not recognized as a directory: {results_path}"
-            )
-    else:
-        results_path = generate_results_dir_name_as_path(root_results_dir)
-        results_path.mkdir()
-
-    frame_dur = metadata.frame_dur
-    logger.info(
-        f"Duration of a frame in dataset, in seconds: {frame_dur}",
-    )
-
-    # ---------------- load training data  -----------------------------------------------------------------------------
-    logger.info(f"using training dataset from {dataset_path}")
-    # below, if we're going to train network to predict unlabeled segments, then
-    # we need to include a class for those unlabeled segments in labelmap,
-    # the mapping from labelset provided by user to a set of consecutive
-    # integers that the network learns to predict
-    train_dur = get_split_dur(dataset_df, "train")
-    logger.info(
-        f"Total duration of training split from dataset (in s): {train_dur}",
-    )
-
-    labelmap_path = dataset_path / "labelmap.json"
-    logger.info(
-        f"loading labelmap from path: {labelmap_path}"
-    )
-    with labelmap_path.open("r") as f:
-        labelmap = json.load(f)
-    # copy to new results_path
-    with open(results_path.joinpath("labelmap.json"), "w") as f:
-        json.dump(labelmap, f)
-
-    if spect_scaler_path is not None and normalize_spectrograms:
-        logger.info(
-            f"loading spect scaler from path: {spect_scaler_path}"
-        )
-        spect_standardizer = joblib.load(spect_scaler_path)
-        shutil.copy(spect_scaler_path, results_path)
-    # get transforms just before creating datasets with them
-    elif normalize_spectrograms and spect_scaler_path is None:
-        logger.info(
-            f"no spect_scaler_path provided, not loading",
-        )
-        logger.info("will normalize spectrograms")
-        spect_standardizer = transforms.StandardizeSpect.fit_dataset_path(
-            dataset_path, split=split,
-        )
-        joblib.dump(spect_standardizer, results_path.joinpath("StandardizeSpect"))
-    elif spect_scaler_path is not None and not normalize_spectrograms:
-        raise ValueError('spect_scaler_path provided but normalize_spectrograms was False, these options conflict')
-    else: 
-        #not normalize_spectrograms and spect_scaler_path is None:
-        logger.info(
-            "normalize_spectrograms is False and no spect_scaler_path was provided, "
-            "will not standardize spectrograms",
-            )
-        spect_standardizer = None
-    transform, target_transform = transforms.get_defaults("train", spect_standardizer)
-
-    train_dataset = WindowDataset.from_dataset_path(
-        dataset_path=dataset_path,
-        window_size=window_size,
-        split=split,
-        transform=transform,
-        target_transform=target_transform,
-    )
-    logger.info(
-        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration}",
-    )
-    train_loader = torch.utils.data.DataLoader(
-        dataset=train_dataset,
-        shuffle=shuffle,
-        batch_size=batch_size,
-        num_workers=num_workers,
-    )
-
-    # ---------------- load validation set (if there is one) -----------------------------------------------------------
-    if val_step:
-        item_transform = transforms.get_defaults(
-            "eval",
-            spect_standardizer,
-            window_size=window_size,
-            return_padding_mask=True,
-        )
-        val_dataset = FramesDataset.from_dataset_path(
+            f"No model family found for the model name specified: {model_name}"
+        ) from e
+    if model_family == "frame classification":
+        train_frame_classification_model(
+            model_name=model_name,
+            model_config=model_config,
             dataset_path=dataset_path,
-            split="val",
-            item_transform=item_transform,
-        )
-        val_loader = torch.utils.data.DataLoader(
-            dataset=val_dataset,
-            shuffle=False,
-            # batch size 1 because each spectrogram reshaped into a batch of windows
-            batch_size=1,
+            window_size=window_size,
+            batch_size=batch_size,
+            num_epochs=num_epochs,
             num_workers=num_workers,
-        )
-        val_dur = get_split_dur(dataset_df, "val")
-        logger.info(
-            f"Total duration of validation split from dataset (in s): {val_dur}",
-        )
-
-        logger.info(
-            f"will measure error on validation set every {val_step} steps of training",
+            checkpoint_path=checkpoint_path,
+            spect_scaler_path=spect_scaler_path,
+            results_path=results_path,
+            normalize_spectrograms=normalize_spectrograms,
+            shuffle=shuffle,
+            val_step=val_step,
+            ckpt_step=ckpt_step,
+            patience=patience,
+            device=device,
+            split=split,
         )
     else:
-        val_loader = None
-
-    if device is None:
-        device = get_default_device()
-
-    model = models.get(
-        model_name,
-        model_config,
-        num_classes=len(labelmap),
-        input_shape=train_dataset.shape,
-        labelmap=labelmap,
-    )
-
-    if checkpoint_path is not None:
-        logger.info(
-            f"loading checkpoint for {model_name} from path: {checkpoint_path}",
+        raise ValueError(
+            f"Model family not recognized: {model_family}"
         )
-        model.load_state_dict_from_path(checkpoint_path)
-
-    results_model_root = results_path.joinpath(model_name)
-    results_model_root.mkdir()
-    ckpt_root = results_model_root.joinpath("checkpoints")
-    ckpt_root.mkdir()
-    logger.info(f"training {model_name}")
-    max_steps = num_epochs * len(train_loader)
-    default_callback_kwargs = {
-        'ckpt_root': ckpt_root,
-        'ckpt_step': ckpt_step,
-        'patience': patience,
-    }
-    trainer = get_default_trainer(
-        max_steps=max_steps,
-        log_save_dir=results_model_root,
-        val_step=val_step,
-        default_callback_kwargs=default_callback_kwargs,
-        device=device,
-    )
-    train_time_start = datetime.datetime.now()
-    logger.info(
-        f"Training start time: {train_time_start.isoformat()}"
-    )
-    trainer.fit(
-        model=model,
-        train_dataloaders=train_loader,
-        val_dataloaders=val_loader,
-    )
-    train_time_stop = datetime.datetime.now()
-    logger.info(
-        f"Training stop time: {train_time_stop.isoformat()}"
-    )
-    elapsed = train_time_stop - train_time_start
-    logger.info(
-        f"Elapsed training time: {elapsed}"
-    )
