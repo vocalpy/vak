@@ -128,7 +128,7 @@ def learning_curve_for_frame_classification_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.FrameClassificationDatasetMetadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
 
