@@ -68,8 +68,6 @@ def train(toml_path):
         checkpoint_path=cfg.train.checkpoint_path,
         spect_scaler_path=cfg.train.spect_scaler_path,
         results_path=results_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
         normalize_spectrograms=cfg.train.normalize_spectrograms,
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
