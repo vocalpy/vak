@@ -30,6 +30,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#658](https://github.com/NickleDave/vak/pull/658).
   Fixes [#649](https://github.com/NickleDave/vak/issues/649) and 
   [#650](https://github.com/NickleDave/vak/issues/650).
+- Add concept of "dataset type" and "input type", 
+  where a dataset type maps to the task that a family of models is used for,
+  and the input type denotes the domain of the data that becomes the input 
+  for the neural network model.
+  E.g., a frame classification model requires a frame classification dataset,
+  and its input type can be either audio or spectrograms 
+  [#670](https://github.com/NickleDave/vak/pull/670).
+  Fixes [#667](https://github.com/NickleDave/vak/issues/667)
+  and [#652](https://github.com/NickleDave/vak/issues/652).
+- Add DAS model
+  [#670](https://github.com/NickleDave/vak/pull/670).
+  Fixes [#630](https://github.com/NickleDave/vak/issues/630).
 
 ### Changed
 - Rename config file option `csv_path` to `dataset_path`, 
