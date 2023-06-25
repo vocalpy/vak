@@ -95,29 +95,29 @@ class EvalItemTransform:
 
         self.annot_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, source, annot, spect_path=None):
+    def __call__(self, frames, frame_labels, source_path=None):
         if self.spect_standardizer:
-            source = self.spect_standardizer(source)
+            frames = self.spect_standardizer(frames)
 
         if self.pad_to_window.return_padding_mask:
-            source, padding_mask = self.pad_to_window(source)
+            frames, padding_mask = self.pad_to_window(frames)
         else:
-            source = self.pad_to_window(source)
+            frames = self.pad_to_window(frames)
             padding_mask = None
-        source = self.source_transform_after_pad(source)
+        frames = self.source_transform_after_pad(frames)
 
-        annot = self.annot_transform(annot)
+        frame_labels = self.annot_transform(frame_labels)
 
         item = {
-            "frames": source,
-            "frame_labels": annot,
+            "frames": frames,
+            "frame_labels": frame_labels,
         }
 
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
 
-        if spect_path is not None:
-            item["spect_path"] = spect_path
+        if source_path is not None:
+            item["source_path"] = source_path
 
         return item
 
@@ -160,27 +160,27 @@ class PredictItemTransform:
             ]
         )
 
-    def __call__(self, source, spect_path=None):
+    def __call__(self, frames, source_path=None):
         if self.spect_standardizer:
-            source = self.spect_standardizer(source)
+            frames = self.spect_standardizer(frames)
 
         if self.pad_to_window.return_padding_mask:
-            source, padding_mask = self.pad_to_window(source)
+            frames, padding_mask = self.pad_to_window(frames)
         else:
-            source = self.pad_to_window(source)
+            frames = self.pad_to_window(frames)
             padding_mask = None
 
-        source = self.source_transform_after_pad(source)
+        frames = self.source_transform_after_pad(frames)
 
         item = {
-            "frames": source,
+            "frames": frames,
         }
 
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
 
-        if spect_path is not None:
-            item["spect_path"] = spect_path
+        if source_path is not None:
+            item["source_path"] = source_path
 
         return item
 
