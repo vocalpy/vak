@@ -8,7 +8,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from . import constants
-from ..metadata import Metadata
+from .metadata import FrameClassificationDatasetMetadata
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
@@ -198,7 +198,7 @@ class WindowDataset:
             target_transform: Callable | None = None
     ):
         dataset_path = pathlib.Path(dataset_path)
-        metadata = Metadata.from_dataset_path(dataset_path)
+        metadata = FrameClassificationDatasetMetadata.from_dataset_path(dataset_path)
         frame_dur = metadata.frame_dur
 
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
