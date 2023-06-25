@@ -1,3 +1,6 @@
+"""High-level function that trains models."""
+from __future__ import annotations
+
 import logging
 import pathlib
 
