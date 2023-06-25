@@ -265,7 +265,7 @@ def make_npy_files_for_each_split(
             # add to frame labels
             if annot:
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
-                frame_labels = transforms.labeled_timebins.from_segments(
+                frame_labels = transforms.frame_labels.from_segments(
                     lbls_int,
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,

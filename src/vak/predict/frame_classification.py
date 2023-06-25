@@ -270,14 +270,14 @@ def predict_with_frame_classification_model(
             frame_times = spect_dict[timebins_key]
 
         if majority_vote or min_segment_dur:
-            y_pred = transforms.labeled_timebins.postprocess(
+            y_pred = transforms.frame_labels.postprocess(
                 y_pred,
                 timebin_dur=frame_dur,
                 min_segment_dur=min_segment_dur,
                 majority_vote=majority_vote,
             )
 
-        labels, onsets_s, offsets_s = transforms.labeled_timebins.to_segments(
+        labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
             y_pred,
             labelmap=labelmap,
             t=frame_times,

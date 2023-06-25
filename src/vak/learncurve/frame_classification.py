@@ -85,7 +85,7 @@ def learning_curve_for_frame_classification_model(
         If None, then no additional clean-up is applied
         when transforming labeled timebins to segments,
         the default behavior. The transform used is
-        ``vak.transforms.labeled_timebins.ToSegmentsWithPostProcessing`.
+        ``vak.transforms.frame_labels.ToSegmentsWithPostProcessing`.
         Valid keyword argument names are 'majority_vote'
         and 'min_segment_dur', and should be appropriate
         values for those arguments: Boolean for ``majority_vote``,

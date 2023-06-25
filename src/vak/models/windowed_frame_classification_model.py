@@ -78,8 +78,8 @@ class WindowedFrameClassificationModel(base.Model):
         See https://github.com/vocalpy/vak/issues/373 for more detail.
         If all keys (except "unlabeled") are single-character,
         then ``eval_labelmap`` will just be ``labelmap``.
-    to_labels_eval : vak.transforms.labeled_timebins.ToLabels
-        Instance of :class:`~vak.transforms.labeled_timebins.ToLabels`
+    to_labels_eval : vak.transforms.frame_labels.ToLabels
+        Instance of :class:`~vak.transforms.frame_labels.ToLabels`
         that uses ``eval_labelmap`` to convert labeled timebins
         to string labels inside of ``validation_step``,
         for computing edit distance.
@@ -140,7 +140,7 @@ class WindowedFrameClassificationModel(base.Model):
         else:
             self.eval_labelmap = labelmap
 
-        self.to_labels_eval = transforms.labeled_timebins.ToLabels(self.eval_labelmap)
+        self.to_labels_eval = transforms.frame_labels.ToLabels(self.eval_labelmap)
         self.post_tfm = post_tfm
 
     def configure_optimizers(self):

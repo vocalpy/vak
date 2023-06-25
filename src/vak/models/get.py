@@ -32,10 +32,10 @@ def get(name: str,
     post_tfm : callable
         Post-processing transform that models applies during evaluation.
         Default is None, in which case the model defaults to using
-        ``vak.transforms.labeled_timebins.ToLabels`` (that does not
+        ``vak.transforms.frame_labels.ToLabels`` (that does not
         apply any post-processing clean-ups).
         To be valid, ``post_tfm`` must be either an instance of
-        ``vak.transforms.labeled_timebins.PostProcess``.
+        ``vak.transforms.frame_labels.PostProcess``.
 
     Returns
     -------

@@ -79,7 +79,7 @@ def eval_frame_classification_model(
         If None, then no additional clean-up is applied
         when transforming labeled timebins to segments,
         the default behavior. The transform used is
-        ``vak.transforms.labeled_timebins.PostProcess`.
+        ``vak.transforms.frame_labels.PostProcess`.
         Valid keyword argument names are 'majority_vote'
         and 'min_segment_dur', and should be appropriate
         values for those arguments: Boolean for ``majority_vote``,
@@ -171,7 +171,7 @@ def eval_frame_classification_model(
         input_shape = input_shape[1:]
 
     if post_tfm_kwargs:
-        post_tfm = transforms.labeled_timebins.PostProcess(
+        post_tfm = transforms.frame_labels.PostProcess(
             timebin_dur=frame_dur,
             **post_tfm_kwargs,
         )
