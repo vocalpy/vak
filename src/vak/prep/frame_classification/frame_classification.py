@@ -397,6 +397,8 @@ def prep_frame_classification_dataset(
         dataset_csv_filename=str(dataset_csv_path.name),
         frame_dur=frame_dur,
         input_type=input_type,
+        audio_format=audio_format,
+        spect_format=spect_format,
     )
     metadata.to_json(dataset_path)
 
