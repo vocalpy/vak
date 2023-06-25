@@ -117,7 +117,7 @@ def eval_frame_classification_model(
         )
 
     # we unpack `frame_dur` to log it, regardless of whether we use it with post_tfm below
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.FrameClassificationDatasetMetadata.from_dataset_path(dataset_path)
     frame_dur = metadata.frame_dur
     logger.info(
         f"Duration of a frame in dataset, in seconds: {frame_dur}",
