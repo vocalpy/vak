@@ -1,22 +1,23 @@
-"""class forms of transformations
-related to labeled timebins,
+"""Class forms of transformations
+related to frame labels,
 i.e., vectors where each element represents
-a label for a time bin from a spectrogram.
+a label for a frame, either a single sample in audio
+or a single time bin from a spectrogram.
 
 These classes call functions from
-``vak.transforms.labeled_timebins.functional``.
+``vak.transforms.frame_labels.functional``.
 Not all functions in that module
 have a corresponding class,
 just key functions needed by
 dataloaders and models.
 
-- FromSegments: transform to get labeled timebins from annotations
-- ToLabels: transform to get back just string labels from labeled timebins,
+- FromSegments: transform to get frame labels from annotations
+- ToLabels: transform to get back just string labels from frame labels,
   used to evaluate a model.
-- ToSegments: transform to get segment onsets, offsets, and labels from labeled timebins.
+- ToSegments: transform to get segment onsets, offsets, and labels from frame labels.
     Used to convert model output to predictions.
     Inverse of ``from_segments``.
-- PostProcess: combines two post-processing transforms applied to labeled timebins,
+- PostProcess: combines two post-processing transforms applied to frame labels,
   ``remove_short_segments`` and ``take_majority_vote``, in one class.
 """
 from __future__ import annotations
@@ -27,7 +28,7 @@ from . import functional as F
 
 
 class FromSegments:
-    """Transform that makes a vector of labels for a vector of time bins,
+    """Transform that makes a vector of frame labels,
     given labeled segments in the form of onset times,
     offset times, and segment labels.
 
@@ -45,7 +46,7 @@ class FromSegments:
                  onsets_s: np.ndarray,
                  offsets_s: np.ndarray,
                  time_bins: np.ndarray) -> np.ndarray:
-        """Make a vector of labels for a vector of time bins,
+        """Make a vector of frame labels,
         given labeled segments in the form of onset times,
         offset times, and segment labels.
 
@@ -63,7 +64,7 @@ class FromSegments:
 
         Returns
         -------
-        lbl_tb : numpy.ndarray
+        frame_labels : numpy.ndarray
             same length as time_bins, with each element a label for each time bin
         """
         return F.from_segments(labels_int, onsets_s, offsets_s, time_bins,
@@ -72,7 +73,7 @@ class FromSegments:
 
 class ToLabels:
     """Transforms that converts
-    vector of labeled timebins to a string,
+    vector of frame labels to a string,
     one character for each continuous segment.
 
     Allows for converting output of network
@@ -89,27 +90,29 @@ class ToLabels:
     def __init__(self, labelmap: dict):
         self.labelmap = labelmap
 
-    def __call__(self, lbl_tb: np.ndarray) -> str:
-        """Convert vector of labeled timebins to a string,
+    def __call__(self, frame_labels: np.ndarray) -> str:
+        """Convert vector of frame labels to a string,
         one character for each continuous segment.
 
         Parameters
         ----------
-        lbl_tb : numpy.ndarray
-            Where each element is a label for a frame / time bin.
+        frame_labels : numpy.ndarray
+            A vector where each element represents
+            a label for a frame, either a single sample in audio
+            or a single time bin from a spectrogram.
             Typically, the output of a neural network.
 
         Returns
         -------
         labels : str
             The label at the onset of each continuous segment
-            in ``lbl_tb``, mapped back to string labels in ``labelmap``.
+            in ``frame_labels``, mapped back to string labels in ``labelmap``.
         """
-        return F.to_labels(lbl_tb, self.labelmap)
+        return F.to_labels(frame_labels, self.labelmap)
 
 
 class ToSegments:
-    """Transform that converts a vector of labeled time bins
+    """Transform that converts a vector of frame labels
     into segments in the form of onset indices,
     offset indices, and labels.
 
@@ -138,9 +141,9 @@ class ToSegments:
         self.n_decimals_trunc = n_decimals_trunc
 
     def __call__(self,
-                 lbl_tb: np.ndarray,
-                 t: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Convert a vector of labeled time bins
+                 frame_labels: np.ndarray,
+                 frame_times: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Convert a vector of frame labels
         into segments in the form of onset indices,
         offset indices, and labels.
 
@@ -153,14 +156,16 @@ class ToSegments:
 
         Parameters
         ----------
-        lbl_tb : numpy.ndarray
-            Vector of labeled spectrogram time bins, i.e.,
-            where each element is a label for a time bin.
+        frame_labels : numpy.ndarray
+            A vector where each element represents
+            a label for a frame, either a single sample in audio
+            or a single time bin from a spectrogram.
             Output of a neural network.
-        t : numpy.ndarray
-            Vector of times; the times are bin centers of columns in a spectrogram.
-            Returned by function that generated spectrogram.
-            Used to convert onset and offset indices in lbl_tb to seconds.
+        frame_times : numpy.ndarray
+            Vector of times; the times are either the time of samples in audio,
+            or the bin centers of columns in a spectrogram,
+            returned by function that generated spectrogram.
+            Used to convert onset and offset indices in frame_labels to seconds.
 
         Returns
         -------
@@ -175,12 +180,12 @@ class ToSegments:
             Vector where each element is the offset in seconds of a segment.
             Each offset corresponds to the value at the same index in labels.
         """
-        return F.to_segments(lbl_tb, self.labelmap, t, self.n_decimals_trunc)
+        return F.to_segments(frame_labels, self.labelmap, frame_times, self.n_decimals_trunc)
 
 
 class PostProcess:
     """Apply post-processing transformations
-    to a vector of labeled timebins.
+    to a vector of frame labels.
 
     Optional post-processing
     consist of two transforms,
@@ -204,10 +209,10 @@ class PostProcess:
     .. code-block::
 
        if min_segment_dur:
-           lbl_tb = remove_short_segments(lbl_tb, labelmap, min_segment_dur)
+           frame_labels = remove_short_segments(frame_labels, labelmap, min_segment_dur)
        if majority_vote:
-           lbl_tb = majority_vote(lbl_tb, labelmap)
-       return lbl_tb
+           frame_labels = majority_vote(frame_labels, labelmap)
+       return frame_labels
 
     Attributes
     ----------
@@ -221,7 +226,7 @@ class PostProcess:
     min_segment_dur : float
         Minimum duration of segment, in seconds. If specified, then
         any segment with a duration less than min_segment_dur is
-        removed from lbl_tb. Default is None, in which case no
+        removed from frame_labels. Default is None, in which case no
         segments are removed.
     majority_vote : bool
         If True, transform segments containing multiple labels
@@ -244,20 +249,21 @@ class PostProcess:
         self.majority_vote = majority_vote
 
     def __call__(self,
-                 lbl_tb: np.ndarray) -> np.ndarray:
-        """Convert vector of labeled timebins into labels.
+                 frame_labels: np.ndarray) -> np.ndarray:
+        """Convert vector of frame labels into labels.
 
         Parameters
         ----------
-        lbl_tb : numpy.ndarray
-            Vector of labeled spectrogram time bins, i.e.,
-            where each element is a label for a time bin.
+        frame_labels : numpy.ndarray
+            A vector where each element represents
+            a label for a frame, either a single sample in audio
+            or a single time bin from a spectrogram.
             Output of a neural network.
 
         Returns
         -------
-        lbl_tb : numpy.ndarray
-            Vector of labeled timebins after post-processing is applied.
+        frame_labels : numpy.ndarray
+            Vector of frame labels after post-processing is applied.
         """
-        return F.postprocess(lbl_tb, self.timebin_dur, self.unlabeled_label,
+        return F.postprocess(frame_labels, self.timebin_dur, self.unlabeled_label,
                              self.min_segment_dur, self.majority_vote)
