@@ -11,6 +11,7 @@ import torch
 
 from . import base
 from .definition import ModelDefinition
+from .registry import model_family
 from .. import transforms
 from ..common import labels
 
@@ -18,6 +19,7 @@ from ..common import labels
 logger = logging.getLogger(__name__)
 
 
+@model_family
 class WindowedFrameClassificationModel(base.Model):
     """Class that represents a family of neural network models
     that predicts a label for each frame in a window,
