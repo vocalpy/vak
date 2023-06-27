@@ -1,0 +1,24 @@
+[PREP]
+dataset_type = "frame classification"
+input_type = "audio"
+labelset = "iabcdefghjk"
+data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032412"
+output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/das"
+audio_format = "cbin"
+annot_format = "notmat"
+
+[DATALOADER]
+window_size = 256
+
+[EVAL]
+model = "DAS"
+checkpoint_path = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/das/results_230622_173715/DAS/checkpoints/max-val-acc-checkpoint.pt"
+labelmap_path = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/das/results_230622_173715/labelmap.json"
+batch_size = 11
+num_workers = 4
+device = "cuda"
+output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/DAS"
+dataset_path = "tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/das/032412-vak-frame-classification-dataset-generated-230623_150058"
+
+[DAS.optimizer]
+lr = 0.001
