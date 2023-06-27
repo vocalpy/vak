@@ -13,6 +13,7 @@ from typing import Type
 
 from .base import Model
 from .definition import validate as validate_definition
+from .registry import register_model
 
 
 class ModelDefinitionValidationError(Exception):
@@ -81,6 +82,9 @@ def model(family: Type[Model]):
         subclass_name = definition.__name__
         subclass = type(subclass_name, (family,), attributes)
         subclass.__module__ = definition.__module__
+
+        # finally, add model to registry
+        register_model(subclass)
 
         return subclass
 
