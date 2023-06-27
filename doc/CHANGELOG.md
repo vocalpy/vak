@@ -39,9 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#670](https://github.com/NickleDave/vak/pull/670).
   Fixes [#667](https://github.com/NickleDave/vak/issues/667)
   and [#652](https://github.com/NickleDave/vak/issues/652).
-- Add DAS model
-  [#670](https://github.com/NickleDave/vak/pull/670).
-  Fixes [#630](https://github.com/NickleDave/vak/issues/630).
 
 ### Changed
 - Rename config file option `csv_path` to `dataset_path`, 
