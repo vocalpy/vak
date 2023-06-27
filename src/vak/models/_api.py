@@ -1,4 +1,3 @@
-from .das import DAS
 from .tweetynet import TweetyNet
 from .teenytweetynet import TeenyTweetyNet
 
@@ -7,7 +6,6 @@ from .teenytweetynet import TeenyTweetyNet
 MODEL_FAMILY_NAME_CLASS_MAPS = {
     'frame classification':
         {
-            'DAS': DAS,
             'TweetyNet': TweetyNet,
             'TeenyTweetyNet': TeenyTweetyNet
         }
