@@ -8,7 +8,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from . import constants
-from .metadata import FrameClassificationDatasetMetadata
+from .metadata import Metadata
 
 
 class FramesDataset:
@@ -98,7 +98,7 @@ class FramesDataset:
         item_transform: Callable | None = None,
     ):
         dataset_path = pathlib.Path(dataset_path)
-        metadata = FrameClassificationDatasetMetadata.from_dataset_path(dataset_path)
+        metadata = Metadata.from_dataset_path(dataset_path)
         frame_dur = metadata.frame_dur
         input_type = metadata.input_type
 

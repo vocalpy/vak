@@ -85,11 +85,11 @@ class StandardizeSpect:
         standardize_spect : StandardizeSpect
             Instance that has been fit to input data from split.
         """
-        from vak.datasets.frame_classification import FrameClassificationDatasetMetadata
+        from vak.datasets.frame_classification import Metadata
         from vak.datasets import frame_classification
 
         dataset_path = pathlib.Path(dataset_path)
-        metadata = FrameClassificationDatasetMetadata.from_dataset_path(dataset_path)
+        metadata = Metadata.from_dataset_path(dataset_path)
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
         df = pd.read_csv(dataset_csv_path)
