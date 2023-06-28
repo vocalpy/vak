@@ -58,18 +58,13 @@ def get(name: str,
         ) from e
 
     # still need to special case model logic here
-    if name == 'DAS':
-        n_audio_channels = input_shape[-2]
-        num_samples = input_shape[-1]
+    if name in ('TweetyNet', 'TeenyTweetyNet'):
+        num_input_channels = input_shape[-3]
+        num_freqbins = input_shape[-2]
         config["network"].update(
             num_classes=num_classes,
-            n_audio_channels=n_audio_channels,
-            num_samples=num_samples
-        )
-    elif name in ('TweetyNet', 'TeenyTweetyNet'):
-        config["network"].update(
-            num_classes=num_classes,
-            input_shape=input_shape,
+            num_input_channels=num_input_channels,
+            num_freqbins=num_freqbins
         )
     else:
         model_names = list(all_models_dict.keys())
