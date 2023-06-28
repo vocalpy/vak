@@ -5,11 +5,11 @@ import torch
 from .. import metrics
 from .. import nets
 
-from .windowed_frame_classification_model import WindowedFrameClassificationModel
+from .frame_classification_model import FrameClassificationModel
 from .decorator import model
 
 
-@model(family=WindowedFrameClassificationModel)
+@model(family=FrameClassificationModel)
 class TeenyTweetyNet:
     """lightweight version of ``vak.models.TweetyNet`` used by ``vak`` unit tests"""
     network = nets.TeenyTweetyNet

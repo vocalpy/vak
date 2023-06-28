@@ -13,7 +13,8 @@ class TeenyTweetyNet(nn.Module):
     def __init__(
         self,
         num_classes,
-        input_shape=(1, 513, 88),
+        num_input_channels=1,
+        num_freqbins=256,
         conv1_filters=8,
         conv1_kernel_size=(5, 5),
         conv1_padding=(0, 2),
@@ -58,12 +59,13 @@ class TeenyTweetyNet(nn.Module):
         """
         super().__init__()
         self.num_classes = num_classes
-        self.input_shape = input_shape
+        self.num_input_channels = num_input_channels
+        self.num_freqbins = num_freqbins
         self.hidden_size = hidden_size
 
         self.cnn = nn.Sequential(
             nn.Conv2d(
-                in_channels=self.input_shape[0],
+                in_channels=self.num_input_channels,
                 out_channels=conv1_filters,
                 kernel_size=conv1_kernel_size,
                 padding=conv1_padding,
@@ -83,7 +85,8 @@ class TeenyTweetyNet(nn.Module):
         # determine number of features in output after stacking channels
         # we use the same number of features for hidden states
         # note self.num_hidden is also used to reshape output of cnn in self.forward method
-        batch_shape = tuple((1,) + input_shape)
+        N_DUMMY_TIMEBINS = 256  # some not-small number. This dimension doesn't matter here
+        batch_shape = (1, self.num_input_channels, self.num_freqbins, N_DUMMY_TIMEBINS)
         tmp_tensor = torch.rand(batch_shape)
         tmp_out = self.cnn(tmp_tensor)
         channels_out, freqbins_out = tmp_out.shape[1], tmp_out.shape[2]

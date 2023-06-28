@@ -12,7 +12,7 @@ from .base import Model
 from .get import get
 from .teenytweetynet import TeenyTweetyNet
 from .tweetynet import TweetyNet
-from .windowed_frame_classification_model import WindowedFrameClassificationModel
+from .frame_classification_model import FrameClassificationModel
 
 
 __all__ = [
@@ -26,5 +26,5 @@ __all__ = [
     "MODEL_NAMES",
     "TeenyTweetyNet",
     "TweetyNet",
-    "WindowedFrameClassificationModel"
+    "FrameClassificationModel"
 ]

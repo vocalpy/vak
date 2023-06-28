@@ -13,13 +13,14 @@ from typing import Type
 
 from .base import Model
 from .definition import validate as validate_definition
+from .registry import register_model
 
 
 class ModelDefinitionValidationError(Exception):
     """Exception raised when validating a model
     definition fails.
 
-    Used by ``vak.models.model`` decorator.
+    Used by :func:`vak.models.decorator.model` decorator.
     """
     pass
 
@@ -40,12 +41,12 @@ def model(family: Type[Model]):
     definition : type
         The definition of the new model that will be made.
         A class with all the class variables required
-        by ``vak.models.definition.validate``.
+        by :func:`vak.models.definition.validate`.
         See docstring of that function for specification.
     family : subclass of vak.models.Model
         The class representing the family of models
         that the new model will belong to.
-        E.g., ``vak.models.WindowedFrameClassificationModel``.
+        E.g., :class:`vak.models.FrameClassificationModel`.
 
     Returns
     -------
@@ -81,6 +82,9 @@ def model(family: Type[Model]):
         subclass_name = definition.__name__
         subclass = type(subclass_name, (family,), attributes)
         subclass.__module__ = definition.__module__
+
+        # finally, add model to registry
+        register_model(subclass)
 
         return subclass
 

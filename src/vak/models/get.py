@@ -3,8 +3,6 @@ given its name and a configuration as a dict."""
 from __future__ import annotations
 from typing import Callable
 
-from ._api import MODEL_NAMES
-
 
 def get(name: str,
         config: dict,
@@ -43,32 +41,36 @@ def get(name: str,
         Instance of a sub-class of the base Model class,
         e.g. a TweetyNet instance.
     """
-    import vak.models
-
-    if name == 'DAS':
-        n_audio_channels = input_shape[-2]
-        num_samples = input_shape[-1]
-        config["network"].update(
-            num_classes=num_classes,
-            n_audio_channels=n_audio_channels,
-            num_samples=num_samples
-        )
-    elif name in ('TweetyNet', 'TeenyTweetyNet'):
-        config["network"].update(
-            num_classes=num_classes,
-            input_shape=input_shape,
-        )
-    else:
-        raise ValueError(
-            f"Invalid model name: '{name}'.\nValid model names are: {MODEL_NAMES}"
-        )
+    # we do this dynamically so we always get all registered models
+    from .registry import MODELS_BY_FAMILY_REGISTRY
+    all_models_dict = {
+        model_name: model_class
+        for model_family_name, models_dict in MODELS_BY_FAMILY_REGISTRY.items()
+        for model_name, model_class in models_dict.items()
+    }
 
     try:
-        model_class = getattr(vak.models, name)
-    except AttributeError as e:
+        model_class = all_models_dict[name]
+    except KeyError as e:
+        model_names = list(all_models_dict.keys())
         raise ValueError(
-            f"Invalid model name: '{name}'.\nValid model names are: {MODEL_NAMES}"
+            f"Invalid model name: '{name}'.\nValid model names are: {model_names}"
         ) from e
+
+    # still need to special case model logic here
+    if name in ('TweetyNet', 'TeenyTweetyNet'):
+        num_input_channels = input_shape[-3]
+        num_freqbins = input_shape[-2]
+        config["network"].update(
+            num_classes=num_classes,
+            num_input_channels=num_input_channels,
+            num_freqbins=num_freqbins
+        )
+    else:
+        model_names = list(all_models_dict.keys())
+        raise ValueError(
+            f"Invalid model name: '{name}'.\nValid model names are: {model_names}"
+        )
 
     model = model_class.from_config(config=config, labelmap=labelmap, post_tfm=post_tfm)
 

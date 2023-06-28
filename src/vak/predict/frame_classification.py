@@ -160,7 +160,7 @@ def predict_with_frame_classification_model(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    metadata = datasets.frame_classification.FrameClassificationDatasetMetadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
 
     logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
