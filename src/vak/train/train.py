@@ -45,7 +45,7 @@ def train(
     Parameters
     ----------
     model_name : str
-        Model name, must be one of vak.models.MODEL_NAMES.
+        Model name, must be one of vak.models.registry.MODEL_NAMES.
     model_config : dict
         Model configuration in a ``dict``,
         as loaded from a .toml file,
@@ -156,7 +156,7 @@ def train(
         )
 
     try:
-        model_family = models.MODEL_FAMILY_FROM_NAME[model_name]
+        model_family = models.registry.MODEL_FAMILY_FROM_NAME[model_name]
     except KeyError as e:
         raise ValueError(
             f"No model family found for the model name specified: {model_name}"

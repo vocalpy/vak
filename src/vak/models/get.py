@@ -16,7 +16,7 @@ def get(name: str,
     Parameters
     ----------
     name : str
-        Model name, must be one of vak.models.MODEL_NAMES.
+        Model name, must be one of vak.models.registry.MODEL_NAMES.
     config: dict
         Model configuration in a ``dict``,
         as loaded from a .toml file,
