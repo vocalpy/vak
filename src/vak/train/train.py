@@ -161,7 +161,7 @@ def train(
         raise ValueError(
             f"No model family found for the model name specified: {model_name}"
         ) from e
-    if model_family == "frame classification":
+    if model_family == "FrameClassificationModel":
         train_frame_classification_model(
             model_name=model_name,
             model_config=model_config,

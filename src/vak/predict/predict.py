@@ -135,7 +135,7 @@ def predict(
         raise ValueError(
             f"No model family found for the model name specified: {model_name}"
         ) from e
-    if model_family == "frame classification":
+    if model_family == "FrameClassificationModel":
         predict_with_frame_classification_model(
             model_name=model_name,
             model_config=model_config,
