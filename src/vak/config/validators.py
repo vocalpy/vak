@@ -27,9 +27,9 @@ def is_a_file(instance, attribute, value):
 
 def is_valid_model_name(instance, attribute, value: str) -> None:
     """Validate model name."""
-    if value not in models.MODEL_NAMES:
+    if value not in models.registry.MODEL_NAMES:
         raise ValueError(
-            f"Invalid model name: {value}.\nValid model names are: {models.MODEL_NAMES}"
+            f"Invalid model name: {value}.\nValid model names are: {models.registry.MODEL_NAMES}"
         )
 
 
@@ -90,7 +90,7 @@ def are_sections_valid(config_dict, toml_path=None):
             f"Please use just one command besides `prep` per .toml configuration file"
         )
 
-    MODEL_NAMES = list(models.MODEL_NAMES)
+    MODEL_NAMES = list(models.registry.MODEL_NAMES)
     # add model names to valid sections so users can define model config in sections
     valid_sections = VALID_SECTIONS + MODEL_NAMES
     for section in sections:

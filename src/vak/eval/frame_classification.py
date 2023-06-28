@@ -43,7 +43,7 @@ def eval_frame_classification_model(
     Parameters
     ----------
     model_name : str
-        Model name, must be one of vak.models.MODEL_NAMES.
+        Model name, must be one of vak.models.registry.MODEL_NAMES.
     model_config : dict
         Model configuration in a ``dict``,
         as loaded from a .toml file,

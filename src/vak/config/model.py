@@ -35,9 +35,9 @@ def config_from_toml_dict(toml_dict: dict, model_name: str) -> dict:
         as loaded from a .toml file,
         and used by the model method ``from_config``.
     """
-    if model_name not in models.MODEL_NAMES:
+    if model_name not in models.registry.MODEL_NAMES:
         raise ValueError(
-            f"Invalid model name: {model_name}.\nValid model names are: {models.MODEL_NAMES}"
+            f"Invalid model name: {model_name}.\nValid model names are: {models.registry.MODEL_NAMES}"
         )
 
     try:
