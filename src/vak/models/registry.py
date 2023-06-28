@@ -86,7 +86,7 @@ def __getattr__(name: str) -> Any:
             for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
             for model_name, model_class in family_dict.items()
         }
-    elif name == 'BUILTIN_MODELS':
+    elif name == 'MODEL_CLASS_BY_NAME':
         return {
             model_name: model_class
             for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
