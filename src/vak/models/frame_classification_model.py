@@ -255,7 +255,7 @@ class FrameClassificationModel(base.Model):
 
         if self.post_tfm:
             y_pred_tfm = self.post_tfm(
-                lbl_tb=y_pred.cpu().numpy(),
+                y_pred.cpu().numpy(),
             )
             y_pred_tfm_labels = self.to_labels_eval(y_pred_tfm)
             # convert back to tensor so we can compute accuracy
