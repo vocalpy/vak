@@ -58,7 +58,7 @@ def get(name: str,
         ) from e
 
     # still need to special case model logic here
-    if name in ('TweetyNet', 'TeenyTweetyNet'):
+    if name in ('TweetyNet', 'TeenyTweetyNet', 'ED_TCN'):
         num_input_channels = input_shape[-3]
         num_freqbins = input_shape[-2]
         config["network"].update(
