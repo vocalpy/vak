@@ -1,27 +1,31 @@
-from .tweetynet import TweetyNet
-from .teenytweetynet import TeenyTweetyNet
+from typing import Any
+
+from . import registry
 
 
-# TODO: Replace constant with decorator that registers models, https://github.com/vocalpy/vak/issues/623
-MODEL_FAMILY_NAME_CLASS_MAPS = {
-    'frame classification':
-        {
-            'TweetyNet': TweetyNet,
-            'TeenyTweetyNet': TeenyTweetyNet
+def __getattr__(name: str) -> Any:
+    """Module-level __getattr__ function that we use to dynamically determine models."""
+    if name == 'MODEL_FAMILY_FROM_NAME':
+        return {
+            model_name: family_name
+            for family_name, family_dict in registry.MODELS_BY_FAMILY_REGISTRY.items()
+            for model_name, model_class in family_dict.items()
         }
-}
-
-# used by e.g. vak.train to figure out which train function to call
-MODEL_FAMILY_FROM_NAME = {
-    model_name: family_name
-    for family_name, family_dict in MODEL_FAMILY_NAME_CLASS_MAPS.items()
-    for model_name, model_class in family_dict.items()
-}
-
-BUILTIN_MODELS = {
-    model_name: model_class
-    for family_name, family_dict in MODEL_FAMILY_NAME_CLASS_MAPS.items()
-    for model_name, model_class in family_dict.items()
-}
-
-MODEL_NAMES = list(BUILTIN_MODELS.keys())
+    elif name == 'BUILTIN_MODELS':
+        return {
+            model_name: model_class
+            for family_name, family_dict in registry.MODELS_BY_FAMILY_REGISTRY.items()
+            for model_name, model_class in family_dict.items()
+        }
+    elif name == 'MODEL_NAMES':
+        return list(
+            {
+                model_name: model_class
+                for family_name, family_dict in registry.MODELS_BY_FAMILY_REGISTRY.items()
+                for model_name, model_class in family_dict.items()
+            }.keys()
+        )
+    else:
+        raise AttributeError(
+            f"Not an attribute of `vak.models._api`: {name}"
+        )
