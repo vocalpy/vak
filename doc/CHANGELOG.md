@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#670](https://github.com/NickleDave/vak/pull/670).
   Fixes [#667](https://github.com/NickleDave/vak/issues/667)
   and [#652](https://github.com/NickleDave/vak/issues/652).
+- Add decorators to register models and model families 
+  [#676](https://github.com/NickleDave/vak/pull/676).
+  Fixes [#623](https://github.com/NickleDave/vak/issues/623).
 
 ### Changed
 - Rename config file option `csv_path` to `dataset_path`, 
