@@ -6,7 +6,7 @@ with a decorator, so that the model can be used at runtime.
 from __future__ import annotations
 
 import inspect
-from typing import Type
+from typing import Any, Type
 
 from .base import Model
 
@@ -76,3 +76,31 @@ def register_model(model_class: Type) -> None:
     # need to return class after we register it or we replace it with None
     # when this function is used as a decorator
     return model_class
+
+
+def __getattr__(name: str) -> Any:
+    """Module-level __getattr__ function that we use to dynamically determine models."""
+    if name == 'MODEL_FAMILY_FROM_NAME':
+        return {
+            model_name: family_name
+            for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
+            for model_name, model_class in family_dict.items()
+        }
+    elif name == 'BUILTIN_MODELS':
+        return {
+            model_name: model_class
+            for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
+            for model_name, model_class in family_dict.items()
+        }
+    elif name == 'MODEL_NAMES':
+        return list(
+            {
+                model_name: model_class
+                for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
+                for model_name, model_class in family_dict.items()
+            }.keys()
+        )
+    else:
+        raise AttributeError(
+            f"Not an attribute of `vak.models.registry`: {name}"
+        )
