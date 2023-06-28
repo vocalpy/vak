@@ -3,6 +3,8 @@ given its name and a configuration as a dict."""
 from __future__ import annotations
 from typing import Callable
 
+from . import registry
+
 
 def get(name: str,
         config: dict,
@@ -42,19 +44,12 @@ def get(name: str,
         e.g. a TweetyNet instance.
     """
     # we do this dynamically so we always get all registered models
-    from .registry import MODELS_BY_FAMILY_REGISTRY
-    all_models_dict = {
-        model_name: model_class
-        for model_family_name, models_dict in MODELS_BY_FAMILY_REGISTRY.items()
-        for model_name, model_class in models_dict.items()
-    }
-
     try:
-        model_class = all_models_dict[name]
+        model_class = registry.MODEL_CLASS_BY_NAME[name]
     except KeyError as e:
-        model_names = list(all_models_dict.keys())
         raise ValueError(
-            f"Invalid model name: '{name}'.\nValid model names are: {model_names}"
+            f"Invalid model name: '{name}'.\n"
+            f"Valid model names are: {registry.MODEL_NAMES}"
         ) from e
 
     # still need to special case model logic here
