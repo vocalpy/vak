@@ -1,6 +1,6 @@
 """A LightningModule that represents a task
 where a model predicts a label for each frame
-in a window, e.g., each time bin in
+in a time series, e.g., each time bin in
 a window from a spectrogram."""
 from __future__ import annotations
 
@@ -20,12 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 @model_family
-class WindowedFrameClassificationModel(base.Model):
+class FrameClassificationModel(base.Model):
     """Class that represents a family of neural network models
-    that predicts a label for each frame in a window,
+    that predicts a label for each frame in a time series,
     e.g., each time bin in a window from a spectrogram.
 
-    The task of predicting labels for frames in a window
+    The task of predicting a label for each frame in a series
     is one way of predicting annotations for a vocalization,
     where the annotations consist of a sequence
     of segments, each with an onset, offset, and label.
@@ -96,19 +96,20 @@ class WindowedFrameClassificationModel(base.Model):
                  metrics: dict[str: Type] | None = None,
                  post_tfm: Callable | None = None,
                  ):
-        """Initialize a new instance of a ``WindowedFrameClassificationModel``.
+        """Initialize a new instance of a
+        :class:`~vak.models.frame_classification_model.FrameClassificationModel`.
 
         Parameters
         ----------
         labelmap : dict-like
             That maps human-readable labels to integers predicted by network.
         network : torch.nn.Module, dict
-            An instance of a ``torch.nn.Module``
+            An instance of a :class:`torch.nn.Module`
             that implements a neural network,
             or a ``dict`` that maps human-readable string names
             to a set of such instances.
         loss : torch.nn.Module, callable
-            An instance of a ``torch.nn.Module``
+            An instance of a :class:`torch.nn.Module`
             that implements a loss function,
             or a callable Python function that
             computes a scalar loss.
@@ -317,8 +318,8 @@ class WindowedFrameClassificationModel(base.Model):
         Parameters
         ----------
         config : dict
-            Returned by calling ``vak.config.models.map_from_path``
-            or ``vak.config.models.map_from_config_dict``.
+            Returned by calling :func:`vak.config.models.map_from_path`
+            or :func:`vak.config.models.map_from_config_dict`.
         post_tfm : callable
             Post-processing transformation.
             A callable applied to the network output.

@@ -20,7 +20,7 @@ class ModelDefinitionValidationError(Exception):
     """Exception raised when validating a model
     definition fails.
 
-    Used by ``vak.models.model`` decorator.
+    Used by :func:`vak.models.decorator.model` decorator.
     """
     pass
 
@@ -41,12 +41,12 @@ def model(family: Type[Model]):
     definition : type
         The definition of the new model that will be made.
         A class with all the class variables required
-        by ``vak.models.definition.validate``.
+        by :func:`vak.models.definition.validate`.
         See docstring of that function for specification.
     family : subclass of vak.models.Model
         The class representing the family of models
         that the new model will belong to.
-        E.g., ``vak.models.WindowedFrameClassificationModel``.
+        E.g., :class:`vak.models.FrameClassificationModel`.
 
     Returns
     -------

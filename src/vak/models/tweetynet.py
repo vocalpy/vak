@@ -14,11 +14,11 @@ from .. import (
     metrics,
     nets
 )
-from .windowed_frame_classification_model import WindowedFrameClassificationModel
+from .frame_classification_model import FrameClassificationModel
 from .decorator import model
 
 
-@model(family=WindowedFrameClassificationModel)
+@model(family=FrameClassificationModel)
 class TweetyNet:
     """TweetyNet model, as described in
     Cohen, Y., Nicholson, D. A., Sanchioni, A., Mallaber, E. K., Skidanova, V., & Gardner, T. J. (2022).
@@ -47,7 +47,7 @@ class TweetyNet:
 
     ``TweetyNet`` is a type of windowed frame classification model,
     and this version built into ``vak`` relies on the
-    ``WindowedFrameClassificationModel`` class.
+    ``FrameClassificationModel`` class.
 
     References
     ----------
