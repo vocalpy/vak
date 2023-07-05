@@ -68,9 +68,8 @@ def get(name: str,
             num_freqbins=num_freqbins
         )
     else:
-        model_names = list(all_models_dict.keys())
         raise ValueError(
-            f"Invalid model name: '{name}'.\nValid model names are: {model_names}"
+            f"Unable to determine network init arguments for model: {name}"
         )
 
     model = model_class.from_config(config=config, labelmap=labelmap, post_tfm=post_tfm)
