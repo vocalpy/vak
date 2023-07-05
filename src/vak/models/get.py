@@ -1,6 +1,7 @@
 """Function that gets an instance of a model,
 given its name and a configuration as a dict."""
 from __future__ import annotations
+import inspect
 from typing import Callable
 
 from . import registry
@@ -53,7 +54,12 @@ def get(name: str,
         ) from e
 
     # still need to special case model logic here
-    if name in ('TweetyNet', 'TeenyTweetyNet', 'ED_TCN'):
+    net_init_params = list(
+        inspect.signature(
+            model_class.definition.network.__init__
+        ).parameters.keys()
+    )
+    if ('num_input_channels' in net_init_params) and ('num_freqbins' in net_init_params):
         num_input_channels = input_shape[-3]
         num_freqbins = input_shape[-2]
         config["network"].update(
