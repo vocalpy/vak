@@ -1,1 +1,2 @@
+from . import dataset_arrays
 from .dimensionality_reduction import prep_dimensionality_reduction_dataset
