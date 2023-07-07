@@ -314,7 +314,7 @@ def prep_frame_classification_dataset(
             do_split = True
 
     if do_split:
-        dataset_df = split.dataframe(
+        dataset_df = split.frame_classification_dataframe(
             dataset_df,
             dataset_path,
             labelset=labelset,
