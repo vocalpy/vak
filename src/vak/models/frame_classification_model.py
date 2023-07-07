@@ -192,6 +192,7 @@ class FrameClassificationModel(base.Model):
         x, y = batch[0], batch[1]
         out = self.network(x)
         loss = self.loss(out, y)
+        self.log(f'train_loss', loss)
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
@@ -264,19 +265,19 @@ class FrameClassificationModel(base.Model):
         # TODO: figure out smarter way to do this
         for metric_name, metric_callable in self.metrics.items():
             if metric_name == "loss":
-                self.log(f'val_{metric_name}', metric_callable(out, y), batch_size=1)
+                self.log(f'val_{metric_name}', metric_callable(out, y), batch_size=1, on_step=True)
             elif metric_name == "acc":
                 self.log(f'val_{metric_name}', metric_callable(y_pred, y), batch_size=1)
                 if self.post_tfm:
                     self.log(f'val_{metric_name}_tfm',
                              metric_callable(y_pred_tfm, y),
-                             batch_size=1)
+                             batch_size=1, on_step=True)
             elif metric_name == "levenshtein" or metric_name == "segment_error_rate":
                 self.log(f'val_{metric_name}', metric_callable(y_pred_labels, y_labels), batch_size=1)
                 if self.post_tfm:
                     self.log(f'val_{metric_name}_tfm',
                              metric_callable(y_pred_tfm_labels, y_labels),
-                             batch_size=1)
+                             batch_size=1, on_step=True)
 
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
