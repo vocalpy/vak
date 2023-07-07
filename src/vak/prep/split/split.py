@@ -79,7 +79,7 @@ def train_test_dur_split_inds(
             f"training, test, and (if specified) validation sets: {total_target_dur}"
         )
 
-    logger.info(,
+    logger.info(
         f"Total target duration of splits: {total_target_dur} seconds. "
         f"Will be drawn from dataset with total duration: {total_dur:.3f}.",
     )
