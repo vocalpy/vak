@@ -58,12 +58,6 @@ def prep_frame_classification_dataset(
         Purpose of the dataset.
         One of {'train', 'eval', 'predict', 'learncurve'}.
         These correspond to commands of the vak command-line interface.
-    dataset_type : str
-        String name of the type of dataset, e.g.,
-        'frame_classification'. Dataset types are
-        defined by machine learning tasks, e.g.,
-        a 'frame_classification' dataset would be used
-        a :class:`vak.models.FrameClassificationModel` model.
     input_type : str
         The type of input to the neural network model.
         One of {'audio', 'spect'}.
