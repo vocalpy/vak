@@ -229,7 +229,7 @@ DF_COLUMNS = [
 def prep_unit_dataset(
         audio_format: str,
         output_dir: str,
-        spect_params: dict | config.spect_params.SpectParamsConfig,
+        spect_params: dict,
         data_dir: list | None = None,
         annot_format: str | None = None,
         annot_file: str | pathlib.Path | None = None,
