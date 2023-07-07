@@ -3,7 +3,10 @@ import logging
 import pathlib
 import warnings
 
-from .. import dataset_df_helper, sequence_dataset, split
+import crowsetta
+
+from . import dataset_arrays
+from .. import dataset_df_helper, split
 from ..unit_dataset import prep_unit_dataset
 
 from ... import datasets
@@ -23,6 +26,7 @@ def prep_dimensionality_reduction_dataset(
     audio_format: str | None = None,
     spect_params: dict | None = None,
     annot_format: str | None = None,
+    annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
     context_s: float = 0.015,
     train_dur: int | None = None,
@@ -122,6 +126,13 @@ def prep_dimensionality_reduction_dataset(
     if not output_dir.is_dir():
         raise NotADirectoryError(f"Path specified for ``output_dir`` not found: {output_dir}")
 
+    if annot_file is not None:
+        annot_file = expanded_user_path(annot_file)
+        if not annot_file.exists():
+            raise FileNotFoundError(
+                f'Path specified for ``annot_file`` not found: {annot_file}'
+            )
+
     if purpose == "predict":
         if labelset is not None:
             warnings.warn(
@@ -150,6 +161,29 @@ def prep_dimensionality_reduction_dataset(
     dataset_path = output_dir / f'{data_dir_name}-vak-dimensionality-reduction-dataset-generated-{timenow}'
     dataset_path.mkdir()
 
+    if annot_file and annot_format == 'birdsong-recognition-dataset':
+        # we do this normalization / canonicalization after we make dataset_path
+        # so that we can put the new annot_file inside of dataset_path, instead of
+        # making new files elsewhere on a user's system
+        logger.info("The ``annot_format`` argument was set to 'birdsong-recognition-format'; "
+                    "this format requires the audio files for their sampling rate "
+                    "to convert onset and offset times of birdsong syllables to seconds."
+                    "Converting this format to 'generic-seq' now with the times in seconds, "
+                    "so that the dataset prepared by vak will not require the audio files.")
+        birdsongrec = crowsetta.formats.seq.BirdsongRec.from_file(annot_file)
+        annots = birdsongrec.to_annot()
+        # note we point `annot_file` at a new file we're about to make
+        annot_file = dataset_path / f'{annot_file.stem}.converted-to-generic-seq.csv'
+        # and we remake Annotations here so that annot_path points to this new file, not the birdsong-rec Annotation.xml
+        annots = [
+            crowsetta.Annotation(seq=annot.seq, annot_path=annot_file, notated_path=annot.notated_path)
+            for annot in annots
+        ]
+        generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+        generic_seq.to_file(annot_file)
+        # and we now change `annot_format` as well. Both these will get passed to io.prep_spectrogram_dataset
+        annot_format = 'generic-seq'
+
     # NOTE we set up logging here (instead of cli) so the prep log is included in the dataset
     config_logging_for_cli(
         log_dst=dataset_path,
@@ -167,10 +201,12 @@ def prep_dimensionality_reduction_dataset(
     # ---- actually make the dataset -----------------------------------------------------------------------------------
     dataset_df = prep_unit_dataset(
         audio_format=audio_format,
-        output_dir=output_dir,
+        output_dir=dataset_path,
         spect_params=spect_params,
         data_dir=data_dir,
         annot_format=annot_format,
+        annot_file=annot_file,
+        labelset=labelset,
         context_s=context_s,
     )
 
@@ -217,7 +253,7 @@ def prep_dimensionality_reduction_dataset(
             do_split = True
 
     if do_split:
-        dataset_df = split.dataframe(
+        dataset_df = split.unit_dataframe(
             dataset_df,
             dataset_path,
             labelset=labelset,
@@ -242,8 +278,7 @@ def prep_dimensionality_reduction_dataset(
     # we do this before creating array files since we need to load the labelmap to make frame label vectors
     if purpose != 'predict':
         # TODO: add option to generate predict using existing dataset, so we can get labelmap from it
-        map_unlabeled_segments = sequence_dataset.has_unlabeled_segments(dataset_df)
-        labelmap = labels.to_map(labelset, map_unlabeled=map_unlabeled_segments)
+        labelmap = labels.to_map(labelset, map_unlabeled=False)
         logger.info(
             f"Number of classes in labelmap: {len(labelmap)}",
         )
@@ -253,11 +288,17 @@ def prep_dimensionality_reduction_dataset(
     else:
         labelmap = None
 
-    # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
+    # ---- make arrays that represent final dataset --------------------------------------------------------------------
+    dataset_arrays.move_files_into_split_subdirs(
+        dataset_df,
+        dataset_path,
+        purpose,
+    )
+    #
+    # # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
     # if purpose == 'learncurve':
     #     dataset_df = make_learncurve_splits_from_dataset_df(
     #         dataset_df,
-    #         input_type,
     #         train_set_durs,
     #         num_replicates,
     #         dataset_path,
@@ -276,14 +317,9 @@ def prep_dimensionality_reduction_dataset(
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
-    frame_dur = validators.validate_and_get_frame_dur(dataset_df, input_type)
-
-    metadata = datasets.frame_classification.Metadata(
+    metadata = datasets.dimensionality_reduction.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
-        frame_dur=frame_dur,
-        input_type=input_type,
         audio_format=audio_format,
-        spect_format=spect_format,
     )
     metadata.to_json(dataset_path)
 
