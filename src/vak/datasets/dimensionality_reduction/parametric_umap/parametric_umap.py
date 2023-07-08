@@ -114,7 +114,7 @@ class ParametricUMAPDataset(Dataset):
                           dataset_path,
                           split,
                           n_neighbors=10,
-                          metric='Euclidean',
+                          metric='euclidean',
                           random_state=None,
                           n_epochs=200,
                           transform=None):
