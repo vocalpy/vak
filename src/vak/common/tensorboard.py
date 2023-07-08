@@ -105,9 +105,9 @@ def events2df(events_path, size_guidance=None, drop_wall_time=True):
     dfs = {}
     for scalar_tag in scalar_tags:
         dfs[scalar_tag] = pd.DataFrame(
-            ea.Scalars(scalar_tag), columns=["wall_time", "step", scalar_tag]
-        )
-        dfs[scalar_tag] = dfs[scalar_tag].set_index("step")
+            [(scalar.wall_time, scalar.step, scalar.value) for scalar in ea.Scalars(scalar_tag)],
+            columns=["wall_time", "step", scalar_tag]
+        ).set_index("step")
         if drop_wall_time:
             dfs[scalar_tag].drop("wall_time", axis=1, inplace=True)
     return pd.concat([v for k, v in dfs.items()], axis=1)
