@@ -66,3 +66,12 @@ def umap_loss(embedding_to, embedding_from, a, b, batch_size, negative_sample_ra
     )
     loss = torch.mean(ce_loss)
     return loss
+
+
+class UmapLoss(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, embedding_to, embedding_from, a, b, batch_size, negative_sample_rate):
+        return umap_loss(embedding_to, embedding_from, a, b,
+                         batch_size, negative_sample_rate)
