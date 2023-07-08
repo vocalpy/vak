@@ -5,6 +5,7 @@ import logging
 import pathlib
 
 from .frame_classification import train_frame_classification_model
+from .parametric_umap import train_parametric_umap_model
 from .. import (
     models,
 )
@@ -174,6 +175,23 @@ def train(
             spect_scaler_path=spect_scaler_path,
             results_path=results_path,
             normalize_spectrograms=normalize_spectrograms,
+            shuffle=shuffle,
+            val_step=val_step,
+            ckpt_step=ckpt_step,
+            patience=patience,
+            device=device,
+            split=split,
+        )
+    elif model_family == "ParametricUMAPModel":
+        train_parametric_umap_model(
+            model_name=model_name,
+            model_config=model_config,
+            dataset_path=dataset_path,
+            batch_size=batch_size,
+            num_epochs=num_epochs,
+            num_workers=num_workers,
+            checkpoint_path=checkpoint_path,
+            results_path=results_path,
             shuffle=shuffle,
             val_step=val_step,
             ckpt_step=ckpt_step,
