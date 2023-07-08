@@ -95,6 +95,12 @@ class ParametricUMAPDataset(Dataset):
     def __len__(self):
         return int(self.data.shape[0])
 
+    @property
+    def shape(self):
+        tmp_x_ind = 0
+        tmp_item = self.__getitem__(tmp_x_ind)
+        return tmp_item[0].shape
+
     def __getitem__(self, index):
         edges_to_exp = self.data[self.edges_to_exp[index]]
         edges_from_exp = self.data[self.edges_from_exp[index]]
