@@ -124,23 +124,6 @@ def train_frame_classification_model(
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
-    source_ids : numpy.ndarray
-        Parameter for WindowDataset. Represents the 'id' of any spectrogram,
-        i.e., the index into spect_paths that will let us load it.
-        Default is None.
-    source_inds : numpy.ndarray
-        Parameter for WindowDataset. Same length as source_ids
-        but values represent indices within each spectrogram.
-        Default is None.
-    window_inds : numpy.ndarray
-        Parameter for WindowDataset.
-        Indices of each window in the dataset. The value at x[0]
-        represents the start index of the first window; using that
-        value, we can index into source_ids to get the path
-        of the spectrogram file to load, and we can index into
-        source_inds to index into the spectrogram itself
-        and get the window.
-        Default is None.
     val_step : int
         Step on which to estimate accuracy using validation set.
         If val_step is n, then validation is carried out every time
