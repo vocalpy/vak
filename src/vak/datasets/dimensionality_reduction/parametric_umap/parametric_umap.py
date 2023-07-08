@@ -78,65 +78,7 @@ def get_graph_elements(graph, n_epochs):
     return graph, epochs_per_sample, head, tail, weight, n_vertices
 
 
-class UMAPDataset(Dataset):
-    def __init__(self, data, graph, n_epochs=200, transform=None):
-        graph, epochs_per_sample, head, tail, weight, n_vertices = get_graph_elements(graph, n_epochs)
-
-        self.edges_to_exp, self.edges_from_exp = (
-            np.repeat(head, epochs_per_sample.astype("int")),
-            np.repeat(tail, epochs_per_sample.astype("int")),
-        )
-        shuffle_mask = np.random.permutation(np.arange(len(self.edges_to_exp)))
-        self.edges_to_exp = self.edges_to_exp[shuffle_mask].astype(np.int64)
-        self.edges_from_exp = self.edges_from_exp[shuffle_mask].astype(np.int64)
-        self.data = data
-        self.transform = transform
-
-    def __len__(self):
-        return int(self.data.shape[0])
-
-    def __getitem__(self, index):
-        edges_to_exp = self.data[self.edges_to_exp[index]]
-        edges_from_exp = self.data[self.edges_from_exp[index]]
-        if self.transform:
-            edges_to_exp = self.transform(edges_to_exp)
-            edges_from_exp = self.transform(edges_from_exp)
-        return (edges_to_exp, edges_from_exp)
-
-    @classmethod
-    def from_dataset_path(cls,
-                          dataset_path,
-                          split,
-                          n_neighbors=10,
-                          metric='Euclidean',
-                          random_state=None,
-                          n_epochs=200,
-                          transform=None):
-        dataset_path = pathlib.Path(dataset_path)
-        metadata = vak.datasets.dimensionality_reduction.Metadata.from_dataset_path(dataset_path)
-
-        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-        dataset_df = pd.read_csv(dataset_csv_path)
-        split_df = dataset_df[dataset_df.split == split]
-
-        split_path = dataset_path / split
-
-        data = np.stack(
-            [
-                np.load(dataset_path / spect_path) for spect_path in split_df.spect_path.values
-            ]
-        )
-        graph = get_umap_graph(data, n_neighbors=n_neighbors, metric=metric, random_state=random_state)
-
-        return cls(
-            data,
-            graph,
-            n_epochs,
-            transform=transform,
-        )
-
-
-class UMAPDataset(Dataset):
+class ParametricUMAPDataset(Dataset):
     def __init__(self, data, graph, n_epochs=200, transform=None):
         graph, epochs_per_sample, head, tail, weight, n_vertices = get_graph_elements(graph, n_epochs)
 
