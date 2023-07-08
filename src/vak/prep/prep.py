@@ -4,6 +4,7 @@ import pathlib
 from . import (
     constants,
 )
+from .dimensionality_reduction import prep_dimensionality_reduction_dataset
 from .frame_classification import prep_frame_classification_dataset
 
 
@@ -30,6 +31,7 @@ def prep(
     num_replicates: int | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
+    context_s: float = 0.015,
 ):
     """Prepare datasets for use with neural network models.
 
@@ -209,6 +211,26 @@ def prep(
             num_replicates,
             spect_key,
             timebins_key,
+        )
+        return dataset_df, dataset_path
+    elif dataset_type == "dimensionality reduction":
+        dataset_df, dataset_path = prep_dimensionality_reduction_dataset(
+            data_dir,
+            purpose,
+            output_dir,
+            audio_format,
+            spect_params,
+            annot_format,
+            annot_file,
+            labelset,
+            context_s,
+            train_dur,
+            val_dur,
+            test_dur,
+            train_set_durs,
+            num_replicates,
+            spect_key=spect_key,
+            timebins_key=timebins_key,
         )
         return dataset_df, dataset_path
     else:
