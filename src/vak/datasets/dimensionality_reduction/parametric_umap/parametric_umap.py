@@ -79,7 +79,7 @@ def get_graph_elements(graph, n_epochs):
 
 
 class ParametricUMAPDataset(Dataset):
-    def __init__(self, data, graph, n_epochs=200, transform=None):
+    def __init__(self, data, graph, dataset_df, n_epochs=200, transform=None):
         graph, epochs_per_sample, head, tail, weight, n_vertices = get_graph_elements(graph, n_epochs)
 
         self.edges_to_exp, self.edges_from_exp = (
@@ -89,8 +89,14 @@ class ParametricUMAPDataset(Dataset):
         shuffle_mask = np.random.permutation(np.arange(len(self.edges_to_exp)))
         self.edges_to_exp = self.edges_to_exp[shuffle_mask].astype(np.int64)
         self.edges_from_exp = self.edges_from_exp[shuffle_mask].astype(np.int64)
+
         self.data = data
+        self.dataset_df = dataset_df
         self.transform = transform
+
+    @property
+    def duration(self):
+        return self.dataset_df['duration'].sum()
 
     def __len__(self):
         return int(self.data.shape[0])
@@ -137,6 +143,7 @@ class ParametricUMAPDataset(Dataset):
         return cls(
             data,
             graph,
+            split_df,
             n_epochs,
             transform=transform,
         )
