@@ -147,18 +147,14 @@ def save_spect(spect_to_save: SpectToSave, output_dir: str | pathlib.Path) -> st
 
 
 @dask.delayed
-def pad_spectrogram(record: tuple, pad_length: float):
-    """Pads a spectrogram to being a certain length
+def pad_spectrogram(record: tuple, pad_length: float) -> None:
+    """Pads a spectrogram to a specified length on the left and right sides.
+    Spectrogram is saved again after padding.
 
     Parameters
     ----------
     record : tuple
-    pad_length :
-
-    Returns
-    -------
-    spect_padded : numpy.ndarray
-        With padding of length ``pad_length`` added on left and right sides.
+    pad_length : int
     """
     spect_path = record[0]  # 'spect_path'
     spect = np.load(spect_path)
@@ -169,6 +165,7 @@ def pad_spectrogram(record: tuple, pad_length: float):
     spect_padded = np.pad(
         spect, [(0, 0), (pad_left, pad_right)], "constant", constant_values=0
     )
+    np.save(spect_path, spect_padded)
 
 
 def abspath(a_path):
