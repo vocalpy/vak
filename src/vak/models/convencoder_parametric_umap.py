@@ -54,8 +54,8 @@ class ConvEncoderParametricUMAP:
        https://direct.mit.edu/neco/article/33/11/2881/107068.
 
     """
-    network = {'encoder': nets.ConvEncoder, 'decoder': None}
-    loss = nn.loss.umap_loss
+    network = {'encoder': nets.ConvEncoder}
+    loss = nn.UmapLoss
     optimizer = torch.optim.AdamW
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
