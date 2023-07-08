@@ -52,7 +52,7 @@ class ParametricUMAPModel(base.Model):
         super().__init__(network=network, loss=loss,
                          optimizer=optimizer, metrics=metrics)
         self.encoder = network['encoder']
-        self.decoder = network['decoder']
+        self.decoder = network.get('decoder', None)
         self.beta = beta  # weight for reconstruction loss
         self._a, self._b = find_ab_params(1.0, min_dist)
         self.negative_sample_rate = negative_sample_rate
