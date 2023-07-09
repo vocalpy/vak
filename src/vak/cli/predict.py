@@ -54,7 +54,6 @@ def predict(toml_path):
         labelmap_path=cfg.predict.labelmap_path,
         window_size=cfg.dataloader.window_size,
         num_workers=cfg.predict.num_workers,
-        spect_key=cfg.spect_params.spect_key,
         timebins_key=cfg.spect_params.timebins_key,
         spect_scaler_path=cfg.predict.spect_scaler_path,
         device=cfg.predict.device,
