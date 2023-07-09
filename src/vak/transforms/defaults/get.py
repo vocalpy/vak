@@ -8,7 +8,7 @@ from . import (
 from ... import models
 
 
-def get_defaults(
+def get_default_transform(
     model_name: str,
     mode: str,
     transform_kwargs: dict,
