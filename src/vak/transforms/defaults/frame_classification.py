@@ -199,6 +199,22 @@ def get_default_frame_classification_transform(
     ----------
     mode : str
     transform_kwargs : dict
+        A dict with the following key-value pairs:
+            spect_standardizer : vak.transforms.StandardizeSpect
+                instance that has already been fit to dataset, using fit_df method.
+                Default is None, in which case no standardization transform is applied.
+            window_size : int
+                width of window in number of elements. Argument to PadToWindow transform.
+            padval : float
+                value to pad with. Added to end of array, the "right side" if 2-dimensional.
+                Argument to PadToWindow transform. Default is 0.
+            return_padding_mask : bool
+                if True, the dictionary returned by ItemTransform classes will include
+                a boolean vector to use for cropping back down to size before padding.
+                padding_mask has size equal to width of padded array, i.e. original size
+                plus padding at the end, and has values of 1 where
+                columns in padded are from the original array,
+                and values of 0 where columns were added for padding.
 
     Returns
     -------
