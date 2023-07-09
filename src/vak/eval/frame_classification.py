@@ -144,6 +144,7 @@ def eval_frame_classification_model(
         labelmap = json.load(f)
 
     item_transform = transforms.defaults.get_default_transform(
+        model_name,
         "eval",
         transform_kwargs=dict(
             spect_standardizer=spect_standardizer,
