@@ -32,7 +32,7 @@ def make_learncurve_splits_from_dataset_df(
     """Make splits for a learning curve
     from a dataframe representing the entire dataset.
 
-    Uses :func:`vak.prep.split.dataframe` to make
+    Uses :func:`vak.prep.split.frame_classification_dataframe` to make
     splits/subsets of the training data
     from ``dataset_df``, and then uses
     :func:`vak.prep.frame_classification.dataset_arrays.make_npy_files_for_each_split`
@@ -101,7 +101,7 @@ def make_learncurve_splits_from_dataset_df(
                 train_dur, replicate_num
             )
 
-            train_dur_replicate_df = split.dataframe(
+            train_dur_replicate_df = split.frame_classification_dataframe(
                 # copy to avoid mutating original train_split_df
                 train_split_df.copy(), dataset_path, train_dur=train_dur, labelset=labelset
             )
