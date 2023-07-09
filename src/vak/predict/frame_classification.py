@@ -149,11 +149,13 @@ def predict_with_frame_classification_model(
         logger.info(f"Not loading SpectScaler, no path was specified")
         spect_standardizer = None
 
-    item_transform = transforms.get_defaults(
+    item_transform = transforms.defaults.get_default_transform(
         "predict",
-        spect_standardizer,
-        window_size=window_size,
-        return_padding_mask=True,
+        transform_kwargs=dict(
+            spect_standardizer=spect_standardizer,
+            window_size=window_size,
+            return_padding_mask=True,
+        )
     )
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
