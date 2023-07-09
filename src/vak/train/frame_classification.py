@@ -236,7 +236,7 @@ def train_frame_classification_model(
             )
         spect_standardizer = None
     transform, target_transform = transforms.defaults.get_default_transform(
-        "train", transform_kwargs={'spect_standardizer': spect_standardizer}
+        model_name, "train", transform_kwargs={'spect_standardizer': spect_standardizer}
     )
 
     train_dataset = WindowDataset.from_dataset_path(
@@ -259,6 +259,7 @@ def train_frame_classification_model(
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if val_step:
         item_transform = transforms.defaults.get_default_transform(
+            model_name,
             "eval",
             transform_kwargs=dict(
                 spect_standardizer=spect_standardizer,
