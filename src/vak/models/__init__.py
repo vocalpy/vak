@@ -2,6 +2,7 @@ from . import (
     base,
     decorator,
     definition,
+    registry,
 )
 from .base import Model
 from .convencoder_parametric_umap import ConvEncoderParametricUMAP
@@ -23,6 +24,7 @@ __all__ = [
     "get",
     "Model",
     "ParametricUMAPModel",
+    "registry",
     "TeenyTweetyNet",
     "TweetyNet",
 ]
