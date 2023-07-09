@@ -1,6 +1,6 @@
-"""default item transforms used with the different command-line interface commands
+"""Default transforms for frame classification models.
 
-"item" transforms because they apply transforms to input parameters
+These are "item" transforms because they apply transforms to input parameters
 and then return them in an "item" (dictionary)
 that is turn returned by the __getitem__ method of a vak.FramesDataset.
 Having the transform return a dictionary makes it possible to avoid
@@ -8,13 +8,17 @@ coupling the FramesDataset __getitem__ implementation to the transforms
 needed for specific neural network models, e.g., whether the returned
 output includes a mask to crop off padding that was added.
 """
+from __future__ import annotations
+
+from typing import Callable
+
 import torchvision.transforms
 
-from . import transforms as vak_transforms
+from .. import transforms as vak_transforms
 
 
 class TrainItemTransform:
-    """default transform used when training models"""
+    """Default transform used when training frame classification models"""
 
     def __init__(
         self,
@@ -55,7 +59,7 @@ class TrainItemTransform:
 
 
 class EvalItemTransform:
-    """default transform used when evaluating models
+    """Default transform used when evaluating frame classification models.
 
     Returned item includes "source" spectrogram reshaped into a stack of windows,
     with padded added to make reshaping possible, and annotation also padded and
@@ -123,7 +127,8 @@ class EvalItemTransform:
 
 
 class PredictItemTransform:
-    """default transform used when using trained models to make predictions.
+    """Default transform used when using trained frame classification models
+    to make predictions.
 
     Returned item includes "source" spectrogram reshaped into a stack of windows,
     with padded added to make reshaping possible.
@@ -185,42 +190,21 @@ class PredictItemTransform:
         return item
 
 
-def get_defaults(
-    mode,
-    spect_standardizer=None,
-    window_size=None,
-    padval=0.0,
-    return_padding_mask=False,
-):
-    """get default transforms
+def get_default_frame_classification_transform(
+        mode: str, transform_kwargs: dict
+) -> tuple[Callable, Callable] | Callable:
+    """Get default transform for frame classification model.
 
     Parameters
     ----------
     mode : str
-        one of {'train', 'eval', 'predict'}. Determines set of transforms.
-    spect_standardizer : vak.transforms.StandardizeSpect
-        instance that has already been fit to dataset, using fit_df method.
-        Default is None, in which case no standardization transform is applied.
-    window_size : int
-        width of window in number of elements. Argument to PadToWindow transform.
-    padval : float
-        value to pad with. Added to end of array, the "right side" if 2-dimensional.
-        Argument to PadToWindow transform. Default is 0.
-    return_padding_mask : bool
-        if True, the dictionary returned by ItemTransform classes will include
-        a boolean vector to use for cropping back down to size before padding.
-        padding_mask has size equal to width of padded array, i.e. original size
-        plus padding at the end, and has values of 1 where
-        columns in padded are from the original array,
-        and values of 0 where columns were added for padding.
+    transform_kwargs : dict
 
     Returns
     -------
-    transform, target_transform : callable
-        one or more vak transforms to be applied to inputs x and, during training, the target y.
-        If more than one transform, they are combined into an instance of torchvision.transforms.Compose.
-        Note that when mode is 'predict', the target transform is None.
+
     """
+    spect_standardizer = transform_kwargs.get('spect_standardizer', None)
     # regardless of mode, transform always starts with StandardizeSpect, if used
     if spect_standardizer is not None:
         if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
@@ -249,20 +233,19 @@ def get_defaults(
     elif mode == "predict":
         item_transform = PredictItemTransform(
             spect_standardizer=spect_standardizer,
-            window_size=window_size,
-            padval=padval,
-            return_padding_mask=return_padding_mask,
+            window_size=transform_kwargs['window_size'],
+            padval=transform_kwargs['padval'],
+            return_padding_mask=transform_kwargs['return_padding_mask'],
         )
         return item_transform
 
     elif mode == "eval":
         item_transform = EvalItemTransform(
             spect_standardizer=spect_standardizer,
-            window_size=window_size,
-            padval=padval,
-            return_padding_mask=return_padding_mask,
+            window_size=transform_kwargs['window_size'],
+            padval=transform_kwargs['padval'],
+            return_padding_mask=transform_kwargs['return_padding_mask'],
         )
         return item_transform
-
     else:
         raise ValueError(f"invalid mode: {mode}")
