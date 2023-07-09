@@ -143,11 +143,13 @@ def eval_frame_classification_model(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    item_transform = transforms.get_defaults(
+    item_transform = transforms.defaults.get_default_transform(
         "eval",
-        spect_standardizer,
-        window_size=window_size,
-        return_padding_mask=True,
+        transform_kwargs=dict(
+            spect_standardizer=spect_standardizer,
+            window_size=window_size,
+            return_padding_mask=True,
+        )
     )
 
     val_dataset = FramesDataset.from_dataset_path(
