@@ -235,7 +235,9 @@ def train_frame_classification_model(
             "will not standardize spectrograms",
             )
         spect_standardizer = None
-    transform, target_transform = transforms.get_defaults("train", spect_standardizer)
+    transform, target_transform = transforms.defaults.get_default_transform(
+        "train", transform_kwargs={'spect_standardizer': spect_standardizer}
+    )
 
     train_dataset = WindowDataset.from_dataset_path(
         dataset_path=dataset_path,
@@ -256,11 +258,13 @@ def train_frame_classification_model(
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if val_step:
-        item_transform = transforms.get_defaults(
+        item_transform = transforms.defaults.get_default_transform(
             "eval",
-            spect_standardizer,
-            window_size=window_size,
-            return_padding_mask=True,
+            transform_kwargs=dict(
+                spect_standardizer=spect_standardizer,
+                window_size=window_size,
+                return_padding_mask=True,
+            )
         )
         val_dataset = FramesDataset.from_dataset_path(
             dataset_path=dataset_path,
