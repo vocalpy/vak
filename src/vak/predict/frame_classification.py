@@ -150,6 +150,7 @@ def predict_with_frame_classification_model(
         spect_standardizer = None
 
     item_transform = transforms.defaults.get_default_transform(
+        model_name,
         "predict",
         transform_kwargs=dict(
             spect_standardizer=spect_standardizer,
