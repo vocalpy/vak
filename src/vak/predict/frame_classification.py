@@ -187,7 +187,7 @@ def predict_with_frame_classification_model(
     annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
-    metadata = datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.metadata.Metadata.from_dataset_path(dataset_path)
     frame_dur = metadata.frame_dur
     logger.info(
         f"Duration of a frame in dataset, in seconds: {frame_dur}",
