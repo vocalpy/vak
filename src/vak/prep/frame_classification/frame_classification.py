@@ -387,6 +387,11 @@ def prep_frame_classification_dataset(
     # ---- save metadata -----------------------------------------------------------------------------------------------
     frame_dur = validators.validate_and_get_frame_dur(dataset_df, input_type)
 
+    if input_type == 'spect' and spect_format != 'npz':
+        # then change to npz since we canonicalize data so it's always npz arrays
+        # We need this to be correct for other functions, e.g. predict when it loads spectrogram files
+        spect_format = 'npz'
+
     metadata = datasets.frame_classification.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
         frame_dur=frame_dur,
