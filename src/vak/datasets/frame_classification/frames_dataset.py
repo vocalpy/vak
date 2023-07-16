@@ -52,7 +52,7 @@ class FramesDataset:
         if input_type == 'audio':
             self.source_paths = self.dataset_df['audio_path'].values
         elif input_type == 'spect':
-            self.source_paths = self.dataset_df['audio_path'].values
+            self.source_paths = self.dataset_df['spect_path'].values
         else:
             raise ValueError(
                 f"Invalid `input_type`: {input_type}. Must be one of {{'audio', 'spect'}}."
