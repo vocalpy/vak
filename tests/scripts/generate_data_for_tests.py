@@ -337,6 +337,9 @@ def generate_test_data(
                     # we run `learncurve` so there's a `previous_run_path` to test;
                     # skip all other commands
                     for config_path in command_config_paths:
+                        print(
+                            f"n\Running 'vak {command}'  with model '{model}', using config: {config_path.name}"
+                        )
                         vak.cli.cli.cli(command, config_path)
 
                 elif command in ("predict", "eval", "train_continue"):
@@ -351,6 +354,10 @@ def generate_test_data(
                         if config_path.name.startswith(model) and command in config_path.name
                     ]
                     for config_path in command_config_paths:
+                        for config_path in command_config_paths:
+                            print(
+                                f"\nRunning 'vak {command}' with model '{model}', using config: {config_path.name}"
+                            )
                         vak.cli.cli.cli(command, config_path)
 
 
