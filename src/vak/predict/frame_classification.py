@@ -283,7 +283,7 @@ def predict_with_frame_classification_model(
         labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
             y_pred,
             labelmap=labelmap,
-            t=frame_times,
+            frame_times=frame_times,
         )
         if labels is None and onsets_s is None and offsets_s is None:
             # handle the case when all time bins are predicted to be unlabeled
