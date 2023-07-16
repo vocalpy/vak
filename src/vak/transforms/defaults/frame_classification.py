@@ -250,8 +250,8 @@ def get_default_frame_classification_transform(
         item_transform = PredictItemTransform(
             spect_standardizer=spect_standardizer,
             window_size=transform_kwargs['window_size'],
-            padval=transform_kwargs['padval'],
-            return_padding_mask=transform_kwargs['return_padding_mask'],
+            padval=transform_kwargs.get('padval', 0.0),
+            return_padding_mask=transform_kwargs.get('return_padding_mask', True),
         )
         return item_transform
 
