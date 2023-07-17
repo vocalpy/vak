@@ -115,7 +115,7 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_predict_audio_cbin_annot_notmat.toml",
+      "use_dataset_from_config": "TweetyNet_predict_audio_cbin_annot_notmat.toml"
     },
     {
       "filename": "TeenyTweetyNet_predict_audio_wav_annot_birdsongrec.toml",
@@ -160,7 +160,7 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml",
+      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
     },
     {
       "filename": "TeenyTweetyNet_train_continue_audio_wav_annot_birdsongrec.toml",
