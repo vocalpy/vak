@@ -35,37 +35,35 @@ def copy_config_files():
     return copied_configs
 
 
-def add_dataset_path_from_prepped_configs(target_configs, target_model, source_configs, source_model):
-    for target_config_path in target_configs:
-        suffix_to_match = target_config_path.name.replace(target_model, '')  # remove model name at start of config name
-        source_config_path = [
-            source_config_path
-            for source_config_path in source_configs
-            if source_config_path.name.replace(source_model, '') == suffix_to_match
-        ]
-        source_config_path = source_config_path[0]
-        command = [
-            command
-            for command in COMMANDS
-            if command in source_config_path.name
-        ][0]
-        if command == 'train_continue':
-            section = 'TRAIN'
-        else:
-            section = command.upper()
-        print(
-            f"Re-using prepped dataset from model '{source_model}' config:\n{source_config_path}\n"
-            f"Will use for model '{target_model}' config:\n{target_config_path}"
-        )
+def add_dataset_path_from_prepped_configs():
+    """This helper function goes through all configs in
+    :data:`vaktestdata.constants.CONFIG_METADATA`
+    and for any that have a filename for the attribute
+    "use_dataset_from_config", it sets the option 'dataset_path'
+    in the config file that the metadata corresponds to
+    to the same option from the file specified
+    by the attribute.
+    """
+    configs_to_change = [
+        config_metadata
+        for config_metadata in constants.CONFIG_METADATA
+        if config_metadata.use_dataset_from_config is not None
+    ]
 
-        with source_config_path.open("r") as fp:
-            source_config_toml = toml.load(fp)
-        dataset_path = source_config_toml[section]['dataset_path']
-        with target_config_path.open("r") as fp:
-            target_config_toml = toml.load(fp)
-        target_config_toml[section]['dataset_path'] = dataset_path
-        with target_config_path.open("w") as fp:
-            toml.dump(target_config_toml, fp)
+    for config_metadata in configs_to_change:
+        config_to_change_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
+        section = config_metadata.config_type
+
+        config_dataset_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.use_dataset_from_config
+
+        with config_dataset_path.open("r") as fp:
+            dataset_config_toml = toml.load(fp)
+        dataset_path = dataset_config_toml[section]['dataset_path']
+        with config_to_change_path.open("r") as fp:
+            config_to_change_toml = toml.load(fp)
+        config_to_change_toml[section]['dataset_path'] = dataset_path
+        with config_to_change_path.open("w") as fp:
+            toml.dump(config_to_change_toml, fp)
 
 
 def fix_options_in_configs(config_paths, model, command, single_train_result=True):
