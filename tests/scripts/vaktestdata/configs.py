@@ -14,6 +14,13 @@ def copy_config_files():
     the copied files are the ones that get modified when this setup script runs,
     while the originals in this directory remain unchanged.
     """
+    print(
+        "Copying config files run to generate test data from ./tests/data_for_tests/configs to "
+        "./tests/data_for_tests/generated/configs"
+    )
+
+    constants.GENERATED_TEST_CONFIGS_ROOT.mkdir(parents=True)
+
     copied_configs = []
 
     for toml_path in constants.CONFIGS_TO_RUN:
