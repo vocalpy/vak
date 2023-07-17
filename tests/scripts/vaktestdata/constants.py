@@ -1,0 +1,68 @@
+"""Constants used by vaktestdata and scripts that rely on it."""
+import pathlib
+
+
+HERE = pathlib.Path(__file__).parent
+TEST_DATA_ROOT = HERE / ".." / ".." / "data_for_tests"
+GENERATED_TEST_DATA = TEST_DATA_ROOT / "generated"
+GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA / "configs"
+
+# convention is that all the config.toml files in tests/data_for_tests/configs
+# that should be run when generating test data
+# have filenames of the form `{MODEL}_{COMMAND}_audio_{FORMAT}_annot_{FORMAT}.toml'
+# **or** `{MODEL}_{COMMAND}_spect_{FORMAT}_annot_{FORMAT}_config.ini'
+# e.g., 'TweetyNet_learncurve_audio_cbin_annot_notmat.toml'.
+# Below, we iterate over model names
+# so glob doesn't pick up static configs that are just used for testing,
+# like 'invalid_option_config.toml`
+TEST_CONFIGS_ROOT = TEST_DATA_ROOT.joinpath("configs")
+CONFIGS_TO_RUN = []
+
+MODELS_PREP = ("TweetyNet",)
+MODELS_REUSE_PREP = {
+    "TeenyTweetyNet": "TweetyNet"
+}
+
+MODELS_RESULTS = (
+    "TeenyTweetyNet",
+    "TweetyNet",
+)
+for model in MODELS_RESULTS:
+    CONFIGS_TO_RUN.extend(sorted(TEST_CONFIGS_ROOT.glob(f"{model}*.toml")))
+
+# the sub-directories that will get made inside `./tests/data_for_tests/generated`
+TOP_LEVEL_DIRS = [
+    "prep",
+    "results",
+]
+
+# these sub-dirs get made in each of the TOP_LEVEL_DIRS (except for 'configs')
+COMMAND_DIRS = [
+    "eval",
+    "learncurve",
+    "predict",
+    "train",
+]
+
+# these sub-dirs get made in each of the COMMAND_DIRS (except for 'configs')
+DATA_DIRS = [
+    "audio_cbin_annot_notmat",
+    "audio_wav_annot_birdsongrec",
+    "spect_mat_annot_yarden",
+]
+
+# need to run 'train' config before we run 'predict'
+# so we can add checkpoints, etc., from training to predict
+COMMANDS = (
+    "train",
+    "learncurve",
+    "eval",
+    "predict",
+    "train_continue",
+)
+
+GENERATE_TEST_DATA_STEPS = (
+    'prep',
+    'results',
+    'all',
+)
