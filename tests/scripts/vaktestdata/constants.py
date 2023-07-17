@@ -1,9 +1,18 @@
 """Constants used by vaktestdata and scripts that rely on it."""
+import json
 import pathlib
 
+from .config_metadata import ConfigMetadata
 
 HERE = pathlib.Path(__file__).parent
 TEST_DATA_ROOT = HERE / ".." / ".." / "data_for_tests"
+CONFIG_METADATA_JSON_PATH = TEST_DATA_ROOT / "configs" / "configs.json"
+with CONFIG_METADATA_JSON_PATH.open('r') as fp:
+    CONFIG_METADATA_LIST = json.load(fp)['config_metadata']
+CONFIG_METADATA = [
+    ConfigMetadata(**config_metadata_dict)
+    for config_metadata_dict in CONFIG_METADATA_LIST
+]
 GENERATED_TEST_DATA = TEST_DATA_ROOT / "generated"
 GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA / "configs"
 
