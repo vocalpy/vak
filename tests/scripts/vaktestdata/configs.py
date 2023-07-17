@@ -1,4 +1,6 @@
 """Helper functions for moving and modifying configs"""
+import logging
+import pathlib
 import shutil
 
 # TODO: use tomli
@@ -7,6 +9,8 @@ import toml
 from . import constants
 
 
+logger = logging.getLogger(__name__)
+
 
 def copy_config_files():
     """copy config files from setup to data_for_tests/configs
@@ -14,12 +18,16 @@ def copy_config_files():
     the copied files are the ones that get modified when this setup script runs,
     while the originals in this directory remain unchanged.
     """
-    print(
+    logger.info(
+        f"Making directory to copy config files:\n{constants.GENERATED_TEST_CONFIGS_ROOT}"
+    )
+    constants.GENERATED_TEST_CONFIGS_ROOT.mkdir(parents=True)
+
+    logger.info(
         "Copying config files run to generate test data from ./tests/data_for_tests/configs to "
-        "./tests/data_for_tests/generated/configs"
+        f"{constants.GENERATED_TEST_CONFIGS_ROOT}"
     )
 
-    constants.GENERATED_TEST_CONFIGS_ROOT.mkdir(parents=True)
 
     copied_configs = []
 
@@ -28,7 +36,7 @@ def copy_config_files():
             raise FileNotFoundError(f"{toml_path} not found")
 
         dst = constants.GENERATED_TEST_CONFIGS_ROOT.joinpath(toml_path.name)
-        print(f"\tcopying to {dst}")
+        logger.info(f"\tCopying '{toml_path.name}'")
         shutil.copy(src=toml_path, dst=dst)
         copied_configs.append(dst)
 
@@ -52,7 +60,10 @@ def add_dataset_path_from_prepped_configs():
 
     for config_metadata in configs_to_change:
         config_to_change_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
-        section = config_metadata.config_type
+        if config_metadata.config_type == 'train_continue':
+            section = 'TRAIN'
+        else:
+            section = config_metadata.config_type.upper()
 
         config_dataset_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.use_dataset_from_config
 
@@ -105,7 +116,7 @@ def fix_options_in_configs(config_paths, model, command, single_train_result=Tru
         # which are checkpoint_path, spect_scaler_path, and labelmap_path
         with train_config_to_use.open("r") as fp:
             train_config_toml = toml.load(fp)
-        root_results_dir = Path(train_config_toml["TRAIN"]["root_results_dir"])
+        root_results_dir = pathlib.Path(train_config_toml["TRAIN"]["root_results_dir"])
         results_dir = sorted(root_results_dir.glob("results_*"))
         if len(results_dir) > 1:
             if single_train_result:
