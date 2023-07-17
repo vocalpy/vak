@@ -179,6 +179,15 @@
       "spect_format": "mat",
       "annot_format": "yarden",
       "use_dataset_from_config": "TweetyNet_train_continue_spect_mat_annot_yarden.toml"
+    },
+    {
+      "filename": "ConvEncoderUMAP_train_audio_cbin_annot_notmat.toml",
+      "model": "ConvEncoderUMAP",
+      "config_type": "train",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat",
+      "use_dataset_from_config": null
     }
   ]
 }
