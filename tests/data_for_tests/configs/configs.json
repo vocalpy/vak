@@ -1,5 +1,5 @@
 {
-  "configs": [
+  "config_metadata": [
     {
       "filename": "TweetyNet_eval_audio_cbin_annot_notmat.toml",
       "model": "TweetyNet",
@@ -177,7 +177,8 @@
       "config_type": "train_continue",
       "audio_format": null,
       "spect_format": "mat",
-      "annot_format": "yarden"
+      "annot_format": "yarden",
+      "use_dataset_from_config": "TweetyNet_train_continue_spect_mat_annot_yarden.toml"
     }
   ]
 }
