@@ -2,7 +2,7 @@
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032312"
-output_dir = "./tests/data_for_tests/generated/prep/learncurve/audio_cbin_annot_notmat/teenytweetynet"
+output_dir = "./tests/data_for_tests/generated/prep/learncurve/audio_cbin_annot_notmat/TeenyTweetyNet"
 audio_format = "cbin"
 annot_format = "notmat"
 labelset = "iabcdefghjk"
@@ -32,7 +32,7 @@ ckpt_step = 200
 patience = 3
 num_workers = 2
 device = "cuda"
-root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/teenytweetynet"
+root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/TeenyTweetyNet"
 
 [TeenyTweetyNet.optimizer]
 lr = 0.001

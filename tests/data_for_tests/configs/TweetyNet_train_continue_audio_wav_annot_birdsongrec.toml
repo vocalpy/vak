@@ -3,7 +3,7 @@ dataset_type = "frame classification"
 input_type = "spect"
 labelset = "012345678"
 data_dir = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0"
-output_dir = "./tests/data_for_tests/generated/prep/train/audio_wav_annot_birdsongrec/tweetynet"
+output_dir = "./tests/data_for_tests/generated/prep/train/audio_wav_annot_birdsongrec/TweetyNet"
 audio_format = "wav"
 annot_format = "birdsong-recognition-dataset"
 annot_file = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0/Annotation.xml"
@@ -31,9 +31,9 @@ ckpt_step = 200
 patience = 4
 num_workers = 4
 device = "cuda"
-root_results_dir = "./tests/data_for_tests/generated/results/train/audio_wav_annot_birdsongrec/tweetynet"
-checkpoint_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
-spect_scaler_path = "~/Documents/repos/coding/birdsong/tweetynet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
+root_results_dir = "./tests/data_for_tests/generated/results/train/audio_wav_annot_birdsongrec/TweetyNet"
+checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 
 [TweetyNet.optimizer]
 lr = 0.001

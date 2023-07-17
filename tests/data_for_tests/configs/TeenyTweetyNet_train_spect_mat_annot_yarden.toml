@@ -2,7 +2,7 @@
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/spect"
-output_dir = "./tests/data_for_tests/generated/prep/train/spect_mat_annot_yarden/teenytweetynet"
+output_dir = "./tests/data_for_tests/generated/prep/train/spect_mat_annot_yarden/TeenyTweetyNet"
 spect_format = "mat"
 annot_format = "yarden"
 annot_file = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/llb3_annot_subset.mat"
@@ -30,7 +30,7 @@ ckpt_step = 200
 patience = 3
 num_workers = 2
 device = "cuda"
-root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/teenytweetynet"
+root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/TeenyTweetyNet"
 
 [TeenyTweetyNet.optimizer]
 lr = 0.001

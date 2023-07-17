@@ -2,7 +2,7 @@
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0"
-output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_birdsongrec/teenytweetynet"
+output_dir = "./tests/data_for_tests/generated/prep/predict/audio_wav_annot_birdsongrec/TeenyTweetyNet"
 audio_format = "wav"
 
 [SPECT_PARAMS]
@@ -23,7 +23,7 @@ model = "TeenyTweetyNet"
 batch_size = 4
 num_workers = 2
 device = "cuda"
-output_dir = "./tests/data_for_tests/generated/results/predict/audio_wav_annot_birdsongrec/teenytweetynet"
+output_dir = "./tests/data_for_tests/generated/results/predict/audio_wav_annot_birdsongrec/TeenyTweetyNet"
 annot_csv_filename = "Bird0.annot.csv"
 
 [TeenyTweetyNet.optimizer]
