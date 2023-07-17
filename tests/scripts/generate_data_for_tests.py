@@ -53,264 +53,29 @@ and corresponding results will be in
 The directories will have names with timestamps like `prep_20201015_1115`.
 Those are the generated directories we want to remove.
 """
-import argparse
-from pathlib import Path
-import shutil
+import logging
+import sys
 import warnings
 
+# Do this here to suppress warnings before we import vak
 from numba.core.errors import NumbaDeprecationWarning
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
-
-import toml
 import vak
 
-
-HERE = Path(__file__).parent
-TEST_DATA_ROOT = HERE / ".." / "data_for_tests"
-GENERATED_TEST_DATA = TEST_DATA_ROOT / "generated"
-GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA / "configs"
-
-# convention is that all the config.toml files in tests/data_for_tests/configs
-# that should be run when generating test data
-# have filenames of the form `{MODEL}_{COMMAND}_audio_{FORMAT}_annot_{FORMAT}.toml'
-# **or** `{MODEL}_{COMMAND}_spect_{FORMAT}_annot_{FORMAT}_config.ini'
-# e.g., 'tweetynet_learncurve_audio_cbin_annot_notmat.toml'.
-# Below, we iterate over model names
-# so glob doesn't pick up static configs that are just used for testing,
-# like 'invalid_option_config.toml`
-TEST_CONFIGS_ROOT = TEST_DATA_ROOT.joinpath("configs")
-CONFIGS_TO_RUN = []
-
-MODELS_PREP = ("tweetynet")
-MODELS_REUSE_PREP = {
-    "teenytweetynet": "tweetynet"
-}
-
-MODELS_RESULTS = (
-    "teenytweetynet",
-    "tweetynet"
-)
-for model in MODELS_RESULTS:
-    CONFIGS_TO_RUN.extend(sorted(TEST_CONFIGS_ROOT.glob(f"{model}*.toml")))
-
-# the sub-directories that will get made inside `./tests/data_for_tests/generated`
-TOP_LEVEL_DIRS = [
-    "prep",
-    "results",
-]
-
-# these sub-dirs get made in each of the TOP_LEVEL_DIRS (except for 'configs')
-COMMAND_DIRS = [
-    "eval",
-    "learncurve",
-    "predict",
-    "train",
-]
-
-# these sub-dirs get made in each of the COMMAND_DIRS (except for 'configs')
-DATA_DIRS = [
-    "audio_cbin_annot_notmat",
-    "audio_wav_annot_birdsongrec",
-    "spect_mat_annot_yarden",
-]
+import vaktestdata
 
 
-def make_subdirs_in_generated(config_paths):
-    """make sub-directories inside ./tests/data_for_tests/generated
-
-    do this after copying configs,
-    before using those configs to generate results.
-    We use configs to decide which dirs we need to make
-
-    makes three directories in data_for_tests/generated:
-    configs, prep, and results.
-    prep has one sub-directory for every data "type".
-    results does also, but in addition will have sub-directories
-    within those for models.
-    """
-    for top_level_dir in TOP_LEVEL_DIRS:
-        for command_dir in COMMAND_DIRS:
-            for data_dir in DATA_DIRS:
-                if not any(
-                        [f'{command_dir}_{data_dir}' in str(config_path) for config_path in config_paths]
-                ):
-                    continue  # no need to make this dir
-
-                for model in MODELS_RESULTS:
-                    subdir_to_make = (
-                        GENERATED_TEST_DATA / top_level_dir / command_dir / data_dir / model
-                    )
-                    subdir_to_make.mkdir(parents=True)
-
-
-def copy_config_files():
-    """copy config files from setup to data_for_tests/configs
-
-    the copied files are the ones that get modified when this setup script runs,
-    while the originals in this directory remain unchanged.
-    """
-    copied_configs = []
-
-    for toml_path in CONFIGS_TO_RUN:
-        if not toml_path.exists():
-            raise FileNotFoundError(f"{toml_path} not found")
-
-        dst = GENERATED_TEST_CONFIGS_ROOT.joinpath(toml_path.name)
-        print(f"\tcopying to {dst}")
-        shutil.copy(src=toml_path, dst=dst)
-        copied_configs.append(dst)
-
-    return copied_configs
-
-
-def run_prep(config_paths):
-    """run ``vak prep`` to generate data for testing"""
-    for config_path in config_paths:
-        if not config_path.exists():
-            raise FileNotFoundError(f"{config_path} not found")
-        print(
-            f"running vak prep to generate data for tests, using config: {config_path.name}"
-        )
-        vak.cli.prep.prep(toml_path=config_path)
-
-
-def add_dataset_path_from_prepped_configs(target_configs, target_model, source_configs, source_model):
-    for target_config_path in target_configs:
-        suffix_to_match = config_path.name.replace(target_model, '')  # remove model name at start of config name
-        source_config_path = [
-            source_config_path
-            for source_config_path in source_configs
-            if source_config_path.name.replace(source_model, '') == suffix_to_match
-        ]
-        source_config_path = source_config_path[0]
-        command = [
-            command
-            for command in COMMANDS
-            if command in source_config_path.name
-        ][0]
-        if command == 'train_continue':
-            section = 'TRAIN'
-        else:
-            section = command.upper()
-        print(
-            f"Re-using prepped dataset from model '{source_model}' config:\n{source_config_path}\n"
-            f"Will use for model '{target_model}' config:\n{target_config_path}"
-        )
-
-        with source_config_path.open("r") as fp:
-            source_config_toml = toml.load(fp)
-        dataset_path = source_config_toml[section]['dataset_path']
-        with target_config_path.open("r") as fp:
-            target_config_toml = toml.load(fp)
-        target_config_toml[section]['dataset_path'] = dataset_path
-        with target_config_path.open("w") as fp:
-            toml.dump(target_config_toml, fp)
-
-
-def fix_options_in_configs(config_paths, model, command, single_train_result=True):
-    """Fix values assigned to options in predict and eval configs.
-
-    Need to do this because both predict and eval configs have options
-    that can only be assigned *after* running the corresponding `train` config.
-    """
-    if command not in ('eval', 'predict', 'train_continue'):
-        raise ValueError(
-            f'invalid command to fix config options: {command}'
-        )
-    configs_to_fix, train_configs = [], []
-    # split configs into predict/eval/"train_continue" configs and other configs
-    for config_path in config_paths:
-        if command in config_path.name:
-            configs_to_fix.append(config_path)
-        elif 'train' in config_path.name and 'continue' not in config_path.name:
-            train_configs.append(config_path)
-
-    for config_to_fix in configs_to_fix:
-        # figure out which 'train' config corresponds to this 'predict' or 'eval' config
-        # by using 'suffix' of config file names. `train` suffix will match `predict`/'eval' suffix
-        prefix, suffix = config_to_fix.name.split(command)
-        train_config_to_use = []
-        for train_config in train_configs:
-            train_prefix, train_suffix = train_config.name.split("train")
-            if train_prefix.startswith(model) and train_suffix == suffix:
-                train_config_to_use.append(train_config)
-        if len(train_config_to_use) > 1:
-            raise ValueError(
-                f"Did not find just a single train config that matches with '{command}' config:\n"
-                f"{config_to_fix}\n"
-                f"Matches were: {train_config_to_use}"
-            )
-        train_config_to_use = train_config_to_use[0]
-
-        # now use the config to find the results dir and get the values for the options we need to set
-        # which are checkpoint_path, spect_scaler_path, and labelmap_path
-        with train_config_to_use.open("r") as fp:
-            train_config_toml = toml.load(fp)
-        root_results_dir = Path(train_config_toml["TRAIN"]["root_results_dir"])
-        results_dir = sorted(root_results_dir.glob("results_*"))
-        if len(results_dir) > 1:
-            if single_train_result:
-                raise ValueError(
-                    f"Did not find just a single results directory in root_results_dir from train_config:\n"
-                    f"{train_config_to_use}"
-                    f"root_results_dir was: {root_results_dir}"
-                    f'Matches for "results_*" were: {results_dir}'
-                )
-            else:
-                results_dir = results_dir[-1]
-        elif len(results_dir) == 1:
-            results_dir = results_dir[0]
-        else:
-            raise ValueError(
-                f"Did not find a results directory in root_results_dir from train_config:\n"
-                f"{train_config_to_use}"
-                f"root_results_dir was:\n{root_results_dir}"
-                f'Matches for "results_*" were:\n{results_dir}'
-            )
-
-        # these are the only options whose values we need to change
-        # and they are the same for both predict and eval
-        checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
-        if train_config_toml['TRAIN']['normalize_spectrograms']:
-            spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
-        else:
-            spect_scaler_path = None
-        labelmap_path = sorted(results_dir.glob("labelmap.json"))[0]
-
-        # now add these values to corresponding options in predict / eval config
-        with config_to_fix.open("r") as fp:
-            config_toml = toml.load(fp)
-        if command == 'train_continue':
-            section = 'TRAIN'
-        else:
-            section = command.upper()
-        config_toml[section]["checkpoint_path"] = str(checkpoint_path)
-        if spect_scaler_path:
-            config_toml[section]["spect_scaler_path"] = str(spect_scaler_path)
-        else:
-            if 'spect_scaler_path' in config_toml[section]:
-                # remove any existing 'spect_scaler_path' option
-                del config_toml[section]["spect_scaler_path"]
-        if command != 'train_continue':  # train always gets labelmap from dataset dir, not from a config option
-            config_toml[section]["labelmap_path"] = str(labelmap_path)
-        with config_to_fix.open("w") as fp:
-            toml.dump(config_toml, fp)
-
-
-# need to run 'train' config before we run 'predict'
-# so we can add checkpoints, etc., from training to predict
-COMMANDS = (
-    "train",
-    "learncurve",
-    "eval",
-    "predict",
-    "train_continue",
-)
+logger = logging.getLogger()  # 'base' logger
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(formatter)
+logger.addHandler(stream_handler)
+logger.setLevel('INFO')
 
 
 def generate_test_data(
         step: str = 'all',
-        commands=COMMANDS,
+        commands=vaktestdata.constants.COMMANDS,
         single_train_result:bool = True,
 ):
     """Main function that generates all the test data.
@@ -336,52 +101,19 @@ def generate_test_data(
     """
     # need to run `prep` before we run other commands
     if step in ('prep', 'all'):
-        print(
-            "copying config files run to generate test data from ./tests/data_for_tests/configs to "
-            "./tests/data_for_tests/generated/configs"
-        )
-        GENERATED_TEST_CONFIGS_ROOT.mkdir(parents=True)
-        config_paths = copy_config_files()
-
-        print(f"will generate test data from these config files: {config_paths}")
-
-        print(
-            "making sub-directories in ./tests/data_for_tests/generated/ where files generated by `vak` will go"
-        )
-        make_subdirs_in_generated(config_paths)
-
+        config_paths = vaktestdata.configs.copy_config_files()
+        vaktestdata.dirs.make_subdirs_in_generated(config_paths)
         # run prep for some models
-        for model in MODELS_PREP:
-            config_paths_this_model = [
-                        config_path
-                        for config_path in config_paths
-                        if config_path.name.startswith(model)
-                    ]
-            run_prep(config_paths=config_paths_this_model)
+        vaktestdata.prep.run_prep()
         # re-use some of the prepped datasets for other models
         # this makes time to prep all datasets shorter
-        for target_model, source_model in MODELS_REUSE_PREP.items():
-            print(
-                f"Re-using prepped datasets from model '{source_model}' for model '{target_model}'."
-            )
-            config_paths_source_model = [
-                        config_path
-                        for config_path in config_paths
-                        if config_path.name.startswith(source_model_prep)
-                    ]
-            config_paths_target_model = [
-                        config_path
-                        for config_path in config_paths
-                        if config_path.name.startswith(target_model_prep)
-                    ]
-            add_dataset_path_from_prepped_configs(config_paths_target_model, target_model,
-                                                  config_paths_source_model, source_model)
+        vaktestdata.configs.add_dataset_path_from_prepped_configs()
 
     else:
-        config_paths = sorted(GENERATED_TEST_CONFIGS_ROOT.glob('*.toml'))
+        config_paths = sorted(vaktestdata.constants.GENERATED_TEST_CONFIGS_ROOT.glob('*.toml'))
 
     if step in ('results', 'all'):
-        for model in MODELS_RESULTS:
+        for model in vaktestdata.constants.MODELS_RESULTS:
             for command in commands:
                 if command == "prep":
                     continue  # we don't run prep in this code block
@@ -414,7 +146,7 @@ def generate_test_data(
                     # using results from running the corresponding train configs.
                     # this only works if we ran the train configs already,
                     # which we should have because of ordering of COMMANDS constant above
-                    fix_options_in_configs(config_paths, model, command, single_train_result)
+                    vaktestdata.configs.fix_options_in_configs(config_paths, model, command, single_train_result)
                     command_config_paths = [
                         config_path
                         for config_path in config_paths
@@ -428,41 +160,8 @@ def generate_test_data(
                         vak.cli.cli.cli(command, config_path)
 
 
-GENERATE_TEST_DATA_STEPS = (
-    'prep',
-    'results',
-    'all',
-)
-
-
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--step',
-        choices=GENERATE_TEST_DATA_STEPS,
-        help=f"Which step of generating test data to perform, one of: {GENERATE_TEST_DATA_STEPS}",
-        default='all'
-    )
-    parser.add_argument(
-        '--commands',
-        choices=('train', 'learncurve', 'eval', 'predict', 'train_continue'),
-        help=f"Space-separated list of commands to run for 'results' step",
-        nargs="+",
-    )
-    parser.add_argument(
-        '--single-train-result',
-        action = argparse.BooleanOptionalAction,
-        help=(
-            "If --single-train-result, require there be a single results directory "
-            "from any training config when looking for them to use in toher configs. "
-            "If --no-single-train-result, allow multiple and use the most recent."
-        )
-    )
-    return parser
-
-
 if __name__ == "__main__":
-    parser = get_parser()
+    parser = vaktestdata.parser.get_parser()
     args = parser.parse_args()
     generate_test_data(
         step=args.step,
