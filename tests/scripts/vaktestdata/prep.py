@@ -1,10 +1,17 @@
 # Do this here to suppress warnings before we import vak
+import logging
 import warnings
+
 from numba.core.errors import NumbaDeprecationWarning
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+
 import vak
 
 from . import constants
+
+
+logger = logging.getLogger(__name__)
+
 
 def run_prep():
     """Run ``vak prep`` to prepare datasets used with tests.
@@ -24,7 +31,7 @@ def run_prep():
         config_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
         if not config_path.exists():
             raise FileNotFoundError(f"{config_path} not found")
-        print(
+        logger.info(
             f"\nRunning vak prep to generate data for tests, using config:\n{config_path.name}"
         )
         vak.cli.prep.prep(toml_path=config_path)
