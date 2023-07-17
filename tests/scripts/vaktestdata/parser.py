@@ -17,6 +17,7 @@ def get_parser():
         choices=('train', 'learncurve', 'eval', 'predict', 'train_continue'),
         help=f"Space-separated list of commands to run for 'results' step",
         nargs="+",
+        default=('train', 'learncurve', 'eval', 'predict', 'train_continue')
     )
     parser.add_argument(
         '--single-train-result',
