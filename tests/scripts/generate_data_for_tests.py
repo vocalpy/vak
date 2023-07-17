@@ -56,9 +56,14 @@ Those are the generated directories we want to remove.
 import argparse
 from pathlib import Path
 import shutil
+import warnings
+
+from numba.core.errors import NumbaDeprecationWarning
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 
 import toml
 import vak
+
 
 HERE = Path(__file__).parent
 TEST_DATA_ROOT = HERE / ".." / "data_for_tests"
@@ -75,8 +80,17 @@ GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA / "configs"
 # like 'invalid_option_config.toml`
 TEST_CONFIGS_ROOT = TEST_DATA_ROOT.joinpath("configs")
 CONFIGS_TO_RUN = []
-MODELS = ("teenytweetynet", "tweetynet")
-for model in MODELS:
+
+MODELS_PREP = ("tweetynet")
+MODELS_REUSE_PREP = {
+    "teenytweetynet": "tweetynet"
+}
+
+MODELS_RESULTS = (
+    "teenytweetynet",
+    "tweetynet"
+)
+for model in MODELS_RESULTS:
     CONFIGS_TO_RUN.extend(sorted(TEST_CONFIGS_ROOT.glob(f"{model}*.toml")))
 
 # the sub-directories that will get made inside `./tests/data_for_tests/generated`
@@ -122,7 +136,7 @@ def make_subdirs_in_generated(config_paths):
                 ):
                     continue  # no need to make this dir
 
-                for model in MODELS:
+                for model in MODELS_RESULTS:
                     subdir_to_make = (
                         GENERATED_TEST_DATA / top_level_dir / command_dir / data_dir / model
                     )
@@ -155,9 +169,42 @@ def run_prep(config_paths):
         if not config_path.exists():
             raise FileNotFoundError(f"{config_path} not found")
         print(
-            f"running vak prep to generate data for tests test, using config: {config_path.name}"
+            f"running vak prep to generate data for tests, using config: {config_path.name}"
         )
         vak.cli.prep.prep(toml_path=config_path)
+
+
+def add_dataset_path_from_prepped_configs(target_configs, target_model, source_configs, source_model):
+    for target_config_path in target_configs:
+        suffix_to_match = config_path.name.replace(target_model, '')  # remove model name at start of config name
+        source_config_path = [
+            source_config_path
+            for source_config_path in source_configs
+            if source_config_path.name.replace(source_model, '') == suffix_to_match
+        ]
+        source_config_path = source_config_path[0]
+        command = [
+            command
+            for command in COMMANDS
+            if command in source_config_path.name
+        ][0]
+        if command == 'train_continue':
+            section = 'TRAIN'
+        else:
+            section = command.upper()
+        print(
+            f"Re-using prepped dataset from model '{source_model}' config:\n{source_config_path}\n"
+            f"Will use for model '{target_model}' config:\n{target_config_path}"
+        )
+
+        with source_config_path.open("r") as fp:
+            source_config_toml = toml.load(fp)
+        dataset_path = source_config_toml[section]['dataset_path']
+        with target_config_path.open("r") as fp:
+            target_config_toml = toml.load(fp)
+        target_config_toml[section]['dataset_path'] = dataset_path
+        with target_config_path.open("w") as fp:
+            toml.dump(target_config_toml, fp)
 
 
 def fix_options_in_configs(config_paths, model, command, single_train_result=True):
@@ -303,18 +350,38 @@ def generate_test_data(
         )
         make_subdirs_in_generated(config_paths)
 
-        for model in MODELS:
+        # run prep for some models
+        for model in MODELS_PREP:
             config_paths_this_model = [
                         config_path
                         for config_path in config_paths
                         if config_path.name.startswith(model)
                     ]
             run_prep(config_paths=config_paths_this_model)
+        # re-use some of the prepped datasets for other models
+        # this makes time to prep all datasets shorter
+        for target_model, source_model in MODELS_REUSE_PREP.items():
+            print(
+                f"Re-using prepped datasets from model '{source_model}' for model '{target_model}'."
+            )
+            config_paths_source_model = [
+                        config_path
+                        for config_path in config_paths
+                        if config_path.name.startswith(source_model_prep)
+                    ]
+            config_paths_target_model = [
+                        config_path
+                        for config_path in config_paths
+                        if config_path.name.startswith(target_model_prep)
+                    ]
+            add_dataset_path_from_prepped_configs(config_paths_target_model, target_model,
+                                                  config_paths_source_model, source_model)
+
     else:
         config_paths = sorted(GENERATED_TEST_CONFIGS_ROOT.glob('*.toml'))
 
     if step in ('results', 'all'):
-        for model in MODELS:
+        for model in MODELS_RESULTS:
             for command in commands:
                 if command == "prep":
                     continue  # we don't run prep in this code block
