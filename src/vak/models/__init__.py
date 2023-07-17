@@ -5,7 +5,7 @@ from . import (
     registry,
 )
 from .base import Model
-from .convencoder_parametric_umap import ConvEncoderParametricUMAP
+from .convencoder_umap import ConvEncoderUMAP
 from .get import get
 from .ed_tcn import ED_TCN
 from .teenytweetynet import TeenyTweetyNet
@@ -16,7 +16,7 @@ from .parametric_umap_model import ParametricUMAPModel
 
 __all__ = [
     "base",
-    "ConvEncoderParametricUMAP",
+    "ConvEncoderUMAP",
     "decorator",
     "definition",
     "ED_TCN",

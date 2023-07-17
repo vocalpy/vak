@@ -19,7 +19,7 @@ from .decorator import model
 
 
 @model(family=ParametricUMAPModel)
-class ConvEncoderParametricUMAP:
+class ConvEncoderUMAP:
     """Parametric UMAP model, as described in [1]_,
     with a convolutional network as the encoder.
 
