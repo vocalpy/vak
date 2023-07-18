@@ -7,12 +7,12 @@ https://github.com/lmcinnes/umap/issues/580#issuecomment-1368649550.
 """
 from __future__ import annotations
 
+import pathlib
 from typing import Callable, ClassVar, Type
 
+import pytorch_lightning as lightning
 import torch
-from torch.nn.functional import mse_loss
-
-from umap.umap_ import find_ab_params
+import torch.utils.data
 
 from . import base
 from .definition import ModelDefinition
@@ -45,17 +45,11 @@ class ParametricUMAPModel(base.Model):
         loss: torch.nn.Module | Callable | None = None,
         optimizer: torch.optim.Optimizer | None = None,
         metrics: dict[str: Type] | None = None,
-        beta: float = 1.0,
-        min_dist: float = 0.1,
-        negative_sample_rate: int = 5,
     ):
         super().__init__(network=network, loss=loss,
                          optimizer=optimizer, metrics=metrics)
         self.encoder = network['encoder']
         self.decoder = network.get('decoder', None)
-        self.beta = beta  # weight for reconstruction loss
-        self._a, self._b = find_ab_params(1.0, min_dist)
-        self.negative_sample_rate = negative_sample_rate
 
     def configure_optimizers(self):
         return self.optimizer
@@ -63,40 +57,41 @@ class ParametricUMAPModel(base.Model):
     def training_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
         embedding_to, embedding_from = self.encoder(edges_to_exp), self.encoder(edges_from_exp)
-        encoder_loss = self.loss(embedding_to, embedding_from, self._a, self._b,
-                                 edges_to_exp.shape[0], negative_sample_rate=self.negative_sample_rate)
-        self.log("train_umap_loss", encoder_loss)
 
         if self.decoder is not None:
-            recon = self.decoder(embedding_to)
-            recon_loss = mse_loss(recon, edges_to_exp)
-            self.log("train_recon_loss", recon_loss)
-            return encoder_loss + self.beta * recon_loss
+            reconstruction = self.decoder(embedding_to)
+            before_encoding = edges_to_exp
         else:
-            return encoder_loss
+            reconstruction = None
+            before_encoding = None
+        loss_umap, loss_reconstruction, loss = self.loss(embedding_to, embedding_from, reconstruction, before_encoding)
+        self.log("train_umap_loss", loss_umap)
+        if loss_reconstruction:
+            self.log("train_reconstruction_loss", loss_reconstruction)
+        # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
+        self.log("train_loss", loss)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
         embedding_to, embedding_from = self.encoder(edges_to_exp), self.encoder(edges_from_exp)
-        encoder_loss = self.loss(embedding_to, embedding_from, self._a, self._b,
-                                 edges_to_exp.shape[0], negative_sample_rate=self.negative_sample_rate)
-        self.log("val_umap_loss", encoder_loss, on_step=True)
 
         if self.decoder is not None:
-            recon = self.decoder(embedding_to)
-            recon_loss = mse_loss(recon, edges_to_exp)
-            self.log("val_recon_loss", recon_loss, on_step=True)
-            return encoder_loss + self.beta * recon_loss
+            reconstruction = self.decoder(embedding_to)
+            before_encoding = edges_to_exp
         else:
-            return encoder_loss
+            reconstruction = None
+            before_encoding = None
+        loss_umap, loss_reconstruction, loss = self.loss(embedding_to, embedding_from, reconstruction, before_encoding)
+        self.log("val_umap_loss", loss_umap, on_step=True)
+        if loss_reconstruction:
+            self.log("val_reconstruction_loss", loss_reconstruction, on_step=True)
+        # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
+        self.log("val_loss", loss, on_step=True)
 
     @classmethod
     def from_config(cls,
-                    config: dict,
-                    beta: float = 1.0,
-                    min_dist: float = 0.1,
-                    negative_sample_rate: int = 5,
-                    ):
+                    config: dict):
         """Return an initialized model instance from a config ``dict``
 
         Parameters
@@ -115,8 +110,72 @@ class ParametricUMAPModel(base.Model):
         return cls(network=network,
                    optimizer=optimizer,
                    loss=loss,
-                   metrics=metrics,
-                   beta=beta,
-                   min_dist=min_dist,
-                   negative_sample_rate=negative_sample_rate,
-                   )
+                   metrics=metrics)
+
+
+class ParametricUMAPDatamodule(lightning.LightningDataModule):
+    def __init__(
+        self,
+        dataset,
+        batch_size,
+        num_workers,
+    ):
+        super().__init__()
+        self.dataset = dataset
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+
+    def train_dataloader(self) -> torch.utils.data.DataLoader:
+        return torch.utils.data.DataLoader(
+            dataset=self.dataset,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=True,
+        )
+
+
+class ParametricUMAP:
+    def __init__(
+        self,
+        encoder: torch.nn.Module,
+        decoder: torch.nn.Module | None = None,
+        n_neighbors: int = 10,
+        min_dist: float = 0.1,
+        metric: str = "euclidean",
+        lr: float = 1e-3,
+        batch_size: int = 64,
+        num_workers: int = 16,
+        random_state: int | None = None,
+    ):
+        self.encoder = encoder
+        self.decoder = decoder
+        self.n_neighbors = n_neighbors
+        self.min_dist = min_dist
+        self.metric = metric
+
+        self.lr = lr
+        self.num_epochs = num_epochs
+
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.random_state = random_state
+
+        self.model = ParametricUMAPModel(self.encoder, min_dist=self.min_dist)
+
+    def fit(self, trainer: lightning.Trainer, dataset_path: str | pathlib.Path, transform=None):
+        import vak.datasets
+        dataset = vak.datasets.UMAPDataset.from_dataset_path(dataset_path, 'train', self.n_neighbors, self.metric,
+                                                             self.random_state, self.num_epochs, transform)
+        trainer.fit(
+            model=self.model,
+            datamodule=ParametricUMAPDatamodule(dataset, self.batch_size, self.num_workers)
+        )
+
+    @torch.no_grad()
+    def transform(self, X):
+        self.embedding_ = self.model.encoder(X).detach().cpu().numpy()
+        return self.embedding_
+
+    @torch.no_grad()
+    def inverse_transform(self, Z):
+        return self.model.decoder(Z).detach().cpu().numpy()
