@@ -1,4 +1,9 @@
+"""Parametric UMAP loss function."""
+from __future__ import annotations
+
 import torch
+from torch.nn.functional import mse_loss
+from umap.umap_ import find_ab_params
 
 
 def convert_distance_to_probability(distances, a=1.0, b=1.0):
@@ -33,7 +38,8 @@ def compute_cross_entropy(
     return attraction_term, repulsion_term, CE
 
 
-def umap_loss(embedding_to, embedding_from, a, b, batch_size, negative_sample_rate=5):
+def umap_loss(embedding_to: torch.Tensor, embedding_from: torch.Tensor,
+              a, b, negative_sample_rate: int = 5):
     """UMAP loss function
 
     Converts distances to probabilities,
@@ -54,6 +60,7 @@ def umap_loss(embedding_to, embedding_from, a, b, batch_size, negative_sample_ra
         distance_embedding, a, b
     )
     # set true probabilities based on negative sampling
+    batch_size = embedding_to.shape[0]
     probabilities_graph = torch.cat(
         (torch.ones(batch_size), torch.zeros(batch_size * negative_sample_rate)), dim=0,
     # ``to`` method in next line to avoid error `Expected all tensors to be on the same device`
@@ -69,9 +76,27 @@ def umap_loss(embedding_to, embedding_from, a, b, batch_size, negative_sample_ra
 
 
 class UmapLoss(torch.nn.Module):
-    def __init__(self):
+    """"""
+    def __init__(self,
+                 spread: float = 1.0,
+                 min_dist: float = 0.1,
+                 negative_sample_rate: int = 5,
+                 beta: float = 1.0,
+                 ):
         super().__init__()
+        self.min_dist = min_dist
+        self.a, self.b = find_ab_params(spread, min_dist)
+        self.negative_sample_rate = negative_sample_rate
+        self.beta = beta
 
-    def forward(self, embedding_to, embedding_from, a, b, batch_size, negative_sample_rate):
-        return umap_loss(embedding_to, embedding_from, a, b,
-                         batch_size, negative_sample_rate)
+
+    def forward(self, embedding_to: torch.Tensor, embedding_from: torch.Tensor,
+                reconstruction: torch.Tensor | None = None, before_encoding: torch.Tensor | None = None):
+        loss_umap = umap_loss(embedding_to, embedding_from, self.a, self.b, self.negative_sample_rate)
+        if reconstruction is not None:
+            loss_reconstruction = mse_loss(reconstruction, before_encoding)
+            loss = loss_umap + self.beta * loss_reconstruction
+        else:
+            loss_reconstruction = None
+            loss = loss_umap
+        return loss_umap, loss_reconstruction, loss
