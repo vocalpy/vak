@@ -118,3 +118,14 @@ class TrainConfig:
         converter=converters.optional(expanded_user_path),
         default=None,
     )
+
+    train_dataset_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )
+    val_dataset_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )
