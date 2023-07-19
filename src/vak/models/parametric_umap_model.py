@@ -41,7 +41,7 @@ class ParametricUMAPModel(base.Model):
 
     def __init__(
         self,
-        network: torch.nn.Module | dict[str: torch.nn.Module] | None = None,
+        network: dict | None = None,
         loss: torch.nn.Module | Callable | None = None,
         optimizer: torch.optim.Optimizer | None = None,
         metrics: dict[str: Type] | None = None,
