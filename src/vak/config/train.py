@@ -119,7 +119,7 @@ class TrainConfig:
         default=None,
     )
 
-    train_transform_kwargs = attr.ib(
+    train_transform_params = attr.ib(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
@@ -131,7 +131,7 @@ class TrainConfig:
         default=None,
     )
 
-    val_transform_kwargs = attr.ib(
+    val_transform_params = attr.ib(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
