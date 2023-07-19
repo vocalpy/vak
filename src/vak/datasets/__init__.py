@@ -1,6 +1,6 @@
 from . import (
-    dimensionality_reduction,
     frame_classification,
+    parametric_umap
 )
 
 
