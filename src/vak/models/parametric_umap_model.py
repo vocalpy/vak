@@ -142,6 +142,7 @@ class ParametricUMAP:
         n_neighbors: int = 10,
         min_dist: float = 0.1,
         metric: str = "euclidean",
+        num_epochs: int = 200,
         lr: float = 1e-3,
         batch_size: int = 64,
         num_workers: int = 16,
@@ -163,9 +164,9 @@ class ParametricUMAP:
         self.model = ParametricUMAPModel(self.encoder, min_dist=self.min_dist)
 
     def fit(self, trainer: lightning.Trainer, dataset_path: str | pathlib.Path, transform=None):
-        import vak.datasets
-        dataset = vak.datasets.UMAPDataset.from_dataset_path(dataset_path, 'train', self.n_neighbors, self.metric,
-                                                             self.random_state, self.num_epochs, transform)
+        from vak.datasets.parametric_umap import ParametricUMAPDataset
+        dataset = ParametricUMAPDataset.from_dataset_path(dataset_path, 'train', self.n_neighbors, self.metric,
+                                                          self.random_state, self.num_epochs, transform)
         trainer.fit(
             model=self.model,
             datamodule=ParametricUMAPDatamodule(dataset, self.batch_size, self.num_workers)
@@ -173,8 +174,8 @@ class ParametricUMAP:
 
     @torch.no_grad()
     def transform(self, X):
-        self.embedding_ = self.model.encoder(X).detach().cpu().numpy()
-        return self.embedding_
+        embedding = self.model.encoder(X).detach().cpu().numpy()
+        return embedding
 
     @torch.no_grad()
     def inverse_transform(self, Z):
