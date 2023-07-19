@@ -35,7 +35,9 @@ def train_parametric_umap_model(
     batch_size: int,
     num_epochs: int,
     num_workers: int,
+    train_transform_params: dict | None = None,
     train_dataset_params: dict | None = None,
+    val_transform_params: dict | None = None,
     val_dataset_params: dict | None = None,
     checkpoint_path: str | pathlib.Path | None = None,
     root_results_dir: str | pathlib.Path | None = None,
@@ -173,7 +175,7 @@ def train_parametric_umap_model(
         f"Total duration of training split from dataset (in s): {train_dur}",
     )
 
-    transform = transforms.defaults.get_default_transform(model_name, "train")
+    transform = transforms.defaults.get_default_transform(model_name, "train", train_transform_params)
 
     if train_dataset_params is None:
         train_dataset_params = {}
@@ -195,7 +197,7 @@ def train_parametric_umap_model(
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if val_step:
-        transform = transforms.defaults.get_default_transform(model_name, "eval")
+        transform = transforms.defaults.get_default_transform(model_name, "eval", val_transform_params)
         if val_dataset_params is None:
             val_dataset_params = {}
         val_dataset = ParametricUMAPDataset.from_dataset_path(
