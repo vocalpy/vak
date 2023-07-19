@@ -7,6 +7,7 @@ import datetime
 
 import pandas as pd
 import torch.utils.data
+import pytorch_lightning as lightning
 
 from .. import (
     datasets,
@@ -28,6 +29,30 @@ def get_split_dur(df: pd.DataFrame, split: str) -> float:
     return df[df["split"] == split]["duration"].sum()
 
 
+def get_trainer(max_epochs: int,
+                log_save_dir: str | pathlib.Path,
+                device: str = 'cuda',
+                ) -> lightning.Trainer:
+    """Returns an instance of ``lightning.Trainer``
+    with a default set of callbacks.
+    Used by ``vak.core`` functions."""
+    if device == 'cuda':
+        accelerator = 'gpu'
+    else:
+        accelerator = None
+
+    logger = lightning.loggers.TensorBoardLogger(
+        save_dir=log_save_dir
+    )
+
+    trainer = lightning.Trainer(
+        max_epochs=max_epochs,
+        accelerator=accelerator,
+        logger=logger,
+    )
+    return trainer
+
+
 def train_parametric_umap_model(
     model_name: str,
     model_config: dict,
@@ -44,8 +69,6 @@ def train_parametric_umap_model(
     results_path: str | pathlib.Path | None = None,
     shuffle: bool = True,
     val_step: int | None = None,
-    ckpt_step: int | None = None,
-    patience: int | None = None,
     device: str | None = None,
     split: str = 'train',
 ) -> None:
@@ -104,20 +127,6 @@ def train_parametric_umap_model(
         That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    val_step : int
-        Step on which to estimate accuracy using validation set.
-        If val_step is n, then validation is carried out every time
-        the global step / n is a whole number, i.e., when val_step modulo the global step is 0.
-        Default is None, in which case no validation is done.
-    ckpt_step : int
-        Step on which to save to checkpoint file.
-        If ckpt_step is n, then a checkpoint is saved every time
-        the global step / n is a whole number, i.e., when ckpt_step modulo the global step is 0.
-        Default is None, in which case checkpoint is only saved at the last epoch.
-    patience : int
-        number of validation steps to wait without performance on the
-        validation set improving before stopping the training.
-        Default is None, in which case training only stops after the specified number of epochs.
     split : str
         Name of split from dataset found at ``dataset_path`` to use
         when training model. Default is 'train'. This parameter is used by
@@ -186,7 +195,7 @@ def train_parametric_umap_model(
         **train_dataset_params,
     )
     logger.info(
-        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration}",
+        f"Duration of ParametricUMAPDataset used for training, in seconds: {train_dataset.duration}",
     )
     train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,
@@ -206,20 +215,15 @@ def train_parametric_umap_model(
             transform=transform,
             **val_dataset_params,
         )
+        logger.info(
+            f"Duration of ParametricUMAPDataset used for validation, in seconds: {val_dataset.duration}",
+        )
         val_loader = torch.utils.data.DataLoader(
             dataset=val_dataset,
             shuffle=False,
             # batch size 1 because each spectrogram reshaped into a batch of windows
             batch_size=1,
             num_workers=num_workers,
-        )
-        val_dur = get_split_dur(dataset_df, "val")
-        logger.info(
-            f"Total duration of validation split from dataset (in s): {val_dur}",
-        )
-
-        logger.info(
-            f"will measure loss on validation set every {val_step} steps of training",
         )
     else:
         val_loader = None
@@ -245,16 +249,9 @@ def train_parametric_umap_model(
     ckpt_root.mkdir()
     logger.info(f"training {model_name}")
     max_steps = num_epochs * len(train_loader)
-    default_callback_kwargs = {
-        'ckpt_root': ckpt_root,
-        'ckpt_step': ckpt_step,
-        'patience': patience,
-    }
-    trainer = get_default_trainer(
-        max_steps=max_steps,
+    trainer = get_trainer(
+        max_epochs=num_epochs,
         log_save_dir=results_model_root,
-        val_step=val_step,
-        default_callback_kwargs=default_callback_kwargs,
         device=device,
     )
     train_time_start = datetime.datetime.now()
