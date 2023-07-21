@@ -17,9 +17,6 @@ freq_cutoffs = [ 1000, 8000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[DATALOADER]
-window_size = 44
-
 [TRAIN]
 model = "TeenyTweetyNet"
 normalize_spectrograms = true
@@ -33,6 +30,12 @@ device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TeenyTweetyNet"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
+
+[TRAIN.train_dataset_params]
+window_size = 44
+
+[TRAIN.val_transform_params]
+window_size = 44
 
 [TeenyTweetyNet.optimizer]
 lr = 0.001

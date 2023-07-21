@@ -17,9 +17,6 @@ freq_cutoffs = [ 1000, 8000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[DATALOADER]
-window_size = 44
-
 [TRAIN]
 model = "TeenyTweetyNet"
 normalize_spectrograms = false
@@ -31,6 +28,12 @@ patience = 3
 num_workers = 2
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/TeenyTweetyNet"
+
+[TRAIN.train_dataset_params]
+window_size = 44
+
+[TRAIN.val_transform_params]
+window_size = 44
 
 [TeenyTweetyNet.optimizer]
 lr = 0.001
