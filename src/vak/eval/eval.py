@@ -21,8 +21,9 @@ def eval(
     checkpoint_path: str | pathlib.Path,
     labelmap_path: str | pathlib.Path,
     output_dir: str | pathlib.Path,
-    window_size: int,
     num_workers: int,
+    transform_params: dict | None = None,
+    dataset_params: dict | None = None,
     split: str = "test",
     spect_scaler_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
@@ -44,9 +45,6 @@ def eval(
         path to directory with checkpoint files saved by Torch, to reload model
     output_dir : str, pathlib.Path
         Path to location where .csv files with evaluation metrics should be saved.
-    window_size : int
-        size of windows taken from spectrograms, in number of time bins,
-        shown to neural networks
     labelmap_path : str, pathlib.Path
         path to 'labelmap.json' file.
     models : list
@@ -56,6 +54,14 @@ def eval(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
+        Optional, default is None.
     split : str
         split of dataset on which model should be evaluated.
         One of {'train', 'val', 'test'}. Default is 'test'.
@@ -122,6 +128,8 @@ def eval(
             output_dir=output_dir,
             window_size=window_size,
             num_workers=num_workers,
+            transform_params=transform_params,
+            dataset_params=dataset_params,
             split=split,
             spect_scaler_path=spect_scaler_path,
             device=device,
