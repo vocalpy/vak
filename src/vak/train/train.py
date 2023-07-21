@@ -70,17 +70,15 @@ def train(
         Optional, default is None.
     train_dataset_params: dict, optional
         Parameters for training dataset.
-        Passed as keyword arguments to
-        :class:`vak.datasets.frame_classification.WindowDataset`.
-        Optional, default is None.
-    val_transform_params: dict, optional
-        Parameters for validation data transform.
         Passed as keyword arguments.
         Optional, default is None.
-    val_dataset_params: dict, optional
-        Parameters for validation dataset.
-        Passed as keyword arguments to
-        :class:`vak.datasets.parametric_umap.ParametricUMAP`.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
         Optional, default is None.
     checkpoint_path : str, pathlib.Path
         path to a checkpoint file, 
