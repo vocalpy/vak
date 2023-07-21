@@ -24,8 +24,9 @@ def predict(
     dataset_path: str | pathlib.Path,
     checkpoint_path: str | pathlib.Path,
     labelmap_path: str | pathlib.Path,
-    window_size: int,
     num_workers: int = 2,
+    transform_params: dict | None = None,
+    dataset_params: dict | None = None,
     timebins_key: str = "t",
     spect_scaler_path: str | pathlib.Path | None = None,
     device: str | None = None,
@@ -57,8 +58,14 @@ def predict(
      num_workers : int
          Number of processes to use for parallel loading of data.
          Argument to torch.DataLoader. Default is 2.
-     spect_key : str
-         key for accessing spectrogram in files. Default is 's'.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
+        Optional, default is None.
      timebins_key : str
          key for accessing vector of time bins in files. Default is 't'.
      device : str
@@ -142,8 +149,9 @@ def predict(
             dataset_path=dataset_path,
             checkpoint_path=checkpoint_path,
             labelmap_path=labelmap_path,
-            window_size=window_size,
             num_workers=num_workers,
+            transform_params=transform_params,
+            dataset_params=dataset_params,
             timebins_key=timebins_key,
             spect_scaler_path=spect_scaler_path,
             device=device,
