@@ -100,7 +100,7 @@ def train_frame_classification_model(
     val_dataset_params: dict, optional
         Parameters for validation dataset.
         Passed as keyword arguments to
-        :class:`vak.datasets.parametric_umap.ParametricUMAP`.
+        :class:`vak.datasets.frame_classification.FramesDataset`.
         Optional, default is None.
     dataset_csv_path
         Path to csv file representing splits of dataset,
