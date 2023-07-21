@@ -99,6 +99,14 @@ class EvalConfig:
         a float value for ``min_segment_dur``.
         See the docstring of the transform for more details on
         these arguments and how they work.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
+        Optional, default is None.
     """
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path)
@@ -133,3 +141,15 @@ class EvalConfig:
     # optional, data loader
     num_workers = attr.ib(validator=instance_of(int), default=2)
     device = attr.ib(validator=instance_of(str), default=device.get_default())
+
+    transform_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )
+
+    dataset_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )
