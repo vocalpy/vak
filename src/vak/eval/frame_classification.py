@@ -31,8 +31,9 @@ def eval_frame_classification_model(
     checkpoint_path: str | pathlib.Path,
     labelmap_path: str | pathlib.Path,
     output_dir: str | pathlib.Path,
-    window_size: int,
     num_workers: int,
+    transform_params: dict | None = None,
+    dataset_params: dict | None = None,
     split: str = "test",
     spect_scaler_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
@@ -54,9 +55,6 @@ def eval_frame_classification_model(
         path to directory with checkpoint files saved by Torch, to reload model
     output_dir : str, pathlib.Path
         Path to location where .csv files with evaluation metrics should be saved.
-    window_size : int
-        size of windows taken from spectrograms, in number of time bins,
-        shown to neural networks
     labelmap_path : str, pathlib.Path
         path to 'labelmap.json' file.
     models : list
@@ -66,6 +64,14 @@ def eval_frame_classification_model(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
+        Optional, default is None.
     split : str
         split of dataset on which model should be evaluated.
         One of {'train', 'val', 'test'}. Default is 'test'.
@@ -142,21 +148,21 @@ def eval_frame_classification_model(
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
-
+    if transform_params is None:
+        transform_params = {}
+    transform_params.update({'spect_standardizer': spect_standardizer})
     item_transform = transforms.defaults.get_default_transform(
         model_name,
         "eval",
-        transform_kwargs=dict(
-            spect_standardizer=spect_standardizer,
-            window_size=window_size,
-            return_padding_mask=True,
-        )
+        transform_params
     )
-
+    if dataset_params is None:
+        dataset_params = {}
     val_dataset = FramesDataset.from_dataset_path(
         dataset_path=dataset_path,
         split=split,
         item_transform=item_transform,
+        **dataset_params,
     )
     val_loader = torch.utils.data.DataLoader(
         dataset=val_dataset,
