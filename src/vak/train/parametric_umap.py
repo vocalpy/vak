@@ -184,6 +184,8 @@ def train_parametric_umap_model(
         f"Total duration of training split from dataset (in s): {train_dur}",
     )
 
+    if train_transform_params is None:
+        train_transform_params = {}
     transform = transforms.defaults.get_default_transform(model_name, "train", train_transform_params)
 
     if train_dataset_params is None:
@@ -206,6 +208,8 @@ def train_parametric_umap_model(
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if val_step:
+        if val_transform_params is None:
+            val_transform_params = {}
         transform = transforms.defaults.get_default_transform(model_name, "eval", val_transform_params)
         if val_dataset_params is None:
             val_dataset_params = {}
