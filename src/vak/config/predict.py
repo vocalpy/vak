@@ -68,6 +68,14 @@ class PredictConfig:
          spectrogram with `spect_path` filename `gy6or6_032312_081416.npz`,
          and the network is `TweetyNet`, then the net output file
          will be `gy6or6_032312_081416.tweetynet.output.npz`.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
+        Optional, default is None.
     """
 
     # required, external files
@@ -109,3 +117,15 @@ class PredictConfig:
     )
     majority_vote = attr.ib(validator=instance_of(bool), default=True)
     save_net_outputs = attr.ib(validator=instance_of(bool), default=False)
+
+    transform_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )
+
+    dataset_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )
