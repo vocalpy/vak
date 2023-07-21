@@ -36,8 +36,9 @@ def predict_with_frame_classification_model(
     dataset_path,
     checkpoint_path,
     labelmap_path,
-    window_size,
     num_workers=2,
+    transform_params: dict | None = None,
+    dataset_params: dict | None = None,
     timebins_key="t",
     spect_scaler_path=None,
     device=None,
@@ -63,12 +64,17 @@ def predict_with_frame_classification_model(
          path to directory with checkpoint files saved by Torch, to reload model
      labelmap_path : str
          path to 'labelmap.json' file.
-     window_size : int
-         size of windows taken from spectrograms, in number of time bins,
-         shown to neural networks
      num_workers : int
          Number of processes to use for parallel loading of data.
          Argument to torch.DataLoader. Default is 2.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
+        Optional, default is None.
      spect_key : str
          key for accessing spectrogram in files. Default is 's'.
      timebins_key : str
@@ -149,14 +155,13 @@ def predict_with_frame_classification_model(
         logger.info(f"Not loading SpectScaler, no path was specified")
         spect_standardizer = None
 
+    if transform_params is None:
+        transform_params = {}
+    transform_params.update({'spect_standardizer': spect_standardizer})
     item_transform = transforms.defaults.get_default_transform(
         model_name,
         "predict",
-        transform_kwargs=dict(
-            spect_standardizer=spect_standardizer,
-            window_size=window_size,
-            return_padding_mask=True,
-        )
+        transform_params
     )
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
@@ -167,10 +172,13 @@ def predict_with_frame_classification_model(
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
 
     logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
+    if dataset_params is None:
+        dataset_params = {}
     pred_dataset = FramesDataset.from_dataset_path(
         dataset_path=dataset_path,
         split="predict",
         item_transform=item_transform,
+        **dataset_params
     )
 
     pred_loader = torch.utils.data.DataLoader(
