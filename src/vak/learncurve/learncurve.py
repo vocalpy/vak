@@ -18,10 +18,13 @@ def learning_curve(
     model_name: str,
     model_config: dict,
     dataset_path: str | pathlib.Path,
-    window_size: int,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
+    train_transform_params: dict | None = None,
+    train_dataset_params: dict | None = None,
+    val_transform_params: dict | None = None,
+    val_dataset_params: dict | None = None,
     results_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None =None,
     normalize_spectrograms: bool = True,
@@ -83,10 +86,6 @@ def learning_curve(
         a float value for ``min_segment_dur``.
         See the docstring of the transform for more details on
         these arguments and how they work.
-    spect_key : str
-        key for accessing spectrogram in files. Default is 's'.
-    timebins_key : str
-        key for accessing vector of time bins in files. Default is 't'.
     device : str
         Device on which to work with model + data.
         Default is None. If None, then a device will be selected with vak.device.get_default.
@@ -131,10 +130,13 @@ def learning_curve(
             model_name=model_name,
             model_config=model_config,
             dataset_path=dataset_path,
-            window_size=window_size,
             batch_size=batch_size,
             num_epochs=num_epochs,
             num_workers=num_workers,
+            train_transform_params=train_transform_params,
+            train_dataset_params=train_dataset_params,
+            val_transform_params=val_transform_params,
+            val_dataset_params=val_dataset_params,
             results_path=results_path,
             post_tfm_kwargs=post_tfm_kwargs,
             normalize_spectrograms=normalize_spectrograms,
