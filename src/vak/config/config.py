@@ -1,7 +1,6 @@
 import attr
 from attr.validators import instance_of, optional
 
-from .dataloader import DataLoaderConfig
 from .eval import EvalConfig
 from .learncurve import LearncurveConfig
 from .predict import PredictConfig
