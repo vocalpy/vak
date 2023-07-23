@@ -14,9 +14,6 @@ freq_cutoffs = [ 1000, 8000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[DATALOADER]
-window_size = 44
-
 [EVAL]
 checkpoint_path = "~/Documents/repos/coding/birdsong/TeenyTweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TeenyTweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 labelmap_path = "~/Documents/repos/coding/birdsong/TeenyTweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
@@ -26,6 +23,9 @@ num_workers = 2
 device = "cuda"
 spect_scaler_path = "~/Documents/repos/coding/birdsong/TeenyTweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TeenyTweetyNet"
+
+[EVAL.transform_params]
+window_size = 44
 
 [TeenyTweetyNet.optimizer]
 lr = 0.001

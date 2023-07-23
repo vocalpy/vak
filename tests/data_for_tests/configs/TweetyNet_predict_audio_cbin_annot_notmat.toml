@@ -12,9 +12,6 @@ freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[DATALOADER]
-window_size = 88
-
 [PREDICT]
 spect_scaler_path = "/home/user/results_181014_194418/spect_scaler"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
@@ -25,6 +22,9 @@ num_workers = 4
 device = "cuda"
 output_dir = "./tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet"
 annot_csv_filename = "bl26lb16.041912.annot.csv"
+
+[PREDICT.transform_params]
+window_size = 88
 
 [TweetyNet.optimizer]
 lr = 0.001
