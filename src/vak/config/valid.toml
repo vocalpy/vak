@@ -33,9 +33,6 @@ freqbins_key = 'f'
 timebins_key = 't'
 audio_path_key = 'audio_path'
 
-[DATALOADER]
-window_size = 88
-
 [TRAIN]
 model = 'TweetyNet'
 root_results_dir = './tests/test_data/results/train'

@@ -15,7 +15,6 @@ from .validators import are_sections_valid, are_options_valid
 
 
 SECTION_CLASSES = {
-    "DATALOADER": DataLoaderConfig,
     "EVAL": EvalConfig,
     "LEARNCURVE": LearncurveConfig,
     "PREDICT": PredictConfig,
@@ -25,7 +24,6 @@ SECTION_CLASSES = {
 }
 
 REQUIRED_OPTIONS = {
-    "DATALOADER": None,
     "EVAL": [
         "checkpoint_path",
         "labelmap_path",
