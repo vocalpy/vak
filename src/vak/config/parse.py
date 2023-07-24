@@ -4,7 +4,6 @@ import toml
 from toml.decoder import TomlDecodeError
 
 from .config import Config
-from .dataloader import DataLoaderConfig
 from .eval import EvalConfig
 from .learncurve import LearncurveConfig
 from .predict import PredictConfig
