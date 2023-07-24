@@ -14,9 +14,6 @@ fft_size = 512
 step_size = 32
 transform_type = "log_spect_plus_one"
 
-[DATALOADER]
-window_size = 44
-
 [TRAIN]
 model = "ConvEncoderUMAP"
 normalize_spectrograms = true

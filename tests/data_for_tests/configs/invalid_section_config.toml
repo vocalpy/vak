@@ -20,9 +20,6 @@ freq_cutoffs = [500, 10000]
 thresh = 6.25
 transform_type = 'log_spect'
 
-[DATALOADER]
-window_size = 88
-
 [TRIAN]  # <-- invalid section 'TRIAN' (instead of 'TRAIN')
 model = 'TweetyNet'
 root_results_dir = '/home/user/data/subdir/'
