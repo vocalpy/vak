@@ -31,5 +31,11 @@ num_workers = 2
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/TeenyTweetyNet"
 
+[LEARNCURVE.train_dataset_params]
+window_size = 44
+
+[LEARNCURVE.val_transform_params]
+window_size = 44
+
 [TeenyTweetyNet.optimizer]
 lr = 0.001
