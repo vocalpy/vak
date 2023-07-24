@@ -1,8 +1,16 @@
 """Parametric UMAP loss function."""
 from __future__ import annotations
 
+import warnings
+
 import torch
 from torch.nn.functional import mse_loss
+
+# Ignore warnings from Numba deprecation:
+# https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit
+# Numba is required by UMAP.
+from numba.core.errors import NumbaDeprecationWarning
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 from umap.umap_ import find_ab_params
 
 

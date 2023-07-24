@@ -1,11 +1,20 @@
+from __future__ import annotations
+
 import pathlib
+import warnings
 
 import numpy as np
 import pandas as pd
 from pynndescent import NNDescent
 from sklearn.utils import check_random_state
-from umap.umap_ import fuzzy_simplicial_set
 from torch.utils.data import Dataset
+
+# Ignore warnings from Numba deprecation:
+# https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit
+# Numba is required by UMAP.
+from numba.core.errors import NumbaDeprecationWarning
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+from umap.umap_ import fuzzy_simplicial_set
 
 
 def get_umap_graph(X, n_neighbors: int = 10, metric: str= "cosine", random_state: int | None = None, max_candidates=60, verbose=True):
