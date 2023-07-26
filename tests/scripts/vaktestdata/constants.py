@@ -32,21 +32,6 @@ TOP_LEVEL_DIRS = [
     "results",
 ]
 
-# these sub-dirs get made in each of the TOP_LEVEL_DIRS (except for 'configs')
-COMMAND_DIRS = [
-    "eval",
-    "learncurve",
-    "predict",
-    "train",
-]
-
-# these sub-dirs get made in each of the COMMAND_DIRS (except for 'configs')
-DATA_DIRS = [
-    "audio_cbin_annot_notmat",
-    "audio_wav_annot_birdsongrec",
-    "spect_mat_annot_yarden",
-]
-
 # need to run 'train' config before we run 'predict'
 # so we can add checkpoints, etc., from training to predict
 COMMANDS = (
