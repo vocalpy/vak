@@ -3,7 +3,7 @@ dataset_type = "frame classification"
 input_type = "spect"
 labelset = "012345678"
 data_dir = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0"
-output_dir = "./tests/data_for_tests/generated/prep/train/audio_wav_annot_birdsongrec/TweetyNet"
+output_dir = "./tests/data_for_tests/generated/prep/train/audio_wav_annot_birdsong-recognition-dataset/TweetyNet"
 audio_format = "wav"
 annot_format = "birdsong-recognition-dataset"
 annot_file = "./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0/Annotation.xml"
@@ -28,7 +28,7 @@ ckpt_step = 200
 patience = 4
 num_workers = 4
 device = "cuda"
-root_results_dir = "./tests/data_for_tests/generated/results/train/audio_wav_annot_birdsongrec/TweetyNet"
+root_results_dir = "./tests/data_for_tests/generated/results/train/audio_wav_annot_birdsong-recognition-dataset/TweetyNet"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 
