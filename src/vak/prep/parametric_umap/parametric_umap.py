@@ -19,7 +19,7 @@ from ...common.timenow import get_timenow_as_str
 logger = logging.getLogger(__name__)
 
 
-def prep_dimensionality_reduction_dataset(
+def prep_parametric_umap_dataset(
     data_dir: str | pathlib.Path,
     purpose: str,
     output_dir: str | pathlib.Path | None = None,
@@ -317,7 +317,7 @@ def prep_dimensionality_reduction_dataset(
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
-    metadata = datasets.dimensionality_reduction.Metadata(
+    metadata = datasets.parametric_umap.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
         audio_format=audio_format,
     )

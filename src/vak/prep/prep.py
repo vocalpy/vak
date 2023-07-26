@@ -4,7 +4,7 @@ import pathlib
 from . import (
     constants,
 )
-from .dimensionality_reduction import prep_dimensionality_reduction_dataset
+from .parametric_umap import prep_parametric_umap_dataset
 from .frame_classification import prep_frame_classification_dataset
 
 
@@ -213,8 +213,8 @@ def prep(
             timebins_key,
         )
         return dataset_df, dataset_path
-    elif dataset_type == "dimensionality reduction":
-        dataset_df, dataset_path = prep_dimensionality_reduction_dataset(
+    elif dataset_type == "parametric umap":
+        dataset_df, dataset_path = prep_parametric_umap_dataset(
             data_dir,
             purpose,
             output_dir,
