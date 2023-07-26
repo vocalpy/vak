@@ -31,7 +31,8 @@ def copy_config_files():
 
     copied_configs = []
 
-    for toml_path in constants.CONFIGS_TO_RUN:
+    for config_metadata in constants.CONFIG_METADATA:
+        toml_path = constants.TEST_CONFIGS_ROOT / config_metadata.filename
         if not toml_path.exists():
             raise FileNotFoundError(f"{toml_path} not found")
 
@@ -77,7 +78,7 @@ def add_dataset_path_from_prepped_configs():
             toml.dump(config_to_change_toml, fp)
 
 
-def fix_options_in_configs(config_paths, model, command, single_train_result=True):
+def fix_options_in_configs(config_metadata_list, command, single_train_result=True):
     """Fix values assigned to options in predict and eval configs.
 
     Need to do this because both predict and eval configs have options
@@ -87,42 +88,22 @@ def fix_options_in_configs(config_paths, model, command, single_train_result=Tru
         raise ValueError(
             f'invalid command to fix config options: {command}'
         )
-    configs_to_fix, train_configs = [], []
-    # split configs into predict/eval/"train_continue" configs and other configs
-    for config_path in config_paths:
-        if command in config_path.name:
-            configs_to_fix.append(config_path)
-        elif 'train' in config_path.name and 'continue' not in config_path.name:
-            train_configs.append(config_path)
 
-    for config_to_fix in configs_to_fix:
-        # figure out which 'train' config corresponds to this 'predict' or 'eval' config
-        # by using 'suffix' of config file names. `train` suffix will match `predict`/'eval' suffix
-        prefix, suffix = config_to_fix.name.split(command)
-        train_config_to_use = []
-        for train_config in train_configs:
-            train_prefix, train_suffix = train_config.name.split("train")
-            if train_prefix.startswith(model) and train_suffix == suffix:
-                train_config_to_use.append(train_config)
-        if len(train_config_to_use) > 1:
-            raise ValueError(
-                f"Did not find just a single train config that matches with '{command}' config:\n"
-                f"{config_to_fix}\n"
-                f"Matches were: {train_config_to_use}"
-            )
-        train_config_to_use = train_config_to_use[0]
+    for config_metadata in config_metadata_list:
+        config_to_fix = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
+        config_to_use_result_from = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.use_result_from_config
 
         # now use the config to find the results dir and get the values for the options we need to set
         # which are checkpoint_path, spect_scaler_path, and labelmap_path
-        with train_config_to_use.open("r") as fp:
-            train_config_toml = toml.load(fp)
-        root_results_dir = pathlib.Path(train_config_toml["TRAIN"]["root_results_dir"])
+        with config_to_use_result_from.open("r") as fp:
+            config_toml = toml.load(fp)
+        root_results_dir = pathlib.Path(config_toml["TRAIN"]["root_results_dir"])
         results_dir = sorted(root_results_dir.glob("results_*"))
         if len(results_dir) > 1:
             if single_train_result:
                 raise ValueError(
                     f"Did not find just a single results directory in root_results_dir from train_config:\n"
-                    f"{train_config_to_use}"
+                    f"{config_toml}"
                     f"root_results_dir was: {root_results_dir}"
                     f'Matches for "results_*" were: {results_dir}'
                 )
@@ -133,7 +114,7 @@ def fix_options_in_configs(config_paths, model, command, single_train_result=Tru
         else:
             raise ValueError(
                 f"Did not find a results directory in root_results_dir from train_config:\n"
-                f"{train_config_to_use}"
+                f"{config_toml}"
                 f"root_results_dir was:\n{root_results_dir}"
                 f'Matches for "results_*" were:\n{results_dir}'
             )
@@ -141,7 +122,7 @@ def fix_options_in_configs(config_paths, model, command, single_train_result=Tru
         # these are the only options whose values we need to change
         # and they are the same for both predict and eval
         checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
-        if train_config_toml['TRAIN']['normalize_spectrograms']:
+        if config_toml['TRAIN']['normalize_spectrograms']:
             spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
         else:
             spect_scaler_path = None
@@ -150,10 +131,12 @@ def fix_options_in_configs(config_paths, model, command, single_train_result=Tru
         # now add these values to corresponding options in predict / eval config
         with config_to_fix.open("r") as fp:
             config_toml = toml.load(fp)
+
         if command == 'train_continue':
             section = 'TRAIN'
         else:
             section = command.upper()
+
         config_toml[section]["checkpoint_path"] = str(checkpoint_path)
         if spect_scaler_path:
             config_toml[section]["spect_scaler_path"] = str(spect_scaler_path)
@@ -163,5 +146,6 @@ def fix_options_in_configs(config_paths, model, command, single_train_result=Tru
                 del config_toml[section]["spect_scaler_path"]
         if command != 'train_continue':  # train always gets labelmap from dataset dir, not from a config option
             config_toml[section]["labelmap_path"] = str(labelmap_path)
+
         with config_to_fix.open("w") as fp:
             toml.dump(config_toml, fp)
