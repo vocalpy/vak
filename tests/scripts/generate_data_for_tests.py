@@ -109,55 +109,31 @@ def generate_test_data(
         # this makes time to prep all datasets shorter
         vaktestdata.configs.add_dataset_path_from_prepped_configs()
 
-    else:
-        config_paths = sorted(vaktestdata.constants.GENERATED_TEST_CONFIGS_ROOT.glob('*.toml'))
-
     if step in ('results', 'all'):
-        for model in vaktestdata.constants.MODELS_RESULTS:
-            for command in commands:
-                if command == "prep":
-                    continue  # we don't run prep in this code block
-                print(f"running configs for command: {command}")
+        # Note we need to run `train` first to get results needed for `eval', 'predict' and continuing 'train'
+        for command in commands:
+            if command == "prep":
+                continue  # we don't run prep in this code block
+            print(f"running configs for command: {command}")
+            command_config_metadata = [
+                config_metadata
+                for config_metadata in vaktestdata.constants.CONFIG_METADATA
+                if config_metadata.config_type == command
+            ]
 
-                # print(f"using the following configs:\n{command_config_paths}")
-                if command == 'train' or command == 'learncurve':
-                    command_config_paths = [
-                        config_path
-                        for config_path in config_paths
-                        if config_path.name.startswith(model) and command in config_path.name
-                    ]
-                    if command == "train":
-                        # need to remove 'train_continue' configs
-                        command_config_paths = [
-                            config_path for config_path in command_config_paths
-                            if 'continue' not in config_path.name
-                        ]
-                    # we run `train` to get results needed for `eval', 'predict' and continuing 'train';
-                    # we run `learncurve` so there's a `previous_run_path` to test;
-                    # skip all other commands
-                    for config_path in command_config_paths:
-                        print(
-                            f"n\Running 'vak {command}'  with model '{model}', using config: {config_path.name}"
-                        )
-                        vak.cli.cli.cli(command, config_path)
+            if command in ("predict", "eval", "train_continue"):
+                # Fix values for required options in predict / eval / train_continue configs
+                # using results from running the corresponding train configs.
+                # this only works if we ran the train configs already,
+                # which we should have because of ordering of COMMANDS constant above
+                vaktestdata.configs.fix_options_in_configs(command_config_metadata, command, single_train_result)
 
-                elif command in ("predict", "eval", "train_continue"):
-                    # Fix values for required options in predict / eval / train_continue configs
-                    # using results from running the corresponding train configs.
-                    # this only works if we ran the train configs already,
-                    # which we should have because of ordering of COMMANDS constant above
-                    vaktestdata.configs.fix_options_in_configs(config_paths, model, command, single_train_result)
-                    command_config_paths = [
-                        config_path
-                        for config_path in config_paths
-                        if config_path.name.startswith(model) and command in config_path.name
-                    ]
-                    for config_path in command_config_paths:
-                        for config_path in command_config_paths:
-                            print(
-                                f"\nRunning 'vak {command}' with model '{model}', using config: {config_path.name}"
-                            )
-                        vak.cli.cli.cli(command, config_path)
+            for config_metadata in command_config_metadata:
+                config_path = vaktestdata.constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
+                print(
+                    f"n\Running 'vak {command}', using config: {config_path.name}"
+                )
+                vak.cli.cli.cli(command, config_path)
 
 
 if __name__ == "__main__":
