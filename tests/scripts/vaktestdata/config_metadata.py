@@ -10,3 +10,4 @@ class ConfigMetadata:
     spect_format: str = attrs.field()
     annot_format: str = attrs.field()
     use_dataset_from_config = attrs.field(default=None)
+    use_result_from_config = attrs.field(default=None)
