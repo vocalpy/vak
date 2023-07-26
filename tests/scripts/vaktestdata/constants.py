@@ -25,19 +25,6 @@ GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA / "configs"
 # so glob doesn't pick up static configs that are just used for testing,
 # like 'invalid_option_config.toml`
 TEST_CONFIGS_ROOT = TEST_DATA_ROOT.joinpath("configs")
-CONFIGS_TO_RUN = []
-
-MODELS_PREP = ("TweetyNet",)
-MODELS_REUSE_PREP = {
-    "TeenyTweetyNet": "TweetyNet"
-}
-
-MODELS_RESULTS = (
-    "TeenyTweetyNet",
-    "TweetyNet",
-)
-for model in MODELS_RESULTS:
-    CONFIGS_TO_RUN.extend(sorted(TEST_CONFIGS_ROOT.glob(f"{model}*.toml")))
 
 # the sub-directories that will get made inside `./tests/data_for_tests/generated`
 TOP_LEVEL_DIRS = [
