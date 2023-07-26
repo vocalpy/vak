@@ -1,13 +1,14 @@
 {
   "config_metadata": [
     {
-      "filename": "TweetyNet_eval_audio_cbin_annot_notmat.toml",
+      "filename": "TweetyNet_train_audio_cbin_annot_notmat.toml",
       "model": "TweetyNet",
-      "config_type": "eval",
+      "config_type": "train",
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": null
+      "use_dataset_from_config": null,
+      "use_result_from_config": null
     },
     {
       "filename": "TweetyNet_learncurve_audio_cbin_annot_notmat.toml",
@@ -16,7 +17,18 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": null
+      "use_dataset_from_config": null,
+      "use_result_from_config": null
+    },
+    {
+      "filename": "TweetyNet_eval_audio_cbin_annot_notmat.toml",
+      "model": "TweetyNet",
+      "config_type": "eval",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat",
+      "use_dataset_from_config": null,
+      "use_result_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
     },
     {
       "filename": "TweetyNet_predict_audio_cbin_annot_notmat.toml",
@@ -25,43 +37,8 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": null
-    },
-    {
-      "filename": "TweetyNet_predict_audio_wav_annot_birdsongrec.toml",
-      "model": "TweetyNet",
-      "config_type": "predict",
-      "audio_format": "wav",
-      "spect_format": null,
-      "annot_format": "birdsong-recognition-dataset",
-      "use_dataset_from_config": null
-    },
-    {
-      "filename": "TweetyNet_train_audio_cbin_annot_notmat.toml",
-      "model": "TweetyNet",
-      "config_type": "train",
-      "audio_format": "cbin",
-      "spect_format": null,
-      "annot_format": "notmat",
-      "use_dataset_from_config": null
-    },
-    {
-      "filename": "TweetyNet_train_audio_wav_annot_birdsongrec.toml",
-      "model": "TweetyNet",
-      "config_type": "train",
-      "audio_format": "wav",
-      "spect_format": null,
-      "annot_format": "birdsong-recognition-dataset",
-      "use_dataset_from_config": null
-    },
-    {
-      "filename": "TweetyNet_train_spect_mat_annot_yarden.toml",
-      "model": "TweetyNet",
-      "config_type": "train",
-      "audio_format": null,
-      "spect_format": "mat",
-      "annot_format": "yarden",
-      "use_dataset_from_config": null
+      "use_dataset_from_config": null,
+      "use_result_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
     },
     {
       "filename": "TweetyNet_train_continue_audio_cbin_annot_notmat.toml",
@@ -70,7 +47,28 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
+      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml",
+      "use_result_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
+    },
+    {
+      "filename": "TweetyNet_train_audio_wav_annot_birdsongrec.toml",
+      "model": "TweetyNet",
+      "config_type": "train",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "birdsong-recognition-dataset",
+      "use_dataset_from_config": null,
+      "use_result_from_config": null
+    },
+    {
+      "filename": "TweetyNet_predict_audio_wav_annot_birdsongrec.toml",
+      "model": "TweetyNet",
+      "config_type": "predict",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "birdsong-recognition-dataset",
+      "use_dataset_from_config": null,
+      "use_result_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml"
     },
     {
       "filename": "TweetyNet_train_continue_audio_wav_annot_birdsongrec.toml",
@@ -79,7 +77,18 @@
       "audio_format": "wav",
       "spect_format": null,
       "annot_format": "birdsong-recognition-dataset",
-      "use_dataset_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml"
+      "use_dataset_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml",
+      "use_result_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml"
+    },
+    {
+      "filename": "TweetyNet_train_spect_mat_annot_yarden.toml",
+      "model": "TweetyNet",
+      "config_type": "train",
+      "audio_format": null,
+      "spect_format": "mat",
+      "annot_format": "yarden",
+      "use_dataset_from_config": null,
+      "use_result_from_config": null
     },
     {
       "filename": "TweetyNet_train_continue_spect_mat_annot_yarden.toml",
@@ -91,13 +100,14 @@
       "use_dataset_from_config": "TweetyNet_train_spect_mat_annot_yarden.toml"
     },
     {
-      "filename": "TeenyTweetyNet_eval_audio_cbin_annot_notmat.toml",
+      "filename": "TeenyTweetyNet_train_audio_cbin_annot_notmat.toml",
       "model": "TeenyTweetyNet",
-      "config_type": "eval",
+      "config_type": "train",
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_eval_audio_cbin_annot_notmat.toml"
+      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml",
+      "use_result_from_config": null
     },
     {
       "filename": "TeenyTweetyNet_learncurve_audio_cbin_annot_notmat.toml",
@@ -106,7 +116,18 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_learncurve_audio_cbin_annot_notmat.toml"
+      "use_dataset_from_config": "TweetyNet_learncurve_audio_cbin_annot_notmat.toml",
+      "use_result_from_config": null
+    },
+    {
+      "filename": "TeenyTweetyNet_eval_audio_cbin_annot_notmat.toml",
+      "model": "TeenyTweetyNet",
+      "config_type": "eval",
+      "audio_format": "cbin",
+      "spect_format": null,
+      "annot_format": "notmat",
+      "use_dataset_from_config": "TweetyNet_eval_audio_cbin_annot_notmat.toml",
+      "use_result_from_config": "TeenyTweetyNet_train_audio_cbin_annot_notmat.toml"
     },
     {
       "filename": "TeenyTweetyNet_predict_audio_cbin_annot_notmat.toml",
@@ -115,43 +136,8 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_predict_audio_cbin_annot_notmat.toml"
-    },
-    {
-      "filename": "TeenyTweetyNet_predict_audio_wav_annot_birdsongrec.toml",
-      "model": "TeenyTweetyNet",
-      "config_type": "predict",
-      "audio_format": "wav",
-      "spect_format": null,
-      "annot_format": "birdsong-recognition-dataset",
-      "use_dataset_from_config": "TweetyNet_predict_audio_wav_annot_birdsongrec.toml"
-    },
-    {
-      "filename": "TeenyTweetyNet_train_audio_cbin_annot_notmat.toml",
-      "model": "TeenyTweetyNet",
-      "config_type": "train",
-      "audio_format": "cbin",
-      "spect_format": null,
-      "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
-    },
-    {
-      "filename": "TeenyTweetyNet_train_audio_wav_annot_birdsongrec.toml",
-      "model": "TeenyTweetyNet",
-      "config_type": "train",
-      "audio_format": "wav",
-      "spect_format": null,
-      "annot_format": "birdsong-recognition-dataset",
-      "use_dataset_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml"
-    },
-    {
-      "filename": "TeenyTweetyNet_train_spect_mat_annot_yarden.toml",
-      "model": "TeenyTweetyNet",
-      "config_type": "train",
-      "audio_format": null,
-      "spect_format": "mat",
-      "annot_format": "yarden",
-      "use_dataset_from_config": "TweetyNet_train_spect_mat_annot_yarden.toml"
+      "use_dataset_from_config": "TweetyNet_predict_audio_cbin_annot_notmat.toml",
+      "use_result_from_config": "TeenyTweetyNet_train_audio_cbin_annot_notmat.toml"
     },
     {
       "filename": "TeenyTweetyNet_train_continue_audio_cbin_annot_notmat.toml",
@@ -160,7 +146,28 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
+      "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml",
+      "use_result_from_config": "TeenyTweetyNet_train_audio_cbin_annot_notmat.toml"
+    },
+    {
+      "filename": "TeenyTweetyNet_train_audio_wav_annot_birdsongrec.toml",
+      "model": "TeenyTweetyNet",
+      "config_type": "train",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "birdsong-recognition-dataset",
+      "use_dataset_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml",
+      "use_result_from_config": null
+    },
+    {
+      "filename": "TeenyTweetyNet_predict_audio_wav_annot_birdsongrec.toml",
+      "model": "TeenyTweetyNet",
+      "config_type": "predict",
+      "audio_format": "wav",
+      "spect_format": null,
+      "annot_format": "birdsong-recognition-dataset",
+      "use_dataset_from_config": "TweetyNet_predict_audio_wav_annot_birdsongrec.toml",
+      "use_result_from_config": "TeenyTweetyNet_train_audio_wav_annot_birdsongrec.toml"
     },
     {
       "filename": "TeenyTweetyNet_train_continue_audio_wav_annot_birdsongrec.toml",
@@ -169,7 +176,18 @@
       "audio_format": "wav",
       "spect_format": null,
       "annot_format": "birdsong-recognition-dataset",
-      "use_dataset_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml"
+      "use_dataset_from_config": "TweetyNet_train_audio_wav_annot_birdsongrec.toml",
+      "use_result_from_config": "TeenyTweetyNet_train_audio_wav_annot_birdsongrec.toml"
+    },
+    {
+      "filename": "TeenyTweetyNet_train_spect_mat_annot_yarden.toml",
+      "model": "TeenyTweetyNet",
+      "config_type": "train",
+      "audio_format": null,
+      "spect_format": "mat",
+      "annot_format": "yarden",
+      "use_dataset_from_config": "TweetyNet_train_spect_mat_annot_yarden.toml",
+      "use_result_from_config": null
     },
     {
       "filename": "TeenyTweetyNet_train_continue_spect_mat_annot_yarden.toml",
@@ -178,7 +196,8 @@
       "audio_format": null,
       "spect_format": "mat",
       "annot_format": "yarden",
-      "use_dataset_from_config": "TweetyNet_train_continue_spect_mat_annot_yarden.toml"
+      "use_dataset_from_config": "TweetyNet_train_continue_spect_mat_annot_yarden.toml",
+      "use_result_from_config": "TeenyTweetyNet_train_spect_mat_annot_yarden.toml"
     },
     {
       "filename": "ConvEncoderUMAP_train_audio_cbin_annot_notmat.toml",
@@ -187,7 +206,8 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": null
+      "use_dataset_from_config": null,
+      "use_result_from_config": null
     }
   ]
 }
