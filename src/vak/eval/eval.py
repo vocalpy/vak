@@ -126,7 +126,6 @@ def eval(
             checkpoint_path=checkpoint_path,
             labelmap_path=labelmap_path,
             output_dir=output_dir,
-            window_size=window_size,
             num_workers=num_workers,
             transform_params=transform_params,
             dataset_params=dataset_params,
