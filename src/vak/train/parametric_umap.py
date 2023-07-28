@@ -18,7 +18,6 @@ from ..common import validators
 from ..datasets.parametric_umap import ParametricUMAPDataset
 from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
-from ..common.trainer import get_default_trainer
 
 
 logger = logging.getLogger(__name__)
