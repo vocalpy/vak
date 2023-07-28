@@ -25,7 +25,6 @@ SECTION_CLASSES = {
 REQUIRED_OPTIONS = {
     "EVAL": [
         "checkpoint_path",
-        "labelmap_path",
         "output_dir",
         "model",
     ],
@@ -35,7 +34,6 @@ REQUIRED_OPTIONS = {
     ],
     "PREDICT": [
         "checkpoint_path",
-        "labelmap_path",
         "model",
     ],
     "PREP": [
