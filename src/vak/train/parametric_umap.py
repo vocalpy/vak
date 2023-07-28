@@ -29,6 +29,8 @@ def get_split_dur(df: pd.DataFrame, split: str) -> float:
 
 
 def get_trainer(max_epochs: int,
+                ckpt_root: str | pathlib.Path,
+                ckpt_step: int,
                 log_save_dir: str | pathlib.Path,
                 device: str = 'cuda',
                 ) -> lightning.Trainer:
@@ -40,6 +42,33 @@ def get_trainer(max_epochs: int,
     else:
         accelerator = None
 
+    ckpt_callback = lightning.callbacks.ModelCheckpoint(
+        dirpath=ckpt_root,
+        filename='checkpoint',
+        every_n_train_steps=ckpt_step,
+        save_last=True,
+        verbose=True,
+    )
+    ckpt_callback.CHECKPOINT_NAME_LAST = 'checkpoint'
+    ckpt_callback.FILE_EXTENSION = '.pt'
+
+    val_ckpt_callback = lightning.callbacks.ModelCheckpoint(
+        monitor="val_loss",
+        dirpath=ckpt_root,
+        save_top_k=1,
+        mode='min',
+        filename='min-val-loss-checkpoint',
+        auto_insert_metric_name=False,
+        verbose=True
+    )
+    val_ckpt_callback.FILE_EXTENSION = '.pt'
+
+    callbacks = [
+        ckpt_callback,
+        val_ckpt_callback,
+    ]
+
+
     logger = lightning.loggers.TensorBoardLogger(
         save_dir=log_save_dir
     )
@@ -48,6 +77,7 @@ def get_trainer(max_epochs: int,
         max_epochs=max_epochs,
         accelerator=accelerator,
         logger=logger,
+        callbacks=callbacks,
     )
     return trainer
 
@@ -68,6 +98,7 @@ def train_parametric_umap_model(
     results_path: str | pathlib.Path | None = None,
     shuffle: bool = True,
     val_step: int | None = None,
+    ckpt_step: int | None = None,
     device: str | None = None,
     split: str = 'train',
 ) -> None:
@@ -120,6 +151,14 @@ def train_parametric_umap_model(
     results_path : str, pathlib.Path, optional
         Directory where results will be saved.
         If specified, this parameter overrides ``root_results_dir``.
+    val_step : int
+        Computes the loss using validation set every ``val_step`` epochs.
+        Default is None, in which case no validation is done.
+    ckpt_step : int
+        Step on which to save to checkpoint file.
+        If ckpt_step is n, then a checkpoint is saved every time
+        the global step / n is a whole number, i.e., when ckpt_step modulo the global step is 0.
+        Default is None, in which case checkpoint is only saved at the last epoch.
     device : str
         Device on which to work with model + data.
         Default is None. If None, then a device will be selected with vak.split.get_default.
@@ -224,8 +263,7 @@ def train_parametric_umap_model(
         val_loader = torch.utils.data.DataLoader(
             dataset=val_dataset,
             shuffle=False,
-            # batch size 1 because each spectrogram reshaped into a batch of windows
-            batch_size=1,
+            batch_size=batch_size,
             num_workers=num_workers,
         )
     else:
@@ -251,11 +289,12 @@ def train_parametric_umap_model(
     ckpt_root = results_model_root.joinpath("checkpoints")
     ckpt_root.mkdir()
     logger.info(f"training {model_name}")
-    max_steps = num_epochs * len(train_loader)
     trainer = get_trainer(
         max_epochs=num_epochs,
         log_save_dir=results_model_root,
         device=device,
+        ckpt_root=ckpt_root,
+        ckpt_step=ckpt_step,
     )
     train_time_start = datetime.datetime.now()
     logger.info(
