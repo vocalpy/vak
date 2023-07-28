@@ -97,7 +97,8 @@
       "audio_format": null,
       "spect_format": "mat",
       "annot_format": "yarden",
-      "use_dataset_from_config": "TweetyNet_train_spect_mat_annot_yarden.toml"
+      "use_dataset_from_config": "TweetyNet_train_spect_mat_annot_yarden.toml",
+      "use_result_from_config": "TweetyNet_train_spect_mat_annot_yarden.toml"
     },
     {
       "filename": "TeenyTweetyNet_train_audio_cbin_annot_notmat.toml",
@@ -196,7 +197,7 @@
       "audio_format": null,
       "spect_format": "mat",
       "annot_format": "yarden",
-      "use_dataset_from_config": "TweetyNet_train_continue_spect_mat_annot_yarden.toml",
+      "use_dataset_from_config": "TweetyNet_train_spect_mat_annot_yarden.toml",
       "use_result_from_config": "TeenyTweetyNet_train_spect_mat_annot_yarden.toml"
     },
     {
