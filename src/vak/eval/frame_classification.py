@@ -57,8 +57,6 @@ def eval_frame_classification_model(
         Path to location where .csv files with evaluation metrics should be saved.
     labelmap_path : str, pathlib.Path
         Path to 'labelmap.json' file.
-    batch_size : int
-        Number of samples per batch presented to models during training.
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
