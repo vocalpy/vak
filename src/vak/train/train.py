@@ -206,6 +206,7 @@ def train(
             results_path=results_path,
             shuffle=shuffle,
             val_step=val_step,
+            ckpt_step=ckpt_step,
             device=device,
             split=split,
         )
