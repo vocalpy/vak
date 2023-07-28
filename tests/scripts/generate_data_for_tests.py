@@ -128,6 +128,10 @@ def generate_test_data(
                 # which we should have because of ordering of COMMANDS constant above
                 vaktestdata.configs.fix_options_in_configs(command_config_metadata, command, single_train_result)
 
+            if command == "train_continue":
+                # so we don't get 'command not recognized' error in next code block
+                command = "train"
+
             for config_metadata in command_config_metadata:
                 config_path = vaktestdata.constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
                 print(
