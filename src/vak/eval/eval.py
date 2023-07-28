@@ -5,6 +5,7 @@ import logging
 import pathlib
 
 from .frame_classification import eval_frame_classification_model
+from .parametric_umap import eval_parametric_umap_model
 from .. import (
     models,
 )
@@ -133,6 +134,20 @@ def eval(
             spect_scaler_path=spect_scaler_path,
             device=device,
             post_tfm_kwargs=post_tfm_kwargs,
+        )
+    elif model_family == "ParametricUMAPModel":
+        eval_parametric_umap_model(
+            model_name=model_name,
+            model_config=model_config,
+            dataset_path=dataset_path,
+            checkpoint_path=checkpoint_path,
+            output_dir=output_dir,
+            num_workers=num_workers,
+            transform_params=transform_params,
+            dataset_params=dataset_params,
+            split=split,
+            spect_scaler_path=spect_scaler_path,
+            device=device,
         )
     else:
         raise ValueError(
