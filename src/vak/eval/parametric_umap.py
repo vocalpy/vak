@@ -54,7 +54,7 @@ def eval_parametric_umap_model(
     output_dir : str, pathlib.Path
         Path to location where .csv files with evaluation metrics should be saved.
     batch_size : int
-        Number of samples per batch presented to models during training.
+        Number of samples per batch fed into model.
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
