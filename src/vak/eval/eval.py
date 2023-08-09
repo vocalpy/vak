@@ -20,9 +20,10 @@ def eval(
     model_config: dict,
     dataset_path: str | pathlib.Path,
     checkpoint_path: str | pathlib.Path,
-    labelmap_path: str | pathlib.Path,
     output_dir: str | pathlib.Path,
     num_workers: int,
+    labelmap_path: str | pathlib.Path | None = None,
+    batch_size: int | None = None,
     transform_params: dict | None = None,
     dataset_params: dict | None = None,
     split: str = "test",
@@ -46,15 +47,15 @@ def eval(
         path to directory with checkpoint files saved by Torch, to reload model
     output_dir : str, pathlib.Path
         Path to location where .csv files with evaluation metrics should be saved.
-    labelmap_path : str, pathlib.Path
-        path to 'labelmap.json' file.
-    models : list
-        of model names. e.g., 'models = TweetyNet, GRUNet, ConvNet'
-    batch_size : int
-        number of samples per batch presented to models during training.
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
+    labelmap_path : str, pathlib.Path, optional
+        Path to 'labelmap.json' file.
+        Optional, default is None.
+    batch_size : int, optional.
+        Number of samples per batch fed into model.
+        Optional, default is None.
     transform_params: dict, optional
         Parameters for data transform.
         Passed as keyword arguments.
@@ -142,6 +143,7 @@ def eval(
             dataset_path=dataset_path,
             checkpoint_path=checkpoint_path,
             output_dir=output_dir,
+            batch_size=batch_size,
             num_workers=num_workers,
             transform_params=transform_params,
             dataset_params=dataset_params,
