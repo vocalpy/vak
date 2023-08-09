@@ -110,7 +110,6 @@ class EvalConfig:
     """
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path)
-    labelmap_path = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
 
     # required, model / dataloader
@@ -126,6 +125,10 @@ class EvalConfig:
         default=None,
     )
 
+    # "optional" but actually required for frame classification models
+    # TODO: check model family in __post_init__ and raise ValueError if labelmap
+    # TODO: not specified for a frame classification model?
+    labelmap_path = attr.ib(converter=converters.optional(expanded_user_path), default=None)
     # optional, transform
     spect_scaler_path = attr.ib(
         converter=converters.optional(expanded_user_path),
