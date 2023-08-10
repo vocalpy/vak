@@ -59,6 +59,7 @@ def eval(toml_path):
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
         num_workers=cfg.eval.num_workers,
+        batch_size=cfg.eval.batch_size,
         transform_params=cfg.eval.transform_params,
         dataset_params=cfg.eval.dataset_params,
         spect_scaler_path=cfg.eval.spect_scaler_path,
