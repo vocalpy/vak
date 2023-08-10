@@ -212,6 +212,7 @@ def pad_spectrogram(record: tuple, pad_length: float) -> None:
         spect, [(0, 0), (pad_left, pad_right)], "constant", constant_values=0
     )
     np.save(spect_path, spect_padded)
+    return spect_padded.shape
 
 
 # constant, used for names of columns in DataFrame below
@@ -358,7 +359,7 @@ def prep_unit_dataset(
 
     shape = set(shapes)
     assert len(shape) == 1, f"Did not find a single unique shape for all spectrograms. Instead found: {shape}"
-    shape = shape[0]
+    shape = shape.pop()
 
     unit_df = pd.DataFrame.from_records(records, columns=DF_COLUMNS)
 
