@@ -199,7 +199,7 @@ def prep_parametric_umap_dataset(
     )
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    dataset_df = prep_unit_dataset(
+    dataset_df, shape = prep_unit_dataset(
         audio_format=audio_format,
         output_dir=dataset_path,
         spect_params=spect_params,
@@ -320,6 +320,7 @@ def prep_parametric_umap_dataset(
     metadata = datasets.parametric_umap.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
         audio_format=audio_format,
+        shape=shape,
     )
     metadata.to_json(dataset_path)
 
