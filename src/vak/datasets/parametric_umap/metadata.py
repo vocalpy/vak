@@ -52,6 +52,7 @@ class Metadata:
         Name of csv file representing the source files in the dataset.
         Csv file will be located in root of directory representing dataset,
         so only the filename is given.
+    audio_format
     """
     # declare this as a constant to avoid
     # needing to remember this in multiple places, and to use in unit tests
@@ -64,6 +65,20 @@ class Metadata:
         validator=attr.validators.optional(is_valid_audio_format),
         default=None
     )
+
+    shape: tuple = attr.field()
+    @shape.validator
+    def is_valid_shape(self, attribute, value):
+        if not isinstance(value, tuple):
+            raise TypeError(
+                f"`shape` should be a tuple but type was: {type(value)}"
+            )
+        if not all(
+            [isinstance(val, int) and val > 0 for val in value]
+        ):
+            raise ValueError(
+                f"All values of `shape` should be positive integers but values were: {value}"
+            )
 
     @classmethod
     def from_path(cls, json_path: str | pathlib.Path):
