@@ -60,7 +60,7 @@ class Metadata:
 
     dataset_csv_filename: str = attr.field(converter=str, validator=is_valid_dataset_csv_filename)
 
-    shape: tuple = attr.field()
+    shape: tuple = attr.field(converter=tuple)
     @shape.validator
     def is_valid_shape(self, attribute, value):
         if not isinstance(value, tuple):
