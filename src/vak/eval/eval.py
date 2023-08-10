@@ -148,7 +148,6 @@ def eval(
             transform_params=transform_params,
             dataset_params=dataset_params,
             split=split,
-            spect_scaler_path=spect_scaler_path,
             device=device,
         )
     else:
