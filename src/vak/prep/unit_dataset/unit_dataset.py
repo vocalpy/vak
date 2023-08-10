@@ -30,8 +30,11 @@ class Segment:
     from segmented audio or spectrogram.
 
     The attributes are metadata used to track
-    the origin of this segment in a csv file
-    representing a dataset of such segments.
+    the origin of this segment in a dataset
+    of such segments.
+
+    The dataset including metadata is saved as a csv file
+    where these attributes become the columns.
     """
     data: npt.NDArray
     samplerate: int
@@ -45,7 +48,9 @@ class Segment:
 
 
 @dask.delayed
-def get_segment_list(audio_path, annot, audio_format, context_s=0.005):
+def get_segment_list(
+        audio_path: str, annot: crowsetta.Annotation, audio_format: str, context_s: float = 0.005
+) -> list[Segment]:
     """Get a list of :class:`Segment` instances, given
     the path to an audio file and an annotation that indicates
     where segments occur in that audio file.
@@ -56,13 +61,16 @@ def get_segment_list(audio_path, annot, audio_format, context_s=0.005):
     Parameters
     ----------
     audio_path : str
-
+        Path to an audio file.
     annot : crowsetta.Annotation
-
+        Annotation for audio file.
     audio_format : str
-
+        String representing audio file format, e.g. 'wav'.
     context_s : float
-
+        Number of seconds of "context" around unit to
+        add, i.e., time before and after the onset
+        and offset respectively. Default is 0.005s,
+        5 milliseconds.
 
     Returns
     -------
@@ -88,7 +96,7 @@ def get_segment_list(audio_path, annot, audio_format, context_s=0.005):
     return segments
 
 
-def spectrogram_from_segment(segment, spect_params):
+def spectrogram_from_segment(segment: Segment, spect_params: dict) -> npt.NDArray:
     """Compute a spectrogram given a :class:`Segment` instance.
 
     Parameters
@@ -146,6 +154,44 @@ def save_spect(spect_to_save: SpectToSave, output_dir: str | pathlib.Path) -> st
     return npy_path
 
 
+def abspath(a_path):
+    """Convert a path to an absolute path"""
+    if isinstance(a_path, str) or isinstance(a_path, pathlib.Path):
+        return str(pathlib.Path(a_path).absolute())
+    elif np.isnan(a_path):
+        return a_path
+
+
+# ---- make spectrograms + records for dataframe -----------------------------------------------------------------------
+@dask.delayed
+def make_spect_return_record(segment: Segment, ind: int, spect_params: dict, output_dir: pathlib.Path) -> tuple:
+    """Helper function that enables parallelized creation of "records",
+    i.e. rows for dataframe, from .
+    Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
+    and (2) annotation for that file"""
+
+    spect = spectrogram_from_segment(segment, spect_params)
+    n_timebins = spect.shape[-1]
+
+    spect_to_save = SpectToSave(spect, ind, segment.audio_path)
+    spect_path = save_spect(spect_to_save, output_dir)
+    record = tuple(
+        [
+            abspath(spect_path),
+            abspath(segment.audio_path),
+            abspath(segment.annot_path),
+            segment.onset_s,
+            segment.offset_s,
+            segment.label,
+            segment.samplerate,
+            segment.sample_dur,
+            segment.segment_dur,
+        ]
+    )
+
+    return record, n_timebins
+
+
 @dask.delayed
 def pad_spectrogram(record: tuple, pad_length: float) -> None:
     """Pads a spectrogram to a specified length on the left and right sides.
@@ -168,48 +214,7 @@ def pad_spectrogram(record: tuple, pad_length: float) -> None:
     np.save(spect_path, spect_padded)
 
 
-def abspath(a_path):
-    """Convert a path to an absolute path"""
-    if isinstance(a_path, str) or isinstance(a_path, pathlib.Path):
-        return str(pathlib.Path(a_path).absolute())
-    elif np.isnan(a_path):
-        return a_path
-
-
-# ---- make spectrograms + records for dataframe -----------------------------------------------------------------------
-def make_spect_return_record(segment, ind, spect_params, output_dir):
-    """helper function that enables parallelized creation of "records",
-    i.e. rows for dataframe, from .
-    Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
-    and (2) annotation for that file"""
-
-    spect = spectrogram_from_segment(segment, spect_params)
-    # FIXME: Add parameters for these functions to config and use
-    # mask_spec(spect)
-    # log_resize_spec(spect)
-    n_timebins = spect.shape[-1]
-
-    spect_to_save = SpectToSave(spect, ind, segment.audio_path)
-    spect_path = save_spect(spect_to_save, output_dir)
-    record = tuple(
-        [
-            abspath(spect_path),
-            abspath(segment.audio_path),
-            abspath(segment.annot_path),
-            segment.onset_s,
-            segment.offset_s,
-            segment.label,
-            segment.samplerate,
-            segment.sample_dur,
-            segment.segment_dur,
-        ]
-    )
-
-    return record, n_timebins
-
-
 # constant, used for names of columns in DataFrame below
-# this is analogous to ``syllable_df`` that ``avgn`` uses.
 DF_COLUMNS = [
     "spect_path",
     "audio_path",
@@ -233,6 +238,29 @@ def prep_unit_dataset(
         labelset: set | None = None,
         context_s: float = 0.005,
 ) -> pd.DataFrame:
+    """Prepare a dataset of units from sequences,
+    e.g., all syllables segmented out of a dataset of birdsong.
+
+    Parameters
+    ----------
+    audio_format
+    output_dir
+    spect_params
+    data_dir
+    annot_format
+    annot_file
+    labelset
+    context_s
+
+    Returns
+    -------
+    unit_df : pandas.DataFrame
+        A DataFrame representing all the units in the dataset.
+    shape: tuple
+        A tuple representing the shape of all spectograms in the dataset.
+        The spectrograms of all units are padded so that they are all
+        as wide as the widest unit (i.e, the one with the longest duration).
+    """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if audio_format not in constants.VALID_AUDIO_FORMATS:
         raise ValueError(
@@ -272,8 +300,8 @@ def prep_unit_dataset(
         # no annotation, so map spectrogram files to None
         audio_annot_map = dict((audio_path, None) for audio_path in audio_files)
 
-    # use mapping (if generated/supplied) with labelset, if supplied, to filter
-    if labelset:  # then remove annotations with labels not in labelset
+    # use labelset, if supplied, with annotations, if any, to filter;
+    if labelset and annot_list:  # then remove annotations with labels not in labelset
         for audio_file, annot in list(audio_annot_map.items()):
             # loop in a verbose way (i.e. not a comprehension)
             # so we can give user warning when we skip files
@@ -297,15 +325,20 @@ def prep_unit_dataset(
         "Loading audio for all segments in all files",
     )
     with ProgressBar():
-        segments = dask.compute(*segments)
-    segments = [segment for segment_list in segments for segment in segment_list]
+        segments: list[list[Segment]] = dask.compute(*segments)
+    segments: list[Segment] = [segment for segment_list in segments for segment in segment_list]
 
+    # ---- make and save all spectrograms *before* padding
+    # This is a design choice to avoid keeping all the spectrograms in memory
+    # but since we want to pad all spectrograms to be the same width,
+    # it requires us to go back, load each one, and pad it.
+    # Might be worth looking at how often typical dataset sizes in memory and whether this is really necessary.
     records_n_timebins_tuples = []
     for ind, segment in enumerate(segments):
-        records_n_timebins_tuple = dask.delayed(make_spect_return_record)(segment, ind, spect_params, output_dir)
+        records_n_timebins_tuple = make_spect_return_record(segment, ind, spect_params, output_dir)
         records_n_timebins_tuples.append(records_n_timebins_tuple)
     with ProgressBar():
-        records_n_timebins_tuples = dask.compute(*records_n_timebins_tuples)
+        records_n_timebins_tuples: list[tuple[tuple, int]] = dask.compute(*records_n_timebins_tuples)
 
     records, n_timebins_list = [], []
     for records_n_timebins_tuple in records_n_timebins_tuples:
@@ -321,8 +354,12 @@ def prep_unit_dataset(
             pad_spectrogram(record, pad_length)
         )
     with ProgressBar():
-        _ = dask.compute(*padded)
+        shapes:list[tuple[int, int]] = dask.compute(*padded)
+
+    shape = set(shapes)
+    assert len(shape) == 1, f"Did not find a single unique shape for all spectrograms. Instead found: {shape}"
+    shape = shape[0]
 
     unit_df = pd.DataFrame.from_records(records, columns=DF_COLUMNS)
 
-    return unit_df
+    return unit_df, shape
