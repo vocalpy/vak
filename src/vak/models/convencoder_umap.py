@@ -69,31 +69,11 @@ class ConvEncoderUMAP:
     }
 
 
-def next_power_of_2(x: int | float) -> int:
-    """Compute the nearest power of 2 to a number.
-
-    Used e.g. to pad an input
-    to a convolutional neural network.
-
-    Parameters
-    ----------
-    x : int, float
-        A number :math:`x` for which we would like
-        to find the nearest power of 2.
-
-    Returns
-    -------
-    pow2 : int
-        The nearest power of 2 to :math:`x`.
-    """
-    return 1 if x == 0 else 2**math.ceil(math.log2(x))
-
-
 def get_default_padding(shape):
     """Get default padding for input to ConvEncoderUMAP model.
 
-    Pads the input shape so that each dimension is a power of 2.
+    Rounds up to nearest tens place
     """
-    shape_pow2 = tuple(next_power_of_2(x) for x in shape)
-    padding = (xpow2 - x for (xpow2, x) in zip(shape_pow2, shape))
+    rounded_up = tuple(10 * math.ceil(x / 10) for x in shape)
+    padding = tuple(rounded_up_x - shape_x for (rounded_up_x, shape_x) in zip(rounded_up, shape))
     return padding
