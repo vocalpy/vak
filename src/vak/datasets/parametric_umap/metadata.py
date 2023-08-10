@@ -60,12 +60,6 @@ class Metadata:
 
     dataset_csv_filename: str = attr.field(converter=str, validator=is_valid_dataset_csv_filename)
 
-    audio_format: str = attr.field(
-        converter=attr.converters.optional(str),
-        validator=attr.validators.optional(is_valid_audio_format),
-        default=None
-    )
-
     shape: tuple = attr.field()
     @shape.validator
     def is_valid_shape(self, attribute, value):
@@ -79,6 +73,12 @@ class Metadata:
             raise ValueError(
                 f"All values of `shape` should be positive integers but values were: {value}"
             )
+
+    audio_format: str = attr.field(
+        converter=attr.converters.optional(str),
+        validator=attr.validators.optional(is_valid_audio_format),
+        default=None
+    )
 
     @classmethod
     def from_path(cls, json_path: str | pathlib.Path):
