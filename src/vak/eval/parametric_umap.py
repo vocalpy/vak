@@ -6,7 +6,6 @@ from datetime import datetime
 import logging
 import pathlib
 
-import joblib
 import pytorch_lightning as lightning
 import pandas as pd
 import torch.utils.data
@@ -34,7 +33,6 @@ def eval_parametric_umap_model(
     transform_params: dict | None = None,
     dataset_params: dict | None = None,
     split: str = "test",
-    spect_scaler_path: str | pathlib.Path = None,
     device: str | None = None,
 ) -> None:
     """Evaluate a trained model.
@@ -75,8 +73,8 @@ def eval_parametric_umap_model(
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
-            (checkpoint_path, spect_scaler_path),
-            ('checkpoint_path', 'spect_scaler_path'),
+            (checkpoint_path,),
+            ('checkpoint_path',),
     ):
         if path is not None:  # because `spect_scaler_path` is optional
             if not validators.is_a_file(path):
@@ -89,6 +87,10 @@ def eval_parametric_umap_model(
         raise NotADirectoryError(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
+    logger.info(
+        f"Loading metadata from dataset path: {dataset_path}",
+    )
+    metadata = datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
 
     if not validators.is_a_directory(output_dir):
         raise NotADirectoryError(
@@ -99,16 +101,12 @@ def eval_parametric_umap_model(
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------
-    if spect_scaler_path:
-        logger.info(f"loading spect scaler from path: {spect_scaler_path}")
-        spect_standardizer = joblib.load(spect_scaler_path)
-    else:
-        logger.info(f"not using a spect scaler")
-        spect_standardizer = None
-
     if transform_params is None:
         transform_params = {}
-    transform_params.update({'spect_standardizer': spect_standardizer})
+    if 'padding' not in transform_params and model_name == 'ConvEncoderUMAP':
+        padding = models.convencoder_umap.get_default_padding(metadata.shape)
+        transform_params['padding'] = padding
+
     item_transform = transforms.defaults.get_default_transform(
         model_name,
         "eval",
