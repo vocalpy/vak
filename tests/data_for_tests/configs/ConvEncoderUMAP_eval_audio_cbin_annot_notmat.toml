@@ -22,7 +22,7 @@ output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_not
 dataset_path = "tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/ConvEncoderUMAP/032312-vak-dimensionality-reduction-dataset-generated-230727_205727"
 
 [EVAL.transform_params]
-resize = 128
+resize = [128, 128]
 
 [ConvEncoderUMAP.optimizer]
 lr = 0.001
