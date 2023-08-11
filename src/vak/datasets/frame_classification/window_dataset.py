@@ -197,6 +197,21 @@ class WindowDataset:
             transform: Callable | None = None,
             target_transform: Callable | None = None
     ):
+        """
+
+        Parameters
+        ----------
+        dataset_path
+        window_size
+        stride
+        split
+        transform
+        target_transform
+
+        Returns
+        -------
+
+        """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
         frame_dur = metadata.frame_dur
