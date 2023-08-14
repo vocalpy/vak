@@ -5,7 +5,7 @@ a window from a spectrogram."""
 from __future__ import annotations
 
 import logging
-from typing import Callable, ClassVar, Mapping, Type
+from typing import Callable, ClassVar, Mapping
 
 import torch
 
