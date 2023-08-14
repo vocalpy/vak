@@ -31,7 +31,7 @@ def get_umap_graph(
     max_candidates: int = 60,
     verbose: bool = True,
 ) -> scipy.sparse._coo.coo_matrix:
-    """Get graph used by UMAP,
+    r"""Get graph used by UMAP,
     the fuzzy topological representation.
 
     Parameters
