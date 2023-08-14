@@ -92,8 +92,11 @@ def fit_learning_curve(
             "Number of elements in train_set_size does not match number of columns in error_test"
         )
 
-    fitfunc = lambda p, x: p[0] + p[1] * x
-    errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
+    def fitfunc(p, x):
+        return p[0] + p[1] * x
+
+    def errfunc(p, x, y, err):
+        return (y - fitfunc(p, x)) / err
 
     logx = np.log10(train_set_size)
 
@@ -140,10 +143,8 @@ def fit_learning_curve(
     elif error_train is not None and funcs == 2:
         y1 = np.mean(error_test, axis=1)
         y1err = np.std(error_test, axis=1)
-        logy1 = np.log10(y1)
         y2 = np.mean(error_train, axis=1)
         y2err = np.std(error_train, axis=1)
-        logy2 = np.log10(y2)
         if len(pinit) < 3:  # if default pinit from function declaration
             # change instead to default pinit in next line
             pinit = [1.0, -1.0, 1.0, 1.0, 0.05]
