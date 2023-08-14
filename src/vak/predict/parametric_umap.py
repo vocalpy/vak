@@ -176,9 +176,9 @@ def predict_with_parametric_umap_model(
     logger.info(f"running predict method of {model_name}")
     results = trainer.predict(model, pred_loader)
 
-    eval_df = pd.DataFrame(row, index=[0])
-    eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
-    logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
-    eval_df.to_csv(
-        eval_csv_path, index=False
-    )  # index is False to avoid having "Unnamed: 0" column when loading
+    # eval_df = pd.DataFrame(row, index=[0])
+    # eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
+    # logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
+    # eval_df.to_csv(
+    #     eval_csv_path, index=False
+    # )  # index is False to avoid having "Unnamed: 0" column when loading
