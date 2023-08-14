@@ -64,7 +64,9 @@ class StandardizeSpect:
                 != 1
             ):
                 raise ValueError(
-                    f"mean_freqs, std_freqs, and non_zero_std must all have the same length"
+                    "`mean_freqs`, `std_freqs`, and `non_zero_std` must all have the same length.\n"
+                    f"`mean_freqs.shape`: {mean_freqs.shape}, `std_freqs.shape`: {std_freqs.shape}, "
+                    f"`non_zero_std.shape`: {non_zero_std.shape}"
                 )
 
         self.mean_freqs = mean_freqs
@@ -166,7 +168,7 @@ class StandardizeSpect:
                 "transform"
             )
 
-        if type(spect) != np.ndarray:
+        if not isinstance(spect, np.ndarray):
             raise TypeError(
                 f"type of spect must be numpy.ndarray but was: {type(spect)}"
             )
@@ -223,8 +225,8 @@ class PadToWindow:
     """
 
     def __init__(self, window_size, padval=0.0, return_padding_mask=True):
-        if not (type(window_size) == int) or (
-            type(window_size) == float and window_size.is_integer() is False
+        if not isinstance(window_size, int) or (
+            isinstance(window_size, float) and window_size.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"
@@ -235,7 +237,7 @@ class PadToWindow:
             raise TypeError(
                 f"type for padval must be int or float but was: {type(padval)}"
             )
-        if not type(return_padding_mask) == bool:
+        if not isinstance(return_padding_mask, bool):
             raise TypeError(
                 "return_padding_mask must be boolean (True or False), "
                 f"but was type {type(return_padding_mask)} with value {return_padding_mask}"
@@ -284,9 +286,9 @@ class ViewAsWindowBatch:
     https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
 
-    def __init__(self, window_width):
-        if not (type(window_width) == int) or (
-            type(window_width) == float and window_width.is_integer() is False
+    def __init__(self, window_width: int | float):
+        if not isinstance(window_width, int) or (
+            isinstance(window_width, float) and window_width.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"
@@ -364,9 +366,9 @@ class AddChannel:
         Default is 0, which returns a tensor with dimensions (channel, height, width).
     """
 
-    def __init__(self, channel_dim=0):
-        if not (type(channel_dim) == int) or (
-            type(channel_dim) == float and channel_dim.is_integer() is False
+    def __init__(self, channel_dim: int | float = 0):
+        if not isinstance(channel_dim, int) or (
+            isinstance(channel_dim, float) and channel_dim.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"
