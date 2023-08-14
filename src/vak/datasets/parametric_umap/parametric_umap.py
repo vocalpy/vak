@@ -19,8 +19,7 @@ from torch.utils.data import Dataset
 from numba.core.errors import NumbaDeprecationWarning
 
 warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
-from umap.umap_ import fuzzy_simplicial_set
-
+from umap.umap_ import fuzzy_simplicial_set  # noqa: E402
 # isort: on
 
 
@@ -86,7 +85,7 @@ def get_umap_graph(
     In the UMAP package, these are calculated using :func:`umap._umap.smooth_knn_dist`.
     """
     random_state = (
-        check_random_state(None) if random_state == None else random_state
+        check_random_state(None) if random_state is None else random_state
     )
 
     # number of trees in random projection forest
