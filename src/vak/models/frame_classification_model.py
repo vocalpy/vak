@@ -91,10 +91,10 @@ class FrameClassificationModel(base.Model):
     def __init__(
         self,
         labelmap: Mapping,
-        network: torch.nn.Module | dict[str : torch.nn.Module] | None = None,
+        network: torch.nn.Module | dict | None = None,
         loss: torch.nn.Module | Callable | None = None,
         optimizer: torch.optim.Optimizer | None = None,
-        metrics: dict[str:Type] | None = None,
+        metrics: dict | None = None,
         post_tfm: Callable | None = None,
     ):
         """Initialize a new instance of a
@@ -202,7 +202,7 @@ class FrameClassificationModel(base.Model):
         x, y = batch[0], batch[1]
         out = self.network(x)
         loss = self.loss(out, y)
-        self.log(f"train_loss", loss)
+        self.log(f"train_loss: {loss}")
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
