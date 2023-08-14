@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import inspect
-from typing import Callable, Type, Union
+from typing import Type, Union
 
 import torch
 
@@ -49,10 +49,10 @@ class ModelDefinition:
         ``network = self.definition.network(**self.definition.default_config['network'])``.
     """
 
-    network: Union[torch.nn.Module, dict[str : torch.nn.Module]]
-    loss: dict[Union[str:Callable, str : torch.nn.Module]]
+    network: Union[torch.nn.Module, dict]
+    loss: dict
     optimizer: torch.optim.Optimizer
-    metrics: dict[str:Type]
+    metrics: dict
     default_config: dict
 
 
