@@ -1,12 +1,11 @@
 """utility functions for logging"""
 import logging
-from pathlib import Path
 import sys
 import warnings
+from pathlib import Path
 
-from . import timenow
 from ..__about__ import __version__
-
+from . import timenow
 
 logger = logging.getLogger('vak')  # 'base' logger
 

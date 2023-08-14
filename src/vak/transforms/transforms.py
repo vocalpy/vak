@@ -6,7 +6,6 @@ import pandas as pd
 from ..common.validators import column_or_1d
 from . import functional as F
 
-
 __all__ = [
     "AddChannel",
     "PadToWindow",
@@ -85,8 +84,8 @@ class StandardizeSpect:
         standardize_spect : StandardizeSpect
             Instance that has been fit to input data from split.
         """
-        from vak.datasets.frame_classification import Metadata
         from vak.datasets import frame_classification
+        from vak.datasets.frame_classification import Metadata
 
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)

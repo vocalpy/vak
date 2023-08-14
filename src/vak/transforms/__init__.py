@@ -1,5 +1,2 @@
-from . import (
-    defaults,
-    frame_labels
-)
+from . import defaults, frame_labels
 from .transforms import *

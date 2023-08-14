@@ -2,7 +2,6 @@ from typing import Optional
 
 import torch
 
-
 __all__ = ["one_hot"]
 
 

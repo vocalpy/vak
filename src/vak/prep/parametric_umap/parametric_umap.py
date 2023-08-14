@@ -5,16 +5,14 @@ import warnings
 
 import crowsetta
 
-from . import dataset_arrays
-from .. import dataset_df_helper, split
-from ..unit_dataset import prep_unit_dataset
-
 from ... import datasets
 from ...common import labels
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
-
+from .. import dataset_df_helper, split
+from ..unit_dataset import prep_unit_dataset
+from . import dataset_arrays
 
 logger = logging.getLogger(__name__)
 

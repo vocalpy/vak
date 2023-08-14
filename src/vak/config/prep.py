@@ -2,17 +2,13 @@
 import inspect
 
 import attr
+import dask.bag
 from attr import converters, validators
 from attr.validators import instance_of
-import dask.bag
 
-from .validators import (
-    is_audio_format,
-    is_annot_format,
-    is_spect_format,
-)
-from ..common.converters import expanded_user_path, labelset_to_set
 from .. import prep
+from ..common.converters import expanded_user_path, labelset_to_set
+from .validators import is_annot_format, is_audio_format, is_spect_format
 
 
 def duration_from_toml_value(value):

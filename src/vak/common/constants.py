@@ -5,10 +5,9 @@ from functools import partial
 
 import crowsetta
 import numpy as np
+import soundfile
 from evfuncs import load_cbin
 from scipy.io import loadmat
-import soundfile
-
 
 # ---- audio files ----
 AUDIO_FORMAT_FUNC_MAP = {

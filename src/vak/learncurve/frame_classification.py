@@ -6,16 +6,12 @@ import pathlib
 
 import pandas as pd
 
-from .dirname import replicate_dirname, train_dur_dirname
-from ..eval.frame_classification import eval_frame_classification_model
-from ..train.frame_classification import train_frame_classification_model
-from .. import (
-    common,
-    datasets,
-)
+from .. import common, datasets
 from ..common.converters import expanded_user_path
 from ..common.paths import generate_results_dir_name_as_path
-
+from ..eval.frame_classification import eval_frame_classification_model
+from ..train.frame_classification import train_frame_classification_model
+from .dirname import replicate_dirname, train_dur_dirname
 
 logger = logging.getLogger(__name__)
 

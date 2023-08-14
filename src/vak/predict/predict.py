@@ -5,15 +5,10 @@ import logging
 import os
 import pathlib
 
-from .frame_classification import predict_with_frame_classification_model
-from .. import (
-    models
-)
-from ..common import (
-    validators
-)
+from .. import models
+from ..common import validators
 from ..common.device import get_default as get_default_device
-
+from .frame_classification import predict_with_frame_classification_model
 
 logger = logging.getLogger(__name__)
 

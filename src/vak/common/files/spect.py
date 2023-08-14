@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import logging
 import pathlib
 
@@ -7,9 +8,8 @@ from dask import bag as db
 from dask.diagnostics import ProgressBar
 
 from .. import constants
-from .files import find_fname
 from ..timebins import timebin_dur_from_vec
-
+from .files import find_fname
 
 logger = logging.getLogger(__name__)
 

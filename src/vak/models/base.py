@@ -2,11 +2,12 @@
 that other families of models should subclass.
 """
 from __future__ import annotations
+
 import inspect
 from typing import Callable, ClassVar, Type
 
-import torch
 import pytorch_lightning as lightning
+import torch
 
 from .definition import ModelDefinition
 from .definition import validate as validate_definition

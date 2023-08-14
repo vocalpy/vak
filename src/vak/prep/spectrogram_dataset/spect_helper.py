@@ -9,14 +9,13 @@ import logging
 import pathlib
 
 import dask.bag as db
-from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
+from dask.diagnostics import ProgressBar
 
 from ...common import constants, files
 from ...common.annotation import map_annotated_to_annot
 from ...common.converters import expanded_user_path, labelset_to_set
-
 
 logger = logging.getLogger(__name__)
 

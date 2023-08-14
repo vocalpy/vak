@@ -4,12 +4,9 @@ from __future__ import annotations
 import logging
 import pathlib
 
-from .frame_classification import learning_curve_for_frame_classification_model
-from .. import (
-    models
-)
+from .. import models
 from ..common.converters import expanded_user_path
-
+from .frame_classification import learning_curve_for_frame_classification_model
 
 logger = logging.getLogger(__name__)
 

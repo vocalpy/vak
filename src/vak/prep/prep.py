@@ -1,12 +1,9 @@
 import logging
 import pathlib
 
-from . import (
-    constants,
-)
-from .parametric_umap import prep_parametric_umap_dataset
+from . import constants
 from .frame_classification import prep_frame_classification_dataset
-
+from .parametric_umap import prep_parametric_umap_dataset
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,12 @@
 """functions to plot learning curve results"""
-from glob import glob
 import os
 import pickle
 from configparser import ConfigParser
+from glob import glob
 
 import joblib
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def get_all_results_list(root, these_dirs_branch, config_file):

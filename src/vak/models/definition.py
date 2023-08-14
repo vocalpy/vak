@@ -2,13 +2,12 @@
 of a neural network model; the abstraction of how models
 are declared with code in vak."""
 from __future__ import annotations
-import dataclasses
 
+import dataclasses
 import inspect
 from typing import Callable, Type, Union
 
 import torch
-
 
 REQUIRED_MODEL_DEFINITION_CLASS_VARS = (
     'network',

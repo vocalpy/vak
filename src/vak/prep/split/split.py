@@ -8,10 +8,9 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+from ...common.labels import from_df as labels_from_df
 from .algorithms import brute_force
 from .algorithms.validate import validate_split_durations
-from ...common.labels import from_df as labels_from_df
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,25 +1,20 @@
 """Function that evaluates trained models in the frame classification family."""
 from __future__ import annotations
 
-from collections import OrderedDict
-from datetime import datetime
 import json
 import logging
 import pathlib
+from collections import OrderedDict
+from datetime import datetime
 
 import joblib
-import pytorch_lightning as lightning
 import pandas as pd
+import pytorch_lightning as lightning
 import torch.utils.data
 
-from .. import (
-    datasets,
-    models,
-    transforms,
-)
+from .. import datasets, models, transforms
 from ..common import validators
 from ..datasets.frame_classification import FramesDataset
-
 
 logger = logging.getLogger(__name__)
 

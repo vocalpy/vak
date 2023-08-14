@@ -25,7 +25,6 @@ import scipy.stats
 from ...common.timebins import timebin_dur_from_vec
 from ...common.validators import column_or_1d, row_or_1d
 
-
 __all__ = [
     # keep alphabetized
     'from_segments',

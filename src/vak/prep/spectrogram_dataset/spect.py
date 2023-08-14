@@ -6,9 +6,8 @@ spectrogram adapted from code by Kyle Kastner and Tim Sainburg
 https://github.com/timsainb/python_spectrograms_and_inversion
 """
 import numpy as np
-
-from scipy.signal import butter, lfilter
 from matplotlib.mlab import specgram
+from scipy.signal import butter, lfilter
 
 
 def butter_bandpass(lowcut, highcut, fs, order=5):

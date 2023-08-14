@@ -10,8 +10,7 @@ from .predict import PredictConfig
 from .prep import PrepConfig
 from .spect_params import SpectParamsConfig
 from .train import TrainConfig
-from .validators import are_sections_valid, are_options_valid
-
+from .validators import are_options_valid, are_sections_valid
 
 SECTION_CLASSES = {
     "EVAL": EvalConfig,

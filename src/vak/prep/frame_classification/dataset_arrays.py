@@ -9,17 +9,12 @@ import pathlib
 import attrs
 import crowsetta
 import dask.bag as db
-from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
+from dask.diagnostics import ProgressBar
 
+from ... import common, datasets, transforms
 from .. import constants as prep_constants
-from ... import (
-    common,
-    datasets,
-    transforms
-)
-
 
 logger = logging.getLogger(__name__)
 

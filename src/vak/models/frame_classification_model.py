@@ -9,12 +9,11 @@ from typing import Callable, ClassVar, Mapping, Type
 
 import torch
 
+from .. import transforms
+from ..common import labels
 from . import base
 from .definition import ModelDefinition
 from .registry import model_family
-from .. import transforms
-from ..common import labels
-
 
 logger = logging.getLogger(__name__)
 

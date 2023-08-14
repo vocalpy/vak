@@ -1,5 +1,5 @@
-from pathlib import Path
 from distutils.util import strtobool
+from pathlib import Path
 
 
 def bool_from_str(value):

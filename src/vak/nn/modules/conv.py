@@ -1,6 +1,8 @@
 """Modules that perform neural network convolutions."""
 import torch
 from torch.nn import functional as F
+
+
 # NOTE: added 2023-03-04
 # in this class, we detect when one extra pixel should be added on the bottom or right
 # and specifically pad those, see line 75, ``if rows_odd or cols_odd:``.

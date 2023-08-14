@@ -4,13 +4,10 @@ from __future__ import annotations
 import logging
 import pathlib
 
+from .. import models
+from ..common import validators
 from .frame_classification import train_frame_classification_model
 from .parametric_umap import train_parametric_umap_model
-from .. import (
-    models,
-)
-from ..common import validators
-
 
 logger = logging.getLogger(__name__)
 

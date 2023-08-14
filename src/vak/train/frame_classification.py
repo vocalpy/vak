@@ -1,31 +1,22 @@
 """Function that trains models in the frame classification family."""
 from __future__ import annotations
 
+import datetime
 import json
 import logging
 import pathlib
 import shutil
-import datetime
 
 import joblib
-
 import pandas as pd
 import torch.utils.data
 
-from .. import (
-    datasets,
-    models,
-    transforms,
-)
+from .. import datasets, models, transforms
 from ..common import validators
-from ..datasets.frame_classification import (
-    WindowDataset,
-    FramesDataset
-)
 from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
 from ..common.trainer import get_default_trainer
-
+from ..datasets.frame_classification import FramesDataset, WindowDataset
 
 logger = logging.getLogger(__name__)
 

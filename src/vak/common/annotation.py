@@ -1,16 +1,16 @@
 from __future__ import annotations
-from collections import Counter
+
 import copy
 import os
 import pathlib
+from collections import Counter
 from typing import Optional, Union
 
 import crowsetta
 import numpy as np
 import pandas as pd
 
-from . import files
-from . import constants
+from . import constants, files
 from .typing import PathLike
 
 

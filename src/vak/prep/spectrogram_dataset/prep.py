@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime
 import logging
 import pathlib
+from datetime import datetime
 
 import attrs
 import crowsetta
 import pandas as pd
 
-from . import audio_helper, spect_helper
-from ...config.spect_params import SpectParamsConfig
 from ...common import annotation
 from ...common.converters import expanded_user_path, labelset_to_set
-
+from ...config.spect_params import SpectParamsConfig
+from . import audio_helper, spect_helper
 
 logger = logging.getLogger(__name__)
 

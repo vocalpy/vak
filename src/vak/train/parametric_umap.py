@@ -1,24 +1,19 @@
 """Function that trains models in the Parametric UMAP family."""
 from __future__ import annotations
 
+import datetime
 import logging
 import pathlib
-import datetime
 
 import pandas as pd
-import torch.utils.data
 import pytorch_lightning as lightning
+import torch.utils.data
 
-from .. import (
-    datasets,
-    models,
-    transforms,
-)
+from .. import datasets, models, transforms
 from ..common import validators
-from ..datasets.parametric_umap import ParametricUMAPDataset
 from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
-
+from ..datasets.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
 

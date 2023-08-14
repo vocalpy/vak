@@ -1,2 +1,2 @@
 from .dice import *
-from .umap import umap_loss, UmapLoss
+from .umap import UmapLoss, umap_loss

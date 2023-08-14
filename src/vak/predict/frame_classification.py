@@ -8,24 +8,15 @@ import pathlib
 
 import crowsetta
 import joblib
-import pytorch_lightning as lightning
 import numpy as np
-from tqdm import tqdm
+import pytorch_lightning as lightning
 import torch.utils.data
+from tqdm import tqdm
 
-from .. import (
-    datasets,
-    models,
-    transforms
-)
-from ..common import (
-    constants,
-    files,
-    validators
-)
-from ..datasets.frame_classification import FramesDataset
+from .. import datasets, models, transforms
+from ..common import constants, files, validators
 from ..common.device import get_default as get_default_device
-
+from ..datasets.frame_classification import FramesDataset
 
 logger = logging.getLogger(__name__)
 

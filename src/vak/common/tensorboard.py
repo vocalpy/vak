@@ -2,8 +2,9 @@
 from pathlib import Path
 
 import pandas as pd
+from tensorboard.backend.event_processing.event_accumulator import \
+    EventAccumulator
 from torch.utils.tensorboard import SummaryWriter
-from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 
 def get_summary_writer(log_dir, filename_suffix):

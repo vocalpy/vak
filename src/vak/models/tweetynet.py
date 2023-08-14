@@ -10,12 +10,9 @@ from __future__ import annotations
 
 import torch
 
-from .. import (
-    metrics,
-    nets
-)
-from .frame_classification_model import FrameClassificationModel
+from .. import metrics, nets
 from .decorator import model
+from .frame_classification_model import FrameClassificationModel
 
 
 @model(family=FrameClassificationModel)

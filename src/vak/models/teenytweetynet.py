@@ -2,11 +2,9 @@
 """
 import torch
 
-from .. import metrics
-from .. import nets
-
-from .frame_classification_model import FrameClassificationModel
+from .. import metrics, nets
 from .decorator import model
+from .frame_classification_model import FrameClassificationModel
 
 
 @model(family=FrameClassificationModel)

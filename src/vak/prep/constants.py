@@ -2,11 +2,7 @@
 
 Defined in a separate module to minimize circular imports.
 """
-from . import (
-    parametric_umap,
-    frame_classification
-)
-
+from . import frame_classification, parametric_umap
 
 VALID_PURPOSES = frozenset(
     [

@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 import pathlib
 
 import toml
 
 from .. import models
-
 
 MODEL_TABLES = [
         "network",

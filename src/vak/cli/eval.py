@@ -5,7 +5,6 @@ from .. import config
 from .. import eval as eval_module
 from ..common.logging import config_logging_for_cli, log_version
 
-
 logger = logging.getLogger(__name__)
 
 

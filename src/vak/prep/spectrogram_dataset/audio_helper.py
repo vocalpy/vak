@@ -1,21 +1,19 @@
 from __future__ import annotations
+
 import logging
 import os
 from pathlib import Path
 
-import numpy as np
 import dask.bag as db
+import numpy as np
 from dask.diagnostics import ProgressBar
 
-from ... import (
-    config,
-)
+from ... import config
 from ...common import constants, files
 from ...common.annotation import map_annotated_to_annot
 from ...common.converters import labelset_to_set
 from ...config.spect_params import SpectParamsConfig
 from .spect import spectrogram
-
 
 logger = logging.getLogger(__name__)
 

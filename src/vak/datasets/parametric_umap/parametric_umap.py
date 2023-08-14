@@ -12,13 +12,15 @@ import scipy.sparse._coo
 from sklearn.utils import check_random_state
 from torch.utils.data import Dataset
 
+# isort: off
 # Ignore warnings from Numba deprecation:
 # https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit
 # Numba is required by UMAP.
 from numba.core.errors import NumbaDeprecationWarning
+
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 from umap.umap_ import fuzzy_simplicial_set
-
+# isort: on
 
 def get_umap_graph(X: npt.NDArray, n_neighbors: int = 10, metric: str= "euclidean",
                    random_state: np.random.RandomState | None = None,

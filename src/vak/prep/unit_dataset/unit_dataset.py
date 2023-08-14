@@ -10,16 +10,15 @@ import attrs
 import crowsetta
 import dask
 import dask.delayed
-from dask.diagnostics import ProgressBar
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from dask.diagnostics import ProgressBar
 
 from ...common import annotation, constants
 from ...common.converters import expanded_user_path, labelset_to_set
 from ..spectrogram_dataset.audio_helper import files_from_dir
 from ..spectrogram_dataset.spect import spectrogram
-
 
 logger = logging.getLogger(__name__)
 

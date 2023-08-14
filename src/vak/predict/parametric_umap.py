@@ -8,18 +8,10 @@ import pathlib
 import pytorch_lightning as lightning
 import torch.utils.data
 
-from .. import (
-    datasets,
-    models,
-    transforms
-)
-from ..common import (
-    constants,
-    validators
-)
-from ..datasets.parametric_umap import ParametricUMAPDataset
+from .. import datasets, models, transforms
+from ..common import constants, validators
 from ..common.device import get_default as get_default_device
-
+from ..datasets.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
 

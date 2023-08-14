@@ -11,13 +11,9 @@ import math
 
 import torch
 
-from .. import (
-    metrics,
-    nets,
-    nn,
-)
-from .parametric_umap_model import ParametricUMAPModel
+from .. import metrics, nets, nn
 from .decorator import model
+from .parametric_umap_model import ParametricUMAPModel
 
 
 @model(family=ParametricUMAPModel)

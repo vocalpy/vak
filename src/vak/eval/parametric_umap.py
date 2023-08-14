@@ -1,23 +1,18 @@
 """Function that evaluates trained models in the parametric UMAP family."""
 from __future__ import annotations
 
-from collections import OrderedDict
-from datetime import datetime
 import logging
 import pathlib
+from collections import OrderedDict
+from datetime import datetime
 
-import pytorch_lightning as lightning
 import pandas as pd
+import pytorch_lightning as lightning
 import torch.utils.data
 
-from .. import (
-    datasets,
-    models,
-    transforms,
-)
+from .. import datasets, models, transforms
 from ..common import validators
 from ..datasets.parametric_umap import ParametricUMAPDataset
-
 
 logger = logging.getLogger(__name__)
 

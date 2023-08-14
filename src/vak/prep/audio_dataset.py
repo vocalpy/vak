@@ -5,14 +5,13 @@ import pathlib
 
 import crowsetta
 import dask.bag as db
-from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
+from dask.diagnostics import ProgressBar
 
 from ..common import annotation, constants
 from ..common.converters import expanded_user_path, labelset_to_set
 from .spectrogram_dataset.audio_helper import files_from_dir
-
 
 logger = logging.getLogger(__name__)
 
