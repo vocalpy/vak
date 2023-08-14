@@ -55,7 +55,8 @@ def download_dataset(
     # top-level keys are bird ID: bl26lb16, gr41rd51, ...
     for bird_id, tars_dict in download_urls_by_bird_ID.items():
         print(f"Downloading .tar files for bird: {bird_id}")
-        # bird ID -> dict where keys are .tar.gz filenames mapping to download url + MD5 hash
+        # bird ID -> dict
+        # where keys are .tar.gz filenames mapping to download url + MD5 hash
         for tar_name, url_md5_dict in tars_dict.items():
             print(f"Downloading tar: {tar_name}")
             download_url = url_md5_dict["download"]
