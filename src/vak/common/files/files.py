@@ -28,7 +28,7 @@ def find_fname(fname: str, ext: str) -> str | None:
     """
     if ext.startswith("."):
         ext = ext[1:]
-    m = re.match(f"[\S ]*{ext}", fname)
+    m = re.match(f"[\S ]*{ext}", fname)  # noqa: W605
     if hasattr(m, "group"):
         return m.group()
     elif m is None:
