@@ -1,6 +1,7 @@
 """Function that gets an instance of a model,
 given its name and a configuration as a dict."""
 from __future__ import annotations
+
 import inspect
 from typing import Callable
 
@@ -9,9 +10,9 @@ from . import registry
 
 def get(name: str,
         config: dict,
-        num_classes: int,
         input_shape: tuple[int, int, int],
-        labelmap: dict,
+        num_classes: int | None = None,
+        labelmap: dict | None = None,
         post_tfm: Callable | None = None):
     """Get a model instance, given its name and
     a configuration as a :class:`dict`.
@@ -76,7 +77,23 @@ def get(name: str,
                 f"unable to determine network init arguments for model. Currently all models "
                 f"in this family must have networks with parameters ``num_input_channels`` and ``num_freqbins``"
             )
+        model = model_class.from_config(config=config, labelmap=labelmap, post_tfm=post_tfm)
+    elif model_family == 'ParametricUMAPModel':
+        encoder_init_params = list(
+            inspect.signature(
+                model_class.definition.network['encoder'].__init__
+            ).parameters.keys()
+        )
+        if ('input_shape' in encoder_init_params):
+            if "encoder" in config["network"]:
+                config["network"]["encoder"].update(input_shape=input_shape)
+            else:
+                config["network"]["encoder"] = dict(input_shape=input_shape)
 
-    model = model_class.from_config(config=config, labelmap=labelmap, post_tfm=post_tfm)
+        model = model_class.from_config(config=config)
+    else:
+        raise ValueError(
+            f"Value for ``model_family`` not recognized: {model_family}"
+        )
 
     return model

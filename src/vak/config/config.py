@@ -1,7 +1,6 @@
 import attr
 from attr.validators import instance_of, optional
 
-from .dataloader import DataLoaderConfig
 from .eval import EvalConfig
 from .learncurve import LearncurveConfig
 from .predict import PredictConfig
@@ -20,8 +19,6 @@ class Config:
         represents ``[PREP]`` section of config.toml file
     spect_params : vak.config.spect_params.SpectParamsConfig
         represents ``[SPECT_PARAMS]`` section of config.toml file
-    dataloader : vak.config.dataloader.DataLoaderConfig
-        represents ``[DATALOADER]`` section of config.toml file
     train : vak.config.train.TrainConfig
         represents ``[TRAIN]`` section of config.toml file
     eval : vak.config.eval.EvalConfig
@@ -31,14 +28,9 @@ class Config:
     learncurve : vak.config.learncurve.LearncurveConfig
         represents ``[LEARNCURVE]`` section of config.toml file
     """
-
     spect_params = attr.ib(
         validator=instance_of(SpectParamsConfig), default=SpectParamsConfig()
     )
-    dataloader = attr.ib(
-        validator=instance_of(DataLoaderConfig), default=DataLoaderConfig()
-    )
-
     prep = attr.ib(validator=optional(instance_of(PrepConfig)), default=None)
     train = attr.ib(validator=optional(instance_of(TrainConfig)), default=None)
     eval = attr.ib(validator=optional(instance_of(EvalConfig)), default=None)

@@ -99,10 +99,17 @@ class EvalConfig:
         a float value for ``min_segment_dur``.
         See the docstring of the transform for more details on
         these arguments and how they work.
+    transform_params: dict, optional
+        Parameters for data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    dataset_params: dict, optional
+        Parameters for dataset.
+        Passed as keyword arguments.
+        Optional, default is None.
     """
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path)
-    labelmap_path = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
 
     # required, model / dataloader
@@ -118,6 +125,10 @@ class EvalConfig:
         default=None,
     )
 
+    # "optional" but actually required for frame classification models
+    # TODO: check model family in __post_init__ and raise ValueError if labelmap
+    # TODO: not specified for a frame classification model?
+    labelmap_path = attr.ib(converter=converters.optional(expanded_user_path), default=None)
     # optional, transform
     spect_scaler_path = attr.ib(
         converter=converters.optional(expanded_user_path),
@@ -133,3 +144,15 @@ class EvalConfig:
     # optional, data loader
     num_workers = attr.ib(validator=instance_of(int), default=2)
     device = attr.ib(validator=instance_of(str), default=device.get_default())
+
+    transform_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )
+
+    dataset_params = attr.ib(
+        converter=converters.optional(dict),
+        validator=validators.optional(instance_of(dict)),
+        default=None,
+    )

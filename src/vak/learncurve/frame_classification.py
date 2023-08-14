@@ -24,11 +24,13 @@ def learning_curve_for_frame_classification_model(
     model_name: str,
     model_config: dict,
     dataset_path: str | pathlib.Path,
-    window_size: int,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
-    root_results_dir: str | pathlib.Path | None = None,
+    train_transform_params: dict | None = None,
+    train_dataset_params: dict | None = None,
+    val_transform_params: dict | None = None,
+    val_dataset_params: dict | None = None,
     results_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None =None,
     normalize_spectrograms: bool = True,
@@ -69,12 +71,28 @@ def learning_curve_for_frame_classification_model(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader.
-    root_results_dir : str, pathlib.Path
-        Root directory in which a new directory will be created where results will be saved.
+    train_transform_params: dict, optional
+        Parameters for training data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    train_dataset_params: dict, optional
+        Parameters for training dataset.
+        Passed as keyword arguments to
+        :class:`vak.datasets.frame_classification.WindowDataset`.
+        Optional, default is None.
+    val_transform_params: dict, optional
+        Parameters for validation data transform.
+        Passed as keyword arguments.
+        Optional, default is None.
+    val_dataset_params: dict, optional
+        Parameters for validation dataset.
+        Passed as keyword arguments to
+        :class:`vak.datasets.frame_classification.FramesDataset`.
+        Optional, default is None.
     results_path : str, pathlib.Path
-        Directory where results will be saved. If specified, this parameter overrides root_results_dir.
+        Directory where results will be saved.
     previous_run_path : str, Path
-        path to directory containing dataset .csv files
+        Path to directory containing dataset .csv files
         that represent subsets of training set, created by
         a previous run of ``vak.core.learncurve.learning_curve``.
         Typically directory will have a name like ``results_{timestamp}``
@@ -139,15 +157,11 @@ def learning_curve_for_frame_classification_model(
         )
 
     # ---- set up directory to save output -----------------------------------------------------------------------------
-    if results_path:
-        results_path = expanded_user_path(results_path)
-        if not results_path.is_dir():
-            raise NotADirectoryError(
-                f"results_path not recognized as a directory: {results_path}"
-            )
-    else:
-        results_path = generate_results_dir_name_as_path(root_results_dir)
-        results_path.mkdir()
+    results_path = expanded_user_path(results_path)
+    if not results_path.is_dir():
+        raise NotADirectoryError(
+            f"results_path not recognized as a directory: {results_path}"
+        )
 
     logger.info(f"Saving results to: {results_path}")
 
@@ -194,10 +208,13 @@ def learning_curve_for_frame_classification_model(
             model_name,
             model_config,
             dataset_path,
-            window_size,
             batch_size,
             num_epochs,
             num_workers,
+            train_transform_params,
+            train_dataset_params,
+            val_transform_params,
+            val_dataset_params,
             results_path=results_path_this_replicate,
             normalize_spectrograms=normalize_spectrograms,
             shuffle=shuffle,
@@ -258,15 +275,16 @@ def learning_curve_for_frame_classification_model(
             model_name,
             model_config,
             dataset_path,
-            checkpoint_path=ckpt_path,
-            labelmap_path=labelmap_path,
-            output_dir=results_path_this_replicate,
-            window_size=window_size,
-            num_workers=num_workers,
-            split="test",
-            spect_scaler_path=spect_scaler_path,
-            post_tfm_kwargs=post_tfm_kwargs,
-            device=device,
+            ckpt_path,
+            labelmap_path,
+            results_path_this_replicate,
+            num_workers,
+            val_transform_params,
+            val_dataset_params,
+            "test",
+            spect_scaler_path,
+            post_tfm_kwargs,
+            device,
         )
 
     # ---- make a csv for analysis -------------------------------------------------------------------------------------

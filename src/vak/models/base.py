@@ -329,7 +329,7 @@ class Model(lightning.LightningModule):
         elif isinstance(cls.definition.network, dict):
             network = {}
             for net_name, net_class in cls.definition.network.items():
-                net_class_kwargs = network_kwargs[net_name]
+                net_class_kwargs = network_kwargs.get(net_name, {})
                 network[net_name] = net_class(**net_class_kwargs)
 
         if isinstance(cls.definition.network, dict):

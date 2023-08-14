@@ -44,12 +44,15 @@ class FramesDataset:
         dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
         self.frames_paths = self.dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
-        self.frame_labels_paths = self.dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+        if split != 'predict':
+            self.frame_labels_paths = self.dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+        else:
+            self.frame_labels_paths = None
 
         if input_type == 'audio':
             self.source_paths = self.dataset_df['audio_path'].values
         elif input_type == 'spect':
-            self.source_paths = self.dataset_df['audio_path'].values
+            self.source_paths = self.dataset_df['spect_path'].values
         else:
             raise ValueError(
                 f"Invalid `input_type`: {input_type}. Must be one of {{'audio', 'spect'}}."
@@ -97,6 +100,18 @@ class FramesDataset:
         split: str = "val",
         item_transform: Callable | None = None,
     ):
+        """
+
+        Parameters
+        ----------
+        dataset_path
+        split
+        item_transform
+
+        Returns
+        -------
+
+        """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
         frame_dur = metadata.frame_dur

@@ -4,7 +4,6 @@ import toml
 from toml.decoder import TomlDecodeError
 
 from .config import Config
-from .dataloader import DataLoaderConfig
 from .eval import EvalConfig
 from .learncurve import LearncurveConfig
 from .predict import PredictConfig
@@ -15,7 +14,6 @@ from .validators import are_sections_valid, are_options_valid
 
 
 SECTION_CLASSES = {
-    "DATALOADER": DataLoaderConfig,
     "EVAL": EvalConfig,
     "LEARNCURVE": LearncurveConfig,
     "PREDICT": PredictConfig,
@@ -25,10 +23,8 @@ SECTION_CLASSES = {
 }
 
 REQUIRED_OPTIONS = {
-    "DATALOADER": None,
     "EVAL": [
         "checkpoint_path",
-        "labelmap_path",
         "output_dir",
         "model",
     ],
@@ -38,7 +34,6 @@ REQUIRED_OPTIONS = {
     ],
     "PREDICT": [
         "checkpoint_path",
-        "labelmap_path",
         "model",
     ],
     "PREP": [

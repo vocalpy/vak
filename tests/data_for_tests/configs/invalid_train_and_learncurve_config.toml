@@ -17,9 +17,6 @@ freq_cutoffs = [500, 10000]
 thresh = 6.25
 transform_type = "log_spect"
 
-[DATALOADER]
-window_size = 88
-
 # this .toml file should cause 'vak.config.parse.from_toml' to raise a ValueError
 # because it defines both a TRAIN and a LEARNCURVE section
 [TRAIN]

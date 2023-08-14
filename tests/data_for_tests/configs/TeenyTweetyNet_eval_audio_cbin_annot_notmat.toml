@@ -1,0 +1,31 @@
+[PREP]
+dataset_type = "frame classification"
+input_type = "spect"
+labelset = "iabcdefghjk"
+data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032412"
+output_dir = "./tests/data_for_tests/generated/prep/eval/audio_cbin_annot_notmat/TeenyTweetyNet"
+audio_format = "cbin"
+annot_format = "notmat"
+
+[SPECT_PARAMS]
+fft_size = 256
+step_size = 64
+freq_cutoffs = [ 1000, 8000,]
+thresh = 6.25
+transform_type = "log_spect"
+
+[EVAL]
+checkpoint_path = "~/Documents/repos/coding/birdsong/TeenyTweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TeenyTweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+labelmap_path = "~/Documents/repos/coding/birdsong/TeenyTweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
+model = "TeenyTweetyNet"
+batch_size = 4
+num_workers = 2
+device = "cuda"
+spect_scaler_path = "~/Documents/repos/coding/birdsong/TeenyTweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
+output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TeenyTweetyNet"
+
+[EVAL.transform_params]
+window_size = 44
+
+[TeenyTweetyNet.optimizer]
+lr = 0.001

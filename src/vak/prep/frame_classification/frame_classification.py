@@ -58,12 +58,6 @@ def prep_frame_classification_dataset(
         Purpose of the dataset.
         One of {'train', 'eval', 'predict', 'learncurve'}.
         These correspond to commands of the vak command-line interface.
-    dataset_type : str
-        String name of the type of dataset, e.g.,
-        'frame_classification'. Dataset types are
-        defined by machine learning tasks, e.g.,
-        a 'frame_classification' dataset would be used
-        a :class:`vak.models.FrameClassificationModel` model.
     input_type : str
         The type of input to the neural network model.
         One of {'audio', 'spect'}.
@@ -320,7 +314,7 @@ def prep_frame_classification_dataset(
             do_split = True
 
     if do_split:
-        dataset_df = split.dataframe(
+        dataset_df = split.frame_classification_dataframe(
             dataset_df,
             dataset_path,
             labelset=labelset,
@@ -392,6 +386,11 @@ def prep_frame_classification_dataset(
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
     frame_dur = validators.validate_and_get_frame_dur(dataset_df, input_type)
+
+    if input_type == 'spect' and spect_format != 'npz':
+        # then change to npz since we canonicalize data so it's always npz arrays
+        # We need this to be correct for other functions, e.g. predict when it loads spectrogram files
+        spect_format = 'npz'
 
     metadata = datasets.frame_classification.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
