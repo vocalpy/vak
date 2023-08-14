@@ -8,7 +8,6 @@ import pandas as pd
 
 from .. import common, datasets
 from ..common.converters import expanded_user_path
-from ..common.paths import generate_results_dir_name_as_path
 from ..eval.frame_classification import eval_frame_classification_model
 from ..train.frame_classification import train_frame_classification_model
 from .dirname import replicate_dirname, train_dur_dirname
@@ -183,7 +182,7 @@ def learning_curve_for_frame_classification_model(
             to_do.append((train_dur, replicate_num))
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
-    logger.info(f"Starting training for learning curve.")
+    logger.info("Starting training for learning curve.")
     for train_dur, replicate_num in to_do:
         logger.info(
             f"Training model with training set of size: {train_dur}s, replicate number {replicate_num}.",
