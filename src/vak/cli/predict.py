@@ -30,7 +30,7 @@ def predict(toml_path):
         log_dst=cfg.predict.output_dir,
         log_stem="predict",
         level="INFO",
-        force=True
+        force=True,
     )
     log_version(logger)
     logger.info("Logging results to {}".format(cfg.prep.output_dir))

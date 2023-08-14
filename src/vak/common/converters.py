@@ -48,11 +48,15 @@ def range_str(range_str, sort=True):
         subrange = substr.split("-")
         if len(subrange) not in [1, 2]:
             raise SyntaxError(
-                "unable to parse range {} in labelset {}.".format(subrange, substr)
+                "unable to parse range {} in labelset {}.".format(
+                    subrange, substr
+                )
             )
         list_range.extend([int(subrange[0])]) if len(
             subrange
-        ) == 1 else list_range.extend(range(int(subrange[0]), int(subrange[1]) + 1))
+        ) == 1 else list_range.extend(
+            range(int(subrange[0]), int(subrange[1]) + 1)
+        )
 
     if sort:
         list_range.sort()

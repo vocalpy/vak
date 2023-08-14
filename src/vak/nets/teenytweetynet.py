@@ -10,6 +10,7 @@ class TeenyTweetyNet(nn.Module):
     -----
     This is the network used by ``vak.models.TeenyTweetyNetModel``.
     """
+
     def __init__(
         self,
         num_classes,
@@ -85,8 +86,15 @@ class TeenyTweetyNet(nn.Module):
         # determine number of features in output after stacking channels
         # we use the same number of features for hidden states
         # note self.num_hidden is also used to reshape output of cnn in self.forward method
-        N_DUMMY_TIMEBINS = 256  # some not-small number. This dimension doesn't matter here
-        batch_shape = (1, self.num_input_channels, self.num_freqbins, N_DUMMY_TIMEBINS)
+        N_DUMMY_TIMEBINS = (
+            256  # some not-small number. This dimension doesn't matter here
+        )
+        batch_shape = (
+            1,
+            self.num_input_channels,
+            self.num_freqbins,
+            N_DUMMY_TIMEBINS,
+        )
         tmp_tensor = torch.rand(batch_shape)
         tmp_out = self.cnn(tmp_tensor)
         channels_out, freqbins_out = tmp_out.shape[1], tmp_out.shape[2]

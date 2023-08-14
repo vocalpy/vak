@@ -2,8 +2,9 @@
 from pathlib import Path
 
 import pandas as pd
-from tensorboard.backend.event_processing.event_accumulator import \
-    EventAccumulator
+from tensorboard.backend.event_processing.event_accumulator import (
+    EventAccumulator,
+)
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -100,14 +101,19 @@ def events2df(events_path, size_guidance=None, drop_wall_time=True):
     ea = EventAccumulator(path=events_path, size_guidance=size_guidance)
     ea.Reload()  # load all data written so far
 
-    scalar_tags = ea.Tags()["scalars"]  # list of tags for values written to scalar
+    scalar_tags = ea.Tags()[
+        "scalars"
+    ]  # list of tags for values written to scalar
     # make a dataframe for each tag, which we will then concatenate using 'step' as the index
     # so that pandas will fill in with NaNs for any scalars that were not measured on every step
     dfs = {}
     for scalar_tag in scalar_tags:
         dfs[scalar_tag] = pd.DataFrame(
-            [(scalar.wall_time, scalar.step, scalar.value) for scalar in ea.Scalars(scalar_tag)],
-            columns=["wall_time", "step", scalar_tag]
+            [
+                (scalar.wall_time, scalar.step, scalar.value)
+                for scalar in ea.Scalars(scalar_tag)
+            ],
+            columns=["wall_time", "step", scalar_tag],
         ).set_index("step")
         if drop_wall_time:
             dfs[scalar_tag].drop("wall_time", axis=1, inplace=True)

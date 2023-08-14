@@ -26,35 +26,37 @@ def validate_labels(labels: list[np.array], labelset: set) -> None:
         if uniq_labels < labelset:
             missing = labelset - uniq_labels
             raise ValueError(
-                f'Unable to split using this labelset: {labelset}. '
-                f'The following classes of label do not appear in the list of label arrays: {missing}\n'
-                'To fix, either remove those classes from the labelset, '
-                'or add vocalizations to the dataset containing the missing labels.'
+                f"Unable to split using this labelset: {labelset}. "
+                f"The following classes of label do not appear in the list of label arrays: {missing}\n"
+                "To fix, either remove those classes from the labelset, "
+                "or add vocalizations to the dataset containing the missing labels."
             )
         elif uniq_labels > labelset:
             extra = uniq_labels - labelset
             raise ValueError(
-                f'Unable to split using this labelset: {labelset}. '
-                f'The following classes of label that are not in labelset are found '
-                f'in the list of label arrays: {extra}\n'
-                'To fix, either add these classes to the labelset, '
-                'or remove the vocalizations from the dataset that contain these labels.'
+                f"Unable to split using this labelset: {labelset}. "
+                f"The following classes of label that are not in labelset are found "
+                f"in the list of label arrays: {extra}\n"
+                "To fix, either add these classes to the labelset, "
+                "or remove the vocalizations from the dataset that contain these labels."
             )
         elif uniq_labels & labelset == set():
             raise ValueError(
-                f'Unable to split using this labelset: {labelset}. '
-                f'None of the label classes are found in the set of '
-                f'unique labels from the list of label arrays: {uniq_labels}.'
+                f"Unable to split using this labelset: {labelset}. "
+                f"None of the label classes are found in the set of "
+                f"unique labels from the list of label arrays: {uniq_labels}."
             )
 
 
-def brute_force(durs: list[float],
-                labels: list[np.ndarray],
-                labelset: set,
-                train_dur: Union[int, float],
-                val_dur: Union[int, float],
-                test_dur: Union[int, float],
-                max_iter: int = 5000) -> (list[int], list[int], list[int]):
+def brute_force(
+    durs: list[float],
+    labels: list[np.ndarray],
+    labelset: set,
+    train_dur: Union[int, float],
+    val_dur: Union[int, float],
+    test_dur: Union[int, float],
+    max_iter: int = 5000,
+) -> (list[int], list[int], list[int]):
     """Generate indices that split a dataset into separate
     training, validation, and test subsets.
 
@@ -144,20 +146,31 @@ def brute_force(durs: list[float],
 
         # when making `split_inds`, "initialize" the dict with all split names, by using target_split_durs
         # so we don't get an error when indexing into dict in return statement below
-        split_inds = {split_name: [] for split_name in target_split_durs.keys()}
-        total_split_durs = {split_name: 0 for split_name in target_split_durs.keys()}
-        split_labelsets = {split_name: set() for split_name in target_split_durs.keys()}
+        split_inds = {
+            split_name: [] for split_name in target_split_durs.keys()
+        }
+        total_split_durs = {
+            split_name: 0 for split_name in target_split_durs.keys()
+        }
+        split_labelsets = {
+            split_name: set() for split_name in target_split_durs.keys()
+        }
 
         # list of split 'choices' we use when randomly adding indices to splits
         choice = []
         for split_name in target_split_durs.keys():
-            if target_split_durs[split_name] > 0 or target_split_durs[split_name] == -1:
+            if (
+                target_split_durs[split_name] > 0
+                or target_split_durs[split_name] == -1
+            ):
                 choice.append(split_name)
 
         # ---- make sure each split has at least one instance of each label --------------------------------------------
         for label_from_labelset in sorted(labelset):
             label_inds = [
-                ind for ind in durs_labels_inds if label_from_labelset in labels[ind]
+                ind
+                for ind in durs_labels_inds
+                if label_from_labelset in labels[ind]
             ]
 
             random.shuffle(label_inds)
@@ -170,9 +183,9 @@ def brute_force(durs: list[float],
                         ind = label_inds.pop()
                         split_inds[split_name].append(ind)
                         total_split_durs[split_name] += durs[ind]
-                        split_labelsets[split_name] = split_labelsets[split_name].union(
-                            set(labels[ind])
-                        )
+                        split_labelsets[split_name] = split_labelsets[
+                            split_name
+                        ].union(set(labels[ind]))
                         durs_labels_inds.remove(ind)
                     except IndexError:
                         if len(label_inds) == 0:
@@ -189,7 +202,8 @@ def brute_force(durs: list[float],
         for split_name in target_split_durs.keys():
             if (
                 target_split_durs[split_name] > 0
-                and total_split_durs[split_name] >= target_split_durs[split_name]
+                and total_split_durs[split_name]
+                >= target_split_durs[split_name]
             ):
                 choice.remove(split_name)
 
@@ -225,7 +239,8 @@ def brute_force(durs: list[float],
             total_split_durs[split_name] += durs[ind]
             if (
                 target_split_durs[split_name] > 0
-                and total_split_durs[split_name] >= target_split_durs[split_name]
+                and total_split_durs[split_name]
+                >= target_split_durs[split_name]
             ):
                 choice.remove(split_name)
             elif target_split_durs[split_name] == -1:
@@ -240,7 +255,10 @@ def brute_force(durs: list[float],
             if len(choice) < 1:  # list is empty, we popped off all the choices
                 for split_name in target_split_durs.keys():
                     if target_split_durs[split_name] > 0:
-                        if total_split_durs[split_name] < target_split_durs[split_name]:
+                        if (
+                            total_split_durs[split_name]
+                            < target_split_durs[split_name]
+                        ):
                             raise ValueError(
                                 "Loop to find splits completed, "
                                 f"but total duration of '{split_name}' split, "
@@ -265,7 +283,9 @@ def brute_force(durs: list[float],
                     or target_split_durs[split_name] == -1
                 ):
                     split_labels = [
-                        label for ind in split_inds[split_name] for label in labels[ind]
+                        label
+                        for ind in split_inds[split_name]
+                        for label in labels[ind]
                     ]
                     split_labelset = set(split_labels)
                     if split_labelset != set(labelset):
@@ -286,7 +306,8 @@ def brute_force(durs: list[float],
             continue
 
     split_inds = {
-        split_name: (inds if inds else None) for split_name, inds in split_inds.items()
+        split_name: (inds if inds else None)
+        for split_name, inds in split_inds.items()
     }
 
     return split_inds["train"], split_inds["val"], split_inds["test"]

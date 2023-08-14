@@ -1,25 +1,30 @@
 def eval(toml_path):
     from .eval import eval
+
     eval(toml_path=toml_path)
 
 
 def train(toml_path):
     from .train import train
+
     train(toml_path=toml_path)
 
 
 def learncurve(toml_path):
     from .learncurve import learning_curve
+
     learning_curve(toml_path=toml_path)
 
 
 def predict(toml_path):
     from .predict import predict
+
     predict(toml_path=toml_path)
 
 
 def prep(toml_path):
     from .prep import prep
+
     prep(toml_path=toml_path)
 
 

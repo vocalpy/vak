@@ -8,12 +8,14 @@ from typing import Callable
 from . import registry
 
 
-def get(name: str,
-        config: dict,
-        input_shape: tuple[int, int, int],
-        num_classes: int | None = None,
-        labelmap: dict | None = None,
-        post_tfm: Callable | None = None):
+def get(
+    name: str,
+    config: dict,
+    input_shape: tuple[int, int, int],
+    num_classes: int | None = None,
+    labelmap: dict | None = None,
+    post_tfm: Callable | None = None,
+):
     """Get a model instance, given its name and
     a configuration as a :class:`dict`.
 
@@ -56,20 +58,22 @@ def get(name: str,
 
     model_family = registry.MODEL_FAMILY_FROM_NAME[name]
 
-    if model_family == 'FrameClassificationModel':
+    if model_family == "FrameClassificationModel":
         # still need to special case model logic here
         net_init_params = list(
             inspect.signature(
                 model_class.definition.network.__init__
             ).parameters.keys()
         )
-        if ('num_input_channels' in net_init_params) and ('num_freqbins' in net_init_params):
+        if ("num_input_channels" in net_init_params) and (
+            "num_freqbins" in net_init_params
+        ):
             num_input_channels = input_shape[-3]
             num_freqbins = input_shape[-2]
             config["network"].update(
                 num_classes=num_classes,
                 num_input_channels=num_input_channels,
-                num_freqbins=num_freqbins
+                num_freqbins=num_freqbins,
             )
         else:
             raise ValueError(
@@ -77,14 +81,16 @@ def get(name: str,
                 f"unable to determine network init arguments for model. Currently all models "
                 f"in this family must have networks with parameters ``num_input_channels`` and ``num_freqbins``"
             )
-        model = model_class.from_config(config=config, labelmap=labelmap, post_tfm=post_tfm)
-    elif model_family == 'ParametricUMAPModel':
+        model = model_class.from_config(
+            config=config, labelmap=labelmap, post_tfm=post_tfm
+        )
+    elif model_family == "ParametricUMAPModel":
         encoder_init_params = list(
             inspect.signature(
-                model_class.definition.network['encoder'].__init__
+                model_class.definition.network["encoder"].__init__
             ).parameters.keys()
         )
-        if ('input_shape' in encoder_init_params):
+        if "input_shape" in encoder_init_params:
             if "encoder" in config["network"]:
                 config["network"]["encoder"].update(input_shape=input_shape)
             else:

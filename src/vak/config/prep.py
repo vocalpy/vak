@@ -52,9 +52,11 @@ def are_valid_dask_bag_kwargs(instance, attribute, value):
         inspect.signature(dask.bag.from_sequence).parameters.keys()
     )
     if not all([kwarg in valid_bag_kwargs for kwarg in kwargs]):
-        invalid_kwargs = [kwarg for kwarg in kwargs if kwarg not in valid_bag_kwargs]
+        invalid_kwargs = [
+            kwarg for kwarg in kwargs if kwarg not in valid_bag_kwargs
+        ]
         print(
-            f'Invalid keyword arguments specified in ``audio_dask_bag_kwargs``: {invalid_kwargs}'
+            f"Invalid keyword arguments specified in ``audio_dask_bag_kwargs``: {invalid_kwargs}"
         )
 
 
@@ -116,10 +118,12 @@ class PrepConfig:
         randomly drawn subset of the training data (but of the same duration).
         Default is None. Required if config file has a learncurve section.
     """
+
     data_dir = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
 
     dataset_type = attr.ib(validator=instance_of(str))
+
     @dataset_type.validator
     def is_valid_dataset_type(self, attribute, value):
         if value not in prep.constants.DATASET_TYPES:
@@ -129,6 +133,7 @@ class PrepConfig:
             )
 
     input_type = attr.ib(validator=instance_of(str))
+
     @input_type.validator
     def is_valid_input_type(self, attribute, value):
         if value not in prep.constants.INPUT_TYPES:
@@ -136,13 +141,19 @@ class PrepConfig:
                 f"Invalid input type: {value}. Must be one of: {prep.constants.INPUT_TYPES}"
             )
 
-    audio_format = attr.ib(validator=validators.optional(is_audio_format), default=None)
-    spect_format = attr.ib(validator=validators.optional(is_spect_format), default=None)
+    audio_format = attr.ib(
+        validator=validators.optional(is_audio_format), default=None
+    )
+    spect_format = attr.ib(
+        validator=validators.optional(is_spect_format), default=None
+    )
     annot_file = attr.ib(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
-    annot_format = attr.ib(validator=validators.optional(is_annot_format), default=None)
+    annot_format = attr.ib(
+        validator=validators.optional(is_annot_format), default=None
+    )
 
     labelset = attr.ib(
         converter=converters.optional(labelset_to_set),
@@ -150,7 +161,9 @@ class PrepConfig:
         default=None,
     )
 
-    audio_dask_bag_kwargs = attr.ib(validator=validators.optional(are_valid_dask_bag_kwargs), default=None)
+    audio_dask_bag_kwargs = attr.ib(
+        validator=validators.optional(are_valid_dask_bag_kwargs), default=None
+    )
 
     train_dur = attr.ib(
         converter=converters.optional(duration_from_toml_value),
@@ -167,12 +180,18 @@ class PrepConfig:
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    train_set_durs = attr.ib(validator=validators.optional(instance_of(list)), default=None)
-    num_replicates = attr.ib(validator=validators.optional(instance_of(int)), default=None)
+    train_set_durs = attr.ib(
+        validator=validators.optional(instance_of(list)), default=None
+    )
+    num_replicates = attr.ib(
+        validator=validators.optional(instance_of(int)), default=None
+    )
 
     def __attrs_post_init__(self):
         if self.audio_format is not None and self.spect_format is not None:
             raise ValueError(f"cannot specify audio_format and spect_format")
 
         if self.audio_format is None and self.spect_format is None:
-            raise ValueError(f"must specify either audio_format or spect_format")
+            raise ValueError(
+                f"must specify either audio_format or spect_format"
+            )

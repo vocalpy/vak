@@ -23,7 +23,7 @@ def learning_curve(
     val_transform_params: dict | None = None,
     val_dataset_params: dict | None = None,
     results_path: str | pathlib.Path = None,
-    post_tfm_kwargs: dict | None =None,
+    post_tfm_kwargs: dict | None = None,
     normalize_spectrograms: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
@@ -144,6 +144,4 @@ def learning_curve(
             device=device,
         )
     else:
-        raise ValueError(
-            f"Model family not recognized: {model_family}"
-        )
+        raise ValueError(f"Model family not recognized: {model_family}")

@@ -51,7 +51,11 @@ def validate_split_durations(train_dur, val_dur, test_dur, dataset_dur):
         )
 
     if not all(
-        [dur >= 0 or dur == -1 for dur in split_durs.values() if dur is not None]
+        [
+            dur >= 0 or dur == -1
+            for dur in split_durs.values()
+            if dur is not None
+        ]
     ):
         raise ValueError(
             "all durations for split must be real non-negative number or "
@@ -69,7 +73,9 @@ def validate_split_durations(train_dur, val_dur, test_dur, dataset_dur):
             split_durs[split_name] = 0
 
     if -1 in split_durs.values():
-        total_other_splits_dur = sum([dur for dur in split_durs.values() if dur != -1])
+        total_other_splits_dur = sum(
+            [dur for dur in split_durs.values() if dur != -1]
+        )
 
         if total_other_splits_dur > dataset_dur:
             raise ValueError(

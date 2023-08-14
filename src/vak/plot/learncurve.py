@@ -10,7 +10,9 @@ import numpy as np
 
 
 def get_all_results_list(root, these_dirs_branch, config_file):
-    these_dirs = [(root + this_dir[0], this_dir[1]) for this_dir in these_dirs_branch]
+    these_dirs = [
+        (root + this_dir[0], this_dir[1]) for this_dir in these_dirs_branch
+    ]
     config = ConfigParser()
 
     all_results_list = []
@@ -24,13 +26,16 @@ def get_all_results_list(root, these_dirs_branch, config_file):
         results_dict["time_steps"] = config["NETWORK"]["time_steps"]
         results_dict["num_hidden"] = config["NETWORK"]["num_hidden"]
         results_dict["train_set_durs"] = [
-            int(element) for element in config["TRAIN"]["train_set_durs"].split(",")
+            int(element)
+            for element in config["TRAIN"]["train_set_durs"].split(",")
         ]
         with open(glob("summary*/train_err")[0], "rb") as f:
             results_dict["train_err"] = pickle.load(f)
         with open(glob("summary*/test_err")[0], "rb") as f:
             results_dict["test_err"] = pickle.load(f)
-        pe = joblib.load(glob("summary*/y_preds_and_err_for_train_and_test")[0])
+        pe = joblib.load(
+            glob("summary*/y_preds_and_err_for_train_and_test")[0]
+        )
         results_dict["train_syl_err_rate"] = pe["train_syl_err_rate"]
         results_dict["test_syl_err_rate"] = pe["test_syl_err_rate"]
         results_dict["bird_ID"] = bird_ID
@@ -78,7 +83,9 @@ def frame_error_rate(all_results_list):
     plt.legend(fontsize=20)
     plt.xticks(el["train_set_durs"])
     plt.tick_params(axis="both", which="major", labelsize=20, rotation=45)
-    plt.title("Frame error rate as a function of training set size", fontsize=40)
+    plt.title(
+        "Frame error rate as a function of training set size", fontsize=40
+    )
     plt.ylabel("Frame error rate\nas measured on test set", fontsize=32)
     plt.xlabel("Training set size: duration in s", fontsize=32)
     plt.tight_layout()
@@ -115,7 +122,9 @@ def syllable_error_rate(all_results_list):
     )
 
     plt.legend(fontsize=20, loc="upper right")
-    plt.title("Syllable error rate as a function of training set size", fontsize=40)
+    plt.title(
+        "Syllable error rate as a function of training set size", fontsize=40
+    )
     plt.xticks(el["train_set_durs"])
     plt.tick_params(axis="both", which="major", labelsize=20, rotation=45)
     plt.ylabel("Syllable error rate\nas measured on test set", fontsize=32)

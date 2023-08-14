@@ -119,7 +119,7 @@ def make_dataframe_of_spect_files(
             f"format '{spect_format}' not recognized."
         )
 
-    if spect_format == 'mat' and spect_output_dir is None:
+    if spect_format == "mat" and spect_output_dir is None:
         raise ValueError(
             "Must provide ``spect_output_dir`` when ``spect_format`` is '.mat'."
             "so that array files can be converted to npz format. "
@@ -128,7 +128,9 @@ def make_dataframe_of_spect_files(
         )
 
     if all([arg is None for arg in (spect_dir, spect_files, spect_annot_map)]):
-        raise ValueError("must specify one of: spect_dir, spect_files, spect_annot_map")
+        raise ValueError(
+            "must specify one of: spect_dir, spect_files, spect_annot_map"
+        )
 
     if spect_dir and spect_files:
         raise ValueError(
@@ -160,7 +162,9 @@ def make_dataframe_of_spect_files(
                 "a spect_annot_map was provided, but no annot_format was specified"
             )
 
-    if annot_format is not None and (annot_list is None and spect_annot_map is None):
+    if annot_format is not None and (
+        annot_list is None and spect_annot_map is None
+    ):
         raise ValueError(
             "an annot_format was specified but no annot_list or spect_annot_map was provided"
         )
@@ -171,23 +175,35 @@ def make_dataframe_of_spect_files(
     if spect_output_dir:
         spect_output_dir = expanded_user_path(spect_output_dir)
         if not spect_output_dir.is_dir():
-            raise NotADirectoryError(f"spect_output_dir not found: {spect_output_dir}")
+            raise NotADirectoryError(
+                f"spect_output_dir not found: {spect_output_dir}"
+            )
 
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
         # note we already validated format above
-        spect_files = sorted(pathlib.Path(spect_dir).glob(f"**/*{spect_format}"))
+        spect_files = sorted(
+            pathlib.Path(spect_dir).glob(f"**/*{spect_format}")
+        )
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
-            spect_annot_map = map_annotated_to_annot(spect_files, annot_list, annot_format, annotated_ext=spect_ext)
+            spect_annot_map = map_annotated_to_annot(
+                spect_files, annot_list, annot_format, annotated_ext=spect_ext
+            )
         else:
             # no annotation, so map spectrogram files to None
-            spect_annot_map = dict((spect_path, None) for spect_path in spect_files)
+            spect_annot_map = dict(
+                (spect_path, None) for spect_path in spect_files
+            )
 
     # use labelset if supplied, to filter
-    if labelset:  # then assume user wants to filter out files where annotation has labels not in labelset
-        for spect_path, annot in list(spect_annot_map.items()):  # `list` so we can pop from dict without RuntimeError
+    if (
+        labelset
+    ):  # then assume user wants to filter out files where annotation has labels not in labelset
+        for spect_path, annot in list(
+            spect_annot_map.items()
+        ):  # `list` so we can pop from dict without RuntimeError
             annot_labelset = set(annot.seq.labels)
             # below, set(labels_mapping) is a set of that dict's keys
             if not annot_labelset.issubset(set(labelset)):
@@ -241,14 +257,16 @@ def make_dataframe_of_spect_files(
             # (or an error)
             audio_path = files.spect.find_audio_fname(spect_path)
 
-        if spect_format == 'mat':
+        if spect_format == "mat":
             # convert to .npz and save in spect_output_dir
             spect_dict_npz = {
-                's': spect_dict[spect_key],
-                't': spect_dict[timebins_key],
-                'f': spect_dict[freqbins_key]
+                "s": spect_dict[spect_key],
+                "t": spect_dict[timebins_key],
+                "f": spect_dict[freqbins_key],
             }
-            spect_path = spect_output_dir / (pathlib.Path(spect_path).stem + ".npz")
+            spect_path = spect_output_dir / (
+                pathlib.Path(spect_path).stem + ".npz"
+            )
             np.savez(spect_path, **spect_dict_npz)
 
         if annot is not None:
@@ -267,12 +285,15 @@ def make_dataframe_of_spect_files(
                 abspath(audio_path),
                 abspath(spect_path),
                 abspath(annot_path),
-                annot_format if annot_format else constants.NO_ANNOTATION_FORMAT,
+                annot_format
+                if annot_format
+                else constants.NO_ANNOTATION_FORMAT,
                 spect_dur,
                 timebin_dur,
             ]
         )
         return record
+
     spect_path_annot_tuples = db.from_sequence(spect_annot_map.items())
     logger.info(
         "creating pandas.DataFrame representing dataset from spectrogram files",

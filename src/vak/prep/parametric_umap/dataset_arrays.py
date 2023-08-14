@@ -13,9 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 def move_files_into_split_subdirs(
-        dataset_df: pd.DataFrame,
-        dataset_path: pathlib.Path,
-        purpose: str) -> None:
+    dataset_df: pd.DataFrame, dataset_path: pathlib.Path, purpose: str
+) -> None:
     """Move npy files in dataset into sub-directories, one for each split in the dataset.
 
     This is run *after* calling :func:`vak.prep.unit_dataset.prep_unit_dataset`
@@ -46,13 +45,15 @@ def move_files_into_split_subdirs(
     The ``DataFrame`` is modified in place
     as the files are moved, so nothing is returned.
     """
-    moved_spect_paths = []  # to clean up after moving -- may be empty if we copy all spects (e.g., user generated)
+    moved_spect_paths = (
+        []
+    )  # to clean up after moving -- may be empty if we copy all spects (e.g., user generated)
     # ---- copy/move files into split sub-directories inside dataset directory
     # Next line, note we drop any na rows in the split column, since they don't belong to a split anyway
     split_names = sorted(dataset_df.split.dropna().unique())
 
     for split_name in split_names:
-        if split_name == 'None':
+        if split_name == "None":
             # these are files that didn't get assigned to a split
             continue
         split_subdir = dataset_path / split_name
@@ -62,7 +63,7 @@ def move_files_into_split_subdirs(
         split_spect_paths = [
             # this just converts from string to pathlib.Path
             pathlib.Path(spect_path)
-            for spect_path in split_df['spect_path'].values
+            for spect_path in split_df["spect_path"].values
         ]
         is_in_dataset_dir = [
             # if dataset_path is one of the parents of spect_path, we can move; otherwise, we copy
@@ -87,13 +88,9 @@ def move_files_into_split_subdirs(
                 new_spect_path = spect_path.rename(
                     split_subdir / spect_path.name
                 )
-                moved_spect_paths.append(
-                    spect_path
-                )
+                moved_spect_paths.append(spect_path)
             else:  # copy instead of moving
-                new_spect_path = shutil.copy(
-                    src=spect_path, dst=split_subdir
-                )
+                new_spect_path = shutil.copy(src=spect_path, dst=split_subdir)
 
             new_spect_paths.append(
                 # rewrite paths relative to dataset directory's root, so dataset is portable
@@ -101,15 +98,17 @@ def move_files_into_split_subdirs(
             )
 
         # cast to str before rewrite so that type doesn't silently change for some rows
-        new_spect_paths = [str(new_spect_path) for new_spect_path in new_spect_paths]
-        dataset_df.loc[split_df.index, 'spect_path'] = new_spect_paths
+        new_spect_paths = [
+            str(new_spect_path) for new_spect_path in new_spect_paths
+        ]
+        dataset_df.loc[split_df.index, "spect_path"] = new_spect_paths
 
     # ---- clean up after moving/copying -------------------------------------------------------------------------------
     # remove any directories that we just emptied
     if moved_spect_paths:
-        unique_parents = set([
-            moved_spect.parent for moved_spect in moved_spect_paths
-        ])
+        unique_parents = set(
+            [moved_spect.parent for moved_spect in moved_spect_paths]
+        )
         for parent in unique_parents:
             if len(list(parent.iterdir())) < 1:
                 shutil.rmtree(parent)

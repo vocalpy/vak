@@ -11,7 +11,7 @@ from .cli import cli
 def get_parser():
     """returns ArgumentParser instance used by main()"""
     parser = argparse.ArgumentParser(
-        prog='vak',
+        prog="vak",
         description="vak command-line interface",
         formatter_class=argparse.RawTextHelpFormatter,
     )

@@ -13,11 +13,11 @@ VALID_PURPOSES = frozenset(
     ]
 )
 
-INPUT_TYPES = {'audio', 'spect'}
+INPUT_TYPES = {"audio", "spect"}
 
 DATASET_TYPE_FUNCTION_MAP = {
-    'frame classification': frame_classification.prep_frame_classification_dataset,
-    'parametric umap': parametric_umap.prep_parametric_umap_dataset,
+    "frame classification": frame_classification.prep_frame_classification_dataset,
+    "parametric umap": parametric_umap.prep_parametric_umap_dataset,
 }
 
 DATASET_TYPES = tuple(DATASET_TYPE_FUNCTION_MAP.keys())

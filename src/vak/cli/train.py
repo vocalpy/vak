@@ -31,17 +31,16 @@ def train(toml_path):
         )
 
     # ---- set up directory to save output -----------------------------------------------------------------------------
-    results_path = generate_results_dir_name_as_path(cfg.train.root_results_dir)
+    results_path = generate_results_dir_name_as_path(
+        cfg.train.root_results_dir
+    )
     results_path.mkdir(parents=True)
     # copy config file into results dir now that we've made the dir
     shutil.copy(toml_path, results_path)
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
     config_logging_for_cli(
-        log_dst=results_path,
-        log_stem="train",
-        level="INFO",
-        force=True
+        log_dst=results_path, log_stem="train", level="INFO", force=True
     )
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))

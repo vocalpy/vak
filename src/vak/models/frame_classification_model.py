@@ -85,16 +85,18 @@ class FrameClassificationModel(base.Model):
         to string labels inside of ``validation_step``,
         for computing edit distance.
     """
+
     definition: ClassVar[ModelDefinition]
 
-    def __init__(self,
-                 labelmap: Mapping,
-                 network: torch.nn.Module | dict[str: torch.nn.Module] | None = None,
-                 loss: torch.nn.Module | Callable | None = None,
-                 optimizer: torch.optim.Optimizer | None = None,
-                 metrics: dict[str: Type] | None = None,
-                 post_tfm: Callable | None = None,
-                 ):
+    def __init__(
+        self,
+        labelmap: Mapping,
+        network: torch.nn.Module | dict[str : torch.nn.Module] | None = None,
+        loss: torch.nn.Module | Callable | None = None,
+        optimizer: torch.optim.Optimizer | None = None,
+        metrics: dict[str:Type] | None = None,
+        post_tfm: Callable | None = None,
+    ):
         """Initialize a new instance of a
         :class:`~vak.models.frame_classification_model.FrameClassificationModel`.
 
@@ -123,26 +125,35 @@ class FrameClassificationModel(base.Model):
         post_tfm : callable
             Post-processing transform applied to predictions.
         """
-        super().__init__(network=network, loss=loss,
-                         optimizer=optimizer, metrics=metrics)
+        super().__init__(
+            network=network, loss=loss, optimizer=optimizer, metrics=metrics
+        )
 
         self.labelmap = labelmap
         # replace any multiple character labels in mapping
         # with single-character labels
         # so that we do not affect edit distance computation
         # see https://github.com/NickleDave/vak/issues/373
-        labelmap_keys = [lbl for lbl in labelmap.keys() if lbl != 'unlabeled']
-        if any([len(label) > 1 for label in labelmap_keys]):  # only re-map if necessary
+        labelmap_keys = [lbl for lbl in labelmap.keys() if lbl != "unlabeled"]
+        if any(
+            [len(label) > 1 for label in labelmap_keys]
+        ):  # only re-map if necessary
             # (to minimize chance of knock-on bugs)
-            logger.info("Detected that labelmap has keys with multiple characters:"
-                        f"\n{labelmap_keys}\n"
-                        "Re-mapping labelmap used with to_labels_eval transform, using "
-                        "function vak.labels.multi_char_labels_to_single_char")
-            self.eval_labelmap = labels.multi_char_labels_to_single_char(labelmap)
+            logger.info(
+                "Detected that labelmap has keys with multiple characters:"
+                f"\n{labelmap_keys}\n"
+                "Re-mapping labelmap used with to_labels_eval transform, using "
+                "function vak.labels.multi_char_labels_to_single_char"
+            )
+            self.eval_labelmap = labels.multi_char_labels_to_single_char(
+                labelmap
+            )
         else:
             self.eval_labelmap = labelmap
 
-        self.to_labels_eval = transforms.frame_labels.ToLabels(self.eval_labelmap)
+        self.to_labels_eval = transforms.frame_labels.ToLabels(
+            self.eval_labelmap
+        )
         self.post_tfm = post_tfm
 
     def configure_optimizers(self):
@@ -191,7 +202,7 @@ class FrameClassificationModel(base.Model):
         x, y = batch[0], batch[1]
         out = self.network(x)
         loss = self.loss(out, y)
-        self.log(f'train_loss', loss)
+        self.log(f"train_loss", loss)
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
@@ -264,19 +275,41 @@ class FrameClassificationModel(base.Model):
         # TODO: figure out smarter way to do this
         for metric_name, metric_callable in self.metrics.items():
             if metric_name == "loss":
-                self.log(f'val_{metric_name}', metric_callable(out, y), batch_size=1, on_step=True)
+                self.log(
+                    f"val_{metric_name}",
+                    metric_callable(out, y),
+                    batch_size=1,
+                    on_step=True,
+                )
             elif metric_name == "acc":
-                self.log(f'val_{metric_name}', metric_callable(y_pred, y), batch_size=1)
+                self.log(
+                    f"val_{metric_name}",
+                    metric_callable(y_pred, y),
+                    batch_size=1,
+                )
                 if self.post_tfm:
-                    self.log(f'val_{metric_name}_tfm',
-                             metric_callable(y_pred_tfm, y),
-                             batch_size=1, on_step=True)
-            elif metric_name == "levenshtein" or metric_name == "segment_error_rate":
-                self.log(f'val_{metric_name}', metric_callable(y_pred_labels, y_labels), batch_size=1)
+                    self.log(
+                        f"val_{metric_name}_tfm",
+                        metric_callable(y_pred_tfm, y),
+                        batch_size=1,
+                        on_step=True,
+                    )
+            elif (
+                metric_name == "levenshtein"
+                or metric_name == "segment_error_rate"
+            ):
+                self.log(
+                    f"val_{metric_name}",
+                    metric_callable(y_pred_labels, y_labels),
+                    batch_size=1,
+                )
                 if self.post_tfm:
-                    self.log(f'val_{metric_name}_tfm',
-                             metric_callable(y_pred_tfm_labels, y_labels),
-                             batch_size=1, on_step=True)
+                    self.log(
+                        f"val_{metric_name}_tfm",
+                        metric_callable(y_pred_tfm_labels, y_labels),
+                        batch_size=1,
+                        on_step=True,
+                    )
 
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
@@ -312,7 +345,9 @@ class FrameClassificationModel(base.Model):
         return {source_path: y_pred}
 
     @classmethod
-    def from_config(cls, config: dict, labelmap: Mapping, post_tfm: Callable | None = None):
+    def from_config(
+        cls, config: dict, labelmap: Mapping, post_tfm: Callable | None = None
+    ):
         """Return an initialized model instance from a config ``dict``
 
         Parameters
@@ -332,10 +367,11 @@ class FrameClassificationModel(base.Model):
             initialized using parameters from ``config``.
         """
         network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(labelmap=labelmap,
-                   network=network,
-                   optimizer=optimizer,
-                   loss=loss,
-                   metrics=metrics,
-                   post_tfm=post_tfm,
-                   )
+        return cls(
+            labelmap=labelmap,
+            network=network,
+            optimizer=optimizer,
+            loss=loss,
+            metrics=metrics,
+            post_tfm=post_tfm,
+        )

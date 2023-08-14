@@ -70,7 +70,9 @@ class SpectParamsConfig:
         default=None,
     )
     transform_type = attr.ib(
-        validator=validators.optional([instance_of(str), is_valid_transform_type]),
+        validator=validators.optional(
+            [instance_of(str), is_valid_transform_type]
+        ),
         default=None,
     )
     spect_key = attr.ib(validator=instance_of(str), default="s")

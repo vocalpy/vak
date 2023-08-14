@@ -22,7 +22,7 @@ def prep(
     labelset: set | None = None,
     audio_dask_bag_kwargs: dict | None = None,
     train_dur: int | None = None,
-    val_dur: int | None =None,
+    val_dur: int | None = None,
     test_dur: int | None = None,
     train_set_durs: list[float] | None = None,
     num_replicates: int | None = None,
@@ -168,7 +168,7 @@ def prep(
             f"Value for ``input_type`` was: {input_type}"
         )
 
-    if input_type == 'audio' and spect_format is not None:
+    if input_type == "audio" and spect_format is not None:
         raise ValueError(
             f"``input_type`` was set to 'audio' but a ``spect_format`` was specified: '{spect_format}'.\n"
             f"Please only provide a ``spect_format`` argument when the input type to the neural network "
@@ -188,7 +188,7 @@ def prep(
     # we have to use an if-else here since args may vary across dataset prep functions
     # but we still define DATASET_TYPE_FUNC_MAP in vak.prep.constants
     # so that the mapping is made explicit in the code
-    if dataset_type == 'frame classification':
+    if dataset_type == "frame classification":
         dataset_df, dataset_path = prep_frame_classification_dataset(
             data_dir,
             input_type,
@@ -233,6 +233,4 @@ def prep(
     else:
         # this is in case a dataset type is written wrong
         # in the if-else statements above, we want to error loudly
-        raise ValueError(
-            f"Unrecognized dataset type: {dataset_type}"
-        )
+        raise ValueError(f"Unrecognized dataset type: {dataset_type}")

@@ -18,8 +18,8 @@ def residual_two_functions(params, x, y1, y1err, y2, y2err):
     c = params[2]
     beta = params[3]
     asymptote = params[4]
-    diff1 = (y1 - (asymptote + b * alpha ** x)) ** 2 / y1err
-    diff2 = (y2 - (asymptote + c * beta ** x)) ** 2 / y2err
+    diff1 = (y1 - (asymptote + b * alpha**x)) ** 2 / y1err
+    diff2 = (y2 - (asymptote + c * beta**x)) ** 2 / y2err
     return np.concatenate((diff1, diff2))
 
 
@@ -97,7 +97,9 @@ def fit_learning_curve(
 
     logx = np.log10(train_set_size)
 
-    if error_train is None:  # if we just have test error, fit with power function
+    if (
+        error_train is None
+    ):  # if we just have test error, fit with power function
         y = np.mean(error_test, axis=1)
         logy = np.log10(y)
         yerr = np.std(error_test, axis=1)
@@ -132,7 +134,7 @@ def fit_learning_curve(
         logy2err = y2err / y
         # take mean of logy as best estimate of horizontal line
         estimate = np.average(logy2, weights=logy2err)
-        a = (10.0 ** estimate) / 2
+        a = (10.0**estimate) / 2
         return a, b, alpha
 
     elif error_train is not None and funcs == 2:

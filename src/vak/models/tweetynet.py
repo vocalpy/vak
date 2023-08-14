@@ -53,14 +53,14 @@ class TweetyNet:
        Paper: https://elifesciences.org/articles/63853
        Code: https://github.com/yardencsGitHub/tweetynet
     """
+
     network = nets.TweetyNet
     loss = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    metrics = {'acc': metrics.Accuracy,
-               'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
-               'loss': torch.nn.CrossEntropyLoss}
-    default_config = {
-        'optimizer':
-            {'lr': 0.003}
+    metrics = {
+        "acc": metrics.Accuracy,
+        "levenshtein": metrics.Levenshtein,
+        "segment_error_rate": metrics.SegmentErrorRate,
+        "loss": torch.nn.CrossEntropyLoss,
     }
+    default_config = {"optimizer": {"lr": 0.003}}

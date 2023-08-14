@@ -88,7 +88,10 @@ def prep_audio_dataset(
                 annot_dir=data_dir, annot_format=annot_format
             )
             scribe = crowsetta.Transcriber(format=annot_format)
-            annot_list = [scribe.from_file(annot_file).to_annot() for annot_file in annot_files]
+            annot_list = [
+                scribe.from_file(annot_file).to_annot()
+                for annot_file in annot_files
+            ]
         else:
             scribe = crowsetta.Transcriber(format=annot_format)
             annot_list = scribe.from_file(annot_file).to_annot()
@@ -100,10 +103,14 @@ def prep_audio_dataset(
         annot_list = None
 
     if annot_list:
-        audio_annot_map = annotation.map_annotated_to_annot(audio_files, annot_list, annot_format)
+        audio_annot_map = annotation.map_annotated_to_annot(
+            audio_files, annot_list, annot_format
+        )
     else:
         # no annotation, so map spectrogram files to None
-        audio_annot_map = dict((audio_path, None) for audio_path in audio_files)
+        audio_annot_map = dict(
+            (audio_path, None) for audio_path in audio_files
+        )
 
     # use mapping (if generated/supplied) with labelset, if supplied, to filter
     if labelset:  # then remove annotations with labels not in labelset
@@ -129,8 +136,10 @@ def prep_audio_dataset(
         Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
         and (2) annotation for that file"""
         audio_path, annot = audio_annot_tuple
-        dat, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_path)
-        sample_dur = 1. / samplerate
+        dat, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](
+            audio_path
+        )
+        sample_dur = 1.0 / samplerate
         audio_dur = dat.shape[-1] * sample_dur
 
         if annot is not None:
@@ -148,7 +157,9 @@ def prep_audio_dataset(
             [
                 abspath(audio_path),
                 abspath(annot_path),
-                annot_format if annot_format else constants.NO_ANNOTATION_FORMAT,
+                annot_format
+                if annot_format
+                else constants.NO_ANNOTATION_FORMAT,
                 samplerate,
                 sample_dur,
                 audio_dur,

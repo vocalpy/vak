@@ -68,8 +68,8 @@ def eval_parametric_umap_model(
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
-            (checkpoint_path,),
-            ('checkpoint_path',),
+        (checkpoint_path,),
+        ("checkpoint_path",),
     ):
         if path is not None:  # because `spect_scaler_path` is optional
             if not validators.is_a_file(path):
@@ -85,11 +85,13 @@ def eval_parametric_umap_model(
     logger.info(
         f"Loading metadata from dataset path: {dataset_path}",
     )
-    metadata = datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.parametric_umap.Metadata.from_dataset_path(
+        dataset_path
+    )
 
     if not validators.is_a_directory(output_dir):
         raise NotADirectoryError(
-            f'value for ``output_dir`` not recognized as a directory: {output_dir}'
+            f"value for ``output_dir`` not recognized as a directory: {output_dir}"
         )
 
     # ---- get time for .csv file --------------------------------------------------------------------------------------
@@ -98,14 +100,12 @@ def eval_parametric_umap_model(
     # ---------------- load data for evaluation ------------------------------------------------------------------------
     if transform_params is None:
         transform_params = {}
-    if 'padding' not in transform_params and model_name == 'ConvEncoderUMAP':
+    if "padding" not in transform_params and model_name == "ConvEncoderUMAP":
         padding = models.convencoder_umap.get_default_padding(metadata.shape)
-        transform_params['padding'] = padding
+        transform_params["padding"] = padding
 
     item_transform = transforms.defaults.get_default_transform(
-        model_name,
-        "eval",
-        transform_params
+        model_name, "eval", transform_params
     )
     if dataset_params is None:
         dataset_params = {}
@@ -133,22 +133,18 @@ def eval_parametric_umap_model(
 
     model.load_state_dict_from_path(checkpoint_path)
 
-    if device == 'cuda':
-        accelerator = 'gpu'
+    if device == "cuda":
+        accelerator = "gpu"
     else:
         accelerator = None
 
-    trainer_logger = lightning.loggers.TensorBoardLogger(
-        save_dir=output_dir
-    )
+    trainer_logger = lightning.loggers.TensorBoardLogger(save_dir=output_dir)
     trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
     # TODO: check for hasattr(model, test_step) and if so run test
     # below, [0] because validate returns list of dicts, length of no. of val loaders
     metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
     for metric_name, metric_val in metric_vals.items():
-        logger.info(
-            f'{metric_name}: {metric_val:0.5f}'
-        )
+        logger.info(f"{metric_name}: {metric_val:0.5f}")
 
     # create a "DataFrame" with just one row which we will save as a csv;
     # the idea is to be able to concatenate csvs from multiple runs of eval
@@ -162,9 +158,7 @@ def eval_parametric_umap_model(
     )
     # TODO: is this still necessary after switching to Lightning? Stop saying "average"?
     # order metrics by name to be extra sure they will be consistent across runs
-    row.update(
-        sorted([(k, v) for k, v in metric_vals.items()])
-    )
+    row.update(sorted([(k, v) for k, v in metric_vals.items()]))
 
     # pass index into dataframe, needed when using all scalar values (a single row)
     # throw away index below when saving to avoid extra column

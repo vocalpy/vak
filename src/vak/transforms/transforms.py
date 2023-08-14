@@ -45,14 +45,20 @@ class StandardizeSpect:
         non_zero_std : numpy.ndarray
             boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
         """
-        if any([arg is not None for arg in (mean_freqs, std_freqs, non_zero_std)]):
+        if any(
+            [arg is not None for arg in (mean_freqs, std_freqs, non_zero_std)]
+        ):
             mean_freqs, std_freqs, non_zero_std = (
-                column_or_1d(arr) for arr in (mean_freqs, std_freqs, non_zero_std)
+                column_or_1d(arr)
+                for arr in (mean_freqs, std_freqs, non_zero_std)
             )
             if (
                 len(
                     np.unique(
-                        [arg.shape[0] for arg in (mean_freqs, std_freqs, non_zero_std)]
+                        [
+                            arg.shape[0]
+                            for arg in (mean_freqs, std_freqs, non_zero_std)
+                        ]
                     )
                 )
                 != 1
@@ -66,7 +72,7 @@ class StandardizeSpect:
         self.non_zero_std = non_zero_std
 
     @classmethod
-    def fit_dataset_path(cls, dataset_path, split='train'):
+    def fit_dataset_path(cls, dataset_path, split="train"):
         """Returns a :class:`StandardizeSpect` instance
         that is fit to a split from a dataset,
         given the path to that dataset and the
@@ -92,8 +98,10 @@ class StandardizeSpect:
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
         df = pd.read_csv(dataset_csv_path)
-        df = df[df['split'] == split].copy()
-        frames_paths = df[frame_classification.constants.FRAMES_NPY_PATH_COL_NAME].values
+        df = df[df["split"] == split].copy()
+        frames_paths = df[
+            frame_classification.constants.FRAMES_NPY_PATH_COL_NAME
+        ].values
         frames = np.load(dataset_path / frames_paths[0])
 
         # in files, spectrograms are in orientation (freq bins, time bins)
@@ -148,7 +156,9 @@ class StandardizeSpect:
             array standardized to same scale as set of spectrograms that
             SpectScaler was fit with
         """
-        if any([not hasattr(self, attr) for attr in ["mean_freqs", "std_freqs"]]):
+        if any(
+            [not hasattr(self, attr) for attr in ["mean_freqs", "std_freqs"]]
+        ):
             raise AttributeError(
                 "SpectScaler properties are set to None,"
                 "must call fit method first to set the"

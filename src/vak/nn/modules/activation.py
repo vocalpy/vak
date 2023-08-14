@@ -12,6 +12,7 @@ class NormReLU(torch.nn.Module):
        Temporal convolutional networks for action segmentation and detection.
        In proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (pp. 156-165).
     """
+
     def __init__(self):
         super().__init__()
         self.relu = torch.nn.ReLU(inplace=True)

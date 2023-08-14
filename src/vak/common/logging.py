@@ -7,14 +7,12 @@ from pathlib import Path
 from ..__about__ import __version__
 from . import timenow
 
-logger = logging.getLogger('vak')  # 'base' logger
+logger = logging.getLogger("vak")  # 'base' logger
 
 
-def config_logging_for_cli(log_dst: str,
-                           log_stem: str,
-                           level='info',
-                           timestamp=None,
-                           force=False):
+def config_logging_for_cli(
+    log_dst: str, log_stem: str, level="info", timestamp=None, force=False
+):
     """Configure logging for a run of the cli.
 
     Called by `vak.cli` functions. Allows logging
@@ -64,7 +62,9 @@ def config_logging_for_cli(log_dst: str,
             )
             return
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
     file_handler = logging.FileHandler(logfile_name)
     stream_handler = logging.StreamHandler(sys.stdout)
     for handler in (file_handler, stream_handler):
@@ -75,6 +75,4 @@ def config_logging_for_cli(log_dst: str,
 
 
 def log_version(logger: logging.Logger) -> None:
-    logger.info(
-            f"vak version: {__version__}"
-    )
+    logger.info(f"vak version: {__version__}")

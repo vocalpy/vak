@@ -26,7 +26,7 @@ def predict(
     spect_scaler_path: str | pathlib.Path | None = None,
     device: str | None = None,
     annot_csv_filename: str | None = None,
-    output_dir:  str | pathlib.Path | None = None,
+    output_dir: str | pathlib.Path | None = None,
     min_segment_dur: float | None = None,
     majority_vote: bool = False,
     save_net_outputs: bool = False,
@@ -103,8 +103,8 @@ def predict(
          will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
     for path, path_name in zip(
-            (checkpoint_path, labelmap_path, spect_scaler_path),
-            ('checkpoint_path', 'labelmap_path', 'spect_scaler_path'),
+        (checkpoint_path, labelmap_path, spect_scaler_path),
+        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -157,6 +157,4 @@ def predict(
             save_net_outputs=save_net_outputs,
         )
     else:
-        raise ValueError(
-            f"Model family not recognized: {model_family}"
-        )
+        raise ValueError(f"Model family not recognized: {model_family}")

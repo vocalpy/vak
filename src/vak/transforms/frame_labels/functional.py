@@ -27,21 +27,23 @@ from ...common.validators import column_or_1d, row_or_1d
 
 __all__ = [
     # keep alphabetized
-    'from_segments',
-    'postprocess',
-    'remove_short_segments',
-    'take_majority_vote',
-    'to_inds_list',
-    'to_labels',
-    'to_segments',
+    "from_segments",
+    "postprocess",
+    "remove_short_segments",
+    "take_majority_vote",
+    "to_inds_list",
+    "to_labels",
+    "to_segments",
 ]
 
 
-def from_segments(labels_int: np.ndarray,
-                  onsets_s: np.ndarray,
-                  offsets_s: np.ndarray,
-                  time_bins: np.ndarray,
-                  unlabeled_label: int = 0) -> np.ndarray:
+def from_segments(
+    labels_int: np.ndarray,
+    onsets_s: np.ndarray,
+    offsets_s: np.ndarray,
+    time_bins: np.ndarray,
+    unlabeled_label: int = 0,
+) -> np.ndarray:
     """Make a vector of labels for a vector of frames,
     given labeled segments in the form of onset times,
     offset times, and segment labels.
@@ -67,23 +69,24 @@ def from_segments(labels_int: np.ndarray,
         same length as time_bins, with each element a label for each time bin
     """
     if (
-            (
-            type(labels_int) == list
-            and not all([type(lbl) == int for lbl in labels_int])
-            ) or
-            (
-            type(labels_int) == np.ndarray
-            and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64]
-            )
+        type(labels_int) == list
+        and not all([type(lbl) == int for lbl in labels_int])
+    ) or (
+        type(labels_int) == np.ndarray
+        and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64]
     ):
-        raise TypeError("labels_int must be a list or numpy.ndarray of integers")
+        raise TypeError(
+            "labels_int must be a list or numpy.ndarray of integers"
+        )
 
     label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * unlabeled_label
     onset_inds = [np.argmin(np.abs(time_bins - onset)) for onset in onsets_s]
-    offset_inds = [np.argmin(np.abs(time_bins - offset)) for offset in offsets_s]
+    offset_inds = [
+        np.argmin(np.abs(time_bins - offset)) for offset in offsets_s
+    ]
     for label, onset, offset in zip(labels_int, onset_inds, offset_inds):
         # offset_inds[ind]+1 because offset time bin is still "part of" syllable
-        label_vec[onset:offset + 1] = label
+        label_vec[onset : offset + 1] = label
 
     return label_vec
 
@@ -137,10 +140,10 @@ def to_labels(frame_labels: np.ndarray, labelmap: dict) -> str:
 
 
 def to_segments(
-        frame_labels: np.ndarray,
-        labelmap: dict,
-        frame_times: np.ndarray,
-        n_decimals_trunc: int = 5
+    frame_labels: np.ndarray,
+    labelmap: dict,
+    frame_times: np.ndarray,
+    n_decimals_trunc: int = 5,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert a vector of frame labels
     into segments in the form of onset indices,
@@ -191,15 +194,22 @@ def to_segments(
         # handle the case when all time bins are predicted to be unlabeled
         # see https://github.com/NickleDave/vak/issues/383
         uniq_frame_labels = np.unique(frame_labels)
-        if len(uniq_frame_labels) == 1 and uniq_frame_labels[0] == labelmap["unlabeled"]:
+        if (
+            len(uniq_frame_labels) == 1
+            and uniq_frame_labels[0] == labelmap["unlabeled"]
+        ):
             return None, None, None
 
     # used to find onsets/offsets below; compute here so if we fail we do so early
     timebin_dur = timebin_dur_from_vec(frame_times, n_decimals_trunc)
 
-    offset_inds = np.nonzero(np.diff(frame_labels, axis=0))[0]  # [0] because nonzero return tuple
+    offset_inds = np.nonzero(np.diff(frame_labels, axis=0))[
+        0
+    ]  # [0] because nonzero return tuple
     onset_inds = offset_inds + 1
-    offset_inds = np.concatenate((offset_inds, np.asarray([frame_labels.shape[0] - 1])))
+    offset_inds = np.concatenate(
+        (offset_inds, np.asarray([frame_labels.shape[0] - 1]))
+    )
     onset_inds = np.concatenate((np.asarray([0]), onset_inds))
     labels = frame_labels[onset_inds]
 
@@ -241,7 +251,9 @@ def to_segments(
     return labels, onsets_s, offsets_s
 
 
-def to_inds_list(frame_labels: np.ndarray, unlabeled_label: int = 0) -> list[np.ndarray]:
+def to_inds_list(
+    frame_labels: np.ndarray, unlabeled_label: int = 0
+) -> list[np.ndarray]:
     """Given a vector of frame labels,
     returns a list of indexing vectors,
     one for each labeled segment in the vector.
@@ -269,11 +281,11 @@ def to_inds_list(frame_labels: np.ndarray, unlabeled_label: int = 0) -> list[np.
 
 
 def remove_short_segments(
-        frame_labels: np.ndarray,
-        segment_inds_list: list[np.ndarray],
-        timebin_dur: float,
-        min_segment_dur: float | int,
-        unlabeled_label: int = 0
+    frame_labels: np.ndarray,
+    segment_inds_list: list[np.ndarray],
+    timebin_dur: float,
+    min_segment_dur: float | int,
+    unlabeled_label: int = 0,
 ) -> tuple[np.ndarray, list[np.ndarray]]:
     """Remove segments from vector of frame labels
     that are shorter than a specified duration.
@@ -325,8 +337,9 @@ def remove_short_segments(
     return frame_labels, new_segment_inds_list
 
 
-def take_majority_vote(frame_labels: np.ndarray,
-                       segment_inds_list: list[np.ndarray]) -> np.ndarray:
+def take_majority_vote(
+    frame_labels: np.ndarray, segment_inds_list: list[np.ndarray]
+) -> np.ndarray:
     """Transform segments containing multiple labels
     into segments with a single label by taking a "majority vote",
     i.e. assign all frames in the segment the most frequently
@@ -357,11 +370,11 @@ def take_majority_vote(frame_labels: np.ndarray,
 
 
 def postprocess(
-        frame_labels: np.ndarray,
-        timebin_dur: float,
-        unlabeled_label: int = 0,
-        min_segment_dur: float | None = None,
-        majority_vote: bool = False,
+    frame_labels: np.ndarray,
+    timebin_dur: float,
+    unlabeled_label: int = 0,
+    min_segment_dur: float | None = None,
+    majority_vote: bool = False,
 ) -> np.ndarray:
     """Apply post-processing transformations
     to a vector of frame labels.

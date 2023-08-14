@@ -41,4 +41,6 @@ def get_default_transform(
         )
 
     elif model_family == "ParametricUMAPModel":
-        return parametric_umap.get_default_parametric_umap_transform(transform_kwargs)
+        return parametric_umap.get_default_parametric_umap_transform(
+            transform_kwargs
+        )

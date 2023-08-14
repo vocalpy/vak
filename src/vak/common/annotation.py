@@ -36,7 +36,10 @@ def format_from_df(dataset_df: pd.DataFrame) -> str:
     annot_format = dataset_df["annot_format"].unique()
     if len(annot_format) == 1:
         annot_format = annot_format.item()
-        if annot_format is None or annot_format == constants.NO_ANNOTATION_FORMAT:
+        if (
+            annot_format is None
+            or annot_format == constants.NO_ANNOTATION_FORMAT
+        ):
             return None
     elif len(annot_format) > 1:
         raise ValueError(
@@ -46,8 +49,9 @@ def format_from_df(dataset_df: pd.DataFrame) -> str:
     return annot_format
 
 
-def from_df(dataset_df: pd.DataFrame,
-            annot_root: str | pathlib.Path | None = None) -> list[crowsetta.Annotation] | None:
+def from_df(
+    dataset_df: pd.DataFrame, annot_root: str | pathlib.Path | None = None
+) -> list[crowsetta.Annotation] | None:
     """Get list of annotations from a dataframe
     representing a dataset.
 
@@ -111,7 +115,9 @@ def from_df(dataset_df: pd.DataFrame,
         annots = scribe.from_file(annot_path).to_annot()
 
         # as long as we have at least as many annotations as there are rows in the dataframe
-        if (isinstance(annots, list) and len(annots) >= len(dataset_df)) or (  # case 1
+        if (
+            isinstance(annots, list) and len(annots) >= len(dataset_df)
+        ) or (  # case 1
             isinstance(annots, crowsetta.Annotation) and len(dataset_df) == 1
         ):  # case 2
             if isinstance(annots, crowsetta.Annotation):
@@ -119,7 +125,9 @@ def from_df(dataset_df: pd.DataFrame,
                     annots
                 ]  # wrap in list for map_annotated_to_annot to iterate over it
             # then we can try and map those annotations to the rows
-            audio_annot_map = map_annotated_to_annot(dataset_df["audio_path"].values, annots, annot_format)
+            audio_annot_map = map_annotated_to_annot(
+                dataset_df["audio_path"].values, annots, annot_format
+            )
             # sort by row of dataframe
             annots = [
                 audio_annot_map[audio_path]
@@ -138,9 +146,12 @@ def from_df(dataset_df: pd.DataFrame,
         # --> there is a unique annotation file (path) for each row, iterate over them to get labels from each
         annot_paths = dataset_df["annot_path"].values
         if annot_root:
-            annot_paths  = [annot_root / annot_path for annot_path in annot_paths]
+            annot_paths = [
+                annot_root / annot_path for annot_path in annot_paths
+            ]
         annots = [
-            scribe.from_file(annot_path).to_annot() for annot_path in annot_paths
+            scribe.from_file(annot_path).to_annot()
+            for annot_path in annot_paths
         ]
 
     else:
@@ -175,7 +186,10 @@ def files_from_dir(annot_dir, annot_format):
     elif isinstance(format_class.ext, tuple):
         # then we actually have to determine whether there's any files for either format
         for ext_to_test in format_class.ext:
-            if len(sorted(pathlib.Path(annot_dir).glob(f'*{ext_to_test}'))) > 0:
+            if (
+                len(sorted(pathlib.Path(annot_dir).glob(f"*{ext_to_test}")))
+                > 0
+            ):
                 ext = ext_to_test
     if ext is None:
         raise ValueError(
@@ -197,8 +211,7 @@ class AudioFilenameNotFoundError(Exception):
     """
 
 
-def audio_filename_from_path(path: PathLike,
-                             audio_ext: str = None) -> str:
+def audio_filename_from_path(path: PathLike, audio_ext: str = None) -> str:
     """Find the name of an audio file within a filename
     by removing extensions until finding an audio extension,
     then return the name of that audio file
@@ -243,12 +256,12 @@ def audio_filename_from_path(path: PathLike,
         Part of filename that precedes audio extension.
     """
     if audio_ext:
-        if audio_ext.startswith('.'):
+        if audio_ext.startswith("."):
             audio_ext = audio_ext[1:]
         if audio_ext not in constants.VALID_AUDIO_FORMATS:
             raise ValueError(
-                f'Not a valid extension for audio formats: {audio_ext}\n'
-                f'Valid formats are: {constants.VALID_AUDIO_FORMATS}'
+                f"Not a valid extension for audio formats: {audio_ext}\n"
+                f"Valid formats are: {constants.VALID_AUDIO_FORMATS}"
             )
         extensions_to_look_for = [audio_ext]
     else:
@@ -274,12 +287,15 @@ class MapUsingNotatedPathError(BaseException):
     """Error raised when :func:`vak.annotation._map_using_notated_path`
     cannot map the filename of an annotation file to the name
     of an annotated file"""
+
     pass
 
 
-def _map_using_notated_path(annotated_files: list[PathLike],
-                            annot_list: list[crowsetta.Annotation],
-                            audio_ext: Optional[str] = None) -> dict[str: crowsetta.Annotation]:
+def _map_using_notated_path(
+    annotated_files: list[PathLike],
+    annot_list: list[crowsetta.Annotation],
+    audio_ext: Optional[str] = None,
+) -> dict[str : crowsetta.Annotation]:
     """Map a :class:`list` of annotated files to a :class:`list`
     of  :class:`crowsetta.Annotation` instances,
     using the ``notated_path`` attribute of the
@@ -333,7 +349,9 @@ def _map_using_notated_path(annotated_files: list[PathLike],
 
     keys_set = set(keys)
     if len(keys_set) < len(keys):
-        duplicates = [item for item, count in Counter(keys).items() if count > 1]
+        duplicates = [
+            item for item, count in Counter(keys).items() if count > 1
+        ]
         raise ValueError(
             f"found multiple annotations with the same audio filename(s): {duplicates}"
         )
@@ -345,7 +363,8 @@ def _map_using_notated_path(annotated_files: list[PathLike],
     audio_filename_annot_map = {
         # NOTE HERE WE GET FILENAMES FROM EACH annot.notated_path,
         # BELOW we get filenames from each annotated_file
-        audio_filename_from_path(annot.notated_path): annot for annot in annot_list
+        audio_filename_from_path(annot.notated_path): annot
+        for annot in annot_list
     }
 
     # Make a copy of ``annotated_files`` from which
@@ -360,11 +379,15 @@ def _map_using_notated_path(annotated_files: list[PathLike],
         # that match with stems from each annot.notated_path;
         # e.g. find '~/path/to/llb3/llb3_0003_2018_04_23_14_18_54.wav.mat' that
         # should match with ``Annotation(notated_path='llb3_0003_2018_04_23_14_18_54.wav')``
-        audio_filename_from_annotated_file = audio_filename_from_path(annotated_file)
+        audio_filename_from_annotated_file = audio_filename_from_path(
+            annotated_file
+        )
         try:
-            annot = audio_filename_annot_map[audio_filename_from_annotated_file]
+            annot = audio_filename_annot_map[
+                audio_filename_from_annotated_file
+            ]
         except KeyError as e:
-            raise MapUsingNotatedPathError (
+            raise MapUsingNotatedPathError(
                 "Could not map an annotation to an annotated file path "
                 "using `vak.annotation.audio_filename_from_path` to get "
                 "an audio filename from the annotated file path."
@@ -390,14 +413,17 @@ class MapUsingExtensionError(BaseException):
     """Error raised when :func:`vak.annotation._map_using_ext`
     cannot map the filename of an annotation file to the name
     of an annotated file"""
+
     pass
 
 
-def _map_using_ext(annotated_files: list[PathLike],
-                   annot_list: list[crowsetta.Annotation],
-                   annot_format: str,
-                   method: str,
-                   annotated_ext: str | None = None) -> dict[str: crowsetta.Annotation]:
+def _map_using_ext(
+    annotated_files: list[PathLike],
+    annot_list: list[crowsetta.Annotation],
+    annot_format: str,
+    method: str,
+    annotated_ext: str | None = None,
+) -> dict[str : crowsetta.Annotation]:
     """Map a list of annotated files to a :class:`list` of
     :class:`crowsetta.Annotation` instances,
     by either removing the extension of the annotation format,
@@ -440,7 +466,7 @@ def _map_using_ext(annotated_files: list[PathLike],
         Where each key is path to annotated file, and
         its value is the corresponding ``crowsetta.Annotation``.
     """
-    if method not in {'remove', 'replace'}:
+    if method not in {"remove", "replace"}:
         raise ValueError(
             f"`method` must be one of: {{'remove', 'replace'}}, but was: '{method}'"
         )
@@ -449,9 +475,11 @@ def _map_using_ext(annotated_files: list[PathLike],
         pathlib.Path(annotated_file) for annotated_file in annotated_files
     ]
 
-    if method == 'replace':
+    if method == "replace":
         if annotated_ext is None:
-            annotated_ext_set = set([annotated_file.suffix for annotated_file in annotated_files])
+            annotated_ext_set = set(
+                [annotated_file.suffix for annotated_file in annotated_files]
+            )
             if len(annotated_ext_set) > 1:
                 raise ValueError(
                     "Found more than one extension in annotated files, "
@@ -477,13 +505,13 @@ def _map_using_ext(annotated_files: list[PathLike],
             # NOTE that by convention the `ext` attribute
             # of all Crowsetta annotation format classes
             # begins with a period
-            annotated_name = annot.annot_path.name.replace(annot_class.ext, '')
+            annotated_name = annot.annot_path.name.replace(annot_class.ext, "")
         elif isinstance(annot_class.ext, tuple):
             # handle the case where an annotation format can have multiple extensions,
             # e.g., ``Format.ext == ('.csv', '.txt')``
             for ext in annot_class.ext:
                 if annot.annot_path.name.endswith(ext):
-                    annotated_name = annot.annot_path.name.replace(ext, '')
+                    annotated_name = annot.annot_path.name.replace(ext, "")
                     break
 
         if annotated_name is None:
@@ -496,7 +524,7 @@ def _map_using_ext(annotated_files: list[PathLike],
 
         # NOTE we don't have to do anything else for method=='remove'
         # since we just removed the extension
-        if method == 'replace':
+        if method == "replace":
             annotated_name = annotated_name + annotated_ext
 
         annotated_filename_annot_map[annotated_name] = annot
@@ -528,10 +556,12 @@ def _map_using_ext(annotated_files: list[PathLike],
     return {str(path): annot for path, annot in annotated_annot_map.items()}
 
 
-def map_annotated_to_annot(annotated_files: Union[list, np.array],
-                           annot_list: list[crowsetta.Annotation],
-                           annot_format: str,
-                           annotated_ext: str | None = None) -> dict[pathlib.Path : crowsetta.Annotation]:
+def map_annotated_to_annot(
+    annotated_files: Union[list, np.array],
+    annot_list: list[crowsetta.Annotation],
+    annot_format: str,
+    annotated_ext: str | None = None,
+) -> dict[pathlib.Path : crowsetta.Annotation]:
     """Map annotated files,
     i.e. audio or spectrogram files,
     to their corresponding annotations.
@@ -595,31 +625,45 @@ def map_annotated_to_annot(annotated_files: Union[list, np.array],
     reference section of the documentation:
     https://vak.readthedocs.io/en/latest/reference/filenames.html
     """
-    if type(annotated_files) == np.ndarray:  # e.g., vak DataFrame['spect_path'].values
+    if (
+        type(annotated_files) == np.ndarray
+    ):  # e.g., vak DataFrame['spect_path'].values
         annotated_files = annotated_files.tolist()
 
-    if annot_format in ('birdsong-recognition-dataset', 'yarden', 'generic-seq'):
-        annotated_annot_map = _map_using_notated_path(annotated_files, annot_list)
+    if annot_format in (
+        "birdsong-recognition-dataset",
+        "yarden",
+        "generic-seq",
+    ):
+        annotated_annot_map = _map_using_notated_path(
+            annotated_files, annot_list
+        )
     else:
         try:
-            annotated_annot_map = _map_using_ext(annotated_files, annot_list, annot_format, method='remove')
+            annotated_annot_map = _map_using_ext(
+                annotated_files, annot_list, annot_format, method="remove"
+            )
         except MapUsingExtensionError:
             try:
-                annotated_annot_map = _map_using_ext(annotated_files, annot_list, annot_format, method='replace',
-                                                     annotated_ext=annotated_ext)
+                annotated_annot_map = _map_using_ext(
+                    annotated_files,
+                    annot_list,
+                    annot_format,
+                    method="replace",
+                    annotated_ext=annotated_ext,
+                )
             except MapUsingExtensionError as e:
                 raise ValueError(
-                    'Could not map annotated files to annotations.\n'
-                    'Please see this section in the `vak` documentation:\n'
-                    'https://vak.readthedocs.io/en/latest/howto/howto_prep_annotate.html'
-                    '#how-does-vak-know-which-annotations-go-with-which-annotated-files'
+                    "Could not map annotated files to annotations.\n"
+                    "Please see this section in the `vak` documentation:\n"
+                    "https://vak.readthedocs.io/en/latest/howto/howto_prep_annotate.html"
+                    "#how-does-vak-know-which-annotations-go-with-which-annotated-files"
                 ) from e
 
     return annotated_annot_map
 
 
-def has_unlabeled(annot: crowsetta.Annotation,
-                  duration: float) -> bool:
+def has_unlabeled(annot: crowsetta.Annotation, duration: float) -> bool:
     """Returns ``True`` if an annotated sequence has unlabeled segments.
 
     Tests whether an instance of ``crowsetta.Annotation.seq`` has
@@ -653,7 +697,13 @@ def has_unlabeled(annot: crowsetta.Annotation,
         # Handle edge case where there are no annotated segments in annotation file
         # See https://github.com/vocalpy/vak/issues/378
         return True
-    has_unlabeled_intervals = np.any((annot.seq.onsets_s[1:] - annot.seq.offsets_s[:-1]) > 0.)
-    has_unlabeled_before_first_onset = annot.seq.onsets_s[0] > 0.
-    has_unlabeled_after_last_offset = duration - annot.seq.offsets_s[-1] > 0.
-    return has_unlabeled_intervals or has_unlabeled_before_first_onset or has_unlabeled_after_last_offset
+    has_unlabeled_intervals = np.any(
+        (annot.seq.onsets_s[1:] - annot.seq.offsets_s[:-1]) > 0.0
+    )
+    has_unlabeled_before_first_onset = annot.seq.onsets_s[0] > 0.0
+    has_unlabeled_after_last_offset = duration - annot.seq.offsets_s[-1] > 0.0
+    return (
+        has_unlabeled_intervals
+        or has_unlabeled_before_first_onset
+        or has_unlabeled_after_last_offset
+    )

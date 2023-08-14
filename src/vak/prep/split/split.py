@@ -94,8 +94,12 @@ def train_test_dur_split_inds(
 
 
 def frame_classification_dataframe(
-    dataset_df: pd.DataFrame, dataset_path: str | pathlib.Path, labelset: set,
-    train_dur: float | None = None, test_dur: float | None = None, val_dur: float | None = None
+    dataset_df: pd.DataFrame,
+    dataset_path: str | pathlib.Path,
+    labelset: set,
+    train_dur: float | None = None,
+    test_dur: float | None = None,
+    val_dur: float | None = None,
 ):
     """Create datasets splits from a dataframe
     representing a frame classification dataset.
@@ -158,8 +162,12 @@ def frame_classification_dataframe(
 
     # start off with all elements set to 'None'
     # so we don't have to change any that are not assigned to one of the subsets to 'None' after
-    split_col = np.asarray(["None" for _ in range(len(dataset_df))], dtype="object")
-    split_zip = zip(["train", "val", "test"], [train_inds, val_inds, test_inds])
+    split_col = np.asarray(
+        ["None" for _ in range(len(dataset_df))], dtype="object"
+    )
+    split_zip = zip(
+        ["train", "val", "test"], [train_inds, val_inds, test_inds]
+    )
     for split_name, split_inds in split_zip:
         if split_inds is not None:
             split_col[split_inds] = split_name
@@ -171,8 +179,12 @@ def frame_classification_dataframe(
 
 
 def unit_dataframe(
-    dataset_df: pd.DataFrame, dataset_path: str | pathlib.Path, labelset: set,
-    train_dur: float | None = None, test_dur: float | None = None, val_dur: float | None = None
+    dataset_df: pd.DataFrame,
+    dataset_path: str | pathlib.Path,
+    labelset: set,
+    train_dur: float | None = None,
+    test_dur: float | None = None,
+    val_dur: float | None = None,
 ):
     """Create datasets splits from a dataframe
     representing a unit dataset.
@@ -222,9 +234,7 @@ def unit_dataframe(
     dataset_df = (
         dataset_df.copy()
     )  # don't want this function to have unexpected side effects, so return a copy
-    labels = [
-        np.array([label]) for label in dataset_df.label.values
-    ]
+    labels = [np.array([label]) for label in dataset_df.label.values]
 
     durs = dataset_df["duration"].values
     train_inds, val_inds, test_inds = train_test_dur_split_inds(
@@ -238,8 +248,12 @@ def unit_dataframe(
 
     # start off with all elements set to 'None'
     # so we don't have to change any that are not assigned to one of the subsets to 'None' after
-    split_col = np.asarray(["None" for _ in range(len(dataset_df))], dtype="object")
-    split_zip = zip(["train", "val", "test"], [train_inds, val_inds, test_inds])
+    split_col = np.asarray(
+        ["None" for _ in range(len(dataset_df))], dtype="object"
+    )
+    split_zip = zip(
+        ["train", "val", "test"], [train_inds, val_inds, test_inds]
+    )
     for split_name, split_inds in split_zip:
         if split_inds is not None:
             split_col[split_inds] = split_name

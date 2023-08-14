@@ -27,7 +27,7 @@ SPECT_FORMAT_LOAD_FUNCTION_MAP = {
 VALID_SPECT_FORMATS = list(SPECT_FORMAT_LOAD_FUNCTION_MAP.keys())
 
 # ---- valid types of training data, the $x$ that goes into a network
-VALID_X_SOURCES = {'audio', 'spect'}
+VALID_X_SOURCES = {"audio", "spect"}
 
 # ---- annotation files ----
 VALID_ANNOT_FORMATS = crowsetta.formats.as_list()

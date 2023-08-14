@@ -32,7 +32,9 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     """
     tfm = spect - mean_freqs[:, np.newaxis]  # need axis for broadcasting
     # keep any stds that are zero from causing NaNs
-    tfm[non_zero_std, :] = tfm[non_zero_std, :] / std_freqs[non_zero_std, np.newaxis]
+    tfm[non_zero_std, :] = (
+        tfm[non_zero_std, :] / std_freqs[non_zero_std, np.newaxis]
+    )
     return tfm
 
 

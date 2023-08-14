@@ -18,13 +18,20 @@ from torch.utils.data import Dataset
 # Numba is required by UMAP.
 from numba.core.errors import NumbaDeprecationWarning
 
-warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 from umap.umap_ import fuzzy_simplicial_set
+
 # isort: on
 
-def get_umap_graph(X: npt.NDArray, n_neighbors: int = 10, metric: str= "euclidean",
-                   random_state: np.random.RandomState | None = None,
-                   max_candidates: int = 60, verbose: bool = True) -> scipy.sparse._coo.coo_matrix:
+
+def get_umap_graph(
+    X: npt.NDArray,
+    n_neighbors: int = 10,
+    metric: str = "euclidean",
+    random_state: np.random.RandomState | None = None,
+    max_candidates: int = 60,
+    verbose: bool = True,
+) -> scipy.sparse._coo.coo_matrix:
     """Get graph used by UMAP,
     the fuzzy topological representation.
 
@@ -78,7 +85,9 @@ def get_umap_graph(X: npt.NDArray, n_neighbors: int = 10, metric: str= "euclidea
     (where :math:`k` is a hyperparameter).
     In the UMAP package, these are calculated using :func:`umap._umap.smooth_knn_dist`.
     """
-    random_state = check_random_state(None) if random_state == None else random_state
+    random_state = (
+        check_random_state(None) if random_state == None else random_state
+    )
 
     # number of trees in random projection forest
     n_trees = 5 + int(round((X.shape[0]) ** 0.5 / 20.0))
@@ -94,7 +103,7 @@ def get_umap_graph(X: npt.NDArray, n_neighbors: int = 10, metric: str= "euclidea
         n_trees=n_trees,
         n_iters=n_iters,
         max_candidates=max_candidates,
-        verbose=verbose
+        verbose=verbose,
     )
 
     # get indices and distances for 10 nearest neighbors of every point in dataset
@@ -114,8 +123,15 @@ def get_umap_graph(X: npt.NDArray, n_neighbors: int = 10, metric: str= "euclidea
 
 
 def get_graph_elements(
-        graph: scipy.sparse._coo.coo_matrix, n_epochs: int
-) -> tuple[scipy.sparse._coo.coo_matrix, npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray, int]:
+    graph: scipy.sparse._coo.coo_matrix, n_epochs: int
+) -> tuple[
+    scipy.sparse._coo.coo_matrix,
+    npt.NDArray,
+    npt.NDArray,
+    npt.NDArray,
+    npt.NDArray,
+    int,
+]:
     """Get graph elements for Parametric UMAP Dataset.
 
     Parameters
@@ -170,12 +186,24 @@ def get_graph_elements(
 
 
 class ParametricUMAPDataset(Dataset):
-    """Dataset used for training Parametric UMAP models
+    """Dataset used for training Parametric UMAP models"""
 
-    """
-    def __init__(self, data: npt.NDArray, graph,
-                 dataset_df: pd.DataFrame, n_epochs: int = 200, transform: Callable | None = None):
-        graph, epochs_per_sample, head, tail, weight, n_vertices = get_graph_elements(graph, n_epochs)
+    def __init__(
+        self,
+        data: npt.NDArray,
+        graph,
+        dataset_df: pd.DataFrame,
+        n_epochs: int = 200,
+        transform: Callable | None = None,
+    ):
+        (
+            graph,
+            epochs_per_sample,
+            head,
+            tail,
+            weight,
+            n_vertices,
+        ) = get_graph_elements(graph, n_epochs)
 
         # we repeat each sample in (head, tail) a certain number of times depending on its probability
         self.edges_to_exp, self.edges_from_exp = (
@@ -185,7 +213,9 @@ class ParametricUMAPDataset(Dataset):
         # we then shuffle -- not sure this is necessary if the dataset is shuffled during training?
         shuffle_mask = np.random.permutation(np.arange(len(self.edges_to_exp)))
         self.edges_to_exp = self.edges_to_exp[shuffle_mask].astype(np.int64)
-        self.edges_from_exp = self.edges_from_exp[shuffle_mask].astype(np.int64)
+        self.edges_from_exp = self.edges_from_exp[shuffle_mask].astype(
+            np.int64
+        )
 
         self.data = data
         self.dataset_df = dataset_df
@@ -193,7 +223,7 @@ class ParametricUMAPDataset(Dataset):
 
     @property
     def duration(self):
-        return self.dataset_df['duration'].sum()
+        return self.dataset_df["duration"].sum()
 
     def __len__(self):
         return self.edges_to_exp.shape[0]
@@ -213,14 +243,16 @@ class ParametricUMAPDataset(Dataset):
         return (edges_to_exp, edges_from_exp)
 
     @classmethod
-    def from_dataset_path(cls,
-                          dataset_path: str | pathlib.Path,
-                          split: str,
-                          n_neighbors: int = 10,
-                          metric: str = 'euclidean',
-                          random_state: int | None = None,
-                          n_epochs:int = 200,
-                          transform: Callable | None = None):
+    def from_dataset_path(
+        cls,
+        dataset_path: str | pathlib.Path,
+        split: str,
+        n_neighbors: int = 10,
+        metric: str = "euclidean",
+        random_state: int | None = None,
+        n_epochs: int = 200,
+        transform: Callable | None = None,
+    ):
         """
 
         Parameters
@@ -241,7 +273,9 @@ class ParametricUMAPDataset(Dataset):
         import vak.datasets  # import here just to make classmethod more explicit
 
         dataset_path = pathlib.Path(dataset_path)
-        metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
+        metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(
+            dataset_path
+        )
 
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
@@ -249,10 +283,16 @@ class ParametricUMAPDataset(Dataset):
 
         data = np.stack(
             [
-                np.load(dataset_path / spect_path) for spect_path in split_df.spect_path.values
+                np.load(dataset_path / spect_path)
+                for spect_path in split_df.spect_path.values
             ]
         )
-        graph = get_umap_graph(data, n_neighbors=n_neighbors, metric=metric, random_state=random_state)
+        graph = get_umap_graph(
+            data,
+            n_neighbors=n_neighbors,
+            metric=metric,
+            random_state=random_state,
+        )
 
         return cls(
             data,
@@ -264,14 +304,19 @@ class ParametricUMAPDataset(Dataset):
 
 
 class ParametricUMAPInferenceDataset(Dataset):
-    def __init__(self, data: npt.NDArray, dataset_df: pd.DataFrame, transform: Callable | None = None):
+    def __init__(
+        self,
+        data: npt.NDArray,
+        dataset_df: pd.DataFrame,
+        transform: Callable | None = None,
+    ):
         self.data = data
         self.dataset_df = dataset_df
         self.transform = transform
 
     @property
     def duration(self):
-        return self.dataset_df['duration'].sum()
+        return self.dataset_df["duration"].sum()
 
     def __len__(self):
         return self.data.shape[0]
@@ -286,18 +331,20 @@ class ParametricUMAPInferenceDataset(Dataset):
         x = self.data[index]
         df_index = self.dataset_df.index[index]
         if self.transform:
-            x= self.transform(x)
-        return {'x': x, 'df_index': df_index}
+            x = self.transform(x)
+        return {"x": x, "df_index": df_index}
 
     @classmethod
-    def from_dataset_path(cls,
-                          dataset_path: str | pathlib.Path,
-                          split: str,
-                          n_neighbors: int = 10,
-                          metric: str = 'euclidean',
-                          random_state: int | None = None,
-                          n_epochs:int = 200,
-                          transform: Callable | None = None):
+    def from_dataset_path(
+        cls,
+        dataset_path: str | pathlib.Path,
+        split: str,
+        n_neighbors: int = 10,
+        metric: str = "euclidean",
+        random_state: int | None = None,
+        n_epochs: int = 200,
+        transform: Callable | None = None,
+    ):
         """
 
         Parameters
@@ -318,7 +365,9 @@ class ParametricUMAPInferenceDataset(Dataset):
         import vak.datasets  # import here just to make classmethod more explicit
 
         dataset_path = pathlib.Path(dataset_path)
-        metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
+        metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(
+            dataset_path
+        )
 
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
@@ -326,7 +375,8 @@ class ParametricUMAPInferenceDataset(Dataset):
 
         data = np.stack(
             [
-                np.load(dataset_path / spect_path) for spect_path in split_df.spect_path.values
+                np.load(dataset_path / spect_path)
+                for spect_path in split_df.spect_path.values
             ]
         )
         return cls(

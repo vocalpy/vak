@@ -37,6 +37,7 @@ class ParametricUMAPModel(base.Model):
        Neural Computation, 33(11), 2881-2907.
        https://direct.mit.edu/neco/article/33/11/2881/107068.
     """
+
     definition: ClassVar[ModelDefinition]
 
     def __init__(
@@ -44,19 +45,22 @@ class ParametricUMAPModel(base.Model):
         network: dict | None = None,
         loss: torch.nn.Module | Callable | None = None,
         optimizer: torch.optim.Optimizer | None = None,
-        metrics: dict[str: Type] | None = None,
+        metrics: dict[str:Type] | None = None,
     ):
-        super().__init__(network=network, loss=loss,
-                         optimizer=optimizer, metrics=metrics)
-        self.encoder = network['encoder']
-        self.decoder = network.get('decoder', None)
+        super().__init__(
+            network=network, loss=loss, optimizer=optimizer, metrics=metrics
+        )
+        self.encoder = network["encoder"]
+        self.decoder = network.get("decoder", None)
 
     def configure_optimizers(self):
         return self.optimizer
 
     def training_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to, embedding_from = self.encoder(edges_to_exp), self.encoder(edges_from_exp)
+        embedding_to, embedding_from = self.encoder(
+            edges_to_exp
+        ), self.encoder(edges_from_exp)
 
         if self.decoder is not None:
             reconstruction = self.decoder(embedding_to)
@@ -64,7 +68,9 @@ class ParametricUMAPModel(base.Model):
         else:
             reconstruction = None
             before_encoding = None
-        loss_umap, loss_reconstruction, loss = self.loss(embedding_to, embedding_from, reconstruction, before_encoding)
+        loss_umap, loss_reconstruction, loss = self.loss(
+            embedding_to, embedding_from, reconstruction, before_encoding
+        )
         self.log("train_umap_loss", loss_umap)
         if loss_reconstruction:
             self.log("train_reconstruction_loss", loss_reconstruction)
@@ -74,7 +80,9 @@ class ParametricUMAPModel(base.Model):
 
     def validation_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to, embedding_from = self.encoder(edges_to_exp), self.encoder(edges_from_exp)
+        embedding_to, embedding_from = self.encoder(
+            edges_to_exp
+        ), self.encoder(edges_from_exp)
 
         if self.decoder is not None:
             reconstruction = self.decoder(embedding_to)
@@ -82,16 +90,19 @@ class ParametricUMAPModel(base.Model):
         else:
             reconstruction = None
             before_encoding = None
-        loss_umap, loss_reconstruction, loss = self.loss(embedding_to, embedding_from, reconstruction, before_encoding)
+        loss_umap, loss_reconstruction, loss = self.loss(
+            embedding_to, embedding_from, reconstruction, before_encoding
+        )
         self.log("val_umap_loss", loss_umap, on_step=True)
         if loss_reconstruction:
-            self.log("val_reconstruction_loss", loss_reconstruction, on_step=True)
+            self.log(
+                "val_reconstruction_loss", loss_reconstruction, on_step=True
+            )
         # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
         self.log("val_loss", loss, on_step=True)
 
     @classmethod
-    def from_config(cls,
-                    config: dict):
+    def from_config(cls, config: dict):
         """Return an initialized model instance from a config ``dict``
 
         Parameters
@@ -107,10 +118,9 @@ class ParametricUMAPModel(base.Model):
             initialized using parameters from ``config``.
         """
         network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(network=network,
-                   optimizer=optimizer,
-                   loss=loss,
-                   metrics=metrics)
+        return cls(
+            network=network, optimizer=optimizer, loss=loss, metrics=metrics
+        )
 
 
 class ParametricUMAPDatamodule(lightning.LightningDataModule):
@@ -163,13 +173,28 @@ class ParametricUMAP:
 
         self.model = ParametricUMAPModel(self.encoder, min_dist=self.min_dist)
 
-    def fit(self, trainer: lightning.Trainer, dataset_path: str | pathlib.Path, transform=None):
+    def fit(
+        self,
+        trainer: lightning.Trainer,
+        dataset_path: str | pathlib.Path,
+        transform=None,
+    ):
         from vak.datasets.parametric_umap import ParametricUMAPDataset
-        dataset = ParametricUMAPDataset.from_dataset_path(dataset_path, 'train', self.n_neighbors, self.metric,
-                                                          self.random_state, self.num_epochs, transform)
+
+        dataset = ParametricUMAPDataset.from_dataset_path(
+            dataset_path,
+            "train",
+            self.n_neighbors,
+            self.metric,
+            self.random_state,
+            self.num_epochs,
+            transform,
+        )
         trainer.fit(
             model=self.model,
-            datamodule=ParametricUMAPDatamodule(dataset, self.batch_size, self.num_workers)
+            datamodule=ParametricUMAPDatamodule(
+                dataset, self.batch_size, self.num_workers
+            ),
         )
 
     @torch.no_grad()

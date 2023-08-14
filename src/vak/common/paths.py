@@ -33,5 +33,7 @@ def generate_results_dir_name_as_path(root_results_dir=None):
             f"root_results_dir not recognized as a directory: {root_results_dir}"
         )
 
-    results_dirname = f"{constants.RESULTS_DIR_PREFIX}{timenow.get_timenow_as_str()}"
+    results_dirname = (
+        f"{constants.RESULTS_DIR_PREFIX}{timenow.get_timenow_as_str()}"
+    )
     return root_results_dir.joinpath(results_dirname)

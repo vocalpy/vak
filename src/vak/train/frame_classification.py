@@ -46,7 +46,7 @@ def train_frame_classification_model(
     ckpt_step: int | None = None,
     patience: int | None = None,
     device: str | None = None,
-    split: str = 'train',
+    split: str = "train",
 ) -> None:
     """Train a model from the frame classification family
     and save results.
@@ -149,8 +149,8 @@ def train_frame_classification_model(
         training set to use when training models for a learning curve.
     """
     for path, path_name in zip(
-            (checkpoint_path, spect_scaler_path),
-            ('checkpoint_path', 'spect_scaler_path'),
+        (checkpoint_path, spect_scaler_path),
+        ("checkpoint_path", "spect_scaler_path"),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -167,7 +167,9 @@ def train_frame_classification_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+        dataset_path
+    )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
@@ -201,9 +203,7 @@ def train_frame_classification_model(
     )
 
     labelmap_path = dataset_path / "labelmap.json"
-    logger.info(
-        f"loading labelmap from path: {labelmap_path}"
-    )
+    logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
     # copy to new results_path
@@ -211,9 +211,7 @@ def train_frame_classification_model(
         json.dump(labelmap, f)
 
     if spect_scaler_path is not None and normalize_spectrograms:
-        logger.info(
-            f"loading spect scaler from path: {spect_scaler_path}"
-        )
+        logger.info(f"loading spect scaler from path: {spect_scaler_path}")
         spect_standardizer = joblib.load(spect_scaler_path)
         shutil.copy(spect_scaler_path, results_path)
     # get transforms just before creating datasets with them
@@ -223,22 +221,27 @@ def train_frame_classification_model(
         )
         logger.info("will normalize spectrograms")
         spect_standardizer = transforms.StandardizeSpect.fit_dataset_path(
-            dataset_path, split=split,
+            dataset_path,
+            split=split,
         )
-        joblib.dump(spect_standardizer, results_path.joinpath("StandardizeSpect"))
+        joblib.dump(
+            spect_standardizer, results_path.joinpath("StandardizeSpect")
+        )
     elif spect_scaler_path is not None and not normalize_spectrograms:
-        raise ValueError('spect_scaler_path provided but normalize_spectrograms was False, these options conflict')
+        raise ValueError(
+            "spect_scaler_path provided but normalize_spectrograms was False, these options conflict"
+        )
     else:
-        #not normalize_spectrograms and spect_scaler_path is None:
+        # not normalize_spectrograms and spect_scaler_path is None:
         logger.info(
             "normalize_spectrograms is False and no spect_scaler_path was provided, "
             "will not standardize spectrograms",
-            )
+        )
         spect_standardizer = None
 
     if train_transform_params is None:
         train_transform_params = {}
-    train_transform_params.update({'spect_standardizer': spect_standardizer})
+    train_transform_params.update({"spect_standardizer": spect_standardizer})
     transform, target_transform = transforms.defaults.get_default_transform(
         model_name, "train", transform_kwargs=train_transform_params
     )
@@ -275,11 +278,9 @@ def train_frame_classification_model(
 
         if val_transform_params is None:
             val_transform_params = {}
-        val_transform_params.update({'spect_standardizer': spect_standardizer})
+        val_transform_params.update({"spect_standardizer": spect_standardizer})
         item_transform = transforms.defaults.get_default_transform(
-            model_name,
-            "eval",
-            val_transform_params
+            model_name, "eval", val_transform_params
         )
         if val_dataset_params is None:
             val_dataset_params = {}
@@ -326,9 +327,9 @@ def train_frame_classification_model(
     logger.info(f"training {model_name}")
     max_steps = num_epochs * len(train_loader)
     default_callback_kwargs = {
-        'ckpt_root': ckpt_root,
-        'ckpt_step': ckpt_step,
-        'patience': patience,
+        "ckpt_root": ckpt_root,
+        "ckpt_step": ckpt_step,
+        "patience": patience,
     }
     trainer = get_default_trainer(
         max_steps=max_steps,
@@ -338,19 +339,13 @@ def train_frame_classification_model(
         device=device,
     )
     train_time_start = datetime.datetime.now()
-    logger.info(
-        f"Training start time: {train_time_start.isoformat()}"
-    )
+    logger.info(f"Training start time: {train_time_start.isoformat()}")
     trainer.fit(
         model=model,
         train_dataloaders=train_loader,
         val_dataloaders=val_loader,
     )
     train_time_stop = datetime.datetime.now()
-    logger.info(
-        f"Training stop time: {train_time_stop.isoformat()}"
-    )
+    logger.info(f"Training stop time: {train_time_stop.isoformat()}")
     elapsed = train_time_stop - train_time_start
-    logger.info(
-        f"Elapsed training time: {elapsed}"
-    )
+    logger.info(f"Elapsed training time: {elapsed}")

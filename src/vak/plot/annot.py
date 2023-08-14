@@ -139,5 +139,9 @@ def annotation(
 
     segment_centers = np.array(segment_centers)
     plot_labels(
-        labels=labels, t=segment_centers, y=y_labels, ax=ax, text_kwargs=text_kwargs
+        labels=labels,
+        t=segment_centers,
+        y=y_labels,
+        ax=ax,
+        text_kwargs=text_kwargs,
     )

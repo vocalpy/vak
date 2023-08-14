@@ -35,9 +35,7 @@ def where_unlabeled_segments(dataset_df: pd.DataFrame) -> npt.NDArray:
     has_unlabeled_list = []
 
     for annot, duration in zip(annots, durations):
-        has_unlabeled_list.append(
-            annotation.has_unlabeled(annot, duration)
-        )
+        has_unlabeled_list.append(annotation.has_unlabeled(annot, duration))
 
     return np.array(has_unlabeled_list).astype(bool)
 
@@ -69,6 +67,4 @@ def has_unlabeled_segments(dataset_df: pd.DataFrame) -> bool:
     # np.any returns an instance of <class 'numpy.bool_'>
     # and `<class 'numpy.bool_'> is True == False`.
     # Not sure if this is numpy version specific
-    return bool(
-        np.any(where_unlabeled_segments(dataset_df)
-    ))
+    return bool(np.any(where_unlabeled_segments(dataset_df)))

@@ -5,48 +5,49 @@ import pathlib
 import pytorch_lightning as lightning
 
 
-def get_default_train_callbacks(ckpt_root: str | pathlib.Path,
-                                ckpt_step: int,
-                                patience: int, ):
+def get_default_train_callbacks(
+    ckpt_root: str | pathlib.Path,
+    ckpt_step: int,
+    patience: int,
+):
     ckpt_callback = lightning.callbacks.ModelCheckpoint(
         dirpath=ckpt_root,
-        filename='checkpoint',
+        filename="checkpoint",
         every_n_train_steps=ckpt_step,
         save_last=True,
         verbose=True,
     )
-    ckpt_callback.CHECKPOINT_NAME_LAST = 'checkpoint'
-    ckpt_callback.FILE_EXTENSION = '.pt'
+    ckpt_callback.CHECKPOINT_NAME_LAST = "checkpoint"
+    ckpt_callback.FILE_EXTENSION = ".pt"
 
     val_ckpt_callback = lightning.callbacks.ModelCheckpoint(
         monitor="val_acc",
         dirpath=ckpt_root,
         save_top_k=1,
-        mode='max',
-        filename='max-val-acc-checkpoint',
+        mode="max",
+        filename="max-val-acc-checkpoint",
         auto_insert_metric_name=False,
-        verbose=True
+        verbose=True,
     )
-    val_ckpt_callback.FILE_EXTENSION = '.pt'
+    val_ckpt_callback.FILE_EXTENSION = ".pt"
 
     early_stopping = lightning.callbacks.EarlyStopping(
-        mode='max',
-        monitor='val_acc',
+        mode="max",
+        monitor="val_acc",
         patience=patience,
         verbose=True,
     )
 
-    return [ckpt_callback,
-            val_ckpt_callback,
-            early_stopping]
+    return [ckpt_callback, val_ckpt_callback, early_stopping]
 
 
-def get_default_trainer(max_steps: int,
-                        log_save_dir: str | pathlib.Path,
-                        val_step: int,
-                        default_callback_kwargs: dict | None = None,
-                        device: str = 'cuda',
-                        ) -> lightning.Trainer:
+def get_default_trainer(
+    max_steps: int,
+    log_save_dir: str | pathlib.Path,
+    val_step: int,
+    default_callback_kwargs: dict | None = None,
+    device: str = "cuda",
+) -> lightning.Trainer:
     """Returns an instance of ``lightning.Trainer``
     with a default set of callbacks.
     Used by ``vak.core`` functions."""
@@ -55,14 +56,12 @@ def get_default_trainer(max_steps: int,
     else:
         callbacks = None
 
-    if device == 'cuda':
-        accelerator = 'gpu'
+    if device == "cuda":
+        accelerator = "gpu"
     else:
         accelerator = None
 
-    logger = lightning.loggers.TensorBoardLogger(
-        save_dir=log_save_dir
-    )
+    logger = lightning.loggers.TensorBoardLogger(save_dir=log_save_dir)
 
     trainer = lightning.Trainer(
         callbacks=callbacks,

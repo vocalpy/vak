@@ -48,24 +48,26 @@ class TweetyNet(nn.Module):
     -----
     This is the network used by ``vak.models.TweetyNetModel``.
     """
-    def __init__(self,
-                 num_classes,
-                 num_input_channels=1,
-                 num_freqbins=256,
-                 padding='SAME',
-                 conv1_filters=32,
-                 conv1_kernel_size=(5, 5),
-                 conv2_filters=64,
-                 conv2_kernel_size=(5, 5),
-                 pool1_size=(8, 1),
-                 pool1_stride=(8, 1),
-                 pool2_size=(8, 1),
-                 pool2_stride=(8, 1),
-                 hidden_size=None,
-                 rnn_dropout=0.,
-                 num_layers=1,
-                 bidirectional=True,
-                 ):
+
+    def __init__(
+        self,
+        num_classes,
+        num_input_channels=1,
+        num_freqbins=256,
+        padding="SAME",
+        conv1_filters=32,
+        conv1_kernel_size=(5, 5),
+        conv2_filters=64,
+        conv2_kernel_size=(5, 5),
+        pool1_size=(8, 1),
+        pool1_stride=(8, 1),
+        pool2_size=(8, 1),
+        pool2_stride=(8, 1),
+        hidden_size=None,
+        rnn_dropout=0.0,
+        num_layers=1,
+        bidirectional=True,
+    ):
         """initialize TweetyNet model
 
         Parameters
@@ -113,29 +115,36 @@ class TweetyNet(nn.Module):
         self.num_freqbins = num_freqbins
 
         self.cnn = nn.Sequential(
-            Conv2dTF(in_channels=self.num_input_channels,
-                     out_channels=conv1_filters,
-                     kernel_size=conv1_kernel_size,
-                     padding=padding
-                     ),
+            Conv2dTF(
+                in_channels=self.num_input_channels,
+                out_channels=conv1_filters,
+                kernel_size=conv1_kernel_size,
+                padding=padding,
+            ),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=pool1_size,
-                         stride=pool1_stride),
-            Conv2dTF(in_channels=conv1_filters,
-                     out_channels=conv2_filters,
-                     kernel_size=conv2_kernel_size,
-                     padding=padding,
-                     ),
+            nn.MaxPool2d(kernel_size=pool1_size, stride=pool1_stride),
+            Conv2dTF(
+                in_channels=conv1_filters,
+                out_channels=conv2_filters,
+                kernel_size=conv2_kernel_size,
+                padding=padding,
+            ),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=pool2_size,
-                         stride=pool2_stride),
+            nn.MaxPool2d(kernel_size=pool2_size, stride=pool2_stride),
         )
 
         # determine number of features in output after stacking channels
         # we use the same number of features for hidden states
         # note self.num_hidden is also used to reshape output of cnn in self.forward method
-        N_DUMMY_TIMEBINS = 256  # some not-small number. This dimension doesn't matter here
-        batch_shape = (1, self.num_input_channels, self.num_freqbins, N_DUMMY_TIMEBINS)
+        N_DUMMY_TIMEBINS = (
+            256  # some not-small number. This dimension doesn't matter here
+        )
+        batch_shape = (
+            1,
+            self.num_input_channels,
+            self.num_freqbins,
+            N_DUMMY_TIMEBINS,
+        )
         tmp_tensor = torch.rand(batch_shape)
         tmp_out = self.cnn(tmp_tensor)
         channels_out, freqbins_out = tmp_out.shape[1], tmp_out.shape[2]
@@ -146,15 +155,19 @@ class TweetyNet(nn.Module):
         else:
             self.hidden_size = hidden_size
 
-        self.rnn = nn.LSTM(input_size=self.rnn_input_size,
-                           hidden_size=self.hidden_size,
-                           num_layers=num_layers,
-                           dropout=rnn_dropout,
-                           bidirectional=bidirectional)
+        self.rnn = nn.LSTM(
+            input_size=self.rnn_input_size,
+            hidden_size=self.hidden_size,
+            num_layers=num_layers,
+            dropout=rnn_dropout,
+            bidirectional=bidirectional,
+        )
 
         # for self.fc, in_features = hidden_size * 2 because LSTM is bidirectional
         # so we get hidden forward + hidden backward as output
-        self.fc = nn.Linear(in_features=self.hidden_size * 2, out_features=num_classes)
+        self.fc = nn.Linear(
+            in_features=self.hidden_size * 2, out_features=num_classes
+        )
 
     def forward(self, x):
         features = self.cnn(x)

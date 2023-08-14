@@ -35,14 +35,14 @@ class ED_TCN:
        Temporal convolutional networks for action segmentation and detection.
        In proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (pp. 156-165).
     """
+
     network = nets.ED_TCN
     loss = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
-    metrics = {'acc': metrics.Accuracy,
-               'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
-               'loss': torch.nn.CrossEntropyLoss}
-    default_config = {
-        'optimizer':
-            {'lr': 0.003}
+    metrics = {
+        "acc": metrics.Accuracy,
+        "levenshtein": metrics.Levenshtein,
+        "segment_error_rate": metrics.SegmentErrorRate,
+        "loss": torch.nn.CrossEntropyLoss,
     }
+    default_config = {"optimizer": {"lr": 0.003}}

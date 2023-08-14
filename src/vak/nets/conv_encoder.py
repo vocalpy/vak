@@ -8,15 +8,18 @@ class ConvEncoder(nn.Module):
     """Convolutional encoder,
     used by Parametric UMAP model.
     """
-    def __init__(self,
-                 input_shape: tuple[int],
-                 conv1_filters: int = 64,
-                 conv2_filters: int = 128,
-                 conv_kernel_size: int = 3,
-                 conv_stride: int = 2,
-                 conv_padding: int = 1,
-                 n_features_linear: int = 512,
-                 n_components: int = 2):
+
+    def __init__(
+        self,
+        input_shape: tuple[int],
+        conv1_filters: int = 64,
+        conv2_filters: int = 128,
+        conv_kernel_size: int = 3,
+        conv_stride: int = 2,
+        conv_padding: int = 1,
+        n_features_linear: int = 512,
+        n_components: int = 2,
+    ):
         """Initialize a ConvEncoder instance.
 
         Parameters
@@ -51,14 +54,20 @@ class ConvEncoder(nn.Module):
 
         self.conv = nn.Sequential(
             nn.Conv2d(
-                in_channels=self.num_input_channels, out_channels=conv1_filters,
-                kernel_size=conv_kernel_size, stride=conv_stride, padding=conv_padding,
+                in_channels=self.num_input_channels,
+                out_channels=conv1_filters,
+                kernel_size=conv_kernel_size,
+                stride=conv_stride,
+                padding=conv_padding,
             ),
             nn.Conv2d(
-                in_channels=conv1_filters, out_channels=conv2_filters,
-                kernel_size=conv_kernel_size, stride=conv_stride, padding=conv_padding,
+                in_channels=conv1_filters,
+                out_channels=conv2_filters,
+                kernel_size=conv_kernel_size,
+                stride=conv_stride,
+                padding=conv_padding,
             ),
-            nn.Flatten()
+            nn.Flatten(),
         )
         mock_input = torch.rand((1, *input_shape))
         mock_conv_out = self.conv(mock_input)
@@ -69,7 +78,7 @@ class ConvEncoder(nn.Module):
             nn.ReLU(),
             nn.Linear(n_features_linear, n_features_linear),
             nn.ReLU(),
-            nn.Linear(n_features_linear, n_components)
+            nn.Linear(n_features_linear, n_components),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

@@ -14,8 +14,9 @@ from .files import find_fname
 logger = logging.getLogger(__name__)
 
 
-def find_audio_fname(spect_path: str | pathlib.Path,
-                     audio_ext: str | None = None):
+def find_audio_fname(
+    spect_path: str | pathlib.Path, audio_ext: str | None = None
+):
     """finds name of audio file in a path to a spectrogram file,
     if one is present.
 
@@ -63,8 +64,7 @@ def find_audio_fname(spect_path: str | pathlib.Path,
         )
 
 
-def load(spect_path: str | pathlib.Path,
-         spect_format: str | None = None):
+def load(spect_path: str | pathlib.Path, spect_format: str | None = None):
     """load spectrogram and related arrays from a file,
     return as an object that provides Python dictionary-like
     access
@@ -89,14 +89,18 @@ def load(spect_path: str | pathlib.Path,
     if spect_format is None:
         # "replace('.', '')", because suffix returns file extension with period included
         spect_format = spect_path.suffix.replace(".", "")
-    spect_dict = constants.SPECT_FORMAT_LOAD_FUNCTION_MAP[spect_format](spect_path)
+    spect_dict = constants.SPECT_FORMAT_LOAD_FUNCTION_MAP[spect_format](
+        spect_path
+    )
     return spect_dict
 
 
-def timebin_dur(spect_path: str | pathlib.Path,
-                spect_format: str,
-                timebins_key: str = 't',
-                n_decimals_trunc: int = 5):
+def timebin_dur(
+    spect_path: str | pathlib.Path,
+    spect_format: str,
+    timebins_key: str = "t",
+    n_decimals_trunc: int = 5,
+):
     """get duration of time bins from a spectrogram file
 
     Parameters
@@ -170,7 +174,8 @@ def is_valid_set_of_spect_files(
 
     def _validate(spect_path):
         """validates each spectrogram file, then returns frequency bin array
-        and duration of time bins, so that those can be validated across all files"""
+        and duration of time bins, so that those can be validated across all files
+        """
         spect_dict = load(spect_path, spect_format)
 
         if spect_key not in spect_dict:
@@ -184,13 +189,19 @@ def is_valid_set_of_spect_files(
         timebin_dur = timebin_dur_from_vec(time_bins, n_decimals_trunc)
 
         # number of freq. bins should equal number of rows
-        if spect_dict[freqbins_key].shape[-1] != spect_dict[spect_key].shape[0]:
+        if (
+            spect_dict[freqbins_key].shape[-1]
+            != spect_dict[spect_key].shape[0]
+        ):
             raise ValueError(
                 f"length of frequency bins in {spect_path.name} "
                 "does not match number of rows in spectrogram"
             )
         # number of time bins should equal number of columns
-        if spect_dict[timebins_key].shape[-1] != spect_dict[spect_key].shape[1]:
+        if (
+            spect_dict[timebins_key].shape[-1]
+            != spect_dict[spect_key].shape[1]
+        ):
             raise ValueError(
                 f"length of time_bins in {spect_path.name} "
                 f"does not match number of columns in spectrogram"
@@ -205,7 +216,9 @@ def is_valid_set_of_spect_files(
     with ProgressBar():
         path_freqbins_timebin_dur_tups = list(spect_paths_bag.map(_validate))
 
-    all_freq_bins = np.stack([tup[1] for tup in path_freqbins_timebin_dur_tups])
+    all_freq_bins = np.stack(
+        [tup[1] for tup in path_freqbins_timebin_dur_tups]
+    )
     uniq_freq_bins = np.unique(all_freq_bins, axis=0)
     if len(uniq_freq_bins) != 1:
         raise ValueError(
