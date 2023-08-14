@@ -135,7 +135,7 @@ def eval_frame_classification_model(
         logger.info(f"loading spect scaler from path: {spect_scaler_path}")
         spect_standardizer = joblib.load(spect_scaler_path)
     else:
-        logger.info(f"not using a spect scaler")
+        logger.info("not using a spect scaler")
         spect_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
