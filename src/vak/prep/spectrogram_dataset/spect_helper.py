@@ -248,7 +248,7 @@ def make_dataframe_of_spect_files(
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
         if audio_path_key in spect_dict:
             audio_path = spect_dict[audio_path_key]
-            if type(audio_path) == np.ndarray:
+            if isinstance(audio_path, np.ndarray):
                 # (because everything stored in .npz has to be in an ndarray)
                 audio_path = audio_path.tolist()
         else:
