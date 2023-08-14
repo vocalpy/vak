@@ -140,7 +140,7 @@ def prep_parametric_umap_dataset(
             warnings.warn(
                 "The ``purpose`` argument was set to 'predict`, but a ``labelset`` was provided."
                 "This would cause an error because the ``prep_spectrogram_dataset`` section will attempt to "
-                f"check whether the files in the ``data_dir`` have labels in "
+                "check whether the files in the ``data_dir`` have labels in "
                 "``labelset``, even though those files don't have annotation.\n"
                 "Setting ``labelset`` to None."
             )
@@ -311,7 +311,7 @@ def prep_parametric_umap_dataset(
         purpose,
     )
     #
-    # # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
+    # ---- if purpose is learncurve, additionally prep splits for that -----------------------------------------------
     # if purpose == 'learncurve':
     #     dataset_df = make_learncurve_splits_from_dataset_df(
     #         dataset_df,
