@@ -9,7 +9,7 @@ import pytorch_lightning as lightning
 import torch.utils.data
 
 from .. import datasets, models, transforms
-from ..common import constants, validators
+from ..common import validators
 from ..common.device import get_default as get_default_device
 from ..datasets.parametric_umap import ParametricUMAPDataset
 
@@ -134,14 +134,6 @@ def predict_with_parametric_umap_model(
         num_workers=num_workers,
     )
 
-    # ---------------- set up to convert predictions to annotation files -----------------------------------------------
-    if annot_csv_filename is None:
-        annot_csv_filename = (
-            pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
-        )
-    annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
-    logger.info(f"will save annotations in .csv file: {annot_csv_path}")
-
     # ---------------- do the actual predicting + converting to annotations --------------------------------------------
     input_shape = pred_dataset.shape
     # if dataset returns spectrogram reshaped into windows,
@@ -174,7 +166,7 @@ def predict_with_parametric_umap_model(
     trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
 
     logger.info(f"running predict method of {model_name}")
-    results = trainer.predict(model, pred_loader)
+    results = trainer.predict(model, pred_loader)  # noqa : F841
 
     # eval_df = pd.DataFrame(row, index=[0])
     # eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
