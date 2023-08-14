@@ -152,7 +152,6 @@ def eval_parametric_umap_model(
         [
             ("model_name", model_name),
             ("checkpoint_path", checkpoint_path),
-            ("spect_scaler_path", spect_scaler_path),
             ("dataset_path", dataset_path),
         ]
     )
