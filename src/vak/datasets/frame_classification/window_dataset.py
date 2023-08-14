@@ -152,7 +152,7 @@ class WindowDataset:
     def __getitem__(self, idx):
         window_idx = self.window_inds[idx]
         sample_ids = self.sample_ids[
-            window_idx : window_idx + self.window_size
+            window_idx: window_idx + self.window_size
         ]
         uniq_sample_ids = np.unique(sample_ids)
         if len(uniq_sample_ids) == 1:
@@ -187,10 +187,10 @@ class WindowDataset:
 
         inds_in_sample = self.inds_in_sample[window_idx]
         frames = frames[
-            ..., inds_in_sample : inds_in_sample + self.window_size
+            ..., inds_in_sample: inds_in_sample + self.window_size
         ]
         frame_labels = frame_labels[
-            inds_in_sample : inds_in_sample + self.window_size
+            inds_in_sample: inds_in_sample + self.window_size
         ]
         if self.transform:
             frames = self.transform(frames)
