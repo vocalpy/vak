@@ -9,6 +9,7 @@ The subclass can then be instantiated
 and have all model methods.
 """
 from __future__ import annotations
+
 from typing import Type
 
 from .base import Model
@@ -22,6 +23,7 @@ class ModelDefinitionValidationError(Exception):
 
     Used by :func:`vak.models.decorator.model` decorator.
     """
+
     pass
 
 
@@ -56,29 +58,30 @@ def model(family: Type[Model]):
         that will be used when making
         new instances of the model.
     """
+
     def _model(definition: Type):
         if not issubclass(family, Model):
             raise TypeError(
-                'The ``family`` argument to the ``vak.models.model`` decorator'
-                'should be a subclass of ``vak.models.base.Model``,'
-                f'but the type was: {type(family)}, '
-                'which was not recognized as a subclass '
-                'of ``vak.models.base.Model``.'
+                "The ``family`` argument to the ``vak.models.model`` decorator"
+                "should be a subclass of ``vak.models.base.Model``,"
+                f"but the type was: {type(family)}, "
+                "which was not recognized as a subclass "
+                "of ``vak.models.base.Model``."
             )
 
         try:
             validate_definition(definition)
         except ValueError as err:
             raise ModelDefinitionValidationError(
-                f'Validation failed for the following model definition:\n{definition}'
+                f"Validation failed for the following model definition:\n{definition}"
             ) from err
         except TypeError as err:
             raise ModelDefinitionValidationError(
-                f'Validation failed for the following model definition:\n{definition}'
+                f"Validation failed for the following model definition:\n{definition}"
             ) from err
 
         attributes = dict(family.__dict__)
-        attributes.update({'definition': definition})
+        attributes.update({"definition": definition})
         subclass_name = definition.__name__
         subclass = type(subclass_name, (family,), attributes)
         subclass.__module__ = definition.__module__

@@ -8,12 +8,9 @@ from typing import Sequence
 
 import pandas as pd
 
-from .dataset_arrays import (
-    make_npy_files_for_each_split,
-)
-from .. import split
 from ... import common
-
+from .. import split
+from .dataset_arrays import make_npy_files_for_each_split
 
 logger = logging.getLogger(__name__)
 
@@ -97,30 +94,37 @@ def make_learncurve_splits_from_dataset_df(
             f"Subsetting training set for training set of duration: {train_dur}",
         )
         for replicate_num in range(1, num_replicates + 1):
-            train_dur_replicate_split_name = common.learncurve.get_train_dur_replicate_split_name(
-                train_dur, replicate_num
+            train_dur_replicate_split_name = (
+                common.learncurve.get_train_dur_replicate_split_name(
+                    train_dur, replicate_num
+                )
             )
 
             train_dur_replicate_df = split.frame_classification_dataframe(
                 # copy to avoid mutating original train_split_df
-                train_split_df.copy(), dataset_path, train_dur=train_dur, labelset=labelset
+                train_split_df.copy(),
+                dataset_path,
+                train_dur=train_dur,
+                labelset=labelset,
             )
             # remove rows where split set to 'None'
-            train_dur_replicate_df = train_dur_replicate_df[train_dur_replicate_df.split == "train"]
+            train_dur_replicate_df = train_dur_replicate_df[
+                train_dur_replicate_df.split == "train"
+            ]
             # next line, make split name in csv match the split name used for directory in dataset dir
-            train_dur_replicate_df['split'] = train_dur_replicate_split_name
-            train_dur_replicate_df['train_dur'] = train_dur
-            train_dur_replicate_df['replicate_num'] = replicate_num
-            all_train_durs_and_replicates_df.append(
-                train_dur_replicate_df
-            )
+            train_dur_replicate_df["split"] = train_dur_replicate_split_name
+            train_dur_replicate_df["train_dur"] = train_dur
+            train_dur_replicate_df["replicate_num"] = replicate_num
+            all_train_durs_and_replicates_df.append(train_dur_replicate_df)
 
-    all_train_durs_and_replicates_df = pd.concat(all_train_durs_and_replicates_df)
+    all_train_durs_and_replicates_df = pd.concat(
+        all_train_durs_and_replicates_df
+    )
     all_train_durs_and_replicates_df = make_npy_files_for_each_split(
         all_train_durs_and_replicates_df,
         dataset_path,
         input_type,
-        'learncurve',  # purpose
+        "learncurve",  # purpose
         labelmap,
         audio_format,
         spect_key,

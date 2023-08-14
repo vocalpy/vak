@@ -1,7 +1,7 @@
 """functions for plotting annotations for vocalizations"""
 import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
 import numpy as np
+from matplotlib.collections import LineCollection
 
 
 def plot_segments(onsets, offsets, y=0.5, ax=None, line_kwargs=None):
@@ -139,5 +139,9 @@ def annotation(
 
     segment_centers = np.array(segment_centers)
     plot_labels(
-        labels=labels, t=segment_centers, y=y_labels, ax=ax, text_kwargs=text_kwargs
+        labels=labels,
+        t=segment_centers,
+        y=y_labels,
+        ax=ax,
+        text_kwargs=text_kwargs,
     )

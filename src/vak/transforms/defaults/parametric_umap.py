@@ -6,7 +6,9 @@ import torchvision.transforms
 from .. import transforms as vak_transforms
 
 
-def get_default_parametric_umap_transform(transform_kwargs) -> torchvision.transforms.Compose:
+def get_default_parametric_umap_transform(
+    transform_kwargs,
+) -> torchvision.transforms.Compose:
     """Get default transform for frame classification model.
 
     Parameters
@@ -21,8 +23,8 @@ def get_default_parametric_umap_transform(transform_kwargs) -> torchvision.trans
         vak_transforms.ToFloatTensor(),
         vak_transforms.AddChannel(),
     ]
-    if 'padding' in transform_kwargs:
+    if "padding" in transform_kwargs:
         transforms.append(
-            torchvision.transforms.Pad(transform_kwargs['padding'])
+            torchvision.transforms.Pad(transform_kwargs["padding"])
         )
     return torchvision.transforms.Compose(transforms)

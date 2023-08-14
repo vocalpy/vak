@@ -4,13 +4,10 @@ from __future__ import annotations
 import logging
 import pathlib
 
+from .. import models
+from ..common import validators
 from .frame_classification import eval_frame_classification_model
 from .parametric_umap import eval_parametric_umap_model
-from .. import (
-    models,
-)
-from ..common import validators
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +26,7 @@ def eval(
     split: str = "test",
     spect_scaler_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
-    device: str | None = None
+    device: str | None = None,
 ) -> None:
     """Evaluate a trained model.
 
@@ -99,8 +96,8 @@ def eval(
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
-            (checkpoint_path, labelmap_path, spect_scaler_path),
-            ('checkpoint_path', 'labelmap_path', 'spect_scaler_path'),
+        (checkpoint_path, labelmap_path, spect_scaler_path),
+        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
     ):
         if path is not None:  # because `spect_scaler_path` is optional
             if not validators.is_a_file(path):
@@ -151,6 +148,4 @@ def eval(
             device=device,
         )
     else:
-        raise ValueError(
-            f"Model family not recognized: {model_family}"
-        )
+        raise ValueError(f"Model family not recognized: {model_family}")

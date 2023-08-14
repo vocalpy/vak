@@ -26,9 +26,9 @@ def find_fname(fname: str, ext: str) -> str | None:
     >>> vak.files.find_fname(fname='llb3_0003_2018_04_23_14_18_54.wav.mat', ext='wav')
     'llb3_0003_2018_04_23_14_18_54.wav'
     """
-    if ext.startswith('.'):
+    if ext.startswith("."):
         ext = ext[1:]
-    m = re.match(f"[\S ]*{ext}", fname)
+    m = re.match(f"[\S ]*{ext}", fname)  # noqa: W605
     if hasattr(m, "group"):
         return m.group()
     elif m is None:
@@ -71,9 +71,11 @@ def from_dir(dir_path: str | pathlib.Path, ext: str) -> list[str]:
     """
     dir_path = pathlib.Path(dir_path)
     if not dir_path.is_dir():
-        raise NotADirectoryError(f"dir_path not recognized as a directory: {dir_path}")
+        raise NotADirectoryError(
+            f"dir_path not recognized as a directory: {dir_path}"
+        )
 
-    if ext.startswith('.'):
+    if ext.startswith("."):
         ext = ext[1:]
 
     # use fnmatch + re to make search case-insensitive
@@ -84,7 +86,9 @@ def from_dir(dir_path: str | pathlib.Path, ext: str) -> list[str]:
     rule = re.compile(fnmatch.translate(glob_pat), re.IGNORECASE)
 
     files = [
-        file for file in dir_path.iterdir() if file.is_file() and rule.match(file.name)
+        file
+        for file in dir_path.iterdir()
+        if file.is_file() and rule.match(file.name)
     ]
 
     if len(files) == 0:

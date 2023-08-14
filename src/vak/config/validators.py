@@ -75,7 +75,9 @@ def are_sections_valid(config_dict, toml_path=None):
         command for command in CLI_COMMANDS if command != "prep"
     ]
     sections_that_are_commands_besides_prep = [
-        section for section in sections if section.lower() in cli_commands_besides_prep
+        section
+        for section in sections
+        if section.lower() in cli_commands_besides_prep
     ]
     if len(sections_that_are_commands_besides_prep) == 0:
         raise ValueError(
@@ -94,11 +96,18 @@ def are_sections_valid(config_dict, toml_path=None):
     # add model names to valid sections so users can define model config in sections
     valid_sections = VALID_SECTIONS + MODEL_NAMES
     for section in sections:
-        if section not in valid_sections and f"{section}Model" not in valid_sections:
+        if (
+            section not in valid_sections
+            and f"{section}Model" not in valid_sections
+        ):
             if toml_path:
-                err_msg = f"section defined in {toml_path} is not valid: {section}"
+                err_msg = (
+                    f"section defined in {toml_path} is not valid: {section}"
+                )
             else:
-                err_msg = f"section defined in toml config is not valid: {section}"
+                err_msg = (
+                    f"section defined in toml config is not valid: {section}"
+                )
             raise ValueError(err_msg)
 
 

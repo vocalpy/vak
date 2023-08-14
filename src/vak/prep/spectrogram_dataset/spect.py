@@ -6,9 +6,8 @@ spectrogram adapted from code by Kyle Kastner and Tim Sainburg
 https://github.com/timsainb/python_spectrograms_and_inversion
 """
 import numpy as np
-
-from scipy.signal import butter, lfilter
 from matplotlib.mlab import specgram
+from scipy.signal import butter, lfilter
 
 
 def butter_bandpass(lowcut, highcut, fs, order=5):
@@ -68,12 +67,14 @@ def spectrogram(
     noverlap = fft_size - step_size
 
     if freq_cutoffs:
-        dat = butter_bandpass_filter(dat, freq_cutoffs[0], freq_cutoffs[1], samp_freq)
+        dat = butter_bandpass_filter(
+            dat, freq_cutoffs[0], freq_cutoffs[1], samp_freq
+        )
 
     # below only take [:3] from return of specgram because we don't need the image
-    spect, freqbins, timebins = specgram(dat, fft_size, samp_freq, noverlap=noverlap)[
-        :3
-    ]
+    spect, freqbins, timebins = specgram(
+        dat, fft_size, samp_freq, noverlap=noverlap
+    )[:3]
 
     if transform_type:
         if transform_type == "log_spect":

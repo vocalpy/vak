@@ -10,8 +10,7 @@ from .predict import PredictConfig
 from .prep import PrepConfig
 from .spect_params import SpectParamsConfig
 from .train import TrainConfig
-from .validators import are_sections_valid, are_options_valid
-
+from .validators import are_options_valid, are_sections_valid
 
 SECTION_CLASSES = {
     "EVAL": EvalConfig,
@@ -92,10 +91,17 @@ def _validate_sections_arg_convert_list(sections):
     if isinstance(sections, str):
         sections = [sections]
     elif isinstance(sections, list):
-        if not all([isinstance(section_name, str) for section_name in sections]):
-            raise ValueError("all section names in 'sections' should be strings")
         if not all(
-            [section_name in list(SECTION_CLASSES.keys()) for section_name in sections]
+            [isinstance(section_name, str) for section_name in sections]
+        ):
+            raise ValueError(
+                "all section names in 'sections' should be strings"
+            )
+        if not all(
+            [
+                section_name in list(SECTION_CLASSES.keys())
+                for section_name in sections
+            ]
         ):
             raise ValueError(
                 "all section names in 'sections' should be valid names of sections. "
@@ -162,7 +168,9 @@ def _load_toml_from_path(toml_path):
         with toml_path.open("r") as fp:
             config_toml = toml.load(fp)
     except TomlDecodeError as e:
-        raise Exception(f"Error when parsing .toml config file: {toml_path}") from e
+        raise Exception(
+            f"Error when parsing .toml config file: {toml_path}"
+        ) from e
 
     return config_toml
 

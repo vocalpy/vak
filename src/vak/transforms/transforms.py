@@ -6,7 +6,6 @@ import pandas as pd
 from ..common.validators import column_or_1d
 from . import functional as F
 
-
 __all__ = [
     "AddChannel",
     "PadToWindow",
@@ -46,20 +45,28 @@ class StandardizeSpect:
         non_zero_std : numpy.ndarray
             boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
         """
-        if any([arg is not None for arg in (mean_freqs, std_freqs, non_zero_std)]):
+        if any(
+            [arg is not None for arg in (mean_freqs, std_freqs, non_zero_std)]
+        ):
             mean_freqs, std_freqs, non_zero_std = (
-                column_or_1d(arr) for arr in (mean_freqs, std_freqs, non_zero_std)
+                column_or_1d(arr)
+                for arr in (mean_freqs, std_freqs, non_zero_std)
             )
             if (
                 len(
                     np.unique(
-                        [arg.shape[0] for arg in (mean_freqs, std_freqs, non_zero_std)]
+                        [
+                            arg.shape[0]
+                            for arg in (mean_freqs, std_freqs, non_zero_std)
+                        ]
                     )
                 )
                 != 1
             ):
                 raise ValueError(
-                    f"mean_freqs, std_freqs, and non_zero_std must all have the same length"
+                    "`mean_freqs`, `std_freqs`, and `non_zero_std` must all have the same length.\n"
+                    f"`mean_freqs.shape`: {mean_freqs.shape}, `std_freqs.shape`: {std_freqs.shape}, "
+                    f"`non_zero_std.shape`: {non_zero_std.shape}"
                 )
 
         self.mean_freqs = mean_freqs
@@ -67,7 +74,7 @@ class StandardizeSpect:
         self.non_zero_std = non_zero_std
 
     @classmethod
-    def fit_dataset_path(cls, dataset_path, split='train'):
+    def fit_dataset_path(cls, dataset_path, split="train"):
         """Returns a :class:`StandardizeSpect` instance
         that is fit to a split from a dataset,
         given the path to that dataset and the
@@ -85,16 +92,18 @@ class StandardizeSpect:
         standardize_spect : StandardizeSpect
             Instance that has been fit to input data from split.
         """
-        from vak.datasets.frame_classification import Metadata
         from vak.datasets import frame_classification
+        from vak.datasets.frame_classification import Metadata
 
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
         df = pd.read_csv(dataset_csv_path)
-        df = df[df['split'] == split].copy()
-        frames_paths = df[frame_classification.constants.FRAMES_NPY_PATH_COL_NAME].values
+        df = df[df["split"] == split].copy()
+        frames_paths = df[
+            frame_classification.constants.FRAMES_NPY_PATH_COL_NAME
+        ].values
         frames = np.load(dataset_path / frames_paths[0])
 
         # in files, spectrograms are in orientation (freq bins, time bins)
@@ -149,7 +158,9 @@ class StandardizeSpect:
             array standardized to same scale as set of spectrograms that
             SpectScaler was fit with
         """
-        if any([not hasattr(self, attr) for attr in ["mean_freqs", "std_freqs"]]):
+        if any(
+            [not hasattr(self, attr) for attr in ["mean_freqs", "std_freqs"]]
+        ):
             raise AttributeError(
                 "SpectScaler properties are set to None,"
                 "must call fit method first to set the"
@@ -157,7 +168,7 @@ class StandardizeSpect:
                 "transform"
             )
 
-        if type(spect) != np.ndarray:
+        if not isinstance(spect, np.ndarray):
             raise TypeError(
                 f"type of spect must be numpy.ndarray but was: {type(spect)}"
             )
@@ -214,8 +225,8 @@ class PadToWindow:
     """
 
     def __init__(self, window_size, padval=0.0, return_padding_mask=True):
-        if not (type(window_size) == int) or (
-            type(window_size) == float and window_size.is_integer() is False
+        if not isinstance(window_size, int) or (
+            isinstance(window_size, float) and window_size.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"
@@ -226,7 +237,7 @@ class PadToWindow:
             raise TypeError(
                 f"type for padval must be int or float but was: {type(padval)}"
             )
-        if not type(return_padding_mask) == bool:
+        if not isinstance(return_padding_mask, bool):
             raise TypeError(
                 "return_padding_mask must be boolean (True or False), "
                 f"but was type {type(return_padding_mask)} with value {return_padding_mask}"
@@ -275,9 +286,9 @@ class ViewAsWindowBatch:
     https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
 
-    def __init__(self, window_width):
-        if not (type(window_width) == int) or (
-            type(window_width) == float and window_width.is_integer() is False
+    def __init__(self, window_width: int | float):
+        if not isinstance(window_width, int) or (
+            isinstance(window_width, float) and window_width.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"
@@ -355,9 +366,9 @@ class AddChannel:
         Default is 0, which returns a tensor with dimensions (channel, height, width).
     """
 
-    def __init__(self, channel_dim=0):
-        if not (type(channel_dim) == int) or (
-            type(channel_dim) == float and channel_dim.is_integer() is False
+    def __init__(self, channel_dim: int | float = 0):
+        if not isinstance(channel_dim, int) or (
+            isinstance(channel_dim, float) and channel_dim.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"

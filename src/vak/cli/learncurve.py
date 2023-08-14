@@ -1,11 +1,10 @@
 import logging
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 from .. import config, learncurve
 from ..common.logging import config_logging_for_cli, log_version
 from ..common.paths import generate_results_dir_name_as_path
-
 
 logger = logging.getLogger(__name__)
 
@@ -32,17 +31,16 @@ def learning_curve(toml_path):
         )
 
     # ---- set up directory to save output -----------------------------------------------------------------------------
-    results_path = generate_results_dir_name_as_path(cfg.learncurve.root_results_dir)
+    results_path = generate_results_dir_name_as_path(
+        cfg.learncurve.root_results_dir
+    )
     results_path.mkdir(parents=True)
     # copy config file into results dir now that we've made the dir
     shutil.copy(toml_path, results_path)
 
     # ---- set up logging ----------------------------------------------------------------------------------------------
     config_logging_for_cli(
-        log_dst=results_path,
-        log_stem="learncurve",
-        level="INFO",
-        force=True
+        log_dst=results_path, log_stem="learncurve", level="INFO", force=True
     )
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))

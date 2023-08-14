@@ -1,24 +1,19 @@
 """Function that trains models in the Parametric UMAP family."""
 from __future__ import annotations
 
+import datetime
 import logging
 import pathlib
-import datetime
 
 import pandas as pd
-import torch.utils.data
 import pytorch_lightning as lightning
+import torch.utils.data
 
-from .. import (
-    datasets,
-    models,
-    transforms,
-)
+from .. import datasets, models, transforms
 from ..common import validators
-from ..datasets.parametric_umap import ParametricUMAPDataset
 from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
-
+from ..datasets.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
 
@@ -28,50 +23,48 @@ def get_split_dur(df: pd.DataFrame, split: str) -> float:
     return df[df["split"] == split]["duration"].sum()
 
 
-def get_trainer(max_epochs: int,
-                ckpt_root: str | pathlib.Path,
-                ckpt_step: int,
-                log_save_dir: str | pathlib.Path,
-                device: str = 'cuda',
-                ) -> lightning.Trainer:
+def get_trainer(
+    max_epochs: int,
+    ckpt_root: str | pathlib.Path,
+    ckpt_step: int,
+    log_save_dir: str | pathlib.Path,
+    device: str = "cuda",
+) -> lightning.Trainer:
     """Returns an instance of ``lightning.Trainer``
     with a default set of callbacks.
     Used by ``vak.core`` functions."""
-    if device == 'cuda':
-        accelerator = 'gpu'
+    if device == "cuda":
+        accelerator = "gpu"
     else:
         accelerator = None
 
     ckpt_callback = lightning.callbacks.ModelCheckpoint(
         dirpath=ckpt_root,
-        filename='checkpoint',
+        filename="checkpoint",
         every_n_train_steps=ckpt_step,
         save_last=True,
         verbose=True,
     )
-    ckpt_callback.CHECKPOINT_NAME_LAST = 'checkpoint'
-    ckpt_callback.FILE_EXTENSION = '.pt'
+    ckpt_callback.CHECKPOINT_NAME_LAST = "checkpoint"
+    ckpt_callback.FILE_EXTENSION = ".pt"
 
     val_ckpt_callback = lightning.callbacks.ModelCheckpoint(
         monitor="val_loss",
         dirpath=ckpt_root,
         save_top_k=1,
-        mode='min',
-        filename='min-val-loss-checkpoint',
+        mode="min",
+        filename="min-val-loss-checkpoint",
         auto_insert_metric_name=False,
-        verbose=True
+        verbose=True,
     )
-    val_ckpt_callback.FILE_EXTENSION = '.pt'
+    val_ckpt_callback.FILE_EXTENSION = ".pt"
 
     callbacks = [
         ckpt_callback,
         val_ckpt_callback,
     ]
 
-
-    logger = lightning.loggers.TensorBoardLogger(
-        save_dir=log_save_dir
-    )
+    logger = lightning.loggers.TensorBoardLogger(save_dir=log_save_dir)
 
     trainer = lightning.Trainer(
         max_epochs=max_epochs,
@@ -100,7 +93,7 @@ def train_parametric_umap_model(
     val_step: int | None = None,
     ckpt_step: int | None = None,
     device: str | None = None,
-    split: str = 'train',
+    split: str = "train",
 ) -> None:
     """Train a model from the parametric UMAP family
     and save results.
@@ -172,8 +165,8 @@ def train_parametric_umap_model(
         training set to use when training models for a learning curve.
     """
     for path, path_name in zip(
-            (checkpoint_path,),
-            ('checkpoint_path',),
+        (checkpoint_path,),
+        ("checkpoint_path",),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -190,7 +183,9 @@ def train_parametric_umap_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.parametric_umap.Metadata.from_dataset_path(
+        dataset_path
+    )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
@@ -224,10 +219,15 @@ def train_parametric_umap_model(
 
     if train_transform_params is None:
         train_transform_params = {}
-    if 'padding' not in train_transform_params and model_name == 'ConvEncoderUMAP':
+    if (
+        "padding" not in train_transform_params
+        and model_name == "ConvEncoderUMAP"
+    ):
         padding = models.convencoder_umap.get_default_padding(metadata.shape)
-        train_transform_params['padding'] = padding
-    transform = transforms.defaults.get_default_transform(model_name, "train", train_transform_params)
+        train_transform_params["padding"] = padding
+    transform = transforms.defaults.get_default_transform(
+        model_name, "train", train_transform_params
+    )
 
     if train_dataset_params is None:
         train_dataset_params = {}
@@ -251,10 +251,17 @@ def train_parametric_umap_model(
     if val_step:
         if val_transform_params is None:
             val_transform_params = {}
-        if 'padding' not in val_transform_params and model_name == 'ConvEncoderUMAP':
-            padding = models.convencoder_umap.get_default_padding(metadata.shape)
-            val_transform_params['padding'] = padding
-        transform = transforms.defaults.get_default_transform(model_name, "eval", val_transform_params)
+        if (
+            "padding" not in val_transform_params
+            and model_name == "ConvEncoderUMAP"
+        ):
+            padding = models.convencoder_umap.get_default_padding(
+                metadata.shape
+            )
+            val_transform_params["padding"] = padding
+        transform = transforms.defaults.get_default_transform(
+            model_name, "eval", val_transform_params
+        )
         if val_dataset_params is None:
             val_dataset_params = {}
         val_dataset = ParametricUMAPDataset.from_dataset_path(
@@ -303,19 +310,13 @@ def train_parametric_umap_model(
         ckpt_step=ckpt_step,
     )
     train_time_start = datetime.datetime.now()
-    logger.info(
-        f"Training start time: {train_time_start.isoformat()}"
-    )
+    logger.info(f"Training start time: {train_time_start.isoformat()}")
     trainer.fit(
         model=model,
         train_dataloaders=train_loader,
         val_dataloaders=val_loader,
     )
     train_time_stop = datetime.datetime.now()
-    logger.info(
-        f"Training stop time: {train_time_stop.isoformat()}"
-    )
+    logger.info(f"Training stop time: {train_time_stop.isoformat()}")
     elapsed = train_time_stop - train_time_start
-    logger.info(
-        f"Elapsed training time: {elapsed}"
-    )
+    logger.info(f"Elapsed training time: {elapsed}")

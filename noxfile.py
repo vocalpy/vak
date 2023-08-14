@@ -50,6 +50,18 @@ def dev(session: nox.Session) -> None:
     session.run(python, "-m", "pip", "install", "-e", ".[dev,test,doc]", external=True)
 
 
+@nox.session(python="3.10")
+def lint(session):
+    """
+    Run the linter.
+    """
+    session.install(".[dev]")
+    # run isort first since black disagrees with it
+    session.run("isort", "./src")
+    session.run("black", "./src", "--line-length=79")
+    session.run("flake8", "./src", "--max-line-length", "120", "--exclude", "./src/crowsetta/_vendor")
+
+
 # ---- used by sessions that "clean up" data for tests
 def clean_dir(dir_path):
     """

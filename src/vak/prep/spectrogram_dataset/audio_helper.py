@@ -1,21 +1,19 @@
 from __future__ import annotations
+
 import logging
 import os
 from pathlib import Path
 
-import numpy as np
 import dask.bag as db
+import numpy as np
 from dask.diagnostics import ProgressBar
 
-from ... import (
-    config,
-)
+from ... import config
 from ...common import constants, files
 from ...common.annotation import map_annotated_to_annot
 from ...common.converters import labelset_to_set
 from ...config.spect_params import SpectParamsConfig
 from .spect import spectrogram
-
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +118,9 @@ def make_spectrogram_files_from_audio_files(
         )
 
     if all([arg is None for arg in (audio_dir, audio_files, audio_annot_map)]):
-        raise ValueError("must specify one of: audio_dir, audio_files, audio_annot_map")
+        raise ValueError(
+            "must specify one of: audio_dir, audio_files, audio_annot_map"
+        )
 
     if audio_dir and audio_files:
         raise ValueError(
@@ -185,7 +185,9 @@ def make_spectrogram_files_from_audio_files(
         audio_files = files_from_dir(audio_dir, audio_format)
 
     if annot_list:
-        audio_annot_map = map_annotated_to_annot(audio_files, annot_list, annot_format)
+        audio_annot_map = map_annotated_to_annot(
+            audio_files, annot_list, annot_format
+        )
 
     logger.info("creating array files with spectrograms")
 
@@ -233,7 +235,9 @@ def make_spectrogram_files_from_audio_files(
             spect_params.audio_path_key: str(audio_file),
         }
         basename = os.path.basename(audio_file)
-        npz_fname = os.path.join(os.path.normpath(output_dir), basename + ".spect.npz")
+        npz_fname = os.path.join(
+            os.path.normpath(output_dir), basename + ".spect.npz"
+        )
         np.savez(npz_fname, **spect_dict)
         return npz_fname
 

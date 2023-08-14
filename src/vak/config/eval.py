@@ -3,26 +3,30 @@ import attr
 from attr import converters, validators
 from attr.validators import instance_of
 
-from .validators import is_valid_model_name
 from ..common import device
 from ..common.converters import expanded_user_path
+from .validators import is_valid_model_name
 
 
 def convert_post_tfm_kwargs(post_tfm_kwargs: dict) -> dict:
     post_tfm_kwargs = dict(post_tfm_kwargs)
 
-    if 'min_segment_dur' not in post_tfm_kwargs:
+    if "min_segment_dur" not in post_tfm_kwargs:
         # because there's no null in TOML,
         # users leave arg out of config then we set it to None
-        post_tfm_kwargs['min_segment_dur'] = None
+        post_tfm_kwargs["min_segment_dur"] = None
     else:
-        post_tfm_kwargs['min_segment_dur'] = float(post_tfm_kwargs['min_segment_dur'])
+        post_tfm_kwargs["min_segment_dur"] = float(
+            post_tfm_kwargs["min_segment_dur"]
+        )
 
-    if 'majority_vote' not in post_tfm_kwargs:
+    if "majority_vote" not in post_tfm_kwargs:
         # set default for this one too
-        post_tfm_kwargs['majority_vote'] = False
+        post_tfm_kwargs["majority_vote"] = False
     else:
-        post_tfm_kwargs['majority_vote'] = bool(post_tfm_kwargs['majority_vote'])
+        post_tfm_kwargs["majority_vote"] = bool(
+            post_tfm_kwargs["majority_vote"]
+        )
 
     return post_tfm_kwargs
 
@@ -36,22 +40,27 @@ def are_valid_post_tfm_kwargs(instance, attribute, value):
             "Please declare in a similar fashion: `{majority_vote = True, min_segment_dur = 0.02}`"
         )
     if any(
-        [k not in {'majority_vote', 'min_segment_dur'} for k in value.keys()]
+        [k not in {"majority_vote", "min_segment_dur"} for k in value.keys()]
     ):
-        invalid_kwargs = [k for k in value.keys()
-                          if k not in {'majority_vote', 'min_segment_dur'}]
+        invalid_kwargs = [
+            k
+            for k in value.keys()
+            if k not in {"majority_vote", "min_segment_dur"}
+        ]
         raise ValueError(
             f"Invalid keyword argument name specified for 'post_tfm_kwargs': {invalid_kwargs}."
             "Valid names are: {'majority_vote', 'min_segment_dur'}"
         )
-    if 'majority_vote' in value:
-        if not isinstance(value['majority_vote'], bool):
+    if "majority_vote" in value:
+        if not isinstance(value["majority_vote"], bool):
             raise TypeError(
                 "'post_tfm_kwargs' keyword argument 'majority_vote' "
                 f"should be of type bool but was: {type(value['majority_vote'])}"
             )
-    if 'min_segment_dur' in value:
-        if value['min_segment_dur'] and not isinstance(value['min_segment_dur'], float):
+    if "min_segment_dur" in value:
+        if value["min_segment_dur"] and not isinstance(
+            value["min_segment_dur"], float
+        ):
             raise TypeError(
                 "'post_tfm_kwargs' keyword argument 'min_segment_dur' type "
                 f"should be float but was: {type(value['min_segment_dur'])}"
@@ -108,6 +117,7 @@ class EvalConfig:
         Passed as keyword arguments.
         Optional, default is None.
     """
+
     # required, external files
     checkpoint_path = attr.ib(converter=expanded_user_path)
     output_dir = attr.ib(converter=expanded_user_path)
@@ -128,7 +138,9 @@ class EvalConfig:
     # "optional" but actually required for frame classification models
     # TODO: check model family in __post_init__ and raise ValueError if labelmap
     # TODO: not specified for a frame classification model?
-    labelmap_path = attr.ib(converter=converters.optional(expanded_user_path), default=None)
+    labelmap_path = attr.ib(
+        converter=converters.optional(expanded_user_path), default=None
+    )
     # optional, transform
     spect_scaler_path = attr.ib(
         converter=converters.optional(expanded_user_path),

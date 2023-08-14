@@ -1,11 +1,8 @@
 """Helper function that gets default transforms for a model."""
 from __future__ import annotations
 
-from . import (
-    frame_classification,
-    parametric_umap,
-)
 from ... import models
+from . import frame_classification, parametric_umap
 
 
 def get_default_transform(
@@ -44,4 +41,6 @@ def get_default_transform(
         )
 
     elif model_family == "ParametricUMAPModel":
-        return parametric_umap.get_default_parametric_umap_transform(transform_kwargs)
+        return parametric_umap.get_default_parametric_umap_transform(
+            transform_kwargs
+        )

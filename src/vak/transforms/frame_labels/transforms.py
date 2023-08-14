@@ -38,14 +38,17 @@ class FromSegments:
         Label assigned to time bins that do not have labels associated with them.
         Default is 0.
     """
+
     def __init__(self, unlabeled_label: int = 0):
         self.unlabeled_label = unlabeled_label
 
-    def __call__(self,
-                 labels_int: np.ndarray,
-                 onsets_s: np.ndarray,
-                 offsets_s: np.ndarray,
-                 time_bins: np.ndarray) -> np.ndarray:
+    def __call__(
+        self,
+        labels_int: np.ndarray,
+        onsets_s: np.ndarray,
+        offsets_s: np.ndarray,
+        time_bins: np.ndarray,
+    ) -> np.ndarray:
         """Make a vector of frame labels,
         given labeled segments in the form of onset times,
         offset times, and segment labels.
@@ -67,8 +70,13 @@ class FromSegments:
         frame_labels : numpy.ndarray
             same length as time_bins, with each element a label for each time bin
         """
-        return F.from_segments(labels_int, onsets_s, offsets_s, time_bins,
-                               unlabeled_label=self.unlabeled_label)
+        return F.from_segments(
+            labels_int,
+            onsets_s,
+            offsets_s,
+            time_bins,
+            unlabeled_label=self.unlabeled_label,
+        )
 
 
 class ToLabels:
@@ -87,6 +95,7 @@ class ToLabels:
         That maps string labels to integers.
         The mapping is inverted to convert back to string labels.
     """
+
     def __init__(self, labelmap: dict):
         self.labelmap = labelmap
 
@@ -133,16 +142,13 @@ class ToSegments:
         calculated from the vector of times t. Default is 5.
     """
 
-    def __init__(self,
-                 labelmap: dict,
-                 n_decimals_trunc: int = 5
-                 ):
+    def __init__(self, labelmap: dict, n_decimals_trunc: int = 5):
         self.labelmap = labelmap
         self.n_decimals_trunc = n_decimals_trunc
 
-    def __call__(self,
-                 frame_labels: np.ndarray,
-                 frame_times: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def __call__(
+        self, frame_labels: np.ndarray, frame_times: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Convert a vector of frame labels
         into segments in the form of onset indices,
         offset indices, and labels.
@@ -180,7 +186,9 @@ class ToSegments:
             Vector where each element is the offset in seconds of a segment.
             Each offset corresponds to the value at the same index in labels.
         """
-        return F.to_segments(frame_labels, self.labelmap, frame_times, self.n_decimals_trunc)
+        return F.to_segments(
+            frame_labels, self.labelmap, frame_times, self.n_decimals_trunc
+        )
 
 
 class PostProcess:
@@ -237,19 +245,20 @@ class PostProcess:
         because unlabeled segments makes it possible to identify
         the labeled segments. Default is False.
     """
-    def __init__(self,
-                 timebin_dur: float,
-                 unlabeled_label: int = 0,
-                 min_segment_dur: float | None = None,
-                 majority_vote: bool = False,
-                 ):
+
+    def __init__(
+        self,
+        timebin_dur: float,
+        unlabeled_label: int = 0,
+        min_segment_dur: float | None = None,
+        majority_vote: bool = False,
+    ):
         self.timebin_dur = timebin_dur
         self.unlabeled_label = unlabeled_label
         self.min_segment_dur = min_segment_dur
         self.majority_vote = majority_vote
 
-    def __call__(self,
-                 frame_labels: np.ndarray) -> np.ndarray:
+    def __call__(self, frame_labels: np.ndarray) -> np.ndarray:
         """Convert vector of frame labels into labels.
 
         Parameters
@@ -265,5 +274,10 @@ class PostProcess:
         frame_labels : numpy.ndarray
             Vector of frame labels after post-processing is applied.
         """
-        return F.postprocess(frame_labels, self.timebin_dur, self.unlabeled_label,
-                             self.min_segment_dur, self.majority_vote)
+        return F.postprocess(
+            frame_labels,
+            self.timebin_dur,
+            self.unlabeled_label,
+            self.min_segment_dur,
+            self.majority_vote,
+        )

@@ -8,18 +8,10 @@ import pathlib
 import pytorch_lightning as lightning
 import torch.utils.data
 
-from .. import (
-    datasets,
-    models,
-    transforms
-)
-from ..common import (
-    constants,
-    validators
-)
-from ..datasets.parametric_umap import ParametricUMAPDataset
+from .. import datasets, models, transforms
+from ..common import validators
 from ..common.device import get_default as get_default_device
-
+from ..datasets.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
 
@@ -75,8 +67,8 @@ def predict_with_parametric_umap_model(
          should be saved. Defaults to current working directory.
     """
     for path, path_name in zip(
-            (checkpoint_path,),
-            ('checkpoint_path',),
+        (checkpoint_path,),
+        ("checkpoint_path",),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -92,7 +84,9 @@ def predict_with_parametric_umap_model(
     logger.info(
         f"Loading metadata from dataset path: {dataset_path}",
     )
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+        dataset_path
+    )
 
     if output_dir is None:
         output_dir = pathlib.Path(os.getcwd())
@@ -110,18 +104,18 @@ def predict_with_parametric_umap_model(
     # ---------------- load data for prediction ------------------------------------------------------------------------
     if transform_params is None:
         transform_params = {}
-    if 'padding' not in transform_params and model_name == 'ConvEncoderUMAP':
+    if "padding" not in transform_params and model_name == "ConvEncoderUMAP":
         padding = models.convencoder_umap.get_default_padding(metadata.shape)
-        transform_params['padding'] = padding
+        transform_params["padding"] = padding
 
     item_transform = transforms.defaults.get_default_transform(
-        model_name,
-        "predict",
-        transform_params
+        model_name, "predict", transform_params
     )
 
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-    logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
+    logger.info(
+        f"loading dataset to predict from csv path: {dataset_csv_path}"
+    )
 
     if dataset_params is None:
         dataset_params = {}
@@ -129,7 +123,7 @@ def predict_with_parametric_umap_model(
         dataset_path=dataset_path,
         split="predict",
         transform=item_transform,
-        **dataset_params
+        **dataset_params,
     )
 
     pred_loader = torch.utils.data.DataLoader(
@@ -140,19 +134,15 @@ def predict_with_parametric_umap_model(
         num_workers=num_workers,
     )
 
-    # ---------------- set up to convert predictions to annotation files -----------------------------------------------
-    if annot_csv_filename is None:
-        annot_csv_filename = pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
-    annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
-    logger.info(f"will save annotations in .csv file: {annot_csv_path}")
-
     # ---------------- do the actual predicting + converting to annotations --------------------------------------------
     input_shape = pred_dataset.shape
     # if dataset returns spectrogram reshaped into windows,
     # throw out the window dimension; just want to tell network (channels, height, width) shape
     if len(input_shape) == 4:
         input_shape = input_shape[1:]
-    logger.info(f"Shape of input to networks used for predictions: {input_shape}")
+    logger.info(
+        f"Shape of input to networks used for predictions: {input_shape}"
+    )
 
     logger.info(f"instantiating model from config:/n{model_name}")
 
@@ -163,24 +153,24 @@ def predict_with_parametric_umap_model(
     )
 
     # ---------------- do the actual predicting --------------------------------------------------------------------
-    logger.info(f"loading checkpoint for {model_name} from path: {checkpoint_path}")
+    logger.info(
+        f"loading checkpoint for {model_name} from path: {checkpoint_path}"
+    )
     model.load_state_dict_from_path(checkpoint_path)
 
-    if device == 'cuda':
-        accelerator = 'gpu'
+    if device == "cuda":
+        accelerator = "gpu"
     else:
         accelerator = None
-    trainer_logger = lightning.loggers.TensorBoardLogger(
-        save_dir=output_dir
-    )
+    trainer_logger = lightning.loggers.TensorBoardLogger(save_dir=output_dir)
     trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
 
     logger.info(f"running predict method of {model_name}")
-    results = trainer.predict(model, pred_loader)
+    results = trainer.predict(model, pred_loader)  # noqa : F841
 
-    eval_df = pd.DataFrame(row, index=[0])
-    eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
-    logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
-    eval_df.to_csv(
-        eval_csv_path, index=False
-    )  # index is False to avoid having "Unnamed: 0" column when loading
+    # eval_df = pd.DataFrame(row, index=[0])
+    # eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
+    # logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
+    # eval_df.to_csv(
+    #     eval_csv_path, index=False
+    # )  # index is False to avoid having "Unnamed: 0" column when loading

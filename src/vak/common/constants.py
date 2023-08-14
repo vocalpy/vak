@@ -5,10 +5,9 @@ from functools import partial
 
 import crowsetta
 import numpy as np
+import soundfile
 from evfuncs import load_cbin
 from scipy.io import loadmat
-import soundfile
-
 
 # ---- audio files ----
 AUDIO_FORMAT_FUNC_MAP = {
@@ -28,7 +27,7 @@ SPECT_FORMAT_LOAD_FUNCTION_MAP = {
 VALID_SPECT_FORMATS = list(SPECT_FORMAT_LOAD_FUNCTION_MAP.keys())
 
 # ---- valid types of training data, the $x$ that goes into a network
-VALID_X_SOURCES = {'audio', 'spect'}
+VALID_X_SOURCES = {"audio", "spect"}
 
 # ---- annotation files ----
 VALID_ANNOT_FORMATS = crowsetta.formats.as_list()

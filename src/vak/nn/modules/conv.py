@@ -1,6 +1,8 @@
 """Modules that perform neural network convolutions."""
 import torch
 from torch.nn import functional as F
+
+
 # NOTE: added 2023-03-04
 # in this class, we detect when one extra pixel should be added on the bottom or right
 # and specifically pad those, see line 75, ``if rows_odd or cols_odd:``.
@@ -17,16 +19,19 @@ class Conv2dTF(torch.nn.Conv2d):
     Note there are issues with SAME convolution as performed by Tensorflow.
     See https://gist.github.com/Yangqing/47772de7eb3d5dbbff50ffb0d7a98964.
     """
-    PADDING_METHODS = ('VALID', 'SAME')
+
+    PADDING_METHODS = ("VALID", "SAME")
 
     def __init__(self, *args, **kwargs):
         # remove 'padding' from ``kwargs`` to avoid bug in ``torch`` => 1.7.2
         # see https://github.com/yardencsGitHub/tweetynet/issues/166
-        kwargs_super = {k: v for k, v in kwargs.items() if k != 'padding'}
+        kwargs_super = {k: v for k, v in kwargs.items() if k != "padding"}
         super(Conv2dTF, self).__init__(*args, **kwargs_super)
         padding = kwargs.get("padding", "SAME")
         if not isinstance(padding, str):
-            raise TypeError(f"value for 'padding' argument should be a string, one of: {self.PADDING_METHODS}")
+            raise TypeError(
+                f"value for 'padding' argument should be a string, one of: {self.PADDING_METHODS}"
+            )
         padding = padding.upper()
         if padding not in self.PADDING_METHODS:
             raise ValueError(
@@ -40,7 +45,10 @@ class Conv2dTF(torch.nn.Conv2d):
         effective_filter_size = (filter_size - 1) * self.dilation[dim] + 1
         out_size = (input_size + self.stride[dim] - 1) // self.stride[dim]
         total_padding = max(
-            0, (out_size - 1) * self.stride[dim] + effective_filter_size - input_size
+            0,
+            (out_size - 1) * self.stride[dim]
+            + effective_filter_size
+            - input_size,
         )
         additional_padding = int(total_padding % 2 != 0)
 

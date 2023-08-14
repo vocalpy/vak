@@ -95,18 +95,18 @@ class WindowDataset:
     """
 
     def __init__(
-            self,
-            dataset_path: str | pathlib.Path,
-            dataset_df: pd.DataFrame,
-            split: str,
-            sample_ids: npt.NDArray,
-            inds_in_sample: npt.NDArray,
-            window_size: int,
-            frame_dur: float,
-            stride: int = 1,
-            window_inds: npt.NDArray | None = None,
-            transform: Callable | None = None,
-            target_transform: Callable | None = None
+        self,
+        dataset_path: str | pathlib.Path,
+        dataset_df: pd.DataFrame,
+        split: str,
+        sample_ids: npt.NDArray,
+        inds_in_sample: npt.NDArray,
+        window_size: int,
+        frame_dur: float,
+        stride: int = 1,
+        window_inds: npt.NDArray | None = None,
+        transform: Callable | None = None,
+        target_transform: Callable | None = None,
     ):
         self.dataset_path = pathlib.Path(dataset_path)
 
@@ -114,8 +114,12 @@ class WindowDataset:
         dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
 
-        self.frames_paths = self.dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
-        self.frame_labels_paths = self.dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+        self.frames_paths = self.dataset_df[
+            constants.FRAMES_NPY_PATH_COL_NAME
+        ].values
+        self.frame_labels_paths = self.dataset_df[
+            constants.FRAME_LABELS_NPY_PATH_COL_NAME
+        ].values
 
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
@@ -125,7 +129,9 @@ class WindowDataset:
         self.stride = stride
 
         if window_inds is None:
-            window_inds = get_window_inds(sample_ids.shape[-1], window_size, stride)
+            window_inds = get_window_inds(
+                sample_ids.shape[-1], window_size, stride
+            )
         self.window_inds = window_inds
 
         self.transform = transform
@@ -145,12 +151,16 @@ class WindowDataset:
 
     def __getitem__(self, idx):
         window_idx = self.window_inds[idx]
-        sample_ids = self.sample_ids[window_idx:window_idx + self.window_size]
+        sample_ids = self.sample_ids[
+            window_idx: window_idx + self.window_size
+        ]
         uniq_sample_ids = np.unique(sample_ids)
         if len(uniq_sample_ids) == 1:
             sample_id = uniq_sample_ids[0]
             frames = np.load(self.dataset_path / self.frames_paths[sample_id])
-            frame_labels = np.load(self.dataset_path / self.frame_labels_paths[sample_id])
+            frame_labels = np.load(
+                self.dataset_path / self.frame_labels_paths[sample_id]
+            )
         elif len(uniq_sample_ids) > 1:
             frames = []
             frame_labels = []
@@ -159,7 +169,9 @@ class WindowDataset:
                     np.load(self.dataset_path / self.frames_paths[sample_id])
                 )
                 frame_labels.append(
-                    np.load(self.dataset_path / self.frame_labels_paths[sample_id])
+                    np.load(
+                        self.dataset_path / self.frame_labels_paths[sample_id]
+                    )
                 )
 
             if all([frames_.ndim == 1 for frames_ in frames]):
@@ -174,8 +186,12 @@ class WindowDataset:
             )
 
         inds_in_sample = self.inds_in_sample[window_idx]
-        frames = frames[..., inds_in_sample:inds_in_sample + self.window_size]
-        frame_labels = frame_labels[inds_in_sample:inds_in_sample + self.window_size]
+        frames = frames[
+            ..., inds_in_sample: inds_in_sample + self.window_size
+        ]
+        frame_labels = frame_labels[
+            inds_in_sample: inds_in_sample + self.window_size
+        ]
         if self.transform:
             frames = self.transform(frames)
         if self.target_transform:
@@ -189,13 +205,13 @@ class WindowDataset:
 
     @classmethod
     def from_dataset_path(
-            cls,
-            dataset_path: str | pathlib.Path,
-            window_size: int,
-            stride: int = 1,
-            split: str = "train",
-            transform: Callable | None = None,
-            target_transform: Callable | None = None
+        cls,
+        dataset_path: str | pathlib.Path,
+        window_size: int,
+        stride: int = 1,
+        split: str = "train",
+        transform: Callable | None = None,
+        target_transform: Callable | None = None,
     ):
         """
 
@@ -222,7 +238,9 @@ class WindowDataset:
         split_path = dataset_path / split
         sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
-        inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+        inds_in_sample_path = (
+            split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+        )
         inds_in_sample = np.load(inds_in_sample_path)
 
         window_inds_path = split_path / constants.WINDOW_INDS_ARRAY_FILENAME
@@ -242,5 +260,5 @@ class WindowDataset:
             stride,
             window_inds,
             transform,
-            target_transform
+            target_transform,
         )

@@ -11,13 +11,9 @@ import math
 
 import torch
 
-from .. import (
-    metrics,
-    nets,
-    nn,
-)
-from .parametric_umap_model import ParametricUMAPModel
+from .. import metrics, nets, nn
 from .decorator import model
+from .parametric_umap_model import ParametricUMAPModel
 
 
 @model(family=ParametricUMAPModel)
@@ -56,16 +52,18 @@ class ConvEncoderUMAP:
        https://direct.mit.edu/neco/article/33/11/2881/107068.
 
     """
-    network = {'encoder': nets.ConvEncoder}
+
+    network = {"encoder": nets.ConvEncoder}
     loss = nn.UmapLoss
     optimizer = torch.optim.AdamW
-    metrics = {'acc': metrics.Accuracy,
-               'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
-               'loss': torch.nn.CrossEntropyLoss}
+    metrics = {
+        "acc": metrics.Accuracy,
+        "levenshtein": metrics.Levenshtein,
+        "segment_error_rate": metrics.SegmentErrorRate,
+        "loss": torch.nn.CrossEntropyLoss,
+    }
     default_config = {
-        'optimizer':
-            {'lr': 1e-3},
+        "optimizer": {"lr": 1e-3},
     }
 
 
@@ -75,5 +73,8 @@ def get_default_padding(shape):
     Rounds up to nearest tens place
     """
     rounded_up = tuple(10 * math.ceil(x / 10) for x in shape)
-    padding = tuple(rounded_up_x - shape_x for (rounded_up_x, shape_x) in zip(rounded_up, shape))
+    padding = tuple(
+        rounded_up_x - shape_x
+        for (rounded_up_x, shape_x) in zip(rounded_up, shape)
+    )
     return padding

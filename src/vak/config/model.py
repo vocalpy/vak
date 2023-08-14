@@ -1,17 +1,17 @@
 from __future__ import annotations
+
 import pathlib
 
 import toml
 
 from .. import models
 
-
 MODEL_TABLES = [
-        "network",
-        "optimizer",
-        "loss",
-        "metrics",
-    ]
+    "network",
+    "optimizer",
+    "loss",
+    "metrics",
+]
 
 
 def config_from_toml_dict(toml_dict: dict, model_name: str) -> dict:
@@ -57,7 +57,9 @@ def config_from_toml_dict(toml_dict: dict, model_name: str) -> dict:
     return model_config
 
 
-def config_from_toml_path(toml_path: str | pathlib.Path, model_name: str) -> dict:
+def config_from_toml_path(
+    toml_path: str | pathlib.Path, model_name: str
+) -> dict:
     """Get configuration for a model from a .toml configuration file,
     given the path to the file.
 

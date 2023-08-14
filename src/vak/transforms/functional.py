@@ -32,7 +32,9 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     """
     tfm = spect - mean_freqs[:, np.newaxis]  # need axis for broadcasting
     # keep any stds that are zero from causing NaNs
-    tfm[non_zero_std, :] = tfm[non_zero_std, :] / std_freqs[non_zero_std, np.newaxis]
+    tfm[non_zero_std, :] = (
+        tfm[non_zero_std, :] / std_freqs[non_zero_std, np.newaxis]
+    )
     return tfm
 
 
@@ -124,8 +126,8 @@ def view_as_window_batch(arr, window_width):
     adapted from skimage.util.view_as_blocks
     https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
-    if not (type(window_width) == int and window_width > 0):
-        raise ValueError(f"window width must be a positive integer")
+    if not isinstance(window_width, int) or window_width < 1:
+        raise ValueError(f"`window_width` must be a positive integer, but was: {window_width}")
 
     if arr.ndim == 1:
         window_shape = (window_width,)

@@ -31,7 +31,9 @@ def get_dataset_csv_filename(data_dir_name: str, timenow: str) -> str:
     return f"{data_dir_name}_prep_{timenow}.csv"
 
 
-def get_dataset_csv_path(dataset_path: pathlib.Path, data_dir_name: str, timenow: str) -> pathlib.Path:
+def get_dataset_csv_path(
+    dataset_path: pathlib.Path, data_dir_name: str, timenow: str
+) -> pathlib.Path:
     """Returns the path that should be used to save
     a pandas DataFrame representing a dataset
     to a csv file.

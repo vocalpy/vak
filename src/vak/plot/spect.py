@@ -112,7 +112,12 @@ def spect_annot(
     spect(s, t, f, tlim, flim, ax=spect_ax, imshow_kwargs=imshow_kwargs)
 
     annotation(
-        annot, t, tlim, ax=annot_ax, line_kwargs=line_kwargs, text_kwargs=text_kwargs
+        annot,
+        t,
+        tlim,
+        ax=annot_ax,
+        line_kwargs=line_kwargs,
+        text_kwargs=text_kwargs,
     )
 
     return fig, spect_ax, annot_ax

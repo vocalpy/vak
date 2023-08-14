@@ -2,7 +2,6 @@ from typing import Optional
 
 import torch
 
-
 __all__ = ["one_hot"]
 
 
@@ -40,12 +39,16 @@ def one_hot(
     """
     if not isinstance(labels, torch.Tensor):
         raise TypeError(
-            "Input labels type is not a torch.Tensor. Got {}".format(type(labels))
+            "Input labels type is not a torch.Tensor. Got {}".format(
+                type(labels)
+            )
         )
 
     if not labels.dtype == torch.int64:
         raise ValueError(
-            "labels must be of the same dtype torch.int64. Got: {}".format(labels.dtype)
+            "labels must be of the same dtype torch.int64. Got: {}".format(
+                labels.dtype
+            )
         )
 
     if num_classes < 1:

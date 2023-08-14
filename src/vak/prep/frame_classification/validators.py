@@ -4,7 +4,9 @@ from __future__ import annotations
 import pandas as pd
 
 
-def validate_and_get_frame_dur(dataset_df: pd.DataFrame, input_type: str) -> float:
+def validate_and_get_frame_dur(
+    dataset_df: pd.DataFrame, input_type: str
+) -> float:
     """Validate that there is a single, unique value for the
     frame duration for all samples (audio signals / spectrograms)
     in a dataset. If so, return that value.
@@ -36,9 +38,9 @@ def validate_and_get_frame_dur(dataset_df: pd.DataFrame, input_type: str) -> flo
         )
 
     # TODO: handle possible KeyError here?
-    if input_type == 'audio':
+    if input_type == "audio":
         frame_dur = dataset_df["sample_dur"].unique()
-    elif input_type == 'spect':
+    elif input_type == "spect":
         frame_dur = dataset_df["timebin_dur"].unique()
 
     if len(frame_dur) > 1:

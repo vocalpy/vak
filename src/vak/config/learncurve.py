@@ -50,6 +50,7 @@ class LearncurveConfig(TrainConfig):
         See the docstring of the transform for more details on
         these arguments and how they work.
     """
+
     post_tfm_kwargs = attr.ib(
         validator=validators.optional(are_valid_post_tfm_kwargs),
         converter=converters.optional(convert_post_tfm_kwargs),

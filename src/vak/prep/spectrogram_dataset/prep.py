@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime
 import logging
 import pathlib
+from datetime import datetime
 
 import attrs
 import crowsetta
 import pandas as pd
 
-from . import audio_helper, spect_helper
-from ...config.spect_params import SpectParamsConfig
 from ...common import annotation
 from ...common.converters import expanded_user_path, labelset_to_set
-
+from ...config.spect_params import SpectParamsConfig
+from . import audio_helper, spect_helper
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +109,9 @@ def prep_spectrogram_dataset(
     if spect_output_dir:
         spect_output_dir = expanded_user_path(spect_output_dir)
         if not spect_output_dir.is_dir():
-            raise NotADirectoryError(f"spect_output_dir not found: {spect_output_dir}")
+            raise NotADirectoryError(
+                f"spect_output_dir not found: {spect_output_dir}"
+            )
     else:
         spect_output_dir = data_dir
 
@@ -125,7 +126,10 @@ def prep_spectrogram_dataset(
                 annot_dir=data_dir, annot_format=annot_format
             )
             scribe = crowsetta.Transcriber(format=annot_format)
-            annot_list = [scribe.from_file(annot_file).to_annot() for annot_file in annot_files]
+            annot_list = [
+                scribe.from_file(annot_file).to_annot()
+                for annot_file in annot_files
+            ]
         else:
             scribe = crowsetta.Transcriber(format=annot_format)
             annot_list = scribe.from_file(annot_file).to_annot()
@@ -168,7 +172,9 @@ def prep_spectrogram_dataset(
         "spect_output_dir": spect_output_dir,
     }
 
-    if spect_files:  # because we just made them, and put them in spect_output_dir
+    if (
+        spect_files
+    ):  # because we just made them, and put them in spect_output_dir
         make_dataframe_kwargs["spect_files"] = spect_files
         logger.info(
             f"creating dataset from spectrogram files in: {spect_output_dir}",
@@ -179,11 +185,18 @@ def prep_spectrogram_dataset(
             f"creating dataset from spectrogram files in: {data_dir}",
         )
 
-    if spect_params: # get relevant keys for accessing arrays from array files
+    if spect_params:  # get relevant keys for accessing arrays from array files
         if isinstance(spect_params, SpectParamsConfig):
             spect_params = attrs.asdict(spect_params)
-        for key in ['freqbins_key', 'timebins_key', 'spect_key', 'audio_path_key']:
+        for key in [
+            "freqbins_key",
+            "timebins_key",
+            "spect_key",
+            "audio_path_key",
+        ]:
             make_dataframe_kwargs[key] = spect_params[key]
 
-    dataset_df = spect_helper.make_dataframe_of_spect_files(**make_dataframe_kwargs)
+    dataset_df = spect_helper.make_dataframe_of_spect_files(
+        **make_dataframe_kwargs
+    )
     return dataset_df

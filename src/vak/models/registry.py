@@ -46,9 +46,7 @@ def register_model(model_class: Type) -> None:
     with the existing :func:`vak.decorator.model`,
     that creates a model class from a model definition.
     """
-    model_family_classes = list(
-        MODEL_FAMILY_REGISTRY.values()
-    )
+    model_family_classes = list(MODEL_FAMILY_REGISTRY.values())
     model_parent_class = inspect.getmro(model_class)[1]
     if model_parent_class not in model_family_classes:
         raise TypeError(
@@ -72,7 +70,9 @@ def register_model(model_class: Type) -> None:
             f"Classes in the model family registry:\n{MODELS_BY_FAMILY_REGISTRY}"
         )
 
-    MODELS_BY_FAMILY_REGISTRY[model_parent_class_name][model_name] = model_class
+    MODELS_BY_FAMILY_REGISTRY[model_parent_class_name][
+        model_name
+    ] = model_class
     # need to return class after we register it or we replace it with None
     # when this function is used as a decorator
     return model_class
@@ -80,19 +80,19 @@ def register_model(model_class: Type) -> None:
 
 def __getattr__(name: str) -> Any:
     """Module-level __getattr__ function that we use to dynamically determine models."""
-    if name == 'MODEL_FAMILY_FROM_NAME':
+    if name == "MODEL_FAMILY_FROM_NAME":
         return {
             model_name: family_name
             for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
             for model_name, model_class in family_dict.items()
         }
-    elif name == 'MODEL_CLASS_BY_NAME':
+    elif name == "MODEL_CLASS_BY_NAME":
         return {
             model_name: model_class
             for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
             for model_name, model_class in family_dict.items()
         }
-    elif name == 'MODEL_NAMES':
+    elif name == "MODEL_NAMES":
         return list(
             {
                 model_name: model_class

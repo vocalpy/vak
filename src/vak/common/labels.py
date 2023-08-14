@@ -8,8 +8,7 @@ import pandas as pd
 from . import annotation
 
 
-def to_map(labelset: set,
-           map_unlabeled: bool = True) -> dict:
+def to_map(labelset: set, map_unlabeled: bool = True) -> dict:
     """Convert set of labels to `dict`
     mapping those labels to a series of consecutive integers
     from 0 to n inclusive,
@@ -40,8 +39,10 @@ def to_map(labelset: set,
     labelmap : dict
         Maps labels to integers.
     """
-    if type(labelset) != set:
-        raise TypeError(f"type of labelset must be set, got type {type(labelset)}")
+    if not isinstance(labelset, set):
+        raise TypeError(
+            f"type of labelset must be set, got type {type(labelset)}"
+        )
 
     labellist = []
     if map_unlabeled is True:
@@ -81,7 +82,9 @@ def to_set(labels_list: list[np.ndarray | list]) -> set:
     return labelset
 
 
-def from_df(dataset_df: pd.DataFrame, dataset_path: str | pathlib.Path) -> list[np.ndarray]:
+def from_df(
+    dataset_df: pd.DataFrame, dataset_path: str | pathlib.Path
+) -> list[np.ndarray]:
     """Returns labels for each vocalization in a dataset.
 
     Takes Pandas DataFrame representing the dataset, loads
@@ -108,21 +111,21 @@ def from_df(dataset_df: pd.DataFrame, dataset_path: str | pathlib.Path) -> list[
     return [annot.seq.labels for annot in annots]
 
 
-ALPHANUMERIC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 DUMMY_SINGLE_CHAR_LABELS = [
     # some large range of characters not typically used as labels
-    chr(x) for x in range(162, 400)
+    chr(x)
+    for x in range(162, 400)
 ]
 # start with alphanumeric since more human readable;
 # mapping can be arbitrary as long as it's consistent
-DUMMY_SINGLE_CHAR_LABELS = (
-    *ALPHANUMERIC,
-    *DUMMY_SINGLE_CHAR_LABELS
-)
+DUMMY_SINGLE_CHAR_LABELS = (*ALPHANUMERIC, *DUMMY_SINGLE_CHAR_LABELS)
 
 
 # added to fix https://github.com/NickleDave/vak/issues/373
-def multi_char_labels_to_single_char(labelmap: dict, skip: tuple[str] = ('unlabeled',)) -> dict:
+def multi_char_labels_to_single_char(
+    labelmap: dict, skip: tuple[str] = ("unlabeled",)
+) -> dict:
     """Return a copy of a ``labelmap`` where any
     labels that are strings with multiple characters
     are converted to single characters.

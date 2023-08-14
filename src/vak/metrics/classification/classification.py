@@ -1,6 +1,5 @@
 from . import functional as F
 
-
 __all__ = [
     "Accuracy",
 ]

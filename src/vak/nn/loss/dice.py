@@ -44,7 +44,9 @@ def dice_loss(
         >>> output.backward()
     """
     if not isinstance(input, torch.Tensor):
-        raise TypeError("Input type is not a torch.Tensor. Got {}".format(type(input)))
+        raise TypeError(
+            "Input type is not a torch.Tensor. Got {}".format(type(input))
+        )
 
     if not len(input.shape) == 3:
         raise ValueError(
@@ -68,7 +70,10 @@ def dice_loss(
 
     # create the labels one hot tensor
     target_one_hot: torch.Tensor = vakF.one_hot(
-        target, num_classes=input.shape[1], device=input.device, dtype=input.dtype
+        target,
+        num_classes=input.shape[1],
+        device=input.device,
+        dtype=input.dtype,
     )
 
     # compute the actual dice score
@@ -116,5 +121,7 @@ class DiceLoss(nn.Module):
         super(DiceLoss, self).__init__()
         self.eps: float = eps
 
-    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, input: torch.Tensor, target: torch.Tensor
+    ) -> torch.Tensor:
         return dice_loss(input, target, self.eps)

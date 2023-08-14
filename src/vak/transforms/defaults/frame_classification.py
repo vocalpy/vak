@@ -41,7 +41,9 @@ class TrainItemTransform:
                 vak_transforms.AddChannel(),
             ]
         )
-        self.source_transform = torchvision.transforms.Compose(source_transform)
+        self.source_transform = torchvision.transforms.Compose(
+            source_transform
+        )
         self.annot_transform = vak_transforms.ToLongTensor()
 
     def __call__(self, source, annot, spect_path=None):
@@ -77,7 +79,9 @@ class EvalItemTransform:
         channel_dim=1,
     ):
         if spect_standardizer is not None:
-            if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
+            if not isinstance(
+                spect_standardizer, vak_transforms.StandardizeSpect
+            ):
                 raise TypeError(
                     f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
                     "Should be an instance of vak.transforms.StandardizeSpect"
@@ -145,7 +149,9 @@ class PredictItemTransform:
         channel_dim=1,
     ):
         if spect_standardizer is not None:
-            if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
+            if not isinstance(
+                spect_standardizer, vak_transforms.StandardizeSpect
+            ):
                 raise TypeError(
                     f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
                     "Should be an instance of vak.transforms.StandardizeSpect"
@@ -191,7 +197,7 @@ class PredictItemTransform:
 
 
 def get_default_frame_classification_transform(
-        mode: str, transform_kwargs: dict
+    mode: str, transform_kwargs: dict
 ) -> tuple[Callable, Callable] | Callable:
     """Get default transform for frame classification model.
 
@@ -220,7 +226,7 @@ def get_default_frame_classification_transform(
     -------
 
     """
-    spect_standardizer = transform_kwargs.get('spect_standardizer', None)
+    spect_standardizer = transform_kwargs.get("spect_standardizer", None)
     # regardless of mode, transform always starts with StandardizeSpect, if used
     if spect_standardizer is not None:
         if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
@@ -249,18 +255,22 @@ def get_default_frame_classification_transform(
     elif mode == "predict":
         item_transform = PredictItemTransform(
             spect_standardizer=spect_standardizer,
-            window_size=transform_kwargs['window_size'],
-            padval=transform_kwargs.get('padval', 0.0),
-            return_padding_mask=transform_kwargs.get('return_padding_mask', True),
+            window_size=transform_kwargs["window_size"],
+            padval=transform_kwargs.get("padval", 0.0),
+            return_padding_mask=transform_kwargs.get(
+                "return_padding_mask", True
+            ),
         )
         return item_transform
 
     elif mode == "eval":
         item_transform = EvalItemTransform(
             spect_standardizer=spect_standardizer,
-            window_size=transform_kwargs['window_size'],
-            padval=transform_kwargs.get('padval', 0.0),
-            return_padding_mask=transform_kwargs.get('return_padding_mask', True),
+            window_size=transform_kwargs["window_size"],
+            padval=transform_kwargs.get("padval", 0.0),
+            return_padding_mask=transform_kwargs.get(
+                "return_padding_mask", True
+            ),
         )
         return item_transform
     else:

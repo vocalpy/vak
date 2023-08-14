@@ -18,8 +18,8 @@ def residual_two_functions(params, x, y1, y1err, y2, y2err):
     c = params[2]
     beta = params[3]
     asymptote = params[4]
-    diff1 = (y1 - (asymptote + b * alpha ** x)) ** 2 / y1err
-    diff2 = (y2 - (asymptote + c * beta ** x)) ** 2 / y2err
+    diff1 = (y1 - (asymptote + b * alpha**x)) ** 2 / y1err
+    diff2 = (y2 - (asymptote + c * beta**x)) ** 2 / y2err
     return np.concatenate((diff1, diff2))
 
 
@@ -92,12 +92,17 @@ def fit_learning_curve(
             "Number of elements in train_set_size does not match number of columns in error_test"
         )
 
-    fitfunc = lambda p, x: p[0] + p[1] * x
-    errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
+    def fitfunc(p, x):
+        return p[0] + p[1] * x
+
+    def errfunc(p, x, y, err):
+        return (y - fitfunc(p, x)) / err
 
     logx = np.log10(train_set_size)
 
-    if error_train is None:  # if we just have test error, fit with power function
+    if (
+        error_train is None
+    ):  # if we just have test error, fit with power function
         y = np.mean(error_test, axis=1)
         logy = np.log10(y)
         yerr = np.std(error_test, axis=1)
@@ -132,16 +137,14 @@ def fit_learning_curve(
         logy2err = y2err / y
         # take mean of logy as best estimate of horizontal line
         estimate = np.average(logy2, weights=logy2err)
-        a = (10.0 ** estimate) / 2
+        a = (10.0**estimate) / 2
         return a, b, alpha
 
     elif error_train is not None and funcs == 2:
         y1 = np.mean(error_test, axis=1)
         y1err = np.std(error_test, axis=1)
-        logy1 = np.log10(y1)
         y2 = np.mean(error_train, axis=1)
         y2err = np.std(error_train, axis=1)
-        logy2 = np.log10(y2)
         if len(pinit) < 3:  # if default pinit from function declaration
             # change instead to default pinit in next line
             pinit = [1.0, -1.0, 1.0, 1.0, 0.05]

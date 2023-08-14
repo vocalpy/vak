@@ -4,12 +4,9 @@ from __future__ import annotations
 import logging
 import pathlib
 
-from .frame_classification import learning_curve_for_frame_classification_model
-from .. import (
-    models
-)
+from .. import models
 from ..common.converters import expanded_user_path
-
+from .frame_classification import learning_curve_for_frame_classification_model
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +23,7 @@ def learning_curve(
     val_transform_params: dict | None = None,
     val_dataset_params: dict | None = None,
     results_path: str | pathlib.Path = None,
-    post_tfm_kwargs: dict | None =None,
+    post_tfm_kwargs: dict | None = None,
     normalize_spectrograms: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
@@ -147,6 +144,4 @@ def learning_curve(
             device=device,
         )
     else:
-        raise ValueError(
-            f"Model family not recognized: {model_family}"
-        )
+        raise ValueError(f"Model family not recognized: {model_family}")

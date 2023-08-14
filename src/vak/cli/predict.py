@@ -5,7 +5,6 @@ from .. import config
 from .. import predict as predict_module
 from ..common.logging import config_logging_for_cli, log_version
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +30,7 @@ def predict(toml_path):
         log_dst=cfg.predict.output_dir,
         log_stem="predict",
         level="INFO",
-        force=True
+        force=True,
     )
     log_version(logger)
     logger.info("Logging results to {}".format(cfg.prep.output_dir))

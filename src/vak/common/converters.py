@@ -1,11 +1,11 @@
-from pathlib import Path
 from distutils.util import strtobool
+from pathlib import Path
 
 
 def bool_from_str(value):
-    if type(value) == bool:
+    if isinstance(value, bool):
         return value
-    elif type(value) == str:
+    elif isinstance(value, str):
         return bool(strtobool(value))
 
 
@@ -42,17 +42,21 @@ def range_str(range_str, sort=True):
     """
     # adapted from
     # http://code.activestate.com/recipes/577279-generate-list-of-numbers-from-hyphenated-and-comma/
-    s = "".join(range_str.split())  # removes white space
+    _ = "".join(range_str.split())  # removes white space
     list_range = []
     for substr in range_str.split(","):
         subrange = substr.split("-")
         if len(subrange) not in [1, 2]:
             raise SyntaxError(
-                "unable to parse range {} in labelset {}.".format(subrange, substr)
+                "unable to parse range {} in labelset {}.".format(
+                    subrange, substr
+                )
             )
         list_range.extend([int(subrange[0])]) if len(
             subrange
-        ) == 1 else list_range.extend(range(int(subrange[0]), int(subrange[1]) + 1))
+        ) == 1 else list_range.extend(
+            range(int(subrange[0]), int(subrange[1]) + 1)
+        )
 
     if sort:
         list_range.sort()

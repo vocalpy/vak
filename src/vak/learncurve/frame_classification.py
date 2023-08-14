@@ -6,16 +6,11 @@ import pathlib
 
 import pandas as pd
 
-from .dirname import replicate_dirname, train_dur_dirname
+from .. import common, datasets
+from ..common.converters import expanded_user_path
 from ..eval.frame_classification import eval_frame_classification_model
 from ..train.frame_classification import train_frame_classification_model
-from .. import (
-    common,
-    datasets,
-)
-from ..common.converters import expanded_user_path
-from ..common.paths import generate_results_dir_name_as_path
-
+from .dirname import replicate_dirname, train_dur_dirname
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +27,7 @@ def learning_curve_for_frame_classification_model(
     val_transform_params: dict | None = None,
     val_dataset_params: dict | None = None,
     results_path: str | pathlib.Path = None,
-    post_tfm_kwargs: dict | None =None,
+    post_tfm_kwargs: dict | None = None,
     normalize_spectrograms: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
@@ -146,7 +141,9 @@ def learning_curve_for_frame_classification_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+        dataset_path
+    )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
 
@@ -174,25 +171,31 @@ def learning_curve_for_frame_classification_model(
     dataset_df = dataset_df[
         (dataset_df.train_dur.notna()) & (dataset_df.replicate_num.notna())
     ]
-    train_durs = sorted(dataset_df['train_dur'].unique())
-    replicate_nums = [int(replicate_num)
-                      for replicate_num in sorted(dataset_df['replicate_num'].unique())]
+    train_durs = sorted(dataset_df["train_dur"].unique())
+    replicate_nums = [
+        int(replicate_num)
+        for replicate_num in sorted(dataset_df["replicate_num"].unique())
+    ]
     to_do = []
     for train_dur in train_durs:
         for replicate_num in replicate_nums:
             to_do.append((train_dur, replicate_num))
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
-    logger.info(f"Starting training for learning curve.")
+    logger.info("Starting training for learning curve.")
     for train_dur, replicate_num in to_do:
         logger.info(
             f"Training model with training set of size: {train_dur}s, replicate number {replicate_num}.",
         )
-        results_path_this_train_dur = results_path / train_dur_dirname(train_dur)
+        results_path_this_train_dur = results_path / train_dur_dirname(
+            train_dur
+        )
         if not results_path_this_train_dur.exists():
             results_path_this_train_dur.mkdir()
 
-        results_path_this_replicate = results_path_this_train_dur / replicate_dirname(replicate_num)
+        results_path_this_replicate = (
+            results_path_this_train_dur / replicate_dirname(replicate_num)
+        )
         results_path_this_replicate.mkdir()
 
         logger.info(
@@ -225,12 +228,8 @@ def learning_curve_for_frame_classification_model(
             split=split,
         )
 
-        logger.info(
-            f"Evaluating model from replicate {replicate_num} "
-        )
-        results_model_root = (
-            results_path_this_replicate.joinpath(model_name)
-        )
+        logger.info(f"Evaluating model from replicate {replicate_num} ")
+        results_model_root = results_path_this_replicate.joinpath(model_name)
         ckpt_root = results_model_root.joinpath("checkpoints")
         ckpt_paths = sorted(ckpt_root.glob("*.pt"))
         if any(["max-val-acc" in str(ckpt_path) for ckpt_path in ckpt_paths]):
@@ -250,20 +249,12 @@ def learning_curve_for_frame_classification_model(
                     f"did not find a single checkpoint path, instead found:\n{ckpt_paths}"
                 )
             ckpt_path = ckpt_paths[0]
-        logger.info(
-            f"Using checkpoint: {ckpt_path}"
-        )
-        labelmap_path = results_path_this_replicate.joinpath(
-            "labelmap.json"
-        )
-        logger.info(
-            f"Using labelmap: {labelmap_path}"
-        )
+        logger.info(f"Using checkpoint: {ckpt_path}")
+        labelmap_path = results_path_this_replicate.joinpath("labelmap.json")
+        logger.info(f"Using labelmap: {labelmap_path}")
         if normalize_spectrograms:
-            spect_scaler_path = (
-                results_path_this_replicate.joinpath(
-                    "StandardizeSpect"
-                )
+            spect_scaler_path = results_path_this_replicate.joinpath(
+                "StandardizeSpect"
             )
             logger.info(
                 f"Using spect scaler to normalize: {spect_scaler_path}",
@@ -295,9 +286,13 @@ def learning_curve_for_frame_classification_model(
 
     eval_dfs = []
     for train_dur, replicate_num in to_do:
-        results_path_this_train_dur = results_path / train_dur_dirname(train_dur)
-        results_path_this_replicate = results_path_this_train_dur / replicate_dirname(replicate_num)
-        eval_csv_path = sorted(results_path_this_replicate.glob('eval*.csv'))
+        results_path_this_train_dur = results_path / train_dur_dirname(
+            train_dur
+        )
+        results_path_this_replicate = (
+            results_path_this_train_dur / replicate_dirname(replicate_num)
+        )
+        eval_csv_path = sorted(results_path_this_replicate.glob("eval*.csv"))
         if not len(eval_csv_path) == 1:
             raise ValueError(
                 "Did not find exactly one eval results csv file in replicate directory after running learncurve. "

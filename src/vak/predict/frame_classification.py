@@ -8,24 +8,15 @@ import pathlib
 
 import crowsetta
 import joblib
-import pytorch_lightning as lightning
 import numpy as np
-from tqdm import tqdm
+import pytorch_lightning as lightning
 import torch.utils.data
+from tqdm import tqdm
 
-from .. import (
-    datasets,
-    models,
-    transforms
-)
-from ..common import (
-    constants,
-    files,
-    validators
-)
-from ..datasets.frame_classification import FramesDataset
+from .. import datasets, models, transforms
+from ..common import constants, files, validators
 from ..common.device import get_default as get_default_device
-
+from ..datasets.frame_classification import FramesDataset
 
 logger = logging.getLogger(__name__)
 
@@ -119,8 +110,8 @@ def predict_with_frame_classification_model(
          will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
     for path, path_name in zip(
-            (checkpoint_path, labelmap_path, spect_scaler_path),
-            ('checkpoint_path', 'labelmap_path', 'spect_scaler_path'),
+        (checkpoint_path, labelmap_path, spect_scaler_path),
+        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -152,33 +143,35 @@ def predict_with_frame_classification_model(
         logger.info(f"loading SpectScaler from path: {spect_scaler_path}")
         spect_standardizer = joblib.load(spect_scaler_path)
     else:
-        logger.info(f"Not loading SpectScaler, no path was specified")
+        logger.info("Not loading SpectScaler, no path was specified")
         spect_standardizer = None
 
     if transform_params is None:
         transform_params = {}
-    transform_params.update({'spect_standardizer': spect_standardizer})
+    transform_params.update({"spect_standardizer": spect_standardizer})
     item_transform = transforms.defaults.get_default_transform(
-        model_name,
-        "predict",
-        transform_params
+        model_name, "predict", transform_params
     )
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+        dataset_path
+    )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
 
-    logger.info(f"loading dataset to predict from csv path: {dataset_csv_path}")
+    logger.info(
+        f"loading dataset to predict from csv path: {dataset_csv_path}"
+    )
     if dataset_params is None:
         dataset_params = {}
     pred_dataset = FramesDataset.from_dataset_path(
         dataset_path=dataset_path,
         split="predict",
         item_transform=item_transform,
-        **dataset_params
+        **dataset_params,
     )
 
     pred_loader = torch.utils.data.DataLoader(
@@ -191,11 +184,17 @@ def predict_with_frame_classification_model(
 
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
     if annot_csv_filename is None:
-        annot_csv_filename = pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
+        annot_csv_filename = (
+            pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
+        )
     annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
-    metadata = datasets.frame_classification.metadata.Metadata.from_dataset_path(dataset_path)
+    metadata = (
+        datasets.frame_classification.metadata.Metadata.from_dataset_path(
+            dataset_path
+        )
+    )
     frame_dur = metadata.frame_dur
     logger.info(
         f"Duration of a frame in dataset, in seconds: {frame_dur}",
@@ -207,7 +206,9 @@ def predict_with_frame_classification_model(
     # throw out the window dimension; just want to tell network (channels, height, width) shape
     if len(input_shape) == 4:
         input_shape = input_shape[1:]
-    logger.info(f"Shape of input to networks used for predictions: {input_shape}")
+    logger.info(
+        f"Shape of input to networks used for predictions: {input_shape}"
+    )
 
     logger.info(f"instantiating model from config:/n{model_name}")
 
@@ -220,16 +221,16 @@ def predict_with_frame_classification_model(
     )
 
     # ---------------- do the actual predicting --------------------------------------------------------------------
-    logger.info(f"loading checkpoint for {model_name} from path: {checkpoint_path}")
+    logger.info(
+        f"loading checkpoint for {model_name} from path: {checkpoint_path}"
+    )
     model.load_state_dict_from_path(checkpoint_path)
 
-    if device == 'cuda':
-        accelerator = 'gpu'
+    if device == "cuda":
+        accelerator = "gpu"
     else:
         accelerator = None
-    trainer_logger = lightning.loggers.TensorBoardLogger(
-        save_dir=output_dir
-    )
+    trainer_logger = lightning.loggers.TensorBoardLogger(save_dir=output_dir)
     trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
 
     logger.info(f"running predict method of {model_name}")
@@ -243,10 +244,12 @@ def predict_with_frame_classification_model(
     # ----------------  converting to annotations ------------------------------------------------------------------
     progress_bar = tqdm(pred_loader)
 
-    input_type = metadata.input_type  # we use this to get frame_times inside loop
-    if input_type == 'audio':
+    input_type = (
+        metadata.input_type
+    )  # we use this to get frame_times inside loop
+    if input_type == "audio":
         audio_format = metadata.audio_format
-    elif input_type == 'spect':
+    elif input_type == "spect":
         spect_format = metadata.spect_format
     annots = []
     logger.info("converting predictions to annotations")
@@ -266,18 +269,23 @@ def predict_with_frame_classification_model(
             net_output = net_output[:, padding_mask]
             net_output = net_output.cpu().numpy()
             net_output_path = output_dir.joinpath(
-                pathlib.Path(source_path).stem + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
+                pathlib.Path(source_path).stem
+                + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
             )
             np.savez(net_output_path, net_output)
 
         y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
         y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
 
-        if input_type == 'audio':
-            frames, samplefreq = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](source_path)
+        if input_type == "audio":
+            frames, samplefreq = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](
+                source_path
+            )
             frame_times = np.arange(frames.shape[-1]) / samplefreq
-        elif input_type == 'spect':
-            spect_dict = files.spect.load(dataset_path / source_path, spect_format=spect_format)
+        elif input_type == "spect":
+            spect_dict = files.spect.load(
+                dataset_path / source_path, spect_format=spect_format
+            )
             frame_times = spect_dict[timebins_key]
 
         if majority_vote or min_segment_dur:

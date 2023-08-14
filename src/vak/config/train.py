@@ -3,9 +3,9 @@ import attr
 from attr import converters, validators
 from attr.validators import instance_of
 
-from .validators import is_valid_model_name
 from ..common import device
 from ..common.converters import bool_from_str, expanded_user_path
+from .validators import is_valid_model_name
 
 
 @attr.s
@@ -55,13 +55,14 @@ class TrainConfig:
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
     checkpoint_path : str
-        path to directory with checkpoint files saved by Torch, to reload model. 
-        Default is None, in which case a new model is initialized. 
+        path to directory with checkpoint files saved by Torch, to reload model.
+        Default is None, in which case a new model is initialized.
     spect_scaler_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results. Default is None.
     """
+
     # required
     model = attr.ib(
         validator=[instance_of(str), is_valid_model_name],

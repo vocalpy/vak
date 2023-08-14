@@ -27,6 +27,7 @@ class FramesDataset:
     duration : float
         Total duration of the dataset.
     """
+
     def __init__(
         self,
         dataset_path: str | pathlib.Path,
@@ -43,16 +44,20 @@ class FramesDataset:
         self.split = split
         dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
-        self.frames_paths = self.dataset_df[constants.FRAMES_NPY_PATH_COL_NAME].values
-        if split != 'predict':
-            self.frame_labels_paths = self.dataset_df[constants.FRAME_LABELS_NPY_PATH_COL_NAME].values
+        self.frames_paths = self.dataset_df[
+            constants.FRAMES_NPY_PATH_COL_NAME
+        ].values
+        if split != "predict":
+            self.frame_labels_paths = self.dataset_df[
+                constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            ].values
         else:
             self.frame_labels_paths = None
 
-        if input_type == 'audio':
-            self.source_paths = self.dataset_df['audio_path'].values
-        elif input_type == 'spect':
-            self.source_paths = self.dataset_df['spect_path'].values
+        if input_type == "audio":
+            self.source_paths = self.dataset_df["audio_path"].values
+        elif input_type == "spect":
+            self.source_paths = self.dataset_df["spect_path"].values
         else:
             raise ValueError(
                 f"Invalid `input_type`: {input_type}. Must be one of {{'audio', 'spect'}}."
@@ -76,13 +81,12 @@ class FramesDataset:
     def __getitem__(self, idx):
         source_path = self.source_paths[idx]
         frames = np.load(self.dataset_path / self.frames_paths[idx])
-        item = {
-            'frames': frames,
-            'source_path': source_path
-        }
+        item = {"frames": frames, "source_path": source_path}
         if self.frame_labels_paths is not None:
-            frame_labels = np.load(self.dataset_path / self.frame_labels_paths[idx])
-            item['frame_labels'] = frame_labels
+            frame_labels = np.load(
+                self.dataset_path / self.frame_labels_paths[idx]
+            )
+            item["frame_labels"] = frame_labels
 
         if self.item_transform:
             item = self.item_transform(**item)
@@ -123,7 +127,9 @@ class FramesDataset:
         split_path = dataset_path / split
         sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
-        inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+        inds_in_sample_path = (
+            split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+        )
         inds_in_sample = np.load(inds_in_sample_path)
 
         return cls(

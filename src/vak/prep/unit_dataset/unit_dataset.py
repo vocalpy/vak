@@ -10,16 +10,15 @@ import attrs
 import crowsetta
 import dask
 import dask.delayed
-from dask.diagnostics import ProgressBar
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from dask.diagnostics import ProgressBar
 
 from ...common import annotation, constants
 from ...common.converters import expanded_user_path, labelset_to_set
 from ..spectrogram_dataset.audio_helper import files_from_dir
 from ..spectrogram_dataset.spect import spectrogram
-
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +35,7 @@ class Segment:
     The dataset including metadata is saved as a csv file
     where these attributes become the columns.
     """
+
     data: npt.NDArray
     samplerate: int
     onset_s: float
@@ -49,7 +49,10 @@ class Segment:
 
 @dask.delayed
 def get_segment_list(
-        audio_path: str, annot: crowsetta.Annotation, audio_format: str, context_s: float = 0.005
+    audio_path: str,
+    annot: crowsetta.Annotation,
+    audio_format: str,
+    context_s: float = 0.005,
 ) -> list[Segment]:
     """Get a list of :class:`Segment` instances, given
     the path to an audio file and an annotation that indicates
@@ -77,26 +80,40 @@ def get_segment_list(
     segments : list
         A :class:`list` of :class:`Segment` instances.
     """
-    data, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](audio_path)
-    sample_dur = 1. / samplerate
+    data, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](
+        audio_path
+    )
+    sample_dur = 1.0 / samplerate
 
     segments = []
-    for onset_s, offset_s, label in zip(annot.seq.onsets_s, annot.seq.offsets_s, annot.seq.labels):
+    for onset_s, offset_s, label in zip(
+        annot.seq.onsets_s, annot.seq.offsets_s, annot.seq.labels
+    ):
         onset_s -= context_s
         offset_s += context_s
         onset_ind = int(np.floor(onset_s * samplerate))
         offset_ind = int(np.ceil(offset_s * samplerate))
-        segment_data = data[onset_ind : offset_ind + 1]
+        segment_data = data[onset_ind: offset_ind + 1]
         segment_dur = segment_data.shape[-1] * sample_dur
         segment = Segment(
-            segment_data, samplerate, onset_s, offset_s, label, sample_dur, segment_dur, audio_path, annot.annot_path
+            segment_data,
+            samplerate,
+            onset_s,
+            offset_s,
+            label,
+            sample_dur,
+            segment_dur,
+            audio_path,
+            annot.annot_path,
         )
         segments.append(segment)
 
     return segments
 
 
-def spectrogram_from_segment(segment: Segment, spect_params: dict) -> npt.NDArray:
+def spectrogram_from_segment(
+    segment: Segment, spect_params: dict
+) -> npt.NDArray:
     """Compute a spectrogram given a :class:`Segment` instance.
 
     Parameters
@@ -127,12 +144,15 @@ class SpectToSave:
 
     Used by :func:`save_spect`.
     """
+
     spect: npt.NDArray
     ind: int
     audio_path: str
 
 
-def save_spect(spect_to_save: SpectToSave, output_dir: str | pathlib.Path) -> str:
+def save_spect(
+    spect_to_save: SpectToSave, output_dir: str | pathlib.Path
+) -> str:
     """Save a spectrogram array to an npy file.
 
     The filename is build from the attributes of ``spect_to_save``,
@@ -148,8 +168,13 @@ def save_spect(spect_to_save: SpectToSave, output_dir: str | pathlib.Path) -> st
     npy_path : str
         Path to npy file containing spectrogram inside ``output_dir``
     """
-    basename = os.path.basename(spect_to_save.audio_path) + f"-segment-{spect_to_save.ind}"
-    npy_path = os.path.join(os.path.normpath(output_dir), basename + ".spect.npy")
+    basename = (
+        os.path.basename(spect_to_save.audio_path)
+        + f"-segment-{spect_to_save.ind}"
+    )
+    npy_path = os.path.join(
+        os.path.normpath(output_dir), basename + ".spect.npy"
+    )
     np.save(npy_path, spect_to_save.spect)
     return npy_path
 
@@ -164,7 +189,9 @@ def abspath(a_path):
 
 # ---- make spectrograms + records for dataframe -----------------------------------------------------------------------
 @dask.delayed
-def make_spect_return_record(segment: Segment, ind: int, spect_params: dict, output_dir: pathlib.Path) -> tuple:
+def make_spect_return_record(
+    segment: Segment, ind: int, spect_params: dict, output_dir: pathlib.Path
+) -> tuple:
     """Helper function that enables parallelized creation of "records",
     i.e. rows for dataframe, from .
     Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
@@ -230,14 +257,14 @@ DF_COLUMNS = [
 
 
 def prep_unit_dataset(
-        audio_format: str,
-        output_dir: str,
-        spect_params: dict,
-        data_dir: list | None = None,
-        annot_format: str | None = None,
-        annot_file: str | pathlib.Path | None = None,
-        labelset: set | None = None,
-        context_s: float = 0.005,
+    audio_format: str,
+    output_dir: str,
+    spect_params: dict,
+    data_dir: list | None = None,
+    annot_format: str | None = None,
+    annot_file: str | pathlib.Path | None = None,
+    labelset: set | None = None,
+    context_s: float = 0.005,
 ) -> pd.DataFrame:
     """Prepare a dataset of units from sequences,
     e.g., all syllables segmented out of a dataset of birdsong.
@@ -284,7 +311,10 @@ def prep_unit_dataset(
                 annot_dir=data_dir, annot_format=annot_format
             )
             scribe = crowsetta.Transcriber(format=annot_format)
-            annot_list = [scribe.from_file(annot_file).to_annot() for annot_file in annot_files]
+            annot_list = [
+                scribe.from_file(annot_file).to_annot()
+                for annot_file in annot_files
+            ]
         else:
             scribe = crowsetta.Transcriber(format=annot_format)
             annot_list = scribe.from_file(annot_file).to_annot()
@@ -296,13 +326,19 @@ def prep_unit_dataset(
         annot_list = None
 
     if annot_list:
-        audio_annot_map = annotation.map_annotated_to_annot(audio_files, annot_list, annot_format)
+        audio_annot_map = annotation.map_annotated_to_annot(
+            audio_files, annot_list, annot_format
+        )
     else:
         # no annotation, so map spectrogram files to None
-        audio_annot_map = dict((audio_path, None) for audio_path in audio_files)
+        audio_annot_map = dict(
+            (audio_path, None) for audio_path in audio_files
+        )
 
     # use labelset, if supplied, with annotations, if any, to filter;
-    if labelset and annot_list:  # then remove annotations with labels not in labelset
+    if (
+        labelset and annot_list
+    ):  # then remove annotations with labels not in labelset
         for audio_file, annot in list(audio_annot_map.items()):
             # loop in a verbose way (i.e. not a comprehension)
             # so we can give user warning when we skip files
@@ -319,7 +355,9 @@ def prep_unit_dataset(
 
     segments = []
     for audio_path, annot in audio_annot_map.items():
-        segment_list = dask.delayed(get_segment_list)(audio_path, annot, audio_format, context_s)
+        segment_list = dask.delayed(get_segment_list)(
+            audio_path, annot, audio_format, context_s
+        )
         segments.append(segment_list)
 
     logger.info(
@@ -327,7 +365,9 @@ def prep_unit_dataset(
     )
     with ProgressBar():
         segments: list[list[Segment]] = dask.compute(*segments)
-    segments: list[Segment] = [segment for segment_list in segments for segment in segment_list]
+    segments: list[Segment] = [
+        segment for segment_list in segments for segment in segment_list
+    ]
 
     # ---- make and save all spectrograms *before* padding
     # This is a design choice to avoid keeping all the spectrograms in memory
@@ -336,10 +376,14 @@ def prep_unit_dataset(
     # Might be worth looking at how often typical dataset sizes in memory and whether this is really necessary.
     records_n_timebins_tuples = []
     for ind, segment in enumerate(segments):
-        records_n_timebins_tuple = make_spect_return_record(segment, ind, spect_params, output_dir)
+        records_n_timebins_tuple = make_spect_return_record(
+            segment, ind, spect_params, output_dir
+        )
         records_n_timebins_tuples.append(records_n_timebins_tuple)
     with ProgressBar():
-        records_n_timebins_tuples: list[tuple[tuple, int]] = dask.compute(*records_n_timebins_tuples)
+        records_n_timebins_tuples: list[tuple[tuple, int]] = dask.compute(
+            *records_n_timebins_tuples
+        )
 
     records, n_timebins_list = [], []
     for records_n_timebins_tuple in records_n_timebins_tuples:
@@ -351,14 +395,14 @@ def prep_unit_dataset(
 
     padded = []
     for record in records:
-        padded.append(
-            pad_spectrogram(record, pad_length)
-        )
+        padded.append(pad_spectrogram(record, pad_length))
     with ProgressBar():
-        shapes:list[tuple[int, int]] = dask.compute(*padded)
+        shapes: list[tuple[int, int]] = dask.compute(*padded)
 
     shape = set(shapes)
-    assert len(shape) == 1, f"Did not find a single unique shape for all spectrograms. Instead found: {shape}"
+    assert (
+        len(shape) == 1
+    ), f"Did not find a single unique shape for all spectrograms. Instead found: {shape}"
     shape = shape.pop()
 
     unit_df = pd.DataFrame.from_records(records, columns=DF_COLUMNS)

@@ -9,55 +9,44 @@ import pathlib
 import attrs
 import crowsetta
 import dask.bag as db
-from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
+from dask.diagnostics import ProgressBar
 
+from ... import common, datasets, transforms
 from .. import constants as prep_constants
-from ... import (
-    common,
-    datasets,
-    transforms
-)
-
 
 logger = logging.getLogger(__name__)
 
 
-def argsort_by_label_freq(
-        annots: list[crowsetta.Annotation]
-) -> list[int]:
+def argsort_by_label_freq(annots: list[crowsetta.Annotation]) -> list[int]:
     """Returns indices to sort a list of annotations
-    in order of more frequently appearing labels,
-    i.e., the first annotation will have the label
-    that appears least frequently and the last annotation
-    will have the label that appears most frequently.
+     in order of more frequently appearing labels,
+     i.e., the first annotation will have the label
+     that appears least frequently and the last annotation
+     will have the label that appears most frequently.
 
-   Used to sort a dataframe representing a dataset of annotated audio
-   or spectrograms before cropping that dataset to a specified duration,
-   so that it's less likely that cropping will remove all occurrences
-   of any label class from the total dataset.
+    Used to sort a dataframe representing a dataset of annotated audio
+    or spectrograms before cropping that dataset to a specified duration,
+    so that it's less likely that cropping will remove all occurrences
+    of any label class from the total dataset.
 
-    Parameters
-    ----------
-    annots: list
-        List of :class:`crowsetta.Annotation` instances.
+     Parameters
+     ----------
+     annots: list
+         List of :class:`crowsetta.Annotation` instances.
 
-    Returns
-    -------
-    sort_inds: list
-        Integer values to sort ``annots``.
+     Returns
+     -------
+     sort_inds: list
+         Integer values to sort ``annots``.
     """
-    all_labels = [
-        lbl for annot in annots for lbl in annot.seq.labels
-    ]
+    all_labels = [lbl for annot in annots for lbl in annot.seq.labels]
     label_counts = collections.Counter(all_labels)
 
     sort_inds = []
     # make indices ahead of time so they stay constant as we remove things from the list
-    ind_annot_tuples = list(
-        enumerate(copy.deepcopy(annots))
-    )
+    ind_annot_tuples = list(enumerate(copy.deepcopy(annots)))
     for label, _ in reversed(label_counts.most_common()):
         # next line, [:] to make a temporary copy to avoid remove bug
         for ind_annot_tuple in ind_annot_tuples[:]:
@@ -79,9 +68,7 @@ def argsort_by_label_freq(
             f"Left over (with indices from list): {ind_annot_tuples}"
         )
 
-    if not (
-        sorted(sort_inds) == list(range(len(annots)))
-    ):
+    if not (sorted(sort_inds) == list(range(len(annots)))):
         raise ValueError(
             "sorted(sort_inds) does not equal range(len(annots)):"
             f"sort_inds: {sort_inds}\nrange(len(annots)): {list(range(len(annots)))}"
@@ -92,13 +79,14 @@ def argsort_by_label_freq(
 
 @attrs.define(frozen=True)
 class Sample:
-    """Dataclass representing one sample 
+    """Dataclass representing one sample
     in a frame classification dataset.
-    
-    Used to add paths for arrays from the sample 
-    to a ``dataset_df``, and to build 
-    the ``sample_ids`` vector and ``inds_in_sample`` vector  
+
+    Used to add paths for arrays from the sample
+    to a ``dataset_df``, and to build
+    the ``sample_ids`` vector and ``inds_in_sample`` vector
     for the entire dataset."""
+
     source_id: int = attrs.field()
     frame_npy_path: str
     frame_labels_npy_path: str
@@ -107,14 +95,14 @@ class Sample:
 
 
 def make_npy_files_for_each_split(
-        dataset_df: pd.DataFrame,
-        dataset_path: str | pathlib.Path,
-        input_type: str,
-        purpose: str,
-        labelmap: dict,
-        audio_format: str,
-        spect_key: str = 's',
-        timebins_key: str = 't',
+    dataset_df: pd.DataFrame,
+    dataset_path: str | pathlib.Path,
+    input_type: str,
+    purpose: str,
+    labelmap: dict,
+    audio_format: str,
+    spect_key: str = "s",
+    timebins_key: str = "t",
 ):
     r"""Make npy files containing arrays
     for each split of a frame classification dataset.
@@ -204,32 +192,34 @@ def make_npy_files_for_each_split(
 
         split_df = dataset_df[dataset_df.split == split].copy()
 
-        if purpose != 'predict':
+        if purpose != "predict":
             annots = common.annotation.from_df(split_df)
         else:
             annots = None
 
         if annots:
             sort_inds = argsort_by_label_freq(annots)
-            split_df['sort_inds'] = sort_inds
-            split_df = split_df.sort_values(by='sort_inds').drop(columns='sort_inds').reset_index()
-
-        if input_type == 'audio':
-            source_paths = split_df['audio_path'].values
-        elif input_type == 'spect':
-            source_paths = split_df['spect_path'].values
-        else:
-            raise ValueError(
-                f"Invalid ``input_type``: {input_type}"
+            split_df["sort_inds"] = sort_inds
+            split_df = (
+                split_df.sort_values(by="sort_inds")
+                .drop(columns="sort_inds")
+                .reset_index()
             )
+
+        if input_type == "audio":
+            source_paths = split_df["audio_path"].values
+        elif input_type == "spect":
+            source_paths = split_df["spect_path"].values
+        else:
+            raise ValueError(f"Invalid ``input_type``: {input_type}")
         # do this *again* after sorting the dataframe
-        if purpose != 'predict':
+        if purpose != "predict":
             annots = common.annotation.from_df(split_df)
         else:
             annots = None
 
         def _save_dataset_arrays_and_return_index_arrays(
-                source_id_path_annot_tup
+            source_id_path_annot_tup,
         ):
             """Function we use with dask to parallelize
 
@@ -238,19 +228,24 @@ def make_npy_files_for_each_split(
             source_id, source_path, annot = source_id_path_annot_tup
             source_path = pathlib.Path(source_path)
 
-            if input_type == 'audio':
-                frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[audio_format](source_path)
-                if audio_format == 'cbin':  # convert to ~wav, from int16 to float64
+            if input_type == "audio":
+                frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[
+                    audio_format
+                ](source_path)
+                if (
+                    audio_format == "cbin"
+                ):  # convert to ~wav, from int16 to float64
                     frames = frames.astype(np.float64) / 32768.0
                 if annot:
                     frame_times = np.arange(frames.shape[-1]) / samplefreq
-            elif input_type == 'spect':
+            elif input_type == "spect":
                 spect_dict = np.load(source_path)
                 frames = spect_dict[spect_key]
                 if annot:
                     frame_times = spect_dict[timebins_key]
             frames_npy_path = split_subdir / (
-                    source_path.stem + datasets.frame_classification.constants.FRAMES_ARRAY_EXT
+                source_path.stem
+                + datasets.frame_classification.constants.FRAMES_ARRAY_EXT
             )
             np.save(frames_npy_path, frames)
             frames_npy_path = str(
@@ -273,7 +268,8 @@ def make_npy_files_for_each_split(
                     unlabeled_label=labelmap["unlabeled"],
                 )
                 frame_labels_npy_path = split_subdir / (
-                        source_path.stem + datasets.frame_classification.constants.FRAME_LABELS_EXT
+                    source_path.stem
+                    + datasets.frame_classification.constants.FRAME_LABELS_EXT
                 )
                 np.save(frame_labels_npy_path, frame_labels)
                 frame_labels_npy_path = str(
@@ -288,7 +284,7 @@ def make_npy_files_for_each_split(
                 frames_npy_path,
                 frame_labels_npy_path,
                 sample_id_vec,
-                inds_in_sample_vec
+                inds_in_sample_vec,
             )
 
         # ---- make npy files for this split, parallelized with dask
@@ -296,7 +292,9 @@ def make_npy_files_for_each_split(
         if annots:
             source_path_annot_tups = [
                 (source_id, source_path, annot)
-                for source_id, (source_path, annot) in enumerate(zip(source_paths, annots))
+                for source_id, (source_path, annot) in enumerate(
+                    zip(source_paths, annots)
+                )
             ]
         else:
             source_path_annot_tups = [
@@ -306,9 +304,11 @@ def make_npy_files_for_each_split(
 
         source_path_annot_bag = db.from_sequence(source_path_annot_tups)
         with ProgressBar():
-            samples = list(source_path_annot_bag.map(
-                _save_dataset_arrays_and_return_index_arrays
-            ))
+            samples = list(
+                source_path_annot_bag.map(
+                    _save_dataset_arrays_and_return_index_arrays
+                )
+            )
         samples = sorted(samples, key=lambda sample: sample.source_id)
 
         # ---- save indexing vectors in split directory
@@ -316,24 +316,30 @@ def make_npy_files_for_each_split(
             list(sample.sample_id_vec for sample in samples)
         )
         np.save(
-            split_subdir / datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME, sample_id_vec
+            split_subdir
+            / datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME,
+            sample_id_vec,
         )
         inds_in_sample_vec = np.concatenate(
             list(sample.inds_in_sample_vec for sample in samples)
         )
         np.save(
-            split_subdir / datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME, inds_in_sample_vec
+            split_subdir
+            / datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME,
+            inds_in_sample_vec,
         )
 
-        frame_npy_paths = [
-            str(sample.frame_npy_path) for sample in samples
-        ]
-        split_df[datasets.frame_classification.constants.FRAMES_NPY_PATH_COL_NAME] = frame_npy_paths
+        frame_npy_paths = [str(sample.frame_npy_path) for sample in samples]
+        split_df[
+            datasets.frame_classification.constants.FRAMES_NPY_PATH_COL_NAME
+        ] = frame_npy_paths
 
         frame_labels_npy_paths = [
             str(sample.frame_labels_npy_path) for sample in samples
         ]
-        split_df[datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME] = frame_labels_npy_paths
+        split_df[
+            datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+        ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 
     dataset_df_out = pd.concat(dataset_df_out)

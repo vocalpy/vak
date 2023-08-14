@@ -1,8 +1,8 @@
 # note NO LOGGING -- we configure logger inside `core.prep`
 # so we can save log file inside dataset directory
-from pathlib import Path
 import shutil
 import warnings
+from pathlib import Path
 
 import toml
 
@@ -92,7 +92,9 @@ def prep(toml_path):
         )
 
     # now that we've checked that, go ahead and parse the sections we want
-    cfg = config.parse.from_toml_path(toml_path, sections=SECTIONS_PREP_SHOULD_PARSE)
+    cfg = config.parse.from_toml_path(
+        toml_path, sections=SECTIONS_PREP_SHOULD_PARSE
+    )
     # notice we ignore any other option/values in the 'purpose' section,
     # see https://github.com/NickleDave/vak/issues/334 and https://github.com/NickleDave/vak/issues/314
     if cfg.prep is None:

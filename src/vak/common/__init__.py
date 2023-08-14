@@ -25,7 +25,6 @@ from . import (
     validators,
 )
 
-
 __all__ = [
     "annotation",
     "constants",

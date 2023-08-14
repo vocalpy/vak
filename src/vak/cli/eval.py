@@ -5,7 +5,6 @@ from .. import config
 from .. import eval as eval_module
 from ..common.logging import config_logging_for_cli, log_version
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,10 +31,7 @@ def eval(toml_path):
 
     # ---- set up logging ---------------------------------------------------------------------------------------------
     config_logging_for_cli(
-        log_dst=cfg.eval.output_dir,
-        log_stem="eval",
-        level="INFO",
-        force=True
+        log_dst=cfg.eval.output_dir, log_stem="eval", level="INFO", force=True
     )
     log_version(logger)
 
