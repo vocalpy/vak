@@ -143,7 +143,7 @@ def predict_with_frame_classification_model(
         logger.info(f"loading SpectScaler from path: {spect_scaler_path}")
         spect_standardizer = joblib.load(spect_scaler_path)
     else:
-        logger.info(f"Not loading SpectScaler, no path was specified")
+        logger.info("Not loading SpectScaler, no path was specified")
         spect_standardizer = None
 
     if transform_params is None:
