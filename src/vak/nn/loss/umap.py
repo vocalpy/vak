@@ -5,6 +5,7 @@ import warnings
 
 import torch
 
+# isort: off
 # Ignore warnings from Numba deprecation:
 # https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit
 # Numba is required by UMAP.
@@ -12,7 +13,8 @@ from numba.core.errors import NumbaDeprecationWarning
 from torch.nn.functional import mse_loss
 
 warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
-from umap.umap_ import find_ab_params
+from umap.umap_ import find_ab_params  # noqa : E402
+# isort: on
 
 
 def convert_distance_to_probability(distances, a=1.0, b=1.0):
