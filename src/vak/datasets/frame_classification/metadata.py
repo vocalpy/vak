@@ -80,7 +80,7 @@ class Metadata:
             )
         from ...prep.constants import INPUT_TYPES
 
-        if not value in INPUT_TYPES:
+        if value not in INPUT_TYPES:
             raise ValueError(
                 f"Value for {attribute.name} is not a valid input type: '{value}'\n"
                 f"Valid input types are: {INPUT_TYPES}"
