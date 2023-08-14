@@ -14,7 +14,6 @@ import torch.utils.data
 from .. import datasets, models, transforms
 from ..common import validators
 from ..common.device import get_default as get_default_device
-from ..common.paths import generate_results_dir_name_as_path
 from ..common.trainer import get_default_trainer
 from ..datasets.frame_classification import FramesDataset, WindowDataset
 
@@ -217,7 +216,7 @@ def train_frame_classification_model(
     # get transforms just before creating datasets with them
     elif normalize_spectrograms and spect_scaler_path is None:
         logger.info(
-            f"no spect_scaler_path provided, not loading",
+            "no spect_scaler_path provided, not loading",
         )
         logger.info("will normalize spectrograms")
         spect_standardizer = transforms.StandardizeSpect.fit_dataset_path(
