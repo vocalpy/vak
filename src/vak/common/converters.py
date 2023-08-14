@@ -3,9 +3,9 @@ from pathlib import Path
 
 
 def bool_from_str(value):
-    if type(value) == bool:
+    if isinstance(value, bool):
         return value
-    elif type(value) == str:
+    elif isinstance(value, str):
         return bool(strtobool(value))
 
 
@@ -42,7 +42,7 @@ def range_str(range_str, sort=True):
     """
     # adapted from
     # http://code.activestate.com/recipes/577279-generate-list-of-numbers-from-hyphenated-and-comma/
-    s = "".join(range_str.split())  # removes white space
+    _ = "".join(range_str.split())  # removes white space
     list_range = []
     for substr in range_str.split(","):
         subrange = substr.split("-")
