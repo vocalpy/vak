@@ -4,7 +4,7 @@ that other families of models should subclass.
 from __future__ import annotations
 
 import inspect
-from typing import Callable, ClassVar, Type
+from typing import Callable, ClassVar
 
 import pytorch_lightning as lightning
 import torch
@@ -37,10 +37,10 @@ class Model(lightning.LightningModule):
 
     def __init__(
         self,
-        network: torch.nn.Module | dict[str : torch.nn.Module] | None = None,
+        network: torch.nn.Module | dict | None = None,
         loss: torch.nn.Module | Callable | None = None,
         optimizer: torch.optim.Optimizer | None = None,
-        metrics: dict[str:Type] | None = None,
+        metrics: dict | None = None,
     ):
         """Initializes an instance of a model, using its definition.
 
@@ -139,10 +139,10 @@ class Model(lightning.LightningModule):
     @classmethod
     def validate_init(
         cls,
-        network: torch.nn.Module | dict[str : torch.nn.Module] | None = None,
+        network: torch.nn.Module | dict | None = None,
         loss: torch.nn.Module | Callable | None = None,
         optimizer: torch.optim.Optimizer | None = None,
-        metrics: dict[str:Type] | None = None,
+        metrics: dict | None = None,
     ):
         """Validate arguments to ``vak.models.base.Model.__init__``.
 
