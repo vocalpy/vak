@@ -1,7 +1,7 @@
 """Functional forms of transformations
 related to frame labels,
 i.e., vectors where each element represents
-a label for a frame, either a single sample in audio 
+a label for a frame, either a single sample in audio
 or a single time bin from a spectrogram.
 
 This module is structured as followed:
@@ -69,10 +69,10 @@ def from_segments(
         same length as time_bins, with each element a label for each time bin
     """
     if (
-        type(labels_int) == list
-        and not all([type(lbl) == int for lbl in labels_int])
+        isinstance(labels_int, list)
+        and not all([isinstance(lbl, int) for lbl in labels_int])
     ) or (
-        type(labels_int) == np.ndarray
+        isinstance(labels_int, np.ndarray)
         and labels_int.dtype not in [np.int8, np.int16, np.int32, np.int64]
     ):
         raise TypeError(
@@ -86,7 +86,7 @@ def from_segments(
     ]
     for label, onset, offset in zip(labels_int, onset_inds, offset_inds):
         # offset_inds[ind]+1 because offset time bin is still "part of" syllable
-        label_vec[onset : offset + 1] = label
+        label_vec[onset: offset + 1] = label  # noqa: E203
 
     return label_vec
 
