@@ -167,7 +167,7 @@ def get_graph_elements(
     return graph, epochs_per_sample, head, tail, weight, n_vertices
 
 
-class ParametricUMAPTrainingDataset(Dataset):
+class ParametricUMAPDataset(Dataset):
     """Dataset used for training Parametric UMAP models
 
     """
