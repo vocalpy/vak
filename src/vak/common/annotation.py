@@ -295,7 +295,7 @@ def _map_using_notated_path(
     annotated_files: list[PathLike],
     annot_list: list[crowsetta.Annotation],
     audio_ext: Optional[str] = None,
-) -> dict[str : crowsetta.Annotation]:
+) -> dict:
     """Map a :class:`list` of annotated files to a :class:`list`
     of  :class:`crowsetta.Annotation` instances,
     using the ``notated_path`` attribute of the
@@ -423,7 +423,7 @@ def _map_using_ext(
     annot_format: str,
     method: str,
     annotated_ext: str | None = None,
-) -> dict[str : crowsetta.Annotation]:
+) -> dict:
     """Map a list of annotated files to a :class:`list` of
     :class:`crowsetta.Annotation` instances,
     by either removing the extension of the annotation format,
@@ -484,7 +484,7 @@ def _map_using_ext(
                 raise ValueError(
                     "Found more than one extension in annotated files, "
                     "unclear which extension to use when mapping to annotations "
-                    f"with 'replace' method. Extensions found: {ext_set}"
+                    f"with 'replace' method. Extensions found: {annotated_ext_set}"
                 )
             annotated_ext = annotated_ext_set.pop()
 
@@ -561,7 +561,7 @@ def map_annotated_to_annot(
     annot_list: list[crowsetta.Annotation],
     annot_format: str,
     annotated_ext: str | None = None,
-) -> dict[pathlib.Path : crowsetta.Annotation]:
+) -> dict:
     """Map annotated files,
     i.e. audio or spectrogram files,
     to their corresponding annotations.
@@ -625,9 +625,7 @@ def map_annotated_to_annot(
     reference section of the documentation:
     https://vak.readthedocs.io/en/latest/reference/filenames.html
     """
-    if (
-        type(annotated_files) == np.ndarray
-    ):  # e.g., vak DataFrame['spect_path'].values
+    if isinstance(annotated_files, np.ndarray):  # e.g., vak DataFrame['spect_path'].values
         annotated_files = annotated_files.tolist()
 
     if annot_format in (
