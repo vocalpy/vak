@@ -39,7 +39,7 @@ def to_map(labelset: set, map_unlabeled: bool = True) -> dict:
     labelmap : dict
         Maps labels to integers.
     """
-    if type(labelset) != set:
+    if not isinstance(labelset, set):
         raise TypeError(
             f"type of labelset must be set, got type {type(labelset)}"
         )
