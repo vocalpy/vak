@@ -26,11 +26,5 @@ num_workers = 2
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP"
 
-[TRAIN.train_transform_params]
-resize = [128, 128]
-
-[TRAIN.val_transform_params]
-resize = [128, 128]
-
 [ConvEncoderUMAP.optimizer]
 lr = 0.001
