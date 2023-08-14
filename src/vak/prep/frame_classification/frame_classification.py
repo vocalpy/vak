@@ -148,7 +148,7 @@ def prep_frame_classification_dataset(
 
     if input_type == "audio" and audio_format is None:
         raise ValueError(
-            f"Input type was 'audio' but no ``audio_format`` was specified. "
+            "Input type was 'audio' but no ``audio_format`` was specified. "
         )
 
     if audio_format is None and spect_format is None:
@@ -194,7 +194,7 @@ def prep_frame_classification_dataset(
             warnings.warn(
                 "The ``purpose`` argument was set to 'predict`, but a ``labelset`` was provided."
                 "This would cause an error because the ``prep_spectrogram_dataset`` section will attempt to "
-                f"check whether the files in the ``data_dir`` have labels in "
+                "check whether the files in the ``data_dir`` have labels in "
                 "``labelset``, even though those files don't have annotation.\n"
                 "Setting ``labelset`` to None."
             )
