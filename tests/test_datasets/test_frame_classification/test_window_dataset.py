@@ -6,7 +6,7 @@ import vak.datasets.frame_classification
 
 class TestWindowDataset:
     @pytest.mark.parametrize(
-        'config_type, model_name, audio_format, spect_format, annot_format',
+        'config_type, model_name, audio_format, spect_format, annot_format, split',
         [
             ('train', 'teenytweetynet', 'cbin', None, 'notmat', 'train'),
             ('train', 'teenytweetynet', None, 'mat', 'yarden', 'train'),
