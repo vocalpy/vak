@@ -202,7 +202,7 @@ class FrameClassificationModel(base.Model):
         x, y = batch[0], batch[1]
         out = self.network(x)
         loss = self.loss(out, y)
-        self.log(f"train_loss: {loss}")
+        self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
