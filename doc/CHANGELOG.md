@@ -42,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add decorators to register models and model families 
   [#676](https://github.com/NickleDave/vak/pull/676).
   Fixes [#623](https://github.com/NickleDave/vak/issues/623).
+- Add initial parametric UMAP implementation
+  [#688](https://github.com/NickleDave/vak/pull/688).
+  Fixes [#631](https://github.com/NickleDave/vak/issues/631).
 
 ### Changed
 - Rename config file option `csv_path` to `dataset_path`, 
