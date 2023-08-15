@@ -6,8 +6,8 @@ output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notma
 audio_format = "cbin"
 annot_format = "notmat"
 labelset = "iabcdefghjk"
-train_dur = 5
-val_dur = 2.5
+train_dur = 2.5
+val_dur = 1
 
 [SPECT_PARAMS]
 fft_size = 512
@@ -19,7 +19,7 @@ model = "ConvEncoderUMAP"
 batch_size = 64
 num_epochs = 1
 val_step = 1
-ckpt_step = 1
+ckpt_step = 1000
 num_workers = 16
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP"
