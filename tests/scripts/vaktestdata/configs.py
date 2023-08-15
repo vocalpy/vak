@@ -103,7 +103,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
             if single_train_result:
                 raise ValueError(
                     f"Did not find just a single results directory in root_results_dir from train_config:\n"
-                    f"{config_toml}"
+                    f"{config_to_use_result_from}"
                     f"root_results_dir was: {root_results_dir}"
                     f'Matches for "results_*" were: {results_dir}'
                 )
@@ -114,7 +114,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         else:
             raise ValueError(
                 f"Did not find a results directory in root_results_dir from train_config:\n"
-                f"{config_toml}"
+                f"{config_to_use_result_from}"
                 f"root_results_dir was:\n{root_results_dir}"
                 f'Matches for "results_*" were:\n{results_dir}'
             )
@@ -122,11 +122,23 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         # these are the only options whose values we need to change
         # and they are the same for both predict and eval
         checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
-        if config_toml['TRAIN']['normalize_spectrograms']:
+        if 'normalize_spectrograms' in config_toml['TRAIN'] and config_toml['TRAIN']['normalize_spectrograms']:
             spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
         else:
             spect_scaler_path = None
-        labelmap_path = sorted(results_dir.glob("labelmap.json"))[0]
+
+        labelmap_path = sorted(results_dir.glob("labelmap.json"))
+        if len(labelmap_path) == 1:
+            labelmap_path = labelmap_path[0]
+        elif len(labelmap_path) == 0:
+            labelmap_path = None
+        else:
+            raise ValueError(
+                "Invalid number of labelmap.json files from results_dir for train config:\n"
+                f"{config_to_use_result_from}.\n"
+                f"Results dir: {results_dir}"
+                f"labelmap_path(s) found by globbing: {labelmap_path}"
+            )
 
         # now add these values to corresponding options in predict / eval config
         with config_to_fix.open("r") as fp:
@@ -145,7 +157,8 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
                 # remove any existing 'spect_scaler_path' option
                 del config_toml[section]["spect_scaler_path"]
         if command != 'train_continue':  # train always gets labelmap from dataset dir, not from a config option
-            config_toml[section]["labelmap_path"] = str(labelmap_path)
+            if labelmap_path is not None:
+                config_toml[section]["labelmap_path"] = str(labelmap_path)
 
         with config_to_fix.open("w") as fp:
             toml.dump(config_toml, fp)
