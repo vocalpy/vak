@@ -266,7 +266,7 @@ def train_parametric_umap_model(
             val_dataset_params = {}
         val_dataset = ParametricUMAPDataset.from_dataset_path(
             dataset_path=dataset_path,
-            split=split,
+            split="val",
             transform=transform,
             **val_dataset_params,
         )
