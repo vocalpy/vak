@@ -18,7 +18,7 @@ def spect_dir_mat():
 
 SPECT_DIR_NPZ = sorted(
         GENERATED_TEST_DATA_ROOT.joinpath(
-            "prep", "train", "audio_cbin_annot_notmat", "teenytweetynet"
+            "prep", "train", "audio_cbin_annot_notmat", "TweetyNet"
         ).glob("*vak-frame-classification-dataset-generated*")
     )[0]
 
