@@ -34,10 +34,10 @@ TeenyTweetyNet.__name__ = 'TeenyTweetyNet'
          vak.models.Model,
          'MockEncoderDecoderModel'),
         (TweetyNet,
-         vak.models.WindowedFrameClassificationModel,
+         vak.models.FrameClassificationModel,
          'TweetyNet'),
         (TeenyTweetyNet,
-         vak.models.WindowedFrameClassificationModel,
+         vak.models.FrameClassificationModel,
          'TeenyTweetyNet'),
     ]
 )
