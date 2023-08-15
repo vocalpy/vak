@@ -7,12 +7,11 @@ import pytest
 import vak
 import vak.datasets
 
-from ...fixtures.test_data import GENERATED_TEST_DATA_ROOT
 from ...fixtures.config import GENERATED_TEST_CONFIGS_ROOT
 
 
 # get the corresponding .toml config file that generated the dataset
-A_LEARNCURVE_TOML_PATH = GENERATED_TEST_CONFIGS_ROOT / 'teenytweetynet_learncurve_audio_cbin_annot_notmat.toml'
+A_LEARNCURVE_TOML_PATH = GENERATED_TEST_CONFIGS_ROOT / 'TeenyTweetyNet_learncurve_audio_cbin_annot_notmat.toml'
 
 
 def window_dataset_from_csv_kwargs_list():
@@ -27,7 +26,7 @@ def window_dataset_from_csv_kwargs_list():
 
     cfg = vak.config.parse.from_toml_path(A_LEARNCURVE_TOML_PATH)
     dataset_path = cfg.learncurve.dataset_path
-    metadata = vak.datasets.metadata.Metadata.from_dataset_path(dataset_path)
+    metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
 
