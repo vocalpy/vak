@@ -217,7 +217,7 @@
       "audio_format": "cbin",
       "spect_format": null,
       "annot_format": "notmat",
-      "use_dataset_from_config": "ConvEncoderUMAP_train_audio_cbin_annot_notmat.toml",
+      "use_dataset_from_config": null,
       "use_result_from_config": "ConvEncoderUMAP_train_audio_cbin_annot_notmat.toml"
     }
   ]
