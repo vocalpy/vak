@@ -6,6 +6,7 @@ output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notma
 audio_format = "cbin"
 annot_format = "notmat"
 labelset = "iabcdefghjk"
+test_dur = 2.5
 
 [SPECT_PARAMS]
 fft_size = 512
@@ -15,8 +16,8 @@ transform_type = "log_spect_plus_one"
 [EVAL]
 checkpoint_path = "tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP/results_230727_210112/ConvEncoderUMAP/checkpoints/checkpoint.pt"
 model = "ConvEncoderUMAP"
-batch_size = 4
-num_workers = 2
+batch_size = 64
+num_workers = 16
 device = "cuda"
 output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/ConvEncoderUMAP"
 
