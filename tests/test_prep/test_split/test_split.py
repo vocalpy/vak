@@ -261,7 +261,7 @@ def test_split_dataframe_mat(
         spect_format="mat",
         annot_format="yarden",
         config_type="train",
-        model="teenytweetynet"
+        model="TeenyTweetyNet"
     )
 
     train_dur = 200

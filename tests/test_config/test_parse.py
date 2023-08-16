@@ -176,7 +176,7 @@ def test_from_toml_parse_prep_with_sections_not_none(
 ):
     """test that we get only the sections we want when we pass in a sections list to
     ``from_toml``. Specifically test ``PREP`` since that's what this will be used for."""
-    # only use configs from 'default_model') (teenytweetynet)
+    # only use configs from 'default_model') (TeenyTweetyNet)
     # so we are sure paths exist, to avoid NotADirectoryErrors that give spurious test failures
     config_toml_path_pairs = configs_toml_path_pairs_by_model_factory(model)
     for config_toml, toml_path in config_toml_path_pairs:

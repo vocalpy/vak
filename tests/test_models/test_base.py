@@ -170,7 +170,7 @@ class TestModel:
 
     MODEL_DEFINITION_MAP = {
         'tweetynet': TweetyNetDefinition,
-        'teenytweetynet': TeenyTweetyNetDefinition,
+        'TeenyTweetyNet': TeenyTweetyNetDefinition,
     }
 
     def test_load_state_dict_from_path(self,

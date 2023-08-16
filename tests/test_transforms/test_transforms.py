@@ -55,14 +55,14 @@ class TestStandardizeSpect:
         # we need dataset_path since paths in df are relative to it
         dataset_path = specific_dataset_path(
             config_type="train",
-            model="teenytweetynet",
+            model="TeenyTweetyNet",
             audio_format="cbin",
             annot_format="notmat"
         )
 
         dataset_csv_path = specific_dataset_csv_path(
             config_type="train",
-            model="teenytweetynet",
+            model="TeenyTweetyNet",
             audio_format="cbin",
             annot_format="notmat"
         )

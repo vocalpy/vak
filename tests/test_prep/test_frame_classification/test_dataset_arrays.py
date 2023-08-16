@@ -61,9 +61,9 @@ def copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, tmp_pat
 @pytest.mark.parametrize(
     'config_type, model_name, audio_format, spect_format, annot_format, input_type',
     [
-        ('train', 'teenytweetynet', 'cbin', None, 'notmat', 'spect'),
-        ('train', 'teenytweetynet', None, 'mat', 'yarden', 'spect'),
-        ('learncurve', 'teenytweetynet', 'cbin', None, 'notmat', 'spect'),
+        ('train', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'spect'),
+        ('train', 'TeenyTweetyNet', None, 'mat', 'yarden', 'spect'),
+        ('learncurve', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'spect'),
     ]
 )
 def test_make_npy_files_for_each_split(config_type, model_name, audio_format, spect_format, annot_format,

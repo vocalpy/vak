@@ -61,8 +61,8 @@ def test_to_set(labels_list, expected_labelset):
 @pytest.mark.parametrize(
     'config_type, model_name, audio_format, spect_format, annot_format',
     [
-        ('train', 'teenytweetynet', 'cbin', None, 'notmat'),
-        ('train', 'teenytweetynet', None, 'mat', 'yarden'),
+        ('train', 'TeenyTweetyNet', 'cbin', None, 'notmat'),
+        ('train', 'TeenyTweetyNet', None, 'mat', 'yarden'),
     ]
 )
 def test_from_df(config_type, model_name, audio_format, spect_format, annot_format,

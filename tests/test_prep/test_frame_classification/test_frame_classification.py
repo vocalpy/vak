@@ -327,7 +327,7 @@ def test_prep_frame_classification_dataset_raises_not_a_directory(
     """
     toml_path = specific_config(
         config_type="train",
-        model="teenytweetynet",
+        model="TeenyTweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
@@ -374,7 +374,7 @@ def test_prep_frame_classification_dataset_raises_file_not_found(
     """
     toml_path = specific_config(
         config_type="train",
-        model="teenytweetynet",
+        model="TeenyTweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,

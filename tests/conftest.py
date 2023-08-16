@@ -16,7 +16,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--models",
         action="store",
-        default="teenytweetynet",
+        default="TeenyTweetyNet",
         nargs="+",
         help="vak models to test, space-separated list of names",
     )

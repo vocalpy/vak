@@ -36,7 +36,7 @@ def train_cbin_notmat_df(specific_dataset_df):
     """
     return specific_dataset_df(
         config_type="train",
-        model="teenytweetynet",
+        model="TeenyTweetyNet",
         audio_format="cbin",
         annot_format="notmat"
     )
