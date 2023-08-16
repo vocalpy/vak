@@ -41,7 +41,6 @@ def test_parse_config_section_returns_attrs_class(
 @pytest.mark.parametrize(
     "section_name",
     [
-        "DATALOADER",
         "EVAL",
         "LEARNCURVE",
         "PREDICT",
