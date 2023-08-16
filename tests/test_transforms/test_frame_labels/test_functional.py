@@ -1,7 +1,7 @@
 """tests for functional forms of transforms
 for labeled timebins.
 
-Tests are in the same order as the module ``vak.transforms.labeled_timebins.functional``.:
+Tests are in the same order as the module ``vak.transforms.frame_labels.functional``.:
 - from_segments: transform to get labeled timebins from annotations
 - to_labels: transform to get back just string labels from labeled timebins,
   used to evaluate a model
@@ -30,7 +30,7 @@ import pytest
 
 import vak.common.files.spect
 import vak.common.labels
-import vak.transforms.labeled_timebins
+import vak.transforms.frame_labels
 
 
 from ...fixtures.annot import ANNOT_LIST_YARDEN, ANNOT_LIST_NOTMAT, LABELSET_YARDEN, LABELSET_NOTMAT
@@ -82,7 +82,7 @@ def test_from_segments(annot, spect_path, labelset):
             'Annotation with label not in labelset, would not include in dataset'
         )
 
-    lbl_tb = vak.transforms.labeled_timebins.from_segments(
+    lbl_tb = vak.transforms.frame_labels.from_segments(
         lbls_int,
         annot.seq.onsets_s,
         annot.seq.offsets_s,
@@ -114,7 +114,7 @@ def test_to_labels(lbl_tb, labelmap, labels_expected_int):
     labelmap_inv = {v: k for k, v in labelmap.items()}
     labels_expected = ''.join([labelmap_inv[lbl_int] for lbl_int in labels_expected_int])
 
-    labels = vak.transforms.labeled_timebins.to_labels(lbl_tb, labelmap)
+    labels = vak.transforms.frame_labels.to_labels(lbl_tb, labelmap)
     assert labels == labels_expected
 
 
@@ -172,7 +172,7 @@ def test_to_labels_real_data(
 
     timebins = vak.common.files.spect.load(spect_path)[TIMEBINS_KEY]
 
-    lbl_tb = vak.transforms.labeled_timebins.from_segments(
+    lbl_tb = vak.transforms.frame_labels.from_segments(
         lbls_int,
         annot.seq.onsets_s,
         annot.seq.offsets_s,
@@ -180,7 +180,7 @@ def test_to_labels_real_data(
         unlabeled_label=labelmap["unlabeled"],
     )
 
-    labels = vak.transforms.labeled_timebins.to_labels(
+    labels = vak.transforms.frame_labels.to_labels(
         lbl_tb,
         labelmap,
     )
@@ -224,7 +224,7 @@ def test_to_segments_real_data(
 
     timebins = vak.common.files.spect.load(spect_path)[TIMEBINS_KEY]
 
-    lbl_tb = vak.transforms.labeled_timebins.from_segments(
+    lbl_tb = vak.transforms.frame_labels.from_segments(
         lbls_int,
         annot.seq.onsets_s,
         annot.seq.offsets_s,
@@ -232,7 +232,7 @@ def test_to_segments_real_data(
         unlabeled_label=labelmap["unlabeled"],
     )
 
-    labels, onsets_s, offsets_s = vak.transforms.labeled_timebins.to_segments(
+    labels, onsets_s, offsets_s = vak.transforms.frame_labels.to_segments(
         lbl_tb, labelmap, timebins
     )
 
@@ -267,7 +267,7 @@ def test_to_inds(lbl_tb, seg_inds_list_expected):
     """Test ``to_inds`` works as expected"""
     UNLABELED = 0
 
-    seg_inds_list = vak.transforms.labeled_timebins.to_inds_list(
+    seg_inds_list = vak.transforms.frame_labels.to_inds_list(
         lbl_tb=lbl_tb, unlabeled_label=UNLABELED
     )
     assert np.array_equal(seg_inds_list, seg_inds_list_expected)
@@ -296,10 +296,10 @@ def test_to_inds(lbl_tb, seg_inds_list_expected):
 )
 def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, lbl_tb_expected):
     """Test ``remove_short_segments`` works as expected"""
-    segment_inds_list = vak.transforms.labeled_timebins.to_inds_list(
+    segment_inds_list = vak.transforms.frame_labels.to_inds_list(
         lbl_tb, unlabeled_label=unlabeled
     )
-    lbl_tb_tfm, segment_inds_list_out = vak.transforms.labeled_timebins.remove_short_segments(
+    lbl_tb_tfm, segment_inds_list_out = vak.transforms.frame_labels.remove_short_segments(
         lbl_tb,
         segment_inds_list,
         timebin_dur=timebin_dur,
@@ -345,10 +345,10 @@ def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, 
 )
 def test_majority_vote(lbl_tb_in, unlabeled, lbl_tb_expected):
     """Test ``majority_vote`` works as expected"""
-    segment_inds_list = vak.transforms.labeled_timebins.to_inds_list(
+    segment_inds_list = vak.transforms.frame_labels.to_inds_list(
         lbl_tb_in, unlabeled_label=unlabeled
     )
-    lbl_tb_maj_vote = vak.transforms.labeled_timebins.take_majority_vote(
+    lbl_tb_maj_vote = vak.transforms.frame_labels.take_majority_vote(
         lbl_tb_in, segment_inds_list
     )
     assert np.array_equal(lbl_tb_maj_vote, lbl_tb_expected)
@@ -455,10 +455,10 @@ POSTPROCESS_PARAMS_ARGVALS = [
     POSTPROCESS_PARAMS_ARGVALS
 )
 def test_postprocess(lbl_tb, timebin_dur, unlabeled_label, min_segment_dur, majority_vote, lbl_tb_expected):
-    """Test that ``trasnforms.labeled_timebins.postprocess`` works as expected.
+    """Test that ``trasnforms.frame_labels.postprocess`` works as expected.
     Specifically test that we recover an expected string of labels,
     as would be used to compute edit distance."""
-    lbl_tb = vak.transforms.labeled_timebins.postprocess(
+    lbl_tb = vak.transforms.frame_labels.postprocess(
         lbl_tb,
         timebin_dur=timebin_dur,
         unlabeled_label=UNLABELED_LABEL,
