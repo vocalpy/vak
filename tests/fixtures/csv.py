@@ -26,7 +26,11 @@ def specific_dataset_csv_path(specific_config_toml):
             config_type, model, annot_format, audio_format, spect_format
         )
         dataset_path = Path(config_toml[config_type.upper()]["dataset_path"])
-        metadata = vak.datasets.metadata.Metadata.from_dataset_path(dataset_path)
+        # TODO: make this more general -- dataset registry?
+        if config_toml['PREP']['dataset_type'] == 'frame classification':
+            metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+        elif config_toml['PREP']['dataset_type'] == 'parametric UMAP':
+            metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         return dataset_csv_path
 
