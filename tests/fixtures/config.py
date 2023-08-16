@@ -52,7 +52,7 @@ def list_of_schematized_configs(test_configs_root):
     all of the other keys.
     """
     with test_configs_root.joinpath("configs.json").open("r") as fp:
-        return json.load(fp)["configs"]
+        return json.load(fp)["config_metadata"]
 
 
 @pytest.fixture
