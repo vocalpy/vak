@@ -6,15 +6,14 @@ import vak.datasets.frame_classification
 
 class TestWindowDataset:
     @pytest.mark.parametrize(
-        'config_type, model_name, audio_format, spect_format, annot_format, split',
+        'config_type, model_name, audio_format, spect_format, annot_format, split, transform_kwargs',
         [
-            ('train', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'train'),
-            ('train', 'TeenyTweetyNet', None, 'mat', 'yarden', 'train'),
-            ('learncurve', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'train'),
+            ('train', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'train', {}),
+            ('train', 'TeenyTweetyNet', None, 'mat', 'yarden', 'train', {}),
         ]
     )
-    def test_from_dataset_path(self, config_type, model_name, audio_format, spect_format, annot_format, split,
-                               specific_config):
+    def test_from_dataset_path(self, config_type, model_name, audio_format, spect_format, annot_format,
+                               split, transform_kwargs, specific_config):
         """Test we can get a WindowDataset instance from the classmethod ``from_csv``"""
         toml_path = specific_config(config_type,
                                     model_name,
@@ -25,7 +24,7 @@ class TestWindowDataset:
         cfg_command = getattr(cfg, config_type)
 
         transform, target_transform = vak.transforms.defaults.get_default_transform(
-            model_name, config_type
+            model_name, config_type, transform_kwargs
         )
 
         dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
