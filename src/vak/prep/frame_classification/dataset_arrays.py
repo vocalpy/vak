@@ -171,7 +171,7 @@ def make_npy_files_for_each_split(
     -------
     dataset_df_out : pandas.DataFrame
         The ``dataset_df`` with splits sorted by increasing frequency
-        of labels (see :func:`~vak.prep.frame_classification.dataset_arrays.
+        of labels (see :func:`~vak.prep.frame_classification.dataset_arrays`),
         and with columns added containing the npy files for each row.
     """
     if input_type not in prep_constants.INPUT_TYPES:
