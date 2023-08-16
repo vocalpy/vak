@@ -54,12 +54,12 @@ class Metadata:
         Name of csv file representing the source files in the dataset.
         Csv file will be located in root of directory representing dataset,
         so only the filename is given.
-    frame_dur: float, optional
-        Duration of a frame, i.e., a single sample in audio
-        or a single timebin in a spectrogram.
     input_type : str
         The modality of the input data "frames", either audio signals
         or spectrograms. One of {'audio', 'spect'}.
+    frame_dur: float
+        Duration of a frame, i.e., a single sample in audio
+        or a single timebin in a spectrogram.
     """
 
     # declare this as a constant to avoid
