@@ -11,7 +11,7 @@ from .test_tweetynet import TEST_INIT_ARGVALS
 class TestTeenyTweetyNet:
     def test_model_is_decorated(self):
         assert issubclass(vak.models.TeenyTweetyNet,
-                          vak.models.WindowedFrameClassificationModel)
+                          vak.models.FrameClassificationModel)
         assert issubclass(vak.models.TeenyTweetyNet,
                           vak.models.base.Model)
         assert issubclass(vak.models.TeenyTweetyNet,
@@ -23,8 +23,9 @@ class TestTeenyTweetyNet:
     )
     def test_init(self, labelmap, input_shape):
         # network has required args that need to be determined dynamically
-        network = vak.models.TeenyTweetyNet.definition.network(num_classes=len(labelmap),
-                                                               input_shape=input_shape)
+        num_input_channels = input_shape[-3]
+        num_freqbins = input_shape[-2]
+        network = vak.models.TeenyTweetyNet.definition.network(len(labelmap), num_input_channels, num_freqbins)
         model = vak.models.TeenyTweetyNet(labelmap=labelmap, network=network)
         assert isinstance(model, vak.models.TeenyTweetyNet)
         for attr in ('network', 'loss', 'optimizer'):
