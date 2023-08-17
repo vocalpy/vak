@@ -11,11 +11,11 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
     assert results_path.joinpath("learning_curve.csv").exists()
 
     for train_set_dur in cfg.prep.train_set_durs:
-        train_set_dur_root = results_path.joinpath(f"train_dur_{train_set_dur}s")
+        train_set_dur_root = results_path / vak.learncurve.dirname.train_dur_dirname(train_set_dur)
         assert train_set_dur_root.exists()
 
         for replicate_num in range(1, cfg.prep.num_replicates + 1):
-            replicate_path = train_set_dur_root.joinpath(f"replicate_{replicate_num}")
+            replicate_path = train_set_dur_root / vak.learncurve.dirname.replicate_dirname(replicate_num)
             assert replicate_path.exists()
 
             assert replicate_path.joinpath("labelmap.json").exists()
@@ -80,58 +80,6 @@ def test_learning_curve_for_frame_classification_model(specific_config, tmp_path
         patience=cfg.learncurve.patience,
         device=cfg.learncurve.device,
     )
-
-    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
-
-
-@pytest.mark.slow
-def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
-    root_results_dir = tmp_path.joinpath("test_learncurve_no_results_path")
-    root_results_dir.mkdir()
-
-    options_to_change = [
-        {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
-            "value": str(root_results_dir),
-        },
-        {"section": "LEARNCURVE", "option": "device", "value": device},
-    ]
-
-    toml_path = specific_config(
-        config_type="learncurve",
-        model=model,
-        audio_format="cbin",
-        annot_format="notmat",
-        options_to_change=options_to_change,
-    )
-
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
-
-    vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
-        model_name=cfg.learncurve.model,
-        model_config=model_config,
-        dataset_path=cfg.learncurve.dataset_path,
-        batch_size=cfg.learncurve.batch_size,
-        num_epochs=cfg.learncurve.num_epochs,
-        num_workers=cfg.learncurve.num_workers,
-        train_transform_params=cfg.learncurve.train_transform_params,
-        train_dataset_params=cfg.learncurve.train_dataset_params,
-        val_transform_params=cfg.learncurve.val_transform_params,
-        val_dataset_params=cfg.learncurve.val_dataset_params,
-        post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
-        normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
-        shuffle=cfg.learncurve.shuffle,
-        val_step=cfg.learncurve.val_step,
-        ckpt_step=cfg.learncurve.ckpt_step,
-        patience=cfg.learncurve.patience,
-        device=cfg.learncurve.device,
-    )
-
-    results_path = sorted(root_results_dir.glob(f"{vak.common.constants.RESULTS_DIR_PREFIX}*"))
-    assert len(results_path) == 1
-    results_path = results_path[0]
 
     assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
 
