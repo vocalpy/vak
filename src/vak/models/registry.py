@@ -42,9 +42,10 @@ MODELS_BY_FAMILY_REGISTRY = {}
 def register_model(model_class: Type) -> None:
     """Decorator that registers a model in the model registry.
 
-    We call this decorator ``register_model`` to not conflict
-    with the existing :func:`vak.decorator.model`,
+    This function is called by :func:`vak.models.decorator.model`,
     that creates a model class from a model definition.
+    So you will not usually need to use this decorator directly,
+    and should prefer to use :func:`vak.models.decorator.model` instead.
     """
     model_family_classes = list(MODEL_FAMILY_REGISTRY.values())
     model_parent_class = inspect.getmro(model_class)[1]
