@@ -22,11 +22,11 @@ def learning_curve_for_frame_classification_model(
     batch_size: int,
     num_epochs: int,
     num_workers: int,
+    results_path: str | pathlib.Path,
     train_transform_params: dict | None = None,
     train_dataset_params: dict | None = None,
     val_transform_params: dict | None = None,
     val_dataset_params: dict | None = None,
-    results_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
     normalize_spectrograms: bool = True,
     shuffle: bool = True,
@@ -66,6 +66,8 @@ def learning_curve_for_frame_classification_model(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader.
+    results_path : str, pathlib.Path
+        Directory where results will be saved.
     train_transform_params: dict, optional
         Parameters for training data transform.
         Passed as keyword arguments.
@@ -84,8 +86,6 @@ def learning_curve_for_frame_classification_model(
         Passed as keyword arguments to
         :class:`vak.datasets.frame_classification.FramesDataset`.
         Optional, default is None.
-    results_path : str, pathlib.Path
-        Directory where results will be saved.
     previous_run_path : str, Path
         Path to directory containing dataset .csv files
         that represent subsets of training set, created by
