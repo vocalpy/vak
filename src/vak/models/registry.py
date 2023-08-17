@@ -36,7 +36,7 @@ def model_family(family_class: Type) -> None:
     return family_class
 
 
-MODELS_BY_FAMILY_REGISTRY = {}
+MODEL_REGISTRY = {}
 
 
 def register_model(model_class: Type) -> Type:
@@ -59,21 +59,14 @@ def register_model(model_class: Type) -> Type:
             f"Valid model family classes are: {model_family_classes}"
         )
 
-    model_parent_class_name = model_parent_class.__name__
-    if model_parent_class_name not in MODELS_BY_FAMILY_REGISTRY:
-        MODELS_BY_FAMILY_REGISTRY[model_parent_class_name] = {}
-
     model_name = model_class.__name__
-    if model_name in MODELS_BY_FAMILY_REGISTRY[model_parent_class_name]:
+    if model_name in MODEL_REGISTRY:
         raise ValueError(
             f"Attempted to register a model family with the name '{model_name}', "
-            f"but this name is already in the registry under this model's family name:\n{model_parent_class_name}.\n"
-            f"Classes in the model family registry:\n{MODELS_BY_FAMILY_REGISTRY}"
+            f"but this name is already in the registry.\n"
         )
 
-    MODELS_BY_FAMILY_REGISTRY[model_parent_class_name][
-        model_name
-    ] = model_class
+    MODEL_REGISTRY[model_name] = model_class
     # need to return class after we register it or we replace it with None
     # when this function is used as a decorator
     return model_class
@@ -82,24 +75,15 @@ def register_model(model_class: Type) -> Type:
 def __getattr__(name: str) -> Any:
     """Module-level __getattr__ function that we use to dynamically determine models."""
     if name == "MODEL_FAMILY_FROM_NAME":
-        return {
-            model_name: family_name
-            for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
-            for model_name, model_class in family_dict.items()
-        }
-    elif name == "MODEL_CLASS_BY_NAME":
-        return {
-            model_name: model_class
-            for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
-            for model_name, model_class in family_dict.items()
-        }
+        model_name_family_name_map = {}
+        for model_name, model_class in MODEL_REGISTRY.items():
+            model_parent_class = inspect.getmro(model_class)[1]
+            family_name = model_parent_class.__name__
+            model_name_family_name_map[model_name] = family_name
+        return model_name_family_name_map
     elif name == "MODEL_NAMES":
         return list(
-            {
-                model_name: model_class
-                for family_name, family_dict in MODELS_BY_FAMILY_REGISTRY.items()
-                for model_name, model_class in family_dict.items()
-            }.keys()
+            MODEL_REGISTRY.keys()
         )
     else:
         raise AttributeError(
