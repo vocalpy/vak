@@ -1,5 +1,7 @@
 import torch
 
+import vak.models.registry
+
 
 class MockNetwork(torch.nn.Module):
     """Network used just to test vak.models.base.Model"""
@@ -18,6 +20,7 @@ class MockNetwork(torch.nn.Module):
 
 
 class MockAcc:
+    """Mock metric used for testing"""
     def __init__(self, average='macro'):
         self.average = average
 
@@ -30,7 +33,7 @@ class MockAcc:
 
 
 class MockModel:
-    """Model definition used just to test vak.models.base.Model"""
+    """Model definition used for testing"""
     network = MockNetwork
     loss = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.SGD
@@ -40,9 +43,37 @@ class MockModel:
     }
 
 
+# we go ahead and register this as a family so that
+@vak.models.registry.model_family
+class MockModelFamily(vak.models.Model):
+    """A model family defined only for tests"""
+    def __init__(self, network, optimizer, loss, metrics):
+        super().__init__(
+            network=network, loss=loss, optimizer=optimizer, metrics=metrics
+        )
+
+    def training_step(self, *args, **kwargs):
+        pass
+
+    def validation_step(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def from_config(cls, config: dict):
+        """Return an initialized model instance from a config ``dict``."""
+        network, loss, optimizer, metrics = cls.attributes_from_config(config)
+        return cls(
+            network=network,
+            optimizer=optimizer,
+            loss=loss,
+            metrics=metrics,
+        )
+
+
 class MockEncoder(torch.nn.Module):
-    """Network used just to test vak.models.base.Model.
-    Unlike ``MockNetwork``, this network will be put into a
+    """Network used for testing.
+
+    This network is put into a
     ``dict`` with ``MockDecoder`` to test
     that specifying ``network`` as a ``dict`` works.
     """
@@ -81,7 +112,7 @@ class MockDecoder(torch.nn.Module):
 
 
 class MockEncoderDecoderModel:
-    """Model definition used only to that network works with a ``dict``"""
+    """Model definition used for testing that network works with a ``dict``"""
     network = {'MockEncoder': MockEncoder, 'MockDecoder': MockDecoder}
     loss = torch.nn.TripletMarginWithDistanceLoss
     optimizer = torch.optim.Adam
