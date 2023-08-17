@@ -1,4 +1,4 @@
-"""tests for vak.learncurve module"""
+"""tests for vak.learncurve.frame_classification module"""
 import pytest
 
 import vak.config
@@ -44,7 +44,7 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
 
 
 @pytest.mark.slow
-def test_learncurve(specific_config, tmp_path, model, device):
+def test_learning_curve_for_frame_classification_model(specific_config, tmp_path, model, device):
     options_to_change = {"section": "LEARNCURVE", "option": "device", "value": device}
 
     toml_path = specific_config(
@@ -60,18 +60,19 @@ def test_learncurve(specific_config, tmp_path, model, device):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
-    vak.learncurve.learning_curve(
+    vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
         model_name=cfg.learncurve.model,
         model_config=model_config,
         dataset_path=cfg.learncurve.dataset_path,
-        window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
-        root_results_dir=None,
+        train_transform_params=cfg.learncurve.train_transform_params,
+        train_dataset_params=cfg.learncurve.train_dataset_params,
+        val_transform_params=cfg.learncurve.val_transform_params,
+        val_dataset_params=cfg.learncurve.val_dataset_params,
         results_path=results_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
+        post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
         shuffle=cfg.learncurve.shuffle,
         val_step=cfg.learncurve.val_step,
@@ -108,18 +109,18 @@ def test_learncurve_no_results_path(specific_config, tmp_path, model, device):
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
 
-    vak.learncurve.learning_curve(
+    vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
         model_name=cfg.learncurve.model,
         model_config=model_config,
         dataset_path=cfg.learncurve.dataset_path,
-        window_size=cfg.dataloader.window_size,
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
-        root_results_dir=cfg.learncurve.root_results_dir,
-        results_path=None,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
+        train_transform_params=cfg.learncurve.train_transform_params,
+        train_dataset_params=cfg.learncurve.train_dataset_params,
+        val_transform_params=cfg.learncurve.val_transform_params,
+        val_dataset_params=cfg.learncurve.val_dataset_params,
+        post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
         shuffle=cfg.learncurve.shuffle,
         val_step=cfg.learncurve.val_step,
@@ -166,18 +167,19 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
     results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.learncurve.learning_curve(
+        vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
             model_name=cfg.learncurve.model,
             model_config=model_config,
             dataset_path=cfg.learncurve.dataset_path,
-            window_size=cfg.dataloader.window_size,
             batch_size=cfg.learncurve.batch_size,
             num_epochs=cfg.learncurve.num_epochs,
             num_workers=cfg.learncurve.num_workers,
-            root_results_dir=None,
+            train_transform_params=cfg.learncurve.train_transform_params,
+            train_dataset_params=cfg.learncurve.train_dataset_params,
+            val_transform_params=cfg.learncurve.val_transform_params,
+            val_dataset_params=cfg.learncurve.val_dataset_params,
             results_path=results_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
+            post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
             normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
             shuffle=cfg.learncurve.shuffle,
             val_step=cfg.learncurve.val_step,
