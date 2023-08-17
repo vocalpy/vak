@@ -4,7 +4,7 @@ import pytest
 import vak.config
 import vak.common.constants
 import vak.common.paths
-import vak.eval.eval
+import vak.eval.frame_classification
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
@@ -70,7 +70,7 @@ def test_eval(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
-    vak.eval.eval(
+    vak.eval.frame_classification.eval_frame_classification_model(
         model_name=cfg.eval.model,
         model_config=model_config,
         dataset_path=cfg.eval.dataset_path,
@@ -78,7 +78,6 @@ def test_eval(
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
         num_workers=cfg.eval.num_workers,
-        batch_size=cfg.eval.batch_size,
         transform_params=cfg.eval.transform_params,
         dataset_params=cfg.eval.dataset_params,
         spect_scaler_path=cfg.eval.spect_scaler_path,
@@ -129,7 +128,7 @@ def test_eval_raises_file_not_found(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
-        vak.eval.eval(
+        vak.eval.frame_classification.eval_frame_classification_model(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,
@@ -137,7 +136,6 @@ def test_eval_raises_file_not_found(
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
-            batch_size=cfg.eval.batch_size,
             transform_params=cfg.eval.transform_params,
             dataset_params=cfg.eval.dataset_params,
             spect_scaler_path=cfg.eval.spect_scaler_path,
@@ -188,7 +186,7 @@ def test_eval_raises_not_a_directory(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
-        vak.eval.eval(
+        vak.eval.frame_classification.eval_frame_classification_model(
             model_name=cfg.eval.model,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,
@@ -196,7 +194,6 @@ def test_eval_raises_not_a_directory(
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
-            batch_size=cfg.eval.batch_size,
             transform_params=cfg.eval.transform_params,
             dataset_params=cfg.eval.dataset_params,
             spect_scaler_path=cfg.eval.spect_scaler_path,
