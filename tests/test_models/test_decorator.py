@@ -2,7 +2,7 @@ import pytest
 
 import vak.models
 
-from .test_base import MockModel, MockEncoderDecoderModel
+from .conftest import MockModel, MockModelFamily, MockEncoderDecoderModel
 from .test_definition import TweetyNetDefinition as TweetyNet
 from .test_definition import TeenyTweetyNetDefinition as TeenyTweetyNet
 
@@ -28,20 +28,17 @@ TeenyTweetyNet.__name__ = 'TeenyTweetyNet'
     'definition, family, expected_name',
     [
         (MockModel,
-         vak.models.Model,
+         MockModelFamily,
          'MockModel'),
         (MockEncoderDecoderModel,
-         vak.models.Model,
+         MockModelFamily,
          'MockEncoderDecoderModel'),
-        (TweetyNet,
-         vak.models.FrameClassificationModel,
-         'TweetyNet'),
-        (TeenyTweetyNet,
-         vak.models.FrameClassificationModel,
-         'TeenyTweetyNet'),
     ]
 )
 def test_model(definition, family, expected_name):
+    """Test that :func:`vak.models.decorator.model` decorator
+    returns a subclass of the specified model family,
+    and has the expected name"""
     model_class = vak.models.decorator.model(family)(definition)
     assert issubclass(model_class, family)
     assert model_class.__name__ == expected_name
