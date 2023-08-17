@@ -34,10 +34,12 @@ class TeenyTweetyNet(nn.Module):
         ----------
         num_classes : int
             number of classes to predict, e.g., number of syllable classes in an individual bird's song
-        input_shape : tuple
-            with 3 elements corresponding to dimensions of spectrogram windows: (channels, frequency bins, time bins).
-            i.e. we assume input is a spectrogram and treat it like an image, typically with one channel,
-            the rows are frequency bins, and the columns are time bins. Default is (1, 513, 88).
+        num_input_channels: int
+            Number of channels in input. Typically one, for a spectrogram.
+            Default is 1.
+        num_freqbins: int
+            Number of frequency bins in spectrograms that will be input to model.
+            Default is 256.
         conv1_filters : int
             Number of filters in first convolutional layer. Default is 32.
         conv1_kernel_size : tuple
