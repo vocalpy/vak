@@ -1,3 +1,5 @@
+import inspect
+
 import pytest
 
 import vak.models.registry
@@ -44,10 +46,11 @@ def test_register_model(family, definition):
     subclass = type(subclass_name, (family,), attributes)
     subclass.__module__ = definition.__module__
 
-    assert subclass_name not in vak.models.registry.MODEL_CLASS_BY_NAME
+    assert subclass_name not in vak.models.registry.MODEL_REGISTRY
     vak.models.registry.register_model(subclass)
-    assert subclass_name in vak.models.registry.MODEL_CLASS_BY_NAME
-    assert vak.models.registry.MODEL_CLASS_BY_NAME[subclass_name] == subclass
+    assert subclass_name in vak.models.registry.MODEL_REGISTRY
+    assert vak.models.registry.MODEL_REGISTRY[subclass_name] == subclass
+    del vak.models.registry.MODEL_REGISTRY[subclass_name]  # so this test doesn't fail for the second case
 
 
 def test_register_model_raises_family():
@@ -92,24 +95,15 @@ def test___get_attr__MODEL_FAMILY_FROM_NAME():
     assert hasattr(vak.models.registry, 'MODEL_FAMILY_FROM_NAME')
     attr = getattr(vak.models.registry, 'MODEL_FAMILY_FROM_NAME')
     assert isinstance(attr, dict)
-    for family_name, family_dict in vak.models.registry.MODELS_BY_FAMILY_REGISTRY.items():
-        for model_name, model_class in family_dict.items():
-            assert attr[model_name] == family_name
-
-
-def test___get_attr__MODEL_CLASS_BY_NAME():
-    assert hasattr(vak.models.registry, 'MODEL_CLASS_BY_NAME')
-    attr = getattr(vak.models.registry, 'MODEL_CLASS_BY_NAME')
-    assert isinstance(attr, dict)
-    for family_name, family_dict in vak.models.registry.MODELS_BY_FAMILY_REGISTRY.items():
-        for model_name, model_class in family_dict.items():
-            assert attr[model_name] == model_class
+    for model_name, model_class in vak.models.registry.MODEL_REGISTRY.items():
+        model_parent_class = inspect.getmro(model_class)[1]
+        family_name = model_parent_class.__name__
+        assert attr[model_name] == family_name
 
 
 def test___get_attr__MODEL_NAMES():
     assert hasattr(vak.models.registry, 'MODEL_NAMES')
     attr = getattr(vak.models.registry, 'MODEL_NAMES')
     assert isinstance(attr, list)
-    for family_name, family_dict in vak.models.registry.MODELS_BY_FAMILY_REGISTRY.items():
-        for model_name, model_class in family_dict.items():
+    for model_name in vak.models.registry.MODEL_REGISTRY.keys():
             assert model_name in attr
