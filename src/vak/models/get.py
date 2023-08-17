@@ -49,7 +49,7 @@ def get(
     """
     # we do this dynamically so we always get all registered models
     try:
-        model_class = registry.MODEL_CLASS_BY_NAME[name]
+        model_class = registry.MODEL_REGISTRY[name]
     except KeyError as e:
         raise ValueError(
             f"Invalid model name: '{name}'.\n"
