@@ -39,7 +39,7 @@ def model_family(family_class: Type) -> None:
 MODELS_BY_FAMILY_REGISTRY = {}
 
 
-def register_model(model_class: Type) -> None:
+def register_model(model_class: Type) -> Type:
     """Decorator that registers a model in the model registry.
 
     This function is called by :func:`vak.models.decorator.model`,
