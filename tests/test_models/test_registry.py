@@ -88,11 +88,28 @@ def test_register_model_raises_registered(family, definition):
         vak.models.registry.register_model(subclass)
 
 
-def test___get_attr__():
-    """Test that :func:`vak.models.registry.__get_attr__`
-    dynamically returns registered models as expected"""
-    # do this by getting initial result,
-    # then registering a new model,
-    # and then asserting the only thing that has changed is
-    # the new model
-    assert False
+def test___get_attr__MODEL_FAMILY_FROM_NAME():
+    assert hasattr(vak.models.registry, 'MODEL_FAMILY_FROM_NAME')
+    attr = getattr(vak.models.registry, 'MODEL_FAMILY_FROM_NAME')
+    assert isinstance(attr, dict)
+    for family_name, family_dict in vak.models.registry.MODELS_BY_FAMILY_REGISTRY.items():
+        for model_name, model_class in family_dict.items():
+            assert attr[model_name] == family_name
+
+
+def test___get_attr__MODEL_CLASS_BY_NAME():
+    assert hasattr(vak.models.registry, 'MODEL_CLASS_BY_NAME')
+    attr = getattr(vak.models.registry, 'MODEL_CLASS_BY_NAME')
+    assert isinstance(attr, dict)
+    for family_name, family_dict in vak.models.registry.MODELS_BY_FAMILY_REGISTRY.items():
+        for model_name, model_class in family_dict.items():
+            assert attr[model_name] == model_class
+
+
+def test___get_attr__MODEL_NAMES():
+    assert hasattr(vak.models.registry, 'MODEL_NAMES')
+    attr = getattr(vak.models.registry, 'MODEL_NAMES')
+    assert isinstance(attr, list)
+    for family_name, family_dict in vak.models.registry.MODELS_BY_FAMILY_REGISTRY.items():
+        for model_name, model_class in family_dict.items():
+            assert model_name in attr
