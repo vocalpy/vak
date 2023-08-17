@@ -43,7 +43,7 @@ class TweetyNet(nn.Module):
         Finally fully-connected layer that maps
         the output of ``TweetyNet.rnn`` to a
         matrix of size (num. time bins in window, num. classes).
-\
+
     Notes
     -----
     This is the network used by ``vak.models.TweetyNetModel``.
