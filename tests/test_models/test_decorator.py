@@ -42,6 +42,8 @@ def test_model(definition, family, expected_name):
     model_class = vak.models.decorator.model(family)(definition)
     assert issubclass(model_class, family)
     assert model_class.__name__ == expected_name
+    # need to delete model from registry so other tests don't fail
+    del vak.models.registry.MODEL_REGISTRY[model_class.__name__]
 
 
 @pytest.mark.parametrize(
