@@ -1,4 +1,4 @@
-"""tests for vak.eval.eval module"""
+"""tests for vak.eval.frame_classification module"""
 import pytest
 
 import vak.config
