@@ -23,8 +23,4 @@ def get_default_parametric_umap_transform(
         vak_transforms.ToFloatTensor(),
         vak_transforms.AddChannel(),
     ]
-    if "padding" in transform_kwargs:
-        transforms.append(
-            torchvision.transforms.Pad(transform_kwargs["padding"])
-        )
     return torchvision.transforms.Compose(transforms)
