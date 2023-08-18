@@ -5,9 +5,6 @@ from . import fixtures
 from .fixtures import *
 
 
-empty_mark = Mark('', [], {})
-
-
 def by_slow_marker(item):
     return 1 if item.get_closest_marker('slow') is None else 0
 
