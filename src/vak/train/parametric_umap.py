@@ -219,12 +219,6 @@ def train_parametric_umap_model(
 
     if train_transform_params is None:
         train_transform_params = {}
-    if (
-        "padding" not in train_transform_params
-        and model_name == "ConvEncoderUMAP"
-    ):
-        padding = models.convencoder_umap.get_default_padding(metadata.shape)
-        train_transform_params["padding"] = padding
     transform = transforms.defaults.get_default_transform(
         model_name, "train", train_transform_params
     )
@@ -251,14 +245,6 @@ def train_parametric_umap_model(
     if val_step:
         if val_transform_params is None:
             val_transform_params = {}
-        if (
-            "padding" not in val_transform_params
-            and model_name == "ConvEncoderUMAP"
-        ):
-            padding = models.convencoder_umap.get_default_padding(
-                metadata.shape
-            )
-            val_transform_params["padding"] = padding
         transform = transforms.defaults.get_default_transform(
             model_name, "eval", val_transform_params
         )
