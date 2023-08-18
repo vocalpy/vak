@@ -100,9 +100,6 @@ def eval_parametric_umap_model(
     # ---------------- load data for evaluation ------------------------------------------------------------------------
     if transform_params is None:
         transform_params = {}
-    if "padding" not in transform_params and model_name == "ConvEncoderUMAP":
-        padding = models.convencoder_umap.get_default_padding(metadata.shape)
-        transform_params["padding"] = padding
     item_transform = transforms.defaults.get_default_transform(
         model_name, "eval", transform_params
     )
