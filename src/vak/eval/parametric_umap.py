@@ -103,7 +103,6 @@ def eval_parametric_umap_model(
     if "padding" not in transform_params and model_name == "ConvEncoderUMAP":
         padding = models.convencoder_umap.get_default_padding(metadata.shape)
         transform_params["padding"] = padding
-
     item_transform = transforms.defaults.get_default_transform(
         model_name, "eval", transform_params
     )
@@ -155,7 +154,6 @@ def eval_parametric_umap_model(
             ("dataset_path", dataset_path),
         ]
     )
-    # TODO: is this still necessary after switching to Lightning? Stop saying "average"?
     # order metrics by name to be extra sure they will be consistent across runs
     row.update(sorted([(k, v) for k, v in metric_vals.items()]))
 
