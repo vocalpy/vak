@@ -35,7 +35,6 @@ def pytest_generate_tests(metafunc):
     if "model" in metafunc.fixturenames and models is not None:
         metafunc.parametrize("model", models)
 
-    dtype_names = None
     if 'dtype_name' in metafunc.fixturenames:
         raw_value = metafunc.config.getoption('--dtype')
         if raw_value == 'all':
