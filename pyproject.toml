@@ -85,5 +85,7 @@ markers = [
 filterwarnings = [
     "ignore:::torch.utils.tensorboard",
     'ignore:Deprecated call to `pkg_resources.declare_namespace',
-    'ignore:pkg_resources is deprecated as an API'
+    'ignore:pkg_resources is deprecated as an API',
+    'ignore:Implementing implicit namespace packages',
+    'ignore:distutils Version classes are deprecated.',
 ]
