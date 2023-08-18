@@ -24,7 +24,7 @@ def assert_predict_output_matches_expected(output_dir, annot_csv_filename):
         ("wav", None, "birdsong-recognition-dataset", True),
     ],
 )
-def test_predict(
+def test_predict_with_frame_classification_model(
     audio_format,
     spect_format,
     annot_format,
@@ -55,15 +55,15 @@ def test_predict(
 
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
-    vak.predict.predict(
+    vak.predict.frame_classification.predict_with_frame_classification_model(
         model_name=cfg.predict.model,
         model_config=model_config,
         dataset_path=cfg.predict.dataset_path,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
-        window_size=cfg.dataloader.window_size,
         num_workers=cfg.predict.num_workers,
-        spect_key=cfg.spect_params.spect_key,
+        transform_params=cfg.predict.transform_params,
+        dataset_params=cfg.predict.dataset_params,
         timebins_key=cfg.spect_params.timebins_key,
         spect_scaler_path=cfg.predict.spect_scaler_path,
         device=cfg.predict.device,
@@ -101,7 +101,7 @@ def test_predict(
         {"section": "PREDICT", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
-def test_predict_raises_file_not_found(
+def test_predict_with_frame_classification_model_raises_file_not_found(
     path_option_to_change,
     specific_config,
     tmp_path,
@@ -131,15 +131,15 @@ def test_predict_raises_file_not_found(
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(FileNotFoundError):
-        vak.predict.predict(
+        vak.predict.frame_classification.predict_with_frame_classification_model(
             model_name=cfg.predict.model,
             model_config=model_config,
             dataset_path=cfg.predict.dataset_path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
-            window_size=cfg.dataloader.window_size,
             num_workers=cfg.predict.num_workers,
-            spect_key=cfg.spect_params.spect_key,
+            transform_params=cfg.predict.transform_params,
+            dataset_params=cfg.predict.dataset_params,
             timebins_key=cfg.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
             device=cfg.predict.device,
@@ -158,7 +158,7 @@ def test_predict_raises_file_not_found(
         {"section": "PREDICT", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
     ]
 )
-def test_predict_raises_not_a_directory(
+def test_predict_with_frame_classification_model_raises_not_a_directory(
     path_option_to_change,
     specific_config,
     device,
@@ -194,15 +194,15 @@ def test_predict_raises_not_a_directory(
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(NotADirectoryError):
-        vak.predict.predict(
+        vak.predict.frame_classification.predict_with_frame_classification_model(
             model_name=cfg.predict.model,
             model_config=model_config,
             dataset_path=cfg.predict.dataset_path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
-            window_size=cfg.dataloader.window_size,
             num_workers=cfg.predict.num_workers,
-            spect_key=cfg.spect_params.spect_key,
+            transform_params=cfg.predict.transform_params,
+            dataset_params=cfg.predict.dataset_params,
             timebins_key=cfg.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
             device=cfg.predict.device,
