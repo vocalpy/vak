@@ -11,7 +11,9 @@ from dask.diagnostics import ProgressBar
 
 from ..common import annotation, constants
 from ..common.converters import expanded_user_path, labelset_to_set
+from ..common.typing import PathLike
 from .spectrogram_dataset.audio_helper import files_from_dir
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,22 +30,31 @@ DF_COLUMNS = [
 
 
 def prep_audio_dataset(
+    data_dir: PathLike,
     audio_format: str,
-    data_dir: list | None = None,
     annot_format: str | None = None,
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
 ) -> pd.DataFrame:
-    """Convert audio files into a dataset
-    represented as a Pandas DataFrame.
+    """Convert audio files into a dataset,
+    and return that dataset represented as a Pandas DataFrame.
+
+    Finds all files with ``audio_format`` in ``data_dir``,
+    then finds any annotations with ``annot_format`` if specified,
+    and additionally filter the audio and annotation files
+    by ``labelset`` if specified.
+    Then creates the dataframe with columns specified by
+    ``vak.prep.audio_dataset.DF_COLUMNS``:
+    ``"audio_path"``, ``"annot_path"``, ``"annot_format"``, ``"samplerate"``,
+    ``"sample_dur",`` and ``"duration"``.
 
     Parameters
     ----------
+    data_dir : str, pathlib.Path
+        Path to directory containing audio files that should be used in dataset.
     audio_format : str
         A :class:`string` representing the format of audio files.
         One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
-    data_dir : str
-        Path to directory containing audio files that should be used in dataset.
     annot_format : str
         Name of annotation format. Added as a column to the DataFrame if specified.
         Used by other functions that open annotation files via their paths from the DataFrame.
@@ -77,8 +88,10 @@ def prep_audio_dataset(
         labelset = labelset_to_set(labelset)
 
     data_dir = expanded_user_path(data_dir)
-    if not data_dir.is_dir():
-        raise NotADirectoryError(f"data_dir not found: {data_dir}")
+    if not data_dir.exists() or not data_dir.is_dir():
+        raise NotADirectoryError(
+            f"`data_dir` not found, or not recognized as a directory:\n{data_dir}"
+        )
 
     audio_files = files_from_dir(data_dir, audio_format)
 
