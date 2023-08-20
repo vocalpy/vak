@@ -6,6 +6,7 @@ import shutil
 # TODO: use tomli
 import toml
 
+import vak.cli.prep
 from . import constants
 
 
@@ -70,7 +71,14 @@ def add_dataset_path_from_prepped_configs():
 
         with config_dataset_path.open("r") as fp:
             dataset_config_toml = toml.load(fp)
-        dataset_path = dataset_config_toml[section]['dataset_path']
+        purpose = vak.cli.prep.purpose_from_toml(dataset_config_toml)
+        # next line, we can't use `section` here because we could get a KeyError,
+        # e.g., when the config we are rewriting is an EVAL config, but
+        # the config we are getting the dataset from is a TRAIN config.
+        # so instead we use `purpose_from_toml` to get the `purpose`
+        # of the config we are getting the dataset from.
+        dataset_config_section = purpose.upper()  # need to be 'TRAIN', not 'train'
+        dataset_path = dataset_config_toml[dataset_config_section]['dataset_path']
         with config_to_change_path.open("r") as fp:
             config_to_change_toml = toml.load(fp)
         config_to_change_toml[section]['dataset_path'] = dataset_path
