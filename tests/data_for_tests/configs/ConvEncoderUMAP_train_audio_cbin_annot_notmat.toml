@@ -8,6 +8,7 @@ annot_format = "notmat"
 labelset = "iabcdefghjk"
 train_dur = 2.5
 val_dur = 1
+test_dur = 2
 
 [SPECT_PARAMS]
 fft_size = 512
