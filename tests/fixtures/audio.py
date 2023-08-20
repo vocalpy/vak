@@ -1,6 +1,7 @@
 """fixtures relating to audio files"""
 import pytest
 
+from .annot import LABELSET_NOTMAT, ANNOT_LIST_NOTMAT
 from .test_data import SOURCE_TEST_DATA_ROOT
 
 
@@ -34,45 +35,33 @@ AUDIO_LIST_CBIN = sorted(AUDIO_DIR_CBIN.glob("*.cbin"))
 def audio_list_cbin():
     return AUDIO_LIST_CBIN
 
+LABELSET_NOTMAT_AS_SET = set(LABELSET_NOTMAT)
+
+
+AUDIO_LIST_CBIN_ALL_LABELS_IN_LABELSET = []
+AUDIO_LIST_CBIN_LABELS_NOT_IN_LABELSET = []
+for audio_path in AUDIO_LIST_CBIN:
+    audio_fname = audio_path.name
+    annot = [
+        annot for annot in ANNOT_LIST_NOTMAT if annot.notated_path.name == audio_fname
+    ]
+    assert len(annot) == 1
+    annot = annot[0]
+    if set(annot.seq.labels).issubset(LABELSET_NOTMAT_AS_SET):
+        AUDIO_LIST_CBIN_ALL_LABELS_IN_LABELSET.append(audio_path)
+    else:
+        AUDIO_LIST_CBIN_LABELS_NOT_IN_LABELSET.append(audio_path)
 
 @pytest.fixture
-def audio_list_cbin_all_labels_in_labelset(
-    audio_list_cbin, annot_list_notmat, labelset_notmat
-):
+def audio_list_cbin_all_labels_in_labelset():
     """list of .cbin audio files where all labels in associated annotation **are** in labelset"""
-    labelset_notmat = set(labelset_notmat)
-    audio_list_labels_in_labelset = []
-    for audio_path in audio_list_cbin:
-        audio_fname = audio_path.name
-        annot = [
-            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
-        ]
-        assert len(annot) == 1
-        annot = annot[0]
-        if set(annot.seq.labels).issubset(labelset_notmat):
-            audio_list_labels_in_labelset.append(audio_path)
-
-    return audio_list_labels_in_labelset
+    return AUDIO_LIST_CBIN_ALL_LABELS_IN_LABELSET
 
 
 @pytest.fixture
-def audio_list_cbin_labels_not_in_labelset(
-    audio_list_cbin, annot_list_notmat, labelset_notmat
-):
+def audio_list_cbin_labels_not_in_labelset():
     """list of .cbin audio files where some labels in associated annotation are **not** in labelset"""
-    labelset_notmat = set(labelset_notmat)
-    audio_list_labels_in_labelset = []
-    for audio_path in audio_list_cbin:
-        audio_fname = audio_path.name
-        annot = [
-            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
-        ]
-        assert len(annot) == 1
-        annot = annot[0]
-        if not set(annot.seq.labels).issubset(labelset_notmat):
-            audio_list_labels_in_labelset.append(audio_path)
-
-    return audio_list_labels_in_labelset
+    return AUDIO_LIST_CBIN_LABELS_NOT_IN_LABELSET
 
 
 AUDIO_DIR_WAV_BIRDSONGREC = SOURCE_TEST_DATA_ROOT.joinpath("audio_wav_annot_birdsongrec", "Bird0", "Wave")
