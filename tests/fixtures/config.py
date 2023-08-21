@@ -142,7 +142,6 @@ def specific_config(generated_test_configs_root, list_of_schematized_configs, tm
             with any options changed as specified
         """
         original_config_path = None
-
         for schematized_config in list_of_schematized_configs:
             if all(
                 [
@@ -156,6 +155,7 @@ def specific_config(generated_test_configs_root, list_of_schematized_configs, tm
                 original_config_path = generated_test_configs_root.joinpath(
                     schematized_config["filename"]
                 )
+                break
 
         if original_config_path is None:
             raise ValueError(
