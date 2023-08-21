@@ -1,4 +1,4 @@
-"""Tests for vak.train.train module."""
+"""Tests for vak.train.train function."""
 from unittest import mock
 
 import pytest
@@ -6,7 +6,7 @@ import pytest
 import vak.config
 import vak.common.constants
 import vak.common.paths
-import vak.train.train
+import vak.train
 
 
 @pytest.mark.parametrize(
@@ -19,7 +19,7 @@ import vak.train.train
         (None, "mat", "yarden", "TeenyTweetyNet",
          'vak.train.train_.train_frame_classification_model'),
         ("cbin", None, "notmat", "ConvEncoderUMAP",
-         'vak.train.train.train_parametric_umap_model'),
+         'vak.train.train_.train_parametric_umap_model'),
     ],
 )
 def test_train(
@@ -55,7 +55,7 @@ def test_train(
     results_path.mkdir()
 
     with mock.patch(train_function_to_mock, autospec=True) as mock_train_function:
-        vak.train.train.train(
+        vak.train.train(
             model_name=model_name,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
