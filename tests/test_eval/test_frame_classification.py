@@ -39,7 +39,7 @@ def post_tfm_kwargs(request):
         ("cbin", None, "notmat"),
     ],
 )
-def test_eval(
+def test_eval_frame_classification_model(
         audio_format,
         spect_format,
         annot_format,
@@ -96,7 +96,7 @@ def test_eval(
         {"section": "EVAL", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
-def test_eval_raises_file_not_found(
+def test_eval_frame_classification_model_raises_file_not_found(
     path_option_to_change,
     specific_config,
     tmp_path,
@@ -150,7 +150,7 @@ def test_eval_raises_file_not_found(
         {"section": "EVAL", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
     ]
 )
-def test_eval_raises_not_a_directory(
+def test_eval_frame_classification_model_raises_not_a_directory(
     path_option_to_change,
     specific_config,
     device,
