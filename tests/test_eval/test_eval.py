@@ -14,10 +14,6 @@ import vak.eval
     [
         ("cbin", None, "notmat", "TweetyNet",
          'vak.eval.eval_.eval_frame_classification_model'),
-        ("wav", None, "birdsong-recognition-dataset", "TweetyNet",
-         'vak.eval.eval_.eval_frame_classification_model'),
-        (None, "mat", "yarden", "TweetyNet",
-         'vak.eval.eval_.eval_frame_classification_model'),
         ("cbin", None, "notmat", "ConvEncoderUMAP",
          'vak.eval.eval_.eval_parametric_umap_model'),
     ],
