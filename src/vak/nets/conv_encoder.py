@@ -50,6 +50,7 @@ class ConvEncoder(nn.Module):
                 f"Input shape was: {input_shape}"
             )
 
+        self.input_shape = input_shape
         self.num_input_channels = input_shape[0]
 
         self.conv = nn.Sequential(
