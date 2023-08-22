@@ -1,4 +1,4 @@
-"""tests for vak.cli.predict module"""
+"""Tests for vak.predict.predict module."""
 from unittest import mock
 import pytest
 
