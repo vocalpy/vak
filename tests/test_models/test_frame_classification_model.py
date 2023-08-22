@@ -9,7 +9,6 @@ import vak.models
 from .test_definition import (
     TeenyTweetyNetDefinition,
     TweetyNetDefinition,
-    InvalidMetricsDictKeyModelDefinition,
 )
 from .test_tweetynet import LABELMAPS, INPUT_SHAPES
 
@@ -34,7 +33,7 @@ class TestFrameClassificationModel:
                   input_shape,
                   definition,
                   monkeypatch):
-        """Test Model.__init__ works as expected"""
+        """Test FrameClassificationModel.__init__ works as expected"""
         # monkeypatch a definition so we can test __init__
         definition = vak.models.definition.validate(definition)
         monkeypatch.setattr(
@@ -101,8 +100,6 @@ class TestFrameClassificationModel:
 
         config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
         num_input_channels, num_freqbins = self.MOCK_INPUT_SHAPE[0], self.MOCK_INPUT_SHAPE[1]
-        # network has required args that need to be determined dynamically
-        network = definition.network(len(labelmap), num_input_channels, num_freqbins)
 
         config["network"].update(
             num_classes=len(labelmap),
