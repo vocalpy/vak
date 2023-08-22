@@ -1,4 +1,6 @@
-"""tests for vak.train module"""
+"""Tests for vak.train.frame_classification module"""
+import pathlib
+
 import pytest
 
 import vak.config
@@ -7,7 +9,8 @@ import vak.common.paths
 import vak.train
 
 
-def assert_train_output_matches_expected(cfg, model_name, results_path):
+def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_name: str,
+                                         results_path: pathlib.Path):
     assert results_path.joinpath("labelmap.json").exists()
 
     if cfg.train.normalize_spectrograms or cfg.train.spect_scaler_path:
@@ -39,7 +42,7 @@ def assert_train_output_matches_expected(cfg, model_name, results_path):
         (None, "mat", "yarden"),
     ],
 )
-def test_train(
+def test_train_frame_classification_model(
     audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
@@ -59,17 +62,20 @@ def test_train(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.train.train(
-        cfg.train.model,
-        model_config,
-        cfg.train.dataset_path,
-        cfg.dataloader.window_size,
-        cfg.train.batch_size,
-        cfg.train.num_epochs,
-        cfg.train.num_workers,
+    vak.train.frame_classification.train_frame_classification_model(
+        model_name=cfg.train.model,
+        model_config=model_config,
+        dataset_path=cfg.train.dataset_path,
+        batch_size=cfg.train.batch_size,
+        num_epochs=cfg.train.num_epochs,
+        num_workers=cfg.train.num_workers,
+        train_transform_params=cfg.train.train_transform_params,
+        train_dataset_params=cfg.train.train_dataset_params,
+        val_transform_params=cfg.train.val_transform_params,
+        val_dataset_params=cfg.train.val_dataset_params,
+        checkpoint_path=cfg.train.checkpoint_path,
+        spect_scaler_path=cfg.train.spect_scaler_path,
         results_path=results_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
         normalize_spectrograms=cfg.train.normalize_spectrograms,
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
@@ -110,18 +116,20 @@ def test_continue_training(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.train.train(
+    vak.train.frame_classification.train_frame_classification_model(
         model_name=cfg.train.model,
         model_config=model_config,
         dataset_path=cfg.train.dataset_path,
-        window_size=cfg.dataloader.window_size,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
+        train_transform_params=cfg.train.train_transform_params,
+        train_dataset_params=cfg.train.train_dataset_params,
+        val_transform_params=cfg.train.val_transform_params,
+        val_dataset_params=cfg.train.val_dataset_params,
+        checkpoint_path=cfg.train.checkpoint_path,
         spect_scaler_path=cfg.train.spect_scaler_path,
         results_path=results_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
         normalize_spectrograms=cfg.train.normalize_spectrograms,
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
@@ -165,19 +173,20 @@ def test_train_raises_file_not_found(
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):
-        vak.train.train(
+        vak.train.frame_classification.train_frame_classification_model(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
-            window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
+            train_transform_params=cfg.train.train_transform_params,
+            train_dataset_params=cfg.train.train_dataset_params,
+            val_transform_params=cfg.train.val_transform_params,
+            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             spect_scaler_path=cfg.train.spect_scaler_path,
             results_path=results_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
             normalize_spectrograms=cfg.train.normalize_spectrograms,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
@@ -220,19 +229,20 @@ def test_train_raises_not_a_directory(
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
-        vak.train.train(
+        vak.train.frame_classification.train_frame_classification_model(
             model_name=cfg.train.model,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
-            window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
+            train_transform_params=cfg.train.train_transform_params,
+            train_dataset_params=cfg.train.train_dataset_params,
+            val_transform_params=cfg.train.val_transform_params,
+            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             spect_scaler_path=cfg.train.spect_scaler_path,
             results_path=results_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
             normalize_spectrograms=cfg.train.normalize_spectrograms,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
