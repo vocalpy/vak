@@ -20,8 +20,10 @@ import vak.eval
 )
 def test_eval(
         audio_format, spect_format, annot_format, model_name, eval_function_to_mock,
-        specific_config, tmp_path, device
+        specific_config, tmp_path
 ):
+    """Test that :func:`vak.eval.eval` dispatches to the correct model-specific
+    training functions"""
     output_dir = tmp_path.joinpath(
         f"test_eval_{audio_format}_{spect_format}_{annot_format}"
     )
