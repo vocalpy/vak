@@ -7,8 +7,8 @@ class TestConvEncoderUMAP:
     @pytest.mark.parametrize(
         'input_shape',
         [
-            (1, 128, 128),
-            (1, 256, 256),
+            (1, 32, 32),
+            (1, 64, 64),
         ]
     )
     def test_init(self, input_shape):
