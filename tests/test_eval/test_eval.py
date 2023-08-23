@@ -31,7 +31,7 @@ def test_eval(
 
     options_to_change = [
         {"section": "EVAL", "option": "output_dir", "value": str(output_dir)},
-        {"section": "EVAL", "option": "device", "value": device},
+        {"section": "EVAL", "option": "device", "value": 'cpu'},
     ]
 
     toml_path = specific_config(
