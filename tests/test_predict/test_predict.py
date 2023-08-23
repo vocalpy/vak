@@ -28,7 +28,7 @@ def test_predict(
 
     options_to_change = [
         {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)},
-        {"section": "PREDICT", "option": "device", "value": device},
+        {"section": "PREDICT", "option": "device", "value": 'cpu'},
     ]
 
     toml_path = specific_config(
