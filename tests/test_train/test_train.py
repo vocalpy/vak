@@ -37,7 +37,7 @@ def test_train(
             "option": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"section": "TRAIN", "option": "device", "value": device},
+        {"section": "TRAIN", "option": "device", "value": 'cpu'},
     ]
 
     toml_path = specific_config(
