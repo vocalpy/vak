@@ -246,7 +246,7 @@ def test_to_segments_real_data(
 
 
 @pytest.mark.parametrize(
-    "lbl_tb, seg_inds_list_expected",
+    "frame_labels, seg_inds_list_expected",
     [
         (np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0]), [np.array([4, 5, 6, 7])]),
         # assert works when segment is at start of lbl_tb
@@ -263,12 +263,12 @@ def test_to_segments_real_data(
         ),
     ],
 )
-def test_to_inds(lbl_tb, seg_inds_list_expected):
+def test_to_inds(frame_labels, seg_inds_list_expected):
     """Test ``to_inds`` works as expected"""
     UNLABELED = 0
 
     seg_inds_list = vak.transforms.frame_labels.to_inds_list(
-        lbl_tb=lbl_tb, unlabeled_label=UNLABELED
+        frame_labels=frame_labels, unlabeled_label=UNLABELED
     )
     assert np.array_equal(seg_inds_list, seg_inds_list_expected)
 
