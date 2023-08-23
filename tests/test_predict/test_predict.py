@@ -33,13 +33,13 @@ def test_predict(
 
     toml_path = specific_config(
         config_type="predict",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         options_to_change=options_to_change,
     )
     cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
+    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     results_path = tmp_path / 'results_path'
     results_path.mkdir()
