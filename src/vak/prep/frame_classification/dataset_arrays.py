@@ -103,24 +103,34 @@ def make_npy_files_for_each_split(
     audio_format: str,
     spect_key: str = "s",
     timebins_key: str = "t",
-):
+) -> pd.DataFrame:
     r"""Make npy files containing arrays
     for each split of a frame classification dataset.
 
-    For each row in ``dataset_df``, this function creates one npy file
-    with the extension '.frames.npy`, containing the input
-    to the frame classification model, and '.frame_labels.npy',
-    a vector where each element is the target label
+    All the npy files for each split are saved
+    in a new directory inside ``dataset_path``
+    that has the same name as the split.
+    E.g., the ``train`` directory inside ``dataset_path``
+    would have all the files for every row in ``dataset_df``
+    for which ``dataset_df['split'] == 'train'``.
+
+    The function creates two npy files for each row in ``dataset_df``.
+    One has the extension '.frames.npy` and contains the input
+    to the frame classification model. The other has the extension
+    '.frame_labels.npy', and contains a vector
+    where each element is the target label that
     the network should predict for the corresponding frame.
-    These files are the data for each sample :math:`(x, y)` in the dataset,
+    Taken together, these two files are the data
+    for each sample :math:`(x, y)` in the dataset,
     where :math:`x_t` is the frames and :math:`y_t` is the frame labels.
 
-    This function also creates two "indexing" vectors that
+    This function also creates two additional npy files for each split.
+    These npy files are "indexing" vectors that
     are used by :class:`vak.datasets.frame_classification.WindowDataset`
     and :class:`vak.datasets.frame_classification.FramesDataset`.
     These vectors make it possible to work with files,
-    to avoid loading the entire dataset into memory
-    or working with memory-mapped arrays.
+    to avoid loading the entire dataset into memory,
+    and to avoid working with memory-mapped arrays.
     The first is the ``sample_ids`` vector,
     that represents the "ID" of any sample :math:`(x, y)` in the dataset.
     We use these IDs to load the array files corresponding to the samples.
@@ -203,7 +213,9 @@ def make_npy_files_for_each_split(
             split_df = (
                 split_df.sort_values(by="sort_inds")
                 .drop(columns="sort_inds")
-                .reset_index()
+                # we don't want to add a new `index` or `level_0` column
+                # so we set drop=True. we just want to re-order the existing index
+                .reset_index(drop=True)
             )
 
         if input_type == "audio":
