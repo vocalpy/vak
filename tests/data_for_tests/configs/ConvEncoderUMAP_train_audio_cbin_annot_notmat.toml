@@ -6,9 +6,9 @@ output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notma
 audio_format = "cbin"
 annot_format = "notmat"
 labelset = "iabcdefghjk"
-train_dur = 2.5
-val_dur = 1
-test_dur = 2
+train_dur = 0.5
+val_dur = 0.2
+test_dur = 0.25
 
 [SPECT_PARAMS]
 fft_size = 512
