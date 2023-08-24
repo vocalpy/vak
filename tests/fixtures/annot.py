@@ -30,7 +30,7 @@ def annot_list_yarden():
 
 LABELSET_YARDEN = [
     str(an_int)
-    for an_int in [1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19]
+    for an_int in [1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19]
 ]
 
 
