@@ -3,6 +3,12 @@ import pytest
 
 import vak.common.files.spect
 
+from .annot import (
+    ANNOT_LIST_NOTMAT,
+    ANNOT_LIST_YARDEN,
+    LABELSET_NOTMAT,
+    LABELSET_YARDEN,
+)
 from .test_data import GENERATED_TEST_DATA_ROOT, SOURCE_TEST_DATA_ROOT
 
 
@@ -57,89 +63,60 @@ def spect_list_npz():
     return SPECT_LIST_NPZ
 
 
+labelset_yarden = set(LABELSET_YARDEN)
+SPECT_LIST_MAT_ALL_LABELS_IN_LABELSET = []
+SPECT_LIST_MAT_LABELS_NOT_IN_LABELSET = []
+for spect_path in SPECT_LIST_MAT:
+    audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
+    annot = [
+        annot for annot in ANNOT_LIST_YARDEN if annot.notated_path.name == audio_fname
+    ]
+    assert len(annot) == 1
+    annot = annot[0]
+    if set(annot.seq.labels).issubset(labelset_yarden):
+        SPECT_LIST_MAT_ALL_LABELS_IN_LABELSET.append(spect_path)
+    else:
+        SPECT_LIST_MAT_LABELS_NOT_IN_LABELSET.append(spect_path)
+
+
 @pytest.fixture
-def spect_list_mat_all_labels_in_labelset(
-    spect_list_mat, annot_list_yarden, labelset_yarden
-):
+def spect_list_mat_all_labels_in_labelset():
     """list of .mat spectrogram files where all labels in associated annotation **are** in labelset"""
-    labelset_yarden = set(labelset_yarden)
-    spect_list_labels_in_labelset = []
-    for spect_path in spect_list_mat:
-        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
-        annot = [
-            annot for annot in annot_list_yarden if annot.notated_path.name == audio_fname
-        ]
-        assert len(annot) == 1
-        annot = annot[0]
-        if set(annot.seq.labels).issubset(labelset_yarden):
-            spect_list_labels_in_labelset.append(spect_path)
-
-    return spect_list_labels_in_labelset
+    return SPECT_LIST_MAT_ALL_LABELS_IN_LABELSET
 
 
 @pytest.fixture
-def spect_list_npz_all_labels_in_labelset(
-    spect_list_npz, annot_list_notmat, labelset_notmat
-):
-    """list of .npz spectrogram files where all labels in associated annotation **are** in labelset"""
-    labelset_notmat = set(labelset_notmat)
-    spect_list_labels_in_labelset = []
-    for spect_path in spect_list_npz:
-        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
-        annot = [
-            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
-        ]
-        assert len(annot) == 1
-        annot = annot[0]
-        if set(annot.seq.labels).issubset(labelset_notmat):
-            spect_list_labels_in_labelset.append(spect_path)
-
-    return spect_list_labels_in_labelset
-
-
-@pytest.fixture
-def spect_list_mat_labels_not_in_labelset(
-    spect_list_mat, annot_list_yarden, labelset_yarden
-):
+def spect_list_mat_labels_not_in_labelset():
     """list of .mat spectrogram files where some labels in associated annotation are **not** in labelset"""
-    labelset_yarden = set(labelset_yarden)
-    spect_list_labels_not_in_labelset = []
-    for spect_path in spect_list_mat:
-        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
-        annot = [
-            annot for annot in annot_list_yarden if annot.notated_path.name == audio_fname
-        ]
-        assert len(annot) == 1
-        annot = annot[0]
-        # notice if labels **not** a subset of labelset
-        if not set(annot.seq.labels).issubset(labelset_yarden):
-            spect_list_labels_not_in_labelset.append(spect_path)
+    return SPECT_LIST_MAT_LABELS_NOT_IN_LABELSET
 
-    err = "not finding .mat spectrogram files where labels in associated annotations are not in dataset"
-    assert len(spect_list_labels_not_in_labelset) > 0, err
-    return spect_list_labels_not_in_labelset
+
+labelset_notmat = set(LABELSET_NOTMAT)
+SPECT_LIST_NPZ_ALL_LABELS_IN_LABELSET = []
+SPECT_LIST_NPZ_LABELS_NOT_IN_LABELSET = []
+for spect_path in SPECT_LIST_NPZ:
+    audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
+    annot = [
+        annot for annot in ANNOT_LIST_NOTMAT if annot.notated_path.name == audio_fname
+    ]
+    assert len(annot) == 1
+    annot = annot[0]
+    if set(annot.seq.labels).issubset(labelset_notmat):
+        SPECT_LIST_NPZ_ALL_LABELS_IN_LABELSET.append(spect_path)
+    else:
+        SPECT_LIST_NPZ_LABELS_NOT_IN_LABELSET.append(spect_path)
 
 
 @pytest.fixture
-def spect_list_npz_labels_not_in_labelset(
-    spect_list_npz, annot_list_notmat, labelset_notmat
-):
-    """list of .npz spectrogram files where some labels in associated annotation are  **not** in labelset"""
-    labelset_notmat = set(labelset_notmat)
-    spect_list_labels_not_in_labelset = []
-    for spect_path in spect_list_npz:
-        audio_fname = vak.common.files.spect.find_audio_fname(spect_path)
-        annot = [
-            annot for annot in annot_list_notmat if annot.notated_path.name == audio_fname
-        ]
-        assert len(annot) == 1
-        annot = annot[0]
-        if set(annot.seq.labels).issubset(labelset_notmat):
-            spect_list_labels_not_in_labelset.append(spect_path)
+def spect_list_npz_all_labels_in_labelset():
+    """list of .npz spectrogram files where all labels in associated annotation **are** in labelset"""
+    return SPECT_LIST_NPZ_ALL_LABELS_IN_LABELSET
 
-    err = "not finding .npz spectrogram files where labels in associated annotations are not in dataset"
-    assert len(spect_list_labels_not_in_labelset) > 0, err
-    return spect_list_labels_not_in_labelset
+
+@pytest.fixture
+def spect_list_npz_labels_not_in_labelset():
+    """list of .npz spectrogram files where some labels in associated annotation are  **not** in labelset"""
+    return SPECT_LIST_NPZ_LABELS_NOT_IN_LABELSET
 
 
 @pytest.fixture
