@@ -12,6 +12,7 @@ from ...common.labels import from_df as labels_from_df
 from .algorithms import brute_force
 from .algorithms.validate import validate_split_durations
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -107,7 +108,7 @@ def frame_classification_dataframe(
     Splits dataset into training, test, and (optionally) validation subsets,
     specified by their duration.
 
-    Additionally adds a 'split' column to the dataframe,
+    Additionally, adds a 'split' column to the dataframe,
     that assigns each row to 'train', 'val', 'test', or 'None'.
 
     Parameters
