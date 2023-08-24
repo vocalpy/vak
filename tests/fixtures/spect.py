@@ -63,7 +63,7 @@ def spect_list_npz():
     return SPECT_LIST_NPZ
 
 
-labelset_yarden = set(LABELSET_YARDEN)
+LABELSET_YARDEN_SET = set(LABELSET_YARDEN)
 SPECT_LIST_MAT_ALL_LABELS_IN_LABELSET = []
 SPECT_LIST_MAT_LABELS_NOT_IN_LABELSET = []
 for spect_path in SPECT_LIST_MAT:
@@ -73,7 +73,7 @@ for spect_path in SPECT_LIST_MAT:
     ]
     assert len(annot) == 1
     annot = annot[0]
-    if set(annot.seq.labels).issubset(labelset_yarden):
+    if set(annot.seq.labels).issubset(LABELSET_YARDEN_SET):
         SPECT_LIST_MAT_ALL_LABELS_IN_LABELSET.append(spect_path)
     else:
         SPECT_LIST_MAT_LABELS_NOT_IN_LABELSET.append(spect_path)
@@ -91,7 +91,7 @@ def spect_list_mat_labels_not_in_labelset():
     return SPECT_LIST_MAT_LABELS_NOT_IN_LABELSET
 
 
-labelset_notmat = set(LABELSET_NOTMAT)
+LABELSET_NOTMAT_SET = set(LABELSET_NOTMAT)
 SPECT_LIST_NPZ_ALL_LABELS_IN_LABELSET = []
 SPECT_LIST_NPZ_LABELS_NOT_IN_LABELSET = []
 for spect_path in SPECT_LIST_NPZ:
@@ -101,7 +101,7 @@ for spect_path in SPECT_LIST_NPZ:
     ]
     assert len(annot) == 1
     annot = annot[0]
-    if set(annot.seq.labels).issubset(labelset_notmat):
+    if set(annot.seq.labels).issubset(LABELSET_NOTMAT_SET):
         SPECT_LIST_NPZ_ALL_LABELS_IN_LABELSET.append(spect_path)
     else:
         SPECT_LIST_NPZ_LABELS_NOT_IN_LABELSET.append(spect_path)
