@@ -293,3 +293,48 @@ def test_split_frame_classification_dataframe(
             assert duration_out >= duration
         else:
             assert split not in dataset_df_split["split"].unique().tolist()
+
+
+@pytest.mark.parametrize(
+    "config_type, model_name, spect_format, audio_format, annot_format, train_dur, val_dur, test_dur",
+    [
+        ('train', 'ConvEncoderUMAP', None, 'cbin', 'notmat', 0.2, None, None,),
+        ('train', 'ConvEncoderUMAP', None, 'cbin', 'notmat', 0.2, None, 0.15,),
+        ('train', 'ConvEncoderUMAP', None, 'cbin', 'notmat', 0.2, 0.1, 0.15,),
+    ]
+)
+def test_split_unit_dataframe(
+    config_type, model_name, spect_format, audio_format, annot_format,  specific_dataset_path,
+    train_dur, val_dur, test_dur,
+):
+    dataset_path = specific_dataset_path(
+        spect_format=spect_format,
+        audio_format=audio_format,
+        annot_format=annot_format,
+        config_type=config_type,
+        model=model_name,
+    )
+    metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+    dataset_df = pd.read_csv(dataset_csv_path)
+    dataset_df = dataset_df.drop(columns=('split'))
+    labelmap_path = dataset_path / "labelmap.json"
+    with labelmap_path.open("r") as f:
+        labelmap = json.load(f)
+    labelset = set(key for key in labelmap.keys() if key != 'unlabeled')
+
+    dataset_df_split = vak.prep.split.split.unit_dataframe(
+        dataset_df, dataset_path, labelset=labelset, train_dur=train_dur, val_dur=val_dur, test_dur=test_dur
+    )
+
+    assert isinstance(dataset_df_split, pd.DataFrame)
+
+    for split, duration in zip(
+            ('train', 'val', 'test'),
+            (train_dur, val_dur, test_dur),
+    ):
+        if duration is not None:
+            duration_out = dataset_df_split[dataset_df_split["split"] == split].duration.sum()
+            assert duration_out >= duration
+        else:
+            assert split not in dataset_df_split["split"].unique().tolist()
