@@ -213,9 +213,6 @@ def make_npy_files_for_each_split(
             split_df = (
                 split_df.sort_values(by="sort_inds")
                 .drop(columns="sort_inds")
-                # we don't want to add a new `index` or `level_0` column
-                # so we set drop=True. we just want to re-order the existing index
-                .reset_index(drop=True)
             )
 
         if input_type == "audio":
@@ -354,5 +351,7 @@ def make_npy_files_for_each_split(
         ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 
-    dataset_df_out = pd.concat(dataset_df_out)
+    # we reset the entire index across all splits, instead of repeating indices,
+    # and we set drop=False because we don't want to add a new column 'index' or 'level_0'
+    dataset_df_out = pd.concat(dataset_df_out).reset_index(drop=True)
     return dataset_df_out
