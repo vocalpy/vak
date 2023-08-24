@@ -108,7 +108,7 @@ class Metadata:
     )
 
     @classmethod
-    def from_path(cls, json_path: str | pathlib.Path):
+    def from_path(cls, json_path: str | pathlib.Path) -> Metadata:
         """Load dataset metadata from a json file.
 
         Class method that returns an instance of
