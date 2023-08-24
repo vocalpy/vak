@@ -36,8 +36,9 @@ def prep_audio_dataset(
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
 ) -> pd.DataFrame:
-    """Convert audio files into a dataset,
-    and return that dataset represented as a Pandas DataFrame.
+    """Creates a dataset of audio files from a directory,
+    optionally paired with an annotation file or files,
+    and return a Pandas DataFrame that represents the dataset.
 
     Finds all files with ``audio_format`` in ``data_dir``,
     then finds any annotations with ``annot_format`` if specified,
