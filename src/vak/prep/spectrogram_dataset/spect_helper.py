@@ -46,14 +46,20 @@ def make_dataframe_of_spect_files(
     timebins_key: str = "t",
     spect_key: str = "s",
     audio_path_key: str = "audio_path",
-):
-    """Get a dataset of spectrograms and optional annotations as a Pandas DataFrame.
+) -> pd.DataFrame:
+    """Creates a dataset of spectrogram files from a directory,
+    optionally paired with an annotation file or files,
+    and returns a Pandas DataFrame that represents the dataset.
 
     Spectrogram files are array in npz files created by numpy
     or in mat files created by Matlab.
-    If files are in npz format, they will be convert to npz
+    If files are in mat format, they will be converted to npz
     with the default keys for arrays, and saved in
-    ``spect_output_dir``.
+    ``spect_output_dir``. This step is required so that all dataset
+    prepared by :mod:`vak` are in a "normalized" or
+    "canonicalized" format. If no ``spect_output_dir`` is provided
+    when the ``spect_format`` is ``'mat'``, then this function
+    will raise an error.
 
     Parameters
     ----------
@@ -107,7 +113,7 @@ def make_dataframe_of_spect_files(
     at the bin centers. (As far as vak is concerned, "vector" and "matrix" are synonymous with
     "array".)
 
-    Since both .mat files and .npz files load into a dictionary-like structure,
+    Since both mat files and npz files load into a dictionary-like structure,
     the arrays will be accessed with keys. By convention, these keys are 's', 'f', and 't'.
     If you use different keys you can let this function know by changing
     the appropriate arguments: spect_key, freqbins_key, timebins_key
