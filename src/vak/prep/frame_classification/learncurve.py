@@ -139,4 +139,7 @@ def make_learncurve_splits_from_dataset_df(
             dataset_df,
         )
     )
+    # we reset the entire index across all splits, instead of repeating indices,
+    # and we set drop=False because we don't want to add a new column 'index' or 'level_0'
+    dataset_df = dataset_df.reset_index(drop=False)
     return dataset_df
