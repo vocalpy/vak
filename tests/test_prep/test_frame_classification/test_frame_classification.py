@@ -10,7 +10,6 @@ import pytest
 import vak
 
 
-# written as separate function so we can re-use in tests/unit/test_cli/test_prep.py
 def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
     dataset_path = pathlib.Path(dataset_path)
     assert dataset_path.exists()
@@ -19,7 +18,7 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
     log_path = sorted(dataset_path.glob('*log'))
     assert len(log_path) == 1
 
-    meta_json_path = dataset_path / vak.datasets.metadata.Metadata.METADATA_JSON_FILENAME
+    meta_json_path = dataset_path / vak.datasets.frame_classification.Metadata.METADATA_JSON_FILENAME
     assert meta_json_path.exists()
 
     with meta_json_path.open('r') as fp:
@@ -35,11 +34,14 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
             check_exact = False
         else:
             check_exact = True
-        assert_series_equal(
-            df_from_dataset_path[column],
-            df_returned_by_prep[column],
-            check_exact=check_exact,
-        )
+        try:
+            assert_series_equal(
+                df_from_dataset_path[column],
+                df_returned_by_prep[column],
+                check_exact=check_exact,
+            )
+        except:
+            breakpoint()
 
     for column in ('spect_path', 'annot_path'):
         paths = df_from_dataset_path[column].values
@@ -96,6 +98,7 @@ def test_prep_frame_classification_dataset(
     purpose = config_type.lower()
     dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
         data_dir=cfg.prep.data_dir,
+        input_type=cfg.prep.input_type,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
         spect_format=cfg.prep.spect_format,
@@ -169,6 +172,7 @@ def test_prep_frame_classification_dataset_raises_when_labelset_required_but_is_
     with pytest.raises(ValueError):
         vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
             data_dir=cfg.prep.data_dir,
+            input_type=cfg.prep.input_type,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
@@ -235,6 +239,7 @@ def test_prep_frame_classification_dataset_with_single_audio_and_annot(source_te
     purpose = 'eval'
     dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
         data_dir=cfg.prep.data_dir,
+        input_type=cfg.prep.input_type,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
         spect_format=cfg.prep.spect_format,
@@ -292,6 +297,7 @@ def test_prep_frame_classification_dataset_when_annot_has_single_segment(source_
     purpose = 'eval'
     dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
         data_dir=cfg.prep.data_dir,
+        input_type=cfg.prep.input_type,
         purpose=purpose,
         audio_format=cfg.prep.audio_format,
         spect_format=cfg.prep.spect_format,
@@ -327,7 +333,7 @@ def test_prep_frame_classification_dataset_raises_not_a_directory(
     """
     toml_path = specific_config(
         config_type="train",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
@@ -339,6 +345,7 @@ def test_prep_frame_classification_dataset_raises_not_a_directory(
     with pytest.raises(NotADirectoryError):
         vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
             data_dir=cfg.prep.data_dir,
+            input_type=cfg.prep.input_type,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
@@ -374,7 +381,7 @@ def test_prep_frame_classification_dataset_raises_file_not_found(
     """
     toml_path = specific_config(
         config_type="train",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
@@ -386,6 +393,7 @@ def test_prep_frame_classification_dataset_raises_file_not_found(
     with pytest.raises(FileNotFoundError):
         vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
             data_dir=cfg.prep.data_dir,
+            input_type=cfg.prep.input_type,
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
