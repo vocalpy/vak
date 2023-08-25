@@ -28,13 +28,38 @@ def make_learncurve_splits_from_dataset_df(
     timebins_key: str = "t",
 ) -> pd.DataFrame:
     """Make splits for a learning curve
-    from a dataframe representing the entire dataset.
+    from a dataframe representing the entire dataset,
+    one split for each combination of (training set duration,
+    replicate number).
+    Each split is a randomly drawn subset of data
+    from the total training split.
 
     Uses :func:`vak.prep.split.frame_classification_dataframe` to make
     splits/subsets of the training data
     from ``dataset_df``, and then uses
     :func:`vak.prep.frame_classification.dataset_arrays.make_npy_files_for_each_split`
     to make the array files for each split.
+
+    A new directory will be made for each combination of
+    (training set duration, replicate number) as shown below,
+    for ``train_durs=[4.0, 6.0], num_replicates=2``.
+
+    .. code-block:: console
+        032312-vak-frame-classification-dataset-generated-230820_144833
+        ├── 032312_prep_230820_144833.csv
+        ├── labelmap.json
+        ├── metadata.json
+        ├── prep_230820_144833.log
+        ├── spectrograms_generated_230820_144833
+        ├── test
+        ├── train
+        ├── train-dur-4.0-replicate-1
+        ├── train-dur-4.0-replicate-2
+        ├── train-dur-6.0-replicate-1
+        ├── train-dur-6.0-replicate-2
+        ├── TweetyNet_learncurve_audio_cbin_annot_notmat.toml
+        └── val
+
 
     Parameters
     ----------
