@@ -118,3 +118,22 @@ def audio_list_factory(audio_list_cbin,
         return FORMAT_AUDIO_LIST_FIXTURE_MAP[key]
 
     return _audio_list_factory
+
+
+@pytest.fixture
+def specific_audio_list(
+    audio_list_cbin,
+    audio_list_cbin_all_labels_in_labelset,
+    audio_list_cbin_labels_not_in_labelset,
+):
+    def _specific_audio_list(spect_format, qualifier=None):
+        MAP = {
+            "cbin": {
+                None: audio_list_cbin,
+                "all_labels_in_labelset": audio_list_cbin_all_labels_in_labelset,
+                "labels_not_in_labelset": audio_list_cbin_labels_not_in_labelset,
+            },
+        }
+        return MAP[spect_format][qualifier]
+
+    return _specific_spect_list
