@@ -25,7 +25,7 @@ def spect_dir_mat():
 SPECT_DIR_NPZ = sorted(
         GENERATED_TEST_DATA_ROOT.joinpath(
             "prep", "train", "audio_cbin_annot_notmat", "TweetyNet"
-        ).glob("*vak-frame-classification-dataset-generated*")
+        ).glob("*vak-frame-classification-dataset-generated*/spectrograms_generated_*")
     )[0]
 
 
@@ -55,7 +55,7 @@ def spect_list_mat():
     return SPECT_LIST_MAT
 
 
-SPECT_LIST_NPZ = sorted(SPECT_DIR_NPZ.glob("*/*.spect.npz"))
+SPECT_LIST_NPZ = sorted(SPECT_DIR_NPZ.glob("*.spect.npz"))
 
 
 @pytest.fixture
