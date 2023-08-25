@@ -39,7 +39,6 @@ def make_dataframe_of_spect_files(
     spect_ext: str | None = None,
     annot_list: list | None = None,
     annot_format: str | None = None,
-    spect_annot_map: dict | None = None,
     labelset: set | None = None,
     n_decimals_trunc: int = 5,
     freqbins_key: str = "f",
@@ -76,10 +75,6 @@ def make_dataframe_of_spect_files(
         name of annotation format. Added as a column to the DataFrame if specified.
         Used by other functions that open annotation files via their paths from the DataFrame.
         Should be a format that the crowsetta library recognizes.
-        Default is None.
-    spect_annot_map : dict
-        Where keys are paths to files and value corresponding to each key is
-        the annotation for that file.
         Default is None.
     labelset : str, list, set
         of str or int, set of unique labels for vocalizations. Default is None.
@@ -133,9 +128,9 @@ def make_dataframe_of_spect_files(
             "canonical format that other functions in the library expect."
         )
 
-    if all([arg is None for arg in (spect_dir, spect_files, spect_annot_map)]):
+    if all([arg is None for arg in (spect_dir, spect_files)]):
         raise ValueError(
-            "must specify one of: spect_dir, spect_files, spect_annot_map"
+            "must specify one of: spect_dir, spect_files"
         )
 
     if spect_dir and spect_files:
@@ -143,34 +138,12 @@ def make_dataframe_of_spect_files(
             "received values for spect_dir and spect_files, unclear which to use"
         )
 
-    if spect_dir and spect_annot_map:
+    if annot_list and annot_format is None:
         raise ValueError(
-            "received values for spect_dir and spect_annot_map, unclear which to use"
+            "an annot_list was provided, but no annot_format was specified"
         )
 
-    if spect_files and spect_annot_map:
-        raise ValueError(
-            "received values for spect_files and spect_annot_map, unclear which to use"
-        )
-
-    if annot_list and spect_annot_map:
-        raise ValueError(
-            "received values for annot_list and spect_annot_map, unclear which annotations to use"
-        )
-
-    if (annot_list or spect_annot_map) and (annot_format is None):
-        if annot_list:
-            raise ValueError(
-                "an annot_list was provided, but no annot_format was specified"
-            )
-        elif spect_annot_map:
-            raise ValueError(
-                "a spect_annot_map was provided, but no annot_format was specified"
-            )
-
-    if annot_format is not None and (
-        annot_list is None and spect_annot_map is None
-    ):
+    if annot_format is not None and annot_list is None:
         raise ValueError(
             "an annot_format was specified but no annot_list or spect_annot_map was provided"
         )
@@ -189,7 +162,7 @@ def make_dataframe_of_spect_files(
     if spect_dir:  # then get spect_files from that dir
         # note we already validated format above
         spect_files = sorted(
-            pathlib.Path(spect_dir).glob(f"**/*{spect_format}")
+            pathlib.Path(spect_dir).glob(f"*{spect_format}")
         )
 
     if spect_files:  # (or if we just got them from spect_dir)
