@@ -196,8 +196,8 @@ def test_make_dataframe_of_spect_files_dir_and_list_raises(
 def test_make_dataframe_of_spect_files_annot_list_without_annot_format_raises(
     spect_dir_mat, spect_list_mat, annot_list_yarden
 ):
-    """test that calling ``make_dataframe_of_spect_files`` with a list of annotations but no annot_format raises a ValueError"""
-    spect_annot_map = dict(zip(spect_list_mat, annot_list_yarden))
+    """test that calling ``make_dataframe_of_spect_files`` with a list of annotations
+    but no annot_format raises a ValueError"""
     with pytest.raises(ValueError):
         vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
             spect_format="mat", annot_list=annot_list_yarden, annot_format=None
