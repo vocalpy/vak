@@ -22,14 +22,12 @@ def test_make_learncurve_splits_from_dataset_df(
 ):
     root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()
-
     options_to_change = [
         {
             "section": "LEARNCURVE",
             "option": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"section": "LEARNCURVE", "option": "device", "value": device},
     ]
     toml_path = specific_config(
         config_type="learncurve",
@@ -49,9 +47,16 @@ def test_make_learncurve_splits_from_dataset_df(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    tmp_dataset_path = tmp_path / f"test_make_learncurve_splits_from_dataset_df-window-size-{window_size}"
+    tmp_dataset_path = tmp_path / f"test_make_learncurve_splits_from_dataset_df"
     shutil.copytree(dataset_path, tmp_dataset_path)
-    shutil.rmtree(tmp_dataset_path / 'learncurve')  # since we're about to make this and test it works
+    # delete all the split directories since we're about to test that we make them
+    for train_dur in cfg.prep.train_set_durs:
+        for replicate_num in range(1, cfg.prep.num_replicates + 1):
+            train_dur_replicate_split_name = vak.common.learncurve.get_train_dur_replicate_split_name(
+                    train_dur, replicate_num
+                )
+            split_dir = tmp_dataset_path / train_dur_replicate_split_name
+            shutil.rmtree(split_dir)
 
     out = vak.prep.frame_classification.learncurve.make_learncurve_splits_from_dataset_df(
         dataset_df,
@@ -62,49 +67,39 @@ def test_make_learncurve_splits_from_dataset_df(
         labelmap,
         audio_format=audio_format,
     )
-
     assert isinstance(out, pd.DataFrame)
 
-    # learncurve_splits_root = dataset_path / 'learncurve'
-    # assert learncurve_splits_root.exists()
-    #
-    # learncurve_splits_path = learncurve_splits_root / 'learncurve-splits-metadata.csv'
-    # assert learncurve_splits_path.exists()
-    #
-    # splits_df = pd.read_csv(learncurve_splits_path)
-
-    # TODO: test each split dir exists
-    # TODO: (correctly) test dataset_df has all splits
-    # TODO: don't test files get made since other functions do that
-
     splits_df = dataset_df[
-        not dataset_df.split.isin(('train', 'val', 'test'))
+        ~dataset_df.split.isin(('train', 'val', 'test'))
     ]
     assert sorted(splits_df['train_dur'].unique()) == cfg.prep.train_set_durs
     assert sorted(
         splits_df['replicate_num'].unique()
     ) == list(range(1, cfg.prep.num_replicates + 1))
 
-    for train_dur in sorted(splits_df['train_dur'].unique()):
+    # assert that each expected split name is in data frame
+    all_split_names = []
+    for train_dur in cfg.prep.train_set_durs:
         train_dur_df = splits_df[np.isclose(splits_df['train_dur'], train_dur)].copy()
+        # assert correct number of replicates for this train duration
         assert sorted(
             train_dur_df['replicate_num']
         ) == list(range(1, cfg.prep.num_replicates + 1))
 
-        for replicate_num in sorted(train_dur_df['replicate_num']):
-            train_dur_replicate_df = splits_df[
-                (np.isclose(splits_df['train_dur'], train_dur)) &
-                (splits_df['replicate_num'] == replicate_num)
-            ]
-            # assert len(train_dur_replicate_df) == 1
-            #
-            # split_csv_path = tmp_dataset_path / train_dur_replicate_df["split_csv_filename"].item()
-            # assert split_csv_path.exists()
-            #
-            # split_df = pd.read_csv(split_csv_path)
-            assert train_dur_replicate_df.duration.sum() >= train_dur
-            #
-            # for vec_name in ("frames_npy_path", "source_inds", "window_inds"):
-            #     vec_filename = train_dur_replicate_df[f'{vec_name}_npy_filename'].item()
-            #     vector_path = learncurve_splits_root / vec_filename
-            #     assert vector_path.exists()
+        for replicate_num in range(1, cfg.prep.num_replicates + 1):
+            train_dur_replicate_split_name = vak.common.learncurve.get_train_dur_replicate_split_name(
+                    train_dur, replicate_num
+                )
+            all_split_names.append(train_dur_replicate_split_name)
+
+            # assert directory holding split files exists
+            split_dir = tmp_dataset_path / train_dur_replicate_split_name
+            assert split_dir.exists() and split_dir.is_dir()
+
+            # assert this train_dur + replicate split exists in dataframe
+            assert np.isin(train_dur_replicate_split_name, splits_df['split'].values)
+            this_split_df = splits_df[splits_df['split'] == train_dur_replicate_split_name]
+
+            # assert that it has the correct duration
+            assert this_split_df['duration'].sum() >= train_dur
+
