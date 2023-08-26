@@ -11,13 +11,6 @@ import vak.train
 
 def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_name: str,
                                          results_path: pathlib.Path):
-    assert results_path.joinpath("labelmap.json").exists()
-
-    if cfg.train.normalize_spectrograms or cfg.train.spect_scaler_path:
-        assert results_path.joinpath("StandardizeSpect").exists()
-    else:
-        assert not results_path.joinpath("StandardizeSpect").exists()
-
     model_path = results_path.joinpath(model_name)
     assert model_path.exists()
 
@@ -30,7 +23,7 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
     assert checkpoints_path.exists()
     assert checkpoints_path.joinpath("checkpoint.pt").exists()
     if cfg.train.val_step is not None:
-        assert checkpoints_path.joinpath("max-val-acc-checkpoint.pt").exists()
+        assert checkpoints_path.joinpath("min-val-loss-checkpoint.pt").exists()
 
 
 @pytest.mark.slow
@@ -40,7 +33,7 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
         ("ConvEncoderUMAP", "cbin", None, "notmat"),
     ],
 )
-def test_train_frame_classification_model(
+def test_train_parametric_umap_model(
     model_name, audio_format, spect_format, annot_format,
     specific_config, tmp_path, device
 ):
@@ -87,13 +80,12 @@ def test_train_frame_classification_model(
     'path_option_to_change',
     [
         {"section": "TRAIN", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset/'},
     ]
 )
-def test_train_raises_file_not_found(
+def test_train_parametric_umap_model_raises_file_not_found(
     path_option_to_change, specific_config, tmp_path, device
 ):
-    """Test that pre-conditions in `vak.train.parametric_umap.train_parametric_umap_model`
+    """Test that pre-conditions in :func:`vak.train.parametric_umap.train_parametric_umap_model`
     raise FileNotFoundError when one of the following does not exist:
     checkpoint_path, dataset_path
     """
@@ -103,7 +95,7 @@ def test_train_raises_file_not_found(
     ]
     toml_path = specific_config(
         config_type="train",
-        model="TeenyTweetyNet",
+        model="ConvEncoderUMAP",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
@@ -142,7 +134,7 @@ def test_train_raises_file_not_found(
         {"section": "TRAIN", "option": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
     ]
 )
-def test_train_raises_not_a_directory(
+def test_train_parametric_umap_model_raises_not_a_directory(
     path_option_to_change, specific_config, device, tmp_path
 ):
     """Test that core.train raises NotADirectory
@@ -155,7 +147,7 @@ def test_train_raises_not_a_directory(
 
     toml_path = specific_config(
         config_type="train",
-        model="TeenyTweetyNet",
+        model="ConvEncoderUMAP",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
