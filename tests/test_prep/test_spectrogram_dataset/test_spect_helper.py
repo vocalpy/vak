@@ -18,7 +18,6 @@ def assert_expected_spect_paths_in_dataframe(
     """Tests that a dataframe ``dataset_df`` contains one file
     for each path in ``expected_spect_paths`` in its ``spect_path`` column,
     and only those paths.
-    If so, returns True.
 
     Parameters
     ----------
@@ -29,36 +28,36 @@ def assert_expected_spect_paths_in_dataframe(
     not_expected_spect_paths : list
         of paths to spectrogram files, that should **not** be in dataset_df.spect_path column
     """
-    spect_files_from_df = [spect_path.name for spect_path in spect_paths_from_df]
+    spect_file_names_from_df = [spect_path.name for spect_path in spect_paths_from_df]
 
     if spect_format == 'mat':
-        expected_spect_files = [
+        expected_spectfile_names = [
             spect_path.name.replace('.mat', '.npz')
             for spect_path in expected_spect_paths
         ]
     else:
-        expected_spect_files = [
+        expected_spectfile_names = [
             spect_path.name for spect_path in expected_spect_paths
         ]
 
     assert all(
-        [expected_spect_file in spect_files_from_df for expected_spect_file in expected_spect_files]
+        [expected_spect_file in spect_file_names_from_df for expected_spect_file in expected_spectfile_names]
     )
 
     # test that **only** expected paths were in DataFrame
     if not_expected_spect_paths is not None:
         if spect_format == 'mat':
-            not_expected_spect_files = [
+            not_expected_spectfile_names = [
                 spect_path.name.replace('.mat', '.npz')
                 for spect_path in not_expected_spect_paths
             ]
         else:
-            not_expected_spect_files = [
+            not_expected_spectfile_names = [
                 spect_path.name for spect_path in not_expected_spect_paths
             ]
         assert all(
-            [not_expected_spect_file not in spect_files_from_df
-             for not_expected_spect_file in not_expected_spect_files]
+            [not_expected_spect_file not in spect_file_names_from_df
+             for not_expected_spect_file in not_expected_spectfile_names]
         )
 
 
