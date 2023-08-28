@@ -12,12 +12,12 @@ class ConvEncoder(nn.Module):
     def __init__(
         self,
         input_shape: tuple[int],
-        conv1_filters: int = 64,
-        conv2_filters: int = 128,
+        conv1_filters: int = 32,
+        conv2_filters: int = 64,
         conv_kernel_size: int = 3,
         conv_stride: int = 2,
         conv_padding: int = 1,
-        n_features_linear: int = 512,
+        n_features_linear: int = 256,
         n_components: int = 2,
     ):
         """Initialize a ConvEncoder instance.
@@ -61,6 +61,7 @@ class ConvEncoder(nn.Module):
                 stride=conv_stride,
                 padding=conv_padding,
             ),
+            nn.MaxPool2d(2, 2),
             nn.Conv2d(
                 in_channels=conv1_filters,
                 out_channels=conv2_filters,
@@ -68,6 +69,7 @@ class ConvEncoder(nn.Module):
                 stride=conv_stride,
                 padding=conv_padding,
             ),
+            nn.MaxPool2d(2, 2),
             nn.Flatten(),
         )
         mock_input = torch.rand((1, *input_shape))
