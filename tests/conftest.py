@@ -1,4 +1,6 @@
-from _pytest.mark import Mark
+import pathlib
+
+import toml
 
 from . import fixtures
 # keep this import here, we need it for fixtures
@@ -8,12 +10,16 @@ from .fixtures import *
 def by_slow_marker(item):
     return 1 if item.get_closest_marker('slow') is None else 0
 
+with pathlib.Path('vak.tests.config.toml').open('r') as fp:
+    VAK_TESTS_CONFIG_TOML = toml.load(fp)
+DEFAULT_MODELS = VAK_TESTS_CONFIG_TOML['cli_args']['models']
+
 
 def pytest_addoption(parser):
     parser.addoption(
         "--models",
         action="store",
-        default="TeenyTweetyNet",
+        default=DEFAULT_MODELS,
         nargs="+",
         help="vak models to test, space-separated list of names",
     )
