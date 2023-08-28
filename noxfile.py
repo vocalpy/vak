@@ -2,13 +2,19 @@ import os
 import pathlib
 import shutil
 import tarfile
+import tomllib
 import urllib.request
 
 import nox
 
 
+
 DIR = pathlib.Path(__file__).parent.resolve()
 VENV_DIR = pathlib.Path('./.venv').resolve()
+
+with pathlib.Path('./tests/vak.tests.config.toml').open('rb') as fp:
+    VAK_TESTS_CONFIG_TOML = tomllib.load(fp)
+
 
 nox.options.sessions = ['test', 'coverage']
 
@@ -161,8 +167,21 @@ CONFIGS_DIR = f'{GENERATED_TEST_DATA_DIR}configs'
 PREP_DIR = f'{GENERATED_TEST_DATA_DIR}prep/'
 RESULTS_DIR = f'{GENERATED_TEST_DATA_DIR}results/'
 
-PREP_CI = sorted(pathlib.Path(PREP_DIR).glob('*/*/teenytweetynet'))
-RESULTS_CI = sorted(pathlib.Path(RESULTS_DIR).glob('*/*/teenytweetynet'))
+PREP_CI: list = []
+for model_name in VAK_TESTS_CONFIG_TOML['data']['generated']['ci']['prep']['models']:
+    PREP_CI.extend(
+        sorted(
+            pathlib.Path(PREP_DIR).glob(f'*/*/{model_name}')
+                 )
+    )
+RESULTS_CI: list = []
+for model_name in VAK_TESTS_CONFIG_TOML['data']['generated']['ci']['results']['models']:
+    PREP_CI.extend(
+        sorted(
+            pathlib.Path(RESULTS_DIR).glob(f'*/*/{model_name}')
+                 )
+    )
+
 GENERATED_TEST_DATA_CI_TAR = f'{GENERATED_TEST_DATA_DIR}generated_test_data-version-1.x.ci.tar.gz'
 GENERATED_TEST_DATA_CI_DIRS = [CONFIGS_DIR] + PREP_CI + RESULTS_CI
 
@@ -229,13 +248,19 @@ def test_data_download_generated_ci(session) -> None:
     )
 
 
+DEFAULT_MODELS = VAK_TESTS_CONFIG_TOML['cli_args']['models']
+
+
 @nox.session
 def test(session) -> None:
     """
     Run the unit and regular tests.
     """
     session.install(".[test]")
-    session.run("pytest", *session.posargs)
+    if session.posargs:
+        session.run("pytest", *session.posargs)
+    else:
+        session.run("pytest", "-x", "--slow-last", "--models", f"{DEFAULT_MODELS}")
 
 
 @nox.session
@@ -248,7 +273,7 @@ def coverage(session) -> None:
         if "running-on-ci" in session.posargs:
             # on ci, just run `teenytweetynet` model
             session.run(
-                "pytest", "--models", "teenytweetynet", "--cov=./", "--cov-report=xml"
+                "pytest", "--models", f"{DEFAULT_MODELS}", "--cov=./", "--cov-report=xml"
             )
             return
         else:
