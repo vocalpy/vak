@@ -1,18 +1,20 @@
+import json
 import pathlib
 
-import toml
 
 from . import fixtures
 # keep this import here, we need it for fixtures
 from .fixtures import *
 
 
+with pathlib.Path('vak.tests.config.toml').open('r') as fp:
+    VAK_TESTS_CONFIG_TOML = json.load(fp)
+DEFAULT_MODELS = VAK_TESTS_CONFIG_TOML['models']
+
+
 def by_slow_marker(item):
     return 1 if item.get_closest_marker('slow') is None else 0
 
-with pathlib.Path('vak.tests.config.toml').open('r') as fp:
-    VAK_TESTS_CONFIG_TOML = toml.load(fp)
-DEFAULT_MODELS = VAK_TESTS_CONFIG_TOML['cli_args']['models']
 
 
 def pytest_addoption(parser):
