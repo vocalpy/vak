@@ -1,8 +1,0 @@
-[cli_args]
-models = ["TeenyTweetyNet", "ConvEncoderUMAP"]
-
-[data.generated.ci.prep]
-models = ["TweetyNet", "ConvEncoderUMAP"]
-
-[data.generated.ci.results]
-models = ["TeenyTweetyNet", "ConvEncoderUMAP"]
