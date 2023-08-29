@@ -1,19 +1,19 @@
+import json
 import os
 import pathlib
 import shutil
 import tarfile
-import tomllib
 import urllib.request
 
 import nox
 
 
-
 DIR = pathlib.Path(__file__).parent.resolve()
 VENV_DIR = pathlib.Path('./.venv').resolve()
 
-with pathlib.Path('./tests/vak.tests.config.toml').open('rb') as fp:
-    VAK_TESTS_CONFIG_TOML = tomllib.load(fp)
+
+with pathlib.Path('./tests/vak.tests.config.json').open('rb') as fp:
+    VAK_TESTS_CONFIG = json.load(fp)
 
 
 nox.options.sessions = ['test', 'coverage']
@@ -168,14 +168,14 @@ PREP_DIR = f'{GENERATED_TEST_DATA_DIR}prep/'
 RESULTS_DIR = f'{GENERATED_TEST_DATA_DIR}results/'
 
 PREP_CI: list = []
-for model_name in VAK_TESTS_CONFIG_TOML['data']['generated']['ci']['prep']['models']:
+for model_name in VAK_TESTS_CONFIG['models']:
     PREP_CI.extend(
         sorted(
             pathlib.Path(PREP_DIR).glob(f'*/*/{model_name}')
                  )
     )
 RESULTS_CI: list = []
-for model_name in VAK_TESTS_CONFIG_TOML['data']['generated']['ci']['results']['models']:
+for model_name in VAK_TESTS_CONFIG['models']:
     PREP_CI.extend(
         sorted(
             pathlib.Path(RESULTS_DIR).glob(f'*/*/{model_name}')
@@ -248,7 +248,7 @@ def test_data_download_generated_ci(session) -> None:
     )
 
 
-DEFAULT_MODELS = VAK_TESTS_CONFIG_TOML['cli_args']['models']
+DEFAULT_MODELS = VAK_TESTS_CONFIG['models']
 
 
 @nox.session
