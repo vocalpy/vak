@@ -12,15 +12,15 @@ from . import cli_asserts
 
 
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "model_name, audio_format, spect_format, annot_format",
     [
-        ("cbin", None, "notmat"),
-        ("wav", None, "birdsong-recognition-dataset"),
-        (None, "mat", "yarden"),
+        ("TweetyNet", "cbin", None, "notmat"),
+        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
+        ("TweetyNet", None, "mat", "yarden"),
     ],
 )
 def test_train(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
 ):
     root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
     root_results_dir.mkdir()
@@ -36,7 +36,7 @@ def test_train(
 
     toml_path = specific_config(
         config_type="train",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
