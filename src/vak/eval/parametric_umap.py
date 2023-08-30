@@ -129,10 +129,11 @@ def eval_parametric_umap_model(
 
     model.load_state_dict_from_path(checkpoint_path)
 
+    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
     if device == "cuda":
         accelerator = "gpu"
     else:
-        accelerator = None
+        accelerator = "auto"
 
     trainer_logger = lightning.loggers.TensorBoardLogger(save_dir=output_dir)
     trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
