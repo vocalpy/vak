@@ -10,7 +10,7 @@ import vak.cli.learncurve
 from . import cli_asserts
 
 
-def test_learncurve(specific_config, tmp_path, model, device):
+def test_learncurve(specific_config, tmp_path, device):
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
     root_results_dir.mkdir()
 
@@ -25,7 +25,7 @@ def test_learncurve(specific_config, tmp_path, model, device):
 
     toml_path = specific_config(
         config_type="learncurve",
-        model=model,
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         options_to_change=options_to_change,
