@@ -7,7 +7,7 @@ from . import fixtures
 from .fixtures import *
 
 
-with pathlib.Path('vak.tests.config.toml').open('r') as fp:
+with pathlib.Path('./tests/vak.tests.config.json').open('r') as fp:
     VAK_TESTS_CONFIG_TOML = json.load(fp)
 DEFAULT_MODELS = VAK_TESTS_CONFIG_TOML['models']
 
