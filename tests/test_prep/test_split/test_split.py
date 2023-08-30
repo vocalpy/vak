@@ -248,14 +248,14 @@ def test_dataframe_specd_dur_gt_raises():
 @pytest.mark.parametrize(
     "config_type, model_name, spect_format, audio_format, annot_format, train_dur, val_dur, test_dur",
     [
-        ('train', 'TeenyTweetyNet', None, 'cbin', 'notmat', 45, None, None,),
-        ('train', 'TeenyTweetyNet', None, 'cbin', 'notmat', 45, None, 30,),
-        ('train', 'TeenyTweetyNet', None, 'cbin', 'notmat', 45, 15, 30,),
-        ('train', 'TeenyTweetyNet', None, 'cbin', 'notmat', None, None, 30,),
-        ('train', 'TeenyTweetyNet', 'mat', None, 'yarden', 200, None, None,),
-        ('train', 'TeenyTweetyNet', 'mat', None, 'yarden', None, None, 200,),
-        ('train', 'TeenyTweetyNet', 'mat', None, 'yarden', 200, None, 200,),
-        ('train', 'TeenyTweetyNet', 'mat', None, 'yarden', 200, 80, 120,),
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', 45, None, None,),
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', 45, None, 30,),
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', 45, 15, 30,),
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', None, None, 30,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', 200, None, None,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', None, None, 200,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', 200, None, 200,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', 200, 80, 120,),
     ]
 )
 def test_split_frame_classification_dataframe(

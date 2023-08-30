@@ -8,8 +8,8 @@ class TestWindowDataset:
     @pytest.mark.parametrize(
         'config_type, model_name, audio_format, spect_format, annot_format, split, transform_kwargs',
         [
-            ('train', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'train', {}),
-            ('train', 'TeenyTweetyNet', None, 'mat', 'yarden', 'train', {}),
+            ('train', 'TweetyNet', 'cbin', None, 'notmat', 'train', {}),
+            ('train', 'TweetyNet', None, 'mat', 'yarden', 'train', {}),
         ]
     )
     def test_from_dataset_path(self, config_type, model_name, audio_format, spect_format, annot_format,

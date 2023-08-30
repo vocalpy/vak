@@ -119,7 +119,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
 
     toml_path = specific_config(
         config_type="eval",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
@@ -177,7 +177,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
 
     toml_path = specific_config(
         config_type="eval",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,

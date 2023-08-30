@@ -69,11 +69,11 @@ def copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, config_
 @pytest.mark.parametrize(
     'config_type, model_name, audio_format, spect_format, annot_format, input_type',
     [
-        ('train', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'spect'),
-        ('predict', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'spect'),
-        ('eval', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'spect'),
-        ('train', 'TeenyTweetyNet', None, 'mat', 'yarden', 'spect'),
-        ('learncurve', 'TeenyTweetyNet', 'cbin', None, 'notmat', 'spect'),
+        ('train', 'TweetyNet', 'cbin', None, 'notmat', 'spect'),
+        ('predict', 'TweetyNet', 'cbin', None, 'notmat', 'spect'),
+        ('eval', 'TweetyNet', 'cbin', None, 'notmat', 'spect'),
+        ('train', 'TweetyNet', None, 'mat', 'yarden', 'spect'),
+        ('learncurve', 'TweetyNet', 'cbin', None, 'notmat', 'spect'),
         # TODO: add audio cases
     ]
 )

@@ -111,7 +111,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
     ]
     toml_path = specific_config(
         config_type="learncurve",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         options_to_change=options_to_change,

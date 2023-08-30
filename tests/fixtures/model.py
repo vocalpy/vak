@@ -5,7 +5,6 @@ import pytest
 # Should be used throughout fixtures when we need to get things "by model"
 MODELS = [
     "TweetyNet",
-    "TeenyTweetyNet",
 ]
 
 
@@ -15,6 +14,6 @@ def default_model():
     Should work regardless of where the test is run, i.e. both on
     CI platform and locally.
 
-    currently ``TeenyTweetyNet``
+    currently ``TweetyNet``
     """
-    return "TeenyTweetyNet"
+    return "TweetyNet"

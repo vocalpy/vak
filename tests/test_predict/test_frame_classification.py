@@ -121,7 +121,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
     ]
     toml_path = specific_config(
         config_type="predict",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         options_to_change=options_to_change,
@@ -185,7 +185,7 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
 
     toml_path = specific_config(
         config_type="predict",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         options_to_change=options_to_change,

@@ -58,7 +58,7 @@ def test_predict_dataset_path_none_raises(
 
     toml_path = specific_config(
         config_type="predict",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,

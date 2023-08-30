@@ -12,11 +12,11 @@ import vak.train
 @pytest.mark.parametrize(
     "audio_format, spect_format, annot_format, model_name, train_function_to_mock",
     [
-        ("cbin", None, "notmat", "TeenyTweetyNet",
+        ("cbin", None, "notmat", "TweetyNet",
          'vak.train.train_.train_frame_classification_model'),
-        ("wav", None, "birdsong-recognition-dataset", "TeenyTweetyNet",
+        ("wav", None, "birdsong-recognition-dataset", "TweetyNet",
          'vak.train.train_.train_frame_classification_model'),
-        (None, "mat", "yarden", "TeenyTweetyNet",
+        (None, "mat", "yarden", "TweetyNet",
          'vak.train.train_.train_frame_classification_model'),
         ("cbin", None, "notmat", "ConvEncoderUMAP",
          'vak.train.train_.train_parametric_umap_model'),
