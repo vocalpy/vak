@@ -7,7 +7,6 @@ from .frame_classification_model import FrameClassificationModel
 from .get import get
 from .parametric_umap_model import ParametricUMAPModel
 from .registry import model_family
-from .teenytweetynet import TeenyTweetyNet
 from .tweetynet import TweetyNet
 
 __all__ = [
@@ -23,6 +22,5 @@ __all__ = [
     "model_family",
     "ParametricUMAPModel",
     "registry",
-    "TeenyTweetyNet",
     "TweetyNet",
 ]
