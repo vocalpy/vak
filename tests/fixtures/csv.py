@@ -29,7 +29,7 @@ def specific_dataset_csv_path(specific_config_toml):
         # TODO: make this more general -- dataset registry?
         if config_toml['PREP']['dataset_type'] == 'frame classification':
             metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
-        elif config_toml['PREP']['dataset_type'] == 'parametric UMAP':
+        elif config_toml['PREP']['dataset_type'] == 'parametric umap':
             metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         return dataset_csv_path
