@@ -76,13 +76,12 @@ def test_parse_config_section_missing_options_raises(
 def test_parse_config_section_model_not_installed_raises(
         section_name,
         configs_toml_path_pairs_by_model_factory,
-        model,
 ):
     """test that a ValueError is raised when the ``models`` option
     in the section specifies names of models that are not installed"""
     # we only need one toml, path pair
     # so we just call next on the ``zipped`` iterator that our fixture gives us
-    configs_toml_path_pairs = configs_toml_path_pairs_by_model_factory(model)
+    configs_toml_path_pairs = configs_toml_path_pairs_by_model_factory("TweetyNet")
 
     for config_toml, toml_path in configs_toml_path_pairs:
         if section_name.lower() in toml_path.name:
