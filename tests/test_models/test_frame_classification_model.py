@@ -7,7 +7,6 @@ import torch
 import vak.models
 
 from .test_definition import (
-    TeenyTweetyNetDefinition,
     TweetyNetDefinition,
 )
 from .test_tweetynet import LABELMAPS, INPUT_SHAPES
@@ -16,7 +15,6 @@ from .test_tweetynet import LABELMAPS, INPUT_SHAPES
 # pytest.mark.parametrize vals for test_init_with_definition
 MODEL_DEFS = (
     TweetyNetDefinition,
-    TeenyTweetyNetDefinition,
 )
 
 TEST_INIT_ARGVALS = itertools.product(LABELMAPS, INPUT_SHAPES, MODEL_DEFS)
@@ -75,7 +73,6 @@ class TestFrameClassificationModel:
     @pytest.mark.parametrize(
         'definition',
         [
-            TeenyTweetyNetDefinition,
             TweetyNetDefinition,
         ]
     )

@@ -21,7 +21,6 @@ from .conftest import (
 
 from .test_definition import (
     InvalidMetricsDictKeyModelDefinition,
-    TeenyTweetyNetDefinition,
     TweetyNetDefinition,
 )
 
@@ -170,7 +169,6 @@ class TestModel:
 
     MODEL_DEFINITION_MAP = {
         'TweetyNet': TweetyNetDefinition,
-        'TeenyTweetyNet': TeenyTweetyNetDefinition,
     }
 
     @pytest.mark.parametrize(

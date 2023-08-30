@@ -11,7 +11,6 @@ from .conftest import (
 )
 from .test_definition import (
     TweetyNetDefinition,
-    TeenyTweetyNetDefinition,
 )
 
 
@@ -72,7 +71,6 @@ def test_register_model_raises_family():
     'family, definition',
     [
         (vak.models.FrameClassificationModel, TweetyNetDefinition),
-        (vak.models.FrameClassificationModel, TeenyTweetyNetDefinition),
     ]
 )
 def test_register_model_raises_registered(family, definition):

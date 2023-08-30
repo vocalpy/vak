@@ -4,7 +4,7 @@ import pytest
 
 import torch
 from vak import metrics
-from vak.nets import TweetyNet, TeenyTweetyNet
+from vak.nets import TweetyNet
 
 import vak.models
 
@@ -22,26 +22,6 @@ class TweetyNetDefinition:
     because that's already decorated with ``vak.models.decorator.model``.
     """
     network = TweetyNet
-    loss = torch.nn.CrossEntropyLoss
-    optimizer = torch.optim.Adam
-    metrics = {'acc': metrics.Accuracy,
-               'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
-               'loss': torch.nn.CrossEntropyLoss}
-    default_config = {
-        'optimizer':
-            {'lr': 0.003}
-    }
-
-
-class TeenyTweetyNetDefinition:
-    """Redefine here to test that ``vak.models.definition.validate``
-    actually works on classes we care about.
-
-    Can't use the class itself in the ``vak.models.tweetynet``
-    because that's already decorated with ``vak.models.decorator.model``.
-    """
-    network = TeenyTweetyNet
     loss = torch.nn.CrossEntropyLoss
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
@@ -273,7 +253,6 @@ class TestModelDefinition:
         'definition',
         [
             TweetyNetDefinition,
-            TeenyTweetyNetDefinition
         ]
     )
     def test_validate(self, definition):

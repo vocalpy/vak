@@ -4,7 +4,6 @@ import vak.models
 
 from .conftest import MockModel, MockModelFamily, MockEncoderDecoderModel
 from .test_definition import TweetyNetDefinition as TweetyNet
-from .test_definition import TeenyTweetyNetDefinition as TeenyTweetyNet
 
 from .test_definition import (
     MissingClassVarModelDefinition,
@@ -21,7 +20,6 @@ from .test_definition import (
 
 
 TweetyNet.__name__ = 'TweetyNet'
-TeenyTweetyNet.__name__ = 'TeenyTweetyNet'
 
 
 @pytest.mark.parametrize(
@@ -63,4 +61,4 @@ def test_model(definition, family, expected_name):
 )
 def test_model_raises(definition):
     with pytest.raises(vak.models.decorator.ModelDefinitionValidationError):
-        model_class = vak.models.decorator.model(vak.models.base.Model)(definition)
+        vak.models.decorator.model(vak.models.base.Model)(definition)
