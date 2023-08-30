@@ -34,18 +34,18 @@ def post_tfm_kwargs(request):
 
 
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "model_name, audio_format, spect_format, annot_format",
     [
-        ("cbin", None, "notmat"),
+        ("TweetyNet", "cbin", None, "notmat"),
     ],
 )
 def test_eval_frame_classification_model(
+        model_name,
         audio_format,
         spect_format,
         annot_format,
         specific_config,
         tmp_path,
-        model,
         device,
         post_tfm_kwargs
 ):
@@ -61,7 +61,7 @@ def test_eval_frame_classification_model(
 
     toml_path = specific_config(
         config_type="eval",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
