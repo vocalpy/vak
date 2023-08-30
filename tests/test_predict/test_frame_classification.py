@@ -16,22 +16,22 @@ def assert_predict_output_matches_expected(output_dir, annot_csv_filename):
 
 
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format, save_net_outputs",
+    "model_name, audio_format, spect_format, annot_format, save_net_outputs",
     [
-        ("cbin", None, "notmat", False),
-        ("wav", None, "birdsong-recognition-dataset", False),
-        ("cbin", None, "notmat", True),
-        ("wav", None, "birdsong-recognition-dataset", True),
+        ("TweetyNet", "cbin", None, "notmat", False),
+        ("TweetyNet", "wav", None, "birdsong-recognition-dataset", False),
+        ("TweetyNet", "cbin", None, "notmat", True),
+        ("TweetyNet", "wav", None, "birdsong-recognition-dataset", True),
     ],
 )
 def test_predict_with_frame_classification_model(
+    model_name,
     audio_format,
     spect_format,
     annot_format,
     save_net_outputs,
     specific_config,
     tmp_path,
-    model,
     device,
 ):
     output_dir = tmp_path.joinpath(
@@ -46,7 +46,7 @@ def test_predict_with_frame_classification_model(
     ]
     toml_path = specific_config(
         config_type="predict",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         options_to_change=options_to_change,
