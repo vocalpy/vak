@@ -215,9 +215,12 @@ class TestModel:
             vak.models.base.Model, 'definition', definition, raising=False
         )
         # network is the one thing that has required args
+        # and we also need to use its config from the toml file
+        model_config = vak.config.model.config_from_toml_path(train_toml_path, model_name)
         network = definition.network(num_classes=len(labelmap),
                                      num_input_channels=num_input_channels,
-                                     num_freqbins=num_freqbins,)
+                                     num_freqbins=num_freqbins,
+                                     **model_config['network'])
         model = vak.models.base.Model(network=network)
         model.to(device)
 
