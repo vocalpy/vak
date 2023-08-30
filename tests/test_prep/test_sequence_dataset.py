@@ -5,23 +5,23 @@ import vak
 
 
 @pytest.mark.parametrize(
-    'config_type, audio_format, spect_format, annot_format, expected_result',
+    'model_name, config_type, audio_format, spect_format, annot_format, expected_result',
     [
-        ("train", "cbin", None, "notmat", True),
-        ("train", "wav", None, "birdsong-recognition-dataset", True),
-        ("train", None, "mat", "yarden", True),
+        ("TweetyNet", "train", "cbin", None, "notmat", True),
+        ("TweetyNet", "train", "wav", None, "birdsong-recognition-dataset", True),
+        ("TweetyNet", "train", None, "mat", "yarden", True),
     ]
 )
 def test_has_unlabeled_segments(config_type,
+                                model_name,
                                 audio_format,
                                 spect_format,
                                 annot_format,
                                 expected_result,
-                                model,
                                 specific_config_toml,
                                 specific_dataset_csv_path):
     dataset_csv_path = specific_dataset_csv_path(config_type,
-                                                 model,
+                                                 model_name,
                                                  annot_format,
                                                  audio_format,
                                                  spect_format)
