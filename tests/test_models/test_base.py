@@ -173,8 +173,14 @@ class TestModel:
         'TeenyTweetyNet': TeenyTweetyNetDefinition,
     }
 
+    @pytest.mark.parametrize(
+        'model_name',
+        [
+            'TweetyNet',
+        ]
+    )
     def test_load_state_dict_from_path(self,
-                                       model,
+                                       model_name,
                                        # our fixtures
                                        specific_config,
                                        # pytest fixtures
@@ -185,8 +191,7 @@ class TestModel:
 
         We use actual model definitions here so we can test with real checkpoints.
         """
-        definition = self.MODEL_DEFINITION_MAP[model]
-        model_name = definition.__name__.replace('Definition', '')
+        definition = self.MODEL_DEFINITION_MAP[model_name]
         train_toml_path = specific_config('train', model_name, audio_format='cbin', annot_format='notmat')
         train_cfg = vak.config.parse.from_toml_path(train_toml_path)
 
