@@ -248,7 +248,7 @@ def test_data_download_generated_ci(session) -> None:
     # )
 
 
-DEFAULT_MODELS = VAK_TESTS_CONFIG['models']
+DEFAULT_MODELS = ' '.join(VAK_TESTS_CONFIG['models'])
 
 
 @nox.session
