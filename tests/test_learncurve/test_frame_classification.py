@@ -44,14 +44,21 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
 
 
 @pytest.mark.slow
-def test_learning_curve_for_frame_classification_model(specific_config, tmp_path, model, device):
+@pytest.mark.parametrize(
+    'model_name, audio_format, annot_format',
+    [
+        ("TweetyNet", "cbin", "notmat"),
+    ]
+)
+def test_learning_curve_for_frame_classification_model(
+        model_name, audio_format, annot_format, specific_config, tmp_path, device):
     options_to_change = {"section": "LEARNCURVE", "option": "device", "value": device}
 
     toml_path = specific_config(
         config_type="learncurve",
-        model=model,
-        audio_format="cbin",
-        annot_format="notmat",
+        model=model_name,
+        audio_format=audio_format,
+        annot_format=annot_format,
         options_to_change=options_to_change,
     )
 
