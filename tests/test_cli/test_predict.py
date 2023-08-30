@@ -11,14 +11,14 @@ from . import cli_asserts
 
 
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "model_name, audio_format, spect_format, annot_format",
     [
-        ("cbin", None, "notmat"),
-        ("wav", None, "birdsong-recognition-dataset"),
+        ("TweetyNet", "cbin", None, "notmat"),
+        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
     ],
 )
 def test_predict(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
 ):
     output_dir = tmp_path.joinpath(
         f"test_predict_{audio_format}_{spect_format}_{annot_format}"
@@ -32,7 +32,7 @@ def test_predict(
 
     toml_path = specific_config(
         config_type="predict",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         options_to_change=options_to_change,
