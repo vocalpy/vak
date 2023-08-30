@@ -25,5 +25,14 @@ num_workers = 16
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP"
 
+[ConvEncoderUMAP.network]
+conv1_filters = 8
+conv2_filters = 16
+conv_kernel_size = 3
+conv_stride = 2
+conv_padding = 1
+n_features_linear = 32
+n_components = 2
+
 [ConvEncoderUMAP.optimizer]
 lr = 0.001
