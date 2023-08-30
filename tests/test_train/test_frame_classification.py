@@ -35,15 +35,15 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "model_name, audio_format, spect_format, annot_format",
     [
-        ("cbin", None, "notmat"),
-        ("wav", None, "birdsong-recognition-dataset"),
-        (None, "mat", "yarden"),
+        ("TweetyNet", "cbin", None, "notmat"),
+        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
+        ("TweetyNet", None, "mat", "yarden"),
     ],
 )
 def test_train_frame_classification_model(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
@@ -53,7 +53,7 @@ def test_train_frame_classification_model(
     ]
     toml_path = specific_config(
         config_type="train",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
@@ -89,15 +89,15 @@ def test_train_frame_classification_model(
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "model_name, audio_format, spect_format, annot_format",
     [
-        ("cbin", None, "notmat"),
-        ("wav", None, "birdsong-recognition-dataset"),
-        (None, "mat", "yarden"),
+        ("TweetyNet", "cbin", None, "notmat"),
+        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
+        ("TweetyNet", None, "mat", "yarden"),
     ],
 )
 def test_continue_training(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
@@ -107,7 +107,7 @@ def test_continue_training(
     ]
     toml_path = specific_config(
         config_type="train_continue",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
