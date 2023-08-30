@@ -60,7 +60,7 @@ def test_eval_dataset_path_none_raises(
 
     toml_path = specific_config(
         config_type="eval",
-        model="TeenyTweetyNet",
+        model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
