@@ -37,5 +37,16 @@ window_size = 88
 [LEARNCURVE.val_transform_params]
 window_size = 88
 
+[TweetyNet.network]
+conv1_filters = 8
+conv1_kernel_size = [3, 3]
+conv2_filters = 16
+conv2_kernel_size = [5, 5]
+pool1_size = [4, 1]
+pool1_stride = [4, 1]
+pool2_size = [4, 1]
+pool2_stride = [4, 1]
+hidden_size = 32
+
 [TweetyNet.optimizer]
 lr = 0.001
