@@ -33,10 +33,11 @@ def get_trainer(
     """Returns an instance of ``lightning.Trainer``
     with a default set of callbacks.
     Used by ``vak.core`` functions."""
+    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
     if device == "cuda":
         accelerator = "gpu"
     else:
-        accelerator = None
+        accelerator = "auto"
 
     ckpt_callback = lightning.callbacks.ModelCheckpoint(
         dirpath=ckpt_root,
