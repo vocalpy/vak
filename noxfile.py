@@ -68,13 +68,57 @@ def lint(session):
     session.run("flake8", "./src", "--max-line-length", "120", "--exclude", "./src/crowsetta/_vendor")
 
 
-# ---- used by sessions that "clean up" data for tests
+@nox.session
+def test(session) -> None:
+    """
+    Run the unit and regular tests.
+    """
+    session.install(".[test]")
+    if session.posargs:
+        session.run("pytest", *session.posargs)
+    else:
+        session.run("pytest", "-x", "--slow-last")
+
+
+@nox.session
+def coverage(session) -> None:
+    """
+    Run the unit and regular tests, and save coverage report
+    """
+    session.install(".[test]")
+    session.run(
+        "pytest", "--cov=./", "--cov-report=xml", *session.posargs
+    )
+
+
+@nox.session
+def doc(session: nox.Session) -> None:
+    """
+    Build the docs.
+
+    To run ``sphinx-autobuild``,  do:
+
+    .. code-block::console
+
+       nox -s doc -- autobuild
+
+    Otherwise the docs will be built once using
+    """
+    session.install(".[doc]")
+    if session.posargs:
+        if "autobuild" in session.posargs:
+            print("Building docs at http://127.0.0.1:8000 with sphinx-autobuild -- use Ctrl-C to quit")
+            session.run("sphinx-autobuild", "doc", "doc/_build/html")
+        else:
+            print("Unsupported argument to docs")
+    else:
+        session.run("sphinx-build", "-nW", "--keep-going", "-b", "html", "doc/", "doc/_build/html")
+
+
+# ---- sessions below this all have to do with data for tests ----------------------------------------------------
 def clean_dir(dir_path):
-    """
-    "clean" a directory by removing all files
-    (that are not hidden)
-    without removing the directory itself
-    """
+    """Helper function that "cleans" a directory by removing all files
+    (that are not hidden) without removing the directory itself."""
     dir_path = pathlib.Path(dir_path)
     dir_contents = dir_path.glob('*')
     for content in dir_contents:
@@ -98,9 +142,7 @@ SOURCE_TEST_DATA_DIRS = [
 
 @nox.session(name='test-data-clean-source')
 def test_data_clean_source(session) -> None:
-    """
-    Clean (remove) 'source' test data, used by TEST_DATA_GENERATE_SCRIPT.
-    """
+    """Clean (remove) 'source' test data, used by TEST_DATA_GENERATE_SCRIPT."""
     clean_dir(SOURCE_TEST_DATA_DIR)
 
 
@@ -115,18 +157,14 @@ SOURCE_TEST_DATA_TAR = f'{SOURCE_TEST_DATA_DIR}source_test_data-version-1.x.tar.
 
 @nox.session(name='test-data-tar-source')
 def test_data_tar_source(session) -> None:
-    """
-    Make a .tar.gz file of just the 'generated' test data used to run tests on CI.
-    """
+    """Make a .tar.gz file of just the 'generated' test data used to run tests on CI."""
     session.log(f"Making tarfile with source data: {SOURCE_TEST_DATA_TAR}")
     make_tarfile(SOURCE_TEST_DATA_TAR, SOURCE_TEST_DATA_DIRS)
 
 
 @nox.session(name='test-data-download-source')
 def test_data_download_source(session) -> None:
-    """
-    Download and extract a .tar.gz file of 'source' test data, used by TEST_DATA_GENERATE_SCRIPT.
-    """
+    """Download and extract a .tar.gz file of 'source' test data, used by TEST_DATA_GENERATE_SCRIPT."""
     session.log(f'Downloading: {SOURCE_TEST_DATA_URL}')
     copy_url(url=SOURCE_TEST_DATA_URL, path=SOURCE_TEST_DATA_TAR)
     session.log(f'Extracting downloaded tar: {SOURCE_TEST_DATA_TAR}')
@@ -139,9 +177,7 @@ TEST_DATA_GENERATE_SCRIPT = './tests/scripts/generate_data_for_tests.py'
 
 @nox.session(name='test-data-generate', python="3.10")
 def test_data_generate(session) -> None:
-    """
-    Produced 'generated' test data, by running TEST_DATA_GENERATE_SCRIPT on 'source' test data.
-    """
+    """Produced 'generated' test data, by running TEST_DATA_GENERATE_SCRIPT on 'source' test data."""
     session.install(".[test]")
     session.run("python", TEST_DATA_GENERATE_SCRIPT)
 
@@ -151,13 +187,12 @@ GENERATED_TEST_DATA_DIR = f'{DATA_FOR_TESTS_DIR}generated/'
 
 @nox.session(name='test-data-clean-generated')
 def test_data_clean_generated(session) -> None:
-    """
-    Clean (remove) 'generated' test data.
-    """
+    """Clean (remove) 'generated' test data."""
     clean_dir(GENERATED_TEST_DATA_DIR)
 
 
 def make_tarfile(name: str, to_add: list):
+    """Helper function that makes a tarfile"""
     with tarfile.open(name, "w:gz") as tf:
         for add_name in to_add:
             tf.add(name=add_name)
@@ -191,18 +226,14 @@ GENERATED_TEST_DATA_ALL_DIRS = [CONFIGS_DIR, PREP_DIR, RESULTS_DIR]
 
 @nox.session(name='test-data-tar-generated-all')
 def test_data_tar_generated_all(session) -> None:
-    """
-    Make a .tar.gz file of all 'generated' test data.
-    """
+    """Make a .tar.gz file of all 'generated' test data."""
     session.log(f"Making tarfile with all generated data: {GENERATED_TEST_DATA_ALL_TAR}")
     make_tarfile(GENERATED_TEST_DATA_ALL_TAR, GENERATED_TEST_DATA_ALL_DIRS)
 
 
 @nox.session(name='test-data-tar-generated-ci')
 def test_data_tar_generated_ci(session) -> None:
-    """
-    Make a .tar.gz file of just the 'generated' test data used to run tests on CI.
-    """
+    """Make a .tar.gz file of just the 'generated' test data used to run tests on CI."""
     session.log(f"Making tarfile with generated data for CI: {GENERATED_TEST_DATA_CI_TAR}")
     make_tarfile(GENERATED_TEST_DATA_CI_TAR, GENERATED_TEST_DATA_CI_DIRS)
 
@@ -212,9 +243,7 @@ GENERATED_TEST_DATA_ALL_URL = 'https://osf.io/xfp6n/download'
 
 @nox.session(name='test-data-download-generated-all')
 def test_data_download_generated_all(session) -> None:
-    """
-    Download and extract a .tar.gz file of all 'generated' test data
-    """
+    """Download and extract a .tar.gz file of all 'generated' test data"""
     session.install("pandas")
     session.log(f'Downloading: {GENERATED_TEST_DATA_ALL_URL}')
     copy_url(url=GENERATED_TEST_DATA_ALL_URL, path=GENERATED_TEST_DATA_ALL_TAR)
@@ -230,72 +259,10 @@ GENERATED_TEST_DATA_CI_URL = 'https://osf.io/un2zs/download'
 
 @nox.session(name='test-data-download-generated-ci')
 def test_data_download_generated_ci(session) -> None:
-    """
-    Download and extract a .tar.gz file of just the 'generated' test data used to run tests on CI
-    """
+    """Download and extract a .tar.gz file of just the 'generated' test data used to run tests on CI"""
     session.install("pandas")
     session.log(f'Downloading: {GENERATED_TEST_DATA_CI_URL}')
     copy_url(url=GENERATED_TEST_DATA_CI_URL, path=GENERATED_TEST_DATA_CI_TAR)
     session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_CI_TAR}')
     with tarfile.open(GENERATED_TEST_DATA_CI_TAR, "r:gz") as tf:
         tf.extractall(path='.')
-
-
-DEFAULT_MODELS = ' '.join(VAK_TESTS_CONFIG['models'])
-
-
-@nox.session
-def test(session) -> None:
-    """
-    Run the unit and regular tests.
-    """
-    session.install(".[test]")
-    if session.posargs:
-        session.run("pytest", *session.posargs)
-    else:
-        session.run("pytest", "-x", "--slow-last", "--models", f"{DEFAULT_MODELS}")
-
-
-@nox.session
-def coverage(session) -> None:
-    """
-    Run the unit and regular tests, and save coverage report
-    """
-    session.install(".[test]")
-    if session.posargs:
-        if "running-on-ci" in session.posargs:
-            # on ci, just run `teenytweetynet` model
-            session.run(
-                "pytest", "--models", f"{DEFAULT_MODELS}", "--cov=./", "--cov-report=xml"
-            )
-            return
-        else:
-            print("Unsupported argument to coverage")
-
-    session.run(
-        "pytest", "--cov=./", "--cov-report=xml", *session.posargs
-    )
-
-
-@nox.session
-def doc(session: nox.Session) -> None:
-    """
-    Build the docs.
-
-    To run ``sphinx-autobuild``,  do:
-
-    .. code-block::console
-
-       nox -s doc -- autobuild
-
-    Otherwise the docs will be built once using
-    """
-    session.install(".[doc]")
-    if session.posargs:
-        if "autobuild" in session.posargs:
-            print("Building docs at http://127.0.0.1:8000 with sphinx-autobuild -- use Ctrl-C to quit")
-            session.run("sphinx-autobuild", "doc", "doc/_build/html")
-        else:
-            print("Unsupported argument to docs")
-    else:
-        session.run("sphinx-build", "-nW", "--keep-going", "-b", "html", "doc/", "doc/_build/html")
