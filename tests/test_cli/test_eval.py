@@ -12,13 +12,13 @@ from . import cli_asserts
 
 
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "model_name, audio_format, spect_format, annot_format",
     [
-        ("cbin", None, "notmat"),
+        ("TweetyNet", "cbin", None, "notmat"),
     ],
 )
 def test_eval(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
 ):
     output_dir = tmp_path.joinpath(
         f"test_eval_{audio_format}_{spect_format}_{annot_format}"
@@ -32,7 +32,7 @@ def test_eval(
 
     toml_path = specific_config(
         config_type="eval",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
