@@ -3,6 +3,7 @@ from .conv_encoder import ConvEncoder
 from .ed_tcn import ED_TCN
 from .teenytweetynet import TeenyTweetyNet
 from .tweetynet import TweetyNet
+from .ava import Ava
 
 __all__ = [
     "conv_encoder",
@@ -13,4 +14,5 @@ __all__ = [
     "TeenyTweetyNet",
     "tweetynet",
     "TweetyNet",
+    "Ava"
 ]
