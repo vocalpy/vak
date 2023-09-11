@@ -9,7 +9,7 @@ build:
   apt_packages:
     - libsndfile1
   tools:
-    python: "3.8"
+    python: "3.10"
 
 sphinx:
    configuration: doc/conf.py
