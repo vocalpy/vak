@@ -24,23 +24,98 @@ The :mod:`vak.cli` module implements the vak command line interface.
    cli.prep
    cli.train
 
-Core
-----
+Commands
+--------
 
-The :mod:`vak.core` module contains high-level functions called by the
-commmand-line interface to prepare datasets, train and evaluate
-models, and generate predictions from trained models.
+These high-level functions correspond to commands in the
+commmand-line interface. The commands are to prepare datasets,
+train and evaluate models, and generate predictions from trained models.
+
+Prep
+~~~~
 
 .. autosummary::
    :toctree: generated
    :template: module.rst
    :recursive:
 
-   core.learncurve
-   core.eval
-   core.predict
-   core.prep
-   core.train
+   prep
+   prep.frame_classification
+   prep.parametric_umap
+   prep.spectrogram_dataset
+   prep.unit_dataset
+   prep.audio_dataset
+   prep.constants
+   prep.dataset_df_helper
+   prep.prep_
+   prep.sequence_dataset
+
+Train-test-validation splits of datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The :mod:`vak.split` module contains functionality
+for generating train-validation-test splits from
+datasets. It is called by the :mod:`vak.prep` function
+when running ``vak prep`` through the command line interface.
+
+.. autosummary::
+   :toctree: generated
+   :template: module.rst
+   :recursive:
+
+   prep.split.algorithms.bruteforce
+   prep.split.algorithms.validate
+   prep.split.split
+
+
+Train
+~~~~~
+
+.. autosummary::
+   :toctree: generated
+   :template: module.rst
+   :recursive:
+
+   train.train_
+   train.frame_classification
+   train.parametric_umap
+
+Eval
+~~~~
+
+.. autosummary::
+   :toctree: generated
+   :template: module.rst
+   :recursive:
+
+   eval.eval_
+   eval.frame_classification
+   eval.parametric_umap
+
+Predict
+~~~~~~~
+
+.. autosummary::
+   :toctree: generated
+   :template: module.rst
+   :recursive:
+
+   predict.predict_
+   predict.frame_classification
+   predict.parametric_umap
+
+Learning Curve
+~~~~~~~~~~~~~~
+
+.. autosummary::
+   :toctree: generated
+   :template: module.rst
+   :recursive:
+
+   learncurve.curvefit
+   learncurve.dirname
+   learncurve.frame_classification
+   learncurve.learncurve
 
 Configuration files
 -------------------
@@ -55,7 +130,6 @@ and dataclasses that represent tables from those files.
    :recursive:
 
    config.config
-   config.dataloader
    config.eval
    config.learncurve
    config.model
@@ -75,35 +149,8 @@ The :mod:`vak.datasets` module contains datasets built into vak.
    :template: module.rst
    :recursive:
 
-   datasets.seq.validators
-   datasets.vocal_dataset
-   datasets.window_dataset
-
-Files
---------
-The :mod:`vak.files` module contains helper functions for working with files.
-
-.. autosummary::
-   :toctree: generated
-   :template: module.rst
-   :recursive:
-
-   files.files
-   files.spect
-
-Input-Output
-------------
-The :mod:`vak.io` module contains functions for generating datasets used by vak
-from input files: audio files, spectograms, and/or annotation files.
-
-.. autosummary::
-   :toctree: generated
-   :template: module.rst
-   :recursive:
-
-   io.audio
-   io.dataframe
-   io.spect
+   datasets.frame_classification
+   datasets.parametric_umap
 
 Metrics
 -------
@@ -133,14 +180,16 @@ for training, predicting, etc.
    :template: module.rst
    :recursive:
 
-   models._api
    models.base
+   models.convencoder_umap
    models.decorator
    models.definition
+   models.ed_tcn
+   models.frame_classification_model
    models.get
-   models.teenytweetynet
+   models.parametric_umap_model
+   models.registry
    models.tweetynet
-   models.windowed_frame_classification_model
 
 Nets
 ----
@@ -154,7 +203,8 @@ All models include a neural network architecture
    :template: module.rst
    :recursive:
 
-   nets.teenytweetynet
+   nets.conv_encoder
+   nets.ed_tcn
    nets.tweetynet
 
 Neural Network Layers and Operations
@@ -186,23 +236,6 @@ that are built in to vak live in the :mod:`vak.plot` module.
    plot.learncurve
    plot.spect
 
-Train-test-validation splits of datasets
-----------------------------------------
-
-The :mod:`vak.split` module contains functionality
-for generating train-validation-test splits from
-datasets. It is called by the :mod:`vak.prep` function
-when running ``vak prep`` through the command line interface.
-
-.. autosummary::
-   :toctree: generated
-   :template: module.rst
-   :recursive:
-
-   split.algorithms.bruteforce
-   split.algorithms.validate
-   split.split
-
 Transforms
 ----------
 
@@ -215,32 +248,35 @@ i.e., for pre-processing or post-processing.
    :template: module.rst
    :recursive:
 
-   transforms.labeled_timebins.functional
-   transforms.labeled_timebins.transforms
+   transforms.defaults
+   transforms.frame_labels.functional
+   transforms.frame_labels.transforms
    transforms.functional
    transforms.transforms
 
-Miscellaneous
--------------
+Common
+------
+
+This module contains helper functions
+used by multiple other modules.
 
 .. autosummary::
    :toctree: generated
    :template: module.rst
    :recursive:
 
-   annotation
-   constants
-   converters
-   curvefit
-   device
-   labeled_timebins
-   labels
-   logging
-   paths
-   spect
-   tensorboard
-   timebins
-   timenow
-   trainer
-   typing
-   validators
+   common.annotation
+   common.constants
+   common.converters
+   common.device
+   common.files
+   common.labels
+   common.learncurve
+   common.logging
+   common.paths
+   common.tensorboard
+   common.timebins
+   common.timenow
+   common.trainer
+   common.typing
+   common.validators
