@@ -46,7 +46,8 @@ but are designed specifically for computational studies of vocal behavior .
 We originally developed vak to benchmark a neural network model, TweetyNet [^cite_Cohenetal2022b], 
 that automates annotation of birdsong by segmenting spectrograms. 
 TweetyNet and vak have been used in both neuroscience 
-[^cite_Cohenetal2020][^cite_Goffinetetal2021][^cite_McGregoretal2022] and bioacoustics [^cite_Provostetal2022]. 
+[^cite_Cohenetal2020][^cite_Goffinetetal2021][^cite_McGregoretal2022][^cite_Koparkaretal2023] 
+and bioacoustics [^cite_Provostetal2022][^cite_Yangetal2023]. 
 
 ## References
 
@@ -109,3 +110,11 @@ TweetyNet and vak have been used in both neuroscience
    Plos one 17, no. 12 (2022): e0278522.
    Paper: <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0278522>
    Code: <https://github.com/kaiyaprovost/bioacoustics>
+
+[^cite_Yangetal2023]: Yang, Jiaying, Bryan C. Carstens, and Kaiya L. Provost.
+   "Machine learning reveals relationships between song, climate, and migration in coastal Zonotrichia leucophrys." 
+   bioRxiv (2023): 2023-03.
+
+[^cite_Koparkaretal2023]: Koparkar, A., Warren, T. L., Charlesworth, J. D., Shin, S., Brainard, M. S., & Veit, L. (2023).
+   Lesions in a songbird vocal circuit increase variability in song syntax. 
+   bioRxiv, 2023-07.
