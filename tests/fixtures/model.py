@@ -4,8 +4,7 @@ import pytest
 # instead of computing something dynamically e.g. from ``vak.models``.
 # Should be used throughout fixtures when we need to get things "by model"
 MODELS = [
-    "tweetynet",
-    "teenytweetynet",
+    "TweetyNet",
 ]
 
 
@@ -15,6 +14,6 @@ def default_model():
     Should work regardless of where the test is run, i.e. both on
     CI platform and locally.
 
-    currently ``teenytweetynet``
+    currently ``TweetyNet``
     """
-    return "teenytweetynet"
+    return "TweetyNet"

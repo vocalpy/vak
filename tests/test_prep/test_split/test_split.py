@@ -1,4 +1,5 @@
-from math import isclose
+import json
+import math
 
 import numpy as np
 import pandas as pd
@@ -34,11 +35,11 @@ def train_test_dur_split_inds_output_matches_expected(
                 assert dur_out >= dur_in
             elif dur_in == -1:
                 if split == "train":
-                    assert isclose(
+                    assert math.isclose(
                         dur_out, sum(durs) - sum([durs[ind] for ind in test_inds])
                     )
                 elif split == "test":
-                    assert isclose(
+                    assert math.isclose(
                         dur_out, sum(durs) - sum([durs[ind] for ind in train_inds])
                     )
 
@@ -244,43 +245,96 @@ def test_dataframe_specd_dur_gt_raises():
         )
 
 
-@pytest.mark.parametrize("train_dur, test_dur", [(200, 200), (200, None), (None, 200)])
-def test_split_dataframe_mat(
-    train_dur, test_dur, spect_list_mat_all_labels_in_labelset, annot_list_yarden, labelset_yarden,
-    specific_dataset_path
+@pytest.mark.parametrize(
+    "config_type, model_name, spect_format, audio_format, annot_format, train_dur, val_dur, test_dur",
+    [
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', 45, None, None,),
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', 45, None, 30,),
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', 45, 15, 30,),
+        ('train', 'TweetyNet', None, 'cbin', 'notmat', None, None, 30,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', 200, None, None,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', None, None, 200,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', 200, None, 200,),
+        ('train', 'TweetyNet', 'mat', None, 'yarden', 200, 80, 120,),
+    ]
+)
+def test_split_frame_classification_dataframe(
+    config_type, model_name, spect_format, audio_format, annot_format,  specific_dataset_path,
+    train_dur, val_dur, test_dur,
 ):
-    labelset_yarden = set(labelset_yarden)
-
-    dataset_df = vak.prep.spectrogram_dataset.spect_helper.make_dataframe_of_spect_files(
-        spect_format="mat",
-        spect_files=spect_list_mat_all_labels_in_labelset,
-        annot_format="yarden",
-        annot_list=annot_list_yarden,
-    )
     dataset_path = specific_dataset_path(
-        spect_format="mat",
-        annot_format="yarden",
-        config_type="train",
-        model="teenytweetynet"
+        spect_format=spect_format,
+        audio_format=audio_format,
+        annot_format=annot_format,
+        config_type=config_type,
+        model=model_name,
     )
+    metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+    dataset_df = pd.read_csv(dataset_csv_path)
+    dataset_df = dataset_df.drop(columns=('split'))
+    labelmap_path = dataset_path / "labelmap.json"
+    with labelmap_path.open("r") as f:
+        labelmap = json.load(f)
+    labelset = set(key for key in labelmap.keys() if key != 'unlabeled')
 
-    train_dur = 200
-    test_dur = 200
-
-    dataset_df_split = vak.prep.split.split.dataframe(
-        dataset_df, dataset_path, labelset=labelset_yarden, train_dur=train_dur, test_dur=test_dur
+    dataset_df_split = vak.prep.split.split.frame_classification_dataframe(
+        dataset_df, dataset_path, labelset=labelset, train_dur=train_dur, val_dur=val_dur, test_dur=test_dur
     )
 
     assert isinstance(dataset_df_split, pd.DataFrame)
 
-    if train_dur is not None:
-        train_dur_out = dataset_df_split[dataset_df_split["split"] == "train"].duration.sum()
-        assert train_dur_out >= train_dur
-    else:
-        assert "train" not in dataset_df_split["split"].unique().tolist()
+    for split, duration in zip(
+            ('train', 'val', 'test'),
+            (train_dur, val_dur, test_dur),
+    ):
+        if duration is not None:
+            duration_out = dataset_df_split[dataset_df_split["split"] == split].duration.sum()
+            assert duration_out >= duration
+        else:
+            assert split not in dataset_df_split["split"].unique().tolist()
 
-    if test_dur is not None:
-        test_dur_out = dataset_df_split[dataset_df_split["split"] == "test"].duration.sum()
-        assert test_dur_out >= test_dur
-    else:
-        assert "test" not in dataset_df_split["split"].unique().tolist()
+
+@pytest.mark.parametrize(
+    "config_type, model_name, spect_format, audio_format, annot_format, train_dur, val_dur, test_dur",
+    [
+        ('train', 'ConvEncoderUMAP', None, 'cbin', 'notmat', 0.2, None, None,),
+        ('train', 'ConvEncoderUMAP', None, 'cbin', 'notmat', 0.2, None, 0.15,),
+        ('train', 'ConvEncoderUMAP', None, 'cbin', 'notmat', 0.2, 0.1, 0.15,),
+    ]
+)
+def test_split_unit_dataframe(
+    config_type, model_name, spect_format, audio_format, annot_format,  specific_dataset_path,
+    train_dur, val_dur, test_dur,
+):
+    dataset_path = specific_dataset_path(
+        spect_format=spect_format,
+        audio_format=audio_format,
+        annot_format=annot_format,
+        config_type=config_type,
+        model=model_name,
+    )
+    metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
+    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+    dataset_df = pd.read_csv(dataset_csv_path)
+    dataset_df = dataset_df.drop(columns=('split'))
+    labelmap_path = dataset_path / "labelmap.json"
+    with labelmap_path.open("r") as f:
+        labelmap = json.load(f)
+    labelset = set(key for key in labelmap.keys() if key != 'unlabeled')
+
+    dataset_df_split = vak.prep.split.split.unit_dataframe(
+        dataset_df, dataset_path, labelset=labelset, train_dur=train_dur, val_dur=val_dur, test_dur=test_dur
+    )
+
+    assert isinstance(dataset_df_split, pd.DataFrame)
+
+    for split, duration in zip(
+            ('train', 'val', 'test'),
+            (train_dur, val_dur, test_dur),
+    ):
+        if duration is not None:
+            duration_out = dataset_df_split[dataset_df_split["split"] == split].duration.sum()
+            assert duration_out >= duration
+        else:
+            assert split not in dataset_df_split["split"].unique().tolist()

@@ -39,21 +39,26 @@ def make_dataframe_of_spect_files(
     spect_ext: str | None = None,
     annot_list: list | None = None,
     annot_format: str | None = None,
-    spect_annot_map: dict | None = None,
     labelset: set | None = None,
     n_decimals_trunc: int = 5,
     freqbins_key: str = "f",
     timebins_key: str = "t",
     spect_key: str = "s",
     audio_path_key: str = "audio_path",
-):
-    """Get a dataset of spectrograms and optional annotations as a Pandas DataFrame.
+) -> pd.DataFrame:
+    """Creates a dataset of spectrogram files from a directory,
+    optionally paired with an annotation file or files,
+    and returns a Pandas DataFrame that represents the dataset.
 
     Spectrogram files are array in npz files created by numpy
     or in mat files created by Matlab.
-    If files are in npz format, they will be convert to npz
+    If files are in mat format, they will be converted to npz
     with the default keys for arrays, and saved in
-    ``spect_output_dir``.
+    ``spect_output_dir``. This step is required so that all dataset
+    prepared by :mod:`vak` are in a "normalized" or
+    "canonicalized" format. If no ``spect_output_dir`` is provided
+    when the ``spect_format`` is ``'mat'``, then this function
+    will raise an error.
 
     Parameters
     ----------
@@ -70,10 +75,6 @@ def make_dataframe_of_spect_files(
         name of annotation format. Added as a column to the DataFrame if specified.
         Used by other functions that open annotation files via their paths from the DataFrame.
         Should be a format that the crowsetta library recognizes.
-        Default is None.
-    spect_annot_map : dict
-        Where keys are paths to files and value corresponding to each key is
-        the annotation for that file.
         Default is None.
     labelset : str, list, set
         of str or int, set of unique labels for vocalizations. Default is None.
@@ -107,7 +108,7 @@ def make_dataframe_of_spect_files(
     at the bin centers. (As far as vak is concerned, "vector" and "matrix" are synonymous with
     "array".)
 
-    Since both .mat files and .npz files load into a dictionary-like structure,
+    Since both mat files and npz files load into a dictionary-like structure,
     the arrays will be accessed with keys. By convention, these keys are 's', 'f', and 't'.
     If you use different keys you can let this function know by changing
     the appropriate arguments: spect_key, freqbins_key, timebins_key
@@ -127,9 +128,9 @@ def make_dataframe_of_spect_files(
             "canonical format that other functions in the library expect."
         )
 
-    if all([arg is None for arg in (spect_dir, spect_files, spect_annot_map)]):
+    if all([arg is None for arg in (spect_dir, spect_files)]):
         raise ValueError(
-            "must specify one of: spect_dir, spect_files, spect_annot_map"
+            "must specify one of: spect_dir, spect_files"
         )
 
     if spect_dir and spect_files:
@@ -137,34 +138,12 @@ def make_dataframe_of_spect_files(
             "received values for spect_dir and spect_files, unclear which to use"
         )
 
-    if spect_dir and spect_annot_map:
+    if annot_list and annot_format is None:
         raise ValueError(
-            "received values for spect_dir and spect_annot_map, unclear which to use"
+            "an annot_list was provided, but no annot_format was specified"
         )
 
-    if spect_files and spect_annot_map:
-        raise ValueError(
-            "received values for spect_files and spect_annot_map, unclear which to use"
-        )
-
-    if annot_list and spect_annot_map:
-        raise ValueError(
-            "received values for annot_list and spect_annot_map, unclear which annotations to use"
-        )
-
-    if (annot_list or spect_annot_map) and (annot_format is None):
-        if annot_list:
-            raise ValueError(
-                "an annot_list was provided, but no annot_format was specified"
-            )
-        elif spect_annot_map:
-            raise ValueError(
-                "a spect_annot_map was provided, but no annot_format was specified"
-            )
-
-    if annot_format is not None and (
-        annot_list is None and spect_annot_map is None
-    ):
+    if annot_format is not None and annot_list is None:
         raise ValueError(
             "an annot_format was specified but no annot_list or spect_annot_map was provided"
         )
@@ -183,7 +162,7 @@ def make_dataframe_of_spect_files(
     if spect_dir:  # then get spect_files from that dir
         # note we already validated format above
         spect_files = sorted(
-            pathlib.Path(spect_dir).glob(f"**/*{spect_format}")
+            pathlib.Path(spect_dir).glob(f"*{spect_format}")
         )
 
     if spect_files:  # (or if we just got them from spect_dir)

@@ -10,13 +10,13 @@ import vak
 @pytest.mark.parametrize(
     "config_type, audio_format, spect_format, annot_format, dataset_prep_func_to_mock",
     [
-        ("eval", "cbin", None, "notmat", "vak.prep.frame_classification.prep"),
-        ("learncurve", "cbin", None, "notmat", "vak.prep.frame_classification.prep"),
-        ("predict", "cbin", None, "notmat", "vak.prep.frame_classification.prep"),
-        ("predict", "wav", None, "birdsong-recognition-dataset", "vak.prep.frame_classification.prep"),
-        ("train", "cbin", None, "notmat", "vak.prep.frame_classification.prep"),
-        ("train", "wav", None, "birdsong-recognition-dataset", "vak.prep.frame_classification.prep"),
-        ("train", None, "mat", "yarden", "vak.prep.frame_classification.prep"),
+        ("eval", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
+        ("learncurve", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
+        ("predict", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
+        ("predict", "wav", None, "birdsong-recognition-dataset", "vak.prep.prep_.prep_frame_classification_dataset"),
+        ("train", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
+        ("train", "wav", None, "birdsong-recognition-dataset", "vak.prep.prep_.prep_frame_classification_dataset"),
+        ("train", None, "mat", "yarden", "vak.prep.prep_.prep_frame_classification_dataset"),
     ],
 )
 def test_prep(
@@ -73,7 +73,6 @@ def test_prep(
             test_dur=cfg.prep.test_dur,
             train_set_durs=cfg.prep.train_set_durs,
             num_replicates=cfg.prep.num_replicates,
-            window_size=cfg.dataloader.window_size,
         )
 
         assert mocked_dataset_prep_func.called

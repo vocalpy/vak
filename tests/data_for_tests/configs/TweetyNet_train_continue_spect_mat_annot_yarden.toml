@@ -25,9 +25,9 @@ num_epochs = 2
 val_step = 50
 ckpt_step = 200
 patience = 4
-num_workers = 4
+num_workers = 16
 device = "cuda"
-root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/TweetyNet"
+root_results_dir = "./tests/data_for_tests/generated/results/train_continue/spect_mat_annot_yarden/TweetyNet"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 
 [TRAIN.train_dataset_params]
@@ -35,6 +35,17 @@ window_size = 88
 
 [TRAIN.val_transform_params]
 window_size = 88
+
+[TweetyNet.network]
+conv1_filters = 8
+conv1_kernel_size = [3, 3]
+conv2_filters = 16
+conv2_kernel_size = [5, 5]
+pool1_size = [4, 1]
+pool1_stride = [4, 1]
+pool2_size = [4, 1]
+pool2_stride = [4, 1]
+hidden_size = 32
 
 [TweetyNet.optimizer]
 lr = 0.001

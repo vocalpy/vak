@@ -56,10 +56,11 @@ def get_default_trainer(
     else:
         callbacks = None
 
+    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
     if device == "cuda":
         accelerator = "gpu"
     else:
-        accelerator = None
+        accelerator = "auto"
 
     logger = lightning.loggers.TensorBoardLogger(save_dir=log_save_dir)
 

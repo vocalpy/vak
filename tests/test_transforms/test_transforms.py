@@ -50,19 +50,19 @@ class TestStandardizeSpect:
             None
         ]
     )
-    def test_fit_csv_path(self, split, train_cbin_notmat_df,
+    def test_fit_dataset_path(self, split, train_cbin_notmat_df,
                           specific_dataset_path, specific_dataset_csv_path):
         # we need dataset_path since paths in df are relative to it
         dataset_path = specific_dataset_path(
             config_type="train",
-            model="teenytweetynet",
+            model="TweetyNet",
             audio_format="cbin",
             annot_format="notmat"
         )
 
         dataset_csv_path = specific_dataset_csv_path(
             config_type="train",
-            model="teenytweetynet",
+            model="TweetyNet",
             audio_format="cbin",
             annot_format="notmat"
         )
@@ -90,11 +90,10 @@ class TestStandardizeSpect:
 
         # ---- actually do fit
         if split:
-            standardizer = vak.transforms.StandardizeSpect.fit_csv_path(dataset_csv_path,
-                                                                        split=split)
+            standardizer = vak.transforms.StandardizeSpect.fit_dataset_path(dataset_path, split=split)
         else:
             # this tests that default value for split 'train' works as expected
-            standardizer = vak.transforms.StandardizeSpect.fit_csv_path(dataset_csv_path)
+            standardizer = vak.transforms.StandardizeSpect.fit_dataset_path(dataset_path)
 
         # ---- test
         for attr_name, expected in zip(

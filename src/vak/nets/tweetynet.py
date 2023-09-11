@@ -43,7 +43,7 @@ class TweetyNet(nn.Module):
         Finally fully-connected layer that maps
         the output of ``TweetyNet.rnn`` to a
         matrix of size (num. time bins in window, num. classes).
-\
+
     Notes
     -----
     This is the network used by ``vak.models.TweetyNetModel``.
@@ -73,11 +73,13 @@ class TweetyNet(nn.Module):
         Parameters
         ----------
         num_classes : int
-            number of classes to predict, e.g., number of syllable classes in an individual bird's song
-        input_shape : tuple
-            with 3 elements corresponding to dimensions of spectrogram windows: (channels, frequency bins, time bins).
-            i.e. we assume input is a spectrogram and treat it like an image, typically with one channel,
-            the rows are frequency bins, and the columns are time bins. Default is (1, 513, 88).
+            Number of classes to predict, e.g., number of syllable classes in an individual bird's song
+        num_input_channels: int
+            Number of channels in input. Typically one, for a spectrogram.
+            Default is 1.
+        num_freqbins: int
+            Number of frequency bins in spectrograms that will be input to model.
+            Default is 256.
         padding : str
             type of padding to use, one of {"VALID", "SAME"}. Default is "SAME".
         conv1_filters : int

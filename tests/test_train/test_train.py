@@ -1,4 +1,6 @@
-"""tests for vak.train module"""
+"""Tests for vak.train.train function."""
+from unittest import mock
+
 import pytest
 
 import vak.config
@@ -7,50 +9,40 @@ import vak.common.paths
 import vak.train
 
 
-def assert_train_output_matches_expected(cfg, model_name, results_path):
-    assert results_path.joinpath("labelmap.json").exists()
-
-    if cfg.train.normalize_spectrograms or cfg.train.spect_scaler_path:
-        assert results_path.joinpath("StandardizeSpect").exists()
-    else:
-        assert not results_path.joinpath("StandardizeSpect").exists()
-
-    model_path = results_path.joinpath(model_name)
-    assert model_path.exists()
-
-    tensorboard_log = sorted(
-        model_path.glob(f"lightning_logs/**/*events*")
-    )
-    assert len(tensorboard_log) == 1
-
-    checkpoints_path = model_path.joinpath("checkpoints")
-    assert checkpoints_path.exists()
-    assert checkpoints_path.joinpath("checkpoint.pt").exists()
-    if cfg.train.val_step is not None:
-        assert checkpoints_path.joinpath("max-val-acc-checkpoint.pt").exists()
-
-
-@pytest.mark.slow
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "audio_format, spect_format, annot_format, model_name, train_function_to_mock",
     [
-        ("cbin", None, "notmat"),
-        ("wav", None, "birdsong-recognition-dataset"),
-        (None, "mat", "yarden"),
+        ("cbin", None, "notmat", "TweetyNet",
+         'vak.train.train_.train_frame_classification_model'),
+        ("wav", None, "birdsong-recognition-dataset", "TweetyNet",
+         'vak.train.train_.train_frame_classification_model'),
+        (None, "mat", "yarden", "TweetyNet",
+         'vak.train.train_.train_frame_classification_model'),
+        ("cbin", None, "notmat", "ConvEncoderUMAP",
+         'vak.train.train_.train_parametric_umap_model'),
     ],
 )
 def test_train(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
+    audio_format, spect_format, annot_format, model_name, train_function_to_mock,
+    specific_config, tmp_path
 ):
-    results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
-    results_path.mkdir()
+    """Test that :func:`vak.train.train` dispatches to the correct model-specific
+    training functions"""
+    root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
+    root_results_dir.mkdir()
+
     options_to_change = [
-        {"section": "TRAIN", "option": "device", "value": device},
-        {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
+        {
+            "section": "TRAIN",
+            "option": "root_results_dir",
+            "value": str(root_results_dir),
+        },
+        {"section": "TRAIN", "option": "device", "value": 'cpu'},
     ]
+
     toml_path = specific_config(
         config_type="train",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
@@ -59,125 +51,24 @@ def test_train(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
-    vak.train.train(
-        cfg.train.model,
-        model_config,
-        cfg.train.dataset_path,
-        cfg.dataloader.window_size,
-        cfg.train.batch_size,
-        cfg.train.num_epochs,
-        cfg.train.num_workers,
-        results_path=results_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
-        normalize_spectrograms=cfg.train.normalize_spectrograms,
-        shuffle=cfg.train.shuffle,
-        val_step=cfg.train.val_step,
-        ckpt_step=cfg.train.ckpt_step,
-        patience=cfg.train.patience,
-        device=cfg.train.device,
-    )
-
-    assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
-    [
-        ("cbin", None, "notmat"),
-        ("wav", None, "birdsong-recognition-dataset"),
-        (None, "mat", "yarden"),
-    ],
-)
-def test_continue_training(
-    audio_format, spect_format, annot_format, specific_config, tmp_path, model, device
-):
-    results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
-    results_path.mkdir()
-    options_to_change = [
-        {"section": "TRAIN", "option": "device", "value": device},
-        {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
-    ]
-    toml_path = specific_config(
-        config_type="train_continue",
-        model=model,
-        audio_format=audio_format,
-        annot_format=annot_format,
-        spect_format=spect_format,
-        options_to_change=options_to_change,
-    )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
-
-    vak.train.train(
-        model_name=cfg.train.model,
-        model_config=model_config,
-        dataset_path=cfg.train.dataset_path,
-        window_size=cfg.dataloader.window_size,
-        batch_size=cfg.train.batch_size,
-        num_epochs=cfg.train.num_epochs,
-        num_workers=cfg.train.num_workers,
-        spect_scaler_path=cfg.train.spect_scaler_path,
-        results_path=results_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
-        normalize_spectrograms=cfg.train.normalize_spectrograms,
-        shuffle=cfg.train.shuffle,
-        val_step=cfg.train.val_step,
-        ckpt_step=cfg.train.ckpt_step,
-        patience=cfg.train.patience,
-        device=cfg.train.device,
-    )
-
-    assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
-
-
-@pytest.mark.parametrize(
-    'path_option_to_change',
-    [
-        {"section": "TRAIN", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"section": "TRAIN", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
-    ]
-)
-def test_train_raises_file_not_found(
-    path_option_to_change, specific_config, tmp_path, device
-):
-    """Test that pre-conditions in `vak.train` raise FileNotFoundError
-    when one of the following does not exist:
-    checkpoint_path, dataset_path, spect_scaler_path
-    """
-    options_to_change = [
-        {"section": "TRAIN", "option": "device", "value": device},
-        path_option_to_change
-    ]
-    toml_path = specific_config(
-        config_type="train",
-        model="teenytweetynet",
-        audio_format="cbin",
-        annot_format="notmat",
-        spect_format=None,
-        options_to_change=options_to_change,
-    )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
-    results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
+    results_path = tmp_path / 'results_path'
     results_path.mkdir()
 
-    with pytest.raises(FileNotFoundError):
+    with mock.patch(train_function_to_mock, autospec=True) as mock_train_function:
         vak.train.train(
-            model_name=cfg.train.model,
+            model_name=model_name,
             model_config=model_config,
             dataset_path=cfg.train.dataset_path,
-            window_size=cfg.dataloader.window_size,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
+            train_transform_params=cfg.train.train_transform_params,
+            train_dataset_params=cfg.train.train_dataset_params,
+            val_transform_params=cfg.train.val_transform_params,
+            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             spect_scaler_path=cfg.train.spect_scaler_path,
             results_path=results_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
             normalize_spectrograms=cfg.train.normalize_spectrograms,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
@@ -185,58 +76,4 @@ def test_train_raises_file_not_found(
             patience=cfg.train.patience,
             device=cfg.train.device,
         )
-
-
-@pytest.mark.parametrize(
-    'path_option_to_change',
-    [
-        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
-        {"section": "TRAIN", "option": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
-    ]
-)
-def test_train_raises_not_a_directory(
-    path_option_to_change, specific_config, device, tmp_path
-):
-    """Test that core.train raises NotADirectory
-    when directory does not exist
-    """
-    options_to_change = [
-        path_option_to_change,
-        {"section": "TRAIN", "option": "device", "value": device},
-    ]
-
-    toml_path = specific_config(
-        config_type="train",
-        model="teenytweetynet",
-        audio_format="cbin",
-        annot_format="notmat",
-        spect_format=None,
-        options_to_change=options_to_change,
-    )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
-
-    # mock behavior of cli.train, building `results_path` from config option `root_results_dir`
-    results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
-
-    with pytest.raises(NotADirectoryError):
-        vak.train.train(
-            model_name=cfg.train.model,
-            model_config=model_config,
-            dataset_path=cfg.train.dataset_path,
-            window_size=cfg.dataloader.window_size,
-            batch_size=cfg.train.batch_size,
-            num_epochs=cfg.train.num_epochs,
-            num_workers=cfg.train.num_workers,
-            checkpoint_path=cfg.train.checkpoint_path,
-            spect_scaler_path=cfg.train.spect_scaler_path,
-            results_path=results_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
-            normalize_spectrograms=cfg.train.normalize_spectrograms,
-            shuffle=cfg.train.shuffle,
-            val_step=cfg.train.val_step,
-            ckpt_step=cfg.train.ckpt_step,
-            patience=cfg.train.patience,
-            device=cfg.train.device,
-        )
+        assert mock_train_function.called

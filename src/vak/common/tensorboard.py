@@ -1,4 +1,6 @@
-"""functions dealing with ``tensorboard``"""
+"""Functions dealing with ``tensorboard``"""
+from __future__ import annotations
+
 from pathlib import Path
 
 import pandas as pd
@@ -7,14 +9,16 @@ from tensorboard.backend.event_processing.event_accumulator import (
 )
 from torch.utils.tensorboard import SummaryWriter
 
+from ..common.typing import PathLike
 
-def get_summary_writer(log_dir, filename_suffix):
-    """get an instance of ``tensorboard.SummaryWriter``,
-    to use with a vak.Model during training
+
+def get_summary_writer(log_dir: PathLike, filename_suffix: str) -> SummaryWriter:
+    """Get an instance of ``tensorboard.SummaryWriter``,
+    to use with a vak.Model during training.
 
     Parameters
     ----------
-    log_dir : str
+    log_dir : str, pathlib.Path
         directory where event file will be written
     filename_suffix : str
         suffix added to events file name
@@ -40,15 +44,17 @@ DEFAULT_SIZE_GUIDANCE = {
 }
 
 
-def events2df(events_path, size_guidance=None, drop_wall_time=True):
-    """convert ``tensorboard`` "events" log file to pandas DataFrame
+def events2df(
+        events_path: PathLike, size_guidance: dict | None = None, drop_wall_time: bool = True
+) -> pd.DataFrame:
+    """Convert :mod:`tensorboard` events file to pandas.DataFrame
 
-    events files are created by SummaryWriter from PyTorch or Tensorflow.
+    Events files are created by SummaryWriter from PyTorch or Tensorflow.
 
     Parameters
     ----------
-    events_path : str, Path
-        path to either a log directory or a specific events file
+    events_path : str, pathlib.Path
+        Path to either a log directory or a specific events file
         saved by a SummaryWriter in a log directory.
         By default, ``vak`` saves logs in a directory with the model name
         inside a ``results`` directory generated at the start of training.
@@ -64,12 +70,12 @@ def events2df(events_path, size_guidance=None, drop_wall_time=True):
         For more information see
         https://github.com/tensorflow/tensorboard/blob/master/tensorboard/backend/event_processing/event_accumulator.py
     drop_wall_time : bool
-        if True, drop wall times logged in events file. Default is True.
+        If True, drop wall times logged in events file. Default is True.
 
     Returns
     -------
     df : pandas.Dataframe
-        with index 'step' and all Scalars from the events file
+        With index 'step' and all Scalars from the events file
 
     Examples
     --------
@@ -117,4 +123,5 @@ def events2df(events_path, size_guidance=None, drop_wall_time=True):
         ).set_index("step")
         if drop_wall_time:
             dfs[scalar_tag].drop("wall_time", axis=1, inplace=True)
-    return pd.concat([v for k, v in dfs.items()], axis=1)
+    df = pd.concat([v for k, v in dfs.items()], axis=1)
+    return df

@@ -2,10 +2,11 @@
 dataset_type = "parametric umap"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032412"
-output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/ConvEncoderUMAP"
+output_dir = "./tests/data_for_tests/generated/prep/eval/audio_cbin_annot_notmat/ConvEncoderUMAP"
 audio_format = "cbin"
 annot_format = "notmat"
 labelset = "iabcdefghjk"
+test_dur = 0.2
 
 [SPECT_PARAMS]
 fft_size = 512
@@ -15,11 +16,19 @@ transform_type = "log_spect_plus_one"
 [EVAL]
 checkpoint_path = "tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP/results_230727_210112/ConvEncoderUMAP/checkpoints/checkpoint.pt"
 model = "ConvEncoderUMAP"
-batch_size = 4
-num_workers = 2
+batch_size = 64
+num_workers = 16
 device = "cuda"
 output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/ConvEncoderUMAP"
-dataset_path = "tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/ConvEncoderUMAP/032312-vak-dimensionality-reduction-dataset-generated-230727_205727"
+
+[ConvEncoderUMAP.network]
+conv1_filters = 8
+conv2_filters = 16
+conv_kernel_size = 3
+conv_stride = 2
+conv_padding = 1
+n_features_linear = 32
+n_components = 2
 
 [ConvEncoderUMAP.optimizer]
 lr = 0.001

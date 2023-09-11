@@ -71,6 +71,14 @@ class PrepConfig:
     output_dir : str
         Path to location where data sets should be saved. Default is None,
         in which case data sets are saved in the current working directory.
+    dataset_type : str
+        String name of the type of dataset, e.g.,
+        'frame_classification'. Dataset types are
+        defined by machine learning tasks, e.g.,
+        a 'frame_classification' dataset would be used
+        a :class:`vak.models.FrameClassificationModel` model.
+        Valid dataset types are defined as
+        :const:`vak.prep.prep.DATASET_TYPES`.
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.
     spect_format : str

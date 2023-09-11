@@ -22,11 +22,10 @@ import vak.models
 def test_parse_config_section_returns_attrs_class(
     section_name,
     configs_toml_path_pairs_by_model_factory,
-    model,
 ):
     """test that ``vak.config.parse.parse_config_section``
     returns an instance of ``vak.config.learncurve.LearncurveConfig``"""
-    config_toml_path_pairs = configs_toml_path_pairs_by_model_factory(model, section_name)
+    config_toml_path_pairs = configs_toml_path_pairs_by_model_factory("TweetyNet", section_name)
     for config_toml, toml_path in config_toml_path_pairs:
         config_section_obj = vak.config.parse.parse_config_section(
             config_toml=config_toml,
@@ -41,7 +40,6 @@ def test_parse_config_section_returns_attrs_class(
 @pytest.mark.parametrize(
     "section_name",
     [
-        "DATALOADER",
         "EVAL",
         "LEARNCURVE",
         "PREDICT",
@@ -53,13 +51,12 @@ def test_parse_config_section_returns_attrs_class(
 def test_parse_config_section_missing_options_raises(
     section_name,
     configs_toml_path_pairs_by_model_factory,
-    model,
 ):
     """test that configs without the required options in a section raise KeyError"""
     if vak.config.parse.REQUIRED_OPTIONS[section_name] is None:
         pytest.skip(f"no required options to test for section: {section_name}")
 
-    configs_toml_path_pairs = configs_toml_path_pairs_by_model_factory(model, section_name)
+    configs_toml_path_pairs = configs_toml_path_pairs_by_model_factory("TweetyNet", section_name)
 
     for config_toml, toml_path in configs_toml_path_pairs:
         for option in vak.config.parse.REQUIRED_OPTIONS[section_name]:
@@ -77,13 +74,12 @@ def test_parse_config_section_missing_options_raises(
 def test_parse_config_section_model_not_installed_raises(
         section_name,
         configs_toml_path_pairs_by_model_factory,
-        model,
 ):
     """test that a ValueError is raised when the ``models`` option
     in the section specifies names of models that are not installed"""
     # we only need one toml, path pair
     # so we just call next on the ``zipped`` iterator that our fixture gives us
-    configs_toml_path_pairs = configs_toml_path_pairs_by_model_factory(model)
+    configs_toml_path_pairs = configs_toml_path_pairs_by_model_factory("TweetyNet")
 
     for config_toml, toml_path in configs_toml_path_pairs:
         if section_name.lower() in toml_path.name:
@@ -163,8 +159,8 @@ def test_from_toml_path_raises_when_config_doesnt_exist(config_that_doesnt_exist
         vak.config.parse.from_toml_path(config_that_doesnt_exist)
 
 
-def test_from_toml(configs_toml_path_pairs_by_model_factory, model):
-    config_toml_path_pairs = configs_toml_path_pairs_by_model_factory(model)
+def test_from_toml(configs_toml_path_pairs_by_model_factory):
+    config_toml_path_pairs = configs_toml_path_pairs_by_model_factory("TweetyNet")
     for config_toml, toml_path in config_toml_path_pairs:
         config_obj = vak.config.parse.from_toml(config_toml, toml_path)
         assert isinstance(config_obj, vak.config.parse.Config)
@@ -172,13 +168,12 @@ def test_from_toml(configs_toml_path_pairs_by_model_factory, model):
 
 def test_from_toml_parse_prep_with_sections_not_none(
     configs_toml_path_pairs_by_model_factory,
-    model,
 ):
     """test that we get only the sections we want when we pass in a sections list to
     ``from_toml``. Specifically test ``PREP`` since that's what this will be used for."""
-    # only use configs from 'default_model') (teenytweetynet)
+    # only use configs from 'default_model') (TeenyTweetyNet)
     # so we are sure paths exist, to avoid NotADirectoryErrors that give spurious test failures
-    config_toml_path_pairs = configs_toml_path_pairs_by_model_factory(model)
+    config_toml_path_pairs = configs_toml_path_pairs_by_model_factory("TweetyNet")
     for config_toml, toml_path in config_toml_path_pairs:
         config_obj = vak.config.parse.from_toml(
             config_toml, toml_path, sections=["PREP", "SPECT_PARAMS"]

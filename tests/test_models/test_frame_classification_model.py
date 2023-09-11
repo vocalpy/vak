@@ -7,9 +7,7 @@ import torch
 import vak.models
 
 from .test_definition import (
-    TeenyTweetyNetDefinition,
     TweetyNetDefinition,
-    InvalidMetricsDictKeyModelDefinition,
 )
 from .test_tweetynet import LABELMAPS, INPUT_SHAPES
 
@@ -17,13 +15,12 @@ from .test_tweetynet import LABELMAPS, INPUT_SHAPES
 # pytest.mark.parametrize vals for test_init_with_definition
 MODEL_DEFS = (
     TweetyNetDefinition,
-    TeenyTweetyNetDefinition,
 )
 
 TEST_INIT_ARGVALS = itertools.product(LABELMAPS, INPUT_SHAPES, MODEL_DEFS)
 
 
-class TestWindowedFrameClassificationModel:
+class TestFrameClassificationModel:
 
     @pytest.mark.parametrize(
         'labelmap, input_shape, definition',
@@ -34,21 +31,22 @@ class TestWindowedFrameClassificationModel:
                   input_shape,
                   definition,
                   monkeypatch):
-        """Test Model.__init__ works as expected"""
+        """Test FrameClassificationModel.__init__ works as expected"""
         # monkeypatch a definition so we can test __init__
         definition = vak.models.definition.validate(definition)
         monkeypatch.setattr(
-            vak.models.WindowedFrameClassificationModel,
+            vak.models.FrameClassificationModel,
             'definition',
             definition,
             raising=False
         )
+        num_input_channels, num_freqbins = input_shape[0], input_shape[1]
         # network has required args that need to be determined dynamically
-        network = definition.network(num_classes=len(labelmap), input_shape=input_shape)
-        model = vak.models.WindowedFrameClassificationModel(labelmap=labelmap, network=network)
+        network = definition.network(len(labelmap), num_input_channels, num_freqbins)
+        model = vak.models.FrameClassificationModel(labelmap=labelmap, network=network)
 
         # now test that attributes are what we expect
-        assert isinstance(model, vak.models.WindowedFrameClassificationModel)
+        assert isinstance(model, vak.models.FrameClassificationModel)
         for attr in ('network', 'loss', 'optimizer', 'metrics'):
             assert hasattr(model, attr)
             model_attr = getattr(model, attr)
@@ -75,7 +73,6 @@ class TestWindowedFrameClassificationModel:
     @pytest.mark.parametrize(
         'definition',
         [
-            TeenyTweetyNetDefinition,
             TweetyNetDefinition,
         ]
     )
@@ -87,7 +84,7 @@ class TestWindowedFrameClassificationModel:
                          monkeypatch,
                          ):
         definition = vak.models.definition.validate(definition)
-        model_name = definition.__name__.replace('Definition', '').lower()
+        model_name = definition.__name__.replace('Definition', '')
         toml_path = specific_config('train', model_name, audio_format='cbin', annot_format='notmat')
         cfg = vak.config.parse.from_toml_path(toml_path)
 
@@ -95,42 +92,47 @@ class TestWindowedFrameClassificationModel:
         labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
 
         monkeypatch.setattr(
-            vak.models.WindowedFrameClassificationModel, 'definition', definition, raising=False
+            vak.models.FrameClassificationModel, 'definition', definition, raising=False
         )
 
         config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+        num_input_channels, num_freqbins = self.MOCK_INPUT_SHAPE[0], self.MOCK_INPUT_SHAPE[1]
+
         config["network"].update(
             num_classes=len(labelmap),
-            input_shape=self.MOCK_INPUT_SHAPE,
+            num_input_channels=num_input_channels,
+            num_freqbins=num_freqbins
         )
 
-        model = vak.models.WindowedFrameClassificationModel.from_config(config=config, labelmap=labelmap)
-        assert isinstance(model, vak.models.WindowedFrameClassificationModel)
+        model = vak.models.FrameClassificationModel.from_config(config=config, labelmap=labelmap)
+        assert isinstance(model, vak.models.FrameClassificationModel)
 
+        # below, we can only test the config kwargs that actually end up as attributes
+        # so we use `if hasattr` before checking
         if 'network' in config:
             if inspect.isclass(definition.network):
                 for network_kwarg, network_kwargval in config['network'].items():
-                    assert hasattr(model.network, network_kwarg)
-                    assert getattr(model.network, network_kwarg) == network_kwargval
+                    if hasattr(model.network, network_kwarg):
+                        assert getattr(model.network, network_kwarg) == network_kwargval
             elif isinstance(definition.network, dict):
                 for net_name, net_kwargs in config['network'].items():
                     for network_kwarg, network_kwargval in net_kwargs.items():
-                        assert hasattr(model.network[net_name], network_kwarg)
-                        assert getattr(model.network[net_name], network_kwarg) == network_kwargval
+                        if hasattr(model.network[net_name], network_kwarg):
+                            assert getattr(model.network[net_name], network_kwarg) == network_kwargval
 
         if 'loss' in config:
             for loss_kwarg, loss_kwargval in config['loss'].items():
-                assert hasattr(model.loss, loss_kwarg)
-                assert getattr(model.loss, loss_kwarg) == loss_kwargval
+                if hasattr(model.loss, loss_kwarg):
+                    assert getattr(model.loss, loss_kwarg) == loss_kwargval
 
         if 'optimizer' in config:
             for optimizer_kwarg, optimizer_kwargval in config['optimizer'].items():
-                assert optimizer_kwarg in model.optimizer.param_groups[0]
-                assert model.optimizer.param_groups[0][optimizer_kwarg] == optimizer_kwargval
+                if optimizer_kwarg in model.optimizer.param_groups[0]:
+                    assert model.optimizer.param_groups[0][optimizer_kwarg] == optimizer_kwargval
 
         if 'metrics' in config:
             for metric_name, metric_kwargs in config['metrics'].items():
                 assert metric_name in model.metrics
                 for metric_kwarg, metric_kwargval in metric_kwargs.items():
-                    assert hasattr(model.metrics[metric_name], metric_kwarg)
-                    assert getattr(model.metrics[metric_name], metric_kwarg) == metric_kwargval
+                    if hasattr(model.metrics[metric_name], metric_kwarg):
+                        assert getattr(model.metrics[metric_name], metric_kwarg) == metric_kwargval

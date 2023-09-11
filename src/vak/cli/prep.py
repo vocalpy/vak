@@ -1,8 +1,9 @@
-# note NO LOGGING -- we configure logger inside `core.prep`
-# so we can save log file inside dataset directory
+"""Function called by command-line interface for prep command"""
+from __future__ import annotations
+
 import shutil
 import warnings
-from pathlib import Path
+import pathlib
 
 import toml
 
@@ -12,7 +13,7 @@ from ..config.parse import _load_toml_from_path
 from ..config.validators import are_sections_valid
 
 
-def purpose_from_toml(config_toml, toml_path=None):
+def purpose_from_toml(config_toml: dict, toml_path: str | pathlib.Path | None = None) -> str:
     """determine "purpose" from toml config,
     i.e., the command that will be run after we ``prep`` the data.
 
@@ -35,6 +36,9 @@ def purpose_from_toml(config_toml, toml_path=None):
             return section_name.lower()  # this is the "purpose" of the file
 
 
+# note NO LOGGING -- we configure logger inside `core.prep`
+# so we can save log file inside dataset directory
+
 # see https://github.com/NickleDave/vak/issues/334
 SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS", "DATALOADER")
 
@@ -45,7 +49,7 @@ def prep(toml_path):
 
     Parameters
     ----------
-    toml_path : str, Path
+    toml_path : str, pathlib.Path
         path to a configuration file in TOML format.
         Used to rewrite file with options determined by this function and needed for other functions
 
@@ -75,7 +79,7 @@ def prep(toml_path):
     dataset, and for all rows the 'split' columns for that dataset
     will be 'predict' or 'test' (respectively).
     """
-    toml_path = Path(toml_path)
+    toml_path = pathlib.Path(toml_path)
 
     # open here because need to check for `dataset_path` in this function, see #314 & #333
     config_toml = _load_toml_from_path(toml_path)

@@ -9,34 +9,38 @@ import vak.nets
 class TestTweetyNet:
 
     @pytest.mark.parametrize(
-        'input_shape, num_classes',
+        'num_classes, num_input_channels, num_freqbins',
         [
             (
-                    None, 10
+                    1, 10, None,
             ),
             (
-                    None, 23
+                    1, 23, None,
             ),
             (
-                    (1, 513, 88), 6
+                    6, 1, 513
             ),
             (
-                    (1, 512, 1000), 23
+                    23, 1, 512
             ),
         ]
     )
-    def test_init(self, num_classes, input_shape):
+    def test_init(self, num_classes, num_input_channels, num_freqbins):
         """test we can instantiate TweetyNet
         and it has the expected attributes"""
-        if input_shape is None:
+        if num_input_channels is None or num_freqbins is None:
             init_sig = inspect.signature(vak.nets.TweetyNet.__init__)
-            input_shape = init_sig.parameters['input_shape'].default
+            if num_input_channels is None:
+                num_input_channels = init_sig.parameters['num_input_channels'].default
+            if num_freqbins is None:
+                num_freqbins = init_sig.parameters['num_freqbins'].default
 
-        net = vak.nets.TweetyNet(num_classes=num_classes, input_shape=input_shape)
+        net = vak.nets.TweetyNet(num_classes, num_input_channels, num_freqbins)
         assert isinstance(net, vak.nets.TweetyNet)
         for expected_attr, expected_type in (
             ('num_classes', int),
-            ('input_shape', tuple),
+            ('num_input_channels', int),
+            ('num_freqbins', int),
             ('cnn', torch.nn.Module),
             ('rnn_input_size', int),
             ('rnn', torch.nn.LSTM),
@@ -46,30 +50,35 @@ class TestTweetyNet:
             assert isinstance(getattr(net, expected_attr), expected_type)
 
         assert net.num_classes == num_classes
-        assert net.input_shape == input_shape
+        assert net.num_input_channels == num_input_channels
+        assert net.num_freqbins == num_freqbins
 
     @pytest.mark.parametrize(
-        'input_shape, num_classes, batch_size',
+        'num_classes, num_input_channels, num_freqbins, num_timebins, batch_size',
         [
             (
-                    None, 10, 8
+                    10, None, None, 100, 8
             ),
             (
-                    None, 23, 64
+                    23, None, None, 100, 64
             ),
             (
-                    (1, 512, 1000), 23, 64
+                    23, 1, 512, 100, 64
             ),
         ]
     )
-    def test_forward(self, input_shape, num_classes, batch_size):
+    def test_forward(self, num_classes, num_input_channels, num_freqbins, num_timebins, batch_size):
         """test we can forward a tensor through a TweetyNet instance
         and get the expected output"""
-        if input_shape is None:
+        if num_input_channels is None or num_freqbins is None:
             init_sig = inspect.signature(vak.nets.TweetyNet.__init__)
-            input_shape = init_sig.parameters['input_shape'].default
-        input = torch.rand(batch_size, *input_shape)  # a "batch"
-        net = vak.nets.TweetyNet(num_classes=num_classes)
+            if num_input_channels is None:
+                num_input_channels = init_sig.parameters['num_input_channels'].default
+            if num_freqbins is None:
+                num_freqbins = init_sig.parameters['num_freqbins'].default
+
+        input = torch.rand(batch_size, num_input_channels, num_freqbins, num_timebins)  # a "batch"
+        net = vak.nets.TweetyNet(num_classes, num_input_channels, num_freqbins)
         out = net(input)
         assert isinstance(out, torch.Tensor)
-        assert out.shape == (batch_size, num_classes, input_shape[2])
+        assert out.shape == (batch_size, num_classes, num_timebins)

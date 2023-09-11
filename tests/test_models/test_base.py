@@ -21,7 +21,6 @@ from .conftest import (
 
 from .test_definition import (
     InvalidMetricsDictKeyModelDefinition,
-    TeenyTweetyNetDefinition,
     TweetyNetDefinition,
 )
 
@@ -169,12 +168,17 @@ class TestModel:
             vak.models.base.Model.validate_init(**kwargs)
 
     MODEL_DEFINITION_MAP = {
-        'tweetynet': TweetyNetDefinition,
-        'teenytweetynet': TeenyTweetyNetDefinition,
+        'TweetyNet': TweetyNetDefinition,
     }
 
+    @pytest.mark.parametrize(
+        'model_name',
+        [
+            'TweetyNet',
+        ]
+    )
     def test_load_state_dict_from_path(self,
-                                       model,
+                                       model_name,
                                        # our fixtures
                                        specific_config,
                                        # pytest fixtures
@@ -185,33 +189,38 @@ class TestModel:
 
         We use actual model definitions here so we can test with real checkpoints.
         """
-        definition = self.MODEL_DEFINITION_MAP[model]
-        model_name = definition.__name__.replace('Definition', '').lower()
+        definition = self.MODEL_DEFINITION_MAP[model_name]
         train_toml_path = specific_config('train', model_name, audio_format='cbin', annot_format='notmat')
         train_cfg = vak.config.parse.from_toml_path(train_toml_path)
 
         # stuff we need just to be able to instantiate network
-        metadata = vak.datasets.metadata.Metadata.from_dataset_path(train_cfg.train.dataset_path)
-        dataset_csv_path = train_cfg.train.dataset_path / metadata.dataset_csv_filename
         labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
-        transform, target_transform = vak.transforms.get_defaults("train")
-        train_dataset = vak.datasets.WindowDataset.from_csv(
-            dataset_csv_path=dataset_csv_path,
+        transform, target_transform = vak.transforms.defaults.get_default_transform(
+            model_name,
+            "train",
+            transform_kwargs={},
+        )
+        train_dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
+            dataset_path=train_cfg.train.dataset_path,
             split="train",
-            labelmap=labelmap,
-            window_size=train_cfg.dataloader.window_size,
-            spect_key='s',
-            timebins_key='t',
+            window_size=train_cfg.train.train_dataset_params['window_size'],
             transform=transform,
             target_transform=target_transform,
         )
         input_shape = train_dataset.shape
+        num_input_channels = input_shape[-3]
+        num_freqbins = input_shape[-2]
 
         monkeypatch.setattr(
             vak.models.base.Model, 'definition', definition, raising=False
         )
         # network is the one thing that has required args
-        network = definition.network(num_classes=len(labelmap), input_shape=input_shape)
+        # and we also need to use its config from the toml file
+        model_config = vak.config.model.config_from_toml_path(train_toml_path, model_name)
+        network = definition.network(num_classes=len(labelmap),
+                                     num_input_channels=num_input_channels,
+                                     num_freqbins=num_freqbins,
+                                     **model_config['network'])
         model = vak.models.base.Model(network=network)
         model.to(device)
 

@@ -1,54 +1,29 @@
-"""tests for vak.eval.eval module"""
+"""Tests for vak.eval.eval function."""
+from unittest import mock
+
 import pytest
 
 import vak.config
 import vak.common.constants
 import vak.common.paths
-import vak.eval.eval
-
-
-# written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
-def assert_eval_output_matches_expected(model_name, output_dir):
-    eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
-    assert len(eval_csv) == 1
-
-
-# -- we do eval with all possible configurations of post_tfm_kwargs
-POST_TFM_KWARGS = [
-    # default, will use ToLabels
-    None,
-    # no cleanup but uses ToLabelsWithPostprocessing
-    {'majority_vote': False, 'min_segment_dur': None},
-    # use ToLabelsWithPostprocessing with *just* majority_vote
-    {'majority_vote': True, 'min_segment_dur': None},
-    # use ToLabelsWithPostprocessing with *just* min_segment_dur
-    {'majority_vote': False, 'min_segment_dur': 0.002},
-    # use ToLabelsWithPostprocessing with majority_vote *and* min_segment_dur
-    {'majority_vote': True, 'min_segment_dur': 0.002},
-]
-
-
-@pytest.fixture(params=POST_TFM_KWARGS)
-def post_tfm_kwargs(request):
-    return request.param
+import vak.eval
 
 
 @pytest.mark.parametrize(
-    "audio_format, spect_format, annot_format",
+    "audio_format, spect_format, annot_format, model_name, eval_function_to_mock",
     [
-        ("cbin", None, "notmat"),
+        ("cbin", None, "notmat", "TweetyNet",
+         'vak.eval.eval_.eval_frame_classification_model'),
+        ("cbin", None, "notmat", "ConvEncoderUMAP",
+         'vak.eval.eval_.eval_parametric_umap_model'),
     ],
 )
 def test_eval(
-        audio_format,
-        spect_format,
-        annot_format,
-        specific_config,
-        tmp_path,
-        model,
-        device,
-        post_tfm_kwargs
+        audio_format, spect_format, annot_format, model_name, eval_function_to_mock,
+        specific_config, tmp_path
 ):
+    """Test that :func:`vak.eval.eval` dispatches to the correct model-specific
+    training functions"""
     output_dir = tmp_path.joinpath(
         f"test_eval_{audio_format}_{spect_format}_{annot_format}"
     )
@@ -56,12 +31,12 @@ def test_eval(
 
     options_to_change = [
         {"section": "EVAL", "option": "output_dir", "value": str(output_dir)},
-        {"section": "EVAL", "option": "device", "value": device},
+        {"section": "EVAL", "option": "device", "value": 'cpu'},
     ]
 
     toml_path = specific_config(
         config_type="eval",
-        model=model,
+        model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
@@ -70,135 +45,24 @@ def test_eval(
     cfg = vak.config.parse.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
-    vak.eval.eval(
-        model_name=cfg.eval.model,
-        model_config=model_config,
-        dataset_path=cfg.eval.dataset_path,
-        checkpoint_path=cfg.eval.checkpoint_path,
-        labelmap_path=cfg.eval.labelmap_path,
-        output_dir=cfg.eval.output_dir,
-        window_size=cfg.dataloader.window_size,
-        num_workers=cfg.eval.num_workers,
-        spect_scaler_path=cfg.eval.spect_scaler_path,
-        spect_key=cfg.spect_params.spect_key,
-        timebins_key=cfg.spect_params.timebins_key,
-        device=cfg.eval.device,
-        post_tfm_kwargs=post_tfm_kwargs,
-    )
+    results_path = tmp_path / 'results_path'
+    results_path.mkdir()
 
-    assert_eval_output_matches_expected(cfg.eval.model, output_dir)
-
-
-@pytest.mark.parametrize(
-    'path_option_to_change',
-    [
-        {"section": "EVAL", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"section": "EVAL", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "EVAL", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
-    ]
-)
-def test_eval_raises_file_not_found(
-    path_option_to_change,
-    specific_config,
-    tmp_path,
-    device
-):
-    """Test that core.eval raises FileNotFoundError
-    when one of the following does not exist:
-    checkpoint_path, labelmap_path, dataset_path, spect_scaler_path
-    """
-    output_dir = tmp_path.joinpath(
-        f"test_eval_cbin_notmat_invalid_dataset_path"
-    )
-    output_dir.mkdir()
-
-    options_to_change = [
-        {"section": "EVAL", "option": "output_dir", "value": str(output_dir)},
-        {"section": "EVAL", "option": "device", "value": device},
-        path_option_to_change,
-    ]
-
-    toml_path = specific_config(
-        config_type="eval",
-        model="teenytweetynet",
-        audio_format="cbin",
-        annot_format="notmat",
-        spect_format=None,
-        options_to_change=options_to_change,
-    )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
-    with pytest.raises(FileNotFoundError):
+    with mock.patch(eval_function_to_mock, autospec=True) as mock_eval_function:
         vak.eval.eval(
-            model_name=cfg.eval.model,
+            model_name=model_name,
             model_config=model_config,
             dataset_path=cfg.eval.dataset_path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
-            window_size=cfg.dataloader.window_size,
             num_workers=cfg.eval.num_workers,
+            batch_size=cfg.eval.batch_size,
+            transform_params=cfg.eval.transform_params,
+            dataset_params=cfg.eval.dataset_params,
             spect_scaler_path=cfg.eval.spect_scaler_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
             device=cfg.eval.device,
+            post_tfm_kwargs=cfg.eval.post_tfm_kwargs,
         )
 
-
-@pytest.mark.parametrize(
-    'path_option_to_change',
-    [
-        {"section": "EVAL", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
-        {"section": "EVAL", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
-    ]
-)
-def test_eval_raises_not_a_directory(
-    path_option_to_change,
-    specific_config,
-    device,
-    tmp_path,
-):
-    """Test that core.eval raises NotADirectory
-    when directories don't exist
-    """
-    options_to_change = [
-        path_option_to_change,
-        {"section": "EVAL", "option": "device", "value": device},
-    ]
-
-    if path_option_to_change["option"] != "output_dir":
-        # need to make sure output_dir *does* exist
-        # so we don't detect spurious NotADirectoryError and assume test passes
-        output_dir = tmp_path.joinpath(
-            f"test_eval_raises_not_a_directory"
-        )
-        output_dir.mkdir()
-        options_to_change.append(
-            {"section": "EVAL", "option": "output_dir", "value": str(output_dir)}
-        )
-
-    toml_path = specific_config(
-        config_type="eval",
-        model="teenytweetynet",
-        audio_format="cbin",
-        annot_format="notmat",
-        spect_format=None,
-        options_to_change=options_to_change,
-    )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
-    with pytest.raises(NotADirectoryError):
-        vak.eval.eval(
-            model_name=cfg.eval.model,
-            model_config=model_config,
-            dataset_path=cfg.eval.dataset_path,
-            checkpoint_path=cfg.eval.checkpoint_path,
-            labelmap_path=cfg.eval.labelmap_path,
-            output_dir=cfg.eval.output_dir,
-            window_size=cfg.dataloader.window_size,
-            num_workers=cfg.eval.num_workers,
-            spect_scaler_path=cfg.eval.spect_scaler_path,
-            spect_key=cfg.spect_params.spect_key,
-            timebins_key=cfg.spect_params.timebins_key,
-            device=cfg.eval.device,
-        )
+        assert mock_eval_function.called

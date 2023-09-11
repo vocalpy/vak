@@ -1,6 +1,9 @@
 import torch
 
+import vak.models.registry
 
+
+# ---- mock networks ---------------------------------------------------------------------------------------------------
 class MockNetwork(torch.nn.Module):
     """Network used just to test vak.models.base.Model"""
     def __init__(self, n_classes=10):
@@ -17,32 +20,10 @@ class MockNetwork(torch.nn.Module):
         return self.layers(x)
 
 
-class MockAcc:
-    def __init__(self, average='macro'):
-        self.average = average
-
-    def __call__(self, y: torch.Tensor, y_pred: torch.Tensor):
-        sample_acc = y == y_pred
-        if self.average == 'macro':
-            return sample_acc.mean()
-        elif self.average == 'micro':
-            return NotImplemented
-
-
-class MockModel:
-    """Model definition used just to test vak.models.base.Model"""
-    network = MockNetwork
-    loss = torch.nn.CrossEntropyLoss
-    optimizer = torch.optim.SGD
-    metrics = {'acc': MockAcc}
-    default_config = {
-        'optimizer': {'lr': 0.003}
-    }
-
-
 class MockEncoder(torch.nn.Module):
-    """Network used just to test vak.models.base.Model.
-    Unlike ``MockNetwork``, this network will be put into a
+    """Network used for testing.
+
+    This network is put into a
     ``dict`` with ``MockDecoder`` to test
     that specifying ``network`` as a ``dict`` works.
     """
@@ -80,8 +61,74 @@ class MockDecoder(torch.nn.Module):
         return self.layers(x)
 
 
+# ---- mock metrics ----------------------------------------------------------------------------------------------------
+class MockAcc:
+    """Mock metric used for testing"""
+    def __init__(self, average='macro'):
+        self.average = average
+
+    def __call__(self, y: torch.Tensor, y_pred: torch.Tensor):
+        sample_acc = y == y_pred
+        if self.average == 'macro':
+            return sample_acc.mean()
+        elif self.average == 'micro':
+            return NotImplemented
+
+
+# ---- mock model families ---------------------------------------------------------------------------------------------
+class UnregisteredMockModelFamily(vak.models.Model):
+    """A model family defined only for tests.
+    Used to test :func:`vak.models.registry.model_family`.
+    """
+    def __init__(self, network, optimizer, loss, metrics):
+        super().__init__(
+            network=network, loss=loss, optimizer=optimizer, metrics=metrics
+        )
+
+    def training_step(self, *args, **kwargs):
+        pass
+
+    def validation_step(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def from_config(cls, config: dict):
+        """Return an initialized model instance from a config ``dict``."""
+        network, loss, optimizer, metrics = cls.attributes_from_config(config)
+        return cls(
+            network=network,
+            optimizer=optimizer,
+            loss=loss,
+            metrics=metrics,
+        )
+
+
+# Make a "copy" of UnregisteredModelFamily that we *do* register
+# so we can use it to test `vak.models.decorator.model` and other functions
+# that require a registered ModelFamily.
+# Used when testing :func:`vak.models.decorator.model` -- we need a model in the registry to test
+# and we don't want to have to deal with the idiosyncrasies of actual model families
+MockModelFamily = type('MockModelFamily',
+                       UnregisteredMockModelFamily.__bases__,
+                       dict(UnregisteredMockModelFamily.__dict__))
+vak.models.registry.model_family(MockModelFamily)
+
+
+# ---- mock models -----------------------------------------------------------------------------------------------------
+class MockModel:
+    """Model definition used for testing :func:`vak.models.decorator.model`"""
+    network = MockNetwork
+    loss = torch.nn.CrossEntropyLoss
+    optimizer = torch.optim.SGD
+    metrics = {'acc': MockAcc}
+    default_config = {
+        'optimizer': {'lr': 0.003}
+    }
+
+
 class MockEncoderDecoderModel:
-    """Model definition used only to that network works with a ``dict``"""
+    """Model definition used for testing :func:`vak.models.decorator.model`.
+    Specifically tests that `network` works with a ``dict``"""
     network = {'MockEncoder': MockEncoder, 'MockDecoder': MockDecoder}
     loss = torch.nn.TripletMarginWithDistanceLoss
     optimizer = torch.optim.Adam
