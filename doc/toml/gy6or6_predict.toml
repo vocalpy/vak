@@ -1,4 +1,6 @@
 [PREP]
+dataset_type = "frame classification"
+input_type = "spect"
 data_dir = "/PATH/TO/DATA/032312"
 output_dir = "/PATH/TO/DATA/vak/prep/predict"
 audio_format = "wav"
@@ -22,3 +24,6 @@ output_dir = "/PATH/TO/DATA/vak/prep/predict"
 annot_csv_filename = "gy6or6.032312.annot.csv"
 majority_vote = true
 min_segment_dur = 0.01
+
+[PREDICT.transform_params]
+window_size = 176

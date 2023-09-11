@@ -1,4 +1,6 @@
 [PREP]
+dataset_type = "frame classification"
+input_type = "spect"
 data_dir = "/PATH/TO/DATA/032212"
 output_dir = "/PATH/TO/DATA/vak/prep/train"
 audio_format = "wav"
@@ -11,11 +13,8 @@ val_dur = 15
 fft_size = 512
 step_size = 64
 
-[DATALOADER]
-window_size = 176
-
 [TRAIN]
-models = [ "TweetyNet",]
+model = "TweetyNet"
 root_results_dir = "/PATH/TO/DATA/vak/train/results"
 batch_size = 8
 num_epochs = 2
@@ -23,6 +22,12 @@ normalize_spectrograms = true
 val_step = 400
 ckpt_step = 200
 patience = 4
+
+[TRAIN.train_dataset_params]
+window_size = 176
+
+[TRAIN.val_transform_params]
+window_size = 176
 
 [TweetyNet.optimizer]
 lr = 0.001
