@@ -106,7 +106,7 @@ html_logo = "./images/logo/vak-logo-primary.png"
 html_theme_options = {
     "announcement":
         """ 🚧 vak version 1.0.0 is in development! 🚧
-        📣 Test out the alpha release: <code>pip install vak==1.0.0a1</code>. 📣
+        📣 Test out the alpha release: <code>pip install vak==1.0.0a2</code>. 📣
         For more info, please see 
         <a href="https://forum.vocalpy.org/t/vak-1-0-0a1-released/55"> this forum post<a>. 
         """,
@@ -136,7 +136,7 @@ html_theme_options = {
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'songdeckdoc'
+htmlhelp_basename = 'vakdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
