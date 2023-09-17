@@ -14,5 +14,5 @@ __all__ = [
     "TeenyTweetyNet",
     "tweetynet",
     "TweetyNet",
-    "Ava"
+    "Ava",
 ]

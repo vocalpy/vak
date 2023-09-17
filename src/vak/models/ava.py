@@ -5,17 +5,17 @@ import torch
 from .. import metrics, nets
 from .decorator import model
 from .vae_model import VAEModel
-from ..nn.loss import VaeLoss
+from ..nn.loss import VaeElboLoss
 
 @model(family=VAEModel)
 class AVA:
     """
     """
-    network = Ava
-    loss = VaeLoss
+    network = nets.Ava
+    loss = VaeElboLoss
     optimizer = torch.optim.Adam
     metrics = {
-        "loss": VaeLoss,
+        "loss": VaeElboLoss,
         "kl": torch.nn.functional.kl_div
     }
     default_config = {"optimizer": {"lr": 0.003}}

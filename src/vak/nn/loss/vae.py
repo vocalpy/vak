@@ -4,8 +4,9 @@ import warnings
 import math
 import torch
 import numpy as np
-# vak.nn.loss.vae
-def vae_loss(
+
+
+def vae_elbo_loss(
     x: torch.Tensor,
     z: torch.Tensor,
     x_rec: torch.Tensor,
@@ -25,7 +26,7 @@ def vae_loss(
     elbo = elbo + torch.sum(latent_dist.entropy())
     return elbo
 
-class VaeLoss(torch.nn.Module):
+class VaeElboLoss(torch.nn.Module):
     """"""
 
     def __init__(
@@ -47,7 +48,7 @@ class VaeLoss(torch.nn.Module):
         latent_dist: torch.Tensor,
     ):
         x_shape = x.shape
-        elbo = vae_loss(x=x, z=z, x_rec=x_rec, latent_dist=latent_dist, model_precision=self.model_precision, z_dim=self.z_dim)
+        elbo = vae_elbo_loss(x=x, z=z, x_rec=x_rec, latent_dist=latent_dist, model_precision=self.model_precision, z_dim=self.z_dim)
         if self.return_latent_rec:
             return -elbo, z.detach().cpu().numpy(), \
                 x_rec.view(-1, x_shape[0], x_shape[1]).detach().cpu().numpy()

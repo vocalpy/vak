@@ -46,8 +46,7 @@ class VAEModel(base.Model):
         """
         """
         x = batch[0]
-        out, _ = self.network(x)
-        z, latent_dist  = itemgetter('z', 'latent_dist')(_)
+        out, z, latent_dist= self.network(x)
         loss = self.loss(x, z, out, latent_dist)
         self.log("train_loss", loss)
         return loss
