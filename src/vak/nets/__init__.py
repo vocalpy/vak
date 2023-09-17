@@ -11,5 +11,5 @@ __all__ = [
     "ED_TCN",
     "tweetynet",
     "TweetyNet",
-    "Ava"
+    "Ava",
 ]
