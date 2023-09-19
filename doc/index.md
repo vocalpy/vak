@@ -15,6 +15,16 @@ vocalizations---such as birdsong, bat calls,
 and even human speech---to work with
 neural network algorithms.
 
+To learn more about the goals and design of vak, 
+please see this talk from the SciPy 2023 conference, 
+and the associated Proceedings paper 
+[here](https://conference.scipy.org/proceedings/scipy2023/pdfs/david_nicholson.pdf).
+
+```{iframe} https://www.youtube.com/embed/tpL0m5UwpZM?si=YSoCpS_Upa7h9hyw
+:width: 100%
+SciPy 2023 talk on vak
+```
+
 Currently, the main use is automated **annotation** of animal vocalizations.
 By **annotation**, we mean something like this example of annotated birdsong:
 
