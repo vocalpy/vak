@@ -46,6 +46,17 @@ and use the trained models to predict annotations for new files.
 We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).  
 Please see the eLife article here: https://elifesciences.org/articles/63853  
 
+To learn more about the goals and design of vak, 
+please see this talk from the SciPy 2023 conference, 
+and the associated Proceedings paper 
+[here](https://conference.scipy.org/proceedings/scipy2023/pdfs/david_nicholson.pdf).
+
+<p align="center">
+<a href="https://www.youtube.com/watch?v=tpL0m5UwpZM" target="_blank">
+ <img src="https://img.youtube.com/vi/tpL0m5UwpZM/mqdefault.jpg" alt="Thumbnail of SciPy 2023 talk on vak" width="400" border="10" />
+</a>
+</p>
+
 For more background on animal acoustic communication and deep learning, 
 and how these intersect with related fields like 
 computational ethology and neuroscience,
@@ -112,7 +123,23 @@ For a guide on how you can contribute to `vak`, please see:
 https://vak.readthedocs.io/en/latest/development/index.html
 
 ### Citation
-If you use vak for a publication, please cite its DOI:  
+If you use vak for a publication, please cite both the Proceedings paper and the software.
+
+#### Proceedings paper (BiBTex)
+
+```
+@inproceedings{nicholson2023vak,
+  title={vak: a neural network framework for researchers studying animal acoustic communication},
+  author={Nicholson, David and Cohen, Yarden},
+  booktitle={Python in Science Conference},
+  pages={59--67},
+  year={2023}
+}
+
+```
+
+#### Software
+
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 
 ### License
