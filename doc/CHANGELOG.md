@@ -70,6 +70,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Make various other minor clean-ups.
   [#666](https://github.com/NickleDave/vak/pull/666).
   Fixes [#663](https://github.com/NickleDave/vak/issues/663).
+- Have distance metrics return tensors
+  [#702](https://github.com/NickleDave/vak/pull/702).
+  Fixes [#701](https://github.com/NickleDave/vak/issues/701).
 
 ### Removed
 - Remove entry points since they are not being used
@@ -103,6 +106,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   which can cause a crash because the mapping is used in other places 
   [#665](https://github.com/NickleDave/vak/pull/665).
   Fixed in [#664](https://github.com/NickleDave/vak/pull/664).
+- Fix bug that caused crash on Apple M1 / MPS accelerator 
+  [#700](https://github.com/NickleDave/vak/issues/700).
+  Fixed in [#702](https://github.com/NickleDave/vak/pull/702).
 
 ## 0.8.1 -- 2023-03-02
 ### Fixed
