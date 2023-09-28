@@ -47,7 +47,7 @@ To create a new virtual environment that contains `vak`
 and all the libraries it depends on, open your terminal and run:
 
 ```shell
-conda create --name vak-env python=3.8 vak -c pytorch -c conda-forge
+conda create --name vak-env python=3.9 vak -c pytorch -c conda-forge
 ```
 
 Notice that we specify the Python version and the `vak` version.
