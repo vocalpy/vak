@@ -82,7 +82,7 @@ according to the instructions on [pytorch.org](https://pytorch.org/),
 before installing `vak`. For example:  
 
 ```console
-C:\You> conda create -n vak-env python==3.8
+C:\You> conda create -n vak-env python==3.9
 C:\You> conda activate vak-env
 (vak-env) C:\You> pip install torch===1.10.2 torchvision===0.11.3 -f https://download.pytorch.org/whl/torch_stable.html
 (vak-env) C:\You> pip install vak
