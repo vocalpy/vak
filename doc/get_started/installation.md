@@ -39,17 +39,6 @@ that can be accessed as shown in the video below.
   <iframe src="https://www.youtube.com/embed/UAUO_K-bRMs" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
 
-### (on Linux) the `libsndfile` library
-We use [soundfile](http://pysoundfile.readthedocs.io/) to read audio data, 
-which relies on `libsndfile`. 
-On Windows and macOS, `libsndfile` will be automatically installed.
-
-On Linux, you need to install the library manually.
-For example, on Ubuntu run:
-```console
-sudo apt-get install libsndfile1
-```
-
 ## Commands to install `vak`
 
 ### with `conda`
