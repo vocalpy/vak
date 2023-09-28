@@ -18,8 +18,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: excitedleigh/setup-nox@v2.1.0
-      - name: install libsndfile1 on ubuntu
-        run: sudo apt install libsndfile1
       - name: run tests
         run: |
           nox -s test-data-download-source
