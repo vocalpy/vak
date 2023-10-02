@@ -223,7 +223,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://maths.manchester.ac.uk/~mrm/"><img src="https://avatars.githubusercontent.com/u/5350159?v=4?s=100" width="100px;" alt="Mark Muldoon"/><br /><sub><b>Mark Muldoon</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3AVenetianRed" title="Bug reports">🐛</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zhileiz1992"><img src="https://avatars.githubusercontent.com/u/144953579?v=4?s=100" width="100px;" alt="zhileiz1992"/><br /><sub><b>zhileiz1992</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Azhileiz1992" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zhileiz1992"><img src="https://avatars.githubusercontent.com/u/144953579?v=4?s=100" width="100px;" alt="zhileiz1992"/><br /><sub><b>zhileiz1992</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Azhileiz1992" title="Bug reports">🐛</a> <a href="https://github.com/vocalpy/vak/commits?author=zhileiz1992" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
