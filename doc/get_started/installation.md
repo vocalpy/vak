@@ -39,17 +39,6 @@ that can be accessed as shown in the video below.
   <iframe src="https://www.youtube.com/embed/UAUO_K-bRMs" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
 
-### (on Linux) the `libsndfile` library
-We use [soundfile](http://pysoundfile.readthedocs.io/) to read audio data, 
-which relies on `libsndfile`. 
-On Windows and macOS, `libsndfile` will be automatically installed.
-
-On Linux, you need to install the library manually.
-For example, on Ubuntu run:
-```console
-sudo apt-get install libsndfile1
-```
-
 ## Commands to install `vak`
 
 ### with `conda`
@@ -58,7 +47,7 @@ To create a new virtual environment that contains `vak`
 and all the libraries it depends on, open your terminal and run:
 
 ```shell
-conda create --name vak-env python=3.8 vak -c pytorch -c conda-forge
+conda create --name vak-env python=3.9 vak -c pytorch -c conda-forge
 ```
 
 Notice that we specify the Python version and the `vak` version.
@@ -93,7 +82,7 @@ according to the instructions on [pytorch.org](https://pytorch.org/),
 before installing `vak`. For example:  
 
 ```console
-C:\You> conda create -n vak-env python==3.8
+C:\You> conda create -n vak-env python==3.9
 C:\You> conda activate vak-env
 (vak-env) C:\You> pip install torch===1.10.2 torchvision===0.11.3 -f https://download.pytorch.org/whl/torch_stable.html
 (vak-env) C:\You> pip install vak

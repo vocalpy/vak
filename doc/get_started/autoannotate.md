@@ -43,9 +43,9 @@ Before going through this tutorial, you'll need to:
 3. Download example data from this dataset: <https://figshare.com/articles/Bengalese_Finch_song_repository/4805749>
 
    - one day of birdsong, for training data (click to download)  
-     {download}`https://figshare.com/ndownloader/files/37509160`
+     {download}`https://figshare.com/ndownloader/files/41668980`
    - another day, to use to predict annotations (click to download)
-     {download}`https://figshare.com/ndownloader/files/37509172`
+     {download}`https://figshare.com/ndownloader/files/41668983`
    - Be sure to extract the files from these archives! 
      Please use the program "tar" to extract the archives, 
      on either macOS/Linux or Windows.
