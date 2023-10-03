@@ -239,6 +239,15 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "marisbasha",
+      "name": "Maris Basha",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41847328?v=4",
+      "profile": "http://marisbasha.com",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
