@@ -20,10 +20,11 @@ please see this talk from the SciPy 2023 conference,
 and the associated Proceedings paper 
 [here](https://conference.scipy.org/proceedings/scipy2023/pdfs/david_nicholson.pdf).
 
-```{iframe} https://www.youtube.com/embed/tpL0m5UwpZM?si=YSoCpS_Upa7h9hyw
-:width: 100%
-SciPy 2023 talk on vak
-```
+<p align="center">
+<a href="https://www.youtube.com/watch?v=tpL0m5UwpZM" target="_blank">
+ <img src="https://img.youtube.com/vi/tpL0m5UwpZM/mqdefault.jpg" alt="Thumbnail of SciPy 2023 talk on vak" width="400" border="10" />
+</a>
+</p>
 
 Currently, the main use is automated **annotation** of animal vocalizations.
 By **annotation**, we mean something like this example of annotated birdsong:
