@@ -43,7 +43,7 @@ num_workers = 4
 # device: name of device to run model on, one of "cuda", "cpu"
 device = "cuda"
 # output_dir: directory where output should be saved, as a sub-directory within `output_dir`
-output_dir = "/PATH/TO/DATA/vak/prep/predict"
+output_dir = "/PATH/TO/DATA/vak/results/predict"
 # annot_csv_filename
 annot_csv_filename = "gy6or6.032312.annot.csv"
 # The next two options are for post-processing transforms.
