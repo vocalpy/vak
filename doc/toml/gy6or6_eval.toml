@@ -1,0 +1,72 @@
+[PREP]
+# dataset_type: corresponds to the model family such as "frame classification" or "parametric umap"
+dataset_type = "frame classification"
+# input_type: input to model, either audio ("audio") or spectrogram ("spect")
+input_type = "spect"
+# data_dir: directory with data to use when preparing dataset
+data_dir = "/PATH/TO/DATA/032212"
+# output_dir: directory where dataset will be created (as a sub-directory within output_dir)
+output_dir = "/PATH/TO/DATA/vak/prep/train"
+# audio_format: format of audio, either wav or cbin
+audio_format = "wav"
+# annot_format: format of annotations
+annot_format = "simple-seq"
+# labelset: string or array with unique set of labels used in annotations
+labelset = "iabcdefghjk"
+# train_dur: duration of training split in dataset, in seconds
+train_dur = 50
+# val_dur: duration of validation split in dataset, in seconds
+val_dur = 15
+
+# SPECT_PARAMS: parameters for computing spectrograms
+[SPECT_PARAMS]
+# fft_size: size of window used for Fast Fourier Transform, in number of samples
+fft_size = 512
+# step_size: size of step to take when computing spectra with FFT for spectrogram
+# also known as hop size
+step_size = 64
+
+# EVAL: options for evaluating a trained model
+[EVAL]
+model = "TweetyNet"
+# checkpoint_path: path to saved model checkpoint
+checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+# labelmap_path: path to file that maps from outputs of model (integers) to text labels in annotations;
+# this is used when generating predictions
+labelmap_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
+# spect_scaler_path: path to file containing SpectScaler that was fit to training set
+# We want to transform the data we predict on in the exact same way
+spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
+# batch_size
+# for predictions with a frame classification model, this should always be 1
+# and will be ignored if it's not
+batch_size = 11
+# num_workers: number of workers to use when loading data with multiprocessing
+num_workers = 16
+# device: name of device to run model on, one of "cuda", "cpu"
+device = "cuda"
+# output_dir: directory where output should be saved, as a sub-directory within `output_dir`
+output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet"
+
+# EVAL.post_tfm_kwargs: options for post-processing
+[EVAL.post_tfm_kwargs]
+# both these transforms require that there is an "unlabeled" label,
+# and they will only be applied to segments that are bordered on both sides
+# by the "unlabeled" label.
+# Such a label class is added by default by vak.
+# majority_vote: post-processing transformation that takes majority vote within segments that
+# do not have the 'unlabeled' class label. Only applied if `majority_vote` is `true`
+# (default is false).
+majority_vote = true
+# min_segment_dur: post-processing transformation removes any segments
+# with a duration shorter than `min_segment_dur` that do not have the 'unlabeled' class.
+# Only applied if this option is specified.
+min_segment_dur = 0.02
+
+# transform_params: parameters used when transforming data
+# for a frame classification model, we use FrameDataset with the eval_item_transform,
+# that reshapes batches into consecutive adjacent windows with a specific `window_size`
+[EVAL.transform_params]
+window_size = 88
+
+# Note we do not specify any options for the network, and just use the defaults
