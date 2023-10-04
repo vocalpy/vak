@@ -351,6 +351,22 @@ def make_npy_files_for_each_split(
         ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 
+    # We check whether all the source paths are in dataset path.
+    # If they are then we remove them, because we have made the "frames" files
+    # and don't want the audio/spectrogram file to take up disk space.
+    # We live the source paths in the dataframe as metadata.
+    if input_type == "audio":
+        source_paths = dataset_df["audio_path"].values
+    elif input_type == "spect":
+        source_paths = dataset_df["spect_path"].values
+    source_paths = [pathlib.Path(source_path) for source_path in source_paths]
+    if all([
+        source_path.is_relative_to(dataset_path.resolve())
+        for source_path in source_paths]
+    ):
+        for source_path in source_paths:
+            source_path.unlink()
+
     # we reset the entire index across all splits, instead of repeating indices,
     # and we set drop=False because we don't want to add a new column 'index' or 'level_0'
     dataset_df_out = pd.concat(dataset_df_out).reset_index(drop=True)
