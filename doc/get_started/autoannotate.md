@@ -73,18 +73,20 @@ Before going through this tutorial, you'll need to:
      :::
 
 4. Download the corresponding configuration files (click to download):
-   {download}`gy6or6_train.toml <../toml/gy6or6_train.toml>`
+   {download}`gy6or6_train.toml <../toml/gy6or6_train.toml>`,
+   {download}`gy6or6_eval.toml <../toml/gy6or6_eval.toml>, 
    and {download}`gy6or6_predict.toml <../toml/gy6or6_predict.toml>`
 
 ## Overview
 
-There are four steps to using `vak` to automate annotating vocalizations
+There are five steps to using `vak` to automate annotating vocalizations
 
 1. {ref}`prepare a training dataset <prepare-training-dataset>`, from
    a small annotated dataset of vocalizations
-2. {ref}`train a neural <train-neural-network>` network with that dataset
-3. {ref}`prepare a prediction dataset <prepare-prediction-dataset>` of unannotated data
-4. {ref}`use the trained network <use-trained-network>` to predict annotations for the prediction dataset
+2. {ref}`train a neural network <train-neural-network>` with that dataset
+3. {ref}`evaluate the trained model <evaluate-model>` with a held-out dataset
+4. {ref}`prepare a prediction dataset <prepare-prediction-dataset>` of unannotated data
+5. {ref}`use the trained network <use-trained-network>` to predict annotations for the prediction dataset
 
 Before doing that, you'll need to know a little bit about working with the shell,
 since that's the main way to work with `vak` without writing any code.
@@ -158,7 +160,7 @@ of modifying a configuration file and then using it to `prep` a dataset.
 
 (prepare-training-dataset)=
 
-## 1. preparing a training dataset
+## 1. Preparing a training dataset
 
 To train a neural network how to predict annotations,
 you'll need to tell `vak` where your dataset is.
@@ -172,7 +174,7 @@ to help you pick them out, like so:
 
 ```{literalinclude} ../toml/gy6or6_train.toml
 :language: toml
-:lines: 1-3
+:lines: 1-10
 ```
 
 Change the part of the path in capital letters to the actual location
@@ -180,6 +182,9 @@ on your computer:
 
 ```toml
 [PREP]
+dataset_type = "frame classification"
+input_type = "spect"
+# we change the next line
 data_dir = "/home/users/You/Data/vak_tutorial_data/032212"
 ```
 
@@ -234,14 +239,13 @@ When that time comes, please see the how-to page:
 For now, let's move on to training a neural network with this dataset.
 
 (train-neural-network)=
-## 2. training a neural network
+## 2. Training a neural network model
 
 Now that you've prepared the dataset, you can train a neural network with it.
 In this example we will train `TweetyNet`,
 a neural network architecture that annotates vocalizations
 (see: <https://github.com/yardencsGitHub/tweetynet> ).
-Please make sure you have installed it following the steps in
-{ref}`install-tweetynet` in {ref}`installation`.
+As of version 1.0, TweetyNet is built into vak.
 
 Before we start training, there is one option you have to change in the `[TRAIN]` section
 of the `config.toml` file, `root_results_dir`,
@@ -268,7 +272,7 @@ to train models for annotation on a CPU,
 with training times ranging from a couple hours to overnight.
 :::
 
-To train a neural network, you simply run:
+To train a neural network, you run this command in the shell:
 
 ```shell
 vak train gy6o6_train.toml
@@ -284,9 +288,104 @@ You can also just stop after one epoch if you want to go through the rest of the
 options also specify that `vak` should save a "checkpoint" every epoch, and we need to load our trained network
 from that checkpoint later when we predict annotations for new data.
 
+(evaluate-trained-model)=
+
+## 3. Evaluating a trained model
+
 (prepare-prediction-dataset)=
 
-## 3. preparing a prediction dataset
+An important step when using neural network models is to evaluate the model's performance 
+on a held-out dataset that has never been used during training, often called the "test" set.
+
+Here we show you how to evaluate the model we just trained.
+
+This part requires you to find paths to files saved by `vak`.
+
+There's four you need. Three of them will be in the `results` directory
+created by `vak` when you ran `train`. If you replaced the dummy path in
+capital letters in the config file, but kept the rest of the path,
+then this will be a location with a name like
+`/PATH/TO/DATA/vak/train/results/results_{timestamp}`,
+where `PATH/TO/DATA/` will be replaced with a path on your machine,
+and where `{timestamp}` is an actual time in the format `yymmdd_HHMMSS`
+(year-month-day hour-minute-second).
+
+The first path you need is the `checkpoint_path`. This is the full
+path, including filename, to the file that contains the weights (also known as parameters)
+of the trained neural network, saved by `vak`.
+There will be a directory inside the `results_{timestamp}` directory
+with the name of the trained model, `TweetyNet`,
+and inside that sits a `checkpoints` directory that has the actual file you want.
+Typically there will be two checkpoint files, one named just `checkpoint.pt` that is
+saved intermittently as a backup,
+and another that is saved only when accuracy on the
+validation set improves, named `max-val-acc-checkpoint.pt`.
+If you were to use the `max-val-acc-checkpoint.pt` then the path would end
+with `TweetyNet/checkpoints/max-val-acc-checkpoint.pt`.
+
+
+```toml
+checkpoint_path = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+```
+
+In some cases, a `max-val-acc-checkpoint.pt` may not get saved;
+this depends on the options for training and non-deterministic factors like
+the randomly initialized weights of the network.
+For the purposes of completing this tutorial, using either checkpoint is fine.
+
+The second path you want is the one to the file containing the `labelmap`.
+The `labelmap` is a Python
+dictionary that maps the labels from your annotation to a set of consecutive integers, which
+are the outputs the neural network learns to predict during training. It is saved in a `.json`
+file in the root `results_{timestamp}` directory.
+
+```toml
+labelmap_path = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/labelmap.json"
+```
+
+The third and last path you need is the path to the file containing a saved `spect_scaler`.
+The `SpectScaler` represents a transform
+applied to the data that helps when training the neural network.
+You need to apply the same transform to the new
+data for which you are predicting labels--otherwise the accuracy will be impaired.
+Note that the file does not have an extension. (In case you are curious,
+it's a pickled Python object saved by the `joblib` library.)
+This file will also be found in the root `results_{timestamp}` directory.
+
+```toml
+spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/SpectScaler"
+```
+
+The last path you need is actually in the TOML file that we used 
+to train the neural network: `dataset_path`.
+You should copy that `dataset_path` option exactly as it is 
+and then paste it at the bottom of the `[EVAL]` table 
+in the configuration file for evaluation.
+We do this instead of preparing another dataset, 
+because we already created a test split when we ran 
+`vak prep` with the training configuration.
+This is a good practice, because it helps ensure 
+that we do not mix the training data with the test data;
+`vak` makes sure that the data from the `data_dir` option 
+is placed in two separate splits, the train and test splits.
+
+Once you have prepared the configuration file as described, 
+you can run the following in the terminal:
+
+```shell
+vak eval gy6o6_eval.toml
+```
+
+You will see output to the console as the network is evaluated. 
+Notice that for this model we evaluate it *with* and *without* 
+post-processing transforms that clean up the predictions 
+of the model.
+The parameters of the post-processing transform are specified 
+with the `post_tfm_kwargs` option in the configuration file.
+You may find this helpful to understand factors affecting 
+the performance of your own model.
+
+## 4. Preparing a prediction dataset
 
 Next you'll prepare a dataset for prediction. The dataset we downloaded has annotation files with it,
 but for the sake of this tutorial we'll pretend that they're not annotated, and we instead want to
@@ -324,12 +423,15 @@ and then add the path to that file as the option `csv_path` in the `[PREDICT]` s
 
 (use-trained-network)=
 
-## 4. using a trained network to predict annotations
+## 5. Using a trained network to predict annotations
 
 Finally you will use the trained network to predict annotations.
 This is the part that requires you to find paths to files saved by `vak`.
 
-There's three you need. All three will be in the `results` directory
+There's three you need. These are the exact same paths we used above 
+in the configuration file for evaluation, so you can copy them from that file.
+We explain them again here for completeness.
+All three paths will be in the `results` directory
 created by `vak` when you ran `train`. If you replaced the dummy path in
 capital letters in the config file, but kept the rest of the path,
 then this will be a location with a name like
@@ -367,7 +469,7 @@ are the outputs the neural network learns to predict during training. It is save
 file in the root `results_{timestamp}` directory.
 
 ```toml
-spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/labelmap.json"
+labelmap_path = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/labelmap.json"
 ```
 
 The third and last path you need is the path to the file containing a saved `spect_scaler`.
@@ -410,5 +512,6 @@ predicted by the trained neural network.
 vak predict gy6or6_predict.toml
 ```
 
-That's it! With those four simple steps you can train neural networks and then use the
+That's it! With those five simple steps you can train neural networks,
+evaluate the train models, and then use the
 trained networks to predict annotations for vocalizations.
