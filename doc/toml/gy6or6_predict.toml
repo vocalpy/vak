@@ -26,11 +26,11 @@ step_size = 64
 [PREDICT]
 # model: the string name of the model. must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
 model = "TweetyNet"
+# checkpoint_path: path to saved model checkpoint
+checkpoint_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 # labelmap_path: path to file that maps from outputs of model (integers) to text labels in annotations;
 # this is used when generating predictions
 labelmap_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/labelmap.json"
-# checkpoint_path: path to checkpoint
-checkpoint_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 # spect_scaler_path: path to file containing SpectScaler that was fit to training set
 # We want to transform the data we predict on in the exact same way
 spect_scaler_path = "/PATH/TO/DATA/vak/train/RESULTS_TIMESTAMP/StandardizeSpect"
@@ -46,6 +46,11 @@ device = "cuda"
 output_dir = "/PATH/TO/DATA/vak/prep/predict"
 # annot_csv_filename
 annot_csv_filename = "gy6or6.032312.annot.csv"
+# The next two options are for post-processing transforms.
+# Both these transforms require that there is an "unlabeled" label,
+# and they will only be applied to segments that are bordered on both sides
+# by the "unlabeled" label.
+# Such a label class is added by default by vak.
 # majority_vote: post-processing transformation that takes majority vote within segments that
 # do not have the 'unlabeled' class label. Only applied if `majority_vote` is `true`
 # (default is false).
@@ -61,4 +66,4 @@ min_segment_dur = 0.01
 [PREDICT.transform_params]
 window_size = 176
 
-# NOte we do not specify any options for the network, and just use the defaults
+# Note we do not specify any options for the network, and just use the defaults
