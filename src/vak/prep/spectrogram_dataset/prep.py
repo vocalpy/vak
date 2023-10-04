@@ -72,8 +72,6 @@ def prep_spectrogram_dataset(
     spect_output_dir : str
         path to location where spectrogram files should be saved.
         Default is None, in which case it defaults to ``data_dir``.
-        A new directory will be created in ``spect_output_dir`` with
-        the name 'spectrograms_generated_{time stamp}'.
     audio_dask_bag_kwargs : dict
         Keyword arguments used when calling ``dask.bag.from_sequence``
         inside ``vak.io.audio``, where it is used to parallelize
@@ -114,11 +112,6 @@ def prep_spectrogram_dataset(
             )
     else:
         spect_output_dir = data_dir
-
-    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-    spect_dirname = f"spectrograms_generated_{timenow}"
-    spect_output_dir = spect_output_dir / spect_dirname
-    spect_output_dir.mkdir()
 
     if annot_format is not None:
         if annot_file is None:
