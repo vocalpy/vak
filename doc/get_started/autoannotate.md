@@ -323,6 +323,39 @@ validation set improves, named `max-val-acc-checkpoint.pt`.
 If you were to use the `max-val-acc-checkpoint.pt` then the path would end
 with `TweetyNet/checkpoints/max-val-acc-checkpoint.pt`.
 
+
+```toml
+checkpoint_path = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+```
+
+In some cases, a `max-val-acc-checkpoint.pt` may not get saved;
+this depends on the options for training and non-deterministic factors like
+the randomly initialized weights of the network.
+For the purposes of completing this tutorial, using either checkpoint is fine.
+
+The second path you want is the one to the file containing the `labelmap`.
+The `labelmap` is a Python
+dictionary that maps the labels from your annotation to a set of consecutive integers, which
+are the outputs the neural network learns to predict during training. It is saved in a `.json`
+file in the root `results_{timestamp}` directory.
+
+```toml
+labelmap_path = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/labelmap.json"
+```
+
+The third and last path you need is the path to the file containing a saved `spect_scaler`.
+The `SpectScaler` represents a transform
+applied to the data that helps when training the neural network.
+You need to apply the same transform to the new
+data for which you are predicting labels--otherwise the accuracy will be impaired.
+Note that the file does not have an extension. (In case you are curious,
+it's a pickled Python object saved by the `joblib` library.)
+This file will also be found in the root `results_{timestamp}` directory.
+
+```toml
+spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/SpectScaler"
+```
+
 The last path you need is actually in the TOML file that we used 
 to train the neural network: `dataset_path`.
 You should copy that `dataset_path` option exactly as it is 
@@ -395,7 +428,10 @@ and then add the path to that file as the option `csv_path` in the `[PREDICT]` s
 Finally you will use the trained network to predict annotations.
 This is the part that requires you to find paths to files saved by `vak`.
 
-There's three you need. All three will be in the `results` directory
+There's three you need. These are the exact same paths we used above 
+in the configuration file for evaluation, so you can copy them from that file.
+We explain them again here for completeness.
+All three paths will be in the `results` directory
 created by `vak` when you ran `train`. If you replaced the dummy path in
 capital letters in the config file, but kept the rest of the path,
 then this will be a location with a name like
@@ -433,7 +469,7 @@ are the outputs the neural network learns to predict during training. It is save
 file in the root `results_{timestamp}` directory.
 
 ```toml
-spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/labelmap.json"
+labelmap_path = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/labelmap.json"
 ```
 
 The third and last path you need is the path to the file containing a saved `spect_scaler`.
