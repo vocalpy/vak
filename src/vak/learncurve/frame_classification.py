@@ -202,7 +202,7 @@ def learning_curve_for_frame_classification_model(
             f"Saving results to: {results_path_this_replicate}",
         )
 
-        # `split` lets us use correct subset ("split") of training set for this duration / replicate
+        # `subset` lets us use correct subset of training set for this duration / replicate
         subset = common.learncurve.get_train_dur_replicate_subset_name(
             train_dur, replicate_num
         )
