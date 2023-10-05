@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from . import constants
+from . import constants, helper
 from .metadata import Metadata
 
 
@@ -150,11 +150,16 @@ class FramesDataset:
         dataset_df = pd.read_csv(dataset_csv_path)
 
         split_path = dataset_path / split
-        sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
+        if subset:
+            sample_ids_path = split_path / helper.sample_ids_array_filename_for_subset(subset)
+        else:
+            sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
-        inds_in_sample_path = (
-            split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
-        )
+
+        if subset:
+            inds_in_sample_path = split_path / helper.inds_in_sample_array_filename_for_subset(subset)
+        else:
+            inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
         inds_in_sample = np.load(inds_in_sample_path)
 
         return cls(
