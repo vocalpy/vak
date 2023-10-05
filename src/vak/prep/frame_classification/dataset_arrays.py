@@ -132,9 +132,9 @@ def make_npy_files_for_each_split(
     to avoid loading the entire dataset into memory,
     and to avoid working with memory-mapped arrays.
     The first is the ``sample_ids`` vector,
-    that represents the "ID" of any sample :math:`(x, y)` in the dataset.
+    that represents the "ID" of any sample :math:`(x, y)` in the split.
     We use these IDs to load the array files corresponding to the samples.
-    For a dataset with :math:`m` samples, this will be an array of length :math:`T`,
+    For a split with :math:`m` samples, this will be an array of length :math:`T`,
     the total number of frames across all samples,
     with elements :math:`i \in (0, 1, ..., m - 1)`
     indicating which frames correspond to which sample :math:`m_i`:
