@@ -1,3 +1,6 @@
+"""A dataset class used for neural network models with the
+frame classification task, where the source data consists of audio signals
+or spectrograms of varying lengths."""
 from __future__ import annotations
 
 import pathlib
@@ -37,12 +40,32 @@ class FramesDataset:
         inds_in_sample: npt.NDArray,
         frame_dur: float,
         input_type: str,
+        subset: str | None = None,
         item_transform: Callable | None = None,
     ):
+        """
+
+        Parameters
+        ----------
+        dataset_path
+        dataset_df
+        split
+        sample_ids
+        inds_in_sample
+        frame_dur
+        input_type
+        subset
+        item_transform
+        """
         self.dataset_path = pathlib.Path(dataset_path)
 
         self.split = split
-        dataset_df = dataset_df[dataset_df.split == split].copy()
+        self.subset = subset
+        # subset takes precedence over split, if specified
+        if subset:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
+        else:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
         self.frames_paths = self.dataset_df[
             constants.FRAMES_NPY_PATH_COL_NAME
@@ -102,6 +125,7 @@ class FramesDataset:
         cls,
         dataset_path: str | pathlib.Path,
         split: str = "val",
+        subset: str | None = None,
         item_transform: Callable | None = None,
     ):
         """
@@ -110,11 +134,12 @@ class FramesDataset:
         ----------
         dataset_path
         split
+        subset
         item_transform
 
         Returns
         -------
-
+        frames_dataset : FramesDataset
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
@@ -140,5 +165,6 @@ class FramesDataset:
             inds_in_sample,
             frame_dur,
             input_type,
+            subset,
             item_transform,
         )
