@@ -144,7 +144,7 @@ class WindowDataset:
         self.subset = subset
         # subset takes precedence over split, if specified
         if subset:
-            dataset_df = dataset_df[dataset_df.split == split].copy()
+            dataset_df = dataset_df[dataset_df.subset == subset].copy()
         else:
             dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
