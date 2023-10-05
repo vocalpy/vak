@@ -85,25 +85,61 @@ class WindowDataset:
 
     Attributes
     ----------
-    X : numpy.ndarray
-    Y : numpy.ndarray
+    dataset_path : pathlib.Path
+        Path to directory that represents a
+        frame classification dataset,
+        as created by
+        :func:`vak.prep.prep_frame_classification_dataset`.
+    split : str
+        The name of a split from the dataset,
+        one of {'train', 'val', 'test'}.
+    subset : str, optional
+        Name of subset to use.
+        If specified, this takes precedence over split.
+        Subsets are typically taken from the training data
+        for use when generating a learning curve.
+    dataset_df : pandas.DataFrame
+        A frame classification dataset,
+        represented as a :class:`pandas.DataFrame`.
+        This will be only the rows that correspond
+        to either ``subset`` or ``split`` from the
+        ``dataset_df`` that was passed in when
+        instantiating the class.
+    frame_paths : numpy.ndarray
+        Paths to npy files containing frames,
+        either spectrograms or audio signals
+        that are input to the model.
+    frame_labels_paths : numpy.ndarray
+        Paths to npy files containing vectors
+        with a label for each frame.
+        The targets for the outputs of the model.
+    sample_ids : numpy.ndarray
+        Indexing vector representing which sample
+        from the dataset every frame belongs to.
+    inds_in_sample : numpy.ndarray
+        Indexing vector representing which index
+        within each sample from the dataset
+        that every frame belongs to.
     window_size : int
-    frame_dur : float
-        Duration of a single frame, in seconds.
-    duration : float
-        Total duration of the dataset.
-    dataset_path
-    dataset_df
-    split
-    sample_ids
-    inds_in_sample
-    window_size
-    frame_dur
-    stride
-    window_inds
-    subset
-    transform
-    target_transform
+        Size of windows to return;
+        number of frames.
+    frame_dur: float
+        Duration of a frame, i.e., a single sample in audio
+        or a single timebin in a spectrogram.
+    stride : int
+        The size of the stride used to determine which windows
+        are included in the dataset. The default is 1.
+        Used to compute ``window_inds``,
+        with the function
+        :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+    window_inds : numpy.ndarray, optional
+        A vector of valid window indices for the dataset.
+        If specified, this takes precedence over ``stride``.
+    transform : callable
+        The transform applied to the input to the neural network :math:`x`.
+    target_transform : callable
+        The transform applied to the target for the output
+        of the neural network :math:`y`.
     """
 
     def __init__(
@@ -121,22 +157,53 @@ class WindowDataset:
         transform: Callable | None = None,
         target_transform: Callable | None = None,
     ):
-        """
+        """Initialize a new instance of a WindowDataset.
 
         Parameters
         ----------
-        dataset_path
-        dataset_df
-        split
-        sample_ids
-        inds_in_sample
-        window_size
-        frame_dur
-        stride
-        window_inds
-        subset
-        transform
-        target_transform
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            frame classification dataset,
+            as created by
+            :func:`vak.prep.prep_frame_classification_dataset`.
+        dataset_df : pandas.DataFrame
+            A frame classification dataset,
+            represented as a :class:`pandas.DataFrame`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        sample_ids : numpy.ndarray
+            Indexing vector representing which sample
+            from the dataset every frame belongs to.
+        inds_in_sample : numpy.ndarray
+            Indexing vector representing which index
+            within each sample from the dataset
+            that every frame belongs to.
+        window_size : int
+            Size of windows to return;
+            number of frames.
+        frame_dur: float
+            Duration of a frame, i.e., a single sample in audio
+            or a single timebin in a spectrogram.
+        stride : int
+            The size of the stride used to determine which windows
+            are included in the dataset. The default is 1.
+            Used to compute ``window_inds``,
+            with the function
+            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+        window_inds : numpy.ndarray, optional
+            A vector of valid window indices for the dataset.
+            If specified, this takes precedence over ``stride``.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        transform : callable
+            The transform applied to the input to the neural network :math:`x`.
+        target_transform : callable
+            The transform applied to the target for the output
+            of the neural network :math:`y`.
         """
         self.dataset_path = pathlib.Path(dataset_path)
 
@@ -249,20 +316,42 @@ class WindowDataset:
         transform: Callable | None = None,
         target_transform: Callable | None = None,
     ):
-        """
+        """Make a :class:`WindowDataset` instance,
+        given the path to a frame classification dataset.
 
         Parameters
         ----------
-        dataset_path
-        window_size
-        stride
-        split
-        transform
-        target_transform
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            frame classification dataset,
+            as created by
+            :func:`vak.prep.prep_frame_classification_dataset`.
+        window_size : int
+            Size of windows to return;
+            number of frames.
+        stride : int
+            The size of the stride used to determine which windows
+            are included in the dataset. The default is 1.
+            Used to compute ``window_inds``,
+            with the function
+            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        transform : callable
+            The transform applied to the input to the neural network :math:`x`.
+        target_transform : callable
+            The transform applied to the target for the output
+            of the neural network :math:`y`.
 
         Returns
         -------
-
+        dataset : vak.datasets.frame_classification.WindowDataset
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
