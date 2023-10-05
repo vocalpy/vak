@@ -13,7 +13,6 @@ import pandas as pd
 from dask.diagnostics import ProgressBar
 
 from ... import common, datasets
-from .. import constants as prep_constants
 from .. import split
 
 
@@ -38,9 +37,6 @@ class Sample:
 def make_index_vectors_for_each_subset(
     dataset_df: pd.DataFrame,
     dataset_path: str | pathlib.Path,
-    input_type: str,
-    audio_format: str,
-    spect_key: str = "s",
 ) -> pd.DataFrame:
     r"""Make npy files containing indexing vectors
     for each subset of the training data 
@@ -103,25 +99,15 @@ def make_index_vectors_for_each_subset(
     -------
     None
     """
-    if input_type not in prep_constants.INPUT_TYPES:
-        raise ValueError(
-            f"``input_type`` must be one of: {prep_constants.INPUT_TYPES}\n"
-            f"Value for ``input_type`` was: {input_type}"
-        )
-
     subsets = [
         subset
         for subset in sorted(dataset_df.subset.dropna().unique())
     ]
     for subset in subsets:
         subset_df = dataset_df[dataset_df.subset == subset].copy()
-
-        if input_type == "audio":
-            source_paths = subset_df["audio_path"].values
-        elif input_type == "spect":
-            source_paths = subset_df["spect_path"].values
-        else:
-            raise ValueError(f"Invalid ``input_type``: {input_type}")
+        frames_npy_paths = subset_df[
+            datasets.frame_classification.constants.FRAMES_NPY_PATH_COL_NAME
+        ].values
 
         def _return_index_arrays(
             source_id_path_tup,
@@ -129,21 +115,9 @@ def make_index_vectors_for_each_subset(
             """Function we use with dask to parallelize.
             Defined in-line so variables are in scope.
             """
-            source_id, source_path = source_id_path_tup
-            source_path = pathlib.Path(source_path)
-
-            if input_type == "audio":
-                frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[
-                    audio_format
-                ](source_path)
-                if (
-                    audio_format == "cbin"
-                ):  # convert to ~wav, from int16 to float64
-                    frames = frames.astype(np.float64) / 32768.0
-            elif input_type == "spect":
-                spect_dict = np.load(source_path)
-                frames = spect_dict[spect_key]
-
+            source_id, frames_npy_path = source_id_path_tup
+            frames_npy_path = dataset_path / pathlib.Path(frames_npy_path)
+            frames = np.load(frames_npy_path)
             n_frames = frames.shape[-1]
             sample_id_vec = np.ones((n_frames,)).astype(np.int32) * source_id
             inds_in_sample_vec = np.arange(n_frames)
@@ -156,15 +130,15 @@ def make_index_vectors_for_each_subset(
 
         # ---- make npy files for this split, parallelized with dask
         # using nested function just defined
-        source_path_annot_tups = [
-            (source_id, source_path)
-            for source_id, source_path in enumerate(source_paths)
+        frames_npy_path_annot_tups = [
+            (source_id, frames_npy_path)
+            for source_id, frames_npy_path in enumerate(frames_npy_paths)
         ]
 
-        source_path_annot_bag = db.from_sequence(source_path_annot_tups)
+        frames_npy_path_annot_bag = db.from_sequence(frames_npy_path_annot_tups)
         with ProgressBar():
             samples = list(
-                source_path_annot_bag.map(
+                frames_npy_path_annot_bag.map(
                     _return_index_arrays
                 )
             )
@@ -176,9 +150,7 @@ def make_index_vectors_for_each_subset(
         )
         np.save(
             dataset_path / "train" /
-            datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME.replace(
-                '.npy', f'-{subset}.npy'
-            ),
+            datasets.frame_classification.helper.sample_ids_array_filename_for_subset(subset),
             sample_id_vec,
         )
         inds_in_sample_vec = np.concatenate(
@@ -186,22 +158,17 @@ def make_index_vectors_for_each_subset(
         )
         np.save(
             dataset_path / "train" /
-            datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME.replace(
-                '.npy', f'-{subset}.npy'
-            ),
+            datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(subset),
             inds_in_sample_vec,
         )
 
 
 def make_subsets_from_dataset_df(
     dataset_df: pd.DataFrame,
-    input_type: str,
     train_set_durs: Sequence[float],
     num_replicates: int,
     dataset_path: pathlib.Path,
     labelmap: dict,
-    audio_format: str | None = None,
-    spect_key: str = "s",
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
 
@@ -218,33 +185,44 @@ def make_subsets_from_dataset_df(
     The dataframe is returned with these subsets added.
     (The `'split'` for these rows will still be `'train'`.)
     Additionally, a separate set of indexing vectors
-    will be made for each subset,
-    using
+    will be made for each subset, using
+    :func:`vak.prep.frame_classification.learncurve.make_index_vectors_for_each_subset`.
 
-    .. code-block:: console
-        032312-vak-frame-classification-dataset-generated-230820_144833
-        ├── 032312_prep_230820_144833.csv
-        ├── labelmap.json
-        ├── metadata.json
-        ├── prep_230820_144833.log
-        ├── spectrograms_generated_230820_144833
-        ├── test
-        ├── train
-        ├── train-dur-4.0-replicate-1
-        ├── train-dur-4.0-replicate-2
-        ├── train-dur-6.0-replicate-1
-        ├── train-dur-6.0-replicate-2
-        ├── TweetyNet_learncurve_audio_cbin_annot_notmat.toml
-        └── val
+   .. code-block:: console
 
+      032312-vak-frame-classification-dataset-generated-231005_121809
+      ├── 032312_prep_231005_121809.csv
+      ├── labelmap.json
+      ├── metadata.json
+      ├── prep_231005_121809.log
+      ├── TweetyNet_learncurve_audio_cbin_annot_notmat.toml
+      ├── train
+          ├── gy6or6_baseline_230312_0808.138.cbin.spect.frame_labels.npy
+          ├── gy6or6_baseline_230312_0808.138.cbin.spect.frames.npy
+          ├── gy6or6_baseline_230312_0809.141.cbin.spect.frame_labels.npy
+          ├── gy6or6_baseline_230312_0809.141.cbin.spect.frames.npy
+          ├── gy6or6_baseline_230312_0813.163.cbin.spect.frame_labels.npy
+          ├── gy6or6_baseline_230312_0813.163.cbin.spect.frames.npy
+          ├── gy6or6_baseline_230312_0816.179.cbin.spect.frame_labels.npy
+          ├── gy6or6_baseline_230312_0816.179.cbin.spect.frames.npy
+          ├── gy6or6_baseline_230312_0820.196.cbin.spect.frame_labels.npy
+          ├── gy6or6_baseline_230312_0820.196.cbin.spect.frames.npy
+          ├── inds_in_sample.npy
+          ├── inds_in_sample-train-dur-4.0-replicate-1.npy
+          ├── inds_in_sample-train-dur-4.0-replicate-2.npy
+          ├── inds_in_sample-train-dur-6.0-replicate-1.npy
+          ├── inds_in_sample-train-dur-6.0-replicate-2.npy
+          ├── sample_ids.npy
+          ├── sample_ids-train-dur-4.0-replicate-1.npy
+          ├── sample_ids-train-dur-4.0-replicate-2.npy
+          ├── sample_ids-train-dur-6.0-replicate-1.npy
+          └── sample_ids-train-dur-6.0-replicate-2.npy
+      ...
 
     Parameters
     ----------
     dataset_df : pandas.DataFrame
         Representing an entire dataset of vocalizations.
-    input_type : str
-        The type of input to the neural network model.
-        One of {'audio', 'spect'}.
     train_set_durs : list
         Durations in seconds of subsets taken from training data
         to create a learning curve, e.g., `[5., 10., 15., 20.]`.
@@ -255,11 +233,6 @@ def make_subsets_from_dataset_df(
         data (but of the same duration).
     dataset_path : str, pathlib.Path
         Directory where splits will be saved.
-    audio_format : str
-        A :class:`string` representing the format of audio files.
-        One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
-    spect_key : str
-        Key for accessing spectrogram in files. Default is 's'.
 
     Returns
     -------
@@ -276,18 +249,6 @@ def make_subsets_from_dataset_df(
         and then filtering ``dataset_df_out`` with that name
         using the 'split' column.
     """
-    if input_type not in prep_constants.INPUT_TYPES:
-        raise ValueError(
-            f"``input_type`` must be one of: {prep_constants.INPUT_TYPES}\n"
-            f"Value for ``input_type`` was: {input_type}"
-        )
-
-    if input_type == "audio" and audio_format is None:
-        raise ValueError(
-            f"Value for `input_type` was 'audio' but `audio_format` is None. "
-            f"Please specify the audio format."
-        )
-
     dataset_path = pathlib.Path(dataset_path)
 
     # get just train split, to pass to split.dataframe
@@ -332,9 +293,7 @@ def make_subsets_from_dataset_df(
 
     make_index_vectors_for_each_subset(
         all_train_durs_and_replicates_df,
-        input_type,
-        audio_format,
-        spect_key,
+        dataset_path,
     )
 
     # keep the same validation, test, and total train sets by concatenating them with the train subsets
@@ -342,10 +301,7 @@ def make_subsets_from_dataset_df(
     dataset_df = pd.concat(
         (
             all_train_durs_and_replicates_df,
-            dataset_df,
-            input_type,
-            audio_format,
-            spect_key,
+            dataset_df
         )
     )
     # We reset the entire index across all splits, instead of repeating indices,
