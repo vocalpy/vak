@@ -221,7 +221,8 @@ def train_frame_classification_model(
         logger.info("will normalize spectrograms")
         spect_standardizer = transforms.StandardizeSpect.fit_dataset_path(
             dataset_path,
-            split=split,
+            split="train",
+            subset=subset,
         )
         joblib.dump(
             spect_standardizer, results_path.joinpath("StandardizeSpect")
