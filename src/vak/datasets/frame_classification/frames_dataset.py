@@ -23,12 +23,45 @@ class FramesDataset:
 
     Attributes
     ----------
-    dataset_path
-    dataset_df
-    frame_dur : float
-        Duration of a single frame, in seconds.
-    duration : float
-        Total duration of the dataset.
+    dataset_path : pathlib.Path
+        Path to directory that represents a
+        frame classification dataset,
+        as created by
+        :func:`vak.prep.prep_frame_classification_dataset`.
+    split : str
+        The name of a split from the dataset,
+        one of {'train', 'val', 'test'}.
+    sample_ids : numpy.ndarray
+        Indexing vector representing which sample
+        from the dataset every frame belongs to.
+    dataset_df : pandas.DataFrame
+        A frame classification dataset,
+        represented as a :class:`pandas.DataFrame`.
+        This will be only the rows that correspond
+        to either ``subset`` or ``split`` from the
+        ``dataset_df`` that was passed in when
+        instantiating the class.
+    frame_paths : numpy.ndarray
+        Paths to npy files containing frames,
+        either spectrograms or audio signals
+        that are input to the model.
+    frame_labels_paths : numpy.ndarray
+        Paths to npy files containing vectors
+        with a label for each frame.
+        The targets for the outputs of the model.
+    sample_ids : numpy.ndarray
+        Indexing vector representing which sample
+        from the dataset every frame belongs to.
+    inds_in_sample : numpy.ndarray
+        Indexing vector representing which index
+        within each sample from the dataset
+        that every frame belongs to.
+    frame_dur: float
+        Duration of a frame, i.e., a single sample in audio
+        or a single timebin in a spectrogram.
+    item_transform : callable, optional
+        Transform applied to each item :math:`(x, y)`
+        returned by :meth:`FramesDataset.__getitem__`.
     """
 
     def __init__(
@@ -43,19 +76,42 @@ class FramesDataset:
         subset: str | None = None,
         item_transform: Callable | None = None,
     ):
-        """
+        """Initialize a new instance of a FramesDataset.
 
         Parameters
         ----------
-        dataset_path
-        dataset_df
-        split
-        sample_ids
-        inds_in_sample
-        frame_dur
-        input_type
-        subset
-        item_transform
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            frame classification dataset,
+            as created by
+            :func:`vak.prep.prep_frame_classification_dataset`.
+        dataset_df : pandas.DataFrame
+            A frame classification dataset,
+            represented as a :class:`pandas.DataFrame`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        sample_ids : numpy.ndarray
+            Indexing vector representing which sample
+            from the dataset every frame belongs to.
+        inds_in_sample : numpy.ndarray
+            Indexing vector representing which index
+            within each sample from the dataset
+            that every frame belongs to.
+        frame_dur: float
+            Duration of a frame, i.e., a single sample in audio
+            or a single timebin in a spectrogram.
+        input_type : str
+            The type of input to the neural network model.
+            One of {'audio', 'spect'}.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        item_transform : callable, optional
+            Transform applied to each item :math:`(x, y)`
+            returned by :meth:`FramesDataset.__getitem__`.
         """
         self.dataset_path = pathlib.Path(dataset_path)
 
@@ -132,10 +188,22 @@ class FramesDataset:
 
         Parameters
         ----------
-        dataset_path
-        split
-        subset
-        item_transform
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            frame classification dataset,
+            as created by
+            :func:`vak.prep.prep_frame_classification_dataset`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        item_transform : callable, optional
+            Transform applied to each item :math:`(x, y)`
+            returned by :meth:`FramesDataset.__getitem__`.
 
         Returns
         -------
