@@ -76,7 +76,7 @@ class StandardizeSpect:
         self.non_zero_std = non_zero_std
 
     @classmethod
-    def fit_dataset_path(cls, dataset_path, split="train"):
+    def fit_dataset_path(cls, dataset_path, split="train", subset: str | None = None):
         """Returns a :class:`StandardizeSpect` instance
         that is fit to a split from a dataset,
         given the path to that dataset and the
@@ -101,9 +101,12 @@ class StandardizeSpect:
         metadata = Metadata.from_dataset_path(dataset_path)
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
-        df = pd.read_csv(dataset_csv_path)
-        df = df[df["split"] == split].copy()
-        frames_paths = df[
+        dataset_df = pd.read_csv(dataset_csv_path)
+        if subset:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
+        else:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
+        frames_paths = dataset_df[
             frame_classification.constants.FRAMES_NPY_PATH_COL_NAME
         ].values
         frames = np.load(dataset_path / frames_paths[0])
