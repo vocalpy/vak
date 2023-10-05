@@ -1,3 +1,20 @@
+"""A dataset class used for neural network models with the
+frame classification task, where the source data consists of audio signals
+or spectrograms of varying lengths.
+
+Unlike :class:`vak.datasets.frame_classification.FramesDataset`,
+this class does not return entire samples
+from the source dataset.
+Instead each paired samples :math:`(x_i, y_i)`
+returned by this dataset class consists of
+a window :math:`x_i` of fixed length
+:math:`w` from the underlying data ``X`` of total length :math:`T`.
+Each :math:`y_i` is a vector of the same size :math:`w`, containing
+an integer class label for each *frame* in the window :math:`x_i`.
+The entire dataset consists of some number of windows
+:math:`I` determined by a ``stride`` parameter :math:`s`,
+:math:`I = (T - w) / s`.
+"""
 from __future__ import annotations
 
 import pathlib
@@ -43,7 +60,7 @@ def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
 
 class WindowDataset:
     """Dataset used for training neural network models
-    on the frame classification task.
+    on the frame classification task,
     where the source data consists of audio signals
     or spectrograms of varying lengths.
 
