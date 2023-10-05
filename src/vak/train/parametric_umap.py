@@ -94,7 +94,7 @@ def train_parametric_umap_model(
     val_step: int | None = None,
     ckpt_step: int | None = None,
     device: str | None = None,
-    split: str = "train",
+    subset: str | None = None,
 ) -> None:
     """Train a model from the parametric UMAP family
     and save results.
@@ -228,7 +228,8 @@ def train_parametric_umap_model(
         train_dataset_params = {}
     train_dataset = ParametricUMAPDataset.from_dataset_path(
         dataset_path=dataset_path,
-        split=split,
+        split="train",
+        subset=subset,
         transform=transform,
         **train_dataset_params,
     )
