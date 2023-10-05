@@ -92,6 +92,18 @@ class WindowDataset:
         Duration of a single frame, in seconds.
     duration : float
         Total duration of the dataset.
+    dataset_path
+    dataset_df
+    split
+    sample_ids
+    inds_in_sample
+    window_size
+    frame_dur
+    stride
+    window_inds
+    subset
+    transform
+    target_transform
     """
 
     def __init__(
@@ -104,14 +116,37 @@ class WindowDataset:
         window_size: int,
         frame_dur: float,
         stride: int = 1,
+        subset: str | None = None,
         window_inds: npt.NDArray | None = None,
         transform: Callable | None = None,
         target_transform: Callable | None = None,
     ):
+        """
+
+        Parameters
+        ----------
+        dataset_path
+        dataset_df
+        split
+        sample_ids
+        inds_in_sample
+        window_size
+        frame_dur
+        stride
+        window_inds
+        subset
+        transform
+        target_transform
+        """
         self.dataset_path = pathlib.Path(dataset_path)
 
         self.split = split
-        dataset_df = dataset_df[dataset_df.split == split].copy()
+        self.subset = subset
+        # subset takes precedence over split, if specified
+        if subset:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
+        else:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
 
         self.frames_paths = self.dataset_df[
@@ -210,6 +245,7 @@ class WindowDataset:
         window_size: int,
         stride: int = 1,
         split: str = "train",
+        subset: str | None = None,
         transform: Callable | None = None,
         target_transform: Callable | None = None,
     ):
@@ -258,6 +294,7 @@ class WindowDataset:
             window_size,
             frame_dur,
             stride,
+            subset,
             window_inds,
             transform,
             target_transform,
