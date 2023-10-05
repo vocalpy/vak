@@ -32,7 +32,7 @@ def train(
     ckpt_step: int | None = None,
     patience: int | None = None,
     device: str | None = None,
-    split: str = "train",
+    subset: str | None = None,
 ):
     """Train a model and save results.
 
@@ -185,7 +185,7 @@ def train(
             ckpt_step=ckpt_step,
             patience=patience,
             device=device,
-            split=split,
+            subset=subset,
         )
     elif model_family == "ParametricUMAPModel":
         train_parametric_umap_model(
@@ -205,7 +205,7 @@ def train(
             val_step=val_step,
             ckpt_step=ckpt_step,
             device=device,
-            split=split,
+            subset=subset,
         )
     else:
         raise ValueError(f"Model family not recognized: {model_family}")
