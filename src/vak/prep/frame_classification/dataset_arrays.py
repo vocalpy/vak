@@ -100,7 +100,7 @@ def make_npy_files_for_each_split(
     input_type: str,
     purpose: str,
     labelmap: dict,
-    audio_format: str,
+    audio_format: str | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
 ) -> pd.DataFrame:
@@ -188,6 +188,12 @@ def make_npy_files_for_each_split(
         raise ValueError(
             f"``input_type`` must be one of: {prep_constants.INPUT_TYPES}\n"
             f"Value for ``input_type`` was: {input_type}"
+        )
+
+    if input_type == "audio" and audio_format is None:
+        raise ValueError(
+            f"Value for `input_type` was 'audio' but `audio_format` is None. "
+            f"Please specify the audio format."
         )
 
     dataset_df_out = []
