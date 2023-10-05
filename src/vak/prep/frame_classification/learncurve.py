@@ -195,12 +195,12 @@ def make_index_vectors_for_each_subset(
 
 def make_subsets_from_dataset_df(
     dataset_df: pd.DataFrame,
+    input_type: str,
     train_set_durs: Sequence[float],
     num_replicates: int,
     dataset_path: pathlib.Path,
     labelmap: dict,
-    input_type: str,
-    audio_format: str,
+    audio_format: str | None = None,
     spect_key: str = "s",
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
@@ -242,6 +242,9 @@ def make_subsets_from_dataset_df(
     ----------
     dataset_df : pandas.DataFrame
         Representing an entire dataset of vocalizations.
+    input_type : str
+        The type of input to the neural network model.
+        One of {'audio', 'spect'}.
     train_set_durs : list
         Durations in seconds of subsets taken from training data
         to create a learning curve, e.g., `[5., 10., 15., 20.]`.
@@ -252,9 +255,6 @@ def make_subsets_from_dataset_df(
         data (but of the same duration).
     dataset_path : str, pathlib.Path
         Directory where splits will be saved.
-    input_type : str
-        The type of input to the neural network model.
-        One of {'audio', 'spect'}.
     audio_format : str
         A :class:`string` representing the format of audio files.
         One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
@@ -276,6 +276,18 @@ def make_subsets_from_dataset_df(
         and then filtering ``dataset_df_out`` with that name
         using the 'split' column.
     """
+    if input_type not in prep_constants.INPUT_TYPES:
+        raise ValueError(
+            f"``input_type`` must be one of: {prep_constants.INPUT_TYPES}\n"
+            f"Value for ``input_type`` was: {input_type}"
+        )
+
+    if input_type == "audio" and audio_format is None:
+        raise ValueError(
+            f"Value for `input_type` was 'audio' but `audio_format` is None. "
+            f"Please specify the audio format."
+        )
+
     dataset_path = pathlib.Path(dataset_path)
 
     # get just train split, to pass to split.dataframe
