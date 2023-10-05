@@ -203,7 +203,7 @@ def learning_curve_for_frame_classification_model(
         )
 
         # `split` lets us use correct subset ("split") of training set for this duration / replicate
-        split = common.learncurve.get_train_dur_replicate_split_name(
+        subset = common.learncurve.get_train_dur_replicate_subset_name(
             train_dur, replicate_num
         )
 
@@ -225,7 +225,7 @@ def learning_curve_for_frame_classification_model(
             ckpt_step=ckpt_step,
             patience=patience,
             device=device,
-            split=split,
+            subset=subset,
         )
 
         logger.info(f"Evaluating model from replicate {replicate_num} ")
