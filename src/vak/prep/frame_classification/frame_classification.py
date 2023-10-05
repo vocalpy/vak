@@ -16,7 +16,7 @@ from .. import dataset_df_helper, sequence_dataset, split
 from ..audio_dataset import prep_audio_dataset
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 from . import dataset_arrays, validators
-from .learncurve import make_learncurve_splits_from_dataset_df
+from .learncurve import make_subsets_from_dataset_df
 
 logger = logging.getLogger(__name__)
 
@@ -388,7 +388,7 @@ def prep_frame_classification_dataset(
 
     # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
     if purpose == "learncurve":
-        dataset_df = make_learncurve_splits_from_dataset_df(
+        dataset_df = make_subsets_from_dataset_df(
             dataset_df,
             input_type,
             train_set_durs,
@@ -397,7 +397,6 @@ def prep_frame_classification_dataset(
             labelmap,
             audio_format,
             spect_key,
-            timebins_key,
         )
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
