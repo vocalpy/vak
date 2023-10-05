@@ -45,7 +45,7 @@ def train_frame_classification_model(
     ckpt_step: int | None = None,
     patience: int | None = None,
     device: str | None = None,
-    split: str = "train",
+    subset: str | None = None,
 ) -> None:
     """Train a model from the frame classification family
     and save results.
@@ -141,11 +141,11 @@ def train_frame_classification_model(
         number of validation steps to wait without performance on the
         validation set improving before stopping the training.
         Default is None, in which case training only stops after the specified number of epochs.
-    split : str
-        Name of split from dataset found at ``dataset_path`` to use
-        when training model. Default is 'train'. This parameter is used by
-        `vak.learncurve.learncurve` to specify specific subsets of the
-        training set to use when training models for a learning curve.
+    subset : str
+        Name of a subset from the training split of the dataset
+        to use when training model. This parameter is used by
+        :func:`vak.learncurve.learncurve` to specify subsets
+        when training models for a learning curve.
     """
     for path, path_name in zip(
         (checkpoint_path, spect_scaler_path),
@@ -249,7 +249,8 @@ def train_frame_classification_model(
         train_dataset_params = {}
     train_dataset = WindowDataset.from_dataset_path(
         dataset_path=dataset_path,
-        split=split,
+        split="train",
+        subset=subset,
         transform=transform,
         target_transform=target_transform,
         **train_dataset_params,
