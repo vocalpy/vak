@@ -371,6 +371,10 @@ def make_splits(
             else:
                 frame_labels_npy_path = None
 
+            # we do this because all functions and classes downstream
+            # of this expect these paths to be relative to dataset root
+            x_path = pathlib.Path(x_path).relative_to(dataset_path)
+
             return Sample(
                 source_id,
                 x_path,
@@ -421,6 +425,9 @@ def make_splits(
             inds_in_sample_vec,
         )
 
+        # We convert `x_paths` back to string
+        # (just in case they are pathlib.Paths) before adding back to dataframe.
+        # Note that these are all in split dirs, written relative to ``dataset_path``.
         x_paths = [str(sample.x_path) for sample in samples]
         if input_type == "audio":
             split_df["audio_path"] = x_paths
