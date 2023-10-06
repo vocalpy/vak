@@ -15,8 +15,9 @@ from ...common.timenow import get_timenow_as_str
 from .. import dataset_df_helper, sequence_dataset, split
 from ..audio_dataset import prep_audio_dataset
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
-from . import dataset_arrays, validators
+from . import validators
 from .learncurve import make_subsets_from_dataset_df
+from .make_splits import make_splits
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ def prep_frame_classification_dataset(
     num_replicates: int | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
+    freqbins_key: str = "f",
 ):
     """Prepare datasets for neural network models
     that perform the frame classification task.
@@ -116,9 +118,11 @@ def prep_frame_classification_dataset(
         Each replicate uses a different randomly drawn subset of the training
         data (but of the same duration).
     spect_key : str
-        key for accessing spectrogram in files. Default is 's'.
+        Key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
-        key for accessing vector of time bins in files. Default is 't'.
+        Key for accessing vector of time bins in files. Default is 't'.
+    freqbins_key : str
+        Key for accessing vector of frequency bins in files. Default is 'f'.
 
     Returns
     -------
@@ -375,7 +379,7 @@ def prep_frame_classification_dataset(
         labelmap = None
 
     # ---- make arrays that represent final dataset --------------------------------------------------------------------
-    dataset_df = dataset_arrays.make_npy_files_for_each_split(
+    dataset_df = make_splits(
         dataset_df,
         dataset_path,
         input_type,
@@ -384,6 +388,7 @@ def prep_frame_classification_dataset(
         audio_format,
         spect_key,
         timebins_key,
+        freqbins_key,
     )
 
     # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
