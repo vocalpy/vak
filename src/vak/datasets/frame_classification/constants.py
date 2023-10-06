@@ -1,5 +1,3 @@
-FRAMES_ARRAY_EXT = ".frames.npy"
-FRAMES_NPY_PATH_COL_NAME = "frames_npy_path"
 FRAME_LABELS_EXT = ".frame_labels.npy"
 FRAME_LABELS_NPY_PATH_COL_NAME = "frame_labels_npy_path"
 ANNOTATION_CSV_FILENAME = "y.csv"
