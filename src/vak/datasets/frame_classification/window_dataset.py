@@ -287,14 +287,7 @@ class WindowDataset:
         This function assumes that audio is in wav format 
         and spectrograms are in npz files.
         """
-        if self.input_type == "audio":
-            frames, _ = common.constants.AUDIO_FORMAT_FUNC_MAP[
-                "wav"
-            ](frames_path)
-        elif self.input_type == "spect":
-            spect_dict = common.files.spect.load(frames_path)
-            frames = spect_dict[common.constants.SPECT_KEY]
-        return frames
+        return helper.load_frames(frames_path, self.input_type)
 
     def __getitem__(self, idx):
         window_idx = self.window_inds[idx]
