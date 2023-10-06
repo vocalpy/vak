@@ -162,7 +162,6 @@ def prep_spectrogram_dataset(
         "annot_list": annot_list,
         "annot_format": annot_format,
         "spect_ext": spect_ext,
-        "spect_output_dir": spect_output_dir,
     }
 
     if (
