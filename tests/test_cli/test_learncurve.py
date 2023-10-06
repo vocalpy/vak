@@ -10,7 +10,7 @@ import vak.cli.learncurve
 from . import cli_asserts
 
 
-def test_learncurve(specific_config, tmp_path, device):
+def test_learncurve(specific_config_toml_path, tmp_path, device):
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
     root_results_dir.mkdir()
 
@@ -23,7 +23,7 @@ def test_learncurve(specific_config, tmp_path, device):
         {"section": "LEARNCURVE", "option": "device", "value": device},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="learncurve",
         model="TweetyNet",
         audio_format="cbin",
@@ -45,7 +45,7 @@ def test_learncurve(specific_config, tmp_path, device):
 
 
 def test_learning_curve_dataset_path_none_raises(
-        specific_config, tmp_path,
+        specific_config_toml_path, tmp_path,
 ):
     """Test that cli.learncurve.learning_curve
     raises ValueError when dataset_path is None
@@ -66,7 +66,7 @@ def test_learning_curve_dataset_path_none_raises(
             "value": "DELETE-OPTION"},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="learncurve",
         model="TweetyNet",
         audio_format="cbin",

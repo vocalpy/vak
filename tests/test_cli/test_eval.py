@@ -18,7 +18,7 @@ from . import cli_asserts
     ],
 )
 def test_eval(
-    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
 ):
     output_dir = tmp_path.joinpath(
         f"test_eval_{audio_format}_{spect_format}_{annot_format}"
@@ -30,7 +30,7 @@ def test_eval(
         {"section": "EVAL", "option": "device", "value": device},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="eval",
         model=model_name,
         audio_format=audio_format,
@@ -49,7 +49,7 @@ def test_eval(
 
 
 def test_eval_dataset_path_none_raises(
-        specific_config, tmp_path,
+        specific_config_toml_path, tmp_path,
 ):
     """Test that cli.eval raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
@@ -58,7 +58,7 @@ def test_eval_dataset_path_none_raises(
         {"section": "EVAL", "option": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="eval",
         model="TweetyNet",
         audio_format="cbin",

@@ -17,7 +17,7 @@ import vak.common.paths
 )
 def test_predict(
     audio_format, spect_format, annot_format, model_name, predict_function_to_mock,
-    specific_config, tmp_path
+        specific_config_toml_path, tmp_path
 ):
     """Test that :func:`vak.predict.predict` dispatches to the correct model-specific
     training functions"""
@@ -31,7 +31,7 @@ def test_predict(
         {"section": "PREDICT", "option": "device", "value": 'cpu'},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="predict",
         model=model_name,
         audio_format=audio_format,

@@ -25,7 +25,7 @@ def test_prep(
     spect_format,
     annot_format,
     dataset_prep_func_to_mock,
-    specific_config,
+        specific_config_toml_path,
     default_model,
     tmp_path,
 ):
@@ -42,7 +42,7 @@ def test_prep(
             "value": str(output_dir),
         },
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type=config_type,
         model=default_model,
         audio_format=audio_format,

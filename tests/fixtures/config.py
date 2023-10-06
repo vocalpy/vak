@@ -17,7 +17,7 @@ def test_configs_root():
 
     Two types of config files in this directory:
     1) those used by the tests/scripts/generate_data_for_tests.py script.
-       Will be listed in configs.json. See ``specific_config`` fixture below
+       Will be listed in configs.json. See ``specific_config_toml_path`` fixture below
        for details about types of configs.
     2) those used by tests that are static, e.g., ``invalid_section_config.toml``
 
@@ -47,7 +47,7 @@ def list_of_schematized_configs(test_configs_root):
       "annot_format": "notmat"
     }
 
-    The ``specific_config`` factory fixture returns a function that
+    The ``specific_config_toml_path`` factory fixture returns a function that
     itself return a configuration ``filename``, when provided values for
     all of the other keys.
     """
@@ -88,7 +88,7 @@ def all_generated_configs():
 
 
 @pytest.fixture
-def specific_config(generated_test_configs_root, list_of_schematized_configs, tmp_path):
+def specific_config_toml_path(generated_test_configs_root, list_of_schematized_configs, tmp_path):
     """returns a factory function
     that will return the path
     to a specific configuration file, determined by
@@ -226,7 +226,7 @@ def _return_toml(toml_path):
 
 
 @pytest.fixture
-def specific_config_toml(specific_config):
+def specific_config_toml(specific_config_toml_path):
     """returns a function that will return a dict
     containing parsed toml from a
     specific configuration file, determined by
@@ -241,7 +241,7 @@ def specific_config_toml(specific_config):
         audio_format=None,
         spect_format=None,
     ):
-        config_path = specific_config(
+        config_path = specific_config_toml_path(
             config_type, model, annot_format, audio_format, spect_format
         )
         return _return_toml(config_path)

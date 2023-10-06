@@ -44,7 +44,7 @@ def test_eval_frame_classification_model(
         audio_format,
         spect_format,
         annot_format,
-        specific_config,
+        specific_config_toml_path,
         tmp_path,
         device,
         post_tfm_kwargs
@@ -59,7 +59,7 @@ def test_eval_frame_classification_model(
         {"section": "EVAL", "option": "device", "value": device},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="eval",
         model=model_name,
         audio_format=audio_format,
@@ -98,7 +98,7 @@ def test_eval_frame_classification_model(
 )
 def test_eval_frame_classification_model_raises_file_not_found(
     path_option_to_change,
-    specific_config,
+        specific_config_toml_path,
     tmp_path,
     device
 ):
@@ -117,7 +117,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
         path_option_to_change,
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="eval",
         model="TweetyNet",
         audio_format="cbin",
@@ -152,7 +152,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
 )
 def test_eval_frame_classification_model_raises_not_a_directory(
     path_option_to_change,
-    specific_config,
+        specific_config_toml_path,
     device,
     tmp_path,
 ):
@@ -175,7 +175,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
             {"section": "EVAL", "option": "output_dir", "value": str(output_dir)}
         )
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="eval",
         model="TweetyNet",
         audio_format="cbin",

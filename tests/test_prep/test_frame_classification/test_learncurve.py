@@ -18,7 +18,7 @@ import vak.prep.frame_classification
     ]
 )
 def test_make_subsets_from_dataset_df(
-    model_name, audio_format, annot_format, input_type, specific_config, device, tmp_path,
+    model_name, audio_format, annot_format, input_type, specific_config_toml_path, device, tmp_path,
 ):
     root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()
@@ -29,7 +29,7 @@ def test_make_subsets_from_dataset_df(
             "value": str(root_results_dir),
         },
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="learncurve",
         model=model_name,
         audio_format=audio_format,

@@ -20,7 +20,7 @@ from . import cli_asserts
     ],
 )
 def test_train(
-    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
 ):
     root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
     root_results_dir.mkdir()
@@ -34,7 +34,7 @@ def test_train(
         {"section": "TRAIN", "option": "device", "value": device},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="train",
         model=model_name,
         audio_format=audio_format,
@@ -56,7 +56,7 @@ def test_train(
 
 
 def test_train_dataset_path_none_raises(
-        specific_config, tmp_path,
+        specific_config_toml_path, tmp_path,
 ):
     """Test that cli.train raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
@@ -69,7 +69,7 @@ def test_train_dataset_path_none_raises(
         {"section": "TRAIN", "option": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="train",
         model="TweetyNet",
         audio_format="cbin",

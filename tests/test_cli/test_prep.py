@@ -26,11 +26,11 @@ def test_purpose_from_toml(
     audio_format,
     spect_format,
     annot_format,
-    specific_config,
+        specific_config_toml_path,
     default_model,
     tmp_path,
 ):
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type=config_type,
         model=default_model,
         audio_format=audio_format,
@@ -58,7 +58,7 @@ def test_prep(
     audio_format,
     spect_format,
     annot_format,
-    specific_config,
+        specific_config_toml_path,
     default_model,
     tmp_path,
     dummy_tmpfile_csv,
@@ -77,7 +77,7 @@ def test_prep(
             "value": None,
         },
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type=config_type,
         model=default_model,
         audio_format=audio_format,
@@ -109,7 +109,7 @@ def test_prep_dataset_path_raises(
     audio_format,
     spect_format,
     annot_format,
-    specific_config,
+        specific_config_toml_path,
     default_model,
     tmp_path,
 
@@ -122,7 +122,7 @@ def test_prep_dataset_path_raises(
     options_to_change = [
         {"section": "PREP", "option": "output_dir", "value": str(output_dir)},
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type=config_type,
         model=default_model,
         audio_format=audio_format,
