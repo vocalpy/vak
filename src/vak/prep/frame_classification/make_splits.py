@@ -443,6 +443,13 @@ def make_splits(
         ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 
+    # ---- clean up
+    # Remove any spect npz files that were *not* added to a split
+    spect_npz_files_not_in_split = sorted(dataset_path.glob(f'*{common.constants.SPECT_NPZ_EXTENSION}'))
+    if len(spect_npz_files_not_in_split) > 0:
+        for spect_npz_file in spect_npz_files_not_in_split:
+            spect_npz_file.unlink()
+
     # we reset the entire index across all splits, instead of repeating indices,
     # and we set drop=False because we don't want to add a new column 'index' or 'level_0'
     dataset_df_out = pd.concat(dataset_df_out).reset_index(drop=True)
