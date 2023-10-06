@@ -123,13 +123,13 @@ class WindowDataset:
         to either ``subset`` or ``split`` from the
         ``dataset_df`` that was passed in when
         instantiating the class.
+    input_type : str
+        The type of input to the neural network model.
+        One of {'audio', 'spect'}.
     frame_paths : numpy.ndarray
         Paths to npy files containing frames,
         either spectrograms or audio signals
         that are input to the model.
-    input_type : str
-        The type of input to the neural network model.
-        One of {'audio', 'spect'}.
     frame_labels_paths : numpy.ndarray
         Paths to npy files containing vectors
         with a label for each frame.
@@ -231,8 +231,14 @@ class WindowDataset:
             The transform applied to the target for the output
             of the neural network :math:`y`.
         """
-        self.dataset_path = pathlib.Path(dataset_path)
+        from ... import prep  # avoid circular import, use for constants.INPUT_TYPES
+        if input_type not in prep.constants.INPUT_TYPES:
+            raise ValueError(
+                f"``input_type`` must be one of: {prep.constants.INPUT_TYPES}\n"
+                f"Value for ``input_type`` was: {input_type}"
+            )
 
+        self.dataset_path = pathlib.Path(dataset_path)
         self.split = split
         self.subset = subset
         # subset takes precedence over split, if specified
@@ -241,34 +247,23 @@ class WindowDataset:
         else:
             dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
-
-        if input_type == "audio":
-            self.frame_paths = self.dataset_df["audio_path"].values
-        elif input_type == "spect":
-            self.frame_paths = self.dataset_df["spect_path"].values
-        else:
-            raise ValueError(
-                f"Invalid `input_type`: {input_type}. Must be one of {{'audio', 'spect'}}."
-            )
         self.input_type = input_type
-
+        self.frames_paths = self.dataset_df[
+            constants.FRAMES_PATH_COL_NAME
+        ].values
         self.frame_labels_paths = self.dataset_df[
             constants.FRAME_LABELS_NPY_PATH_COL_NAME
         ].values
-
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
-
         self.window_size = window_size
         self.frame_dur = float(frame_dur)
         self.stride = stride
-
         if window_inds is None:
             window_inds = get_window_inds(
                 sample_ids.shape[-1], window_size, stride
             )
         self.window_inds = window_inds
-
         self.transform = transform
         self.target_transform = target_transform
 
