@@ -93,14 +93,15 @@ class Sample:
     ----------
     source_id : int
         Integer ID number used for sorting.
-    source_path : str
+    frames_path : str
         The path to the input to the model
         :math:`x` after it has been moved,
         copied, or created from a ``source_path``.
-        Path will be relative to ``dataset_path``.
-        This is used to fix the `'audio_path'`
-        or `'spect_path'` column in the DataFrame
-        after making splits.
+        Path will be written relative to ``dataset_path``.
+        We preserve the original paths as metadata,
+        and consider the files in the split to contain
+        frames, regardless of the source domain
+        of the data.
     frame_labels_npy_path : str
         Path to frame labels,
         relative to ``dataset_path``.
@@ -304,7 +305,8 @@ def make_splits(
 
             if input_type == "audio":
                 # we always copy audio to the split directory, to avoid damaging source data
-                source_path = shutil.copy(source_path, split_subdir)
+                frames_path = shutil.copy(source_path, split_subdir)
+                # after copying, we load frames to compute frame labels
                 frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[
                     audio_format
                 ](source_path)
@@ -323,15 +325,15 @@ def make_splits(
                         "t": spect_dict[timebins_key],
                         "f": spect_dict[freqbins_key],
                     }
-                    source_path = split_subdir / (
+                    frames_path = split_subdir / (
                             source_path.stem + ".npz"
                     )
-                    np.savez(source_path, **spect_dict_npz)
+                    np.savez(frames_path, **spect_dict_npz)
                 elif source_path.suffix.endswith('npz'):
                     spect_dict = common.files.spect.load(source_path, "npz")
                     if source_path.is_relative_to(dataset_path):
                         # it's already in dataset_path, we just move it into the split
-                        source_path = shutil.move(source_path, split_subdir)
+                        frames_path = shutil.move(source_path, split_subdir)
                     else:
                         # it's somewhere else we copy it to be safe
                         if not all([key in spect_dict for key in ('s', 't', 'f')]):
@@ -340,7 +342,7 @@ def make_splits(
                                 f"All npz files should have keys 's', 't', 'f' corresponding to the spectrogram,"
                                 f"the frequencies vector, and the time vector."
                             )
-                        source_path = shutil.copy(source_path, split_subdir)
+                        frames_path = shutil.copy(source_path, split_subdir)
                 frames = spect_dict[spect_key]
                 if annot:
                     frame_times = spect_dict[timebins_key]
@@ -371,13 +373,13 @@ def make_splits(
             else:
                 frame_labels_npy_path = None
 
-            # we do this because all functions and classes downstream
-            # of this expect these paths to be relative to dataset root
-            source_path = pathlib.Path(source_path).relative_to(dataset_path)
+            # Rewrite ``frames_path`` as relative to root
+            # because all functions and classes downstream expect this
+            frames_path = pathlib.Path(frames_path).relative_to(dataset_path)
 
             return Sample(
                 source_id,
-                source_path,
+                frames_path,
                 frame_labels_npy_path,
                 sample_id_vec,
                 inds_in_sample_vec,
@@ -425,14 +427,13 @@ def make_splits(
             inds_in_sample_vec,
         )
 
-        # We convert `source_paths` back to string
+        # We convert `frames_paths` back to string
         # (just in case they are pathlib.Paths) before adding back to dataframe.
         # Note that these are all in split dirs, written relative to ``dataset_path``.
-        source_paths = [str(sample.source_path) for sample in samples]
-        if input_type == "audio":
-            split_df["audio_path"] = source_paths
-        elif input_type == "spect":
-            split_df["spect_path"] = source_paths
+        frames_paths = [str(sample.source_path) for sample in samples]
+        split_df[
+            datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+        ] = frames_paths
 
         frame_labels_npy_paths = [
             str(sample.frame_labels_npy_path) for sample in samples
