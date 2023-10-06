@@ -17,7 +17,7 @@ import vak.prep.frame_classification
         ('TweetyNet', 'cbin', 'notmat', 'spect')
     ]
 )
-def test_make_learncurve_splits_from_dataset_df(
+def test_make_subsets_from_dataset_df(
     model_name, audio_format, annot_format, input_type, specific_config, device, tmp_path,
 ):
     root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
@@ -52,13 +52,13 @@ def test_make_learncurve_splits_from_dataset_df(
     # delete all the split directories since we're about to test that we make them
     for train_dur in cfg.prep.train_set_durs:
         for replicate_num in range(1, cfg.prep.num_replicates + 1):
-            train_dur_replicate_split_name = vak.common.learncurve.get_train_dur_replicate_split_name(
+            train_dur_replicate_split_name = vak.common.learncurve.get_train_dur_replicate_subset_name(
                     train_dur, replicate_num
                 )
             split_dir = tmp_dataset_path / train_dur_replicate_split_name
             shutil.rmtree(split_dir)
 
-    out = vak.prep.frame_classification.learncurve.make_learncurve_splits_from_dataset_df(
+    out = vak.prep.frame_classification.learncurve.make_subsets_from_dataset_df(
         dataset_df,
         "spect",
         cfg.prep.train_set_durs,
@@ -87,7 +87,7 @@ def test_make_learncurve_splits_from_dataset_df(
         ) == list(range(1, cfg.prep.num_replicates + 1))
 
         for replicate_num in range(1, cfg.prep.num_replicates + 1):
-            train_dur_replicate_split_name = vak.common.learncurve.get_train_dur_replicate_split_name(
+            train_dur_replicate_split_name = vak.common.learncurve.get_train_dur_replicate_subset_name(
                     train_dur, replicate_num
                 )
             all_split_names.append(train_dur_replicate_split_name)
