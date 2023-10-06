@@ -110,9 +110,9 @@ def make_index_vectors_for_each_subset(
         logger.info(f"Making indexing vectors for subset: {subset}")
         subset_df = dataset_df[dataset_df.subset == subset].copy()
         if input_type == "audio":
-            x_paths = subset_df["audio_path"].values
+            source_paths = subset_df["audio_path"].values
         elif input_type == "spect":
-            x_paths = subset_df["spect_path"].values
+            source_paths = subset_df["spect_path"].values
         else:
             raise ValueError(f"Invalid ``input_type``: {input_type}")
 
@@ -122,16 +122,16 @@ def make_index_vectors_for_each_subset(
             """Function we use with dask to parallelize.
             Defined in-line so variables are in scope.
             """
-            source_id, x_path = source_id_path_tup
+            source_id, source_path = source_id_path_tup
 
-            x_path = dataset_path / pathlib.Path(x_path)
+            source_path = dataset_path / pathlib.Path(source_path)
 
             if input_type == "audio":
                 frames, _ = common.constants.AUDIO_FORMAT_FUNC_MAP[
                     audio_format
-                ](x_path)
+                ](source_path)
             elif input_type == "spect":
-                spect_dict = common.files.spect.load(x_path)
+                spect_dict = common.files.spect.load(source_path)
                 frames = spect_dict[spect_key]
 
             n_frames = frames.shape[-1]
@@ -146,15 +146,15 @@ def make_index_vectors_for_each_subset(
 
         # ---- make npy files for this split, parallelized with dask
         # using nested function just defined
-        source_id_x_path_tups = [
-            (source_id, x_path)
-            for source_id, x_path in enumerate(x_paths)
+        source_id_source_path_tups = [
+            (source_id, source_path)
+            for source_id, source_path in enumerate(source_paths)
         ]
 
-        source_id_x_path_bag = db.from_sequence(source_id_x_path_tups)
+        source_id_source_path_bag = db.from_sequence(source_id_source_path_tups)
         with ProgressBar():
             samples = list(
-                source_id_x_path_bag.map(
+                source_id_source_path_bag.map(
                     _return_index_arrays
                 )
             )
