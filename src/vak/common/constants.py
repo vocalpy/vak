@@ -42,3 +42,6 @@ RESULTS_DIR_PREFIX = "results_"
 # ---- output (default) file extensions. Using the `pathlib` name "suffix" ----
 ANNOT_CSV_SUFFIX = ".annot.csv"
 NET_OUTPUT_SUFFIX = ".output.npz"
+
+# ---- the key for loading the spectrogram matrix from an npz file
+SPECT_KEY = "s"
