@@ -17,6 +17,7 @@ from dask.diagnostics import ProgressBar
 from ... import common, datasets, transforms
 from .. import constants as prep_constants
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -259,6 +260,7 @@ def make_splits(
         if split != "None"
     ]
     for split in splits:
+        logger.info(f"Making split for dataset: {split}")
         split_subdir = dataset_path / split
         split_subdir.mkdir()
 
