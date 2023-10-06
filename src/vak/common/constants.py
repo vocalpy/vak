@@ -45,3 +45,8 @@ NET_OUTPUT_SUFFIX = ".output.npz"
 
 # ---- the key for loading the spectrogram matrix from an npz file
 SPECT_KEY = "s"
+
+# TODO: replace this with vocalpy extension when we move to VocalPy
+# ---- the extension used to save spectrograms in npz array files
+# used by :func:`vak.prep.spectrogram_dataset.audio_helper.make
+SPECT_NPZ_EXTENSION = ".spect.npz"
