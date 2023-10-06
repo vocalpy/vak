@@ -1,12 +1,13 @@
-"""Unit tests for vak.prep.frame_classification.dataset_arrays"""
+"""Unit tests for vak.prep.frame_classification.make_splits"""
 import json
 import pathlib
 import shutil
 
 import crowsetta
+import numpy as np
 import pytest
 
-import vak.prep.frame_classification.dataset_arrays
+import vak.prep.frame_classification.make_splits
 
 
 @pytest.mark.parametrize(
@@ -77,8 +78,8 @@ def copy_dataset_df_files_to_tmp_path_data_dir(dataset_df, dataset_path, config_
         # TODO: add audio cases
     ]
 )
-def test_make_npy_files_for_each_split(config_type, model_name, audio_format, spect_format, annot_format,
-                                       input_type, tmp_path, specific_dataset_df, specific_dataset_path):
+def test_make_splits(config_type, model_name, audio_format, spect_format, annot_format,
+                     input_type, tmp_path, specific_dataset_df, specific_dataset_path):
     dataset_df = specific_dataset_df(config_type, model_name, annot_format, audio_format, spect_format)
     dataset_path = specific_dataset_path(config_type, model_name, annot_format, audio_format, spect_format)
     tmp_path_data_dir = tmp_path / 'data_dir'
@@ -96,7 +97,9 @@ def test_make_npy_files_for_each_split(config_type, model_name, audio_format, sp
 
     purpose = config_type
 
-    vak.prep.frame_classification.dataset_arrays.make_npy_files_for_each_split(
+    # TODO: we need a way to run this on the output of the preceding steps, not on the already prep'd datasets
+    # will require some sort of set-up step
+    vak.prep.frame_classification.make_splits.make_splits(
         dataset_df,
         tmp_dataset_path,
         input_type,
@@ -125,37 +128,51 @@ def test_make_npy_files_for_each_split(config_type, model_name, audio_format, sp
         else:
             annots = None
 
-        if input_type == "audio":
-            source_paths = split_df["audio_path"].values
-        elif input_type == "spect":
-            source_paths = split_df["spect_path"].values
+        assert vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME in split_df.columns
 
-        source_paths = [pathlib.Path(source_path) for source_path in source_paths]
+        frames_paths = split_df[
+            vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+        ].values
+        frames_paths = [pathlib.Path(frames_path) for frames_path in frames_paths]
 
         if annots:
-            source_path_annot_tups = [
-                (source_path, annot)
-                for source_path, annot in zip(source_paths, annots)
+            frames_path_annot_tups = [
+                (frames_path, annot)
+                for frames_path, annot in zip(frames_paths, annots)
             ]
         else:
-            source_path_annot_tups = [
-                (source_path, None)
-                for source_path in source_paths
+            frames_path_annot_tups = [
+                (frames_path, None)
+                for frames_path in frames_paths
             ]
 
-        for source_path_annot_tup in source_path_annot_tups:
-            source_path, annot = source_path_annot_tup
-            frames_array_file_that_should_exist = split_subdir / (
-                source_path.stem
-                + vak.datasets.frame_classification.constants.FRAMES_ARRAY_EXT
-            )
-            assert frames_array_file_that_should_exist.exists()
+        sample_id_vecs, inds_in_sample_vecs = [], []
+        for sample_id, frames_path_annot_tup in enumerate(frames_path_annot_tups):
+            frames_path, annot = frames_path_annot_tup
+            frames_file_that_should_exist = dataset_path / frames_path
+            assert frames_file_that_should_exist.exists()
+
+            frames = vak.datasets.frame_classification.helper.load_frames(frames_path, input_type)
+            assert isinstance(frames, np.ndarray)
+
+            # we make indexing vectors that we use to test
+            n_frames = frames.shape[-1]
+            sample_id_vecs.append(np.ones((n_frames,)).astype(np.int32) * sample_id)
+            inds_in_sample_vecs.append(np.arange(n_frames))
+
             if annot:
-                frame_labels_file_that_should_exist = split_subdir / (
-                    source_path.stem
+                frame_labels_file_that_should_exist = dataset_path / (
+                    frames_path.stem
                     + vak.datasets.frame_classification.constants.FRAME_LABELS_EXT
                 )
                 assert frame_labels_file_that_should_exist.exists()
+
+        # assert there are no remaining .spect.npz files in dataset path (root)
+        # because they were moved in to splits, and we removed any remaining that were not put into splits
+        spect_npz_files_not_in_split = sorted(
+            dataset_path.glob(f'*{vak.common.constants.SPECT_NPZ_EXTENSION}')
+        )
+        assert len(spect_npz_files_not_in_split) == 0
 
         sample_id_vec_path = (
             split_subdir /
@@ -163,8 +180,16 @@ def test_make_npy_files_for_each_split(config_type, model_name, audio_format, sp
         )
         assert sample_id_vec_path.exists()
 
+        expected_sample_id_vec = np.concatenate(sample_id_vecs)
+        sample_id_vec = np.load(sample_id_vec_path)
+        assert np.array_equal(sample_id_vec, expected_sample_id_vec)
+
         inds_in_sample_vec_path = (
             split_subdir /
             vak.datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME
         )
         assert inds_in_sample_vec_path.exists()
+
+        expected_inds_in_sample_vec = np.concatenate(inds_in_sample_vecs)
+        inds_in_sample_vec = np.load(inds_in_sample_vec_path)
+        assert np.array_equal(inds_in_sample_vec, expected_inds_in_sample_vec)
