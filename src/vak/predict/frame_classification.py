@@ -239,9 +239,9 @@ def predict_with_frame_classification_model(
     results = trainer.predict(model, pred_loader)
     # TODO: figure out how to overload `on_predict_epoch_end` to return dict
     pred_dict = {
-        source_path: y_pred
+        frames_path: y_pred
         for result in results
-        for source_path, y_pred in result.items()
+        for frames_path, y_pred in result.items()
     }
     # ----------------  converting to annotations ------------------------------------------------------------------
     progress_bar = tqdm(pred_loader)
@@ -256,11 +256,11 @@ def predict_with_frame_classification_model(
     annots = []
     logger.info("converting predictions to annotations")
     for ind, batch in enumerate(progress_bar):
-        padding_mask, source_path = batch["padding_mask"], batch["source_path"]
+        padding_mask, frames_path = batch["padding_mask"], batch["frames_path"]
         padding_mask = np.squeeze(padding_mask)
-        if isinstance(source_path, list) and len(source_path) == 1:
-            source_path = source_path[0]
-        y_pred = pred_dict[source_path]
+        if isinstance(frames_path, list) and len(frames_path) == 1:
+            frames_path = frames_path[0]
+        y_pred = pred_dict[frames_path]
 
         if save_net_outputs:
             # not sure if there's a better way to get outputs into right shape;
@@ -271,7 +271,7 @@ def predict_with_frame_classification_model(
             net_output = net_output[:, padding_mask]
             net_output = net_output.cpu().numpy()
             net_output_path = output_dir.joinpath(
-                pathlib.Path(source_path).stem
+                pathlib.Path(frames_path).stem
                 + f"{model_name}{constants.NET_OUTPUT_SUFFIX}"
             )
             np.savez(net_output_path, net_output)
@@ -281,12 +281,12 @@ def predict_with_frame_classification_model(
 
         if input_type == "audio":
             frames, samplefreq = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](
-                source_path
+                frames_path
             )
             frame_times = np.arange(frames.shape[-1]) / samplefreq
         elif input_type == "spect":
             spect_dict = files.spect.load(
-                dataset_path / source_path, spect_format=spect_format
+                frames_path, spect_format=spect_format
             )
             frame_times = spect_dict[timebins_key]
 
@@ -311,7 +311,7 @@ def predict_with_frame_classification_model(
             labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
         )
 
-        audio_fname = files.spect.find_audio_fname(source_path)
+        audio_fname = files.spect.find_audio_fname(frames_path)
         annot = crowsetta.Annotation(
             seq=seq, notated_path=audio_fname, annot_path=annot_csv_path.name
         )
