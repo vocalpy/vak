@@ -293,7 +293,7 @@ class WindowDataset:
             ](frames_path)
         elif self.input_type == "spect":
             spect_dict = common.files.spect.load(frames_path)
-            frames = spect_dict["s"]
+            frames = spect_dict[common.constants.SPECT_KEY]
         return frames
 
     def __getitem__(self, idx):
