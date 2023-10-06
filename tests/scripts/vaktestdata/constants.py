@@ -13,8 +13,8 @@ CONFIG_METADATA = [
     ConfigMetadata(**config_metadata_dict)
     for config_metadata_dict in CONFIG_METADATA_LIST
 ]
-GENERATED_TEST_DATA = TEST_DATA_ROOT / "generated"
-GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA / "configs"
+GENERATED_TEST_DATA_ROOT = TEST_DATA_ROOT / "generated"
+GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA_ROOT / "configs"
 
 # convention is that all the config.toml files in tests/data_for_tests/configs
 # that should be run when generating test data
