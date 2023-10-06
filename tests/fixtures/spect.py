@@ -22,11 +22,8 @@ def spect_dir_mat():
     return SPECT_DIR_MAT
 
 
-SPECT_DIR_NPZ = sorted(
-        GENERATED_TEST_DATA_ROOT.joinpath(
-            "prep", "train", "audio_cbin_annot_notmat", "TweetyNet"
-        ).glob("*vak-frame-classification-dataset-generated*/spectrograms_generated_*")
-    )[0]
+# this dir is created by ./tests/scripts/generate_test_data
+SPECT_DIR_NPZ = GENERATED_TEST_DATA_ROOT / "spect-dir-npz"
 
 
 @pytest.fixture
