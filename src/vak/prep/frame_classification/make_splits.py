@@ -158,8 +158,12 @@ def make_splits(
     and then copied into the split directory.
     This could be the case if the files were generated
     by another program.
-    If they are mat files, then they are loaded,
+    If they are mat files, they will be converted to npz
+    with the default keys for arrays,
     and then saved in a new npz file in the split directory.
+    This step is required so that all dataset
+    prepared by :mod:`vak` are in a "normalized" or
+    "canonicalized" format.
 
     In addition to copying or moving the audio or spectrogram
     files that are inputs to the neural network model,
@@ -415,7 +419,7 @@ def make_splits(
             inds_in_sample_vec,
         )
 
-        x_paths = [str(sample.x_path)] for sample in samples]
+        x_paths = [str(sample.x_path) for sample in samples]
         if input_type == "audio":
             split_df["audio_path"] = x_paths
         elif input_type == "spect":
