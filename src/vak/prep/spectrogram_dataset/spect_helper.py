@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
+import shutil
 
 import dask.bag as db
 import numpy as np
@@ -34,7 +35,6 @@ DF_COLUMNS = [
 def make_dataframe_of_spect_files(
     spect_format: str,
     spect_dir: str | pathlib.Path | None = None,
-    spect_output_dir: str | pathlib.Path | None = None,
     spect_files: list | None = None,
     spect_ext: str | None = None,
     annot_list: list | None = None,
@@ -52,13 +52,6 @@ def make_dataframe_of_spect_files(
 
     Spectrogram files are array in npz files created by numpy
     or in mat files created by Matlab.
-    If files are in mat format, they will be converted to npz
-    with the default keys for arrays, and saved in
-    ``spect_output_dir``. This step is required so that all dataset
-    prepared by :mod:`vak` are in a "normalized" or
-    "canonicalized" format. If no ``spect_output_dir`` is provided
-    when the ``spect_format`` is ``'mat'``, then this function
-    will raise an error.
 
     Parameters
     ----------
@@ -87,19 +80,20 @@ def make_dataframe_of_spect_files(
         the vector of time bins.
         Default is 3, i.e. assumes milliseconds is the last significant digit.
     freqbins_key : str
-        key for accessing vector of frequency bins in files. Default is 'f'.
+        Key for accessing vector of frequency bins in files. Default is 'f'.
     timebins_key : str
-        key for accessing vector of time bins in files. Default is 't'.
+        Key for accessing vector of time bins in files. Default is 't'.
     spect_key : str
-        key for accessing spectrogram in files. Default is 's'.
+        Key for accessing spectrogram in files. Default is 's'.
     audio_path_key : str
-        key for accessing path to source audio file for spectrogram in files.
+        Key for accessing path to source audio file for spectrogram in files.
         Default is 'audio_path'.
 
     Returns
     -------
-    dataset_df : pandas.Dataframe
-        Dataframe that represents a dataset of vocalizations.
+    dataset_df : pandas.DataFrame
+        A dataset of spectrogram files and possibly annotation files,
+        represented as a :class:`pandas.DataFrame`.
 
     Notes
     -----
@@ -217,11 +211,14 @@ def make_dataframe_of_spect_files(
     # ---- actually make the dataframe ---------------------------------------------------------------------------------
     # this is defined here so all other arguments to 'to_dataframe' are in scope
     def _to_record(spect_annot_tuple):
-        """helper function that enables parallelized creation of "records",
-        i.e. rows for dataframe, from .
-        Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
+        """helper function that enables parallelized creation
+        of "records", i.e. rows for dataframe.
+        Accepts a two-element tuple containing
+        (1) a dictionary that represents a spectrogram
         and (2) annotation for that file"""
         spect_path, annot = spect_annot_tuple
+        spect_path = pathlib.Path(spect_path)
+
         spect_dict = files.spect.load(spect_path, spect_format)
 
         spect_dur = spect_dict[spect_key].shape[-1] * timebin_dur
@@ -235,18 +232,6 @@ def make_dataframe_of_spect_files(
             # if we can't, then we'll get back a None
             # (or an error)
             audio_path = files.spect.find_audio_fname(spect_path)
-
-        if spect_format == "mat":
-            # convert to .npz and save in spect_output_dir
-            spect_dict_npz = {
-                "s": spect_dict[spect_key],
-                "t": spect_dict[timebins_key],
-                "f": spect_dict[freqbins_key],
-            }
-            spect_path = spect_output_dir / (
-                pathlib.Path(spect_path).stem + ".npz"
-            )
-            np.savez(spect_path, **spect_dict_npz)
 
         if annot is not None:
             annot_path = annot.annot_path
