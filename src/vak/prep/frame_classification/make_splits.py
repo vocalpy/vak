@@ -93,7 +93,7 @@ class Sample:
     ----------
     source_id : int
         Integer ID number used for sorting.
-    x_path : str
+    source_path : str
         The path to the input to the model
         :math:`x` after it has been moved,
         copied, or created from a ``source_path``.
@@ -110,7 +110,7 @@ class Sample:
         Indices within sample.
     """
     source_id: int = attrs.field()
-    x_path: str
+    source_path: str
     frame_labels_npy_path: str
     sample_id_vec: np.ndarray
     inds_in_sample_vec: np.ndarray
@@ -304,10 +304,10 @@ def make_splits(
 
             if input_type == "audio":
                 # we always copy audio to the split directory, to avoid damaging source data
-                x_path = shutil.copy(source_path, split_subdir)
+                source_path = shutil.copy(source_path, split_subdir)
                 frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[
                     audio_format
-                ](x_path)
+                ](source_path)
                 if (
                     audio_format == "cbin"
                 ):  # convert to ~wav, from int16 to float64damage
@@ -323,15 +323,15 @@ def make_splits(
                         "t": spect_dict[timebins_key],
                         "f": spect_dict[freqbins_key],
                     }
-                    x_path = split_subdir / (
+                    source_path = split_subdir / (
                             source_path.stem + ".npz"
                     )
-                    np.savez(x_path, **spect_dict_npz)
+                    np.savez(source_path, **spect_dict_npz)
                 elif source_path.suffix.endswith('npz'):
                     spect_dict = common.files.spect.load(source_path, "npz")
                     if source_path.is_relative_to(dataset_path):
                         # it's already in dataset_path, we just move it into the split
-                        x_path = shutil.move(source_path, split_subdir)
+                        source_path = shutil.move(source_path, split_subdir)
                     else:
                         # it's somewhere else we copy it to be safe
                         if not all([key in spect_dict for key in ('s', 't', 'f')]):
@@ -340,7 +340,7 @@ def make_splits(
                                 f"All npz files should have keys 's', 't', 'f' corresponding to the spectrogram,"
                                 f"the frequencies vector, and the time vector."
                             )
-                        x_path = shutil.copy(source_path, split_subdir)
+                        source_path = shutil.copy(source_path, split_subdir)
                 frames = spect_dict[spect_key]
                 if annot:
                     frame_times = spect_dict[timebins_key]
@@ -373,11 +373,11 @@ def make_splits(
 
             # we do this because all functions and classes downstream
             # of this expect these paths to be relative to dataset root
-            x_path = pathlib.Path(x_path).relative_to(dataset_path)
+            source_path = pathlib.Path(source_path).relative_to(dataset_path)
 
             return Sample(
                 source_id,
-                x_path,
+                source_path,
                 frame_labels_npy_path,
                 sample_id_vec,
                 inds_in_sample_vec,
@@ -425,14 +425,14 @@ def make_splits(
             inds_in_sample_vec,
         )
 
-        # We convert `x_paths` back to string
+        # We convert `source_paths` back to string
         # (just in case they are pathlib.Paths) before adding back to dataframe.
         # Note that these are all in split dirs, written relative to ``dataset_path``.
-        x_paths = [str(sample.x_path) for sample in samples]
+        source_paths = [str(sample.source_path) for sample in samples]
         if input_type == "audio":
-            split_df["audio_path"] = x_paths
+            split_df["audio_path"] = source_paths
         elif input_type == "spect":
-            split_df["spect_path"] = x_paths
+            split_df["spect_path"] = source_paths
 
         frame_labels_npy_paths = [
             str(sample.frame_labels_npy_path) for sample in samples
