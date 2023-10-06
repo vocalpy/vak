@@ -174,7 +174,7 @@ class FramesDataset:
             ](source_path)
         elif self.input_type == "spect":
             spect_dict = common.files.spect.load(source_path)
-            frames = spect_dict["s"]
+            frames = spect_dict[common.constants.SPECT_KEY]
         return frames
 
     def __getitem__(self, idx):
