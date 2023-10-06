@@ -178,9 +178,9 @@ class FramesDataset:
         return frames
 
     def __getitem__(self, idx):
-        frames_path = self.frames_paths[idx]
+        frames_path = self.dataset_path / self.frames_paths[idx]
         frames = self._load_frames(frames_path)
-        item = {"frames": frames, "source_path": source_path}
+        item = {"frames": frames, "frames_path": frames_path}
         if self.frame_labels_paths is not None:
             frame_labels = np.load(
                 self.dataset_path / self.frame_labels_paths[idx]
