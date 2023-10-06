@@ -1,3 +1,5 @@
+"""Function that prepares datasets for neural network models
+that perform the frame classification task."""
 from __future__ import annotations
 
 import json
@@ -399,6 +401,9 @@ def prep_frame_classification_dataset(
             num_replicates,
             dataset_path,
             labelmap,
+            input_type,
+            spect_key,
+            audio_format,
         )
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
