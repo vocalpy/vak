@@ -160,7 +160,7 @@ class FramesDataset:
         tmp_item = self.__getitem__(tmp_x_ind)
         return tmp_item["frames"].shape
 
-    def _load_frames(self, source_path):
+    def _load_frames(self, frames_path):
         """Helper function that loads "frames",
         the input to the frame classification model.
         Loads audio or spectrogram, depending on
@@ -168,14 +168,7 @@ class FramesDataset:
         This function assumes that audio is in wav format 
         and spectrograms are in npz files.
         """
-        if self.input_type == "audio":
-            frames, _ = common.constants.AUDIO_FORMAT_FUNC_MAP[
-                "wav"
-            ](source_path)
-        elif self.input_type == "spect":
-            spect_dict = common.files.spect.load(source_path)
-            frames = spect_dict[common.constants.SPECT_KEY]
-        return frames
+        return helper.load_frames(frames_path, self.input_type)
 
     def __getitem__(self, idx):
         frames_path = self.dataset_path / self.frames_paths[idx]
