@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import torch
-
+from torchmetrics import KLDivergence
 from .. import metrics, nets
 from .decorator import model
 from .vae_model import VAEModel
@@ -11,11 +11,11 @@ from ..nn.loss import VaeElboLoss
 class AVA:
     """
     """
-    network = nets.Ava
+    network = nets.AVA
     loss = VaeElboLoss
     optimizer = torch.optim.Adam
     metrics = {
         "loss": VaeElboLoss,
-        "kl": torch.nn.functional.kl_div
+        "kl": KLDivergence
     }
     default_config = {"optimizer": {"lr": 0.003}}

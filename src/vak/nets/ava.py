@@ -17,8 +17,7 @@ class BottleneckLayer(nn.Module):
     def forward(self, x):
         return self.layer(x)
 
-
-class Ava(nn.Module):
+class AVA(nn.Module):
     """
     """
     def __init__(

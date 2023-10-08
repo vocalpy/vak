@@ -4,6 +4,9 @@
 # IDE
 .idea
 
+# VSCODE
+.vscode
+
 # Jupyter
 .ipynb_checkpoints/
 *checkpoint.ipynb
