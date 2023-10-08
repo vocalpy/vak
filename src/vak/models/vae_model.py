@@ -54,8 +54,6 @@ class VAEModel(base.Model):
     def training_step(self, batch: tuple, batch_idx: int):
         """
         """
-        
-        x = batch[0]
         x = batch[0]
         out, _ = self.network(x)
         z, latent_dist  = itemgetter('z', 'latent_dist')(_)

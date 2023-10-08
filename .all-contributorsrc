@@ -220,6 +220,24 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "VenetianRed",
+      "name": "Mark Muldoon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5350159?v=4",
+      "profile": "http://maths.manchester.ac.uk/~mrm/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "zhileiz1992",
+      "name": "zhileiz1992",
+      "avatar_url": "https://avatars.githubusercontent.com/u/144953579?v=4",
+      "profile": "https://github.com/zhileiz1992",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

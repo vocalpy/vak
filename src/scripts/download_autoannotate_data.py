@@ -16,12 +16,12 @@ import warnings
 DATA_TO_DOWNLOAD = {
     "gy6or6": {
         "sober.repo1.gy6or6.032212.wav.csv.tar.gz": {
-            "MD5": "8c88b46ba87f9784d3690cc8ee4bf2f4",
-            "download": "https://figshare.com/ndownloader/files/37509160",
+            "MD5": "9cff3aefc45607617e61f7447dbc8800",
+            "download": "https://figshare.com/ndownloader/files/41668980",
         },
         "sober.repo1.gy6or6.032312.wav.csv.tar.gz": {
-            "MD5": "063ba4d50d1b94009b4b00f0a941d098",
-            "download": "https://figshare.com/ndownloader/files/37509172",
+            "MD5": "522daef2ae6fa07998103827a8afe0a0",
+            "download": "https://figshare.com/ndownloader/files/41668983",
         },
     }
 }

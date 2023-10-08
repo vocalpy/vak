@@ -9,14 +9,14 @@
 
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-21-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-23-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Build Status](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)
 [![codecov](https://codecov.io/gh/vocalpy/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/vocalpy/vak)
 
-<h3>🚧 vak version 1.0.0 is in development! 🚧 📣 Test out the alpha release: <code>pip install vak==1.0.0a1</code>. 📣 For more info, please see <a href="https://forum.vocalpy.org/t/vak-1-0-0a1-released/55"> this forum post<a>.</h3>
+<h3>🚧 vak version 1.0.0 is in development! 🚧 📣 Test out the alpha release: <code>pip install vak==1.0.0a3</code>. 📣 For more info, please see <a href="https://forum.vocalpy.org/t/vak-1-0-0a1-released/55"> this forum post<a>.</h3>
 
 
 `vak` is a Python framework for neural network models, 
@@ -45,6 +45,17 @@ and use the trained models to predict annotations for new files.
 
 We developed `vak` to benchmark a neural network model we call [`tweetynet`](https://github.com/yardencsGitHub/tweetynet).  
 Please see the eLife article here: https://elifesciences.org/articles/63853  
+
+To learn more about the goals and design of vak, 
+please see this talk from the SciPy 2023 conference, 
+and the associated Proceedings paper 
+[here](https://conference.scipy.org/proceedings/scipy2023/pdfs/david_nicholson.pdf).
+
+<p align="center">
+<a href="https://www.youtube.com/watch?v=tpL0m5UwpZM" target="_blank">
+ <img src="https://img.youtube.com/vi/tpL0m5UwpZM/mqdefault.jpg" alt="Thumbnail of SciPy 2023 talk on vak" width="400" border="10" />
+</a>
+</p>
 
 For more background on animal acoustic communication and deep learning, 
 and how these intersect with related fields like 
@@ -112,7 +123,23 @@ For a guide on how you can contribute to `vak`, please see:
 https://vak.readthedocs.io/en/latest/development/index.html
 
 ### Citation
-If you use vak for a publication, please cite its DOI:  
+If you use vak for a publication, please cite both the Proceedings paper and the software.
+
+#### Proceedings paper (BiBTex)
+
+```
+@inproceedings{nicholson2023vak,
+  title={vak: a neural network framework for researchers studying animal acoustic communication},
+  author={Nicholson, David and Cohen, Yarden},
+  booktitle={Python in Science Conference},
+  pages={59--67},
+  year={2023}
+}
+
+```
+
+#### Software
+
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 
 ### License
@@ -193,6 +220,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nhoglen"><img src="https://avatars.githubusercontent.com/u/13972140?v=4?s=100" width="100px;" alt="nhoglen"/><br /><sub><b>nhoglen</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Anhoglen" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://test0.zip"><img src="https://avatars.githubusercontent.com/u/46551097?v=4?s=100" width="100px;" alt="Ja-sonYun"/><br /><sub><b>Ja-sonYun</b></sub></a><br /><a href="https://github.com/vocalpy/vak/commits?author=Ja-sonYun" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/JacquelineGoe"><img src="https://avatars.githubusercontent.com/u/52127436?v=4?s=100" width="100px;" alt="Jacqueline"/><br /><sub><b>Jacqueline</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3AJacquelineGoe" title="Bug reports">🐛</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://maths.manchester.ac.uk/~mrm/"><img src="https://avatars.githubusercontent.com/u/5350159?v=4?s=100" width="100px;" alt="Mark Muldoon"/><br /><sub><b>Mark Muldoon</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3AVenetianRed" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/zhileiz1992"><img src="https://avatars.githubusercontent.com/u/144953579?v=4?s=100" width="100px;" alt="zhileiz1992"/><br /><sub><b>zhileiz1992</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Azhileiz1992" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
