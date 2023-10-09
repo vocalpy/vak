@@ -237,17 +237,52 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
             vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
         ].values
 
+        if purpose != "predict":
+            assert vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME in split_df.columns
+
+            frame_labels_paths = split_df[
+                vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            ].values
+
+            annots = vak.common.annotation.from_df(split_df)
+
+            frames_tuples = [
+                (frames_path, frame_labels_path, annot)
+                for frames_path, frame_labels_path, annot in zip(
+                    frames_paths, frame_labels_paths, annots
+                )
+            ]
+        else:
+            frame_label_paths = None
+            annots = None
+            frames_tuples = [
+                (frames_path, None, None)
+                for frames_path in frames_paths
+            ]
+
         sample_id_vecs, inds_in_sample_vecs = [], []
         # TODO: iterate through with frame paths + annot tuples at same time
         # TODO: so we can get frame times if needed
         # TODO: (if annot) an
-        for sample_id, frames_path in enumerate(frames_paths):
+        for sample_id, frames_tuple in enumerate(frames_tuples):
+            frames_path, frame_labels_path, annot = frames_tuple
             frames_file_that_should_exist = tmp_dataset_path / frames_path
             assert frames_file_that_should_exist.exists()
 
             # NOTE we load frames to confirm we can and also to make indexing vectors we use to test,
             # see next code block
             frames = vak.datasets.frame_classification.helper.load_frames(tmp_dataset_path / frames_path, input_type)
+            if input_type == "audio":
+                frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[
+                    audio_format
+                ](tmp_dataset_path / frames_path)
+                if annot:
+                    frame_times = np.arange(frames.shape[-1]) / samplefreq
+            elif input_type == "spect":
+                spect_dict = vak.common.files.spect.load(tmp_dataset_path / frames_path, "npz")
+                frames = spect_dict[vak.common.constants.SPECT_KEY]
+                if annot:
+                    frame_times = spect_dict[vak.common.constants.TIMEBINS_KEY]
             assert isinstance(frames, np.ndarray)
 
             # make indexing vectors that we use to test
@@ -255,15 +290,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
             sample_id_vecs.append(np.ones((n_frames,)).astype(np.int32) * sample_id)
             inds_in_sample_vecs.append(np.arange(n_frames))
 
-        if purpose != "predict":
-            assert vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME in split_df.columns
-
-            frame_labels_paths = split_df[
-                vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
-            ].values
-            annots = vak.common.annotation.from_df(split_df)
-
-            for frame_labels_path, annot in zip(frame_labels_paths, annots):
+            if frame_labels_path is not None and annot is not None:
                 frame_labels_file_that_should_exist = tmp_dataset_path / frame_labels_path
                 assert frame_labels_file_that_should_exist.exists()
 
