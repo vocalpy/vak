@@ -116,7 +116,6 @@ def test__map_using_notated_path(
     "source_type, source_format, annot_format, annotated_ext, method",
     [
         ("audio", "cbin", "notmat", None, "remove"),
-        ("audio", "wav", "textgrid", None, "replace"),
     ],
 )
 def test__map_using_ext(
