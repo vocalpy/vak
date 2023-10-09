@@ -3,8 +3,10 @@ import pathlib
 
 import pandas as pd
 
+from ...common.converters import expanded_user_path, labelset_to_set
 from ..audio_dataset import prep_audio_dataset
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
+
 
 logger = logging.getLogger(__name__)
 
@@ -12,14 +14,14 @@ logger = logging.getLogger(__name__)
 def get_or_make_source_files(
         data_dir: str | pathlib.Path,
         input_type: str,
-        annot_format: str,
-        annot_file: str | pathlib.Path,
-        audio_format: str,
-        spect_format: str,
-        spect_params: dict,
-        spect_output_dir: str | pathlib.Path,
-        audio_dask_bag_kwargs: dict,
+        audio_format: str | None = None,
+        spect_format: str | None = None,
+        spect_params: dict | None = None,
+        spect_output_dir: str | pathlib.Path | None = None,
+        annot_format: str | None = None,
+        annot_file: str | pathlib.Path | None = None,
         labelset: set | None = None,
+        audio_dask_bag_kwargs: dict | None = None,
 ) -> pd.DataFrame:
     """Get source files for dataset, or make them.
 
@@ -28,18 +30,11 @@ def get_or_make_source_files(
 
     Parameters
     ----------
+    data_dir : str, Path
+        Path to directory with files from which to make dataset.
     input_type : str
         The type of input to the neural network model.
         One of {'audio', 'spect'}.
-    data_dir : str, Path
-        Path to directory with files from which to make dataset.
-    annot_format : str
-        Format of annotations. Any format that can be used with the
-        :module:`crowsetta` library is valid. Default is ``None``.
-    annot_file : str
-        Path to a single annotation file. Default is ``None``.
-        Used when a single file contains annotates multiple audio
-        or spectrogram files.
     audio_format : str
         Format of audio files. One of {'wav', 'cbin'}.
         Default is ``None``, but either ``audio_format`` or ``spect_format``
@@ -51,7 +46,15 @@ def get_or_make_source_files(
         Parameters for creating spectrograms. Default is ``None``.
     spect_output_dir : str
         Path to location where spectrogram files should be saved.
-        Default is None, in which case it defaults to ``data_dir``.
+        Default is None. If ``input_type`` is ``'spect'``,
+        then ``spect_output_dir`` defaults to ``data_dir``.
+    annot_format : str
+        Format of annotations. Any format that can be used with the
+        :module:`crowsetta` library is valid. Default is ``None``.
+    annot_file : str
+        Path to a single annotation file. Default is ``None``.
+        Used when a single file contains annotates multiple audio
+        or spectrogram files.
     audio_dask_bag_kwargs : dict
         Keyword arguments used when calling :func:`dask.bag.from_sequence`
         inside :func:`vak.io.audio`, where it is used to parallelize
@@ -78,6 +81,51 @@ def get_or_make_source_files(
         either an audio file or spectrogram file,
         possibly paired with annotations.
     """
+    if input_type not in constants.INPUT_TYPES:
+        raise ValueError(
+            f"``input_type`` must be one of: {constants.INPUT_TYPES}\n"
+            f"Value for ``input_type`` was: {input_type}"
+        )
+
+    if input_type == "audio" and spect_format is not None:
+        raise ValueError(
+            f"Input type was 'audio' but a ``spect_format`` was specified: '{spect_format}'. "
+            f"Please specify ``audio_format`` only."
+        )
+
+    if input_type == "audio" and audio_format is None:
+        raise ValueError(
+            "Input type was 'audio' but no ``audio_format`` was specified. "
+        )
+
+    if audio_format is None and spect_format is None:
+        raise ValueError(
+            "Must specify either ``audio_format`` or ``spect_format``"
+        )
+
+    if audio_format and spect_format:
+        raise ValueError(
+            "Cannot specify both ``audio_format`` and ``spect_format``, "
+            "unclear whether to create spectrograms from audio files or "
+            "use already-generated spectrograms from array files"
+        )
+
+    if labelset is not None:
+        labelset = labelset_to_set(labelset)
+
+    data_dir = expanded_user_path(data_dir)
+    if not data_dir.is_dir():
+        raise NotADirectoryError(
+            f"Path specified for ``data_dir`` not found: {data_dir}"
+        )
+
+    if annot_file is not None:
+        annot_file = expanded_user_path(annot_file)
+        if not annot_file.exists():
+            raise FileNotFoundError(
+                f"Path specified for ``annot_file`` not found: {annot_file}"
+            )
+
     if input_type == "spect":
         source_files_df = prep_spectrogram_dataset(
             labelset,
