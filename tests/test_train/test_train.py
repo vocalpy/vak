@@ -14,8 +14,6 @@ import vak.train
     [
         ("cbin", None, "notmat", "TweetyNet",
          'vak.train.train_.train_frame_classification_model'),
-        ("wav", None, "birdsong-recognition-dataset", "TweetyNet",
-         'vak.train.train_.train_frame_classification_model'),
         (None, "mat", "yarden", "TweetyNet",
          'vak.train.train_.train_frame_classification_model'),
         ("cbin", None, "notmat", "ConvEncoderUMAP",
