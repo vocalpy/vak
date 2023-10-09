@@ -7,3 +7,5 @@ from . import (
     prep,
     spect,
 )
+
+from .get_or_make_source_files import get_or_make_source_files
