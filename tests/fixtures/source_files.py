@@ -2,6 +2,7 @@
 the "raw" files that go into a data set
 used with neural networks
 """
+import pandas as pd
 import pytest
 
 from .test_data import GENERATED_TEST_DATA_ROOT
@@ -36,6 +37,28 @@ def specific_source_file_csv_path(
 
 
 @pytest.fixture
+def specific_source_file_df(
+        model_name,
+        config_type,
+        annot_format,
+        audio_format=None,
+        spect_format=None,
+):
+    """Factory fixture that returns a specific source file csv"""
+    def _specific_source_file_df(specific_source_file_csv_path):
+        csv_path = specific_source_file_csv_path(
+            model_name,
+            config_type,
+            annot_format,
+            audio_format,
+            spect_format,
+        )
+        df = pd.read_csv(csv_path)
+        return df
+    return _specific_source_file_df
+
+
+@pytest.fixture
 def specific_source_file_with_split_csv_path(
         model_name,
         config_type,
@@ -57,4 +80,26 @@ def specific_source_file_with_split_csv_path(
         csv_path = GENERATED_SOURCE_FILES_WITH_SPLITS_CSV_DIR / csv_filename
         return csv_path
 
-    return _specific_source_file_csv
+    return _specific_source_file_with_split_csv_path
+
+
+@pytest.fixture
+def specific_source_file_with_split_df(
+        model_name,
+        config_type,
+        annot_format,
+        audio_format=None,
+        spect_format=None,
+):
+    """Factory fixture that returns a specific source file csv"""
+    def _specific_source_file_with_split_df(specific_source_file_with_split_csv_path):
+        csv_path = specific_source_file_with_split_csv_path(
+            model_name,
+            config_type,
+            annot_format,
+            audio_format,
+            spect_format,
+        )
+        df = pd.read_csv(csv_path)
+        return df
+    return _specific_source_file_with_split_df
