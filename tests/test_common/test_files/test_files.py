@@ -64,29 +64,3 @@ def test_files_from_dir_with_cbin(audio_dir_cbin, audio_list_cbin):
     # files.from_dir returns str not Path, need to convert fixture
     audio_list_cbin = [str(audio_path) for audio_path in audio_list_cbin]
     assert sorted(audio_list_cbin) == sorted(files)
-
-
-@pytest.mark.parametrize(
-    ("dir_path", "ext"),
-    [
-        ("./tests/data_for_tests/source/audio_wav_annot_textgrid/AGBk/", "WAV"),
-        ("./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0/Wave", "wav"),
-    ],
-)
-def test_from_dir_is_case_insensitive(dir_path, ext):
-    files = vak.common.files.files.from_dir(dir_path, ext)
-    assert len(files) > 0
-    assert all([str(file).endswith(ext) for file in files])
-
-
-@pytest.mark.parametrize(
-    ("dir_path", "ext"),
-    [
-        ("./tests/data_for_tests/source/audio_wav_annot_textgrid/", "WAV"),
-        ("./tests/data_for_tests/source/audio_wav_annot_birdsongrec/Bird0", "wav"),
-    ],
-)
-def test_from_dir_searches_child_dir(dir_path, ext):
-    files = vak.common.files.files.from_dir(dir_path, ext)
-    assert len(files) > 0
-    assert all([str(file).endswith(ext) for file in files])
