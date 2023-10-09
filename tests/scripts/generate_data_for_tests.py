@@ -101,7 +101,17 @@ def generate_test_data(
     """
     # need to run `prep` before we run other commands
     if step in ('prep', 'all'):
+        # first we generate outputs of processing steps
+        # leading up to a dataset that speed up tests
+        vaktestdata.dirs.make_spect_output_dir_in_generated()  # for any prepared spectrograms
+        vaktestdata.dirs.make_source_files_csv_dir_in_generated()  # for csvs of source files
+        vaktestdata.dirs.make_source_files_with_splits_csv_dir_in_generated()  # same csvs, with splits added
+
+        # -- now actually run prep for all the configs
         config_paths = vaktestdata.configs.copy_config_files()
+
+        vaktestdata.source_files.set_up_source_files_and_csv_files_for_frame_classification_models()
+
         vaktestdata.dirs.make_subdirs_in_generated(config_paths)
         # run prep for some models
         vaktestdata.prep.run_prep()
@@ -114,7 +124,7 @@ def generate_test_data(
         for command in commands:
             if command == "prep":
                 continue  # we don't run prep in this code block
-            print(f"running configs for command: {command}")
+            logger.info(f"running configs for command: {command}")
             command_config_metadata = [
                 config_metadata
                 for config_metadata in vaktestdata.constants.CONFIG_METADATA
@@ -134,7 +144,7 @@ def generate_test_data(
 
             for config_metadata in command_config_metadata:
                 config_path = vaktestdata.constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
-                print(
+                logger.info(
                     f"n\Running 'vak {command}', using config: {config_path.name}"
                 )
                 vak.cli.cli.cli(command, config_path)
