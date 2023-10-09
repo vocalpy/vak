@@ -70,7 +70,7 @@ def prep_spectrogram_dataset(
         Parameters for creating spectrograms.
         Default is None (implying that spectrograms are already made).
     spect_output_dir : str
-        path to location where spectrogram files should be saved.
+        Path to location where spectrogram files should be saved.
         Default is None, in which case it defaults to ``data_dir``.
     audio_dask_bag_kwargs : dict
         Keyword arguments used when calling ``dask.bag.from_sequence``
