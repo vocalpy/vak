@@ -1,7 +1,8 @@
-"""function that converts a set of array files (.npz, .mat) containing spectrograms
-into a pandas DataFrame that represents a dataset used by ``vak``
+"""Function that converts a set of array files (.npz, .mat) containing spectrograms
+into a pandas DataFrame that represents a dataset used by ``vak``.
 
-the returned DataFrame has columns as specified by vak.io.spect.DF_COLUMNS
+The columns of the dataframe are specified by
+ :const:`vak.prep.spectrogram_dataset.spect_helper.DF_COLUMNS`.
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ from dask.diagnostics import ProgressBar
 
 from ...common import constants, files
 from ...common.annotation import map_annotated_to_annot
-from ...common.converters import expanded_user_path, labelset_to_set
+from ...common.converters import labelset_to_set
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +46,9 @@ def make_dataframe_of_spect_files(
     spect_key: str = "s",
     audio_path_key: str = "audio_path",
 ) -> pd.DataFrame:
-    """Creates a dataset of spectrogram files from a directory,
+    """Get a set of spectrogram files from a directory,
     optionally paired with an annotation file or files,
-    and returns a Pandas DataFrame that represents the dataset.
+    and returns a Pandas DataFrame that represents all the files.
 
     Spectrogram files are array in npz files created by numpy
     or in mat files created by Matlab.
@@ -55,28 +56,29 @@ def make_dataframe_of_spect_files(
     Parameters
     ----------
     spect_format : str
-        format of files containing spectrograms. One of {'mat', 'npz'}
+        Format of files containing spectrograms. One of {'mat', 'npz'}
     spect_dir : str
-        path to directory of files containing spectrograms as arrays.
+        Path to directory of files containing spectrograms as arrays.
         Default is None.
     spect_files : list
         List of paths to array files. Default is None.
     annot_list : list
-        of annotations for array files. Default is None
+        List of annotations for array files. Default is None
     annot_format : str
-        name of annotation format. Added as a column to the DataFrame if specified.
+        Name of annotation format. Added as a column to the DataFrame if specified.
         Used by other functions that open annotation files via their paths from the DataFrame.
         Should be a format that the crowsetta library recognizes.
         Default is None.
     labelset : str, list, set
-        of str or int, set of unique labels for vocalizations. Default is None.
+        Set of unique labels for vocalizations, of str or int. Default is None.
         If not None, then files will be skipped where the associated annotation
         contains labels not found in ``labelset``.
-        ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
+        ``labelset`` is converted to a Python ``set`` using
+        :func:`vak.common.converters.labelset_to_set`.
         See help for that function for details on how to specify labelset.
     n_decimals_trunc : int
-        number of decimal places to keep when truncating the timebin duration calculated from
-        the vector of time bins.
+        number of decimal places to keep when truncating the time
+        bin duration calculated from the vector of time bins.
         Default is 3, i.e. assumes milliseconds is the last significant digit.
     freqbins_key : str
         Key for accessing vector of frequency bins in files. Default is 'f'.
@@ -90,9 +92,17 @@ def make_dataframe_of_spect_files(
 
     Returns
     -------
-    dataset_df : pandas.DataFrame
-        A dataset of spectrogram files and possibly annotation files,
+    source_files_df : pandas.DataFrame
+        A set of source files that will be used to prepare a
+        data set for use with neural network models,
         represented as a :class:`pandas.DataFrame`.
+        Will contain paths to spectrogram files,
+        possibly paired with annotation files,
+        as well as the original audio files if the
+        spectrograms were generated from audio by
+        :func:`vak.prep.audio_helper.make_spectrogram_files_from_audio_files`.
+        The columns of the dataframe are specified by
+        :const:`vak.prep.spectrogram_dataset.spect_helper.DF_COLUMNS`.
 
     Notes
     -----
