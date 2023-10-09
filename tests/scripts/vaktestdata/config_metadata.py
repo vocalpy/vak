@@ -59,5 +59,5 @@ class ConfigMetadata:
     annot_format: str = attrs.field(converter=attrs.converters.optional(str), default=None)
     spect_output_dir: str = attrs.field(converter=attrs.converters.optional(str), default=None)
     data_dir: str = attrs.field(converter=attrs.converters.optional(str), default=None)
-    use_dataset_from_config: str = attrs.field(converter=attrs.converters.optional(bool), default=None)
-    use_result_from_config: str = attrs.field(converter=attrs.converters.optional(bool), default=None)
+    use_dataset_from_config: str = attrs.field(converter=attrs.converters.optional(str), default=None)
+    use_result_from_config: str = attrs.field(converter=attrs.converters.optional(str), default=None)
