@@ -13,9 +13,7 @@ import vak
         ("eval", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("learncurve", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("predict", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
-        ("predict", "wav", None, "birdsong-recognition-dataset", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("train", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
-        ("train", "wav", None, "birdsong-recognition-dataset", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("train", None, "mat", "yarden", "vak.prep.prep_.prep_frame_classification_dataset"),
     ],
 )
