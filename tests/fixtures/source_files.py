@@ -75,9 +75,9 @@ def specific_source_files_with_split_csv_path():
                 "Specify audio_format or spect_format, not both"
             )
         if audio_format:
-            csv_filename = f'{model_name}_{config_type}_audio_{audio_format}_annot_{annot_format}.toml-source-files.csv'
+            csv_filename = f'{model_name}_{config_type}_audio_{audio_format}_annot_{annot_format}.toml-source-files-with-split.csv'
         elif spect_format:
-            csv_filename = f'{model_name}_{config_type}_spect_{spect_format}_annot_{annot_format}.toml-source-files.csv'
+            csv_filename = f'{model_name}_{config_type}_spect_{spect_format}_annot_{annot_format}.toml-source-files-with-split.csv'
         csv_path = GENERATED_SOURCE_FILES_WITH_SPLITS_CSV_DIR / csv_filename
         return csv_path
 
