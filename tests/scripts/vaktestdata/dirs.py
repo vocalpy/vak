@@ -7,6 +7,16 @@ from . import constants
 logger = logging.getLogger(__name__)
 
 
+def make_spect_output_dir_in_generated():
+    constants.GENERATED_SPECT_OUTPUT_DIR.mkdir()
+
+def make_source_files_csv_dir_in_generated():
+    constants.GENERATED_SOURCE_FILES_CSV_DIR.mkdir()
+
+def make_source_files_with_splits_csv_dir_in_generated():
+    constants.GENERATED_SOURCE_FILES_WITH_SPLITS_CSV_DIR.mkdir()
+
+
 def make_subdirs_in_generated(config_paths):
     """make sub-directories inside ./tests/data_for_tests/generated
 
