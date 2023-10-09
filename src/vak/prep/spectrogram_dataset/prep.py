@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import pathlib
-from datetime import datetime
 
 import attrs
 import crowsetta
@@ -83,8 +82,17 @@ def prep_spectrogram_dataset(
 
     Returns
     -------
-    dataset_df : pandas.DataFrame
-        The dataset prepared from the directory specified
+    source_files_df : pandas.DataFrame
+        A set of source files that will be used to prepare a
+        data set for use with neural network models,
+        represented as a :class:`pandas.DataFrame`.
+        Will contain paths to spectrogram files,
+        possibly paired with annotation files,
+        as well as the original audio files if the
+        spectrograms were generated from audio by
+        :func:`vak.prep.audio_helper.make_spectrogram_files_from_audio_files`.
+        The columns of the dataframe are specified by
+        :const:`vak.prep.spectrogram_dataset.spect_helper.DF_COLUMNS`.
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     if labelset is not None:
@@ -188,7 +196,7 @@ def prep_spectrogram_dataset(
         ]:
             make_dataframe_kwargs[key] = spect_params[key]
 
-    dataset_df = spect_helper.make_dataframe_of_spect_files(
+    source_files_df = spect_helper.make_dataframe_of_spect_files(
         **make_dataframe_kwargs
     )
-    return dataset_df
+    return source_files_df
