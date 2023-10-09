@@ -272,7 +272,7 @@ def prep_frame_classification_dataset(
     logger.info(f"Will prepare dataset as directory: {dataset_path}")
 
     # ---- get or make source files: either audio or spectrogram, possible paired with annotation files ----------------
-    dataset_df: pd.DataFrame = get_or_make_source_files(
+    source_files_df: pd.DataFrame = get_or_make_source_files(
         input_type,
         data_dir,
         annot_format,
@@ -287,12 +287,13 @@ def prep_frame_classification_dataset(
 
     # save before (possibly) splitting, just in case duration args are not valid
     # (we can't know until we make dataset)
-    dataset_df.to_csv(dataset_csv_path)
+    source_files_df.to_csv(dataset_csv_path)
 
     # ---- assign samples to splits; adds a 'split' column to dataset_df, calling `vak.prep.split` if needed -----------
+    # once we assign a split, we consider this the ``dataset_df``
     dataset_df: pd.DataFrame = assign_samples_to_splits(
         purpose,
-        dataset_df,
+        source_files_df,
         dataset_path,
         train_dur,
         val_dur,
@@ -320,6 +321,7 @@ def prep_frame_classification_dataset(
         labelmap = None
 
     # ---- actually move/copy/create files into directories representing splits ----------------------------------------
+    # now we're *remaking* the dataset_df (actually adding additional rows with the splits)
     dataset_df: pd.DataFrame = make_splits(
         dataset_df,
         dataset_path,
