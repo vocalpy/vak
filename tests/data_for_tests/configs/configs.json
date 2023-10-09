@@ -22,7 +22,7 @@
       "spect_format": null,
       "annot_format": "notmat",
       "spect_output_dir": null,
-      "data_dir": "audio_cbin_annot_notmat/gy6or6/032312",
+      "data_dir": "spect-output-dir/audio_cbin_annot_notmat/gy6or6/032312",
       "use_dataset_from_config": null,
       "use_result_from_config": null
     },
@@ -48,7 +48,7 @@
       "spect_format": null,
       "annot_format": "notmat",
       "spect_output_dir": null,
-      "data_dir": "audio_cbin_annot_notmat/gy6or6/032412",
+      "data_dir": "spect-output-dir/audio_cbin_annot_notmat/gy6or6/032412",
       "use_dataset_from_config": null,
       "use_result_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
     },
@@ -61,7 +61,7 @@
       "spect_format": null,
       "annot_format": "notmat",
       "spect_output_dir": null,
-      "data_dir": "audio_cbin_annot_notmat/gy6or6/032312",
+      "data_dir": "spect-output-dir/audio_cbin_annot_notmat/gy6or6/032312",
       "use_dataset_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml",
       "use_result_from_config": "TweetyNet_train_audio_cbin_annot_notmat.toml"
     },
