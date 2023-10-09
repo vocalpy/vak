@@ -65,7 +65,7 @@ import vak
 import vaktestdata
 
 
-logger = logging.getLogger()  # 'base' logger
+logger = logging.getLogger('vaktestdata')  # 'base' logger
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setFormatter(formatter)
