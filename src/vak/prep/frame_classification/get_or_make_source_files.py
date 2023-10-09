@@ -4,6 +4,7 @@ import pathlib
 import pandas as pd
 
 from ...common.converters import expanded_user_path, labelset_to_set
+from .. import constants
 from ..audio_dataset import prep_audio_dataset
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 
@@ -142,9 +143,9 @@ def get_or_make_source_files(
 
     if input_type == "spect":
         source_files_df = prep_spectrogram_dataset(
-            labelset,
             data_dir,
             annot_format,
+            labelset,
             annot_file,
             audio_format,
             spect_format,
