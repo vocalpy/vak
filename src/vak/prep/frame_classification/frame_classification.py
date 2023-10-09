@@ -18,7 +18,7 @@ from ...common.timenow import get_timenow_as_str
 from .. import dataset_df_helper, sequence_dataset
 from . import validators
 from .assign_samples_to_splits import assign_samples_to_splits
-from .get_or_make_source_files import get_or_make_source_files
+from .source_files import get_or_make_source_files
 from .learncurve import make_subsets_from_dataset_df
 from .make_splits import make_splits
 
