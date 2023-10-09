@@ -273,16 +273,16 @@ def prep_frame_classification_dataset(
 
     # ---- get or make source files: either audio or spectrogram, possible paired with annotation files ----------------
     source_files_df: pd.DataFrame = get_or_make_source_files(
-        input_type,
         data_dir,
-        annot_format,
-        annot_file,
+        input_type,
         audio_format,
         spect_format,
         spect_params,
         dataset_path,
-        audio_dask_bag_kwargs,
+        annot_format,
+        annot_file,
         labelset,
+        audio_dask_bag_kwargs,
     )
 
     # save before (possibly) splitting, just in case duration args are not valid
