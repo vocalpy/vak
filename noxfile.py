@@ -157,7 +157,7 @@ SOURCE_TEST_DATA_TAR = f'{SOURCE_TEST_DATA_DIR}source_test_data-version-1.x.tar.
 
 @nox.session(name='test-data-tar-source')
 def test_data_tar_source(session) -> None:
-    """Make a .tar.gz file of just the 'generated' test data used to run tests on CI."""
+    """Make a .tar.gz file of just the 'source' test data used to run tests."""
     session.log(f"Making tarfile with source data: {SOURCE_TEST_DATA_TAR}")
     make_tarfile(SOURCE_TEST_DATA_TAR, SOURCE_TEST_DATA_DIRS)
 
