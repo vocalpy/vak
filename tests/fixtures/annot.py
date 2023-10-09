@@ -87,84 +87,8 @@ def labelset_notmat(generated_test_configs_root):
     return LABELSET_NOTMAT
 
 
-ANNOT_FILE_BIRDSONGREC = SOURCE_TEST_DATA_ROOT.joinpath(
-    "audio_wav_annot_birdsongrec", "Bird0", "Annotation.xml"
-)
-
-
 @pytest.fixture
-def annot_file_birdsongrec():
-    return ANNOT_FILE_BIRDSONGREC
-
-
-scribe_birdsongrec = crowsetta.Transcriber(format="birdsong-recognition-dataset")
-ANNOT_LIST_BIRDSONGREC = scribe_birdsongrec.from_file(ANNOT_FILE_BIRDSONGREC).to_annot()
-
-
-@pytest.fixture
-def annot_list_birdsongrec():
-    return ANNOT_LIST_BIRDSONGREC
-
-
-ANNOT_DIR_TEXTGRID = SOURCE_TEST_DATA_ROOT.joinpath("audio_wav_annot_textgrid", "AGBk")
-
-
-@pytest.fixture
-def annot_dir_textgrid():
-    return ANNOT_DIR_TEXTGRID
-
-
-ANNOT_FILES_TEXTGRID = sorted(ANNOT_DIR_TEXTGRID.glob("*.TextGrid"))
-
-
-@pytest.fixture
-def annot_files_textgrid():
-    return ANNOT_FILES_TEXTGRID
-
-
-scribe_textgrid = crowsetta.Transcriber(format="textgrid")
-ANNOT_LIST_TEXTGRID = [scribe_textgrid.from_file(textgrid).to_annot()
-                       for textgrid in ANNOT_FILES_TEXTGRID]
-
-
-@pytest.fixture
-def annot_list_textgrid():
-    return ANNOT_LIST_TEXTGRID
-
-
-ANNOT_DIR_SIMPLE_SEQ = SOURCE_TEST_DATA_ROOT.joinpath(
-    "audio_cbin_annot_simple_seq", "gy6or6", "032312"
-)
-
-
-@pytest.fixture
-def annot_dir_simple_seq():
-    return ANNOT_DIR_SIMPLE_SEQ
-
-
-ANNOT_FILES_SIMPLE_SEQ = sorted(ANNOT_DIR_SIMPLE_SEQ.glob("*.cbin.csv"))
-
-
-@pytest.fixture
-def annot_files_simple_seq():
-    return ANNOT_FILES_SIMPLE_SEQ
-
-
-scribe_simple_seq = crowsetta.Transcriber(format="simple-seq")
-ANNOT_LIST_SIMPLE_SEQ = [scribe_simple_seq.from_file(simpleseq)
-                         for simpleseq in ANNOT_FILES_SIMPLE_SEQ]
-
-
-@pytest.fixture
-def annot_list_simple_seq():
-    return ANNOT_LIST_SIMPLE_SEQ
-
-
-@pytest.fixture
-def specific_annot_list(annot_list_birdsongrec,
-                        annot_list_notmat,
-                        annot_list_simple_seq,
-                        annot_list_textgrid,
+def specific_annot_list(annot_list_notmat,
                         annot_list_yarden):
     """factory fixture, returns a function that
     returns a fixture containing a list of Annotation objects,
