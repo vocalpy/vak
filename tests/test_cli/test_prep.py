@@ -15,9 +15,7 @@ import vak.common.paths
         ("eval", "cbin", None, "notmat"),
         ("learncurve", "cbin", None, "notmat"),
         ("predict", "cbin", None, "notmat"),
-        ("predict", "wav", None, "birdsong-recognition-dataset"),
         ("train", "cbin", None, "notmat"),
-        ("train", "wav", None, "birdsong-recognition-dataset"),
         ("train", None, "mat", "yarden"),
     ],
 )
@@ -47,9 +45,7 @@ def test_purpose_from_toml(
         ("eval", "cbin", None, "notmat"),
         ("learncurve", "cbin", None, "notmat"),
         ("predict", "cbin", None, "notmat"),
-        ("predict", "wav", None, "birdsong-recognition-dataset"),
         ("train", "cbin", None, "notmat"),
-        ("train", "wav", None, "birdsong-recognition-dataset"),
         ("train", None, "mat", "yarden"),
     ],
 )
@@ -98,9 +94,7 @@ def test_prep(
         ("eval", "cbin", None, "notmat"),
         ("learncurve", "cbin", None, "notmat"),
         ("predict", "cbin", None, "notmat"),
-        ("predict", "wav", None, "birdsong-recognition-dataset"),
         ("train", "cbin", None, "notmat"),
-        ("train", "wav", None, "birdsong-recognition-dataset"),
         ("train", None, "mat", "yarden"),
     ],
 )
