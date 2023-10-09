@@ -7,7 +7,7 @@ import attrs
 import crowsetta
 import pandas as pd
 
-from ...common import annotation
+from ...common import annotation, constants
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...config.spect_params import SpectParamsConfig
 from . import audio_helper, spect_helper
@@ -159,10 +159,11 @@ def prep_spectrogram_dataset(
             dask_bag_kwargs=audio_dask_bag_kwargs,
         )
         spect_format = "npz"
-        spect_ext = ".spect.npz"
+        spect_ext = constants.SPECT_NPZ_EXTENSION
     else:  # if audio format is None
         spect_files = None
-        spect_ext = None
+        # make sure we use the vak extension for spectrogram files
+        spect_ext = constants.SPECT_FORMAT_EXT_MAP[spect_format]
 
     make_dataframe_kwargs = {
         "spect_format": spect_format,
