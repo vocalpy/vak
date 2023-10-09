@@ -5,6 +5,7 @@ import attrs
 class ConfigMetadata:
     filename: str = attrs.field()
     model: str = attrs.field()
+    model_family: str = attrs.field()
     config_type: str = attrs.field()
     audio_format: str = attrs.field()
     spect_format: str = attrs.field()
