@@ -44,7 +44,9 @@ ANNOT_CSV_SUFFIX = ".annot.csv"
 NET_OUTPUT_SUFFIX = ".output.npz"
 
 # ---- the key for loading the spectrogram matrix from an npz file
+# TODO: replace this with vocalpy constants when we move to VocalPy
 SPECT_KEY = "s"
+TIMEBINS_KEY = "t"
 
 # TODO: replace this with vocalpy extension when we move to VocalPy
 # ---- the extension used to save spectrograms in npz array files
