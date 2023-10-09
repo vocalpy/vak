@@ -23,7 +23,7 @@ def spect_dir_mat():
 
 
 # this dir is created by ./tests/scripts/generate_test_data
-SPECT_DIR_NPZ = GENERATED_TEST_DATA_ROOT / "spect-dir-npz"
+SPECT_DIR_NPZ = GENERATED_TEST_DATA_ROOT / "spect-output-dir/audio_cbin_annot_notmat/gy6or6/032312"
 
 
 @pytest.fixture
