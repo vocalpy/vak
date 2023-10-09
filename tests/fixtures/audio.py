@@ -64,42 +64,8 @@ def audio_list_cbin_labels_not_in_labelset():
     return AUDIO_LIST_CBIN_LABELS_NOT_IN_LABELSET
 
 
-AUDIO_DIR_WAV_BIRDSONGREC = SOURCE_TEST_DATA_ROOT.joinpath("audio_wav_annot_birdsongrec", "Bird0", "Wave")
-
-
 @pytest.fixture
-def audio_dir_wav_birdsongrec():
-    return AUDIO_DIR_WAV_BIRDSONGREC
-
-
-AUDIO_LIST_WAV_BIRDSONGREC = sorted(AUDIO_DIR_WAV_BIRDSONGREC.glob("*.wav"))
-
-
-@pytest.fixture
-def audio_list_wav_birdsongrec():
-    return AUDIO_LIST_WAV_BIRDSONGREC
-
-
-AUDIO_DIR_WAV_TEXTGRID = SOURCE_TEST_DATA_ROOT.joinpath("audio_wav_annot_textgrid", "AGBk")
-
-
-@pytest.fixture
-def audio_dir_wav_textgrid():
-    return AUDIO_DIR_WAV_TEXTGRID
-
-
-AUDIO_LIST_WAV_TEXTGRID = sorted(AUDIO_DIR_WAV_TEXTGRID.glob("*.WAV"))
-
-
-@pytest.fixture
-def audio_list_wav_textgrid():
-    return AUDIO_LIST_WAV_TEXTGRID
-
-
-@pytest.fixture
-def audio_list_factory(audio_list_cbin,
-                       audio_list_wav_birdsongrec,
-                       audio_list_wav_textgrid):
+def audio_list_factory(audio_list_cbin):
     """factory fixture, returns a function that
     returns a fixture containing a list of Annotation objects,
     given a specified annotation format
@@ -108,9 +74,6 @@ def audio_list_factory(audio_list_cbin,
     """
     FORMAT_AUDIO_LIST_FIXTURE_MAP = {
         "audio_cbin_annot_notmat": audio_list_cbin,
-        "audio_cbin_annot_simple-seq": audio_list_cbin,
-        "audio_wav_annot_birdsong-recognition-dataset": audio_list_wav_birdsongrec,
-        "audio_wav_annot_textgrid": audio_list_wav_textgrid,
     }
 
     def _audio_list_factory(audio_format, annot_format):
