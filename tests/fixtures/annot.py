@@ -97,10 +97,7 @@ def specific_annot_list(annot_list_notmat,
     so that unit tests can be parameterized with annotation format names
     """
     FORMAT_ANNOT_LIST_FIXTURE_MAP = {
-        "birdsong-recognition-dataset": annot_list_birdsongrec,
         "notmat": annot_list_notmat,
-        "simple-seq": annot_list_simple_seq,
-        "textgrid": annot_list_textgrid,
         "yarden": annot_list_yarden,
     }
 
