@@ -6,5 +6,4 @@ from . import (
     parser,
     prep,
     source_files,
-    spect,
 )
