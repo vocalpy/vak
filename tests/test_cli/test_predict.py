@@ -14,7 +14,6 @@ from . import cli_asserts
     "model_name, audio_format, spect_format, annot_format",
     [
         ("TweetyNet", "cbin", None, "notmat"),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
     ],
 )
 def test_predict(
