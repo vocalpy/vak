@@ -39,13 +39,12 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
 
     for config_metadata in configs_to_make_spectrograms:
         spect_output_dir = constants.GENERATED_SPECT_OUTPUT_DIR / config_metadata.spect_output_dir
-        spect_output_dir.mkdir()
+        spect_output_dir.mkdir(parents=True)
 
         config_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
-        if not config_path.exists():
-            raise FileNotFoundError(f"{config_path} not found")
         logger.info(
-            f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, using config:\n{config_path.name}"
+            f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
+            f"using config:\n{config_path.name}"
         )
         cfg = vak.config.parse.from_toml_path(config_path)
 
@@ -89,12 +88,18 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
     ]
 
     for config_metadata in configs_to_add_data_dir:
-        config_to_change_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
+        config_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
+        logger.info(
+            f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
+            f"using config:\n{config_path.name}"
+        )
 
-        with config_to_change_path.open("r") as fp:
+        with config_path.open("r") as fp:
             config_toml = toml.load(fp)
         data_dir = constants.GENERATED_TEST_DATA_ROOT / config_metadata.data_dir
         config_toml['PREP']['data_dir'] = str(data_dir)
+        with config_path.open("w") as fp:
+            toml.dump(config_toml, fp)
 
         cfg = vak.config.parse.from_toml_path(config_path)
 
@@ -120,6 +125,55 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             purpose,
             source_files_df,
             dataset_path=data_dir,
+            train_dur=cfg.prep.train_dur,
+            val_dur=cfg.prep.val_dur,
+            test_dur=cfg.prep.test_dur,
+            labelset=cfg.prep.labelset,
+        )
+        source_files_with_split_csv_path = (
+                constants.GENERATED_SOURCE_FILES_WITH_SPLITS_CSV_DIR /
+                f'{config_metadata.filename}-source-files-with-split.csv'
+        )
+        dataset_df.to_csv(source_files_with_split_csv_path)
+
+    configs_without_spect_output_or_data_dir_to_change = [
+        config_metadata
+        for config_metadata in constants.CONFIG_METADATA
+        if config_metadata.model_family == "frame_classification" and (
+                config_metadata.spect_output_dir is None and config_metadata.data_dir is None
+        )
+    ]
+    for config_metadata in configs_without_spect_output_or_data_dir_to_change:
+        config_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
+        if not config_path.exists():
+            raise FileNotFoundError(f"{config_path} not found")
+        logger.info(
+            f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
+            f"using config:\n{config_path.name}"
+        )
+        cfg = vak.config.parse.from_toml_path(config_path)
+        source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
+            data_dir=cfg.prep.data_dir,
+            input_type=cfg.prep.input_type,
+            audio_format=cfg.prep.audio_format,
+            spect_format=cfg.prep.spect_format,
+            spect_params=cfg.spect_params,
+            spect_output_dir=None,
+            annot_format=cfg.prep.annot_format,
+            annot_file=cfg.prep.annot_file,
+            labelset=cfg.prep.labelset,
+            audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
+        )
+
+        csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
+        source_files_df.to_csv(csv_path, index=False)
+
+        config_toml: dict = vak.config.parse._load_toml_from_path(config_path)
+        purpose = vak.cli.prep.purpose_from_toml(config_toml, config_path)
+        dataset_df: pd.DataFrame = vak.prep.frame_classification.assign_samples_to_splits(
+            purpose,
+            source_files_df,
+            dataset_path=cfg.prep.data_dir,
             train_dur=cfg.prep.train_dur,
             val_dur=cfg.prep.val_dur,
             test_dur=cfg.prep.test_dur,
