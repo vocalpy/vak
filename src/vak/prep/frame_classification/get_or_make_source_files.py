@@ -156,7 +156,7 @@ def get_or_make_source_files(
         if source_files_df.empty:
             raise ValueError(
                 "Calling `vak.prep.spectrogram_dataset.prep_spectrogram_dataset` "
-                "with arguments passed to `vak..prep.prep_frame_classification_dataset` "
+                "with arguments passed to `vak.prep.prep_frame_classification_dataset` "
                 "returned an empty dataframe.\n"
                 "Please double-check arguments to `prep_frame_classification_dataset` function."
             )
