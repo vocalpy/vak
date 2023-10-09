@@ -5,7 +5,6 @@ from . import (
     dirs,
     parser,
     prep,
+    source_files,
     spect,
 )
-
-from .get_or_make_source_files import get_or_make_source_files
