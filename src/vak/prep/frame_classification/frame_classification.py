@@ -8,16 +8,17 @@ import pathlib
 import warnings
 
 import crowsetta.formats.seq
+import pandas as pd
 
 from ... import datasets
 from ...common import labels
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
-from .. import dataset_df_helper, sequence_dataset, split
-from ..audio_dataset import prep_audio_dataset
-from ..spectrogram_dataset.prep import prep_spectrogram_dataset
+from .. import dataset_df_helper, sequence_dataset
 from . import validators
+from .assign_samples_to_splits import assign_samples_to_splits
+from .get_or_make_source_files import get_or_make_source_files
 from .learncurve import make_subsets_from_dataset_df
 from .make_splits import make_splits
 
@@ -36,9 +37,9 @@ def prep_frame_classification_dataset(
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
     audio_dask_bag_kwargs: dict | None = None,
-    train_dur: int | None = None,
-    val_dur: int | None = None,
-    test_dur: int | None = None,
+    train_dur: float | None = None,
+    val_dur: float | None = None,
+    test_dur: float | None = None,
     train_set_durs: list[float] | None = None,
     num_replicates: int | None = None,
     spect_key: str = "s",
@@ -270,96 +271,34 @@ def prep_frame_classification_dataset(
     )
     logger.info(f"Will prepare dataset as directory: {dataset_path}")
 
-    # ---- actually make the dataset -----------------------------------------------------------------------------------
-    if input_type == "spect":
-        dataset_df = prep_spectrogram_dataset(
-            labelset=labelset,
-            data_dir=data_dir,
-            annot_format=annot_format,
-            annot_file=annot_file,
-            audio_format=audio_format,
-            spect_format=spect_format,
-            spect_params=spect_params,
-            spect_output_dir=dataset_path,
-            audio_dask_bag_kwargs=audio_dask_bag_kwargs,
-        )
-    elif input_type == "audio":
-        dataset_df = prep_audio_dataset(
-            audio_format=audio_format,
-            data_dir=data_dir,
-            annot_format=annot_format,
-            labelset=labelset,
-        )
-
-    if dataset_df.empty:
-        raise ValueError(
-            "Calling `vak.prep.spectrogram_dataset.prep_spectrogram_dataset` "
-            "with arguments passed to `vak.core.prep` "
-            "returned an empty dataframe.\n"
-            "Please double-check arguments to `vak.core.prep` function."
-        )
+    # ---- get or make source files: either audio or spectrogram, possible paired with annotation files ----------------
+    dataset_df: pd.DataFrame = get_or_make_source_files(
+        input_type,
+        data_dir,
+        annot_format,
+        annot_file,
+        audio_format,
+        spect_format,
+        spect_params,
+        dataset_path,
+        audio_dask_bag_kwargs,
+        labelset,
+    )
 
     # save before (possibly) splitting, just in case duration args are not valid
     # (we can't know until we make dataset)
     dataset_df.to_csv(dataset_csv_path)
 
-    # ---- (possibly) split into train / val / test sets ---------------------------------------------
-    # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
-    if (purpose == "train" or purpose == "learncurve") and (
-        (train_dur is not None and train_dur > 0)
-        and (val_dur is None or val_dur == 0)
-        and (test_dur is None or val_dur == 0)
-    ):
-        raise ValueError(
-            "A duration specified for just training set, but prep function does not currently support creating a "
-            "single split of a specified duration. Either remove the train_dur option from the prep section and "
-            "rerun, in which case all data will be included in the training set, or specify values greater than "
-            "zero for test_dur (and val_dur, if a validation set will be used)"
-        )
-
-    if all(
-        [dur is None for dur in (train_dur, val_dur, test_dur)]
-    ) or purpose in (
-        "eval",
-        "predict",
-    ):
-        # then we're not going to split
-        logger.info("Will not split dataset.")
-        do_split = False
-    else:
-        if val_dur is not None and train_dur is None and test_dur is None:
-            raise ValueError(
-                "cannot specify only val_dur, unclear how to split dataset into training and test sets"
-            )
-        else:
-            logger.info("Will split dataset.")
-            do_split = True
-
-    if do_split:
-        dataset_df = split.frame_classification_dataframe(
-            dataset_df,
-            dataset_path,
-            labelset=labelset,
-            train_dur=train_dur,
-            val_dur=val_dur,
-            test_dur=test_dur,
-        )
-
-    elif (
-        do_split is False
-    ):  # add a split column, but assign everything to the same 'split'
-        # ideally we would just say split=purpose in call to add_split_col, but
-        # we have to special case, because "eval" looks for a 'test' split (not an "eval" split)
-        if purpose == "eval":
-            split_name = (
-                "test"  # 'split_name' to avoid name clash with split package
-            )
-        elif purpose == "predict":
-            split_name = "predict"
-
-        dataset_df = dataset_df_helper.add_split_col(
-            dataset_df, split=split_name
-        )
+    # ---- assign samples to splits; adds a 'split' column to dataset_df, calling `vak.prep.split` if needed -----------
+    dataset_df: pd.DataFrame = assign_samples_to_splits(
+        purpose,
+        dataset_df,
+        dataset_path,
+        train_dur,
+        val_dur,
+        test_dur,
+        labelset,
+    )
 
     # ---- create and save labelmap ------------------------------------------------------------------------------------
     # we do this before creating array files since we need to load the labelmap to make frame label vectors
@@ -380,8 +319,8 @@ def prep_frame_classification_dataset(
     else:
         labelmap = None
 
-    # ---- make arrays that represent final dataset --------------------------------------------------------------------
-    dataset_df = make_splits(
+    # ---- actually move/copy/create files into directories representing splits ----------------------------------------
+    dataset_df: pd.DataFrame = make_splits(
         dataset_df,
         dataset_path,
         input_type,
@@ -393,9 +332,9 @@ def prep_frame_classification_dataset(
         freqbins_key,
     )
 
-    # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
+    # ---- if purpose is learncurve, additionally prep training data subsets for the learning curve --------------------
     if purpose == "learncurve":
-        dataset_df = make_subsets_from_dataset_df(
+        dataset_df: pd.DataFrame = make_subsets_from_dataset_df(
             dataset_df,
             train_set_durs,
             num_replicates,
