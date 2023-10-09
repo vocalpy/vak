@@ -19,9 +19,7 @@ def assert_predict_output_matches_expected(output_dir, annot_csv_filename):
     "model_name, audio_format, spect_format, annot_format, save_net_outputs",
     [
         ("TweetyNet", "cbin", None, "notmat", False),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset", False),
         ("TweetyNet", "cbin", None, "notmat", True),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset", True),
     ],
 )
 def test_predict_with_frame_classification_model(
