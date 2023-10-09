@@ -1,5 +1,6 @@
 # Do this here to suppress warnings before we import vak
 import logging
+import shutil
 import warnings
 
 from numba.core.errors import NumbaDeprecationWarning
@@ -60,6 +61,13 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             labelset=cfg.prep.labelset,
             audio_dask_bag_kwargs=cfg.prep.audio_dask_bag_kwargs,
         )
+
+        # We copy annotation files to spect_output_dir
+        # so we can "prep" from that directory later.
+        # This means we have repeats of some files still, which is annoying;
+        # .not.mat files are about ~1.2K though
+        for annot_path in source_files_df['annot_path'].values:
+            shutil.copy(annot_path, spect_output_dir)
 
         csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
         source_files_df.to_csv(csv_path, index=False)
