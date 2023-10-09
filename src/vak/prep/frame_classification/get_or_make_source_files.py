@@ -71,7 +71,7 @@ def get_or_make_source_files(
 
     Returns
     -------
-    dataset_df : pandas.DataFrame
+    source_files_df : pandas.DataFrame
         Source files that will become the dataset,
         represented as a pandas.DataFrame.
         Each row corresponds to one sample in the dataset,
@@ -79,7 +79,7 @@ def get_or_make_source_files(
         possibly paired with annotations.
     """
     if input_type == "spect":
-        dataset_df = prep_spectrogram_dataset(
+        source_files_df = prep_spectrogram_dataset(
             labelset,
             data_dir,
             annot_format,
@@ -90,7 +90,7 @@ def get_or_make_source_files(
             spect_output_dir,
             audio_dask_bag_kwargs,
         )
-        if dataset_df.empty:
+        if source_files_df.empty:
             raise ValueError(
                 "Calling `vak.prep.spectrogram_dataset.prep_spectrogram_dataset` "
                 "with arguments passed to `vak..prep.prep_frame_classification_dataset` "
@@ -99,13 +99,13 @@ def get_or_make_source_files(
             )
 
     elif input_type == "audio":
-        dataset_df = prep_audio_dataset(
+        source_files_df = prep_audio_dataset(
             audio_format,
             data_dir,
             annot_format,
             labelset,
         )
-        if dataset_df.empty:
+        if source_files_df.empty:
             raise ValueError(
                 "Calling `vak.prep.audio_dataset.prep_audio_dataset` "
                 "with arguments passed to `vak.prep.prep_frame_classification_dataset` "
@@ -113,4 +113,4 @@ def get_or_make_source_files(
                 "Please double-check arguments to `prep_frame_classification_dataset` function."
             )
 
-    return dataset_df
+    return source_files_df
