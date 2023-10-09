@@ -52,3 +52,7 @@ TIMEBINS_KEY = "t"
 # ---- the extension used to save spectrograms in npz array files
 # used by :func:`vak.prep.spectrogram_dataset.audio_helper.make
 SPECT_NPZ_EXTENSION = ".spect.npz"
+SPECT_FORMAT_EXT_MAP = {
+    "npz": SPECT_NPZ_EXTENSION,
+    "mat": ".mat",
+}
