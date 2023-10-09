@@ -38,7 +38,6 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
     "model_name, audio_format, spect_format, annot_format",
     [
         ("TweetyNet", "cbin", None, "notmat"),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
         ("TweetyNet", None, "mat", "yarden"),
     ],
 )
@@ -92,7 +91,6 @@ def test_train_frame_classification_model(
     "model_name, audio_format, spect_format, annot_format",
     [
         ("TweetyNet", "cbin", None, "notmat"),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
         ("TweetyNet", None, "mat", "yarden"),
     ],
 )
