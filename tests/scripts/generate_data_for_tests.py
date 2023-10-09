@@ -103,8 +103,6 @@ def generate_test_data(
     if step in ('prep', 'all'):
         config_paths = vaktestdata.configs.copy_config_files()
         vaktestdata.dirs.make_subdirs_in_generated(config_paths)
-        # make spectrograms in npz files that we use in one fixture
-        vaktestdata.spect.prep_spects()
         # run prep for some models
         vaktestdata.prep.run_prep()
         # re-use some of the prepped datasets for other models
