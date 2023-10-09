@@ -23,10 +23,24 @@ def get_or_make_source_files(
         labelset: set | None = None,
         audio_dask_bag_kwargs: dict | None = None,
 ) -> pd.DataFrame:
-    """Get source files for dataset, or make them.
+    """Get source files for a dataset, or make them.
 
     Gets either audio or spectrogram files from ``data dir``,
     possibly paired with annotation files.
+
+    If ``input_type`` is ``'audio'``, then this function will look
+    for files with the extension for ``audio_format`` in ``data_dir``.
+    If ``input_type`` is ``'spectrogram'``, and ``spect_format`` is specified,
+    then this function will look for files with the extension for that format
+    in ``data_dir``. If ``input_type`` is spectrogram,
+    and ``audio_format`` is specified,
+    this function will look for audio files with that extension
+    and then generate spectrograms for them using ``spect_params``.
+    If an ``annot_format`` is specified, this function will additionally
+    look for annotation files for the audio or spectrogram files.
+    If all annotations are in a single file, this can be specified
+    with the ``annot_file`` parameter, and that will be used instead
+    of looking for other annotation files.
 
     Parameters
     ----------
