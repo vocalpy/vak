@@ -60,26 +60,19 @@ class TestStandardizeSpect:
             annot_format="notmat"
         )
 
-        dataset_csv_path = specific_dataset_csv_path(
-            config_type="train",
-            model="TweetyNet",
-            audio_format="cbin",
-            annot_format="notmat"
-        )
-
         if split is None:
             split_to_test = 'train'
         else:
             split_to_test = split
         # ---- set up
         df_split = train_cbin_notmat_df[train_cbin_notmat_df.split == split_to_test].copy()
-        spect_paths = df_split['spect_path'].values
-        spect = vak.common.files.spect.load(dataset_path / spect_paths[0])['s']
+        spect_paths = df_split['frames_path'].values
+        spect = vak.common.files.spect.load(dataset_path / spect_paths[0])[vak.common.constants.SPECT_KEY]
         mean_freqs = np.mean(spect, axis=1)
         std_freqs = np.std(spect, axis=1)
 
         for spect_path in spect_paths[1:]:
-            spect = vak.common.files.spect.load(dataset_path / spect_path)['s']
+            spect = vak.common.files.spect.load(dataset_path / spect_path)[vak.common.constants.SPECT_KEY]
             mean_freqs += np.mean(spect, axis=1)
             std_freqs += np.std(spect, axis=1)
         expected_mean_freqs = mean_freqs / len(spect_paths)
