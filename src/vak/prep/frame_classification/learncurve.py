@@ -38,8 +38,6 @@ def make_index_vectors_for_each_subset(
     dataset_df: pd.DataFrame,
     dataset_path: str | pathlib.Path,
     input_type: str,
-    spect_key: str = "s",
-    audio_format: str | None = None,
 ) -> pd.DataFrame:
     r"""Make npy files containing indexing vectors
     for each subset of the training data 
@@ -92,11 +90,6 @@ def make_index_vectors_for_each_subset(
     input_type : str
         The type of input to the neural network model.
         One of {'audio', 'spect'}.
-    audio_format : str
-        A :class:`string` representing the format of audio files.
-        One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
-    spect_key : str
-        Key for accessing spectrogram in files. Default is 's'.
 
     Returns
     -------
@@ -179,8 +172,6 @@ def make_subsets_from_dataset_df(
     dataset_path: pathlib.Path,
     labelmap: dict,
     input_type: str,
-    spect_key: str = "s",
-    audio_format: str | None = None,
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
 
@@ -248,11 +239,6 @@ def make_subsets_from_dataset_df(
     input_type : str
         The type of input to the neural network model.
         One of {'audio', 'spect'}.
-    audio_format : str
-        A :class:`string` representing the format of audio files.
-        One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
-    spect_key : str
-        Key for accessing spectrogram in files. Default is 's'.
 
     Returns
     -------
@@ -315,8 +301,6 @@ def make_subsets_from_dataset_df(
         all_train_durs_and_replicates_df,
         dataset_path,
         input_type,
-        spect_key,
-        audio_format,
     )
 
     # keep the same validation, test, and total train sets by concatenating them with the train subsets
