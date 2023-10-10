@@ -436,7 +436,9 @@ def make_splits(
         ] = frames_paths
 
         frame_labels_npy_paths = [
-            str(sample.frame_labels_npy_path) for sample in samples
+            sample.frame_labels_npy_path
+            if isinstance(sample.frame_labels_npy_path, str) else None
+            for sample in samples
         ]
         split_df[
             datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
