@@ -167,11 +167,11 @@ def make_index_vectors_for_each_subset(
 
 def make_subsets_from_dataset_df(
     dataset_df: pd.DataFrame,
+    input_type: str,
     train_set_durs: Sequence[float],
     num_replicates: int,
     dataset_path: pathlib.Path,
     labelmap: dict,
-    input_type: str,
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
 
