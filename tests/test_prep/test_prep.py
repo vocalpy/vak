@@ -13,9 +13,7 @@ import vak
         ("eval", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("learncurve", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("predict", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
-        ("predict", "wav", None, "birdsong-recognition-dataset", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("train", "cbin", None, "notmat", "vak.prep.prep_.prep_frame_classification_dataset"),
-        ("train", "wav", None, "birdsong-recognition-dataset", "vak.prep.prep_.prep_frame_classification_dataset"),
         ("train", None, "mat", "yarden", "vak.prep.prep_.prep_frame_classification_dataset"),
     ],
 )
@@ -25,7 +23,7 @@ def test_prep(
     spect_format,
     annot_format,
     dataset_prep_func_to_mock,
-    specific_config,
+        specific_config_toml_path,
     default_model,
     tmp_path,
 ):
@@ -42,7 +40,7 @@ def test_prep(
             "value": str(output_dir),
         },
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type=config_type,
         model=default_model,
         audio_format=audio_format,

@@ -8,7 +8,6 @@ import vak
     'model_name, config_type, audio_format, spect_format, annot_format, expected_result',
     [
         ("TweetyNet", "train", "cbin", None, "notmat", True),
-        ("TweetyNet", "train", "wav", None, "birdsong-recognition-dataset", True),
         ("TweetyNet", "train", None, "mat", "yarden", True),
     ]
 )

@@ -103,7 +103,7 @@ class EvalItemTransform:
 
         self.annot_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, frames, frame_labels, source_path=None):
+    def __call__(self, frames, frame_labels, frames_path=None):
         if self.spect_standardizer:
             frames = self.spect_standardizer(frames)
 
@@ -124,8 +124,9 @@ class EvalItemTransform:
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
 
-        if source_path is not None:
-            item["source_path"] = source_path
+        if frames_path is not None:
+            # make sure frames_path is a str, not a pathlib.Path
+            item["frames_path"] = str(frames_path)
 
         return item
 
@@ -171,7 +172,7 @@ class PredictItemTransform:
             ]
         )
 
-    def __call__(self, frames, source_path=None):
+    def __call__(self, frames, frames_path=None):
         if self.spect_standardizer:
             frames = self.spect_standardizer(frames)
 
@@ -190,8 +191,9 @@ class PredictItemTransform:
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
 
-        if source_path is not None:
-            item["source_path"] = source_path
+        if frames_path is not None:
+            # make sure frames_path is a str, not a pathlib.Path
+            item["frames_path"] = str(frames_path)
 
         return item
 

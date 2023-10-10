@@ -332,9 +332,9 @@ class FrameClassificationModel(base.Model):
             containing the spectrogram
             for which a prediction was generated.
         """
-        x, source_path = batch["frames"].to(self.device), batch["source_path"]
-        if isinstance(source_path, list) and len(source_path) == 1:
-            source_path = source_path[0]
+        x, frames_path = batch["frames"].to(self.device), batch["frames_path"]
+        if isinstance(frames_path, list) and len(frames_path) == 1:
+            frames_path = frames_path[0]
         # TODO: fix this weirdness. Diff't collate_fn?
         if x.ndim in (5, 4):
             if x.shape[0] == 1:
@@ -342,7 +342,7 @@ class FrameClassificationModel(base.Model):
         else:
             raise ValueError(f"invalid shape for x: {x.shape}")
         y_pred = self.network(x)
-        return {source_path: y_pred}
+        return {frames_path: y_pred}
 
     @classmethod
     def from_config(

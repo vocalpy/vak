@@ -7,6 +7,16 @@ from . import constants
 logger = logging.getLogger(__name__)
 
 
+def make_spect_output_dir_in_generated():
+    constants.GENERATED_SPECT_OUTPUT_DIR.mkdir()
+
+def make_source_files_csv_dir_in_generated():
+    constants.GENERATED_SOURCE_FILES_CSV_DIR.mkdir()
+
+def make_source_files_with_splits_csv_dir_in_generated():
+    constants.GENERATED_SOURCE_FILES_WITH_SPLITS_CSV_DIR.mkdir()
+
+
 def make_subdirs_in_generated(config_paths):
     """make sub-directories inside ./tests/data_for_tests/generated
 
@@ -26,7 +36,7 @@ def make_subdirs_in_generated(config_paths):
 
     for top_level_dir in constants.TOP_LEVEL_DIRS:  # datasets / results
         subdir_to_make = (
-                constants.GENERATED_TEST_DATA / top_level_dir
+                constants.GENERATED_TEST_DATA_ROOT / top_level_dir
         )
         logger.info(
             f"Making sub-directory: {subdir_to_make}"
@@ -47,7 +57,7 @@ def make_subdirs_in_generated(config_paths):
 
         if config_metadata.use_dataset_from_config is None:  # we need to make dataset dir
             subdir_to_make = (
-                    constants.GENERATED_TEST_DATA / 'prep' / config_type / data_dir / model
+                    constants.GENERATED_TEST_DATA_ROOT / 'prep' / config_type / data_dir / model
             )
             logger.info(
                 f"Making sub-directory: {subdir_to_make}"
@@ -55,7 +65,7 @@ def make_subdirs_in_generated(config_paths):
             subdir_to_make.mkdir(parents=True)
 
         subdir_to_make = (
-                constants.GENERATED_TEST_DATA / 'results' / config_type / data_dir / model
+                constants.GENERATED_TEST_DATA_ROOT / 'results' / config_type / data_dir / model
         )
         logger.info(
             f"Making sub-directory: {subdir_to_make}"

@@ -1,3 +1,4 @@
+"""A dataset class used to train Parametric UMAP models."""
 from __future__ import annotations
 
 import pathlib
@@ -185,16 +186,64 @@ def get_graph_elements(
 
 
 class ParametricUMAPDataset(Dataset):
-    """Dataset used for training Parametric UMAP models"""
+    """A dataset class used to train Parametric UMAP models."""
 
     def __init__(
         self,
-        data: npt.NDArray,
-        graph,
+        dataset_path: str | pathlib.Path,
         dataset_df: pd.DataFrame,
+        split: str,
+        subset: str | None = None,
         n_epochs: int = 200,
+        n_neighbors: int = 10,
+        metric: str = "euclidean",
+        random_state: int | None = None,
         transform: Callable | None = None,
     ):
+        """Initialize a :class:`ParametricUMAPDataset` instance.
+
+        Parameters
+        ----------
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            parametric UMAP dataset,
+            as created by
+            :func:`vak.prep.prep_parametric_umap_dataset`.
+        dataset_df : pandas.DataFrame
+            A parametric UMAP dataset,
+            represented as a :class:`pandas.DataFrame`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        n_epochs : int
+            Number of epochs model will be trained. Default is 200.
+        transform : callable, optional
+        """
+        # subset takes precedence over split, if specified
+        if subset:
+            dataset_df = dataset_df[dataset_df.subset == subset].copy()
+        else:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
+
+        data = np.stack(
+            [
+                np.load(dataset_path / spect_path)
+                for spect_path in dataset_df.spect_path.values
+            ]
+        )
+
+        graph = get_umap_graph(
+            data,
+            n_neighbors=n_neighbors,
+            metric=metric,
+            random_state=random_state,
+        )
+
         (
             graph,
             epochs_per_sample,
@@ -246,28 +295,49 @@ class ParametricUMAPDataset(Dataset):
         cls,
         dataset_path: str | pathlib.Path,
         split: str,
+        subset: str | None = None,
         n_neighbors: int = 10,
         metric: str = "euclidean",
         random_state: int | None = None,
         n_epochs: int = 200,
         transform: Callable | None = None,
     ):
-        """
+        """Make a :class:`ParametricUMAPDataset` instance,
+        given the path to parametric UMAP dataset.
 
         Parameters
         ----------
-        dataset_path : str, pathlib.Path
-            Path to a directory that represents a dataset.
-        split
-        n_neighbors
-        metric
-        random_state
-        n_epochs
-        transform
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            parametric UMAP dataset,
+            as created by
+            :func:`vak.prep.prep_parametric_umap_dataset`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        n_neighbors : int
+            Number of nearest neighbors to use
+            when computing approximate nearest neighbors.
+            Parameter passed to :class:`pynndescent.NNDescent`
+            and :func:`umap._umap.fuzzy_simplicial_set`.
+        metric : str
+            Distance metric. Default is "cosine".
+            Parameter passed to :class:`pynndescent.NNDescent`
+            and :func:`umap._umap.fuzzy_simplicial_set`.
+        random_state : numpy.random.RandomState
+            Either a numpy.random.RandomState instance,
+            or None.
+        transform : callable
+            The transform applied to the input to the neural network :math:`x`.
 
         Returns
         -------
-
+        dataset : vak.datasets.parametric_umap.ParametricUMAPDataset
         """
         import vak.datasets  # import here just to make classmethod more explicit
 
@@ -278,27 +348,17 @@ class ParametricUMAPDataset(Dataset):
 
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
-        split_df = dataset_df[dataset_df.split == split]
-
-        data = np.stack(
-            [
-                np.load(dataset_path / spect_path)
-                for spect_path in split_df.spect_path.values
-            ]
-        )
-        graph = get_umap_graph(
-            data,
-            n_neighbors=n_neighbors,
-            metric=metric,
-            random_state=random_state,
-        )
 
         return cls(
-            data,
-            graph,
-            split_df,
+            dataset_path,
+            dataset_df,
+            split,
+            subset,
             n_epochs,
-            transform=transform,
+            n_neighbors,
+            metric,
+            random_state,
+            transform,
         )
 
 

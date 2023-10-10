@@ -101,45 +101,32 @@ def assert_returned_dataframe_matches_expected(
                 ]
             )
 
-        # test that all the generated spectrogram files are in a
-        # newly-created directory inside spect_output_dir
+        # test that all the generated spectrogram files are in spect_output_dir
         assert all(
             [
-                spect_path.parents[1] == spect_output_dir
+                spect_path.parents[0] == spect_output_dir
                 for spect_path in spect_paths_from_df
             ]
         )
 
     elif spect_format:  # implies that --> we made the dataframe from spect files
-        if spect_format == 'mat':
-            expected_spect_file_names = [
-                spect_path.name.replace('.mat', '.npz')
-                for spect_path in expected_spect_paths
-            ]
-        else:
-            expected_spect_file_names = [
-                spect_path.name for spect_path in expected_spect_paths
-            ]
+        expected_spect_file_names = [
+            spect_path.name for spect_path in expected_spect_paths
+        ]
 
         assert all(
-            [expected_spect_file_name in spect_file_names_from_df
-             for expected_spect_file_name in expected_spect_file_names]
+            [spect_file_name_from_df in expected_spect_file_names
+             for spect_file_name_from_df in spect_file_names_from_df]
         )
 
         # test that **only** expected paths were in DataFrame
         if not_expected_spect_paths is not None:
-            if spect_format == 'mat':
-                not_expected_spect_file_names = [
-                    spect_path.name.replace('.mat', '.npz')
-                    for spect_path in not_expected_spect_paths
-                ]
-            else:
-                not_expected_spect_file_names = [
-                    spect_path.name for spect_path in not_expected_spect_paths
-                ]
+            not_expected_spect_file_names = [
+                spect_path.name for spect_path in not_expected_spect_paths
+            ]
             assert all(
-                [not_expected_spect_file_name not in spect_file_names_from_df
-                 for not_expected_spect_file_name in not_expected_spect_file_names]
+                [spect_file_name_from_df not in not_expected_spect_file_names
+                 for spect_file_name_from_df in spect_file_names_from_df]
             )
 
 

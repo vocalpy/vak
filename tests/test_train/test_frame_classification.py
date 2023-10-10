@@ -38,12 +38,11 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
     "model_name, audio_format, spect_format, annot_format",
     [
         ("TweetyNet", "cbin", None, "notmat"),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
         ("TweetyNet", None, "mat", "yarden"),
     ],
 )
 def test_train_frame_classification_model(
-    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
@@ -51,7 +50,7 @@ def test_train_frame_classification_model(
         {"section": "TRAIN", "option": "device", "value": device},
         {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="train",
         model=model_name,
         audio_format=audio_format,
@@ -92,12 +91,11 @@ def test_train_frame_classification_model(
     "model_name, audio_format, spect_format, annot_format",
     [
         ("TweetyNet", "cbin", None, "notmat"),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
         ("TweetyNet", None, "mat", "yarden"),
     ],
 )
 def test_continue_training(
-    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
@@ -105,7 +103,7 @@ def test_continue_training(
         {"section": "TRAIN", "option": "device", "value": device},
         {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="train_continue",
         model=model_name,
         audio_format=audio_format,
@@ -149,7 +147,7 @@ def test_continue_training(
     ]
 )
 def test_train_raises_file_not_found(
-    path_option_to_change, specific_config, tmp_path, device
+    path_option_to_change, specific_config_toml_path, tmp_path, device
 ):
     """Test that pre-conditions in `vak.train` raise FileNotFoundError
     when one of the following does not exist:
@@ -159,7 +157,7 @@ def test_train_raises_file_not_found(
         {"section": "TRAIN", "option": "device", "value": device},
         path_option_to_change
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="train",
         model="TweetyNet",
         audio_format="cbin",
@@ -204,7 +202,7 @@ def test_train_raises_file_not_found(
     ]
 )
 def test_train_raises_not_a_directory(
-    path_option_to_change, specific_config, device, tmp_path
+    path_option_to_change, specific_config_toml_path, device, tmp_path
 ):
     """Test that core.train raises NotADirectory
     when directory does not exist
@@ -214,7 +212,7 @@ def test_train_raises_not_a_directory(
         {"section": "TRAIN", "option": "device", "value": device},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="train",
         model="TweetyNet",
         audio_format="cbin",

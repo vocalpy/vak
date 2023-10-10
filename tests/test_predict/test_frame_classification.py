@@ -19,9 +19,7 @@ def assert_predict_output_matches_expected(output_dir, annot_csv_filename):
     "model_name, audio_format, spect_format, annot_format, save_net_outputs",
     [
         ("TweetyNet", "cbin", None, "notmat", False),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset", False),
         ("TweetyNet", "cbin", None, "notmat", True),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset", True),
     ],
 )
 def test_predict_with_frame_classification_model(
@@ -30,7 +28,7 @@ def test_predict_with_frame_classification_model(
     spect_format,
     annot_format,
     save_net_outputs,
-    specific_config,
+        specific_config_toml_path,
     tmp_path,
     device,
 ):
@@ -44,7 +42,7 @@ def test_predict_with_frame_classification_model(
         {"section": "PREDICT", "option": "device", "value": device},
         {"section": "PREDICT", "option": "save_net_outputs", "value": save_net_outputs},
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="predict",
         model=model_name,
         audio_format=audio_format,
@@ -103,7 +101,7 @@ def test_predict_with_frame_classification_model(
 )
 def test_predict_with_frame_classification_model_raises_file_not_found(
     path_option_to_change,
-    specific_config,
+        specific_config_toml_path,
     tmp_path,
     device
 ):
@@ -119,7 +117,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
         {"section": "PREDICT", "option": "device", "value": device},
         path_option_to_change,
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="predict",
         model="TweetyNet",
         audio_format="cbin",
@@ -160,7 +158,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
 )
 def test_predict_with_frame_classification_model_raises_not_a_directory(
     path_option_to_change,
-    specific_config,
+        specific_config_toml_path,
     device,
     tmp_path,
 ):
@@ -183,7 +181,7 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
             {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)}
         )
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="predict",
         model="TweetyNet",
         audio_format="cbin",

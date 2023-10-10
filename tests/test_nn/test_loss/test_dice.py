@@ -1,7 +1,7 @@
 """test loss functions"""
 import torch
 from torch.autograd import gradcheck
-from torch.testing import assert_allclose
+from torch.testing import assert_close
 
 import vak.nn.loss
 
@@ -35,7 +35,7 @@ class TestDiceLoss:
 
         criterion = vak.nn.loss.DiceLoss()
         loss = criterion(logits, labels)
-        assert_allclose(loss, torch.zeros_like(loss), rtol=1e-3, atol=1e-3)
+        assert_close(loss, torch.zeros_like(loss), rtol=1e-3, atol=1e-3)
 
     def test_gradcheck(self, device, dtype):
         num_classes = 3
@@ -55,7 +55,7 @@ class TestDiceLoss:
         op = vak.nn.dice_loss
         op_script = torch.jit.script(op)
 
-        assert_allclose(op(logits, labels), op_script(logits, labels))
+        assert_close(op(logits, labels), op_script(logits, labels))
 
     def test_module(self, device, dtype):
         num_classes = 3
@@ -66,4 +66,4 @@ class TestDiceLoss:
         op = vak.nn.dice_loss
         op_module = vak.nn.loss.DiceLoss()
 
-        assert_allclose(op(logits, labels), op_module(logits, labels))
+        assert_close(op(logits, labels), op_module(logits, labels))

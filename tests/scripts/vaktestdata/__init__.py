@@ -5,4 +5,5 @@ from . import (
     dirs,
     parser,
     prep,
+    source_files,
 )

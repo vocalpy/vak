@@ -5,6 +5,7 @@ import collections
 import copy
 import logging
 import pathlib
+import shutil
 
 import attrs
 import crowsetta
@@ -15,6 +16,7 @@ from dask.diagnostics import ProgressBar
 
 from ... import common, datasets, transforms
 from .. import constants as prep_constants
+
 
 logger = logging.getLogger(__name__)
 
@@ -85,44 +87,98 @@ class Sample:
     Used to add paths for arrays from the sample
     to a ``dataset_df``, and to build
     the ``sample_ids`` vector and ``inds_in_sample`` vector
-    for the entire dataset."""
+    for the entire dataset.
 
+    Attributes
+    ----------
+    source_id : int
+        Integer ID number used for sorting.
+    frames_path : str
+        The path to the input to the model
+        :math:`x` after it has been moved,
+        copied, or created from a ``source_path``.
+        Path will be written relative to ``dataset_path``.
+        We preserve the original paths as metadata,
+        and consider the files in the split to contain
+        frames, regardless of the source domain
+        of the data.
+    frame_labels_npy_path : str
+        Path to frame labels,
+        relative to ``dataset_path``.
+    sample_id_vec : numpy.ndarray
+        Sample ID vector for this sample.
+    inds_in_sample_vec : numpy.ndarray
+        Indices within sample.
+    """
     source_id: int = attrs.field()
-    frame_npy_path: str
+    source_path: str
     frame_labels_npy_path: str
     sample_id_vec: np.ndarray
     inds_in_sample_vec: np.ndarray
 
 
-def make_npy_files_for_each_split(
+def make_splits(
     dataset_df: pd.DataFrame,
     dataset_path: str | pathlib.Path,
     input_type: str,
     purpose: str,
     labelmap: dict,
-    audio_format: str,
+    audio_format: str | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
+    freqbins_key: str = "f",
 ) -> pd.DataFrame:
-    r"""Make npy files containing arrays
-    for each split of a frame classification dataset.
+    r"""Make each split of a frame classification dataset.
 
-    All the npy files for each split are saved
-    in a new directory inside ``dataset_path``
-    that has the same name as the split.
+    This function takes a :class:`pandas.Dataframe` returned by
+    :func:`vak.prep.spectrogram_dataset.prep_spectrogram_dataset`
+    or :func:`vak.prep.audio_dataset.prep_audio_dataset`,
+    after it has been assigned a `'split'` column,
+    and then copies, moves, or generates the required files
+    as appropriate for each split.
+
+    For each unique `'split'` in the :class:`pandas.Dataframe`,
+    a directory is made inside ``dataset_path``.
+    At a high level, all files needed for working with that split
+    will be in that directory
     E.g., the ``train`` directory inside ``dataset_path``
     would have all the files for every row in ``dataset_df``
     for which ``dataset_df['split'] == 'train'``.
 
-    The function creates two npy files for each row in ``dataset_df``.
-    One has the extension '.frames.npy` and contains the input
-    to the frame classification model. The other has the extension
-    '.frame_labels.npy', and contains a vector
+    The inputs to the neural network model
+    are moved or copied into the split directory,
+    or generated if necessary.
+    If the ``input_type`` is `'audio'`,
+    then the audio files are copied from their original directory.
+    If the ``input_type`` is `'spect'`,
+    and the spectrogram files are already
+    in ``dataset_path``, they are moved into the split directory
+    (under the assumption they were generated
+    by ``vak.prep.spectrogram_dataset.audio_helper``).
+    If they are npz files, but they are not in ``dataset_path``,
+    then they are validated to make sure they have the appropriate keys,
+    and then copied into the split directory.
+    This could be the case if the files were generated
+    by another program.
+    If they are mat files, they will be converted to npz
+    with the default keys for arrays,
+    and then saved in a new npz file in the split directory.
+    This step is required so that all dataset
+    prepared by :mod:`vak` are in a "normalized" or
+    "canonicalized" format.
+
+    In addition to copying or moving the audio or spectrogram
+    files that are inputs to the neural network model,
+    other npy files are made for each split
+    and saved in the corresponding directory.
+    This function creates one npy file for each row in ``dataset_df``.
+    It has the extension '.frame_labels.npy', and contains a vector
     where each element is the target label that
     the network should predict for the corresponding frame.
-    Taken together, these two files are the data
+    Taken together, the audio or spectrogram file in each row
+    along with its corresponding frame labels are the data
     for each sample :math:`(x, y)` in the dataset,
-    where :math:`x_t` is the frames and :math:`y_t` is the frame labels.
+    where :math:`x_t` supplies the "frames", and :math:`y_t` is the frame labels.
 
     This function also creates two additional npy files for each split.
     These npy files are "indexing" vectors that
@@ -132,9 +188,9 @@ def make_npy_files_for_each_split(
     to avoid loading the entire dataset into memory,
     and to avoid working with memory-mapped arrays.
     The first is the ``sample_ids`` vector,
-    that represents the "ID" of any sample :math:`(x, y)` in the dataset.
+    that represents the "ID" of any sample :math:`(x, y)` in the split.
     We use these IDs to load the array files corresponding to the samples.
-    For a dataset with :math:`m` samples, this will be an array of length :math:`T`,
+    For a split with :math:`m` samples, this will be an array of length :math:`T`,
     the total number of frames across all samples,
     with elements :math:`i \in (0, 1, ..., m - 1)`
     indicating which frames correspond to which sample :math:`m_i`:
@@ -176,6 +232,8 @@ def make_npy_files_for_each_split(
         Key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
         Key for accessing vector of time bins in files. Default is 't'.
+    freqbins_key : str
+        key for accessing vector of frequency bins in files. Default is 'f'.
 
     Returns
     -------
@@ -190,6 +248,12 @@ def make_npy_files_for_each_split(
             f"Value for ``input_type`` was: {input_type}"
         )
 
+    if input_type == "audio" and audio_format is None:
+        raise ValueError(
+            f"Value for `input_type` was 'audio' but `audio_format` is None. "
+            f"Please specify the audio format."
+        )
+
     dataset_df_out = []
     splits = [
         split
@@ -197,6 +261,7 @@ def make_npy_files_for_each_split(
         if split != "None"
     ]
     for split in splits:
+        logger.info(f"Making split for dataset: {split}")
         split_subdir = dataset_path / split
         split_subdir.mkdir()
 
@@ -221,7 +286,9 @@ def make_npy_files_for_each_split(
             source_paths = split_df["spect_path"].values
         else:
             raise ValueError(f"Invalid ``input_type``: {input_type}")
-        # do this *again* after sorting the dataframe
+        source_paths = [pathlib.Path(source_path) for source_path in source_paths]
+
+        # we get annots again, *after* sorting the dataframe
         if purpose != "predict":
             annots = common.annotation.from_df(split_df)
         else:
@@ -235,32 +302,50 @@ def make_npy_files_for_each_split(
             Defined in-line so variables are in scope
             """
             source_id, source_path, annot = source_id_path_annot_tup
-            source_path = pathlib.Path(source_path)
 
             if input_type == "audio":
+                # we always copy audio to the split directory, to avoid damaging source data
+                frames_path = shutil.copy(source_path, split_subdir)
+                # after copying, we load frames to compute frame labels
                 frames, samplefreq = common.constants.AUDIO_FORMAT_FUNC_MAP[
                     audio_format
                 ](source_path)
                 if (
                     audio_format == "cbin"
-                ):  # convert to ~wav, from int16 to float64
+                ):  # convert to ~wav, from int16 to float64damage
                     frames = frames.astype(np.float64) / 32768.0
                 if annot:
                     frame_times = np.arange(frames.shape[-1]) / samplefreq
             elif input_type == "spect":
-                spect_dict = np.load(source_path)
+                if source_path.suffix.endswith('mat'):
+                    spect_dict = common.files.spect.load(source_path, "mat")
+                    # convert to .npz and save in spect_output_dir
+                    spect_dict_npz = {
+                        "s": spect_dict[spect_key],
+                        "t": spect_dict[timebins_key],
+                        "f": spect_dict[freqbins_key],
+                    }
+                    frames_path = split_subdir / (
+                            source_path.stem + ".npz"
+                    )
+                    np.savez(frames_path, **spect_dict_npz)
+                elif source_path.suffix.endswith('npz'):
+                    spect_dict = common.files.spect.load(source_path, "npz")
+                    if source_path.is_relative_to(dataset_path):
+                        # it's already in dataset_path, we just move it into the split
+                        frames_path = shutil.move(source_path, split_subdir)
+                    else:
+                        # it's somewhere else we copy it to be safe
+                        if not all([key in spect_dict for key in ('s', 't', 'f')]):
+                            raise ValueError(
+                                f"The following spectrogram file did not have valid keys: {source_path}\n."
+                                f"All npz files should have keys 's', 't', 'f' corresponding to the spectrogram,"
+                                f"the frequencies vector, and the time vector."
+                            )
+                        frames_path = shutil.copy(source_path, split_subdir)
                 frames = spect_dict[spect_key]
                 if annot:
                     frame_times = spect_dict[timebins_key]
-            frames_npy_path = split_subdir / (
-                source_path.stem
-                + datasets.frame_classification.constants.FRAMES_ARRAY_EXT
-            )
-            np.save(frames_npy_path, frames)
-            frames_npy_path = str(
-                # make sure we save path in csv as relative to dataset root
-                frames_npy_path.relative_to(dataset_path)
-            )
 
             n_frames = frames.shape[-1]
             sample_id_vec = np.ones((n_frames,)).astype(np.int32) * source_id
@@ -288,9 +373,13 @@ def make_npy_files_for_each_split(
             else:
                 frame_labels_npy_path = None
 
+            # Rewrite ``frames_path`` as relative to root
+            # because all functions and classes downstream expect this
+            frames_path = pathlib.Path(frames_path).relative_to(dataset_path)
+
             return Sample(
                 source_id,
-                frames_npy_path,
+                frames_path,
                 frame_labels_npy_path,
                 sample_id_vec,
                 inds_in_sample_vec,
@@ -338,18 +427,30 @@ def make_npy_files_for_each_split(
             inds_in_sample_vec,
         )
 
-        frame_npy_paths = [str(sample.frame_npy_path) for sample in samples]
+        # We convert `frames_paths` back to string
+        # (just in case they are pathlib.Paths) before adding back to dataframe.
+        # Note that these are all in split dirs, written relative to ``dataset_path``.
+        frames_paths = [str(sample.source_path) for sample in samples]
         split_df[
-            datasets.frame_classification.constants.FRAMES_NPY_PATH_COL_NAME
-        ] = frame_npy_paths
+            datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+        ] = frames_paths
 
         frame_labels_npy_paths = [
-            str(sample.frame_labels_npy_path) for sample in samples
+            sample.frame_labels_npy_path
+            if isinstance(sample.frame_labels_npy_path, str) else None
+            for sample in samples
         ]
         split_df[
             datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
         ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
+
+    # ---- clean up
+    # Remove any spect npz files that were *not* added to a split
+    spect_npz_files_not_in_split = sorted(dataset_path.glob(f'*{common.constants.SPECT_NPZ_EXTENSION}'))
+    if len(spect_npz_files_not_in_split) > 0:
+        for spect_npz_file in spect_npz_files_not_in_split:
+            spect_npz_file.unlink()
 
     # we reset the entire index across all splits, instead of repeating indices,
     # and we set drop=False because we don't want to add a new column 'index' or 'level_0'

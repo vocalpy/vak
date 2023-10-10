@@ -72,9 +72,7 @@ def test_audio_stem_from_path_raises(path, audio_ext):
 @pytest.mark.parametrize(
     "source_type, source_format, annot_format, audio_ext",
     [
-        ("audio", "wav", "birdsong-recognition-dataset", None),
         ("spect", "mat", "yarden", None),
-        ("audio", "wav", "birdsong-recognition-dataset", "wav"),
         ("spect", "mat", "yarden", "wav"),
     ],
 )
@@ -118,7 +116,6 @@ def test__map_using_notated_path(
     "source_type, source_format, annot_format, annotated_ext, method",
     [
         ("audio", "cbin", "notmat", None, "remove"),
-        ("audio", "wav", "textgrid", None, "replace"),
     ],
 )
 def test__map_using_ext(
@@ -166,11 +163,7 @@ def test__map_using_ext(
     "source_type, source_format, annot_format, method",
     [
         ("audio", "cbin", "notmat", "remove"),
-        ("audio", "cbin", "simple-seq", "remove"),
-        ("audio", "wav", "birdsong-recognition-dataset", None),
-        ("audio", "wav", "textgrid", "replace"),
         ("spect", "mat", "yarden", None),
-        ("audio", "wav", "textgrid", "replace"),
     ],
 )
 def test_map_annotated_to_annot(

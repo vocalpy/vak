@@ -1,3 +1,20 @@
+"""A dataset class used for neural network models with the
+frame classification task, where the source data consists of audio signals
+or spectrograms of varying lengths.
+
+Unlike :class:`vak.datasets.frame_classification.FramesDataset`,
+this class does not return entire samples
+from the source dataset.
+Instead each paired samples :math:`(x_i, y_i)`
+returned by this dataset class consists of
+a window :math:`x_i` of fixed length
+:math:`w` from the underlying data ``X`` of total length :math:`T`.
+Each :math:`y_i` is a vector of the same size :math:`w`, containing
+an integer class label for each *frame* in the window :math:`x_i`.
+The entire dataset consists of some number of windows
+:math:`I` determined by a ``stride`` parameter :math:`s`,
+:math:`I = (T - w) / s`.
+"""
 from __future__ import annotations
 
 import pathlib
@@ -7,8 +24,9 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from . import constants
+from . import constants, helper
 from .metadata import Metadata
+from ... import common
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
@@ -43,7 +61,7 @@ def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
 
 class WindowDataset:
     """Dataset used for training neural network models
-    on the frame classification task.
+    on the frame classification task,
     where the source data consists of audio signals
     or spectrograms of varying lengths.
 
@@ -85,55 +103,167 @@ class WindowDataset:
 
     Attributes
     ----------
-    X : numpy.ndarray
-    Y : numpy.ndarray
+    dataset_path : pathlib.Path
+        Path to directory that represents a
+        frame classification dataset,
+        as created by
+        :func:`vak.prep.prep_frame_classification_dataset`.
+    split : str
+        The name of a split from the dataset,
+        one of {'train', 'val', 'test'}.
+    subset : str, optional
+        Name of subset to use.
+        If specified, this takes precedence over split.
+        Subsets are typically taken from the training data
+        for use when generating a learning curve.
+    dataset_df : pandas.DataFrame
+        A frame classification dataset,
+        represented as a :class:`pandas.DataFrame`.
+        This will be only the rows that correspond
+        to either ``subset`` or ``split`` from the
+        ``dataset_df`` that was passed in when
+        instantiating the class.
+    input_type : str
+        The type of input to the neural network model.
+        One of {'audio', 'spect'}.
+    frame_paths : numpy.ndarray
+        Paths to npy files containing frames,
+        either spectrograms or audio signals
+        that are input to the model.
+    frame_labels_paths : numpy.ndarray
+        Paths to npy files containing vectors
+        with a label for each frame.
+        The targets for the outputs of the model.
+    sample_ids : numpy.ndarray
+        Indexing vector representing which sample
+        from the dataset every frame belongs to.
+    inds_in_sample : numpy.ndarray
+        Indexing vector representing which index
+        within each sample from the dataset
+        that every frame belongs to.
     window_size : int
-    frame_dur : float
-        Duration of a single frame, in seconds.
-    duration : float
-        Total duration of the dataset.
+        Size of windows to return;
+        number of frames.
+    frame_dur: float
+        Duration of a frame, i.e., a single sample in audio
+        or a single timebin in a spectrogram.
+    stride : int
+        The size of the stride used to determine which windows
+        are included in the dataset. The default is 1.
+        Used to compute ``window_inds``,
+        with the function
+        :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+    window_inds : numpy.ndarray, optional
+        A vector of valid window indices for the dataset.
+        If specified, this takes precedence over ``stride``.
+    transform : callable
+        The transform applied to the frames,
+         the input to the neural network :math:`x`.
+    target_transform : callable
+        The transform applied to the target for the output
+        of the neural network :math:`y`.
     """
 
     def __init__(
         self,
         dataset_path: str | pathlib.Path,
         dataset_df: pd.DataFrame,
+        input_type: str,
         split: str,
         sample_ids: npt.NDArray,
         inds_in_sample: npt.NDArray,
         window_size: int,
         frame_dur: float,
         stride: int = 1,
+        subset: str | None = None,
         window_inds: npt.NDArray | None = None,
         transform: Callable | None = None,
         target_transform: Callable | None = None,
     ):
+        """Initialize a new instance of a WindowDataset.
+
+        Parameters
+        ----------
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            frame classification dataset,
+            as created by
+            :func:`vak.prep.prep_frame_classification_dataset`.
+        dataset_df : pandas.DataFrame
+            A frame classification dataset,
+            represented as a :class:`pandas.DataFrame`.
+        input_type : str
+            The type of input to the neural network model.
+            One of {'audio', 'spect'}.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        sample_ids : numpy.ndarray
+            Indexing vector representing which sample
+            from the dataset every frame belongs to.
+        inds_in_sample : numpy.ndarray
+            Indexing vector representing which index
+            within each sample from the dataset
+            that every frame belongs to.
+        window_size : int
+            Size of windows to return;
+            number of frames.
+        frame_dur: float
+            Duration of a frame, i.e., a single sample in audio
+            or a single timebin in a spectrogram.
+        stride : int
+            The size of the stride used to determine which windows
+            are included in the dataset. The default is 1.
+            Used to compute ``window_inds``,
+            with the function
+            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        window_inds : numpy.ndarray, optional
+            A vector of valid window indices for the dataset.
+            If specified, this takes precedence over ``stride``.
+        transform : callable
+            The transform applied to the input to the neural network :math:`x`.
+        target_transform : callable
+            The transform applied to the target for the output
+            of the neural network :math:`y`.
+        """
+        from ... import prep  # avoid circular import, use for constants.INPUT_TYPES
+        if input_type not in prep.constants.INPUT_TYPES:
+            raise ValueError(
+                f"``input_type`` must be one of: {prep.constants.INPUT_TYPES}\n"
+                f"Value for ``input_type`` was: {input_type}"
+            )
+
         self.dataset_path = pathlib.Path(dataset_path)
-
         self.split = split
-        dataset_df = dataset_df[dataset_df.split == split].copy()
+        self.subset = subset
+        # subset takes precedence over split, if specified
+        if subset:
+            dataset_df = dataset_df[dataset_df.subset == subset].copy()
+        else:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
         self.dataset_df = dataset_df
-
+        self.input_type = input_type
         self.frames_paths = self.dataset_df[
-            constants.FRAMES_NPY_PATH_COL_NAME
+            constants.FRAMES_PATH_COL_NAME
         ].values
         self.frame_labels_paths = self.dataset_df[
             constants.FRAME_LABELS_NPY_PATH_COL_NAME
         ].values
-
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
-
         self.window_size = window_size
         self.frame_dur = float(frame_dur)
         self.stride = stride
-
         if window_inds is None:
             window_inds = get_window_inds(
                 sample_ids.shape[-1], window_size, stride
             )
         self.window_inds = window_inds
-
         self.transform = transform
         self.target_transform = target_transform
 
@@ -149,6 +279,16 @@ class WindowDataset:
         # e.g. when initializing a neural network model
         return one_x.shape
 
+    def _load_frames(self, frames_path):
+        """Helper function that loads "frames",
+        the input to the frame classification model.
+        Loads audio or spectrogram, depending on
+        :attr:`self.input_type`.
+        This function assumes that audio is in wav format 
+        and spectrograms are in npz files.
+        """
+        return helper.load_frames(frames_path, self.input_type)
+
     def __getitem__(self, idx):
         window_idx = self.window_inds[idx]
         sample_ids = self.sample_ids[
@@ -156,17 +296,21 @@ class WindowDataset:
         ]
         uniq_sample_ids = np.unique(sample_ids)
         if len(uniq_sample_ids) == 1:
+            # we repeat ourselves here to avoid running a loop on one item
             sample_id = uniq_sample_ids[0]
-            frames = np.load(self.dataset_path / self.frames_paths[sample_id])
+            frames_path = self.dataset_path / self.frames_paths[sample_id]
+            frames = self._load_frames(frames_path)
             frame_labels = np.load(
                 self.dataset_path / self.frame_labels_paths[sample_id]
             )
+
         elif len(uniq_sample_ids) > 1:
             frames = []
             frame_labels = []
             for sample_id in sorted(uniq_sample_ids):
+                frames_path = self.dataset_path / self.frames_paths[sample_id]
                 frames.append(
-                    np.load(self.dataset_path / self.frames_paths[sample_id])
+                    self._load_frames(frames_path)
                 )
                 frame_labels.append(
                     np.load(
@@ -210,37 +354,66 @@ class WindowDataset:
         window_size: int,
         stride: int = 1,
         split: str = "train",
+        subset: str | None = None,
         transform: Callable | None = None,
         target_transform: Callable | None = None,
     ):
-        """
+        """Make a :class:`WindowDataset` instance,
+        given the path to a frame classification dataset.
 
         Parameters
         ----------
-        dataset_path
-        window_size
-        stride
-        split
-        transform
-        target_transform
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            frame classification dataset,
+            as created by
+            :func:`vak.prep.prep_frame_classification_dataset`.
+        window_size : int
+            Size of windows to return;
+            number of frames.
+        stride : int
+            The size of the stride used to determine which windows
+            are included in the dataset. The default is 1.
+            Used to compute ``window_inds``,
+            with the function
+            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        transform : callable
+            The transform applied to the input to the neural network :math:`x`.
+        target_transform : callable
+            The transform applied to the target for the output
+            of the neural network :math:`y`.
 
         Returns
         -------
-
+        dataset : vak.datasets.frame_classification.WindowDataset
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
         frame_dur = metadata.frame_dur
+        input_type = metadata.input_type
 
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
 
         split_path = dataset_path / split
-        sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
+        if subset:
+            sample_ids_path = split_path / helper.sample_ids_array_filename_for_subset(subset)
+        else:
+            sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
-        inds_in_sample_path = (
-            split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
-        )
+
+        if subset:
+            inds_in_sample_path = split_path / helper.inds_in_sample_array_filename_for_subset(subset)
+        else:
+            inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
         inds_in_sample = np.load(inds_in_sample_path)
 
         window_inds_path = split_path / constants.WINDOW_INDS_ARRAY_FILENAME
@@ -252,12 +425,14 @@ class WindowDataset:
         return cls(
             dataset_path,
             dataset_df,
+            input_type,
             split,
             sample_ids,
             inds_in_sample,
             window_size,
             frame_dur,
             stride,
+            subset,
             window_inds,
             transform,
             target_transform,

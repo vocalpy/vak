@@ -29,35 +29,23 @@ def assert_expected_spect_paths_in_dataframe(
         of paths to spectrogram files, that should **not** be in dataset_df.spect_path column
     """
     spect_file_names_from_df = [spect_path.name for spect_path in spect_paths_from_df]
-
-    if spect_format == 'mat':
-        expected_spectfile_names = [
-            spect_path.name.replace('.mat', '.npz')
-            for spect_path in expected_spect_paths
-        ]
-    else:
-        expected_spectfile_names = [
-            spect_path.name for spect_path in expected_spect_paths
-        ]
+    expected_spectfile_names = [
+        spect_path.name for spect_path in expected_spect_paths
+    ]
 
     assert all(
-        [expected_spect_file in spect_file_names_from_df for expected_spect_file in expected_spectfile_names]
+        [spect_file_name_from_df in expected_spectfile_names
+         for spect_file_name_from_df in spect_file_names_from_df]
     )
 
     # test that **only** expected paths were in DataFrame
     if not_expected_spect_paths is not None:
-        if spect_format == 'mat':
-            not_expected_spectfile_names = [
-                spect_path.name.replace('.mat', '.npz')
-                for spect_path in not_expected_spect_paths
-            ]
-        else:
-            not_expected_spectfile_names = [
-                spect_path.name for spect_path in not_expected_spect_paths
-            ]
+        not_expected_spectfile_names = [
+            spect_path.name for spect_path in not_expected_spect_paths
+        ]
         assert all(
-            [not_expected_spect_file not in spect_file_names_from_df
-             for not_expected_spect_file in not_expected_spectfile_names]
+            [spect_file_name_from_df not in not_expected_spectfile_names
+             for spect_file_name_from_df in spect_file_names_from_df]
         )
 
 
@@ -119,7 +107,6 @@ def test_make_dataframe_of_spect_files(
         spect_format=spect_format,
         spect_dir=spect_dir,
         spect_files=spect_files,
-        spect_output_dir=spect_output_dir,
         labelset=labelset,
         annot_list=annot_list,
         annot_format=annot_format,
@@ -144,13 +131,10 @@ def test_make_dataframe_of_spect_files(
         expected_spect_list, not_expected_spect_list
     )
 
-    if spect_format == 'mat':
-        expected_parent = spect_output_dir
-    else:
-        expected_parent = specific_spect_dir(spect_format)
-    assert all(
-        [spect_path.parent == expected_parent for spect_path in spect_paths_from_df]
-    )
+    if spect_dir is not None:
+        assert all(
+            [spect_path.parent == spect_dir for spect_path in spect_paths_from_df]
+        )
 
 
 def test_make_dataframe_of_spect_files_no_spect_dir_files_or_map_raises(annot_list_yarden):

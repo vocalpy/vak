@@ -5,6 +5,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+from ..common import constants
 from ..common.validators import column_or_1d
 from . import functional as F
 
@@ -76,7 +77,7 @@ class StandardizeSpect:
         self.non_zero_std = non_zero_std
 
     @classmethod
-    def fit_dataset_path(cls, dataset_path, split="train"):
+    def fit_dataset_path(cls, dataset_path, split="train", subset: str | None = None):
         """Returns a :class:`StandardizeSpect` instance
         that is fit to a split from a dataset,
         given the path to that dataset and the
@@ -99,14 +100,18 @@ class StandardizeSpect:
 
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
+        input_type = metadata.input_type
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
-        df = pd.read_csv(dataset_csv_path)
-        df = df[df["split"] == split].copy()
-        frames_paths = df[
-            frame_classification.constants.FRAMES_NPY_PATH_COL_NAME
+        dataset_df = pd.read_csv(dataset_csv_path)
+        if subset:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
+        else:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
+        frames_paths = dataset_df[
+            frame_classification.constants.FRAMES_PATH_COL_NAME
         ].values
-        frames = np.load(dataset_path / frames_paths[0])
+        frames = np.load(dataset_path / frames_paths[0])[constants.SPECT_KEY]
 
         # in files, spectrograms are in orientation (freq bins, time bins)
         # so we take mean and std across columns, i.e. time bins, i.e. axis 1
@@ -114,7 +119,7 @@ class StandardizeSpect:
         std_freqs = np.std(frames, axis=1)
 
         for frames_path in frames_paths[1:]:
-            frames = np.load(dataset_path / frames_path)
+            frames = np.load(dataset_path / frames_path)[constants.SPECT_KEY]
             mean_freqs += np.mean(frames, axis=1)
             std_freqs += np.std(frames, axis=1)
         mean_freqs = mean_freqs / len(frames_paths)

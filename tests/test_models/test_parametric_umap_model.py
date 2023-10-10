@@ -81,12 +81,12 @@ class TestParametricUMAPModel:
             self,
             input_shape,
             definition,
-            specific_config,
+            specific_config_toml_path,
             monkeypatch,
     ):
         definition = vak.models.definition.validate(definition)
         model_name = definition.__name__.replace('Definition', '')
-        toml_path = specific_config('train', model_name, audio_format='cbin', annot_format='notmat')
+        toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
         cfg = vak.config.parse.from_toml_path(toml_path)
 
         monkeypatch.setattr(

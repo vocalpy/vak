@@ -51,10 +51,10 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
     ]
 )
 def test_learning_curve_for_frame_classification_model(
-        model_name, audio_format, annot_format, specific_config, tmp_path, device):
+        model_name, audio_format, annot_format, specific_config_toml_path, tmp_path, device):
     options_to_change = {"section": "LEARNCURVE", "option": "device", "value": device}
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="learncurve",
         model=model_name,
         audio_format=audio_format,
@@ -99,7 +99,7 @@ def test_learning_curve_for_frame_classification_model(
     ]
 )
 def test_learncurve_raises_not_a_directory(dir_option_to_change,
-                                           specific_config,
+                                           specific_config_toml_path,
                                            tmp_path, device):
     """Test that core.learncurve.learning_curve raises NotADirectoryError
     when the following directories do not exist:
@@ -109,7 +109,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         {"section": "LEARNCURVE", "option": "device", "value": device},
         dir_option_to_change
     ]
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="learncurve",
         model="TweetyNet",
         audio_format="cbin",

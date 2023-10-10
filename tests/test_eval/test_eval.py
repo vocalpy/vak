@@ -20,7 +20,7 @@ import vak.eval
 )
 def test_eval(
         audio_format, spect_format, annot_format, model_name, eval_function_to_mock,
-        specific_config, tmp_path
+        specific_config_toml_path, tmp_path
 ):
     """Test that :func:`vak.eval.eval` dispatches to the correct model-specific
     training functions"""
@@ -34,7 +34,7 @@ def test_eval(
         {"section": "EVAL", "option": "device", "value": 'cpu'},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="eval",
         model=model_name,
         audio_format=audio_format,

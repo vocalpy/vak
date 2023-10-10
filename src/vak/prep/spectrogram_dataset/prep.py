@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import logging
 import pathlib
-from datetime import datetime
 
 import attrs
 import crowsetta
 import pandas as pd
 
-from ...common import annotation
+from ...common import annotation, constants
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...config.spect_params import SpectParamsConfig
 from . import audio_helper, spect_helper
@@ -70,10 +69,8 @@ def prep_spectrogram_dataset(
         Parameters for creating spectrograms.
         Default is None (implying that spectrograms are already made).
     spect_output_dir : str
-        path to location where spectrogram files should be saved.
+        Path to location where spectrogram files should be saved.
         Default is None, in which case it defaults to ``data_dir``.
-        A new directory will be created in ``spect_output_dir`` with
-        the name 'spectrograms_generated_{time stamp}'.
     audio_dask_bag_kwargs : dict
         Keyword arguments used when calling ``dask.bag.from_sequence``
         inside ``vak.io.audio``, where it is used to parallelize
@@ -85,8 +82,17 @@ def prep_spectrogram_dataset(
 
     Returns
     -------
-    dataset_df : pandas.DataFrame
-        The dataset prepared from the directory specified
+    source_files_df : pandas.DataFrame
+        A set of source files that will be used to prepare a
+        data set for use with neural network models,
+        represented as a :class:`pandas.DataFrame`.
+        Will contain paths to spectrogram files,
+        possibly paired with annotation files,
+        as well as the original audio files if the
+        spectrograms were generated from audio by
+        :func:`vak.prep.audio_helper.make_spectrogram_files_from_audio_files`.
+        The columns of the dataframe are specified by
+        :const:`vak.prep.spectrogram_dataset.spect_helper.DF_COLUMNS`.
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     if labelset is not None:
@@ -114,11 +120,6 @@ def prep_spectrogram_dataset(
             )
     else:
         spect_output_dir = data_dir
-
-    timenow = datetime.now().strftime("%y%m%d_%H%M%S")
-    spect_dirname = f"spectrograms_generated_{timenow}"
-    spect_output_dir = spect_output_dir / spect_dirname
-    spect_output_dir.mkdir()
 
     if annot_format is not None:
         if annot_file is None:
@@ -158,10 +159,11 @@ def prep_spectrogram_dataset(
             dask_bag_kwargs=audio_dask_bag_kwargs,
         )
         spect_format = "npz"
-        spect_ext = ".spect.npz"
+        spect_ext = constants.SPECT_NPZ_EXTENSION
     else:  # if audio format is None
         spect_files = None
-        spect_ext = None
+        # make sure we use the vak extension for spectrogram files
+        spect_ext = constants.SPECT_FORMAT_EXT_MAP[spect_format]
 
     make_dataframe_kwargs = {
         "spect_format": spect_format,
@@ -169,7 +171,6 @@ def prep_spectrogram_dataset(
         "annot_list": annot_list,
         "annot_format": annot_format,
         "spect_ext": spect_ext,
-        "spect_output_dir": spect_output_dir,
     }
 
     if (
@@ -196,7 +197,7 @@ def prep_spectrogram_dataset(
         ]:
             make_dataframe_kwargs[key] = spect_params[key]
 
-    dataset_df = spect_helper.make_dataframe_of_spect_files(
+    source_files_df = spect_helper.make_dataframe_of_spect_files(
         **make_dataframe_kwargs
     )
-    return dataset_df
+    return source_files_df

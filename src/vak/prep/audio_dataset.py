@@ -36,9 +36,10 @@ def prep_audio_dataset(
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
 ) -> pd.DataFrame:
-    """Creates a dataset of audio files from a directory,
+    """Gets a set of audio files from a directory,
     optionally paired with an annotation file or files,
-    and return a Pandas DataFrame that represents the dataset.
+    and return a Pandas DataFrame that represents the set
+    of files.
 
     Finds all files with ``audio_format`` in ``data_dir``,
     then finds any annotations with ``annot_format`` if specified,
@@ -74,9 +75,14 @@ def prep_audio_dataset(
 
     Returns
     -------
-    dataset_df : pandas.Dataframe
-        Dataframe that represents a dataset of audio files,
-        optionally with annotations.
+    source_files_df : pandas.Dataframe
+        A set of source files that will be used to prepare a
+        data set for use with neural network models,
+        represented as a :class:`pandas.DataFrame`.
+        Will contain paths to audio files,
+        possibly paired with annotation files.
+        The columns of the dataframe are specified by
+        :const:`vak.prep.audio_dataset.DF_COLUMNS`.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if audio_format not in constants.VALID_AUDIO_FORMATS:

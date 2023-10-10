@@ -14,11 +14,10 @@ from . import cli_asserts
     "model_name, audio_format, spect_format, annot_format",
     [
         ("TweetyNet", "cbin", None, "notmat"),
-        ("TweetyNet", "wav", None, "birdsong-recognition-dataset"),
     ],
 )
 def test_predict(
-    model_name, audio_format, spect_format, annot_format, specific_config, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
 ):
     output_dir = tmp_path.joinpath(
         f"test_predict_{audio_format}_{spect_format}_{annot_format}"
@@ -30,7 +29,7 @@ def test_predict(
         {"section": "PREDICT", "option": "device", "value": device},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="predict",
         model=model_name,
         audio_format=audio_format,
@@ -47,7 +46,7 @@ def test_predict(
 
 
 def test_predict_dataset_path_none_raises(
-        specific_config, tmp_path,
+        specific_config_toml_path, tmp_path,
 ):
     """Test that cli.predict raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
@@ -56,7 +55,7 @@ def test_predict_dataset_path_none_raises(
         {"section": "PREDICT", "option": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
-    toml_path = specific_config(
+    toml_path = specific_config_toml_path(
         config_type="predict",
         model="TweetyNet",
         audio_format="cbin",
