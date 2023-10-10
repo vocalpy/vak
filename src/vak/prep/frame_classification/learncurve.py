@@ -35,7 +35,7 @@ class Sample:
 
 
 def make_index_vectors_for_each_subset(
-    dataset_df: pd.DataFrame,
+    subsets_df: pd.DataFrame,
     dataset_path: str | pathlib.Path,
     input_type: str,
 ) -> pd.DataFrame:
@@ -78,13 +78,14 @@ def make_index_vectors_for_each_subset(
 
     Parameters
     ----------
-    dataset_df : pandas.DataFrame
-        A ``pandas.DataFrame`` returned by :func:`vak.io.dataframe.from_files`
-        with a ``'split'`` column added, as a result of calling
-        :func:`vak.io.dataframe.from_files` or because it was added "manually"
-        by calling :func:`vak.core.prep.prep_helper.add_split_col` (as is done
-        for 'predict' when the entire ``DataFrame`` belongs to this
-        "split").
+    subset_df : pandas.DataFrame
+        A :class:`pandas.DataFrame` representing the training data subsets.
+        This DataFrame is created by
+        :func:`vak.prep.frame_classification.learncurve.make_subsets_from_dataset_df`,
+        and then passed into this function.
+        It is created from  a ``pandas.DataFrame``
+        returned by :func:`vak.prep.frame_classification.get_or_make_source_files`
+        with a ``'split'`` column added.
     dataset_path : pathlib.Path
         Path to directory that represents dataset.
     input_type : str
@@ -97,11 +98,11 @@ def make_index_vectors_for_each_subset(
     """
     subsets = [
         subset
-        for subset in sorted(dataset_df.subset.dropna().unique())
+        for subset in sorted(subsets_df.subset.dropna().unique())
     ]
     for subset in subsets:
         logger.info(f"Making indexing vectors for subset: {subset}")
-        subset_df = dataset_df[dataset_df.subset == subset].copy()
+        subset_df = subsets_df[subsets_df.subset == subset].copy()
         frames_paths = subset_df[
             datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
         ].values
@@ -146,7 +147,7 @@ def make_index_vectors_for_each_subset(
             )
         samples = sorted(samples, key=lambda sample: sample.source_id)
 
-        # ---- save indexing vectors in split directory
+        # ---- save indexing vectors in train directory
         sample_id_vec = np.concatenate(
             list(sample.sample_id_vec for sample in samples)
         )
@@ -225,7 +226,10 @@ def make_subsets_from_dataset_df(
     Parameters
     ----------
     dataset_df : pandas.DataFrame
-        Representing an entire dataset of vocalizations.
+        Dataframe representing a dataset for frame classification models.
+        It is returned by
+        :func:`vak.prep.frame_classification.get_or_make_source_files`,
+        and has a ``'split'`` column added.
     train_set_durs : list
         Durations in seconds of subsets taken from training data
         to create a learning curve, e.g., `[5., 10., 15., 20.]`.
@@ -244,16 +248,16 @@ def make_subsets_from_dataset_df(
     -------
     dataset_df_out : pandas.DataFrame
         A pandas.DataFrame that has the original splits
-        from ``dataset_df`` as well as the additional subsets
+        from ``dataset_df``, as well as the additional subsets
         of the training data added, along with additional
-        'train_dur' and 'replicate_num' columns
-        that can be used during analysis.
+        columns, ``'subset', 'train_dur', 'replicate_num'``,
+        that are used by :mod:`vak`.
         Other functions like :func:`vak.learncurve.learncurve`
         specify a specific subset of the training data
-        by getting the split name with the function
+        by getting the subset name with the function
         :func:`vak.common.learncurve.get_train_dur_replicate_split_name`,
         and then filtering ``dataset_df_out`` with that name
-        using the 'split' column.
+        using the 'subset' column.
     """
     dataset_path = pathlib.Path(dataset_path)
 
@@ -264,7 +268,7 @@ def make_subsets_from_dataset_df(
 
     # will concat after loop, then use ``csv_path`` to replace
     # original dataset df with this one
-    all_train_durs_and_replicates_df = []
+    subsets_df = []
     for train_dur in train_set_durs:
         logger.info(
             f"Subsetting training set for training set of duration: {train_dur}",
@@ -291,14 +295,14 @@ def make_subsets_from_dataset_df(
             train_dur_replicate_df["subset"] = train_dur_replicate_subset_name
             train_dur_replicate_df["train_dur"] = train_dur
             train_dur_replicate_df["replicate_num"] = replicate_num
-            all_train_durs_and_replicates_df.append(train_dur_replicate_df)
+            subsets_df.append(train_dur_replicate_df)
 
-    all_train_durs_and_replicates_df = pd.concat(
-        all_train_durs_and_replicates_df
+    subsets_df = pd.concat(
+        subsets_df
     )
 
     make_index_vectors_for_each_subset(
-        all_train_durs_and_replicates_df,
+        subsets_df,
         dataset_path,
         input_type,
     )
@@ -307,7 +311,7 @@ def make_subsets_from_dataset_df(
     dataset_df["subset"] = None  # add column but have it be empty
     dataset_df = pd.concat(
         (
-            all_train_durs_and_replicates_df,
+            subsets_df,
             dataset_df
         )
     )
