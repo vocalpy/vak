@@ -338,13 +338,11 @@ def prep_frame_classification_dataset(
     if purpose == "learncurve":
         dataset_df: pd.DataFrame = make_subsets_from_dataset_df(
             dataset_df,
+            input_type,
             train_set_durs,
             num_replicates,
             dataset_path,
             labelmap,
-            input_type,
-            spect_key,
-            audio_format,
         )
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
