@@ -34,22 +34,26 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
             check_exact = False
         else:
             check_exact = True
-        try:
-            assert_series_equal(
-                df_from_dataset_path[column],
-                df_returned_by_prep[column],
-                check_exact=check_exact,
-            )
-        except:
-            breakpoint()
+        assert_series_equal(
+            df_from_dataset_path[column],
+            df_returned_by_prep[column],
+            check_exact=check_exact,
+        )
 
-    for column in ('spect_path', 'annot_path'):
-        paths = df_from_dataset_path[column].values
-        if not all([isinstance(path, str) for path in paths]):
-            continue
-        for path in paths:
-            path = pathlib.Path(path)
-            assert (dataset_path / path).exists()
+    if vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME in df_returned_by_prep.columns:
+        frames_paths = df_returned_by_prep[
+            vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+        ].values
+        for frames_path in frames_paths:
+            assert (dataset_path / frames_path).exists()
+
+    if vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME in df_returned_by_prep.columns:
+        frame_labels_paths = df_returned_by_prep[
+            vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+        ].values
+        if not all([frame_labels_path is None for frame_labels_path in frame_labels_paths]):
+            for frame_labels_path in frame_labels_paths:
+                assert (dataset_path / frame_labels_path).exists()
 
 
 @pytest.mark.parametrize(
@@ -67,7 +71,7 @@ def test_prep_frame_classification_dataset(
     audio_format,
     spect_format,
     annot_format,
-        specific_config_toml_path,
+    specific_config_toml_path,
     default_model,
     tmp_path,
 ):
