@@ -43,10 +43,8 @@ class ResidualBlock(torch.nn.Module):
             dropout_,
         )
 
-        # In the DAS implementation there is *always* a 1x1 convolution before the next layer
-        # which adds additional weights.
-        # In Bai et al. 2018 1x1 is only done for layers where n_input != n_output
-        self.downsample = torch.nn.Conv1d(n_inputs, n_outputs, 1)
+        # this 1x1 convolution is like the parametrized skip connection in WaveNet
+        self.conv_1x1 = torch.nn.Conv1d(n_inputs, n_outputs, 1)
         self.relu = torch.nn.ReLU()
 
         self.init_weights()
@@ -58,16 +56,7 @@ class ResidualBlock(torch.nn.Module):
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         out = self.net(x)
-        # in the implementation used by DAS, the 1x1 convolution is applied to the output, i.e. $l(x)$
-        # https://github.com/janclemenslab/das/blob/9ea349f13bdde7f44ba0506c5601078b2617cb45/src/das/tcn/tcn.py#L100
-        # however it should be applied to the input `x` so that `x` is the same size as `out`, see
-        # https://github.com/locuslab/TCN/blob/2f8c2b817050206397458dfd1f5a25ce8a32fe65/TCN/tcn.py#L44
-        # This is now fixed in the upstream Keras-TCN.
-        # https://github.com/philipperemy/keras-tcn/blob/6e66e74a7f8af35d5ca5246700c1ada10fbe0f53/tcn/tcn.py#L176
-        # I think this is never an issue because none of the DAS blocks actually downsample?
-        # They hold the input and output size constant across blocks.
-        # Here we replicate the behavior of the DAS TCN layer, applying the 1x1 convolution to $l(x)$.
-        res = self.downsample(out)
+        res = self.conv_1x1(out)
         return self.relu(x + res), out
 
 
@@ -95,10 +84,6 @@ class TCNBlock(torch.nn.Module):
         self.dilations = dilations
         self.use_skip_connections = use_skip_connections
 
-        # the keras TCN layer implementation adds an initial extra convolutional layer
-        # https://github.com/janclemenslab/das/blob/9ea349f13bdde7f44ba0506c5601078b2617cb45/src/das/tcn/tcn.py#L177
-        # not in the Bai et al 2018 TCN networks.
-        # https://github.com/locuslab/TCN/blob/2f8c2b817050206397458dfd1f5a25ce8a32fe65/TCN/tcn.py#L53
         # Note this first layer is (1x1), has the effect of making output be (num time bins x num time bins)
         self.conv1 = CausalConv1d(in_channels=num_inputs, out_channels=num_channels,
                                   kernel_size=1, stride=1, dilation=1)
