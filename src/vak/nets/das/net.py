@@ -68,7 +68,7 @@ class ResidualBlock(torch.nn.Module):
         # They hold the input and output size constant across blocks.
         # Here we replicate the behavior of the DAS TCN layer, applying the 1x1 convolution to $l(x)$.
         res = self.downsample(out)
-        return self.relu(x + res), x
+        return self.relu(x + res), out
 
 
 class TCNBlock(torch.nn.Module):
