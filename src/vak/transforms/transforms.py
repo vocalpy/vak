@@ -359,7 +359,8 @@ class ToLongTensor:
 
 
 class AddChannel:
-    """add a channel dimension to a 2-dimensional tensor.
+    """Add a "channel" dimension to a tensor.
+
     Transform that makes it easy to treat a spectrogram as an image,
     by adding a dimension with a single 'channel', analogous to grayscale.
     In this way the tensor can be fed to e.g. convolutional layers.
