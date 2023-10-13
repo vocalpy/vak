@@ -152,10 +152,10 @@ def view_as_window_batch(arr, window_width):
     batch_windows = np.lib.stride_tricks.as_strided(
         arr, shape=new_shape, strides=new_strides
     )
-    # when 2d, first dim 1 because new shape has height equal to original arr
-    if batch_windows.ndim == 4 and batch_windows.shape[0] == 1:
-        # we don't want that extra dim of size 1, we want first dim to be "batch"
-        batch_windows = np.squeeze(batch_windows)
+    # TODO: figure out if there's a better way to do this where we don't need to squeeze
+    # The current version always add an initial dim of size 1
+    batch_windows = np.squeeze(batch_windows, axis=0)
+    # By squeezing just that first axis, we always end up with (batch, freq. bins, time bins) for a spectrogram
     return batch_windows
 
 
