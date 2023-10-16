@@ -280,12 +280,15 @@ class FrameClassificationModel(base.Model):
                     metric_callable(out, y),
                     batch_size=1,
                     on_step=True,
+                    sync_dist=True,
                 )
             elif metric_name == "acc":
                 self.log(
                     f"val_{metric_name}",
                     metric_callable(y_pred, y),
                     batch_size=1,
+                    on_step=True,
+                    sync_dist=True,
                 )
                 if self.post_tfm:
                     self.log(
@@ -293,6 +296,7 @@ class FrameClassificationModel(base.Model):
                         metric_callable(y_pred_tfm, y),
                         batch_size=1,
                         on_step=True,
+                        sync_dist=True,
                     )
             elif (
                 metric_name == "levenshtein"
@@ -302,6 +306,8 @@ class FrameClassificationModel(base.Model):
                     f"val_{metric_name}",
                     metric_callable(y_pred_labels, y_labels),
                     batch_size=1,
+                    on_step=True,
+                    sync_dist=True,
                 )
                 if self.post_tfm:
                     self.log(
@@ -309,6 +315,7 @@ class FrameClassificationModel(base.Model):
                         metric_callable(y_pred_tfm_labels, y_labels),
                         batch_size=1,
                         on_step=True,
+                        sync_dist=True,
                     )
 
     def predict_step(self, batch: tuple, batch_idx: int):
