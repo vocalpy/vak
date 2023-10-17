@@ -1,3 +1,3 @@
-from .distance import Levenshtein, CharacterErrorRate
+from .distance import CharacterErrorRate, Levenshtein
 
 __all__ = ["Levenshtein", "CharacterErrorRate"]
