@@ -26,7 +26,7 @@ class TweetyNetDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     default_config = {
         'optimizer':
@@ -47,7 +47,7 @@ class ExtraClassVarModelDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     extra_class_variable = TweetyNet
 
@@ -58,7 +58,7 @@ class InvalidNetworkTypeModelDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
 
 
@@ -68,7 +68,7 @@ class InvalidNetworkDictKeyModelDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
 
 
@@ -78,7 +78,7 @@ class InvalidNetworkDictValueModelDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
 
 
@@ -88,7 +88,7 @@ class InvalidLossTypeModelDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
 
 
@@ -98,7 +98,7 @@ class InvalidOptimTypeModelDefinition:
     optimizer = TweetyNet  # should be a torch.optim subclass
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
 
 
@@ -130,7 +130,7 @@ class InvalidDefaultConfigNetworkKwargDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     default_config = {
         # invalid keyword arg should raise error
@@ -179,7 +179,7 @@ class InvalidDefaultConfigLossIsFunctionButKwargsModelDefinition:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     default_config = {
         'loss': {'invalid_kwarg': 10000}
@@ -193,7 +193,7 @@ class InvalidDefaultConfigLossKwarg:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     default_config = {
         # invalid keyword arg should raise error
@@ -208,7 +208,7 @@ class InvalidDefaultConfigOptimizerKwarg:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     default_config = {
         # invalid keyword arg should raise error
@@ -223,7 +223,7 @@ class InvalidDefaultConfigMetricName:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     default_config = {
         # invalid metric name should raise error
@@ -238,7 +238,7 @@ class InvalidDefaultConfigMetricKwarg:
     optimizer = torch.optim.Adam
     metrics = {'acc': metrics.Accuracy,
                'levenshtein': metrics.Levenshtein,
-               'segment_error_rate': metrics.SegmentErrorRate,
+               'character_error_rate': metrics.CharacterErrorRate,
                'loss': torch.nn.CrossEntropyLoss}
     default_config = {
         # invalid keyword arg should raise error

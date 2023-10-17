@@ -27,7 +27,7 @@ class ED_TCN:
     metrics: dict
         Mapping string names to the following metrics:
         ``vak.metrics.Accuracy``, ``vak.metrics.Levenshtein``,
-        ``vak.metrics.SegmentErrorRate``, ``torch.nn.CrossEntropyLoss``.
+        ``vak.metrics.CharacterErrorRate``, ``torch.nn.CrossEntropyLoss``.
 
     References
     ----------
@@ -42,7 +42,7 @@ class ED_TCN:
     metrics = {
         "acc": metrics.Accuracy,
         "levenshtein": metrics.Levenshtein,
-        "segment_error_rate": metrics.SegmentErrorRate,
+        "character_error_rate": metrics.CharacterErrorRate,
         "loss": torch.nn.CrossEntropyLoss,
     }
     default_config = {"optimizer": {"lr": 0.003}}

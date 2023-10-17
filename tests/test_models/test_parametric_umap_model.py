@@ -13,7 +13,7 @@ class ConvEncoderUMAPDefinition:
     metrics = {
         "acc": vak.metrics.Accuracy,
         "levenshtein": vak.metrics.Levenshtein,
-        "segment_error_rate": vak.metrics.SegmentErrorRate,
+        "character_error_rate": vak.metrics.CharacterErrorRate,
         "loss": torch.nn.CrossEntropyLoss,
     }
     default_config = {

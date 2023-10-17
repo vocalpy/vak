@@ -331,7 +331,8 @@ class WindowDataset:
 
         inds_in_sample = self.inds_in_sample[window_idx]
         frames = frames[
-            ..., inds_in_sample : inds_in_sample + self.window_size  # noqa: E203
+            ...,
+            inds_in_sample : inds_in_sample + self.window_size,  # noqa: E203
         ]
         frame_labels = frame_labels[
             inds_in_sample : inds_in_sample + self.window_size  # noqa: E203

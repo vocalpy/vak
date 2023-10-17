@@ -86,7 +86,7 @@ def events2df(
     >>> events_path = 'tweetynet/results_210322_103904/train_dur_6s/replicate_2/TweetyNet/'
     >>> events_df = vak.tensorboard.events2df(events_path)
     >>> events_df
-              loss/train  avg_acc/val  avg_levenshtein/val  avg_segment_error_rate/val  avg_loss/val
+              loss/train  avg_acc/val  avg_levenshtein/val  avg_character_error_rate/val  avg_loss/val
     step
     0       2.479142          NaN                  NaN                         NaN           NaN
     1       2.458833          NaN                  NaN                         NaN           NaN

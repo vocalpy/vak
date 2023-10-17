@@ -33,15 +33,15 @@ def test_levenshtein(source, target, expected_distance):
     "y_pred, y_true, expected_distance",
     LEV_PARAMETRIZE
 )
-def test_segment_error_rate(y_pred, y_true, expected_distance):
+def test_character_error_rate(y_pred, y_true, expected_distance):
     if len(y_true) == 0 and len(y_pred) == 0:
         expected_rate = 0
-        rate = vak.metrics.distance.functional.segment_error_rate(y_pred, y_true)
+        rate = vak.metrics.distance.functional.character_error_rate(y_pred, y_true)
         assert rate == expected_rate
     elif len(y_true) == 0 and len(y_pred) != 0:
         with pytest.raises(ValueError):
-            vak.metrics.distance.functional.segment_error_rate(y_pred, y_true)
+            vak.metrics.distance.functional.character_error_rate(y_pred, y_true)
     else:
         expected_rate = expected_distance / len(y_true)
-        rate = vak.metrics.distance.functional.segment_error_rate(y_pred, y_true)
+        rate = vak.metrics.distance.functional.character_error_rate(y_pred, y_true)
         assert rate == expected_rate
