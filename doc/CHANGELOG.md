@@ -109,6 +109,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix bug that caused crash on Apple M1 / MPS accelerator 
   [#700](https://github.com/NickleDave/vak/issues/700).
   Fixed in [#702](https://github.com/NickleDave/vak/pull/702).
+- Fix models so they log training loss on each step
+  [#720](https://github.com/NickleDave/vak/issues/720).
+  Fixed in [#722](https://github.com/NickleDave/vak/pull/722).
 
 ## 0.8.1 -- 2023-03-02
 ### Fixed
