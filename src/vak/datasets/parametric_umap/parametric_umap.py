@@ -8,8 +8,8 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from pynndescent import NNDescent
 import scipy.sparse._coo
+from pynndescent import NNDescent
 from sklearn.utils import check_random_state
 from torch.utils.data import Dataset
 
@@ -21,6 +21,7 @@ from numba.core.errors import NumbaDeprecationWarning
 
 warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 from umap.umap_ import fuzzy_simplicial_set  # noqa: E402
+
 # isort: on
 
 

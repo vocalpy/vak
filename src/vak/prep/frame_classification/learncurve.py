@@ -15,7 +15,6 @@ from dask.diagnostics import ProgressBar
 from ... import common, datasets
 from .. import split
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -40,8 +39,8 @@ def make_index_vectors_for_each_subset(
     input_type: str,
 ) -> pd.DataFrame:
     r"""Make npy files containing indexing vectors
-    for each subset of the training data 
-    used to generate a learning curve 
+    for each subset of the training data
+    used to generate a learning curve
     with a frame classification dataset.
 
     This function is basically the same as
@@ -97,8 +96,7 @@ def make_index_vectors_for_each_subset(
     None
     """
     subsets = [
-        subset
-        for subset in sorted(subsets_df.subset.dropna().unique())
+        subset for subset in sorted(subsets_df.subset.dropna().unique())
     ]
     for subset in subsets:
         logger.info(f"Making indexing vectors for subset: {subset}")
@@ -138,13 +136,11 @@ def make_index_vectors_for_each_subset(
             for source_id, frames_path in enumerate(frames_paths)
         ]
 
-        source_id_frames_path_bag = db.from_sequence(source_id_frames_path_tups)
+        source_id_frames_path_bag = db.from_sequence(
+            source_id_frames_path_tups
+        )
         with ProgressBar():
-            samples = list(
-                source_id_frames_path_bag.map(
-                    _return_index_arrays
-                )
-            )
+            samples = list(source_id_frames_path_bag.map(_return_index_arrays))
         samples = sorted(samples, key=lambda sample: sample.source_id)
 
         # ---- save indexing vectors in train directory
@@ -152,16 +148,22 @@ def make_index_vectors_for_each_subset(
             list(sample.sample_id_vec for sample in samples)
         )
         np.save(
-            dataset_path / "train" /
-            datasets.frame_classification.helper.sample_ids_array_filename_for_subset(subset),
+            dataset_path
+            / "train"
+            / datasets.frame_classification.helper.sample_ids_array_filename_for_subset(
+                subset
+            ),
             sample_id_vec,
         )
         inds_in_sample_vec = np.concatenate(
             list(sample.inds_in_sample_vec for sample in samples)
         )
         np.save(
-            dataset_path / "train" /
-            datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(subset),
+            dataset_path
+            / "train"
+            / datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(
+                subset
+            ),
             inds_in_sample_vec,
         )
 
@@ -176,88 +178,88 @@ def make_subsets_from_dataset_df(
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
 
-    Makes subsets given a dataframe representing the entire dataset,
-    with one subset for each combination of (training set duration,
-    replicate number). Each subset is randomly drawn
-    from the total training split.
+     Makes subsets given a dataframe representing the entire dataset,
+     with one subset for each combination of (training set duration,
+     replicate number). Each subset is randomly drawn
+     from the total training split.
 
-    Uses :func:`vak.prep.split.frame_classification_dataframe` to make
-    subsets of the training data from ``dataset_df``.
+     Uses :func:`vak.prep.split.frame_classification_dataframe` to make
+     subsets of the training data from ``dataset_df``.
 
-    A new column will be added to the dataframe, `'subset'`,
-    and additional rows for each subset.
-    The dataframe is returned with these subsets added.
-    (The `'split'` for these rows will still be `'train'`.)
-    Additionally, a separate set of indexing vectors
-    will be made for each subset, using
-    :func:`vak.prep.frame_classification.learncurve.make_index_vectors_for_each_subset`.
+     A new column will be added to the dataframe, `'subset'`,
+     and additional rows for each subset.
+     The dataframe is returned with these subsets added.
+     (The `'split'` for these rows will still be `'train'`.)
+     Additionally, a separate set of indexing vectors
+     will be made for each subset, using
+     :func:`vak.prep.frame_classification.learncurve.make_index_vectors_for_each_subset`.
 
-   .. code-block:: console
+    .. code-block:: console
 
-      032312-vak-frame-classification-dataset-generated-231005_121809
-      ├── 032312_prep_231005_121809.csv
-      ├── labelmap.json
-      ├── metadata.json
-      ├── prep_231005_121809.log
-      ├── TweetyNet_learncurve_audio_cbin_annot_notmat.toml
-      ├── train
-          ├── gy6or6_baseline_230312_0808.138.cbin.spect.frame_labels.npy
-          ├── gy6or6_baseline_230312_0808.138.cbin.spect.frames.npy
-          ├── gy6or6_baseline_230312_0809.141.cbin.spect.frame_labels.npy
-          ├── gy6or6_baseline_230312_0809.141.cbin.spect.frames.npy
-          ├── gy6or6_baseline_230312_0813.163.cbin.spect.frame_labels.npy
-          ├── gy6or6_baseline_230312_0813.163.cbin.spect.frames.npy
-          ├── gy6or6_baseline_230312_0816.179.cbin.spect.frame_labels.npy
-          ├── gy6or6_baseline_230312_0816.179.cbin.spect.frames.npy
-          ├── gy6or6_baseline_230312_0820.196.cbin.spect.frame_labels.npy
-          ├── gy6or6_baseline_230312_0820.196.cbin.spect.frames.npy
-          ├── inds_in_sample.npy
-          ├── inds_in_sample-train-dur-4.0-replicate-1.npy
-          ├── inds_in_sample-train-dur-4.0-replicate-2.npy
-          ├── inds_in_sample-train-dur-6.0-replicate-1.npy
-          ├── inds_in_sample-train-dur-6.0-replicate-2.npy
-          ├── sample_ids.npy
-          ├── sample_ids-train-dur-4.0-replicate-1.npy
-          ├── sample_ids-train-dur-4.0-replicate-2.npy
-          ├── sample_ids-train-dur-6.0-replicate-1.npy
-          └── sample_ids-train-dur-6.0-replicate-2.npy
-      ...
+       032312-vak-frame-classification-dataset-generated-231005_121809
+       ├── 032312_prep_231005_121809.csv
+       ├── labelmap.json
+       ├── metadata.json
+       ├── prep_231005_121809.log
+       ├── TweetyNet_learncurve_audio_cbin_annot_notmat.toml
+       ├── train
+           ├── gy6or6_baseline_230312_0808.138.cbin.spect.frame_labels.npy
+           ├── gy6or6_baseline_230312_0808.138.cbin.spect.frames.npy
+           ├── gy6or6_baseline_230312_0809.141.cbin.spect.frame_labels.npy
+           ├── gy6or6_baseline_230312_0809.141.cbin.spect.frames.npy
+           ├── gy6or6_baseline_230312_0813.163.cbin.spect.frame_labels.npy
+           ├── gy6or6_baseline_230312_0813.163.cbin.spect.frames.npy
+           ├── gy6or6_baseline_230312_0816.179.cbin.spect.frame_labels.npy
+           ├── gy6or6_baseline_230312_0816.179.cbin.spect.frames.npy
+           ├── gy6or6_baseline_230312_0820.196.cbin.spect.frame_labels.npy
+           ├── gy6or6_baseline_230312_0820.196.cbin.spect.frames.npy
+           ├── inds_in_sample.npy
+           ├── inds_in_sample-train-dur-4.0-replicate-1.npy
+           ├── inds_in_sample-train-dur-4.0-replicate-2.npy
+           ├── inds_in_sample-train-dur-6.0-replicate-1.npy
+           ├── inds_in_sample-train-dur-6.0-replicate-2.npy
+           ├── sample_ids.npy
+           ├── sample_ids-train-dur-4.0-replicate-1.npy
+           ├── sample_ids-train-dur-4.0-replicate-2.npy
+           ├── sample_ids-train-dur-6.0-replicate-1.npy
+           └── sample_ids-train-dur-6.0-replicate-2.npy
+       ...
 
-    Parameters
-    ----------
-    dataset_df : pandas.DataFrame
-        Dataframe representing a dataset for frame classification models.
-        It is returned by
-        :func:`vak.prep.frame_classification.get_or_make_source_files`,
-        and has a ``'split'`` column added.
-    train_set_durs : list
-        Durations in seconds of subsets taken from training data
-        to create a learning curve, e.g., `[5., 10., 15., 20.]`.
-    num_replicates : int
-        number of times to replicate training for each training set duration
-        to better estimate metrics for a training set of that size.
-        Each replicate uses a different randomly drawn subset of the training
-        data (but of the same duration).
-    dataset_path : str, pathlib.Path
-        Directory where splits will be saved.
-    input_type : str
-        The type of input to the neural network model.
-        One of {'audio', 'spect'}.
+     Parameters
+     ----------
+     dataset_df : pandas.DataFrame
+         Dataframe representing a dataset for frame classification models.
+         It is returned by
+         :func:`vak.prep.frame_classification.get_or_make_source_files`,
+         and has a ``'split'`` column added.
+     train_set_durs : list
+         Durations in seconds of subsets taken from training data
+         to create a learning curve, e.g., `[5., 10., 15., 20.]`.
+     num_replicates : int
+         number of times to replicate training for each training set duration
+         to better estimate metrics for a training set of that size.
+         Each replicate uses a different randomly drawn subset of the training
+         data (but of the same duration).
+     dataset_path : str, pathlib.Path
+         Directory where splits will be saved.
+     input_type : str
+         The type of input to the neural network model.
+         One of {'audio', 'spect'}.
 
-    Returns
-    -------
-    dataset_df_out : pandas.DataFrame
-        A pandas.DataFrame that has the original splits
-        from ``dataset_df``, as well as the additional subsets
-        of the training data added, along with additional
-        columns, ``'subset', 'train_dur', 'replicate_num'``,
-        that are used by :mod:`vak`.
-        Other functions like :func:`vak.learncurve.learncurve`
-        specify a specific subset of the training data
-        by getting the subset name with the function
-        :func:`vak.common.learncurve.get_train_dur_replicate_split_name`,
-        and then filtering ``dataset_df_out`` with that name
-        using the 'subset' column.
+     Returns
+     -------
+     dataset_df_out : pandas.DataFrame
+         A pandas.DataFrame that has the original splits
+         from ``dataset_df``, as well as the additional subsets
+         of the training data added, along with additional
+         columns, ``'subset', 'train_dur', 'replicate_num'``,
+         that are used by :mod:`vak`.
+         Other functions like :func:`vak.learncurve.learncurve`
+         specify a specific subset of the training data
+         by getting the subset name with the function
+         :func:`vak.common.learncurve.get_train_dur_replicate_split_name`,
+         and then filtering ``dataset_df_out`` with that name
+         using the 'subset' column.
     """
     dataset_path = pathlib.Path(dataset_path)
 
@@ -297,9 +299,7 @@ def make_subsets_from_dataset_df(
             train_dur_replicate_df["replicate_num"] = replicate_num
             subsets_df.append(train_dur_replicate_df)
 
-    subsets_df = pd.concat(
-        subsets_df
-    )
+    subsets_df = pd.concat(subsets_df)
 
     make_index_vectors_for_each_subset(
         subsets_df,
@@ -309,12 +309,7 @@ def make_subsets_from_dataset_df(
 
     # keep the same validation, test, and total train sets by concatenating them with the train subsets
     dataset_df["subset"] = None  # add column but have it be empty
-    dataset_df = pd.concat(
-        (
-            subsets_df,
-            dataset_df
-        )
-    )
+    dataset_df = pd.concat((subsets_df, dataset_df))
     # We reset the entire index across all splits, instead of repeating indices,
     # and we set drop=False because we don't want to add a new column 'index' or 'level_0'.
     # Need to do this again after calling `make_npy_files_for_each_split` since we just

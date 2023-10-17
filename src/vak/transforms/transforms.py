@@ -77,7 +77,9 @@ class StandardizeSpect:
         self.non_zero_std = non_zero_std
 
     @classmethod
-    def fit_dataset_path(cls, dataset_path, split="train", subset: str | None = None):
+    def fit_dataset_path(
+        cls, dataset_path, split="train", subset: str | None = None
+    ):
         """Returns a :class:`StandardizeSpect` instance
         that is fit to a split from a dataset,
         given the path to that dataset and the
@@ -100,7 +102,6 @@ class StandardizeSpect:
 
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
-        input_type = metadata.input_type
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
         dataset_df = pd.read_csv(dataset_csv_path)
@@ -233,7 +234,8 @@ class PadToWindow:
 
     def __init__(self, window_size, padval=0.0, return_padding_mask=True):
         if not isinstance(window_size, int) or (
-            isinstance(window_size, float) and window_size.is_integer() is False
+            isinstance(window_size, float)
+            and window_size.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"
@@ -295,7 +297,8 @@ class ViewAsWindowBatch:
 
     def __init__(self, window_width: int | float):
         if not isinstance(window_width, int) or (
-            isinstance(window_width, float) and window_width.is_integer() is False
+            isinstance(window_width, float)
+            and window_width.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"
@@ -376,7 +379,8 @@ class AddChannel:
 
     def __init__(self, channel_dim: int | float = 0):
         if not isinstance(channel_dim, int) or (
-            isinstance(channel_dim, float) and channel_dim.is_integer() is False
+            isinstance(channel_dim, float)
+            and channel_dim.is_integer() is False
         ):
             raise ValueError(
                 f"window size must be an int or a whole number float;"

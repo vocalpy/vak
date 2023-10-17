@@ -10,7 +10,7 @@ import pandas as pd
 import pytorch_lightning as lightning
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import models, transforms
 from ..common import validators
 from ..datasets.parametric_umap import ParametricUMAPDataset
 
@@ -84,9 +84,6 @@ def eval_parametric_umap_model(
         )
     logger.info(
         f"Loading metadata from dataset path: {dataset_path}",
-    )
-    metadata = datasets.parametric_umap.Metadata.from_dataset_path(
-        dataset_path
     )
 
     if not validators.is_a_directory(output_dir):

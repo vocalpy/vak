@@ -1,9 +1,9 @@
 """Function called by command-line interface for prep command"""
 from __future__ import annotations
 
+import pathlib
 import shutil
 import warnings
-import pathlib
 
 import toml
 
@@ -13,7 +13,9 @@ from ..config.parse import _load_toml_from_path
 from ..config.validators import are_sections_valid
 
 
-def purpose_from_toml(config_toml: dict, toml_path: str | pathlib.Path | None = None) -> str:
+def purpose_from_toml(
+    config_toml: dict, toml_path: str | pathlib.Path | None = None
+) -> str:
     """determine "purpose" from toml config,
     i.e., the command that will be run after we ``prep`` the data.
 

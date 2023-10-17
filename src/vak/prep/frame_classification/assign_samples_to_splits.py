@@ -14,18 +14,17 @@ import pandas as pd
 
 from .. import dataset_df_helper, split
 
-
 logger = logging.getLogger(__name__)
 
 
 def assign_samples_to_splits(
-        purpose: str,
-        dataset_df: pd.DataFrame,
-        dataset_path: str | pathlib.Path,
-        train_dur: float | None = None,
-        val_dur: float | None = None,
-        test_dur: float | None = None,
-        labelset: set | None = None,
+    purpose: str,
+    dataset_df: pd.DataFrame,
+    dataset_path: str | pathlib.Path,
+    train_dur: float | None = None,
+    val_dur: float | None = None,
+    test_dur: float | None = None,
+    labelset: set | None = None,
 ) -> pd.DataFrame:
     """Assign samples in a dataset to splits.
 

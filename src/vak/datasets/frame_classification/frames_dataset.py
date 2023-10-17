@@ -12,7 +12,6 @@ import pandas as pd
 
 from . import constants, helper
 from .metadata import Metadata
-from ... import common
 
 
 class FramesDataset:
@@ -119,7 +118,10 @@ class FramesDataset:
             Transform applied to each item :math:`(x, y)`
             returned by :meth:`FramesDataset.__getitem__`.
         """
-        from ... import prep  # avoid circular import, use for constants.INPUT_TYPES
+        from ... import (
+            prep,
+        )  # avoid circular import, use for constants.INPUT_TYPES
+
         if input_type not in prep.constants.INPUT_TYPES:
             raise ValueError(
                 f"``input_type`` must be one of: {prep.constants.INPUT_TYPES}\n"
@@ -165,7 +167,7 @@ class FramesDataset:
         the input to the frame classification model.
         Loads audio or spectrogram, depending on
         :attr:`self.input_type`.
-        This function assumes that audio is in wav format 
+        This function assumes that audio is in wav format
         and spectrograms are in npz files.
         """
         return helper.load_frames(frames_path, self.input_type)
@@ -233,15 +235,23 @@ class FramesDataset:
 
         split_path = dataset_path / split
         if subset:
-            sample_ids_path = split_path / helper.sample_ids_array_filename_for_subset(subset)
+            sample_ids_path = (
+                split_path
+                / helper.sample_ids_array_filename_for_subset(subset)
+            )
         else:
             sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
 
         if subset:
-            inds_in_sample_path = split_path / helper.inds_in_sample_array_filename_for_subset(subset)
+            inds_in_sample_path = (
+                split_path
+                / helper.inds_in_sample_array_filename_for_subset(subset)
+            )
         else:
-            inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+            inds_in_sample_path = (
+                split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+            )
         inds_in_sample = np.load(inds_in_sample_path)
 
         return cls(

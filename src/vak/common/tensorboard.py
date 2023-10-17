@@ -12,7 +12,9 @@ from torch.utils.tensorboard import SummaryWriter
 from ..common.typing import PathLike
 
 
-def get_summary_writer(log_dir: PathLike, filename_suffix: str) -> SummaryWriter:
+def get_summary_writer(
+    log_dir: PathLike, filename_suffix: str
+) -> SummaryWriter:
     """Get an instance of ``tensorboard.SummaryWriter``,
     to use with a vak.Model during training.
 
@@ -45,7 +47,9 @@ DEFAULT_SIZE_GUIDANCE = {
 
 
 def events2df(
-        events_path: PathLike, size_guidance: dict | None = None, drop_wall_time: bool = True
+    events_path: PathLike,
+    size_guidance: dict | None = None,
+    drop_wall_time: bool = True,
 ) -> pd.DataFrame:
     """Convert :mod:`tensorboard` events file to pandas.DataFrame
 

@@ -17,7 +17,6 @@ from dask.diagnostics import ProgressBar
 from ... import common, datasets, transforms
 from .. import constants as prep_constants
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -110,6 +109,7 @@ class Sample:
     inds_in_sample_vec : numpy.ndarray
         Indices within sample.
     """
+
     source_id: int = attrs.field()
     source_path: str
     frame_labels_npy_path: str
@@ -250,8 +250,8 @@ def make_splits(
 
     if input_type == "audio" and audio_format is None:
         raise ValueError(
-            f"Value for `input_type` was 'audio' but `audio_format` is None. "
-            f"Please specify the audio format."
+            "Value for `input_type` was 'audio' but `audio_format` is None. "
+            "Please specify the audio format."
         )
 
     dataset_df_out = []
@@ -275,9 +275,8 @@ def make_splits(
         if annots:
             sort_inds = argsort_by_label_freq(annots)
             split_df["sort_inds"] = sort_inds
-            split_df = (
-                split_df.sort_values(by="sort_inds")
-                .drop(columns="sort_inds")
+            split_df = split_df.sort_values(by="sort_inds").drop(
+                columns="sort_inds"
             )
 
         if input_type == "audio":
@@ -286,7 +285,9 @@ def make_splits(
             source_paths = split_df["spect_path"].values
         else:
             raise ValueError(f"Invalid ``input_type``: {input_type}")
-        source_paths = [pathlib.Path(source_path) for source_path in source_paths]
+        source_paths = [
+            pathlib.Path(source_path) for source_path in source_paths
+        ]
 
         # we get annots again, *after* sorting the dataframe
         if purpose != "predict":
@@ -317,7 +318,7 @@ def make_splits(
                 if annot:
                     frame_times = np.arange(frames.shape[-1]) / samplefreq
             elif input_type == "spect":
-                if source_path.suffix.endswith('mat'):
+                if source_path.suffix.endswith("mat"):
                     spect_dict = common.files.spect.load(source_path, "mat")
                     # convert to .npz and save in spect_output_dir
                     spect_dict_npz = {
@@ -325,18 +326,18 @@ def make_splits(
                         "t": spect_dict[timebins_key],
                         "f": spect_dict[freqbins_key],
                     }
-                    frames_path = split_subdir / (
-                            source_path.stem + ".npz"
-                    )
+                    frames_path = split_subdir / (source_path.stem + ".npz")
                     np.savez(frames_path, **spect_dict_npz)
-                elif source_path.suffix.endswith('npz'):
+                elif source_path.suffix.endswith("npz"):
                     spect_dict = common.files.spect.load(source_path, "npz")
                     if source_path.is_relative_to(dataset_path):
                         # it's already in dataset_path, we just move it into the split
                         frames_path = shutil.move(source_path, split_subdir)
                     else:
                         # it's somewhere else we copy it to be safe
-                        if not all([key in spect_dict for key in ('s', 't', 'f')]):
+                        if not all(
+                            [key in spect_dict for key in ("s", "t", "f")]
+                        ):
                             raise ValueError(
                                 f"The following spectrogram file did not have valid keys: {source_path}\n."
                                 f"All npz files should have keys 's', 't', 'f' corresponding to the spectrogram,"
@@ -437,7 +438,8 @@ def make_splits(
 
         frame_labels_npy_paths = [
             sample.frame_labels_npy_path
-            if isinstance(sample.frame_labels_npy_path, str) else None
+            if isinstance(sample.frame_labels_npy_path, str)
+            else None
             for sample in samples
         ]
         split_df[
@@ -447,7 +449,9 @@ def make_splits(
 
     # ---- clean up
     # Remove any spect npz files that were *not* added to a split
-    spect_npz_files_not_in_split = sorted(dataset_path.glob(f'*{common.constants.SPECT_NPZ_EXTENSION}'))
+    spect_npz_files_not_in_split = sorted(
+        dataset_path.glob(f"*{common.constants.SPECT_NPZ_EXTENSION}")
+    )
     if len(spect_npz_files_not_in_split) > 0:
         for spect_npz_file in spect_npz_files_not_in_split:
             spect_npz_file.unlink()

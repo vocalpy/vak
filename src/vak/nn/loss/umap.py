@@ -14,6 +14,7 @@ from torch.nn.functional import mse_loss
 
 warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 from umap.umap_ import find_ab_params  # noqa : E402
+
 # isort: on
 
 

@@ -82,9 +82,7 @@ def __getattr__(name: str) -> Any:
             model_name_family_name_map[model_name] = family_name
         return model_name_family_name_map
     elif name == "MODEL_NAMES":
-        return list(
-            MODEL_REGISTRY.keys()
-        )
+        return list(MODEL_REGISTRY.keys())
     else:
         raise AttributeError(
             f"Not an attribute of `vak.models.registry`: {name}"

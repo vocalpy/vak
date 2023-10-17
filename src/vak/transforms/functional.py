@@ -127,7 +127,9 @@ def view_as_window_batch(arr, window_width):
     https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
     if not isinstance(window_width, int) or window_width < 1:
-        raise ValueError(f"`window_width` must be a positive integer, but was: {window_width}")
+        raise ValueError(
+            f"`window_width` must be a positive integer, but was: {window_width}"
+        )
 
     if arr.ndim == 1:
         window_shape = (window_width,)

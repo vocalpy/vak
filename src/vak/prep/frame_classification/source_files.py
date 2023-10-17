@@ -8,21 +8,20 @@ from .. import constants
 from ..audio_dataset import prep_audio_dataset
 from ..spectrogram_dataset.prep import prep_spectrogram_dataset
 
-
 logger = logging.getLogger(__name__)
 
 
 def get_or_make_source_files(
-        data_dir: str | pathlib.Path,
-        input_type: str,
-        audio_format: str | None = None,
-        spect_format: str | None = None,
-        spect_params: dict | None = None,
-        spect_output_dir: str | pathlib.Path | None = None,
-        annot_format: str | None = None,
-        annot_file: str | pathlib.Path | None = None,
-        labelset: set | None = None,
-        audio_dask_bag_kwargs: dict | None = None,
+    data_dir: str | pathlib.Path,
+    input_type: str,
+    audio_format: str | None = None,
+    spect_format: str | None = None,
+    spect_params: dict | None = None,
+    spect_output_dir: str | pathlib.Path | None = None,
+    annot_format: str | None = None,
+    annot_file: str | pathlib.Path | None = None,
+    labelset: set | None = None,
+    audio_dask_bag_kwargs: dict | None = None,
 ) -> pd.DataFrame:
     """Get source files for a dataset, or make them.
 
