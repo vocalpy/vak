@@ -71,11 +71,11 @@ class ParametricUMAPModel(base.Model):
         loss_umap, loss_reconstruction, loss = self.loss(
             embedding_to, embedding_from, reconstruction, before_encoding
         )
-        self.log("train_umap_loss", loss_umap)
+        self.log("train_umap_loss", loss_umap, on_step=True)
         if loss_reconstruction:
-            self.log("train_reconstruction_loss", loss_reconstruction)
+            self.log("train_reconstruction_loss", loss_reconstruction, on_step=True)
         # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
-        self.log("train_loss", loss)
+        self.log("train_loss", loss, on_step=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
