@@ -69,7 +69,7 @@ def levenshtein(source, target):
     return torch.tensor(d0[-1], dtype=torch.int32)
 
 
-def segment_error_rate(y_pred, y_true):
+def character_error_rate(y_pred, y_true):
     """Levenshtein edit distance normalized by length of true sequence.
     Also known as word error distance; here applied to other vocalizations
     in addition to speech.

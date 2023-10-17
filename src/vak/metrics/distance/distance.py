@@ -1,6 +1,6 @@
 from . import functional as F
 
-__all__ = ["Levenshtein", "SegmentErrorRate"]
+__all__ = ["Levenshtein", "CharacterErrorRate"]
 
 
 class Levenshtein:
@@ -26,7 +26,7 @@ class Levenshtein:
         return F.levenshtein(y_pred, y_true)
 
 
-class SegmentErrorRate:
+class CharacterErrorRate:
     """Levenshtein edit distance normalized by length of true sequence.
     Also known as word error distance; here applied to other vocalizations
     in addition to speech.
@@ -47,4 +47,4 @@ class SegmentErrorRate:
         pass
 
     def __call__(self, y_pred, y_true):
-        return F.segment_error_rate(y_pred, y_true)
+        return F.character_error_rate(y_pred, y_true)

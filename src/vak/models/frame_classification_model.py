@@ -300,7 +300,7 @@ class FrameClassificationModel(base.Model):
                     )
             elif (
                 metric_name == "levenshtein"
-                or metric_name == "segment_error_rate"
+                or metric_name == "character_error_rate"
             ):
                 self.log(
                     f"val_{metric_name}",
