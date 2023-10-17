@@ -236,7 +236,8 @@ def make_spectrogram_files_from_audio_files(
         }
         basename = os.path.basename(audio_file)
         npz_fname = os.path.join(
-            os.path.normpath(output_dir), basename + constants.SPECT_NPZ_EXTENSION
+            os.path.normpath(output_dir),
+            basename + constants.SPECT_NPZ_EXTENSION,
         )
         np.savez(npz_fname, **spect_dict)
         return npz_fname

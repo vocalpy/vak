@@ -73,7 +73,9 @@ class ParametricUMAPModel(base.Model):
         )
         self.log("train_umap_loss", loss_umap, on_step=True)
         if loss_reconstruction:
-            self.log("train_reconstruction_loss", loss_reconstruction, on_step=True)
+            self.log(
+                "train_reconstruction_loss", loss_reconstruction, on_step=True
+            )
         # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
         self.log("train_loss", loss, on_step=True)
         return loss

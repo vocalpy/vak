@@ -625,7 +625,9 @@ def map_annotated_to_annot(
     reference section of the documentation:
     https://vak.readthedocs.io/en/latest/reference/filenames.html
     """
-    if isinstance(annotated_files, np.ndarray):  # e.g., vak DataFrame['spect_path'].values
+    if isinstance(
+        annotated_files, np.ndarray
+    ):  # e.g., vak DataFrame['spect_path'].values
         annotated_files = annotated_files.tolist()
 
     if annot_format in (

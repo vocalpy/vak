@@ -24,9 +24,9 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from ... import common
 from . import constants, helper
 from .metadata import Metadata
-from ... import common
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
@@ -231,7 +231,10 @@ class WindowDataset:
             The transform applied to the target for the output
             of the neural network :math:`y`.
         """
-        from ... import prep  # avoid circular import, use for constants.INPUT_TYPES
+        from ... import (
+            prep,
+        )  # avoid circular import, use for constants.INPUT_TYPES
+
         if input_type not in prep.constants.INPUT_TYPES:
             raise ValueError(
                 f"``input_type`` must be one of: {prep.constants.INPUT_TYPES}\n"
@@ -284,7 +287,7 @@ class WindowDataset:
         the input to the frame classification model.
         Loads audio or spectrogram, depending on
         :attr:`self.input_type`.
-        This function assumes that audio is in wav format 
+        This function assumes that audio is in wav format
         and spectrograms are in npz files.
         """
         return helper.load_frames(frames_path, self.input_type)
@@ -292,7 +295,7 @@ class WindowDataset:
     def __getitem__(self, idx):
         window_idx = self.window_inds[idx]
         sample_ids = self.sample_ids[
-            window_idx: window_idx + self.window_size
+            window_idx : window_idx + self.window_size
         ]
         uniq_sample_ids = np.unique(sample_ids)
         if len(uniq_sample_ids) == 1:
@@ -309,9 +312,7 @@ class WindowDataset:
             frame_labels = []
             for sample_id in sorted(uniq_sample_ids):
                 frames_path = self.dataset_path / self.frames_paths[sample_id]
-                frames.append(
-                    self._load_frames(frames_path)
-                )
+                frames.append(self._load_frames(frames_path))
                 frame_labels.append(
                     np.load(
                         self.dataset_path / self.frame_labels_paths[sample_id]
@@ -331,10 +332,10 @@ class WindowDataset:
 
         inds_in_sample = self.inds_in_sample[window_idx]
         frames = frames[
-            ..., inds_in_sample: inds_in_sample + self.window_size
+            ..., inds_in_sample : inds_in_sample + self.window_size
         ]
         frame_labels = frame_labels[
-            inds_in_sample: inds_in_sample + self.window_size
+            inds_in_sample : inds_in_sample + self.window_size
         ]
         if self.transform:
             frames = self.transform(frames)
@@ -405,15 +406,23 @@ class WindowDataset:
 
         split_path = dataset_path / split
         if subset:
-            sample_ids_path = split_path / helper.sample_ids_array_filename_for_subset(subset)
+            sample_ids_path = (
+                split_path
+                / helper.sample_ids_array_filename_for_subset(subset)
+            )
         else:
             sample_ids_path = split_path / constants.SAMPLE_IDS_ARRAY_FILENAME
         sample_ids = np.load(sample_ids_path)
 
         if subset:
-            inds_in_sample_path = split_path / helper.inds_in_sample_array_filename_for_subset(subset)
+            inds_in_sample_path = (
+                split_path
+                / helper.inds_in_sample_array_filename_for_subset(subset)
+            )
         else:
-            inds_in_sample_path = split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+            inds_in_sample_path = (
+                split_path / constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+            )
         inds_in_sample = np.load(inds_in_sample_path)
 
         window_inds_path = split_path / constants.WINDOW_INDS_ARRAY_FILENAME

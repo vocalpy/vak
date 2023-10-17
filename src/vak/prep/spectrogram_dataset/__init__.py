@@ -2,7 +2,6 @@
 from a dataset of spectrograms."""
 from .prep import prep_spectrogram_dataset
 
-
 __all__ = [
     "prep_spectrogram_dataset",
 ]
