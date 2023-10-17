@@ -102,7 +102,6 @@ class StandardizeSpect:
 
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
-        input_type = metadata.input_type
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
         dataset_df = pd.read_csv(dataset_csv_path)

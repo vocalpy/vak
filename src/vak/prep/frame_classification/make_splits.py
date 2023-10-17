@@ -250,8 +250,8 @@ def make_splits(
 
     if input_type == "audio" and audio_format is None:
         raise ValueError(
-            f"Value for `input_type` was 'audio' but `audio_format` is None. "
-            f"Please specify the audio format."
+            "Value for `input_type` was 'audio' but `audio_format` is None. "
+            "Please specify the audio format."
         )
 
     dataset_df_out = []

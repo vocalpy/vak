@@ -93,7 +93,7 @@ def get_segment_list(
         offset_s += context_s
         onset_ind = int(np.floor(onset_s * samplerate))
         offset_ind = int(np.ceil(offset_s * samplerate))
-        segment_data = data[onset_ind : offset_ind + 1]
+        segment_data = data[onset_ind : offset_ind + 1]  # noqa: E203
         segment_dur = segment_data.shape[-1] * sample_dur
         segment = Segment(
             segment_data,

@@ -24,7 +24,6 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from ... import common
 from . import constants, helper
 from .metadata import Metadata
 
@@ -295,7 +294,7 @@ class WindowDataset:
     def __getitem__(self, idx):
         window_idx = self.window_inds[idx]
         sample_ids = self.sample_ids[
-            window_idx : window_idx + self.window_size
+            window_idx : window_idx + self.window_size  # noqa: E203
         ]
         uniq_sample_ids = np.unique(sample_ids)
         if len(uniq_sample_ids) == 1:
@@ -332,10 +331,10 @@ class WindowDataset:
 
         inds_in_sample = self.inds_in_sample[window_idx]
         frames = frames[
-            ..., inds_in_sample : inds_in_sample + self.window_size
+            ..., inds_in_sample : inds_in_sample + self.window_size  # noqa: E203
         ]
         frame_labels = frame_labels[
-            inds_in_sample : inds_in_sample + self.window_size
+            inds_in_sample : inds_in_sample + self.window_size  # noqa: E203
         ]
         if self.transform:
             frames = self.transform(frames)
