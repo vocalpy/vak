@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import numpy as np
 import torch
 from torch import nn
 from torch.distributions import LowRankMultivariateNormal
-from typing import Tuple
 
 # Is it necessary to put this in vak.nn.modules?
 class BottleneckLayer(nn.Module):
@@ -17,27 +17,27 @@ class BottleneckLayer(nn.Module):
     def forward(self, x):
         return self.layer(x)
 
+
 class AVA(nn.Module):
     """
     """
     def __init__(
         self,
-        hidden_dims: Tuple[int] = (8, 8, 16, 16, 24, 24),
-        fc_dims: Tuple[int] = (1024, 256, 64),
+        hidden_dims: tuple[int] = (8, 8, 16, 16, 24, 24),
+        fc_dims: tuple[int] = (1024, 256, 64),
         z_dim: int = 32,
-        in_channels: int = 1,
-        x_shape: Tuple[int] = (128, 128)    
+        input_shape: tuple[int] = (1, 128, 128),
     ):
         """
         """
         super().__init__()
         fc_dims = (*fc_dims, z_dim)
         hidden_dims = (*hidden_dims, z_dim)
-        
-        self.in_channels = in_channels
+
+        self.in_channels = input_shape[0]
         self.fc_view = (int(fc_dims[-1]),int(fc_dims[-1]/2),int(fc_dims[-1]/2))
-        self.x_shape = torch.tensor(x_shape)
-        self.x_dim = torch.prod(self.x_shape)
+        self.input_shape = input_shape
+        self.x_dim = np.prod(self.input_shape[1:])
         self.in_fc = int(self.x_dim / 2)
         in_fc = self.in_fc
         modules = []
@@ -51,9 +51,9 @@ class AVA(nn.Module):
                     nn.ReLU())
             )
             in_channels = h_dim
-        
+
         self.encoder = nn.Sequential(*modules)
-        
+
         modules = []
         for fc_dim in fc_dims[:-2]:
             modules.append(
@@ -77,7 +77,7 @@ class AVA(nn.Module):
             )
         self.decoder_bottleneck = nn.Sequential(*modules)
         hidden_dims = ( *hidden_dims[-2::-1], self.in_channels)
-        hidden_dims
+
         modules = []
         for i, h_dim in enumerate(hidden_dims):
             stride = 2 if h_dim == in_channels else 1
