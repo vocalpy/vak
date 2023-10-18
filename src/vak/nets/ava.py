@@ -5,7 +5,7 @@ from torch import nn
 from torch.distributions import LowRankMultivariateNormal
 from typing import Tuple
 
-# Is it necessary to put this in src.vak.nn.modules?
+# Is it necessary to put this in vak.nn.modules?
 class BottleneckLayer(nn.Module):
     def __init__(self, dims):
         super().__init__()
