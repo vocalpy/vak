@@ -97,6 +97,14 @@ def get(
                 config["network"]["encoder"] = dict(input_shape=input_shape)
 
         model = model_class.from_config(config=config)
+    elif model_family == "VAEModel":
+        net_init_params = list(
+            inspect.signature(
+                model_class.definition.network.__init__
+            ).parameters.keys()
+        )
+        if "input_shape" in net_init_params:
+            config["network"]["input_shape"] = input_shape
     else:
         raise ValueError(
             f"Value for ``model_family`` not recognized: {model_family}"
