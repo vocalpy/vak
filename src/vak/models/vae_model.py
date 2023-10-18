@@ -26,18 +26,16 @@ class VAEModel(base.Model):
         super().__init__(
             network=network, loss=loss, optimizer=optimizer, metrics=metrics
         )
-        self.encoder = network['encode']
-        self.decoder = network['decode']
 
     def forward(self, x):
         out, _ = self.network(x)
         return out
 
     def encode(self, x):
-        return self.encoder(x)
+        return self.network.encoder(x)
     
     def decode(self, x):
-        return self.decoder(x)
+        return self.network.decoder(x)
 
     def configure_optimizers(self):
         return self.optimizer
