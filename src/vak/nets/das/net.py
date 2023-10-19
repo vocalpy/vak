@@ -52,7 +52,7 @@ class ResidualBlock(torch.nn.Module):
     def init_weights(self):
         # we match how ``keras`` initializes weights
         torch.nn.init.xavier_normal_(self.net[0].conv1.weight)
-        torch.nn.init.xavier_normal_(self.downsample.weight)
+        torch.nn.init.xavier_normal_(self.conv_1x1.weight)
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         out = self.net(x)
