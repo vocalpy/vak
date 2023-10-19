@@ -40,6 +40,9 @@ class AVA(nn.Module):
         self.x_dim = np.prod(self.input_shape[1:])
         self.in_fc = int(self.x_dim / 2)
         in_fc = self.in_fc
+
+        # ---- build encoder
+        in_channels = self.in_channels
         modules = []
         for h_dim in hidden_dims:
             stride = 2 if h_dim == in_channels else 1
@@ -54,6 +57,7 @@ class AVA(nn.Module):
 
         self.encoder = nn.Sequential(*modules)
 
+        # ---- build encoder bottleneck
         modules = []
         for fc_dim in fc_dims[:-2]:
             modules.append(
@@ -63,9 +67,12 @@ class AVA(nn.Module):
             )
             in_fc = fc_dim
         self.encoder_bottleneck = nn.Sequential(*modules)
+
         self.mu_layer = BottleneckLayer(fc_dims[-3:])
         self.cov_factor_layer = BottleneckLayer(fc_dims[-3:])
         self.cov_diag_layer = BottleneckLayer(fc_dims[-3:])
+
+        # ---- build decoder bottleneck
         fc_dims = fc_dims[::-1]
         modules = []
         for i in range(len(fc_dims)):
@@ -76,8 +83,9 @@ class AVA(nn.Module):
                     nn.ReLU())
             )
         self.decoder_bottleneck = nn.Sequential(*modules)
-        hidden_dims = ( *hidden_dims[-2::-1], self.in_channels)
 
+        # ---- build decoder
+        hidden_dims = ( *hidden_dims[-2::-1], self.in_channels)
         modules = []
         for i, h_dim in enumerate(hidden_dims):
             stride = 2 if h_dim == in_channels else 1
