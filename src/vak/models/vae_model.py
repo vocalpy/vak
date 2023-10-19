@@ -52,8 +52,7 @@ class VAEModel(base.Model):
     def training_step(self, batch: tuple, batch_idx: int):
         """
         """
-        x = batch[0]
-        x = batch[0]
+        x = batch["x"]
         out, _ = self.network(x)
         z, latent_dist  = itemgetter('z', 'latent_dist')(_)
         loss = self.loss(x, z, out, latent_dist)
@@ -61,8 +60,7 @@ class VAEModel(base.Model):
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
-        x = batch["frames"]
-        x = batch[0]
+        x = batch["x"]
         out, _ = self.network(x)
         z, latent_dist  = itemgetter('z', 'latent_dist')(_)
         for metric_name, metric_callable in self.metrics.items():
