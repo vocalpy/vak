@@ -105,6 +105,8 @@ def get(
         )
         if "input_shape" in net_init_params:
             config["network"]["input_shape"] = input_shape
+
+        model = model_class.from_config(config=config)
     else:
         raise ValueError(
             f"Value for ``model_family`` not recognized: {model_family}"
