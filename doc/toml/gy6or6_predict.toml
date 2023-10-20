@@ -22,3 +22,6 @@ output_dir = "/PATH/TO/DATA/vak/prep/predict"
 annot_csv_filename = "gy6or6.032312.annot.csv"
 majority_vote = true
 min_segment_dur = 0.01
+
+[DATALOADER]
+window_size = 176
