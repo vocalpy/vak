@@ -74,7 +74,7 @@ Before going through this tutorial, you'll need to:
 
 4. Download the corresponding configuration files (click to download):
    {download}`gy6or6_train.toml <../toml/gy6or6_train.toml>`,
-   {download}`gy6or6_eval.toml <../toml/gy6or6_eval.toml>, 
+   {download}`gy6or6_eval.toml <../toml/gy6or6_eval.toml>`, 
    and {download}`gy6or6_predict.toml <../toml/gy6or6_predict.toml>`
 
 ## Overview
