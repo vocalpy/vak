@@ -27,7 +27,7 @@ def learning_curve(toml_path):
 
     if cfg.learncurve is None:
         raise ValueError(
-            f"train called with a config.toml file that does not have a TRAIN section: {toml_path}"
+            f"learncurve called with a config.toml file that does not have a LEARNCURVE section: {toml_path}"
         )
 
     # ---- set up directory to save output -----------------------------------------------------------------------------
