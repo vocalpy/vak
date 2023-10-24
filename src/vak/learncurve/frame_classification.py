@@ -55,9 +55,6 @@ def learning_curve_for_frame_classification_model(
         and used by the model method ``from_config``.
     dataset_path : str
         path to where dataset was saved as a csv.
-    window_size : int
-        size of windows taken from spectrograms, in number of time bins,
-        shown to neural networks
     batch_size : int
         number of samples per batch presented to models during training.
     num_epochs : int
