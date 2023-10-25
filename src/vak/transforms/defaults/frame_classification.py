@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from typing import Callable
 
+import numpy as np
 import torchvision.transforms
 
 from .. import transforms as vak_transforms
@@ -103,7 +104,7 @@ class EvalItemTransform:
 
         self.annot_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, frames, frame_labels, frames_path=None):
+    def __call__(self, frames, frame_labels, annot, frames_path=None):
         if self.spect_standardizer:
             frames = self.spect_standardizer(frames)
 
@@ -119,6 +120,9 @@ class EvalItemTransform:
         item = {
             "frames": frames,
             "frame_labels": frame_labels,
+            "onsets_s": np.array(annot.seq.onsets_s),
+            "offsets_s": np.array(annot.seq.offsets_s),
+            "labels": np.array(annot.seq.labels).astype(str).tolist()
         }
 
         if padding_mask is not None:
