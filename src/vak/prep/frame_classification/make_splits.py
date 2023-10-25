@@ -104,15 +104,17 @@ class Sample:
     frame_labels_npy_path : str
         Path to frame labels,
         relative to ``dataset_path``.
+    annot_path : str
+        The path to the annotations file.
     sample_id_vec : numpy.ndarray
         Sample ID vector for this sample.
     inds_in_sample_vec : numpy.ndarray
         Indices within sample.
     """
-
     source_id: int = attrs.field()
     source_path: str
     frame_labels_npy_path: str
+    annot_path: str
     sample_id_vec: np.ndarray
     inds_in_sample_vec: np.ndarray
 
@@ -352,8 +354,24 @@ def make_splits(
             sample_id_vec = np.ones((n_frames,)).astype(np.int32) * source_id
             inds_in_sample_vec = np.arange(n_frames)
 
-            # add to frame labels
+            # make annotation file, make frame labels
             if annot:
+                # make annotation file: always save as simple-seq
+                seq = annot.seq
+                annot_path = split_subdir / (source_path.name + '.csv')
+                simpleseq = crowsetta.formats.seq.SimpleSeq(
+                    onsets_s=seq.onsets_s,
+                    offsets_s=seq.offsets_s,
+                    labels=seq.labels,
+                    annot_path=annot_path
+                )
+                simpleseq.to_file(annot_path, to_csv_kwargs={'index': False})
+                annot_path = str(
+                    # make sure we save path in csv as relative to dataset root
+                    annot_path.relative_to(dataset_path)
+                )
+
+                # make frame labels
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
                 frame_labels = transforms.frame_labels.from_segments(
                     lbls_int,
@@ -382,6 +400,7 @@ def make_splits(
                 source_id,
                 frames_path,
                 frame_labels_npy_path,
+                annot_path,
                 sample_id_vec,
                 inds_in_sample_vec,
             )
@@ -428,7 +447,7 @@ def make_splits(
             inds_in_sample_vec,
         )
 
-        # We convert `frames_paths` back to string
+        # We convert paths back to string
         # (just in case they are pathlib.Paths) before adding back to dataframe.
         # Note that these are all in split dirs, written relative to ``dataset_path``.
         frames_paths = [str(sample.source_path) for sample in samples]
@@ -445,6 +464,19 @@ def make_splits(
         split_df[
             datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
         ] = frame_labels_npy_paths
+
+        # we rename the old annot path column to preserve it as metadata
+        split_df = split_df.rename(
+            {
+                'annot_path': 'source_annot_path',
+                'annot_format': 'source_annot_format'
+            }
+        )
+        annot_paths = [str(sample.annot_path) for sample in samples]
+        split_df['annot_path'] = annot_paths
+        # make annot format for all rows simple-seq, so downstream functions can load properly
+        split_df['annot_format'] = 'simple-seq'
+
         dataset_df_out.append(split_df)
 
     # ---- clean up
