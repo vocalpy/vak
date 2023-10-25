@@ -301,7 +301,7 @@ class WindowDataset:
             # we repeat ourselves here to avoid running a loop on one item
             sample_id = uniq_sample_ids[0]
             frames_path = self.dataset_path / self.frames_paths[sample_id]
-            frames = self._load_frames(frames_path)
+            frames, _ = self._load_frames(frames_path)
             frame_labels = np.load(
                 self.dataset_path / self.frame_labels_paths[sample_id]
             )
@@ -311,7 +311,8 @@ class WindowDataset:
             frame_labels = []
             for sample_id in sorted(uniq_sample_ids):
                 frames_path = self.dataset_path / self.frames_paths[sample_id]
-                frames.append(self._load_frames(frames_path))
+                frames_, _ = self._load_frames(frames_path)  # `_` is frame_times
+                frames.append(frames_)
                 frame_labels.append(
                     np.load(
                         self.dataset_path / self.frame_labels_paths[sample_id]
