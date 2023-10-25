@@ -1,6 +1,8 @@
 """Helper functions used with frame classification datasets."""
 from __future__ import annotations
 
+import numpy as np
+
 from ... import common
 from . import constants
 
@@ -26,12 +28,19 @@ def load_frames(frames_path, input_type):
     :attr:`self.input_type`.
     This function assumes that audio is in wav format
     and spectrograms are in npz files.
+    Also return ``frame_times``, either the time bins
+    vector from a spectrogram file, or a vector
+    the same length as the audio but where each sample
+    number has been converted to seconds by dividing
+    by the sampling rate.
     """
     if input_type == "audio":
-        frames, _ = common.constants.AUDIO_FORMAT_FUNC_MAP[
+        frames, samplerate = common.constants.AUDIO_FORMAT_FUNC_MAP[
             constants.FRAME_CLASSIFICATION_DATASET_AUDIO_FORMAT
         ](frames_path)
+        frame_times = np.arange(frames.shape[-1]) / samplerate
     elif input_type == "spect":
         spect_dict = common.files.spect.load(frames_path)
         frames = spect_dict[common.constants.SPECT_KEY]
-    return frames
+        frame_times = spect_dict[common.constants.TIMEBINS_KEY]
+    return frames, frame_times
