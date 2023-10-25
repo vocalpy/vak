@@ -115,7 +115,8 @@ def make_index_vectors_for_each_subset(
 
             frames_path = dataset_path / pathlib.Path(frames_path)
 
-            frames = datasets.frame_classification.helper.load_frames(
+            # next line, `_` is frame times
+            frames, _ = datasets.frame_classification.helper.load_frames(
                 frames_path, input_type
             )
 
