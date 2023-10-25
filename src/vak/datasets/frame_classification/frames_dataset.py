@@ -6,6 +6,7 @@ from __future__ import annotations
 import pathlib
 from typing import Callable
 
+import crowsetta
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -145,8 +146,13 @@ class FramesDataset:
             self.frame_labels_paths = self.dataset_df[
                 constants.FRAME_LABELS_NPY_PATH_COL_NAME
             ].values
+            self.annots = [
+                crowsetta.formats.seq.SimpleSeq.from_file(self.dataset_path / annot_path).to_annot()
+                for annot_path in self.dataset_df['annot_path']
+            ]
         else:
             self.frame_labels_paths = None
+            self.annots = None
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
         self.frame_dur = float(frame_dur)
@@ -181,7 +187,8 @@ class FramesDataset:
                 self.dataset_path / self.frame_labels_paths[idx]
             )
             item["frame_labels"] = frame_labels
-
+        if self.annots is not None:
+            item["annot"] = self.annots[idx]
         if self.item_transform:
             item = self.item_transform(**item)
 
