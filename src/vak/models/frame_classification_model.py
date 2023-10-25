@@ -7,7 +7,9 @@ from __future__ import annotations
 import logging
 from typing import Callable, ClassVar, Mapping
 
+import numpy as np
 import torch
+import vocalpy as voc
 
 from .. import transforms
 from ..common import labels
@@ -317,6 +319,74 @@ class FrameClassificationModel(base.Model):
                         on_step=True,
                         sync_dist=True,
                     )
+
+        # TODO: write custom collate_fn that avoids need for this
+        frame_times = np.squeeze(batch["frame_times"].cpu().numpy())
+        onsets_s = np.squeeze(batch["onsets_s"].cpu().numpy())
+        offsets_s = np.squeeze(batch["offsets_s"].cpu().numpy())
+        y_pred_labels_segments, onsets_s_pred, offsets_s_pred = transforms.frame_labels.to_segments(
+            np.squeeze(y_pred.cpu().numpy()),
+            labelmap=self.labelmap,
+            frame_times=frame_times,
+        )
+        if y_pred_labels_segments is None and onsets_s_pred is None and offsets_s_pred is None:
+            # handle the case when all time bins are predicted to be unlabeled
+            onsets_s_pred = np.array([])
+            offsets_s_pred = np.array([])
+        # when we don't apply any post-processing transform, it is possible for the model to predict
+        # consecutive segments with no "unlabeled" / "background" class between them,
+        # meaning that the offset of the first segment will be the onset of the following segment
+        # (as would be the case if we left in the segments representing background classes,
+        # but the `to_segment` transform removes them)
+        # We want to remove the offsets that overlap with onsets before we concatenate all the boundaries together.
+        # We don't do this with the other offsets, because other offsets are actually just
+        # "the onset time of the unlabeled segment".
+        # This is not an issue when we apply the majority vote transform since it forces a consistent class
+        # within each segment, bordered on both sides by the "background" / "unlabeled" segments
+        if np.any(
+            np.isclose(offsets_s_pred[:-1], onsets_s_pred[1:])
+        ):
+            offsets_to_remove = np.nonzero(np.isclose(offsets_s_pred[:-1], onsets_s_pred[1:]))[0]
+            offsets_s_pred = np.delete(offsets_s_pred, offsets_to_remove)
+            hypothesis = np.sort(np.concatenate((onsets_s_pred, offsets_s_pred)))
+        else:
+            hypothesis = voc.metrics.segmentation.ir.concat_starts_and_stops(onsets_s_pred, offsets_s_pred)
+
+        if self.post_tfm:
+            y_pred_tfm_labels_segments, onsets_s_pred_tfm, offsets_s_pred_tfm = transforms.frame_labels.to_segments(
+                np.squeeze(y_pred_tfm.cpu().numpy()),
+                labelmap=self.labelmap,
+                frame_times=frame_times,
+            )
+
+        reference = voc.metrics.segmentation.ir.concat_starts_and_stops(onsets_s, offsets_s)
+
+        if self.post_tfm:
+            hypothesis_tfm = voc.metrics.segmentation.ir.concat_starts_and_stops(onsets_s_pred_tfm, offsets_s_pred_tfm)
+        for metric_name, metric_callable in zip(
+            ("precision", "recall", "fscore"),
+            (
+                voc.metrics.segmentation.ir.precision,
+                voc.metrics.segmentation.ir.recall,
+                voc.metrics.segmentation.ir.fscore,
+            )
+        ):
+            self.log(
+                f"val_{metric_name}",
+                metric_callable(hypothesis, reference, 0.004)[0],
+                batch_size=1,
+                on_step=True,
+                sync_dist=True,
+            )
+            if self.post_tfm:
+                self.log(
+                    f"val_{metric_name}_tfm",
+                    metric_callable(hypothesis_tfm, reference, 0.004)[0],
+                    batch_size=1,
+                    on_step=True,
+                    sync_dist=True,
+                )
+
 
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
