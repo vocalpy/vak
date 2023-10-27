@@ -57,7 +57,7 @@ class ResidualBlock(torch.nn.Module):
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         out = self.net(x)
         res = self.conv_1x1(out)
-        return self.relu(x + res), out
+        return self.relu(x + res), res
 
 
 class TCNBlock(torch.nn.Module):
