@@ -89,11 +89,19 @@ class EvalItemTransform:
                 )
         self.spect_standardizer = spect_standardizer
 
+        self.source_transform = torchvision.transforms.Compose(
+            [
+                vak_transforms.ToFloatTensor(),
+                # for frames we add channel at dim 0, not 1
+                vak_transforms.AddChannel(),
+            ]
+        )
+
         self.pad_to_window = vak_transforms.PadToWindow(
             window_size, padval, return_padding_mask=return_padding_mask
         )
 
-        self.source_transform_after_pad = torchvision.transforms.Compose(
+        self.transform_after_pad = torchvision.transforms.Compose(
             [
                 vak_transforms.ViewAsWindowBatch(window_size),
                 vak_transforms.ToFloatTensor(),
@@ -109,16 +117,21 @@ class EvalItemTransform:
             frames = self.spect_standardizer(frames)
 
         if self.pad_to_window.return_padding_mask:
-            frames, padding_mask = self.pad_to_window(frames)
+            frames_window, padding_mask = self.pad_to_window(frames)
         else:
-            frames = self.pad_to_window(frames)
+            frames_window = self.pad_to_window(frames)
             padding_mask = None
-        frames = self.source_transform_after_pad(frames)
+        frames_window = self.transform_after_pad(frames_window)
+
+        # we need to do this **after** making frames_window
+        frames = self.source_transform(frames)
 
         frame_labels = self.annot_transform(frame_labels)
 
         item = {
             "frames": frames,
+            # we pass in frames window just to get the predictions that we then flatten
+            "frames_window": frames_window,
             "frame_labels": frame_labels,
             "frame_times": frame_times,
             "onsets_s": np.array(annot.seq.onsets_s),
