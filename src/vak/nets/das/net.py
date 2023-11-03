@@ -114,7 +114,7 @@ class TCNBlock(torch.nn.Module):
                 skip_connections.append(skip_out)
 
         if skip_connections:
-            x = torch.add(x, *skip_connections)
+            x = torch.add(skip_connections)
 
         x = F.relu(x)
         return x
