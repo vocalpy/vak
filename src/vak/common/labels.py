@@ -113,9 +113,9 @@ def from_df(
 
 ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 DUMMY_SINGLE_CHAR_LABELS = [
-    # some large range of characters not typically used as labels
     chr(x)
-    for x in range(162, 400)
+    # some large range of characters not typically used as labels
+    for x in range(162, 2000)
 ]
 # start with alphanumeric since more human readable;
 # mapping can be arbitrary as long as it's consistent
@@ -162,12 +162,34 @@ def multi_char_labels_to_single_char(
         # Same order forces mapping to single characters to be deterministic across function calls.
         labelmap.keys()
     )
+    if all([len(lbl) == 1 for lbl in current_str_labels]):
+        # no need to do re-mapping
+        return labelmap
+
+    # We only use single character labels that are not already in labelmap,
+    # to avoid over-writing a single-character label from the original labelmap
+    # with the same single-character from DUMMY_SINGLE_CHAR_LABELS,
+    # which would map it to a new integer and cause us to lose the original integer
+    # from the mapping
+    single_char_labels_not_in_labelmap = [
+        lbl for lbl in DUMMY_SINGLE_CHAR_LABELS
+        if lbl not in labelmap
+    ]
+    n_needed_to_remap = len(
+        [lbl for lbl in current_str_labels if len(lbl) > 1]
+    )
+    if n_needed_to_remap > len(single_char_labels_not_in_labelmap):
+        raise ValueError(
+            f"Need to remap {n_needed_to_remap} multiple-character labels"
+            f"but there are only {len(single_char_labels_not_in_labelmap)} available."
+        )
+
     new_labelmap = {}
     for dummy_label_ind, label_str in enumerate(current_str_labels):
         label_int = labelmap[label_str]
-        if len(label_str) > 1 and label_str not in skip:
+        if len(label_str) > 1 and label_str not in skip:  # default for `skip` is ('unlabeled',)
             # replace with dummy label
-            new_label_str = DUMMY_SINGLE_CHAR_LABELS[dummy_label_ind]
+            new_label_str = single_char_labels_not_in_labelmap[dummy_label_ind]
             new_labelmap[new_label_str] = label_int
         else:
             new_labelmap[label_str] = label_int
