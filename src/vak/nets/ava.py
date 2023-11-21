@@ -24,7 +24,7 @@ class AVA(nn.Module):
     def __init__(
         self,
         input_shape: tuple[int] = (1, 128, 128),
-        hidden_dims: tuple[int] = (8, 8, 16, 16, 24, 24),
+        encoder_channels: tuple[int] = (8, 8, 16, 16, 24, 24),
         fc_dims: tuple[int] = (1024, 256, 64),
         z_dim: int = 32,
     ):
@@ -32,7 +32,7 @@ class AVA(nn.Module):
         """
         super().__init__()
         fc_dims = (*fc_dims, z_dim)
-        hidden_dims = (*hidden_dims, z_dim)
+        encoder_channels = (*encoder_channels, z_dim)
 
         self.input_shape = input_shape
         self.in_channels = input_shape[0]
@@ -44,19 +44,20 @@ class AVA(nn.Module):
         # ---- build encoder
         modules = []
         in_channels = self.in_channels
-        for h_dim in hidden_dims:
-            stride = 2 if h_dim == in_channels else 1
+        for out_channels in encoder_channels:
+            # AVA uses stride=2 when out_channels == in_channels
+            stride = 2 if out_channels == in_channels else 1
             modules.append(
                 nn.Sequential(
                     nn.BatchNorm2d(in_channels),
                     nn.Conv2d(
-                        in_channels, out_channels=h_dim,
+                        in_channels, out_channels,
                         kernel_size=3, stride=stride, padding=1
                     ),
                     nn.ReLU()
                 )
             )
-            in_channels = h_dim
+            in_channels = out_channels
         self.encoder = nn.Sequential(*modules)
 
         # ---- build encoder bottleneck
@@ -91,19 +92,19 @@ class AVA(nn.Module):
 
         # ---- build decoder
         modules = []
-        hidden_dims = (*hidden_dims[-2::-1], self.in_channels)
-        for i, h_dim in enumerate(hidden_dims):
-            stride = 2 if h_dim == in_channels else 1
-            output_padding = 1 if h_dim == in_channels else 0
+        decoder_channels = (*encoder_channels[-2::-1], self.in_channels)
+        for i, out_channels in enumerate(decoder_channels):
+            stride = 2 if out_channels == in_channels else 1
+            output_padding = 1 if out_channels == in_channels else 0
             layers = [nn.BatchNorm2d(in_channels),
                       nn.ConvTranspose2d(
                           in_channels, out_channels=h_dim,
                           kernel_size=3, stride=stride, padding=1, output_padding=output_padding
                       )]
-            if i != len(hidden_dims) - 1:
+            if i != len(decoder_channels) - 1:
                 layers.append(nn.ReLU())
             modules.append(nn.Sequential(*layers))
-            in_channels = h_dim
+            in_channels = out_channels
         self.decoder = nn.Sequential(*modules)
 
     def encode(self, x):
