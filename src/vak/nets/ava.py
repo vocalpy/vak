@@ -110,7 +110,8 @@ class AVA(nn.Module):
     def encode(self, x):
         """
         """
-        x = self.encoder(x.view(-1, self.in_fc))
+        x = self.encoder(x)
+        x = torch.flatten(x, start_dim=1)
         x = self.encoder_bottleneck(x)
         mu = self.mu_layer(x)
         cov_factor = self.cov_factor_layer(x).unsqueeze(-1)
