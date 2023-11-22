@@ -95,6 +95,7 @@ class AVA(nn.Module):
                     nn.ReLU()
                 )
             )
+            in_features = out_features
         self.decoder_fc = nn.Sequential(*modules)
 
         # ---- build decoder
