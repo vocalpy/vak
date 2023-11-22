@@ -132,7 +132,7 @@ class AVA(nn.Module):
         """
         """
         z = self.decoder_fc(z).view(-1, *self.fc_view)
-        z = self.decoder(z).view(-1, *self.x_dim)
+        z = self.decoder(z).view(-1, *self.x_shape)
         return z
 
     @staticmethod
