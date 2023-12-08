@@ -80,6 +80,8 @@ ckpt_step = 1
 patience = 4
 dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
+checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
+spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 num_workers = 4
 device = 'cuda'
