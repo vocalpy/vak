@@ -36,13 +36,16 @@ __all__ = [
     "to_segments",
 ]
 
+# sentinel value we use to verify that all frames were assigned a label
+FROM_SEGMENTS_SENTINEL = -100
+
 
 def from_segments(
     labels_int: np.ndarray,
     onsets_s: np.ndarray,
     offsets_s: np.ndarray,
     time_bins: np.ndarray,
-    unlabeled_label: int = 0,
+    unlabeled_label: int | None = None,
 ) -> np.ndarray:
     """Make a vector of labels for a vector of frames,
     given labeled segments in the form of onset times,
@@ -79,7 +82,11 @@ def from_segments(
             "labels_int must be a list or numpy.ndarray of integers"
         )
 
-    label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * unlabeled_label
+    if unlabeled_label is None:
+        label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * FROM_SEGMENTS_SENTINEL
+    else:
+        label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * unlabeled_label
+
     onset_inds = [np.argmin(np.abs(time_bins - onset)) for onset in onsets_s]
     offset_inds = [
         np.argmin(np.abs(time_bins - offset)) for offset in offsets_s
@@ -87,6 +94,14 @@ def from_segments(
     for label, onset, offset in zip(labels_int, onset_inds, offset_inds):
         # offset_inds[ind]+1 because offset time bin is still "part of" syllable
         label_vec[onset : offset + 1] = label  # noqa: E203
+
+    if unlabeled_label is None:
+        if np.any(
+            label_vec == FROM_SEGMENTS_SENTINEL
+        ):
+            raise ValueError(
+                f"Frames were left with sentinel value"
+            )
 
     return label_vec
 
