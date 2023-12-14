@@ -373,12 +373,16 @@ def make_splits(
 
                 # make frame labels
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
+                if "unlabeled" in labelmap:
+                    unlabeled_label = labelmap["unlabeled"]
+                else:
+                    unlabeled_label = None
                 frame_labels = transforms.frame_labels.from_segments(
                     lbls_int,
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
                     frame_times,
-                    unlabeled_label=labelmap["unlabeled"],
+                    unlabeled_label
                 )
                 frame_labels_npy_path = split_subdir / (
                     source_path.stem
