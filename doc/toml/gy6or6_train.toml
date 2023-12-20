@@ -19,7 +19,7 @@ train_dur = 50
 # val_dur: duration of validation split in dataset, in seconds
 val_dur = 15
 # test_dur: duration of test split in dataset, in seconds
-val_dur = 30
+test_dur = 30
 
 # SPECT_PARAMS: parameters for computing spectrograms
 [SPECT_PARAMS]
