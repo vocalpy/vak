@@ -250,6 +250,15 @@
         "ideas",
         "code"
       ]
+    },
+    {
+      "login": "danielmk",
+      "name": "Daniel Müller-Komorowska",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16190451?v=4",
+      "profile": "https://danielmuellerkomorowska.com",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
