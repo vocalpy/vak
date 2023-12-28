@@ -1,5 +1,3 @@
-import inspect
-
 import torch
 import pytest
 
@@ -50,4 +48,3 @@ class TestConvEncoder:
         net = vak.nets.ConvEncoder(input_shape)
         out = net(input)
         assert isinstance(out, torch.Tensor)
-
