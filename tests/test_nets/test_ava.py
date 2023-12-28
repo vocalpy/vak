@@ -54,4 +54,8 @@ class TestAVA:
         input = torch.rand(batch_size, *input_shape)  # a "batch"
         net = vak.nets.AVA(input_shape)
         out = net(input)
-        assert isinstance(out, torch.Tensor)
+        assert len(out) == 3
+        x_rec, z, latent_dist = out
+        for tensor in (x_rec, z):
+            assert isinstance(tensor, torch.Tensor)
+        assert isinstance(latent_dist, torch.distributions.LowRankMultivariateNormal)
