@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-import pathlib
 from typing import Callable, ClassVar, Type
 
-import pytorch_lightning as lightning
 import torch
 import torch.utils.data
-from torch import nn
 from operator import itemgetter
 
 from .registry import model_family
 from . import base
 from .definition import ModelDefinition
+
 
 @model_family
 class VAEModel(base.Model):
