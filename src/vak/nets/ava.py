@@ -22,6 +22,7 @@ class FullyConnectedLayers(nn.Module):
 
 class AVA(nn.Module):
     """
+
     """
     def __init__(
         self,
@@ -31,6 +32,13 @@ class AVA(nn.Module):
         z_dim: int = 32,
     ):
         """
+
+        Parameters
+        ----------
+        input_shape
+        encoder_channels
+        fc_dims
+        z_dim
         """
         super().__init__()
 
