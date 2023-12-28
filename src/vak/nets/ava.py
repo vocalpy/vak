@@ -43,9 +43,9 @@ class AVA(nn.Module):
         super().__init__()
 
         self.input_shape = input_shape
-        self.in_channels = input_shape[0]
+        self.in_channels = int(input_shape[0])
         self.x_shape = input_shape[1:]  # channels * hide * width
-        self.x_dim = np.prod(self.x_shape)
+        self.x_dim = int(np.prod(self.x_shape))
 
         # ---- build encoder
         modules = []
