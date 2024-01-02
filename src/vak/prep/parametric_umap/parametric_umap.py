@@ -1,3 +1,4 @@
+"""Prepare datasets for parametric UMAP models."""
 from __future__ import annotations
 
 import json
@@ -37,8 +38,7 @@ def prep_parametric_umap_dataset(
     spect_key: str = "s",
     timebins_key: str = "t",
 ):
-    """Prepare datasets for neural network models
-    that perform a dimensionality reduction task.
+    """Prepare datasets for parametric UMAP models.
 
     For general information on dataset preparation,
     see the docstring for :func:`vak.prep.prep`.
