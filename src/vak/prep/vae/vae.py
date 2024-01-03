@@ -238,7 +238,7 @@ def prep_vae_dataset(
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
     logger.info(f"Preparing files for '{dataset_type}' dataset")
-    if dataset_type == 'segment-vae':
+    if dataset_type == 'vae-segment':
         dataset_df, shape = prep_segment_vae_dataset(
             data_dir,
             dataset_path,
@@ -258,7 +258,7 @@ def prep_vae_dataset(
             spect_key,
             timebins_key,
         )
-    elif dataset_type == 'window-vae':
+    elif dataset_type == 'vae-window':
         dataset_df = prep_window_vae_dataset(
             data_dir,
             dataset_path,
@@ -291,6 +291,7 @@ def prep_vae_dataset(
     # ---- save metadata -----------------------------------------------------------------------------------------------
     metadata = datasets.vae.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
+        dataset_type=dataset_type,
         audio_format=audio_format,
         shape=shape,
     )
