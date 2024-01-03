@@ -225,7 +225,7 @@ def prep_parametric_umap_dataset(
     if dataset_df.empty:
         raise ValueError(
             "Calling `vak.prep.unit_dataset.prep_unit_dataset` "
-            "with arguments passed to `vak.core.prep.prep_dimensionality_reduction_dataset` "
+            "with arguments passed to `vak.core.prep.prep_parametric_umap_dataset` "
             "returned an empty dataframe.\n"
             "Please double-check arguments to `vak.core.prep` function."
         )
@@ -242,7 +242,8 @@ def prep_parametric_umap_dataset(
         and (test_dur is None or val_dur == 0)
     ):
         raise ValueError(
-            "A duration specified for just training set, but prep function does not currently support creating a "
+            "A duration was specified for just the training set, "
+            "but prep function does not currently support creating a "
             "single split of a specified duration. Either remove the train_dur option from the prep section and "
             "rerun, in which case all data will be included in the training set, or specify values greater than "
             "zero for test_dur (and val_dur, if a validation set will be used)"
