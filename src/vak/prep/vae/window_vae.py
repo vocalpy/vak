@@ -25,7 +25,6 @@ def prep_window_vae_dataset(
     audio_format: str | None = None,
     spect_format: str | None = None,
     spect_params: dict | None = None,
-    spect_output_dir: str | pathlib.Path | None = None,
     annot_format: str | None = None,
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
@@ -75,8 +74,7 @@ def prep_window_vae_dataset(
         audio_format,
         spect_format,
         spect_params,
-        spect_output_dir,
-        audio_dask_bag_kwargs,
+        audio_dask_bag_kwargs=audio_dask_bag_kwargs,
     )
 
     # save before (possibly) splitting, just in case duration args are not valid
