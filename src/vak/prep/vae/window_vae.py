@@ -7,8 +7,11 @@ import pathlib
 import pandas as pd
 
 from ...common import labels
+from .. import sequence_dataset
 from ..spectrogram_dataset import prep_spectrogram_dataset
 from ..frame_classification.assign_samples_to_splits import assign_samples_to_splits
+from ..frame_classification.learncurve import make_subsets_from_dataset_df
+from ..frame_classification.make_splits import make_splits
 
 
 logger = logging.getLogger(__name__)
@@ -22,6 +25,7 @@ def prep_window_vae_dataset(
     audio_format: str | None = None,
     spect_format: str | None = None,
     spect_params: dict | None = None,
+    spect_output_dir: str | pathlib.Path | None = None,
     annot_format: str | None = None,
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
@@ -33,6 +37,7 @@ def prep_window_vae_dataset(
     num_replicates: int | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
+    freqbins_key: str = "f",
 ) -> pd.DataFrame:
     """
 
@@ -45,6 +50,7 @@ def prep_window_vae_dataset(
     audio_format
     spect_format
     spect_params
+    spect_output_dir
     annot_format
     annot_file
     labelset
@@ -113,7 +119,8 @@ def prep_window_vae_dataset(
     dataset_df: pd.DataFrame = make_splits(
         dataset_df,
         dataset_path,
-        input_type,
+        # input_type="spect", we only make spectrogram datasets for now
+        "spect",
         purpose,
         labelmap,
         audio_format,
