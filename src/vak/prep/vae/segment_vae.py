@@ -5,6 +5,8 @@ import json
 import logging
 import pathlib
 
+import pandas as pd
+
 from ...common import labels
 from .. import dataset_df_helper, split
 from ..unit_dataset import prep_unit_dataset
@@ -32,7 +34,33 @@ def prep_segment_vae_dataset(
         num_replicates: int | None = None,
         spect_key: str = "s",
         timebins_key: str = "t",
-):
+) -> pd.DataFrame:
+    """
+
+    Parameters
+    ----------
+    data_dir
+    dataset_path
+    dataset_csv_path
+    purpose
+    audio_format
+    spect_params
+    annot_format
+    annot_file
+    labelset
+    context_s
+    train_dur
+    val_dur
+    test_dur
+    train_set_durs
+    num_replicates
+    spect_key
+    timebins_key
+
+    Returns
+    -------
+
+    """
     dataset_df, shape = prep_unit_dataset(
         audio_format=audio_format,
         output_dir=dataset_path,
@@ -146,3 +174,5 @@ def prep_segment_vae_dataset(
     #         spect_key,
     #         timebins_key,
     #     )
+
+    return dataset_df
