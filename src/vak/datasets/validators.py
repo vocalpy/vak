@@ -28,3 +28,14 @@ def is_valid_spect_format(instance, attribute, value):
             f"Not a valid spectrogram format: {value}. "
             f"Valid spectrogram formats are: {vak.common.constants.VALID_SPECT_FORMATS}"
         )
+
+
+def is_valid_shape(instance, attribute, value):
+    if not isinstance(value, tuple):
+        raise TypeError(
+            f"`shape` should be a tuple but type was: {type(value)}"
+        )
+    if not all([isinstance(val, int) and val > 0 for val in value]):
+        raise ValueError(
+            f"All values of `shape` should be positive integers but values were: {value}"
+        )
