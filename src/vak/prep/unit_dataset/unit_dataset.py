@@ -260,32 +260,55 @@ def prep_unit_dataset(
     audio_format: str,
     output_dir: str,
     spect_params: dict,
-    data_dir: list | None = None,
+    data_dir: str | pathlib.Path,
     annot_format: str | None = None,
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
     context_s: float = 0.005,
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, tuple[int]]:
     """Prepare a dataset of units from sequences,
     e.g., all syllables segmented out of a dataset of birdsong.
 
     Parameters
     ----------
-    audio_format
-    output_dir
-    spect_params
-    data_dir
-    annot_format
-    annot_file
-    labelset
-    context_s
+    audio_format : str
+        Format of audio files. One of {'wav', 'cbin'}.
+        Default is ``None``, but either ``audio_format`` or ``spect_format``
+        must be specified.
+    output_dir : str
+        Path to location where data sets should be saved.
+        Default is ``None``, in which case it defaults to ``data_dir``.
+    spect_params : dict, vak.config.SpectParams
+        Parameters for creating spectrograms. Default is ``None``.
+    data_dir : str, pathlib.Path
+        Path to directory with files from which to make dataset.
+    annot_format : str
+        Format of annotations. Any format that can be used with the
+        :mod:`crowsetta` library is valid. Default is ``None``.
+    annot_file : str
+        Path to a single annotation file. Default is ``None``.
+        Used when a single file contains annotates multiple audio
+        or spectrogram files.
+    labelset : str, list, set
+        Set of unique labels for vocalizations. Strings or integers.
+        Default is ``None``. If not ``None``, then files will be skipped
+        where the associated annotation
+        contains labels not found in ``labelset``.
+        ``labelset`` is converted to a Python ``set`` using
+        :func:`vak.converters.labelset_to_set`.
+        See help for that function for details on how to specify ``labelset``.
+    context_s : float
+        Number of seconds of "context" around unit to
+        add, i.e., time before and after the onset
+        and offset respectively. Default is 0.005s,
+        5 milliseconds.
 
     Returns
     -------
     unit_df : pandas.DataFrame
         A DataFrame representing all the units in the dataset.
     shape: tuple
-        A tuple representing the shape of all spectograms in the dataset.
+        A tuple representing the shape of all spectrograms in the dataset.
         The spectrograms of all units are padded so that they are all
         as wide as the widest unit (i.e, the one with the longest duration).
     """
