@@ -1,4 +1,4 @@
-"""Prepare datasets for parametric UMAP models."""
+"""Prepare datasets for VAE models."""
 from __future__ import annotations
 
 import json
@@ -7,6 +7,7 @@ import pathlib
 import warnings
 
 import crowsetta
+import pandas as pd
 
 from ... import datasets
 from ...common import labels
@@ -15,7 +16,10 @@ from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
 from .. import dataset_df_helper, split
 from ..unit_dataset import prep_unit_dataset
-from . import dataset_arrays
+from ..parametric_umap import dataset_arrays
+from ..spectrogram_dataset import prep_spectrogram_dataset
+from ..frame_classification.assign_samples_to_splits import assign_samples_to_splits
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +35,12 @@ def prep_vae_dataset(
     dataset_type: str,
     output_dir: str | pathlib.Path | None = None,
     audio_format: str | None = None,
+    spect_format: str | None = None,
     spect_params: dict | None = None,
     annot_format: str | None = None,
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
+    audio_dask_bag_kwargs: dict | None = None,
     context_s: float = 0.015,
     train_dur: int | None = None,
     val_dur: int | None = None,
@@ -44,7 +50,7 @@ def prep_vae_dataset(
     spect_key: str = "s",
     timebins_key: str = "t",
 ):
-    """Prepare datasets for parametric UMAP models.
+    """Prepare datasets for VAE models.
 
     For general information on dataset preparation,
     see the docstring for :func:`vak.prep.prep`.
@@ -66,6 +72,9 @@ def prep_vae_dataset(
         Format of audio files. One of {'wav', 'cbin'}.
         Default is ``None``, but either ``audio_format`` or ``spect_format``
         must be specified.
+    spect_format : str
+        Format of files containing spectrograms as 2-d matrices. One of {'mat', 'npz'}.
+        Default is None, but either audio_format or spect_format must be specified.
     spect_params : dict, vak.config.SpectParams
         Parameters for creating spectrograms. Default is ``None``.
     annot_format : str
@@ -79,6 +88,14 @@ def prep_vae_dataset(
         ``labelset`` is converted to a Python ``set`` using
         :func:`vak.converters.labelset_to_set`.
         See help for that function for details on how to specify ``labelset``.
+    audio_dask_bag_kwargs : dict
+        Keyword arguments used when calling :func:`dask.bag.from_sequence`
+        inside :func:`vak.io.audio`, where it is used to parallelize
+        the conversion of audio files into spectrograms.
+        Option should be specified in config.toml file as an inline table,
+        e.g., ``audio_dask_bag_kwargs = { npartitions = 20 }``.
+        Allows for finer-grained control
+        when needed to process files of different sizes.
     train_dur : float
         Total duration of training set, in seconds.
         When creating a learning curve,
@@ -224,120 +241,28 @@ def prep_vae_dataset(
     logger.info(f"Will prepare dataset as directory: {dataset_path}")
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    dataset_df, shape = prep_unit_dataset(
-        audio_format=audio_format,
-        output_dir=dataset_path,
-        spect_params=spect_params,
-        data_dir=data_dir,
-        annot_format=annot_format,
-        annot_file=annot_file,
-        labelset=labelset,
-        context_s=context_s,
-    )
-
-    if dataset_df.empty:
-        raise ValueError(
-            "Calling `vak.prep.unit_dataset.prep_unit_dataset` "
-            "with arguments passed to `vak.core.prep.prep_dimensionality_reduction_dataset` "
-            "returned an empty dataframe.\n"
-            "Please double-check arguments to `vak.core.prep` function."
-        )
-
-    # save before (possibly) splitting, just in case duration args are not valid
-    # (we can't know until we make dataset)
-    dataset_df.to_csv(dataset_csv_path)
-
-    # ---- (possibly) split into train / val / test sets ---------------------------------------------
-    # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
-    if (purpose == "train" or purpose == "learncurve") and (
-        (train_dur is not None and train_dur > 0)
-        and (val_dur is None or val_dur == 0)
-        and (test_dur is None or val_dur == 0)
-    ):
-        raise ValueError(
-            "A duration specified for just training set, but prep function does not currently support creating a "
-            "single split of a specified duration. Either remove the train_dur option from the prep section and "
-            "rerun, in which case all data will be included in the training set, or specify values greater than "
-            "zero for test_dur (and val_dur, if a validation set will be used)"
-        )
-
-    if all(
-        [dur is None for dur in (train_dur, val_dur, test_dur)]
-    ) or purpose in (
-        "eval",
-        "predict",
-    ):
-        # then we're not going to split
-        logger.info("Will not split dataset.")
-        do_split = False
-    else:
-        if val_dur is not None and train_dur is None and test_dur is None:
-            raise ValueError(
-                "cannot specify only val_dur, unclear how to split dataset into training and test sets"
-            )
-        else:
-            logger.info("Will split dataset.")
-            do_split = True
-
-    if do_split:
-        dataset_df = split.unit_dataframe(
-            dataset_df,
+    if dataset_type == 'segment-vae':
+        prep_segment_vae_dataset(
+            data_dir,
             dataset_path,
-            labelset=labelset,
-            train_dur=train_dur,
-            val_dur=val_dur,
-            test_dur=test_dur,
+            dataset_csv_path,
+            purpose,
+            audio_format,
+            spect_params,
+            annot_format,
+            annot_file,
+            labelset,
+            context_s,
+            train_dur,
+            val_dur,
+            test_dur,
+            train_set_durs,
+            num_replicates,
+            spect_key,
+            timebins_key,
         )
+    elif dataset_type == 'window-vae':
 
-    elif (
-        do_split is False
-    ):  # add a split column, but assign everything to the same 'split'
-        # ideally we would just say split=purpose in call to add_split_col, but
-        # we have to special case, because "eval" looks for a 'test' split (not an "eval" split)
-        if purpose == "eval":
-            split_name = (
-                "test"  # 'split_name' to avoid name clash with split package
-            )
-        elif purpose == "predict":
-            split_name = "predict"
-
-        dataset_df = dataset_df_helper.add_split_col(
-            dataset_df, split=split_name
-        )
-
-    # ---- create and save labelmap ------------------------------------------------------------------------------------
-    # we do this before creating array files since we need to load the labelmap to make frame label vectors
-    if purpose != "predict":
-        # TODO: add option to generate predict using existing dataset, so we can get labelmap from it
-        labelmap = labels.to_map(labelset, map_unlabeled=False)
-        logger.info(
-            f"Number of classes in labelmap: {len(labelmap)}",
-        )
-        # save labelmap in case we need it later
-        with (dataset_path / "labelmap.json").open("w") as fp:
-            json.dump(labelmap, fp)
-    else:
-        labelmap = None
-
-    # ---- make arrays that represent final dataset --------------------------------------------------------------------
-    dataset_arrays.move_files_into_split_subdirs(
-        dataset_df,
-        dataset_path,
-        purpose,
-    )
-    #
-    # ---- if purpose is learncurve, additionally prep splits for that -----------------------------------------------
-    # if purpose == 'learncurve':
-    #     dataset_df = make_learncurve_splits_from_dataset_df(
-    #         dataset_df,
-    #         train_set_durs,
-    #         num_replicates,
-    #         dataset_path,
-    #         labelmap,
-    #         audio_format,
-    #         spect_key,
-    #         timebins_key,
-    #     )
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
     logger.info(f"Saving dataset csv file: {dataset_csv_path}")
@@ -346,7 +271,7 @@ def prep_vae_dataset(
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
-    metadata = datasets.parametric_umap.Metadata(
+    metadata = datasets.vae.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
         audio_format=audio_format,
         shape=shape,
