@@ -8,6 +8,7 @@ from . import (
     sequence_dataset,
     spectrogram_dataset,
     unit_dataset,
+    vae,
 )
 from .prep_ import prep
 
@@ -22,4 +23,5 @@ __all__ = [
     "sequence_dataset",
     "spectrogram_dataset",
     "unit_dataset",
+    "vae",
 ]
