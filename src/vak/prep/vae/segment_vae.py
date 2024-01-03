@@ -34,7 +34,7 @@ def prep_segment_vae_dataset(
         num_replicates: int | None = None,
         spect_key: str = "s",
         timebins_key: str = "t",
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, tuple[int]]:
     """
 
     Parameters
@@ -175,4 +175,4 @@ def prep_segment_vae_dataset(
     #         timebins_key,
     #     )
 
-    return dataset_df
+    return dataset_df, shape
