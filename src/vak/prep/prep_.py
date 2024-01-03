@@ -6,6 +6,7 @@ import pathlib
 from . import constants
 from .frame_classification import prep_frame_classification_dataset
 from .parametric_umap import prep_parametric_umap_dataset
+from .vae import prep_vae_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -213,6 +214,26 @@ def prep(
         )
         return dataset_df, dataset_path
     elif dataset_type == "parametric umap":
+        dataset_df, dataset_path = prep_parametric_umap_dataset(
+            data_dir,
+            purpose,
+            output_dir,
+            audio_format,
+            spect_params,
+            annot_format,
+            annot_file,
+            labelset,
+            context_s,
+            train_dur,
+            val_dur,
+            test_dur,
+            train_set_durs,
+            num_replicates,
+            spect_key=spect_key,
+            timebins_key=timebins_key,
+        )
+        return dataset_df, dataset_path
+    elif dataset_type == "vae":
         dataset_df, dataset_path = prep_parametric_umap_dataset(
             data_dir,
             purpose,
