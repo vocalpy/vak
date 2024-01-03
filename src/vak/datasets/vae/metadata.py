@@ -37,18 +37,11 @@ class Metadata:
         converter=str, validator=validators.is_valid_dataset_csv_filename
     )
 
-    shape: tuple = attr.field(converter=tuple)
-
-    @shape.validator
-    def is_valid_shape(self, attribute, value):
-        if not isinstance(value, tuple):
-            raise TypeError(
-                f"`shape` should be a tuple but type was: {type(value)}"
-            )
-        if not all([isinstance(val, int) and val > 0 for val in value]):
-            raise ValueError(
-                f"All values of `shape` should be positive integers but values were: {value}"
-            )
+    shape: tuple = attr.field(
+        converter=attr.converters.optional(tuple),
+        validator=attr.validators.optional(validators.is_valid_shape),
+        default=None
+    )
 
     audio_format: str = attr.field(
         converter=attr.converters.optional(str),
