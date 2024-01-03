@@ -12,6 +12,14 @@ from typing import ClassVar
 import attr
 
 from .. import validators
+from ...prep.vae.vae import VAE_DATASET_TYPES
+
+
+def is_valid_vae_dataset_type(instance, attribute, value):
+    if value not in VAE_DATASET_TYPES:
+        raise ValueError(
+            f"`dataset_type` must be one of '{VAE_DATASET_TYPES}', but was: {value}"
+        )
 
 
 @attr.define
@@ -26,7 +34,15 @@ class Metadata:
         Name of csv file representing the source files in the dataset.
         Csv file will be located in root of directory representing dataset,
         so only the filename is given.
-    audio_format
+    dataset_type : str
+        One of: {'vae-segment', 'vae-window'}
+    audio_format : str
+        Format of audio files. One of {'wav', 'cbin'}.
+        Default is ``None``, but either ``audio_format`` or ``spect_format``
+        must be specified.
+    shape : tuple, optional
+        Shape of dataset.
+        Only used for 'segment-vae' dataset.
     """
 
     # declare this as a constant to avoid
@@ -35,6 +51,9 @@ class Metadata:
 
     dataset_csv_filename: str = attr.field(
         converter=str, validator=validators.is_valid_dataset_csv_filename
+    )
+    dataset_type: str = attr.field(
+        converter=str, validator=is_valid_vae_dataset_type
     )
 
     shape: tuple = attr.field(
