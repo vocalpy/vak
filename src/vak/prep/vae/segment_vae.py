@@ -1,4 +1,4 @@
-""""""
+"""Prepare a dataset of segments for a VAE model."""
 from __future__ import annotations
 
 import json
@@ -35,7 +35,7 @@ def prep_segment_vae_dataset(
         spect_key: str = "s",
         timebins_key: str = "t",
 ) -> tuple[pd.DataFrame, tuple[int]]:
-    """
+    """Prepare a dataset of segments for a VAE model.
 
     Parameters
     ----------
@@ -74,7 +74,7 @@ def prep_segment_vae_dataset(
     if dataset_df.empty:
         raise ValueError(
             "Calling `vak.prep.unit_dataset.prep_unit_dataset` "
-            "with arguments passed to `vak.core.prep.prep_dimensionality_reduction_dataset` "
+            "with arguments passed to `vak.core.prep.vae.prep_segment_vae_dataset` "
             "returned an empty dataframe.\n"
             "Please double-check arguments to `vak.core.prep` function."
         )
@@ -91,7 +91,8 @@ def prep_segment_vae_dataset(
             and (test_dur is None or val_dur == 0)
     ):
         raise ValueError(
-            "A duration specified for just training set, but prep function does not currently support creating a "
+            "A duration was specified for just the training set, "
+            "but prep function does not currently support creating a "
             "single split of a specified duration. Either remove the train_dur option from the prep section and "
             "rerun, in which case all data will be included in the training set, or specify values greater than "
             "zero for test_dur (and val_dur, if a validation set will be used)"
