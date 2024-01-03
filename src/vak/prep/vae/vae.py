@@ -135,6 +135,7 @@ def prep_vae_dataset(
         raise ValueError(
             f"`dataset_type` must be one of '{VAE_DATASET_TYPES}', but was: {dataset_type}"
         )
+    logger.info(f"Type of VAE dataset that will be prepared : {dataset_type}")
 
     if labelset is not None:
         labelset = labelset_to_set(labelset)
@@ -166,7 +167,7 @@ def prep_vae_dataset(
         if labelset is not None:
             warnings.warn(
                 "The ``purpose`` argument was set to 'predict`, but a ``labelset`` was provided."
-                "This would cause an error because the ``prep_spectrogram_dataset`` section will attempt to "
+                "This would cause an error because the ``prep_spectrogram_dataset`` function will attempt to "
                 "check whether the files in the ``data_dir`` have labels in "
                 "``labelset``, even though those files don't have annotation.\n"
                 "Setting ``labelset`` to None."
@@ -179,17 +180,17 @@ def prep_vae_dataset(
                 "This will cause an error when trying to split the dataset, "
                 "e.g. into training and test splits, "
                 "or a silent error, e.g. when calculating metrics with an evaluation set. "
-                "Please specify a ``labelset`` when calling ``vak.prep.frame_classification.prep`` "
+                "Please specify a ``labelset`` when calling ``vak.prep.vae.prep_vae_dataset`` "
                 f"with ``purpose='{purpose}'."
             )
 
-    logger.info(f"Purpose for frame classification dataset: {purpose}")
+    logger.info(f"Purpose for VAE dataset: {purpose}")
     # ---- set up directory that will contain dataset, and csv file name -----------------------------------------------
     data_dir_name = data_dir.name
     timenow = get_timenow_as_str()
     dataset_path = (
         output_dir
-        / f"{data_dir_name}-vak-dimensionality-reduction-dataset-generated-{timenow}"
+        / f"{data_dir_name}-vak-vae-dataset-generated-{timenow}"
     )
     dataset_path.mkdir()
 
@@ -236,8 +237,9 @@ def prep_vae_dataset(
     logger.info(f"Will prepare dataset as directory: {dataset_path}")
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
+    logger.info(f"Preparing files for '{dataset_type}' dataset")
     if dataset_type == 'segment-vae':
-        dataset_df = prep_segment_vae_dataset(
+        dataset_df, shape = prep_segment_vae_dataset(
             data_dir,
             dataset_path,
             dataset_csv_path,
@@ -277,6 +279,7 @@ def prep_vae_dataset(
             spect_key,
             timebins_key,
         )
+        shape = None
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
     logger.info(f"Saving dataset csv file: {dataset_csv_path}")
