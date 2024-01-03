@@ -152,8 +152,6 @@ def prep_segment_vae_dataset(
         # save labelmap in case we need it later
         with (dataset_path / "labelmap.json").open("w") as fp:
             json.dump(labelmap, fp)
-    else:
-        labelmap = None
 
     # ---- make arrays that represent final dataset --------------------------------------------------------------------
     dataset_arrays.move_files_into_split_subdirs(
