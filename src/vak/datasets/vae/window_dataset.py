@@ -1,4 +1,8 @@
-"""Dataset class used for training VAE models on fixed-sized windows, such as a "shotgun VAE" [1]_."""
+"""Dataset class used for training VAE models on fixed-sized windows, such as a "shotgun VAE" [1]_.
+
+.. [1] Goffinet, J., Brudner, S., Mooney, R., & Pearson, J. (2021).
+   Low-dimensional learned feature spaces quantify individual and group differences in vocal repertoires.
+   eLife, 10:e67855. https://doi.org/10.7554/eLife.67855"""
 from __future__ import annotations
 
 import pathlib
@@ -8,16 +12,12 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from . import constants, helper
+from ..frame_classification import constants, helper
 from .metadata import Metadata
 
 
-
-
-
 class WindowDataset:
-    """Dataset class used for training VAE models on fixed-sized windows,
-    such as a "shotgun VAE" [1]_.
+    """Dataset class used for training VAE models on fixed-sized windows, such as a "shotgun VAE" [1]_.
 
     Attributes
     ----------
@@ -73,6 +73,12 @@ class WindowDataset:
     transform : callable
         The transform applied to the frames,
          the input to the neural network :math:`x`.
+
+    References
+    ----------
+    .. [1] Goffinet, J., Brudner, S., Mooney, R., & Pearson, J. (2021).
+       Low-dimensional learned feature spaces quantify individual and group differences in vocal repertoires.
+       eLife, 10:e67855. https://doi.org/10.7554/eLife.67855
     """
 
     def __init__(
@@ -173,7 +179,6 @@ class WindowDataset:
             )
         self.window_inds = window_inds
         self.transform = transform
-        self.target_transform = target_transform
 
     @property
     def duration(self):
@@ -208,9 +213,6 @@ class WindowDataset:
             sample_id = uniq_sample_ids[0]
             frames_path = self.dataset_path / self.frames_paths[sample_id]
             frames = self._load_frames(frames_path)
-            frame_labels = np.load(
-                self.dataset_path / self.frame_labels_paths[sample_id]
-            )
 
         elif len(uniq_sample_ids) > 1:
             frames = []
@@ -218,11 +220,6 @@ class WindowDataset:
             for sample_id in sorted(uniq_sample_ids):
                 frames_path = self.dataset_path / self.frames_paths[sample_id]
                 frames.append(self._load_frames(frames_path))
-                frame_labels.append(
-                    np.load(
-                        self.dataset_path / self.frame_labels_paths[sample_id]
-                    )
-                )
 
             if all([frames_.ndim == 1 for frames_ in frames]):
                 # --> all 1-d audio vectors; if we specify `axis=1` here we'd get error
@@ -240,15 +237,10 @@ class WindowDataset:
             ...,
             inds_in_sample : inds_in_sample + self.window_size,  # noqa: E203
         ]
-        frame_labels = frame_labels[
-            inds_in_sample : inds_in_sample + self.window_size  # noqa: E203
-        ]
         if self.transform:
             frames = self.transform(frames)
-        if self.target_transform:
-            frame_labels = self.target_transform(frame_labels)
 
-        return frames, frame_labels
+        return frames
 
     def __len__(self):
         """number of batches"""
@@ -263,10 +255,9 @@ class WindowDataset:
         split: str = "train",
         subset: str | None = None,
         transform: Callable | None = None,
-        target_transform: Callable | None = None,
     ):
         """Make a :class:`WindowDataset` instance,
-        given the path to a frame classification dataset.
+        given the path to a VAE window dataset.
 
         Parameters
         ----------
@@ -294,13 +285,10 @@ class WindowDataset:
             for use when generating a learning curve.
         transform : callable
             The transform applied to the input to the neural network :math:`x`.
-        target_transform : callable
-            The transform applied to the target for the output
-            of the neural network :math:`y`.
 
         Returns
         -------
-        dataset : vak.datasets.frame_classification.WindowDataset
+        dataset : vak.datasets.vae.WindowDataset
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
@@ -350,5 +338,4 @@ class WindowDataset:
             subset,
             window_inds,
             transform,
-            target_transform,
         )
