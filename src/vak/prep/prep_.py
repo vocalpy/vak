@@ -233,7 +233,7 @@ def prep(
             timebins_key=timebins_key,
         )
         return dataset_df, dataset_path
-    elif dataset_type == "vae":
+    elif dataset_type in {"vae-segment", "vae-window"}:
         dataset_df, dataset_path = prep_vae_dataset(
             data_dir,
             purpose,
