@@ -20,10 +20,12 @@ def prep_window_vae_dataset(
     dataset_csv_path: str | pathlib.Path,
     purpose: str,
     audio_format: str | None = None,
+    spect_format: str | None = None,
     spect_params: dict | None = None,
     annot_format: str | None = None,
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
+    audio_dask_bag_kwargs: dict | None = None,
     train_dur: int | None = None,
     val_dur: int | None = None,
     test_dur: int | None = None,
@@ -31,7 +33,34 @@ def prep_window_vae_dataset(
     num_replicates: int | None = None,
     spect_key: str = "s",
     timebins_key: str = "t",
-):
+) -> pd.DataFrame:
+    """
+
+    Parameters
+    ----------
+    data_dir
+    dataset_path
+    dataset_csv_path
+    purpose
+    audio_format
+    spect_format
+    spect_params
+    annot_format
+    annot_file
+    labelset
+    audio_dask_bag_kwargs
+    train_dur
+    val_dur
+    test_dur
+    train_set_durs
+    num_replicates
+    spect_key
+    timebins_key
+
+    Returns
+    -------
+
+    """
     source_files_df = prep_spectrogram_dataset(
         data_dir,
         annot_format,
@@ -109,3 +138,5 @@ def prep_window_vae_dataset(
     dataset_df.to_csv(
         dataset_csv_path, index=False
     )  # index is False to avoid having "Unnamed: 0" column when loading
+
+    return dataset_df
