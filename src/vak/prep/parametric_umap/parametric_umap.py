@@ -158,13 +158,13 @@ def prep_parametric_umap_dataset(
                 f"with ``purpose='{purpose}'."
             )
 
-    logger.info(f"Purpose for frame classification dataset: {purpose}")
+    logger.info(f"Purpose for parametric UMAP dataset: {purpose}")
     # ---- set up directory that will contain dataset, and csv file name -----------------------------------------------
     data_dir_name = data_dir.name
     timenow = get_timenow_as_str()
     dataset_path = (
         output_dir
-        / f"{data_dir_name}-vak-dimensionality-reduction-dataset-generated-{timenow}"
+        / f"{data_dir_name}-vak-parametric-UMAP-dataset-generated-{timenow}"
     )
     dataset_path.mkdir()
 
