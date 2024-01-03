@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 VAE_DATASET_TYPES = {
-    "segment-vae", "window-vae"
+    "vae-segment", "vae-window"
 }
 
 
@@ -279,6 +279,7 @@ def prep_vae_dataset(
             spect_key,
             timebins_key,
         )
+        # only segment-vae dataset has shape -- we set to None for metadata below
         shape = None
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
