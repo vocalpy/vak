@@ -234,9 +234,10 @@ def prep(
         )
         return dataset_df, dataset_path
     elif dataset_type == "vae":
-        dataset_df, dataset_path = prep_parametric_umap_dataset(
+        dataset_df, dataset_path = prep_vae_dataset(
             data_dir,
             purpose,
+            dataset_type,
             output_dir,
             audio_format,
             spect_params,
