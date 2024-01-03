@@ -1,24 +1,19 @@
 """Prepare datasets for VAE models."""
 from __future__ import annotations
 
-import json
 import logging
 import pathlib
 import warnings
 
 import crowsetta
-import pandas as pd
 
 from ... import datasets
-from ...common import labels
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
-from .. import dataset_df_helper, split
-from ..unit_dataset import prep_unit_dataset
-from ..parametric_umap import dataset_arrays
-from ..spectrogram_dataset import prep_spectrogram_dataset
-from ..frame_classification.assign_samples_to_splits import assign_samples_to_splits
+from .. import dataset_df_helper
+from .segment_vae import prep_segment_vae_dataset
+from .window_vae import prep_window_vae_dataset
 
 
 logger = logging.getLogger(__name__)
@@ -242,7 +237,7 @@ def prep_vae_dataset(
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
     if dataset_type == 'segment-vae':
-        prep_segment_vae_dataset(
+        dataset_df = prep_segment_vae_dataset(
             data_dir,
             dataset_path,
             dataset_csv_path,
@@ -262,7 +257,26 @@ def prep_vae_dataset(
             timebins_key,
         )
     elif dataset_type == 'window-vae':
-
+        dataset_df = prep_window_vae_dataset(
+            data_dir,
+            dataset_path,
+            dataset_csv_path,
+            purpose,
+            audio_format,
+            spect_format,
+            spect_params,
+            annot_format,
+            annot_file,
+            labelset,
+            audio_dask_bag_kwargs,
+            train_dur,
+            val_dur,
+            test_dur,
+            train_set_durs,
+            num_replicates,
+            spect_key,
+            timebins_key,
+        )
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
     logger.info(f"Saving dataset csv file: {dataset_csv_path}")
