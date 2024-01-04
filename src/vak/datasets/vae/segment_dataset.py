@@ -1,3 +1,8 @@
+"""Dataset class for VAE models that operate on segments.
+
+Segments are typically found with a segmenting algorithm
+that thresholds audio signal energy,
+e.g., syllables from birdsong or mouse USVs."""
 from __future__ import annotations
 
 import pathlib
@@ -10,11 +15,11 @@ import torch.utils.data
 
 
 class SegmentDataset(torch.utils.data.Dataset):
-    """Pipeline for loading samples from a dataset of spectrograms
+    """Dataset class for VAE models that operate on segments.
 
-    This is a simplified version of
-    :class:`vak.datasets.parametric_umap.ParametricUmapInferenceDataset`.
-    """
+    Segments are typically found with a segmenting algorithm
+    that thresholds audio signal energy,
+    e.g., syllables from birdsong or mouse USVs."""
 
     def __init__(
             self,
@@ -51,8 +56,34 @@ class SegmentDataset(torch.utils.data.Dataset):
             cls,
             dataset_path: str | pathlib.Path,
             split: str,
+            subset: str | None = None,
             transform: Callable | None = None,
     ):
+        """Make a :class:`SegmentDataset` instance,
+        given the path to a VAE segment dataset.
+
+        Parameters
+        ----------
+        dataset_path : pathlib.Path
+            Path to directory that represents a
+            frame classification dataset,
+            as created by
+            :func:`vak.prep.prep_frame_classification_dataset`.
+        split : str
+            The name of a split from the dataset,
+            one of {'train', 'val', 'test'}.
+        subset : str, optional
+            Name of subset to use.
+            If specified, this takes precedence over split.
+            Subsets are typically taken from the training data
+            for use when generating a learning curve.
+        transform : callable
+            The transform applied to the input to the neural network :math:`x`.
+
+        Returns
+        -------
+        dataset : vak.datasets.vae.SegmentDataset
+        """
         import vak.datasets  # import here just to make classmethod more explicit
 
         dataset_path = pathlib.Path(dataset_path)
@@ -62,16 +93,20 @@ class SegmentDataset(torch.utils.data.Dataset):
 
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
-        split_df = dataset_df[dataset_df.split == split]
+        # subset takes precedence over split, if specified
+        if subset:
+            dataset_df = dataset_df[dataset_df.subset == subset].copy()
+        else:
+            dataset_df = dataset_df[dataset_df.split == split].copy()
 
         data = np.stack(
             [
                 np.load(dataset_path / spect_path)
-                for spect_path in split_df.spect_path.values
+                for spect_path in dataset_df.spect_path.values
             ]
         )
         return cls(
             data,
-            split_df,
+            dataset_df,
             transform=transform,
         )
