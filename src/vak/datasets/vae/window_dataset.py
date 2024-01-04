@@ -1,4 +1,5 @@
-"""Dataset class used for training VAE models on fixed-sized windows, such as a "shotgun VAE" [1]_.
+"""Dataset class used for VAE models that operate on fixed-sized windows,
+such as a "shotgun VAE" [1]_.
 
 .. [1] Goffinet, J., Brudner, S., Mooney, R., & Pearson, J. (2021).
    Low-dimensional learned feature spaces quantify individual and group differences in vocal repertoires.
@@ -17,7 +18,8 @@ from .metadata import Metadata
 
 
 class WindowDataset:
-    """Dataset class used for training VAE models on fixed-sized windows, such as a "shotgun VAE" [1]_.
+    """Dataset class used for VAE models that operate on fixed-sized windows,
+    such as a "shotgun VAE" [1]_.
 
     Attributes
     ----------
