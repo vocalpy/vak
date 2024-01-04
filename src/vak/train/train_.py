@@ -8,6 +8,8 @@ from .. import models
 from ..common import validators
 from .frame_classification import train_frame_classification_model
 from .parametric_umap import train_parametric_umap_model
+from .vae import train_vae_model
+
 
 logger = logging.getLogger(__name__)
 
@@ -189,6 +191,26 @@ def train(
         )
     elif model_family == "ParametricUMAPModel":
         train_parametric_umap_model(
+            model_name=model_name,
+            model_config=model_config,
+            dataset_path=dataset_path,
+            batch_size=batch_size,
+            num_epochs=num_epochs,
+            num_workers=num_workers,
+            train_transform_params=train_transform_params,
+            train_dataset_params=train_dataset_params,
+            val_transform_params=val_transform_params,
+            val_dataset_params=val_dataset_params,
+            checkpoint_path=checkpoint_path,
+            results_path=results_path,
+            shuffle=shuffle,
+            val_step=val_step,
+            ckpt_step=ckpt_step,
+            device=device,
+            subset=subset,
+        )
+    elif model_family == "VAEModel":
+        train_vae_model(
             model_name=model_name,
             model_config=model_config,
             dataset_path=dataset_path,
