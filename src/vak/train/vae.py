@@ -239,8 +239,8 @@ def train_vae_model(
         val_loader = torch.utils.data.DataLoader(
             dataset=val_dataset,
             shuffle=False,
-            batch_size=64,
-            num_workers=16,
+            batch_size=batch_size,
+            num_workers=num_workers,
         )
 
     if device is None:
