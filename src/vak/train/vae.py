@@ -5,7 +5,6 @@ import datetime
 import logging
 import pathlib
 
-import numpy as np
 import pandas as pd
 import pytorch_lightning as lightning
 import torch.utils.data
@@ -13,8 +12,7 @@ import torch.utils.data
 from .. import datasets, models, transforms
 from ..common import validators
 from ..common.device import get_default as get_default_device
-from ..common.trainer import get_default_trainer
-from ..datasets.vae import SegmentDataset
+from ..datasets.vae import SegmentDataset, WindowDataset
 from .frame_classification import get_split_dur
 
 
@@ -88,11 +86,9 @@ def train_vae_model(
     checkpoint_path: str | pathlib.Path | None = None,
     spect_scaler_path: str | pathlib.Path | None = None,
     results_path: str | pathlib.Path | None = None,
-    normalize_spectrograms: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
     ckpt_step: int | None = None,
-    patience: int | None = None,
     device: str | None = None,
     subset: str | None = None,
 ) -> None:
@@ -128,7 +124,6 @@ def train_vae_model(
     shuffle
     val_step
     ckpt_step
-    patience
     device
     subset
 
@@ -185,72 +180,104 @@ def train_vae_model(
         f"Total duration of training split from dataset (in s): {train_dur}",
     )
 
-    train_transform_params = {}
-    transform = transforms.defaults.get_default_transform(
-        "ConvEncoderUMAP", "train", train_transform_params
-    )
-
     if train_transform_params is None:
         train_transform_params = {}
-    train_dataset = SegmentDataset.from_dataset_path(
-        dataset_path=dataset_path,
-        split="train",
-        transform=transform,
+    transform = transforms.defaults.get_default_transform(
+        model_name, "train", train_transform_params
     )
+
+    if metadata.dataset_type == 'vae-segment':
+        train_dataset = SegmentDataset.from_dataset_path(
+            dataset_path=dataset_path,
+            split="train",
+            subset=subset,
+            transform=transform,
+            **train_dataset_params,
+        )
+    elif metadata.dataset_type == 'vae-window':
+        train_dataset = WindowDataset.from_dataset_path(
+            dataset_path=dataset_path,
+            split="train",
+            subset=subset,
+            transform=transform,
+            **train_dataset_params,
+        )
 
     train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,
-        shuffle=True,
-        batch_size=64,
-        num_workers=16,
+        shuffle=shuffle,
+        batch_size=batch_size,
+        num_workers=num_workers,
     )
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
+    if val_step:
+        if val_transform_params is None:
+            val_transform_params = {}
+        transform = transforms.defaults.get_default_transform(
+            model_name, "eval", val_transform_params
+        )
+        if val_dataset_params is None:
+            val_dataset_params = {}
+        if metadata.dataset_type == 'vae-segment':
+            val_dataset = SegmentDataset.from_dataset_path(
+                dataset_path=dataset_path,
+                split="val",
+                transform=transform,
+                **val_dataset_params,
+            )
+        elif metadata.dataset_type == 'vae-window':
+            val_dataset = WindowDataset.from_dataset_path(
+                dataset_path=dataset_path,
+                split="val",
+                transform=transform,
+                **val_dataset_params,
+            )
+        print(
+            f"Duration of ParametricUMAPDataset used for validation, in seconds: {val_dataset.duration}",
+        )
+        val_loader = torch.utils.data.DataLoader(
+            dataset=val_dataset,
+            shuffle=False,
+            batch_size=64,
+            num_workers=16,
+        )
 
-    val_transform_params = {}
-    transform = vak.transforms.defaults.get_default_transform(
-        "ConvEncoderUMAP", "eval", val_transform_params
-    )
-    val_dataset_params = {}
-    val_dataset = SpectrogramPipe.from_dataset_path(
-        dataset_path=dataset_path,
-        split="val",
-        transform=transform,
-        **val_dataset_params,
-    )
-    print(
-        f"Duration of ParametricUMAPDataset used for validation, in seconds: {val_dataset.duration}",
-    )
-    val_loader = torch.utils.data.DataLoader(
-        dataset=val_dataset,
-        shuffle=False,
-        batch_size=64,
-        num_workers=16,
-    )
+    if device is None:
+        device = get_default_device()
 
-    device = vak.common.device.get_default()
-
-    model = vak.models.get(
-        "AVA",
-        config={"network": {}, "optimizer": {"lr": 0.001}},
+    model = models.get(
+        model_name,
+        config=model_config,
         input_shape=train_dataset.shape,
     )
 
-    results_model_root = results_path.joinpath("AVA")
-    results_model_root.mkdir(exist_ok=True)
+    if checkpoint_path is not None:
+        logger.info(
+            f"loading checkpoint for {model_name} from path: {checkpoint_path}",
+        )
+        model.load_state_dict_from_path(checkpoint_path)
+
+    results_model_root = results_path.joinpath(model_name)
+    results_model_root.mkdir()
     ckpt_root = results_model_root.joinpath("checkpoints")
     ckpt_root.mkdir(exist_ok=True)
-
+    logger.info(f"training {model_name}")
     trainer = get_trainer(
-        max_epochs=50,
+        max_epochs=num_epochs,
         log_save_dir=results_model_root,
         device=device,
         ckpt_root=ckpt_root,
-        ckpt_step=250,
+        ckpt_step=ckpt_step,
     )
-
+    train_time_start = datetime.datetime.now()
+    logger.info(f"Training start time: {train_time_start.isoformat()}")
     trainer.fit(
         model=model,
         train_dataloaders=train_loader,
         val_dataloaders=val_loader,
     )
+    train_time_stop = datetime.datetime.now()
+    logger.info(f"Training stop time: {train_time_stop.isoformat()}")
+    elapsed = train_time_stop - train_time_start
+    logger.info(f"Elapsed training time: {elapsed}")
