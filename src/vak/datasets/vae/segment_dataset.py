@@ -87,7 +87,7 @@ class SegmentDataset(torch.utils.data.Dataset):
         import vak.datasets  # import here just to make classmethod more explicit
 
         dataset_path = pathlib.Path(dataset_path)
-        metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(
+        metadata = vak.datasets.vae.Metadata.from_dataset_path(
             dataset_path
         )
 
