@@ -150,7 +150,7 @@ def train_vae_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.parametric_umap.Metadata.from_dataset_path(
+    metadata = datasets.vae.Metadata.from_dataset_path(
         dataset_path
     )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
@@ -186,6 +186,8 @@ def train_vae_model(
         model_name, "train", train_transform_params
     )
 
+    if train_dataset_params is None:
+        train_dataset_params = {}
     if metadata.dataset_type == 'vae-segment':
         train_dataset = SegmentDataset.from_dataset_path(
             dataset_path=dataset_path,
@@ -234,7 +236,7 @@ def train_vae_model(
                 **val_dataset_params,
             )
         print(
-            f"Duration of ParametricUMAPDataset used for validation, in seconds: {val_dataset.duration}",
+            f"Duration of dataset used for validation, in seconds: {val_dataset.duration}",
         )
         val_loader = torch.utils.data.DataLoader(
             dataset=val_dataset,
@@ -262,7 +264,7 @@ def train_vae_model(
     results_model_root.mkdir()
     ckpt_root = results_model_root.joinpath("checkpoints")
     ckpt_root.mkdir(exist_ok=True)
-    logger.info(f"training {model_name}")
+    logger.info(f"Training model: {model_name}")
     trainer = get_trainer(
         max_epochs=num_epochs,
         log_save_dir=results_model_root,
