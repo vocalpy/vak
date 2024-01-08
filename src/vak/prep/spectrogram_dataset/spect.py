@@ -5,7 +5,10 @@ https://scipy-cookbook.readthedocs.io/items/ButterworthBandpass.html
 spectrogram adapted from code by Kyle Kastner and Tim Sainburg
 https://github.com/timsainb/python_spectrograms_and_inversion
 """
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 from matplotlib.mlab import specgram
 from scipy.signal import butter, lfilter
 
@@ -25,14 +28,14 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
 
 
 def spectrogram(
-    dat,
-    samp_freq,
-    fft_size=512,
-    step_size=64,
-    thresh=None,
-    transform_type=None,
-    freq_cutoffs=None,
-):
+    dat: npt.NDArray,
+    samp_freq: int,
+    fft_size: int = 512,
+    step_size: int = 64,
+    thresh: float | None = None,
+    transform_type: str | None = None,
+    freq_cutoffs: list[int, int] | None = None,
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     """creates a spectrogram
 
     Parameters
