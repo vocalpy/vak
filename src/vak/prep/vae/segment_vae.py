@@ -27,6 +27,8 @@ def prep_segment_vae_dataset(
         annot_file: str | pathlib.Path | None = None,
         labelset: set | None = None,
         context_s: float = 0.015,
+        max_dur: float | None = 0.2,
+        target_shape: tuple[int, int] | None = (128, 128),
         train_dur: int | None = None,
         val_dur: int | None = None,
         test_dur: int | None = None,
@@ -39,37 +41,91 @@ def prep_segment_vae_dataset(
 
     Parameters
     ----------
-    data_dir
+    data_dir : str, Path
+        Path to directory with files from which to make dataset.
     dataset_path
     dataset_csv_path
-    purpose
-    audio_format
-    spect_params
-    annot_format
+    purpose : str
+        Purpose of the dataset.
+        One of {'train', 'eval', 'predict', 'learncurve'}.
+        These correspond to commands of the vak command-line interface.
+    audio_format : str
+        Format of audio files. One of {'wav', 'cbin'}.
+        Default is ``None``, but either ``audio_format`` or ``spect_format``
+        must be specified.
+    spect_params : dict, vak.config.SpectParams
+        Parameters for creating spectrograms. Default is ``None``.
+    annot_format : str
+        Format of annotations. Any format that can be used with the
+        :module:`crowsetta` library is valid. Default is ``None``.
     annot_file
-    labelset
-    context_s
-    train_dur
-    val_dur
-    test_dur
-    train_set_durs
-    num_replicates
-    spect_key
-    timebins_key
+    labelset : str, list, set
+        Set of unique labels for vocalizations. Strings or integers.
+        Default is ``None``. If not ``None``, then files will be skipped
+        where the associated annotation
+        contains labels not found in ``labelset``.
+        ``labelset`` is converted to a Python ``set`` using
+        :func:`vak.converters.labelset_to_set`.
+        See help for that function for details on how to specify ``labelset``.
+    context_s : float
+        Number of seconds of "context" around unit to
+        add, i.e., time before and after the onset
+        and offset respectively. Default is 0.005s,
+        5 milliseconds.
+    max_dur : float
+        Maximum duration for segments.
+        If a float value is specified,
+        any segment with a duration larger than
+        that value (in seconds) will be omitted
+        from the dataset. Default is None.
+    target_shape : tuple
+        Of ints, (target number of frequency bins,
+        target number of time bins).
+        Spectrograms of units will be reshaped
+        by interpolation to have the specified
+        number of frequency and time bins.
+        The transformation is only applied if both this
+        parameter and ``max_dur`` are specified.
+        Default is None.
+    train_dur : float
+        Total duration of training set, in seconds.
+        When creating a learning curve,
+        training subsets of shorter duration
+        will be drawn from this set. Default is None.
+    val_dur : float
+        Total duration of validation set, in seconds.
+        Default is None.
+    test_dur : float
+        Total duration of test set, in seconds.
+        Default is None.
+    train_set_durs : list
+        of int, durations in seconds of subsets taken from training data
+        to create a learning curve, e.g. [5, 10, 15, 20].
+    num_replicates : int
+        number of times to replicate training for each training set duration
+        to better estimate metrics for a training set of that size.
+        Each replicate uses a different randomly drawn subset of the training
+        data (but of the same duration).
+    spect_key : str
+        key for accessing spectrogram in files. Default is 's'.
+    timebins_key : str
+        key for accessing vector of time bins in files. Default is 't'.
 
     Returns
     -------
 
     """
     dataset_df, shape = prep_unit_dataset(
-        audio_format=audio_format,
-        output_dir=dataset_path,
-        spect_params=spect_params,
-        data_dir=data_dir,
-        annot_format=annot_format,
-        annot_file=annot_file,
-        labelset=labelset,
-        context_s=context_s,
+        audio_format,
+        dataset_path,
+        spect_params,
+        data_dir,
+        annot_format,
+        annot_file,
+        labelset,
+        context_s,
+        max_dur,
+        target_shape,
     )
     if dataset_df.empty:
         raise ValueError(
