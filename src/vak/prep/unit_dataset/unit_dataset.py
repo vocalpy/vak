@@ -12,11 +12,13 @@ import dask
 import dask.delayed
 import numpy as np
 import numpy.typing as npt
+import scipy.interpolate
 import pandas as pd
 from dask.diagnostics import ProgressBar
 
 from ...common import annotation, constants
 from ...common.converters import expanded_user_path, labelset_to_set
+from ...config.spect_params import SpectParamsConfig
 from ..spectrogram_dataset.audio_helper import files_from_dir
 from ..spectrogram_dataset.spect import spectrogram
 
@@ -53,13 +55,11 @@ def get_segment_list(
     annot: crowsetta.Annotation,
     audio_format: str,
     context_s: float = 0.005,
+    max_dur: float | None = None
 ) -> list[Segment]:
     """Get a list of :class:`Segment` instances, given
     the path to an audio file and an annotation that indicates
     where segments occur in that audio file.
-
-    Function used by
-    :func:`vak.prep.dimensionality_reduction.unit_dataset.prep_unit_dataset`.
 
     Parameters
     ----------
@@ -74,11 +74,23 @@ def get_segment_list(
         add, i.e., time before and after the onset
         and offset respectively. Default is 0.005s,
         5 milliseconds.
+    max_dur : float
+        Maximum duration for segments.
+        If a float value is specified,
+        any segment with a duration larger than
+        that value (in seconds) will be omitted
+        from the returned list of segments.
+        Default is None.
 
     Returns
     -------
     segments : list
         A :class:`list` of :class:`Segment` instances.
+
+    Notes
+    -----
+    Function used by
+    :func:`vak.prep.unit_dataset.prep_unit_dataset`.
     """
     data, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](
         audio_path
@@ -86,9 +98,20 @@ def get_segment_list(
     sample_dur = 1.0 / samplerate
 
     segments = []
-    for onset_s, offset_s, label in zip(
+    for segment_num, (onset_s, offset_s, label) in enumerate(zip(
         annot.seq.onsets_s, annot.seq.offsets_s, annot.seq.labels
-    ):
+    )):
+        if max_dur is not None:
+            segment_dur = offset_s - onset_s
+            if segment_dur > max_dur:
+                logger.info(
+                    f"Segment {segment_num} in {pathlib.Path(audio_path).name}, "
+                    f"with onset at {onset_s}s and offset at {offset_s}s with label '{label}',"
+                    f"has duration ({segment_dur}) that is greater than "
+                    f"maximum allowed duration ({max_dur})."
+                    "Omitting segment from dataset."
+                )
+                continue
         onset_s -= context_s
         offset_s += context_s
         onset_ind = int(np.floor(onset_s * samplerate))
@@ -112,21 +135,43 @@ def get_segment_list(
 
 
 def spectrogram_from_segment(
-    segment: Segment, spect_params: dict
+    segment: Segment,
+    spect_params: SpectParamsConfig,
+    max_dur: float | None = None,
+    target_shape: tuple[int, int] | None = None
 ) -> npt.NDArray:
     """Compute a spectrogram given a :class:`Segment` instance.
 
     Parameters
     ----------
     segment : Segment
-    spect_params : dict
+    spect_params : SpectParamsConfig
+    max_dur : float
+        Maximum duration for segments.
+        Used with ``target_shape`` when reshaping
+        the spectrogram via interpolation.
+        Default is None.
+    target_shape : tuple
+        Of ints, (target number of frequency bins,
+        target number of time bins).
+        Spectrograms of units will be reshaped
+        by interpolation to have the specified
+        number of frequency and time bins.
+        The transformation is only applied if both this
+        parameter and ``max_dur`` are specified.
+        Default is None.
 
     Returns
     -------
     spect : numpy.ndarray
+
+    Notes
+    -----
+    Function used by
+    :func:`vak.prep.unit_dataset.prep_unit_dataset`.
     """
     data, samplerate = np.array(segment.data), segment.samplerate
-    s, _, _ = spectrogram(
+    s, f, t = spectrogram(
         data,
         samplerate,
         spect_params.fft_size,
@@ -135,6 +180,15 @@ def spectrogram_from_segment(
         spect_params.transform_type,
         spect_params.freq_cutoffs,
     )
+    if max_dur and target_shape:
+        # if max_dur and target_shape are specified we interpolate spectrogram to target shape, like AVA
+        interp = scipy.interpolate.interp2d(t, f, s, copy=False, bounds_error=False, fill_value=-1 / 1e12)
+        target_freqs = np.linspace(f.min(), f.max(), target_shape[0])
+        duration = t.max() - t.min()
+        new_duration = np.sqrt(duration * max_dur)  # stretched duration
+        shoulder = 0.5 * (max_dur - new_duration)
+        target_times = np.linspace(t.min() - shoulder, t.max() + shoulder, target_shape[1])
+        s = interp(target_times, target_freqs, assume_sorted=True)
     return s
 
 
@@ -190,14 +244,24 @@ def abspath(a_path):
 # ---- make spectrograms + records for dataframe -----------------------------------------------------------------------
 @dask.delayed
 def make_spect_return_record(
-    segment: Segment, ind: int, spect_params: dict, output_dir: pathlib.Path
+    segment: Segment,
+    ind: int,
+    spect_params: SpectParamsConfig,
+    output_dir: pathlib.Path,
+    max_dur: float | None = None,
+    target_shape: tuple[int, int] | None = None,
 ) -> tuple:
     """Helper function that enables parallelized creation of "records",
     i.e. rows for dataframe, from .
     Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
     and (2) annotation for that file"""
 
-    spect = spectrogram_from_segment(segment, spect_params)
+    spect = spectrogram_from_segment(
+        segment,
+        spect_params,
+        max_dur,
+        target_shape,
+    )
     n_timebins = spect.shape[-1]
 
     spect_to_save = SpectToSave(spect, ind, segment.audio_path)
@@ -265,6 +329,8 @@ def prep_unit_dataset(
     annot_file: str | pathlib.Path | None = None,
     labelset: set | None = None,
     context_s: float = 0.005,
+    max_dur: float | None = None,
+    target_shape: tuple[int, int] | None = None,
 ) -> tuple[pd.DataFrame, tuple[int]]:
     """Prepare a dataset of units from sequences,
     e.g., all syllables segmented out of a dataset of birdsong.
@@ -302,6 +368,21 @@ def prep_unit_dataset(
         add, i.e., time before and after the onset
         and offset respectively. Default is 0.005s,
         5 milliseconds.
+    max_dur : float
+        Maximum duration for segments.
+        If a float value is specified,
+        any segment with a duration larger than
+        that value (in seconds) will be omitted
+        from the dataset. Default is None.
+    target_shape : tuple
+        Of ints, (target number of frequency bins,
+        target number of time bins).
+        Spectrograms of units will be reshaped
+        by interpolation to have the specified
+        number of frequency and time bins.
+        The transformation is only applied if both this
+        parameter and ``max_dur`` are specified.
+        Default is None.
 
     Returns
     -------
@@ -379,7 +460,7 @@ def prep_unit_dataset(
     segments = []
     for audio_path, annot in audio_annot_map.items():
         segment_list = dask.delayed(get_segment_list)(
-            audio_path, annot, audio_format, context_s
+            audio_path, annot, audio_format, context_s, max_dur
         )
         segments.append(segment_list)
 
@@ -400,7 +481,7 @@ def prep_unit_dataset(
     records_n_timebins_tuples = []
     for ind, segment in enumerate(segments):
         records_n_timebins_tuple = make_spect_return_record(
-            segment, ind, spect_params, output_dir
+            segment, ind, spect_params, output_dir, max_dur, target_shape,
         )
         records_n_timebins_tuples.append(records_n_timebins_tuple)
     with ProgressBar():
