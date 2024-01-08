@@ -12,7 +12,7 @@ import dask
 import dask.delayed
 import numpy as np
 import numpy.typing as npt
-import scipy.interpolate
+from scipy.interpolate import RegularGridInterpolator
 import pandas as pd
 from dask.diagnostics import ProgressBar
 
@@ -182,13 +182,14 @@ def spectrogram_from_segment(
     )
     if max_dur and target_shape:
         # if max_dur and target_shape are specified we interpolate spectrogram to target shape, like AVA
-        interp = scipy.interpolate.interp2d(t, f, s, copy=False, bounds_error=False, fill_value=-1 / 1e12)
         target_freqs = np.linspace(f.min(), f.max(), target_shape[0])
         duration = t.max() - t.min()
         new_duration = np.sqrt(duration * max_dur)  # stretched duration
         shoulder = 0.5 * (max_dur - new_duration)
         target_times = np.linspace(t.min() - shoulder, t.max() + shoulder, target_shape[1])
-        s = interp(target_times, target_freqs, assume_sorted=True)
+        ttnew, ffnew = np.meshgrid(target_times, target_freqs, indexing='ij', sparse=True)
+        r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=-1 / 1e12)
+        s = r((ttnew, ffnew)).T
     return s
 
 
