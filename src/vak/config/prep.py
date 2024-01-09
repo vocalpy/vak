@@ -25,7 +25,7 @@ def is_valid_duration(instance, attribute, value):
     """validator for dataset split durations"""
     if type(value) not in {int, float}:
         raise TypeError(
-            f"invalid type for {attribute} of {instance}: {type(value)}. Type should be float or int."
+            f"invalid type for {attribute.name} of {instance}: {type(value)}. Type should be float or int."
         )
 
     if value == -1:  # specifies "use the remainder of the dataset"
@@ -34,7 +34,7 @@ def is_valid_duration(instance, attribute, value):
 
     if not value >= 0:
         raise ValueError(
-            f"value specified for {attribute} of {instance} must be greater than or equal to zero, was {value}"
+            f"value specified for {attribute.name} of {instance} must be greater than or equal to zero, was {value}"
         )
 
 
@@ -64,17 +64,17 @@ def is_valid_target_shape(instance, attribute, value):
     """validator for target shape"""
     if not isinstance(value, (tuple, list)):
         raise TypeError(
-            f"invalid type for {attribute} of {instance}: {type(value)}. Type should be tuple or list."
+            f"invalid type for {attribute.name} of {instance}: {type(value)}. Type should be tuple or list."
         )
 
     if not all([isinstance(val, int) for val in value]):
         raise ValueError(
-            f"All values in {attribute} of {instance} should be integers"
+            f"All values in {attribute.name} of {instance} should be integers"
         )
 
     if not len(value) == 2:
         raise ValueError(
-            f"{attribute} of {instance} should have length 2: "
+            f"{attribute.name} of {instance} should have length 2: "
             f"(number of frequency bins, number of time bins). "
             f"Length was: {len(value)}"
         )
@@ -240,8 +240,20 @@ class PrepConfig:
     )
 
     context_s = attr.ib(
-        validator=validators.optional(instance_of(float)), default=None
+        default=0.005
     )
+    @context_s.validator
+    def is_valid_context_s(self, attribute, value):
+        if not isinstance(value, float):
+            raise TypeError(
+                f"Value for {attribute.name} should be float but type was: {type(value)}"
+            )
+        if not value >= 0.:
+            raise ValueError(
+                f"Value for {attribute.name} should be greater than or equal to 0., "
+                f"but was: {value}"
+            )
+
     max_dur = attr.ib(
         validator=validators.optional(instance_of(float)), default=None
     )
