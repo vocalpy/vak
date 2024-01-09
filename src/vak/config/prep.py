@@ -60,6 +60,25 @@ def are_valid_dask_bag_kwargs(instance, attribute, value):
         )
 
 
+def is_valid_target_shape(instance, attribute, value):
+    """validator for target shape"""
+    if not isinstance(value, (tuple, list)):
+        raise TypeError(
+            f"invalid type for {attribute} of {instance}: {type(value)}. Type should be tuple or list."
+        )
+
+    if not all([isinstance(val, int) for val in value]):
+        raise ValueError(
+            f"All values in {attribute} of {instance} should be integers"
+        )
+
+    if not len(value) == 2:
+        raise ValueError(
+            f"{attribute} of {instance} should have length 2: "
+            f"(number of frequency bins, number of time bins). "
+            f"Length was: {len(value)}"
+        )
+
 @attr.s
 class PrepConfig:
     """class to represent [PREP] section of config.toml file
@@ -125,6 +144,31 @@ class PrepConfig:
         in a learning curve. Each replicate uses a different
         randomly drawn subset of the training data (but of the same duration).
         Default is None. Required if config file has a learncurve section.
+    context_s : float
+        Number of seconds of "context" around a segment to
+        add, i.e., time before and after the onset
+        and offset respectively. Default is 0.005s,
+        5 milliseconds. This parameter is only used for
+        Parametric UMAP and segment-VAE datasets.
+    max_dur : float
+        Maximum duration for segments.
+        If a float value is specified,
+        any segment with a duration larger than
+        that value (in seconds) will be omitted
+        from the dataset. Default is None.
+        This parameter is only used for
+        vae-segment datasets.
+    target_shape : tuple
+        Of ints, (target number of frequency bins,
+        target number of time bins).
+        Spectrograms of units will be reshaped
+        by interpolation to have the specified
+        number of frequency and time bins.
+        The transformation is only applied if both this
+        parameter and ``max_dur`` are specified.
+        Default is None.
+        This parameter is only used for
+        vae-segment datasets.
     """
 
     data_dir = attr.ib(converter=expanded_user_path)
@@ -193,6 +237,18 @@ class PrepConfig:
     )
     num_replicates = attr.ib(
         validator=validators.optional(instance_of(int)), default=None
+    )
+
+    context_s = attr.ib(
+        validator=validators.optional(instance_of(float)), default=None
+    )
+    max_dur = attr.ib(
+        validator=validators.optional(instance_of(float)), default=None
+    )
+    target_shape = attr.ib(
+        converter=converters.optional(tuple),
+        validator=validators.optional(is_valid_target_shape),
+        default=None
     )
 
     def __attrs_post_init__(self):
