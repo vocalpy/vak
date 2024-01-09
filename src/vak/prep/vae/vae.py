@@ -37,6 +37,8 @@ def prep_vae_dataset(
     labelset: set | None = None,
     audio_dask_bag_kwargs: dict | None = None,
     context_s: float = 0.015,
+    max_dur: float | None = None,
+    target_shape: tuple[int, int] | None = None,
     train_dur: int | None = None,
     val_dur: int | None = None,
     test_dur: int | None = None,
@@ -91,6 +93,31 @@ def prep_vae_dataset(
         e.g., ``audio_dask_bag_kwargs = { npartitions = 20 }``.
         Allows for finer-grained control
         when needed to process files of different sizes.
+    context_s : float
+        Number of seconds of "context" around a segment to
+        add, i.e., time before and after the onset
+        and offset respectively. Default is 0.005s,
+        5 milliseconds. This parameter is only used for
+        Parametric UMAP and segment-VAE datasets.
+    max_dur : float
+        Maximum duration for segments.
+        If a float value is specified,
+        any segment with a duration larger than
+        that value (in seconds) will be omitted
+        from the dataset. Default is None.
+        This parameter is only used for
+        segment-VAE datasets.
+    target_shape : tuple
+        Of ints, (target number of frequency bins,
+        target number of time bins).
+        Spectrograms of units will be reshaped
+        by interpolation to have the specified
+        number of frequency and time bins.
+        The transformation is only applied if both this
+        parameter and ``max_dur`` are specified.
+        Default is None.
+        This parameter is only used for
+        segment-VAE datasets.
     train_dur : float
         Total duration of training set, in seconds.
         When creating a learning curve,
@@ -250,6 +277,8 @@ def prep_vae_dataset(
             annot_file,
             labelset,
             context_s,
+            max_dur,
+            target_shape,
             train_dur,
             val_dur,
             test_dur,
