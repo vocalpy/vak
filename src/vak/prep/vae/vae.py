@@ -39,6 +39,7 @@ def prep_vae_dataset(
     context_s: float = 0.015,
     max_dur: float | None = None,
     target_shape: tuple[int, int] | None = None,
+    normalize: bool = True,
     train_dur: int | None = None,
     val_dur: int | None = None,
     test_dur: int | None = None,
@@ -117,6 +118,10 @@ def prep_vae_dataset(
         parameter and ``max_dur`` are specified.
         Default is None.
         This parameter is only used for
+        segment-VAE datasets.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Default is True. This parameter is only used for
         segment-VAE datasets.
     train_dur : float
         Total duration of training set, in seconds.
@@ -279,6 +284,7 @@ def prep_vae_dataset(
             context_s,
             max_dur,
             target_shape,
+            normalize,
             train_dur,
             val_dur,
             test_dur,
