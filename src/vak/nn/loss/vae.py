@@ -17,12 +17,17 @@ def vae_elbo_loss(
     z_dim: int
 ):
     # E_{q(z|x)} p(z)
-    elbo = -0.5 * ( torch.sum( torch.pow(z, 2) ) + z_dim * torch.log( 2 * PI ))
+    elbo = -0.5 * (torch.sum(torch.pow(z, 2) ) + z_dim * torch.log( 2 * PI ))
 
     # E_{q(z|x)} p(x|z)
     x_dim = np.prod(x.shape[1:])
     pxz_term = -0.5 * x_dim * (torch.log(2 * PI / model_precision))
-    l2s = torch.sum(torch.pow(x - x_rec, 2), dim=1)
+    l2s = torch.sum(
+        torch.pow(
+            x.view(x.shape[0], -1) - x_rec.view(x_rec.shape[0], -1),
+            2),
+        dim=1
+    )
     pxz_term = pxz_term - 0.5 * model_precision * torch.sum(l2s)
     elbo = elbo + pxz_term
 
