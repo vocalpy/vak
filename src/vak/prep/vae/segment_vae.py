@@ -8,6 +8,7 @@ import pathlib
 import pandas as pd
 
 from ...common import labels
+from ...config.spect_params import SpectParamsConfig
 from .. import dataset_df_helper, split
 from ..unit_dataset import prep_unit_dataset
 from ..parametric_umap import dataset_arrays
@@ -22,13 +23,14 @@ def prep_segment_vae_dataset(
         dataset_csv_path: str | pathlib.Path,
         purpose: str,
         audio_format: str | None = None,
-        spect_params: dict | None = None,
+        spect_params: SpectParamsConfig | None = None,
         annot_format: str | None = None,
         annot_file: str | pathlib.Path | None = None,
         labelset: set | None = None,
         context_s: float = 0.005,
         max_dur: float | None = None,
         target_shape: tuple[int, int] | None = None,
+        normalize: bool = True,
         train_dur: int | None = None,
         val_dur: int | None = None,
         test_dur: int | None = None,
@@ -87,6 +89,9 @@ def prep_segment_vae_dataset(
         The transformation is only applied if both this
         parameter and ``max_dur`` are specified.
         Default is None.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Default is True.
     train_dur : float
         Total duration of training set, in seconds.
         When creating a learning curve,
@@ -126,6 +131,7 @@ def prep_segment_vae_dataset(
         context_s,
         max_dur,
         target_shape,
+        normalize,
     )
     if dataset_df.empty:
         raise ValueError(
