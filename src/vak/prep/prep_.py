@@ -34,6 +34,7 @@ def prep(
     context_s: float = 0.015,
     max_dur: float | None = None,
     target_shape: tuple[int, int] | None = None,
+    normalize: bool = True,
 ):
     """Prepare datasets for use with neural network models.
 
@@ -159,7 +160,7 @@ def prep(
         that value (in seconds) will be omitted
         from the dataset. Default is None.
         This parameter is only used for
-        vae-segment datasets.
+        segment-VAE datasets.
     target_shape : tuple
         Of ints, (target number of frequency bins,
         target number of time bins).
@@ -170,7 +171,11 @@ def prep(
         parameter and ``max_dur`` are specified.
         Default is None.
         This parameter is only used for
-        vae-segment datasets.
+        segment-VAE datasets.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Default is True. This parameter is only used for
+        segment-VAE dataset.
 
     Returns
     -------
@@ -276,6 +281,7 @@ def prep(
             context_s,
             max_dur,
             target_shape,
+            normalize,
             train_dur,
             val_dur,
             test_dur,
