@@ -138,7 +138,8 @@ def spectrogram_from_segment(
     segment: Segment,
     spect_params: SpectParamsConfig,
     max_dur: float | None = None,
-    target_shape: tuple[int, int] | None = None
+    target_shape: tuple[int, int] | None = None,
+    normalize: bool = True,
 ) -> npt.NDArray:
     """Compute a spectrogram given a :class:`Segment` instance.
 
@@ -160,6 +161,9 @@ def spectrogram_from_segment(
         The transformation is only applied if both this
         parameter and ``max_dur`` are specified.
         Default is None.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Default is True.
 
     Returns
     -------
@@ -190,6 +194,10 @@ def spectrogram_from_segment(
         ttnew, ffnew = np.meshgrid(target_times, target_freqs, indexing='ij', sparse=True)
         r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=-1 / 1e12)
         s = r((ttnew, ffnew)).T
+    if normalize:
+        s_max, s_min = s.max(), s.min()
+        s = (s - s_min) / (s_max - s_min)
+        s = np.clip(s, 0.0, 1.0)
     return s
 
 
@@ -251,6 +259,7 @@ def make_spect_return_record(
     output_dir: pathlib.Path,
     max_dur: float | None = None,
     target_shape: tuple[int, int] | None = None,
+    normalize: bool = True,
 ) -> tuple:
     """Helper function that enables parallelized creation of "records",
     i.e. rows for dataframe, from .
@@ -262,6 +271,7 @@ def make_spect_return_record(
         spect_params,
         max_dur,
         target_shape,
+        normalize,
     )
     n_timebins = spect.shape[-1]
 
@@ -323,8 +333,8 @@ DF_COLUMNS = [
 
 def prep_unit_dataset(
     audio_format: str,
-    output_dir: str,
-    spect_params: dict,
+    output_dir: str | pathlib.Path,
+    spect_params: SpectParamsConfig,
     data_dir: str | pathlib.Path,
     annot_format: str | None = None,
     annot_file: str | pathlib.Path | None = None,
@@ -332,6 +342,7 @@ def prep_unit_dataset(
     context_s: float = 0.005,
     max_dur: float | None = None,
     target_shape: tuple[int, int] | None = None,
+    normalize: bool = True,
 ) -> tuple[pd.DataFrame, tuple[int]]:
     """Prepare a dataset of units from sequences,
     e.g., all syllables segmented out of a dataset of birdsong.
@@ -384,6 +395,9 @@ def prep_unit_dataset(
         The transformation is only applied if both this
         parameter and ``max_dur`` are specified.
         Default is None.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Default is True.
 
     Returns
     -------
@@ -482,7 +496,7 @@ def prep_unit_dataset(
     records_n_timebins_tuples = []
     for ind, segment in enumerate(segments):
         records_n_timebins_tuple = make_spect_return_record(
-            segment, ind, spect_params, output_dir, max_dur, target_shape,
+            segment, ind, spect_params, output_dir, max_dur, target_shape, normalize,
         )
         records_n_timebins_tuples.append(records_n_timebins_tuple)
     with ProgressBar():
