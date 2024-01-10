@@ -51,29 +51,25 @@ class VAEModel(base.Model):
         """
         """
         x = batch["x"]
-        out, _ = self.network(x)
-        z, latent_dist  = itemgetter('z', 'latent_dist')(_)
-        loss = self.loss(x, z, out, latent_dist)
+        x_rec, z, latent_dist = self.network(x)
+        loss = self.loss(x, z, x_rec, latent_dist)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
         x = batch["x"]
-        out, _ = self.network(x)
-        z, latent_dist  = itemgetter('z', 'latent_dist')(_)
+        x_rec, z, latent_dist = self.network(x)
         for metric_name, metric_callable in self.metrics.items():
             if metric_name == "loss":
                 self.log(
                     f"val_{metric_name}",
-                    metric_callable(x, z, out, latent_dist),
-                    batch_size=1,
+                    metric_callable(x, z, x_rec, latent_dist),
                     on_step=True,
                 )
             elif metric_name == "acc":
                 self.log(
                     f"val_{metric_name}",
-                    metric_callable(out, x),
-                    batch_size=1,
+                    metric_callable(x_rec, x),
                     on_step=True,
                 )
 
