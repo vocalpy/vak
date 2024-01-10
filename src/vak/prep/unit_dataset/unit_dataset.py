@@ -184,6 +184,7 @@ def spectrogram_from_segment(
         spect_params.transform_type,
         spect_params.freq_cutoffs,
     )
+    s_max, s_min = s.max(), s.min()
     if max_dur and target_shape:
         # if max_dur and target_shape are specified we interpolate spectrogram to target shape, like AVA
         target_freqs = np.linspace(f.min(), f.max(), target_shape[0])
@@ -192,10 +193,9 @@ def spectrogram_from_segment(
         shoulder = 0.5 * (max_dur - new_duration)
         target_times = np.linspace(t.min() - shoulder, t.max() + shoulder, target_shape[1])
         ttnew, ffnew = np.meshgrid(target_times, target_freqs, indexing='ij', sparse=True)
-        r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=-1 / 1e12)
+        r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=s_min)
         s = r((ttnew, ffnew)).T
     if normalize:
-        s_max, s_min = s.max(), s.min()
         s = (s - s_min) / (s_max - s_min)
         s = np.clip(s, 0.0, 1.0)
     return s
