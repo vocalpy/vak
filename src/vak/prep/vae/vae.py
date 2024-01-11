@@ -279,7 +279,6 @@ def prep_vae_dataset(
             context_s,
             max_dur,
             target_shape,
-            normalize,
             train_dur,
             val_dur,
             test_dur,
