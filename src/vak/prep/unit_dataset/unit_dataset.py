@@ -245,7 +245,6 @@ def make_spect_return_record(
     s, f, t = spectrogram_from_segment(
         segment,
         spect_params,
-
     )
     n_timebins = s.shape[-1]
 
@@ -269,7 +268,7 @@ def make_spect_return_record(
 
 
 @dask.delayed
-def pad_spectrogram(record: tuple, pad_length: float) -> None:
+def pad_spectrogram(record: tuple, pad_length: float, padval: float = 0.) -> None:
     """Pads a spectrogram to a specified length on the left and right sides.
 
     Spectrogram is saved again after padding.
@@ -295,15 +294,11 @@ def pad_spectrogram(record: tuple, pad_length: float) -> None:
     pad_left = np.floor(float(excess_needed) / 2).astype("int")
     pad_right = np.ceil(float(excess_needed) / 2).astype("int")
     spect_padded = np.pad(
-        spect, [(0, 0), (pad_left, pad_right)], "constant", constant_values=0
+        spect, [(0, 0), (pad_left, pad_right)], "constant", constant_values=padval
     )
     new_spect_path = str(spect_path).replace(".npz", ".npy")
     np.save(new_spect_path, spect_padded)
     return new_spect_path, spect_padded.shape
-
-
-# what AVA uses
-FILL_VALUE = -1 / 1e-12
 
 
 @dask.delayed
@@ -312,6 +307,7 @@ def interp_spectrogram(
     max_dur: float,
     target_shape: tuple[int, int],
     normalize: bool = True,
+    fill_value: float = 0.
 ):
     """Linearly interpolate a spectrogram to a target shape.
 
@@ -365,7 +361,7 @@ def interp_spectrogram(
     shoulder = 0.5 * (max_dur - new_duration)
     target_times = np.linspace(t.min() - shoulder, t.max() + shoulder, target_shape[1])
     ttnew, ffnew = np.meshgrid(target_times, target_freqs, indexing='ij', sparse=True)
-    r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=FILL_VALUE)
+    r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=fill_value)
     s = r((ttnew, ffnew)).T
     if normalize:
         s_max, s_min = s.max(), s.min()
@@ -543,7 +539,7 @@ def prep_unit_dataset(
         segment for segment_list in segments for segment in segment_list
     ]
 
-    # ---- make and save all spectrograms *before* padding
+    # ---- make and save all spectrograms *before* interpolating or padding
     # This is a design choice to avoid keeping all the spectrograms in memory
     # but since we want to pad all spectrograms to be the same width,
     # it requires us to go back, load each one, and pad it.
@@ -569,12 +565,14 @@ def prep_unit_dataset(
         n_timebins_list.append(n_timebins)
 
     # ---- either interpolate or pad spectrograms so they are all the same size
+    fill_value = spect_params.min_val if spect_params.min_val else 0.
+
     if max_dur is not None and target_shape is not None:
         interpolated = []
         for record in records:
             interpolated.append(
                 interp_spectrogram(
-                    record, max_dur, target_shape, spect_params.normalize
+                    record, max_dur, target_shape, spect_params.normalize, fill_value
                 ))
         with ProgressBar():
             path_shape_tuples = dask.compute(*interpolated)
@@ -585,7 +583,7 @@ def prep_unit_dataset(
 
         padded = []
         for record in records:
-            padded.append(pad_spectrogram(record, pad_length))
+            padded.append(pad_spectrogram(record, pad_length, padval=fill_value))
         with ProgressBar():
             path_shape_tuples = dask.compute(*padded)
 
