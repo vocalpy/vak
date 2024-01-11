@@ -172,10 +172,6 @@ def prep(
         Default is None.
         This parameter is only used for
         segment-VAE datasets.
-    normalize : bool
-        If True, min-max normalize the spectrogram.
-        Default is True. This parameter is only used for
-        segment-VAE dataset.
 
     Returns
     -------
@@ -281,7 +277,6 @@ def prep(
             context_s,
             max_dur,
             target_shape,
-            normalize,
             train_dur,
             val_dur,
             test_dur,
