@@ -137,8 +137,6 @@ def get_segment_list(
 def spectrogram_from_segment(
     segment: Segment,
     spect_params: SpectParamsConfig,
-    max_dur: float | None = None,
-    target_shape: tuple[int, int] | None = None,
     normalize: bool = True,
 ) -> npt.NDArray:
     """Compute a spectrogram given a :class:`Segment` instance.
@@ -147,20 +145,6 @@ def spectrogram_from_segment(
     ----------
     segment : Segment
     spect_params : SpectParamsConfig
-    max_dur : float
-        Maximum duration for segments.
-        Used with ``target_shape`` when reshaping
-        the spectrogram via interpolation.
-        Default is None.
-    target_shape : tuple
-        Of ints, (target number of frequency bins,
-        target number of time bins).
-        Spectrograms of units will be reshaped
-        by interpolation to have the specified
-        number of frequency and time bins.
-        The transformation is only applied if both this
-        parameter and ``max_dur`` are specified.
-        Default is None.
     normalize : bool
         If True, min-max normalize the spectrogram.
         Default is True.
@@ -184,21 +168,12 @@ def spectrogram_from_segment(
         spect_params.transform_type,
         spect_params.freq_cutoffs,
     )
-    s_max, s_min = s.max(), s.min()
-    if max_dur and target_shape:
-        # if max_dur and target_shape are specified we interpolate spectrogram to target shape, like AVA
-        target_freqs = np.linspace(f.min(), f.max(), target_shape[0])
-        duration = t.max() - t.min()
-        new_duration = np.sqrt(duration * max_dur)  # stretched duration
-        shoulder = 0.5 * (max_dur - new_duration)
-        target_times = np.linspace(t.min() - shoulder, t.max() + shoulder, target_shape[1])
-        ttnew, ffnew = np.meshgrid(target_times, target_freqs, indexing='ij', sparse=True)
-        r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=s_min)
-        s = r((ttnew, ffnew)).T
+
     if normalize:
+        s_max, s_min = s.max(), s.min()
         s = (s - s_min) / (s_max - s_min)
         s = np.clip(s, 0.0, 1.0)
-    return s
+    return s, f, t
 
 
 @attrs.define
@@ -209,6 +184,8 @@ class SpectToSave:
     """
 
     spect: npt.NDArray
+    f: npt.NDArray
+    t: npt.NDArray
     ind: int
     audio_path: str
 
@@ -228,18 +205,24 @@ def save_spect(
 
     Returns
     -------
-    npy_path : str
-        Path to npy file containing spectrogram inside ``output_dir``
+    npz_path : str
+        Path to npz file containing spectrogram inside ``output_dir``
     """
+    spect_dict = {
+        "s": spect_to_save.spect,
+        "f": spect_to_save.f,
+        "t": spect_to_save.t,
+    }
+
     basename = (
         os.path.basename(spect_to_save.audio_path)
         + f"-segment-{spect_to_save.ind}"
     )
-    npy_path = os.path.join(
-        os.path.normpath(output_dir), basename + ".spect.npy"
+    npz_path = os.path.join(
+        os.path.normpath(output_dir), basename + ".spect.npz"
     )
-    np.save(npy_path, spect_to_save.spect)
-    return npy_path
+    np.savez(npz_path, **spect_dict)
+    return npz_path
 
 
 def abspath(a_path):
@@ -257,25 +240,21 @@ def make_spect_return_record(
     ind: int,
     spect_params: SpectParamsConfig,
     output_dir: pathlib.Path,
-    max_dur: float | None = None,
-    target_shape: tuple[int, int] | None = None,
     normalize: bool = True,
-) -> tuple:
+) -> tuple[tuple, int, float]:
     """Helper function that enables parallelized creation of "records",
     i.e. rows for dataframe, from .
     Accepts a two-element tuple containing (1) a dictionary that represents a spectrogram
     and (2) annotation for that file"""
 
-    spect = spectrogram_from_segment(
+    s, f, t = spectrogram_from_segment(
         segment,
         spect_params,
-        max_dur,
-        target_shape,
         normalize,
     )
-    n_timebins = spect.shape[-1]
+    n_timebins = s.shape[-1]
 
-    spect_to_save = SpectToSave(spect, ind, segment.audio_path)
+    spect_to_save = SpectToSave(s, f, t, ind, segment.audio_path)
     spect_path = save_spect(spect_to_save, output_dir)
     record = tuple(
         [
@@ -291,21 +270,31 @@ def make_spect_return_record(
         ]
     )
 
-    return record, n_timebins
+    return record, n_timebins, s.mean()
 
 
 @dask.delayed
 def pad_spectrogram(record: tuple, pad_length: float) -> None:
     """Pads a spectrogram to a specified length on the left and right sides.
+
     Spectrogram is saved again after padding.
 
     Parameters
     ----------
     record : tuple
+        Returned by :func:`make_spect_return_record`,
+        has path to spectrogram file.
     pad_length : int
+        Length to which spectrogram should be padded.
+
+    Returns
+    -------
+    shape : tuple
+        Shape of spectrogram after padding.
     """
     spect_path = record[0]  # 'spect_path'
-    spect = np.load(spect_path)
+    spect_dict = np.load(spect_path)
+    spect = spect_dict["s"]
 
     excess_needed = pad_length - spect.shape[-1]
     pad_left = np.floor(float(excess_needed) / 2).astype("int")
@@ -313,8 +302,83 @@ def pad_spectrogram(record: tuple, pad_length: float) -> None:
     spect_padded = np.pad(
         spect, [(0, 0), (pad_left, pad_right)], "constant", constant_values=0
     )
-    np.save(spect_path, spect_padded)
-    return spect_padded.shape
+    new_spect_path = str(spect_path).replace(".npz", ".npy")
+    np.save(new_spect_path, spect_padded)
+    return new_spect_path, spect_padded.shape
+
+
+@dask.delayed
+def interp_spectrogram(
+    record: tuple,
+    fill_value: float,
+    max_dur: float,
+    target_shape: tuple[int, int],
+    normalize: bool = True,
+):
+    """Linearly interpolate a spectrogram to a target shape.
+
+    Spectrogram is saved again after interpolation.
+
+    Uses :func:`scipy.interpolate.RegularGridInterpolator`
+    to treat the spectrogram as if it were a function of the
+    frequencies vector :math:`f` and the times vector :math:`t`,
+    then interpolates given new frequencies and times
+    with the same range but with the number of values
+    specified by the argument ``target_shape``.
+
+    Parameters
+    ----------
+    record : tuple
+        Returned by :func:`make_spect_return_record`,
+        has path to spectrogram file.
+    fill_value : float
+        Value to fill in when the approximated function
+        is extrapolating outside of data.
+    max_dur : float
+        Maximum duration for segments.
+        Used with ``target_shape`` when reshaping
+        the spectrogram via interpolation.
+        Default is None.
+    target_shape : tuple
+        Of ints, (target number of frequency bins,
+        target number of time bins).
+        Spectrograms of units will be reshaped
+        by interpolation to have the specified
+        number of frequency and time bins.
+        The transformation is only applied if both this
+        parameter and ``max_dur`` are specified.
+        Default is None.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Default is True.
+
+    Returns
+    -------
+    shape : tuple
+        Shape of spectrogram after interpolation.
+    """
+    spect_path = record[0]  # 'spect_path'
+    spect_dict = np.load(spect_path)
+    s = spect_dict["s"]
+    f = spect_dict["f"]
+    t = spect_dict["t"]
+
+    # if max_dur and target_shape are specified we interpolate spectrogram to target shape, like AVA
+    target_freqs = np.linspace(f.min(), f.max(), target_shape[0])
+    duration = t.max() - t.min()
+    new_duration = np.sqrt(duration * max_dur)  # stretched duration
+    shoulder = 0.5 * (max_dur - new_duration)
+    target_times = np.linspace(t.min() - shoulder, t.max() + shoulder, target_shape[1])
+    ttnew, ffnew = np.meshgrid(target_times, target_freqs, indexing='ij', sparse=True)
+    r = RegularGridInterpolator((t, f), s.T, bounds_error=False, fill_value=fill_value)
+    s = r((ttnew, ffnew)).T
+    if normalize:
+        s_max, s_min = s.max(), s.min()
+        s = (s - s_min) / (s_max - s_min)
+        s = np.clip(s, 0.0, 1.0)
+    new_spect_path = str(spect_path).replace(".npz", ".npy")
+    np.save(new_spect_path, s)
+    return new_spect_path, s.shape
 
 
 # constant, used for names of columns in DataFrame below
@@ -496,7 +560,7 @@ def prep_unit_dataset(
     records_n_timebins_tuples = []
     for ind, segment in enumerate(segments):
         records_n_timebins_tuple = make_spect_return_record(
-            segment, ind, spect_params, output_dir, max_dur, target_shape, normalize,
+            segment, ind, spect_params, output_dir, normalize,
         )
         records_n_timebins_tuples.append(records_n_timebins_tuple)
     with ProgressBar():
@@ -504,26 +568,62 @@ def prep_unit_dataset(
             *records_n_timebins_tuples
         )
 
-    records, n_timebins_list = [], []
+    # we use n_timebins to pad to the same length,
+    # and spect_means to fill with the mean across all spectrograms
+    # when we interpolate
+    records, n_timebins_list, spect_means_list = [], [], []
     for records_n_timebins_tuple in records_n_timebins_tuples:
-        record, n_timebins = records_n_timebins_tuple
+        record, n_timebins, spect_mean = records_n_timebins_tuple
         records.append(record)
         n_timebins_list.append(n_timebins)
+        spect_means_list.append(spect_mean)
 
-    pad_length = max(n_timebins_list)
+    # ---- either interpolate or pad spectrograms so they are all the same size
+    if max_dur is not None and target_shape is not None:
+        # then we interpolate
+        spect_mean = np.array(spect_means_list).mean()
 
-    padded = []
-    for record in records:
-        padded.append(pad_spectrogram(record, pad_length))
-    with ProgressBar():
-        shapes: list[tuple[int, int]] = dask.compute(*padded)
+        interpolated = []
+        for record in records:
+            interpolated.append(
+                interp_spectrogram(
+                    record, spect_mean, max_dur, target_shape, normalize
+                ))
+        with ProgressBar():
+            path_shape_tuples = dask.compute(*interpolated)
 
+    else:
+        # then we pad
+        pad_length = max(n_timebins_list)
+
+        padded = []
+        for record in records:
+            padded.append(pad_spectrogram(record, pad_length))
+        with ProgressBar():
+            path_shape_tuples = dask.compute(*padded)
+
+    # ---- clean up npz files with spectrograms, don't need anymore
+    npz_files = sorted(output_dir.glob('*npz'))
+    for npz_file in npz_files:
+        npz_file.unlink()
+
+    paths, shapes = [], []
+    for path, shape in path_shape_tuples:
+        paths.append(path)
+        shapes.append(shape)
     shape = set(shapes)
     assert (
         len(shape) == 1
     ), f"Did not find a single unique shape for all spectrograms. Instead found: {shape}"
     shape = shape.pop()
 
-    unit_df = pd.DataFrame.from_records(records, columns=DF_COLUMNS)
+    new_records = []
+    for record, path in zip(records, paths):
+        new_records.append(
+            tuple(
+                [path, *record[1:]]
+            )
+        )
+    unit_df = pd.DataFrame.from_records(new_records, columns=DF_COLUMNS)
 
     return unit_df, shape
