@@ -24,7 +24,6 @@ num_replicates = 2
 context_s = 0.005
 max_dur = 0.2
 target_shape = [128, 128]
-normalize = true
 
 [SPECT_PARAMS]
 fft_size = 512
@@ -36,6 +35,9 @@ spect_key = 's'
 freqbins_key = 'f'
 timebins_key = 't'
 audio_path_key = 'audio_path'
+min_val = -6.0
+max_val = 0.0
+normalize = true
 
 [TRAIN]
 model = 'TweetyNet'
