@@ -14,8 +14,7 @@ from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
 from .. import dataset_df_helper, split
-from ..segment_dataset import prep_segment_dataset
-from . import dataset_arrays
+from ..segment_dataset import prep_segment_dataset, make_splits
 
 logger = logging.getLogger(__name__)
 
@@ -308,7 +307,7 @@ def prep_parametric_umap_dataset(
         labelmap = None
 
     # ---- make arrays that represent final dataset --------------------------------------------------------------------
-    dataset_arrays.move_files_into_split_subdirs(
+    make_splits(
         dataset_df,
         dataset_path,
         purpose,
