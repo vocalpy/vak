@@ -310,7 +310,6 @@ def prep_parametric_umap_dataset(
     make_splits(
         dataset_df,
         dataset_path,
-        purpose,
     )
     #
     # ---- if purpose is learncurve, additionally prep splits for that -----------------------------------------------
