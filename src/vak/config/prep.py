@@ -262,9 +262,6 @@ class PrepConfig:
         validator=validators.optional(is_valid_target_shape),
         default=None
     )
-    normalize = attr.ib(
-        validator=instance_of(bool), default=True
-    )
 
     def __attrs_post_init__(self):
         if self.audio_format is not None and self.spect_format is not None:
