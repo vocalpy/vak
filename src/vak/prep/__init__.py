@@ -7,7 +7,7 @@ from . import (
     prep_,
     sequence_dataset,
     spectrogram_dataset,
-    unit_dataset,
+    segment_dataset,
     vae,
 )
 from .prep_ import prep
@@ -22,6 +22,6 @@ __all__ = [
     "prep_",
     "sequence_dataset",
     "spectrogram_dataset",
-    "unit_dataset",
+    "segment_dataset",
     "vae",
 ]

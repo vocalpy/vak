@@ -17,14 +17,14 @@ def move_files_into_split_subdirs(
 ) -> None:
     """Move npy files in dataset into sub-directories, one for each split in the dataset.
 
-    This is run *after* calling :func:`vak.prep.unit_dataset.prep_unit_dataset`
+    This is run *after* calling :func:`vak.prep.segment_dataset.prep_segment_dataset`
     to generate ``dataset_df``.
 
     Parameters
     ----------
     dataset_df : pandas.DataFrame
         A ``pandas.DataFrame`` returned by
-        :func:`vak.prep.unit_dataset.prep_unit_dataset`
+        :func:`vak.prep.segment_dataset.prep_segment_dataset`
         with a ``'split'`` column added, as a result of calling
         :func:`vak.prep.split.unit_dataframe` or because it was added "manually"
         by calling :func:`vak.core.prep.prep_helper.add_split_col` (as is done

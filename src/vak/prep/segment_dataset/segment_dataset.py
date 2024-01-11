@@ -1,5 +1,5 @@
-"""Functions for making a dataset of units from sequences,
-as used to train dimensionality reduction models."""
+"""Functions for making a dataset of segments,
+as used to train parametric UMAP and AVA models."""
 from __future__ import annotations
 
 import logging
@@ -90,7 +90,7 @@ def get_segment_list(
     Notes
     -----
     Function used by
-    :func:`vak.prep.unit_dataset.prep_unit_dataset`.
+    :func:`vak.prep.segment_dataset.prep_segment_dataset`.
     """
     data, samplerate = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](
         audio_path
@@ -153,7 +153,7 @@ def spectrogram_from_segment(
     Notes
     -----
     Function used by
-    :func:`vak.prep.unit_dataset.prep_unit_dataset`.
+    :func:`vak.prep.segment_dataset.prep_segment_dataset`.
     """
     data, samplerate = np.array(segment.data), segment.samplerate
     s, f, t = spectrogram(
@@ -386,7 +386,7 @@ DF_COLUMNS = [
 ]
 
 
-def prep_unit_dataset(
+def prep_segment_dataset(
     audio_format: str,
     output_dir: str | pathlib.Path,
     spect_params: SpectParamsConfig,
@@ -398,8 +398,14 @@ def prep_unit_dataset(
     max_dur: float | None = None,
     target_shape: tuple[int, int] | None = None,
 ) -> tuple[pd.DataFrame, tuple[int]]:
-    """Prepare a dataset of units from sequences,
-    e.g., all syllables segmented out of a dataset of birdsong.
+    """Prepare a dataset of segments.
+
+    Finds segments with a segmenting algorithm,
+    then computes a spectrogram for each segment
+    and saves in npy files.
+    Finally, assigns each npy file to a split
+    and moves files into split directories
+    inside the directory representing the dataset.
 
     Parameters
     ----------
@@ -452,12 +458,12 @@ def prep_unit_dataset(
 
     Returns
     -------
-    unit_df : pandas.DataFrame
-        A DataFrame representing all the units in the dataset.
+    segment_df : pandas.DataFrame
+        A DataFrame representing all the segments in the dataset.
     shape: tuple
         A tuple representing the shape of all spectrograms in the dataset.
-        The spectrograms of all units are padded so that they are all
-        as wide as the widest unit (i.e, the one with the longest duration).
+        The spectrograms of all segments are padded so that they are all
+        as wide as the widest segment (i.e, the one with the longest duration).
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
     if audio_format not in constants.VALID_AUDIO_FORMATS:
@@ -609,6 +615,6 @@ def prep_unit_dataset(
                 [path, *record[1:]]
             )
         )
-    unit_df = pd.DataFrame.from_records(new_records, columns=DF_COLUMNS)
+    segment_df = pd.DataFrame.from_records(new_records, columns=DF_COLUMNS)
 
-    return unit_df, shape
+    return segment_df, shape

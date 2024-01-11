@@ -14,7 +14,7 @@ from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
 from .. import dataset_df_helper, split
-from ..unit_dataset import prep_unit_dataset
+from ..segment_dataset import prep_segment_dataset
 from . import dataset_arrays
 
 logger = logging.getLogger(__name__)
@@ -211,7 +211,7 @@ def prep_parametric_umap_dataset(
     logger.info(f"Will prepare dataset as directory: {dataset_path}")
 
     # ---- actually make the dataset -----------------------------------------------------------------------------------
-    dataset_df, shape = prep_unit_dataset(
+    dataset_df, shape = prep_segment_dataset(
         audio_format=audio_format,
         output_dir=dataset_path,
         spect_params=spect_params,
@@ -224,7 +224,7 @@ def prep_parametric_umap_dataset(
 
     if dataset_df.empty:
         raise ValueError(
-            "Calling `vak.prep.unit_dataset.prep_unit_dataset` "
+            "Calling `vak.prep.segment_dataset.prep_segment_dataset` "
             "with arguments passed to `vak.core.prep.prep_parametric_umap_dataset` "
             "returned an empty dataframe.\n"
             "Please double-check arguments to `vak.core.prep` function."
