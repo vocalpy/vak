@@ -10,8 +10,7 @@ import pandas as pd
 from ...common import labels
 from ...config.spect_params import SpectParamsConfig
 from .. import dataset_df_helper, split
-from ..segment_dataset import prep_segment_dataset
-from ..parametric_umap import dataset_arrays
+from ..segment_dataset import prep_segment_dataset, make_splits
 
 
 logger = logging.getLogger(__name__)
@@ -212,10 +211,9 @@ def prep_segment_vae_dataset(
             json.dump(labelmap, fp)
 
     # ---- make arrays that represent final dataset --------------------------------------------------------------------
-    dataset_arrays.move_files_into_split_subdirs(
+    make_splits(
         dataset_df,
         dataset_path,
-        purpose,
     )
     #
     # ---- if purpose is learncurve, additionally prep splits for that -----------------------------------------------
