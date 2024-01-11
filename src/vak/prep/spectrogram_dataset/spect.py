@@ -102,7 +102,7 @@ def spectrogram(
 
     if transform_type:
         if transform_type == "log":
-            spect = np.log(np.abs(spect) + np.finfo(spect).eps)
+            spect = np.log(np.abs(spect) + np.finfo(spect.dtype).eps)
         elif transform_type == "log_spect":
             spect /= spect.max()  # volume normalize to max 1
             spect = np.log10(spect)  # take log
