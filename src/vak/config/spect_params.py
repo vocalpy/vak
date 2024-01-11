@@ -15,7 +15,9 @@ def freq_cutoffs_validator(instance, attribute, value):
         )
 
 
-VALID_TRANSFORM_TYPES = {"log_spect", "log_spect_plus_one"}
+VALID_TRANSFORM_TYPES = {
+    "log", "log_spect", "log_spect_plus_one"
+}
 
 
 def is_valid_transform_type(instance, attribute, value):
@@ -57,6 +59,24 @@ class SpectParamsConfig:
     audio_path_key : str
         key for accessing path to source audio file for spectogram in files.
         Default is 'audio_path'.
+    min_val : float, optional
+        Minimum value to allow in spectrogram.
+        All values less than this will be set to this value.
+        This operation is applied *after* the transform
+        specified by ``transform_type``.
+        Default is None.
+    max_val : float, optional
+        Maximum value to allow in spectrogram.
+        All values greater than this will be set to this value.
+        This operation is applied *after* the transform
+        specified by ``transform_type``.
+        Default is None.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Normalization is done *after* the transform
+        specified by ``transform_type``, and *after*
+        the ``min_val`` and ``max_val`` operations.
+        Default is False.
     """
 
     fft_size = attr.ib(converter=int, validator=instance_of(int), default=512)
@@ -79,3 +99,16 @@ class SpectParamsConfig:
     freqbins_key = attr.ib(validator=instance_of(str), default="f")
     timebins_key = attr.ib(validator=instance_of(str), default="t")
     audio_path_key = attr.ib(validator=instance_of(str), default="audio_path")
+    min_val = attr.ib(
+        validator=validators.optional(instance_of(float)),
+        default=None
+    )
+    max_val = attr.ib(
+        validator=validators.optional(instance_of(float)),
+        default=None
+    )
+    normalize = attr.ib(
+        validator=instance_of(bool),
+        default=False,
+    )
+
