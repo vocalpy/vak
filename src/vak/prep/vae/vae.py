@@ -110,7 +110,7 @@ def prep_vae_dataset(
     target_shape : tuple
         Of ints, (target number of frequency bins,
         target number of time bins).
-        Spectrograms of units will be reshaped
+        Spectrograms of segments will be reshaped
         by interpolation to have the specified
         number of frequency and time bins.
         The transformation is only applied if both this

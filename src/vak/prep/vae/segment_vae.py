@@ -69,7 +69,7 @@ def prep_segment_vae_dataset(
         :func:`vak.converters.labelset_to_set`.
         See help for that function for details on how to specify ``labelset``.
     context_s : float
-        Number of seconds of "context" around unit to
+        Number of seconds of "context" around segment to
         add, i.e., time before and after the onset
         and offset respectively. Default is 0.005s,
         5 milliseconds.
@@ -82,7 +82,7 @@ def prep_segment_vae_dataset(
     target_shape : tuple
         Of ints, (target number of frequency bins,
         target number of time bins).
-        Spectrograms of units will be reshaped
+        Spectrograms of segments will be reshaped
         by interpolation to have the specified
         number of frequency and time bins.
         The transformation is only applied if both this
@@ -174,7 +174,7 @@ def prep_segment_vae_dataset(
             do_split = True
 
     if do_split:
-        dataset_df = split.unit_dataframe(
+        dataset_df = split.segment_dataframe(
             dataset_df,
             dataset_path,
             labelset=labelset,

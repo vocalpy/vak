@@ -268,7 +268,7 @@ def prep_parametric_umap_dataset(
             do_split = True
 
     if do_split:
-        dataset_df = split.unit_dataframe(
+        dataset_df = split.segment_dataframe(
             dataset_df,
             dataset_path,
             labelset=labelset,

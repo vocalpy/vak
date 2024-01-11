@@ -26,7 +26,7 @@ def move_files_into_split_subdirs(
         A ``pandas.DataFrame`` returned by
         :func:`vak.prep.segment_dataset.prep_segment_dataset`
         with a ``'split'`` column added, as a result of calling
-        :func:`vak.prep.split.unit_dataframe` or because it was added "manually"
+        :func:`vak.prep.split.segment_dataframe` or because it was added "manually"
         by calling :func:`vak.core.prep.prep_helper.add_split_col` (as is done
         for 'predict' when the entire ``DataFrame`` belongs to this
         "split").
