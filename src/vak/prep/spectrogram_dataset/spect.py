@@ -35,6 +35,9 @@ def spectrogram(
     thresh: float | None = None,
     transform_type: str | None = None,
     freq_cutoffs: list[int, int] | None = None,
+    min_val: float | None = None,
+    max_val: float | None = None,
+    normalize: bool = False,
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     """creates a spectrogram
 
@@ -57,6 +60,24 @@ def spectrogram(
         threshold minimum power for log spectrogram
     freq_cutoffs : tuple
         of two elements, lower and higher frequencies.
+    min_val : float, optional
+        Minimum value to allow in spectrogram.
+        All values less than this will be set to this value.
+        This operation is applied *after* the transform
+        specified by ``transform_type``.
+        Default is None.
+    max_val : float, optional
+        Maximum value to allow in spectrogram.
+        All values greater than this will be set to this value.
+        This operation is applied *after* the transform
+        specified by ``transform_type``.
+        Default is None.
+    normalize : bool
+        If True, min-max normalize the spectrogram.
+        Normalization is done *after* the transform
+        specified by ``transform_type``, and *after*
+        the ``min_val`` and ``max_val`` operations.
+        Default is False.
 
     Return
     ------
@@ -80,7 +101,9 @@ def spectrogram(
     )[:3]
 
     if transform_type:
-        if transform_type == "log_spect":
+        if transform_type == "log":
+            spect = np.log(np.abs(spect) + np.finfo(spect).eps)
+        elif transform_type == "log_spect":
             spect /= spect.max()  # volume normalize to max 1
             spect = np.log10(spect)  # take log
             if thresh:
@@ -95,6 +118,16 @@ def spectrogram(
             spect[
                 spect < thresh
             ] = thresh  # set anything less than the threshold as the threshold
+
+    if min_val:
+        spect[spect < min_val] = min_val
+    if max_val:
+        spect[spect > max_val] = max_val
+
+    if normalize:
+        s_max, s_min = spect.max(), spect.min()
+        spect = (spect - s_min) / (s_max - s_min)
+        spect = np.clip(spect, 0.0, 1.0)
 
     if freq_cutoffs:
         f_inds = np.nonzero(
