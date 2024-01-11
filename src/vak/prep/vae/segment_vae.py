@@ -30,7 +30,6 @@ def prep_segment_vae_dataset(
         context_s: float = 0.005,
         max_dur: float | None = None,
         target_shape: tuple[int, int] | None = None,
-        normalize: bool = True,
         train_dur: int | None = None,
         val_dur: int | None = None,
         test_dur: int | None = None,
@@ -89,9 +88,6 @@ def prep_segment_vae_dataset(
         The transformation is only applied if both this
         parameter and ``max_dur`` are specified.
         Default is None.
-    normalize : bool
-        If True, min-max normalize the spectrogram.
-        Default is True.
     train_dur : float
         Total duration of training set, in seconds.
         When creating a learning curve,
@@ -131,7 +127,6 @@ def prep_segment_vae_dataset(
         context_s,
         max_dur,
         target_shape,
-        normalize,
     )
     if dataset_df.empty:
         raise ValueError(
