@@ -6,13 +6,9 @@ import logging
 import pathlib
 from typing import Sequence
 
-import attrs
-import dask.bag as db
-import numpy as np
 import pandas as pd
-from dask.diagnostics import ProgressBar
 
-from ... import common, datasets
+from ... import common
 from .. import split
 
 logger = logging.getLogger(__name__)
