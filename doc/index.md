@@ -4,7 +4,7 @@ hide-toc: true
 
 # `vak`
 
-## a neural network toolbox for animal vocalizations and bioacoustics
+## A neural network framework for researchers studying acoustic communication
 
 ```{image} images/song_with_colored_segments.png
 ```

@@ -5,7 +5,7 @@
 
 <hr>
 
-## A neural network framework for animal acoustic communication and bioacoustics
+## A neural network framework for researchers studying acoustic communication
 
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
@@ -20,17 +20,18 @@
 
 
 `vak` is a Python framework for neural network models, 
-designed for researchers studying animal acoustic communication and bioacoustics.
+designed for researchers studying acoustic communication: 
+how and why animals communicate with sound.
 Many people will be familiar with work in this area on 
 animal vocalizations such as birdsong, bat calls, and even human speech.
 Neural network models have provided a powerful new tool for researchers in this area, 
 as in many other fields.
 
 The library has two main goals:  
-1. Make it easier for researchers studying animal vocalizations to 
+1. Make it easier for researchers studying acoustic communication to 
 apply neural network algorithms to their data
 2. Provide a common framework that will facilitate benchmarking neural 
-network algorithms on tasks related to animal vocalizations
+network algorithms on tasks related to acoustic communication
 
 Currently, the main use is an automatic *annotation* of vocalizations and other animal sounds. 
 By *annotation*, we mean something like the example of annotated birdsong shown below:
