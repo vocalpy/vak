@@ -1,3 +1,12 @@
+"""AVA variational autoencoder, as described in [1]_.
+Code is adapted from [2]_.
+
+.. [1] Goffinet, J., Brudner, S., Mooney, R., & Pearson, J. (2021).
+   Low-dimensional learned feature spaces quantify individual and group differences in vocal repertoires.
+   eLife, 10:e67855. https://doi.org/10.7554/eLife.67855
+
+.. [2] https://github.com/pearsonlab/autoencoded-vocal-analysis
+"""
 from __future__ import annotations
 
 from typing import Sequence
@@ -9,6 +18,11 @@ from torch.distributions import LowRankMultivariateNormal
 
 
 class FullyConnectedLayers(nn.Module):
+    """Module containing two fully-connected layers.
+
+    This module is used to parametrize :math:`\mu`
+    and :math:`\Sigma` in AVA.
+    """
     def __init__(self, n_features: Sequence[int]):
         super().__init__()
         self.layer = nn.Sequential(
@@ -21,8 +35,33 @@ class FullyConnectedLayers(nn.Module):
 
 
 class AVA(nn.Module):
-    """
+    """AVA variational autoencoder, as described in [1]_.
+    Code is adapted from [2]_.
 
+    Attributes
+    ----------
+    input_shape
+    in_channels
+    x_shape
+    x_dim
+    encoder
+    fc_view
+    in_fc_dims
+    shared_encoder_fc
+    mu_fc
+    cov_factor_fc
+    cov_diag_fc
+    decoder_fc
+    decoder
+
+
+    References
+    ----------
+    .. [1] Goffinet, J., Brudner, S., Mooney, R., & Pearson, J. (2021).
+       Low-dimensional learned feature spaces quantify individual and group differences in vocal repertoires.
+       eLife, 10:e67855. https://doi.org/10.7554/eLife.67855
+
+    .. [2] https://github.com/pearsonlab/autoencoded-vocal-analysis
     """
     def __init__(
         self,
@@ -31,14 +70,34 @@ class AVA(nn.Module):
         fc_dims: Sequence[int] = (1024, 256, 64),
         z_dim: int = 32,
     ):
-        """
+        """Initalize a new instance of
+        an AVA variational autoencoder.
 
         Parameters
         ----------
-        input_shape
-        encoder_channels
-        fc_dims
-        z_dim
+        input_shape : Sequence
+            Shape of input to network, a fixed size
+            for all spectrograms.
+            Tuple/list of integers, with dimensions
+            (channels, frequency bins, time bins).
+            Default is ``(1, 128, 128)``.
+        encoder_channels : Sequence
+            Number of channels in convolutional layers
+            of encoder. Tuple/list of integers.
+            Default is ``(8, 8, 16, 16, 24, 24, 32)``.
+        fc_dims : Sequence
+            Dimensionality of fully-connected layers.
+            Tuple/list of integers.
+            These values are used for the linear layers
+            in the encoder (``self.shared_encoder_fc``)
+            after passing through the convolutional layers,
+            as well as the linear layers
+            that are used to parametrize :math:`\mu` and
+            :math:`\Sigma`.
+            Default is (1024, 256, 64).
+        z_dim : int
+            Dimensionality of latent space.
+            Default is 32.
         """
         super().__init__()
 
@@ -125,7 +184,18 @@ class AVA(nn.Module):
         self.decoder = nn.Sequential(*modules)
 
     def encode(self, x):
-        """
+        """Encode a spectrogram ``x``
+        by mapping it to a vector :math:`z`
+        in latent space.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+
+        Returns
+        -------
+        z : torch.Tensor
+        latent_dist : torch.Tensor
         """
         x = self.encoder(x)
         x = torch.flatten(x, start_dim=1)
@@ -137,19 +207,68 @@ class AVA(nn.Module):
         return z, latent_dist
 
     def decode(self, z):
+        """Decode a latent space vector ``z``,
+        mapping it back to a spectrogram :math:`x`
+        in the space of spectrograms :math:`\mathcal{X}`.
+
+        Parameters
+        ----------
+        z : torch.Tensor
+            Output of encoder, with dimensions
+            (batch size, latent space size).
+
+        Returns
+        -------
+        x : torch.Tensor
+            Output of decoder, with shape
+            (batch, channel, frequency bins, time bins).
         """
-        """
-        z = self.decoder_fc(z).view(-1, *self.fc_view)
-        z = self.decoder(z).view(-1, *self.input_shape)
-        return z
+        x = self.decoder_fc(z).view(-1, *self.fc_view)
+        x = self.decoder(x).view(-1, *self.input_shape)
+        return x
 
     @staticmethod
     def reparametrize(mu, cov_factor, cov_diag):
+        """Sample a latent distribution
+        to get the latent embedding :math:`z`.
+
+        Method that encapsulates the reparametrization trick.
+
+        Parameters
+        ----------
+        mu : torch.Tensor
+        cov_factor : torch.Tensor
+        cov_diag : torch.Tensor
+
+        Returns
+        -------
+        z : torch.Tensor
+        latent_dist : LowRankMultivariateNormal
+        """
         latent_dist = LowRankMultivariateNormal(mu, cov_factor, cov_diag)
         z = latent_dist.rsample()
         return z, latent_dist
 
     def forward(self, x):
+        """Pass a spectrogram ``x``
+        through the variational autoencoder:
+        encode, then decode.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+
+        Returns
+        -------
+        x_rec : torch.Tensor
+            Reconstruction of ``x``,
+            output of the decoder.
+        z : torch.Tensor
+            Latent space embedding of ``x``.
+        latent_dist : LowRankMultivariateNormal
+            Distribution parametrized
+            by the output of the encoder.
+        """
         z, latent_dist = self.encode(x)
         x_rec = self.decode(z)
         return x_rec, z, latent_dist
