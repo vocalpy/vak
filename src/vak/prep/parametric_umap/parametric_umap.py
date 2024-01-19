@@ -14,7 +14,8 @@ from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
 from ...common.timenow import get_timenow_as_str
 from .. import dataset_df_helper, split
-from ..segment_dataset import prep_segment_dataset, make_splits
+from ..segment_dataset import learncurve, make_splits, prep_segment_dataset
+
 
 logger = logging.getLogger(__name__)
 
@@ -311,19 +312,16 @@ def prep_parametric_umap_dataset(
         dataset_df,
         dataset_path,
     )
-    #
-    # ---- if purpose is learncurve, additionally prep splits for that -----------------------------------------------
-    # if purpose == 'learncurve':
-    #     dataset_df = make_learncurve_splits_from_dataset_df(
-    #         dataset_df,
-    #         train_set_durs,
-    #         num_replicates,
-    #         dataset_path,
-    #         labelmap,
-    #         audio_format,
-    #         spect_key,
-    #         timebins_key,
-    #     )
+
+    # ---- if purpose is learncurve, additionally prep splits for that -------------------------------------------------
+    if purpose == 'learncurve':
+        dataset_df = learncurve.make_subsets_from_dataset_df(
+            dataset_df,
+            train_set_durs,
+            num_replicates,
+            dataset_path,
+            labelmap,
+        )
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
     logger.info(f"Saving dataset csv file: {dataset_csv_path}")
