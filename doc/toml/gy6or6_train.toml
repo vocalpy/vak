@@ -5,9 +5,9 @@ dataset_type = "frame classification"
 # input_type: input to model, either audio ("audio") or spectrogram ("spect")
 input_type = "spect"
 # data_dir: directory with data to use when preparing dataset
-data_dir = "/PATH/TO/DATA/032212"
+data_dir = "/PATH/TO/FOLDER/gyor6/032212"
 # output_dir: directory where dataset will be created (as a sub-directory within output_dir)
-output_dir = "/PATH/TO/DATA/vak/prep/train"
+output_dir = "/PATH/TO/FOLDER/prep/train"
 # audio_format: format of audio, either wav or cbin
 audio_format = "wav"
 # annot_format: format of annotations
@@ -34,7 +34,7 @@ step_size = 64
 # model: the string name of the model. must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
 model = "TweetyNet"
 # root_results_dir: directory where results should be saved, as a sub-directory within `root_results_dir`
-root_results_dir = "/PATH/TO/DATA/vak/results/train"
+root_results_dir = "/PATH/TO/FOLDER/results/train"
 # batch_size: number of samples from dataset per batch fed into network
 batch_size = 8
 # num_epochs: number of training epochs, where an epoch is one iteration through all samples in training split

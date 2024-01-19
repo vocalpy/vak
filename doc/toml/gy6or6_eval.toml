@@ -4,9 +4,9 @@ dataset_type = "frame classification"
 # input_type: input to model, either audio ("audio") or spectrogram ("spect")
 input_type = "spect"
 # data_dir: directory with data to use when preparing dataset
-data_dir = "/PATH/TO/DATA/032212"
+data_dir = "/PATH/TO/FOLDER/gy6or6/032212"
 # output_dir: directory where dataset will be created (as a sub-directory within output_dir)
-output_dir = "/PATH/TO/DATA/vak/prep/train"
+output_dir = "/PATH/TO/FOLDER/prep/train"
 # audio_format: format of audio, either wav or cbin
 audio_format = "wav"
 # annot_format: format of annotations
@@ -30,13 +30,13 @@ step_size = 64
 [EVAL]
 model = "TweetyNet"
 # checkpoint_path: path to saved model checkpoint
-checkpoint_path = "/PATH/TO/DATA/vak/results/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
+checkpoint_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 # labelmap_path: path to file that maps from outputs of model (integers) to text labels in annotations;
 # this is used when generating predictions
-labelmap_path = "/PATH/TO/DATA/vak/results/train/RESULTS_TIMESTAMP/labelmap.json"
+labelmap_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/labelmap.json"
 # spect_scaler_path: path to file containing SpectScaler that was fit to training set
 # We want to transform the data we predict on in the exact same way
-spect_scaler_path = "/PATH/TO/DATA/vak/results/train/RESULTS_TIMESTAMP/StandardizeSpect"
+spect_scaler_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/StandardizeSpect"
 # batch_size
 # for predictions with a frame classification model, this should always be 1
 # and will be ignored if it's not
@@ -46,7 +46,7 @@ num_workers = 16
 # device: name of device to run model on, one of "cuda", "cpu"
 device = "cuda"
 # output_dir: directory where output should be saved, as a sub-directory within `output_dir`
-output_dir = "/PATH/TO/DATA/vak/results/eval"
+output_dir = "/PATH/TO/FOLDER/results/eval"
 # dataset_path : path to dataset created by prep
 # ADD THE dataset_path OPTION FROM THE TRAIN FILE HERE (we already created a test split when we ran `vak prep` with that config)
 
@@ -69,6 +69,8 @@ min_segment_dur = 0.02
 # for a frame classification model, we use FrameDataset with the eval_item_transform,
 # that reshapes batches into consecutive adjacent windows with a specific `window_size`
 [EVAL.transform_params]
-window_size = 88
+window_size = 176
 
 # Note we do not specify any options for the network, and just use the defaults
+# We need to put this "dummy" table here though for the config to parse correctly
+[TweetyNet]
