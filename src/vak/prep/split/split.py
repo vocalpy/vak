@@ -178,7 +178,7 @@ def frame_classification_dataframe(
     return dataset_df
 
 
-def unit_dataframe(
+def segment_dataframe(
     dataset_df: pd.DataFrame,
     dataset_path: str | pathlib.Path,
     labelset: set,
@@ -187,7 +187,7 @@ def unit_dataframe(
     val_dur: float | None = None,
 ):
     """Create datasets splits from a dataframe
-    representing a unit dataset.
+    representing a segment dataset.
 
     Splits dataset into training, test, and (optionally) validation subsets,
     specified by their duration.

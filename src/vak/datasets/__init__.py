@@ -1,3 +1,3 @@
-from . import frame_classification, parametric_umap
+from . import frame_classification, parametric_umap, vae
 
-__all__ = ["frame_classification", "parametric_umap"]
+__all__ = ["frame_classification", "parametric_umap", "vae"]

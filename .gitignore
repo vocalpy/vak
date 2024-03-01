@@ -3,6 +3,7 @@
 
 # IDE
 .idea
+.vscode
 
 # Jupyter
 .ipynb_checkpoints/
@@ -27,3 +28,6 @@ tests/data_for_tests/generated/
 # coverage / pytest-cov
 .coverage
 coverage.xml
+
+#nox 
+.nox/

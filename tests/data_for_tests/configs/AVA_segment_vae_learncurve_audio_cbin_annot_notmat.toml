@@ -1,0 +1,38 @@
+[PREP]
+dataset_type = "vae-segment"
+input_type = "spect"
+data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032312"
+output_dir = "./tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/AVA_segment_vae"
+audio_format = "cbin"
+annot_format = "notmat"
+labelset = "iabcdefghjk"
+train_dur = 20
+val_dur = 5
+test_dur = 10
+context_s = 0.01
+max_dur = 0.2
+target_shape = [ 128, 128,]
+train_set_durs = [ 4, 6,]
+num_replicates = 2
+
+[SPECT_PARAMS]
+fft_size = 512
+step_size = 256
+transform_type = "log_spect"
+freq_cutoffs = [ 400, 10000,]
+normalize = false
+min_val = -6.0
+max_val = 0.0
+
+[LEARNCURVE]
+model = "AVA"
+batch_size = 64
+num_epochs = 150
+val_step = 500
+ckpt_step = 1000
+num_workers = 16
+device = "cuda"
+root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/AVA"
+
+[AVA.optimizer]
+lr = 0.001
