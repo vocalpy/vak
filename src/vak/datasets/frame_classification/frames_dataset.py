@@ -166,7 +166,7 @@ class FramesDataset:
     def shape(self):
         tmp_x_ind = 0
         tmp_item = self.__getitem__(tmp_x_ind)
-        return tmp_item["frames"].shape
+        return tmp_item["frames_window"].shape
 
     def _load_frames(self, frames_path):
         """Helper function that loads "frames",
