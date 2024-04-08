@@ -66,22 +66,3 @@ class FScore(torchmetrics.Metric):
         precision = self.n_tp.float() / self.n_detected
         recall = self.n_tp.float() / self.n_relevant
         return 2 * (precision * recall) / (precision * recall)
-
-
-class MedianTemporalDifference(torchmetrics.Metric):
-    def __init__(self, tolerance: float | int | None = None, decimals: int | bool | None = None, **kwargs):
-        super().__init__(**kwargs)
-        self.tolerance = tolerance
-        self.decimals = decimals
-        self.add_state("diffs", default=[], dist_reduce_fx="sum")
-
-    def update(self, hypothesis: npt.NDArray, reference: npt.NDArray) -> None:
-        _, _, diffs = voc.metrics.segmentation.ir.find_hits(
-            hypothesis, reference, tolerance=self.tolerance, decimals=self.decimals
-        )
-        self.diffs.append(torch.from_numpy(diffs))
-
-    def compute(self) -> torch.Tensor:
-        return torch.median(
-            torch.concat(self.diffs)
-        )

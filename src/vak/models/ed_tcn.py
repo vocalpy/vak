@@ -45,4 +45,11 @@ class ED_TCN:
         "character_error_rate": metrics.CharacterErrorRate,
         "loss": torch.nn.CrossEntropyLoss,
     }
-    default_config = {"optimizer": {"lr": 0.003}}
+    default_config = {
+        "optimizer": {"lr": 0.003},
+        "metrics": {
+            "precision": {"tolerance": 0.01},
+            "recall": {"tolerance": 0.01},
+            "fscore": {"tolerance": 0.01},
+        }
+    }

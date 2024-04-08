@@ -73,6 +73,5 @@ class TweetyNet:
             "precision": {"tolerance": 0.01},
             "recall": {"tolerance": 0.01},
             "fscore": {"tolerance": 0.01},
-            "median_temporal_difference": {"tolerance": 0.1},
         }
     }
