@@ -224,7 +224,7 @@ class FrameClassificationModel(base.Model):
         -------
         None
         """
-        x, y = batch["frames"], batch["frame_labels"]
+        x, y = batch["frames_window"], batch["frame_labels"]
         # remove "batch" dimension added by collate_fn to x
         # we keep for y because loss still expects the first dimension to be batch
         # TODO: fix this weirdness. Diff't collate_fn?
@@ -386,7 +386,6 @@ class FrameClassificationModel(base.Model):
                     on_step=True,
                     sync_dist=True,
                 )
-
 
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
