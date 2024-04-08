@@ -129,8 +129,7 @@ class EvalItemTransform:
         frame_labels = self.annot_transform(frame_labels)
 
         item = {
-            "frames": frames,
-            # we pass in frames window just to get the predictions that we then flatten
+            # frames window is the actual input to the model
             "frames_window": frames_window,
             "frame_labels": frame_labels,
             "frame_times": frame_times,
