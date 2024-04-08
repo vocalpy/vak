@@ -101,11 +101,13 @@ class Sample:
         and consider the files in the split to contain
         frames, regardless of the source domain
         of the data.
-    frame_labels_npy_path : str
+    frame_labels_npy_path : str, optional.
         Path to frame labels,
         relative to ``dataset_path``.
-    annot_path : str
+        Can be None if the dataset is not yet annotated.
+    annot_path : str, optional.
         The path to the annotations file.
+        Can be None if the dataset is not yet annotated.
     sample_id_vec : numpy.ndarray
         Sample ID vector for this sample.
     inds_in_sample_vec : numpy.ndarray
@@ -113,8 +115,8 @@ class Sample:
     """
     source_id: int = attrs.field()
     source_path: str
-    frame_labels_npy_path: str
-    annot_path: str
+    frame_labels_npy_path: str | None
+    annot_path: str | None
     sample_id_vec: np.ndarray
     inds_in_sample_vec: np.ndarray
 
@@ -395,6 +397,7 @@ def make_splits(
                 )
             else:
                 frame_labels_npy_path = None
+                annot_path = None
 
             # Rewrite ``frames_path`` as relative to root
             # because all functions and classes downstream expect this
