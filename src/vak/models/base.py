@@ -343,9 +343,15 @@ class Model(lightning.LightningModule):
             to ``Callable`` functions, used to measure
             performance of the model.
         """
-        network_kwargs = config.get(
-            "network", cls.definition.default_config["network"]
-        )
+        import vak.config.model
+
+        # NOTE we start with default config and update with what was passed in
+        config_: dict = cls.definition.default_config
+        for key in vak.config.model.MODEL_TABLES:
+            if config[key] != {}:
+                config_[key].update(config[key])
+
+        network_kwargs = config_["network"]
         if inspect.isclass(cls.definition.network):
             network = cls.definition.network(**network_kwargs)
         elif isinstance(cls.definition.network, dict):
@@ -363,9 +369,7 @@ class Model(lightning.LightningModule):
         else:
             params = network.parameters()
 
-        optimizer_kwargs = config.get(
-            "optimizer", cls.definition.default_config["optimizer"]
-        )
+        optimizer_kwargs = config_["optimizer"]
         optimizer = cls.definition.optimizer(params=params, **optimizer_kwargs)
 
         if inspect.isclass(cls.definition.loss):
@@ -376,9 +380,7 @@ class Model(lightning.LightningModule):
         else:
             loss = cls.definition.loss
 
-        metrics_config = config.get(
-            "metrics", cls.definition.default_config["metrics"]
-        )
+        metrics_config = config_["metrics"]
         metrics = {}
         for metric_name, metric_class in cls.definition.metrics.items():
             metrics_class_kwargs = metrics_config.get(metric_name, {})
