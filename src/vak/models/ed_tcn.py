@@ -44,6 +44,9 @@ class ED_TCN:
         "levenshtein": metrics.Levenshtein,
         "character_error_rate": metrics.CharacterErrorRate,
         "loss": torch.nn.CrossEntropyLoss,
+        "precision": metrics.segmentation.Precision,
+        "recall": metrics.segmentation.Recall,
+        "fscore": metrics.segmentation.FScore,
     }
     default_config = {
         "optimizer": {"lr": 0.003},
