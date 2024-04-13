@@ -65,7 +65,6 @@ class TweetyNet:
         "precision": metrics.segmentation.Precision,
         "recall": metrics.segmentation.Recall,
         "fscore": metrics.segmentation.FScore,
-        "median_temporal_difference": metrics.segmentation.MedianTemporalDifference,
     }
     default_config = {
         "optimizer": {"lr": 0.003},
