@@ -1,8 +1,7 @@
-from .segmentation import FScore, MedianTemporalDifference, Precision, Recall
+from .segmentation import FScore, Precision, Recall
 
 __all__ = [
     "FScore",
-    "MedianTemporalDifference",
     "Precision",
     "Recall",
 ]
