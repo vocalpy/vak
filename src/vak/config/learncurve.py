@@ -1,14 +1,16 @@
-"""parses [LEARNCURVE] section of config"""
-import attr
-from attr import converters, validators
+"""Class that represents ``[vak.learncurve]`` table in configuration file."""
+from __future__ import annotations
+
+from attrs import define, field
+from attrs import converters, validators
 
 from .eval import are_valid_post_tfm_kwargs, convert_post_tfm_kwargs
 from .train import TrainConfig
 
 
-@attr.s
+@define
 class LearncurveConfig(TrainConfig):
-    """class that represents [LEARNCURVE] section of config.toml file
+    """Class that represents ``[vak.learncurve]`` table in configuration file.
 
     Attributes
     ----------
@@ -51,7 +53,7 @@ class LearncurveConfig(TrainConfig):
         these arguments and how they work.
     """
 
-    post_tfm_kwargs = attr.ib(
+    post_tfm_kwargs = field(
         validator=validators.optional(are_valid_post_tfm_kwargs),
         converter=converters.optional(convert_post_tfm_kwargs),
         default=None,
