@@ -88,8 +88,8 @@ def prep(toml_path):
     # ---- figure out purpose of config file from sections; will save csv path in that section -------------------------
     purpose = purpose_from_toml(config_toml, toml_path)
     if (
-        "dataset_path" in config_toml[purpose.upper()]
-        and config_toml[purpose.upper()]["dataset_path"] is not None
+        "path" in config_toml[purpose.upper()]["path"]
+        and config_toml[purpose.upper()]["dataset"]["path"] is not None
     ):
         raise ValueError(
             f"config .toml file already has a 'dataset_path' option in the '{purpose.upper()}' section, "
@@ -142,7 +142,7 @@ def prep(toml_path):
     )
 
     # use config and section from above to add dataset_path to config.toml file
-    config_toml[section]["dataset_path"] = str(dataset_path)
+    config_toml[section]["dataset"]["path"] = str(dataset_path)
 
     with toml_path.open("w") as fp:
         toml.dump(config_toml, fp)
