@@ -1,7 +1,7 @@
-# used to test that invalid section 'TRIAN' (instead of 'TRAIN')
+# used to test that invalid section 'TRIAN' (instead of 'vak.train')
 # raises a ValueError when passed to
 # vak.config.validators.are_sections_valid
-[PREP]
+[vak.prep]
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = '/home/user/data/subdir/'
@@ -20,7 +20,7 @@ freq_cutoffs = [500, 10000]
 thresh = 6.25
 transform_type = 'log_spect'
 
-[TRIAN]  # <-- invalid section 'TRIAN' (instead of 'TRAIN')
+[TRIAN]  # <-- invalid section 'TRIAN' (instead of 'vak.train')
 model = 'TweetyNet'
 root_results_dir = '/home/user/data/subdir/'
 normalize_spectrograms = true

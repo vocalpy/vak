@@ -1,4 +1,4 @@
-[PREP]
+[vak.prep]
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032312"
@@ -12,14 +12,14 @@ test_dur = 30
 train_set_durs = [ 4, 6,]
 num_replicates = 2
 
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 fft_size = 512
 step_size = 64
 freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[LEARNCURVE]
+[vak.learncurve]
 model = "TweetyNet"
 normalize_spectrograms = true
 batch_size = 11
@@ -31,14 +31,14 @@ num_workers = 16
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/TweetyNet"
 
-[LEARNCURVE.post_tfm_kwargs]
+[vak.learncurve.post_tfm_kwargs]
 majority_vote = true
 min_segment_dur = 0.02
 
-[LEARNCURVE.train_dataset_params]
+[vak.learncurve.train_dataset_params]
 window_size = 88
 
-[LEARNCURVE.val_transform_params]
+[vak.learncurve.val_transform_params]
 window_size = 88
 
 [TweetyNet.network]
