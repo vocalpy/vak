@@ -15,6 +15,7 @@ from .spect_params import SpectParamsConfig
 from .train import TrainConfig
 from .validators import are_options_valid, are_tables_valid
 
+
 TABLE_CLASSES = {
     "eval": EvalConfig,
     "learncurve": LearncurveConfig,
@@ -42,7 +43,6 @@ REQUIRED_OPTIONS = {
         "data_dir",
         "output_dir",
     ],
-    "spect_params": None,
     "train": [
         "model",
         "root_results_dir",
