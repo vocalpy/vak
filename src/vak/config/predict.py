@@ -1,8 +1,10 @@
-"""parses [PREDICT] section of config"""
+"""Class that represents ``[vak.prep]`` section of configuration file."""
+from __future__ import annotations
+
 import os
 from pathlib import Path
 
-import attr
+from attrs import define, field
 from attr import converters, validators
 from attr.validators import instance_of
 
@@ -11,9 +13,9 @@ from ..common.converters import expanded_user_path
 from .validators import is_valid_model_name
 
 
-@attr.s
+@define
 class PredictConfig:
-    """class that represents [PREDICT] section of config.toml file
+    """Class that represents ``[vak.prep]`` section of configuration file.
 
      Attributes
      ----------
@@ -79,52 +81,52 @@ class PredictConfig:
     """
 
     # required, external files
-    checkpoint_path = attr.ib(converter=expanded_user_path)
-    labelmap_path = attr.ib(converter=expanded_user_path)
+    checkpoint_path = field(converter=expanded_user_path)
+    labelmap_path = field(converter=expanded_user_path)
 
     # required, model / dataloader
-    model = attr.ib(
+    model = field(
         validator=[instance_of(str), is_valid_model_name],
     )
-    batch_size = attr.ib(converter=int, validator=instance_of(int))
+    batch_size = field(converter=int, validator=instance_of(int))
 
     # dataset_path is actually 'required' but we can't enforce that here because cli.prep looks at
     # what sections are defined to figure out where to add dataset_path after it creates the csv
-    dataset_path = attr.ib(
+    dataset_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
 
     # optional, transform
-    spect_scaler_path = attr.ib(
+    spect_scaler_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
 
     # optional, data loader
-    num_workers = attr.ib(validator=instance_of(int), default=2)
-    device = attr.ib(validator=instance_of(str), default=device.get_default())
+    num_workers = field(validator=instance_of(int), default=2)
+    device = field(validator=instance_of(str), default=device.get_default())
 
-    annot_csv_filename = attr.ib(
+    annot_csv_filename = field(
         validator=validators.optional(instance_of(str)), default=None
     )
-    output_dir = attr.ib(
+    output_dir = field(
         converter=expanded_user_path,
         default=Path(os.getcwd()),
     )
-    min_segment_dur = attr.ib(
+    min_segment_dur = field(
         validator=validators.optional(instance_of(float)), default=None
     )
-    majority_vote = attr.ib(validator=instance_of(bool), default=True)
-    save_net_outputs = attr.ib(validator=instance_of(bool), default=False)
+    majority_vote = field(validator=instance_of(bool), default=True)
+    save_net_outputs = field(validator=instance_of(bool), default=False)
 
-    transform_params = attr.ib(
+    transform_params = field(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
     )
 
-    dataset_params = attr.ib(
+    dataset_params = field(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
