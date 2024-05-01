@@ -1,5 +1,5 @@
 """validators used by attrs-based classes and by vak.parse.parse_config"""
-from pathlib import Path
+import pathlib
 
 import tomlkit
 
@@ -9,7 +9,7 @@ from ..common import constants
 
 def is_a_directory(instance, attribute, value):
     """check if given path is a directory"""
-    if not Path(value).is_dir():
+    if not pathlib.Path(value).is_dir():
         raise NotADirectoryError(
             f"Value specified for {attribute.name} of {type(instance)} not recognized as a directory:\n"
             f"{value}"
@@ -18,7 +18,7 @@ def is_a_directory(instance, attribute, value):
 
 def is_a_file(instance, attribute, value):
     """check if given path is a file"""
-    if not Path(value).is_file():
+    if not pathlib.Path(value).is_file():
         raise FileNotFoundError(
             f"Value specified for {attribute.name} of {type(instance)} not recognized as a file:\n"
             f"{value}"
@@ -57,7 +57,7 @@ def is_spect_format(instance, attribute, value):
         )
 
 
-CONFIG_DIR = Path(__file__).parent
+CONFIG_DIR = pathlib.Path(__file__).parent
 VALID_TOML_PATH = CONFIG_DIR.joinpath("valid.toml")
 with VALID_TOML_PATH.open("r") as fp:
     VALID_DICT = tomlkit.load(fp)['vak']
@@ -111,8 +111,39 @@ def are_tables_valid(config_dict, toml_path=None):
             raise ValueError(err_msg)
 
 
-def are_options_valid(config_dict, table, toml_path=None):
+def are_options_valid(
+        config_dict: dict, table: str, toml_path: str | pathlib.Path | None = None
+        ) -> None:
+    """Given a :class:`dict` containing the *entire* configuration loaded from a toml file,
+    validate the option names for a specific top-level table, e.g. ``vak.train`` or ``vak.predict``"""
     user_options = set(config_dict[table].keys())
+    valid_options = set(VALID_OPTIONS[table])
+    if not user_options.issubset(valid_options):
+        invalid_options = user_options - valid_options
+        if toml_path:
+            err_msg = (
+                f"The following options from '{table}' table in "
+                f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
+            )
+        else:
+            err_msg = (
+                f"The following options from '{table}' table in "
+                f"the toml config are not valid:\n{invalid_options}"
+            )
+        raise ValueError(err_msg)
+
+
+def are_table_options_valid(table_config_dict: dict, table: str, toml_path: str | pathlib.Path | None = None) -> None:
+    """Given a :class:`dict` containing the configuration for a *specific* top-level table,
+    loaded from a toml file, validate the option names for that table,
+    e.g. ``vak.train`` or ``vak.predict``.
+
+    This function assumes ``table_config_dict`` comes from the entire ``config_dict``
+    returned by :func:`vak.config.parse.from_toml_path`, accessed using the table name as a key,
+    unlike :func:`are_options_valid`. This function is used by the ``from_config_dict``
+    classmethod of the top-level tables.
+    """
+    user_options = set(table_config_dict.keys())
     valid_options = set(VALID_OPTIONS[table])
     if not user_options.issubset(valid_options):
         invalid_options = user_options - valid_options
