@@ -13,111 +13,111 @@ from .predict import PredictConfig
 from .prep import PrepConfig
 from .spect_params import SpectParamsConfig
 from .train import TrainConfig
-from .validators import are_options_valid, are_sections_valid
+from .validators import are_options_valid, are_tables_valid
 
-SECTION_CLASSES = {
-    "EVAL": EvalConfig,
-    "LEARNCURVE": LearncurveConfig,
-    "PREDICT": PredictConfig,
-    "PREP": PrepConfig,
-    "SPECT_PARAMS": SpectParamsConfig,
-    "TRAIN": TrainConfig,
+TABLE_CLASSES = {
+    "eval": EvalConfig,
+    "learncurve": LearncurveConfig,
+    "predict": PredictConfig,
+    "prep": PrepConfig,
+    "spect_params": SpectParamsConfig,
+    "train": TrainConfig,
 }
 
 REQUIRED_OPTIONS = {
-    "EVAL": [
+    "eval": [
         "checkpoint_path",
         "output_dir",
         "model",
     ],
-    "LEARNCURVE": [
+    "learncurve": [
         "model",
         "root_results_dir",
     ],
-    "PREDICT": [
+    "predict": [
         "checkpoint_path",
         "model",
     ],
-    "PREP": [
+    "prep": [
         "data_dir",
         "output_dir",
     ],
-    "SPECT_PARAMS": None,
-    "TRAIN": [
+    "spect_params": None,
+    "train": [
         "model",
         "root_results_dir",
     ],
 }
 
 
-def parse_config_section(config_toml, section_name, toml_path=None):
-    """parse section of config.toml file
+def parse_config_table(config_toml, table_name, toml_path=None):
+    """Parse table of config.toml file
 
     Parameters
     ----------
     config_toml : dict
-        containing config.toml file already loaded by parse function
-    section_name : str
-        name of section from configuration
-        file that should be parsed
+        Containing config.toml file already loaded by parse function
+    table_name : str
+        Name of table from configuration
+        file that should be parsed.
     toml_path : str
         path to a configuration file in TOML format. Default is None.
         Used for error messages if specified.
 
     Returns
     -------
-    config : vak.config section class
-        instance of class that represents section of config.toml file,
-        e.g. PredictConfig for 'PREDICT' section
+    config : vak.config table class
+        instance of class that represents table of config.toml file,
+        e.g. PredictConfig for 'PREDICT' table
     """
-    section = dict(config_toml[section_name].items())
+    table = dict(config_toml[table_name].items())
 
-    required_options = REQUIRED_OPTIONS[section_name]
+    required_options = REQUIRED_OPTIONS[table_name]
     if required_options is not None:
         for required_option in required_options:
-            if required_option not in section:
+            if required_option not in table:
                 if toml_path:
                     err_msg = (
                         f"the '{required_option}' option is required but was not found in the "
-                        f"{section_name} section of the config.toml file: {toml_path}"
+                        f"{table_name} table of the config.toml file: {toml_path}"
                     )
                 else:
                     err_msg = (
                         f"the '{required_option}' option is required but was not found in the "
-                        f"{section_name} section of the toml config"
+                        f"{table_name} table of the toml config"
                     )
                 raise KeyError(err_msg)
-    return SECTION_CLASSES[section_name](**section)
+    return TABLE_CLASSES[table_name](**table)
 
 
-def _validate_sections_arg_convert_list(sections):
-    if isinstance(sections, str):
-        sections = [sections]
-    elif isinstance(sections, list):
+def _validate_tables_arg_convert_list(tables):
+    if isinstance(tables, str):
+        tables = [tables]
+    elif isinstance(tables, list):
         if not all(
-            [isinstance(section_name, str) for section_name in sections]
+            [isinstance(table_name, str) for table_name in tables]
         ):
             raise ValueError(
-                "all section names in 'sections' should be strings"
+                "all table names in 'tables' should be strings"
             )
         if not all(
             [
-                section_name in list(SECTION_CLASSES.keys())
-                for section_name in sections
+                table_name in list(TABLE_CLASSES.keys())
+                for table_name in tables
             ]
         ):
             raise ValueError(
-                "all section names in 'sections' should be valid names of sections. "
-                f"Values for 'sections were: {sections}.\n"
-                f"Valid section names are: {list(SECTION_CLASSES.keys())}"
+                "all table names in 'tables' should be valid names of tables. "
+                f"Values for 'tables were: {tables}.\n"
+                f"Valid table names are: {list(TABLE_CLASSES.keys())}"
             )
-    return sections
+    return tables
 
 
 def from_toml(
-        config_toml: dict, toml_path: str | pathlib.Path | None = None, sections: list[str] | None = None
+        config_toml: dict, toml_path: str | pathlib.Path | None = None, tables: list[str] | None = None
         ) -> Config:
-    """load a TOML configuration file
+    """Load a TOML configuration file.
 
     Parameters
     ----------
@@ -127,33 +127,33 @@ def from_toml(
     toml_path : str, pathlib.Path
         path to a configuration file in TOML format. Default is None.
         Not required, used only to make any error messages clearer.
-    sections : str, list
-        name of section or sections from configuration
+    tables : str, list
+        Name of table or tables from configuration
         file that should be parsed. Can be a string
-        (single section) or list of strings (multiple
-        sections). Default is None,
+        (single table) or list of strings (multiple
+        tables). Default is None,
         in which case all are validated and parsed.
 
     Returns
     -------
     config : vak.config.parse.Config
         instance of Config class, whose attributes correspond to
-        sections in a config.toml file.
+        tables in a config.toml file.
     """
-    are_sections_valid(config_toml, toml_path)
+    are_tables_valid(config_toml, toml_path)
 
-    sections = _validate_sections_arg_convert_list(sections)
+    tables = _validate_tables_arg_convert_list(tables)
 
     config_dict = {}
-    if sections is None:
-        sections = list(
-            SECTION_CLASSES.keys()
-        )  # i.e., parse all sections, except model
-    for section_name in sections:
-        if section_name in config_toml:
-            are_options_valid(config_toml, section_name, toml_path)
-            config_dict[section_name.lower()] = parse_config_section(
-                config_toml, section_name, toml_path
+    if tables is None:
+        tables = list(
+            TABLE_CLASSES.keys()
+        )  # i.e., parse all tables, except model
+    for table_name in tables:
+        if table_name in config_toml:
+            are_options_valid(config_toml, table_name, toml_path)
+            config_dict[table_name.lower()] = parse_config_table(
+                config_toml, table_name, toml_path
             )
 
     return Config(**config_dict)
@@ -182,7 +182,7 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     return config_toml
 
 
-def from_toml_path(toml_path: str | pathlib.Path, sections: list[str] | None = None) -> Config:
+def from_toml_path(toml_path: str | pathlib.Path, tables: list[str] | None = None) -> Config:
     """Parse a TOML configuration file and return as a :class:`Config`.
 
     Parameters
@@ -192,18 +192,18 @@ def from_toml_path(toml_path: str | pathlib.Path, sections: list[str] | None = N
         Parsed by ``toml`` library, then converted to an
         instance of ``vak.config.parse.Config`` by
         calling ``vak.parse.from_toml``
-    sections : str, list
-        name of section or sections from configuration
+    tables : str, list
+        name of table or tables from configuration
         file that should be parsed. Can be a string
-        (single section) or list of strings (multiple
-        sections). Default is None,
+        (single table) or list of strings (multiple
+        tables). Default is None,
         in which case all are validated and parsed.
 
     Returns
     -------
     config : vak.config.parse.Config
         instance of :class:`Config` class, whose attributes correspond to
-        sections in a config.toml file.
+        tables in a config.toml file.
     """
     config_toml = _load_toml_from_path(toml_path)
-    return from_toml(config_toml, toml_path, sections)
+    return from_toml(config_toml, toml_path, tables)
