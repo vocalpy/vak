@@ -4,9 +4,10 @@ from __future__ import annotations
 import pathlib
 
 from attrs import define, field
+from attrs.validators import instance_of
 
 from .. import models
-from . import parse, validators
+
 
 MODEL_TABLES = [
     "network",
@@ -36,10 +37,10 @@ class ModelConfig:
         metric names to keyword arguments.
     """
     name: str
-    network: dict = field(validators=isinstance(dict))
-    optimizer: dict = field(validators=isinstance(dict))
-    loss: dict = field(validators=isinstance(dict))
-    metrics: dict = field(validators=isinstance(dict))
+    network: dict = field(validator=instance_of(dict))
+    optimizer: dict = field(validator=instance_of(dict))
+    loss: dict = field(validator=instance_of(dict))
+    metrics: dict = field(validator=instance_of(dict))
 
     @classmethod
     def from_config_dict(cls, config_dict: dict):
@@ -126,6 +127,7 @@ def config_from_toml_dict(toml_dict: dict, table: str, model_name: str) -> dict:
         raise ValueError(
             f"Invalid model name: {model_name}.\nValid model names are: {models.registry.MODEL_NAMES}"
         )
+    from . import validators  # avoid circular import
     validators.are_tables_valid(toml_dict)
 
     try:
@@ -169,5 +171,7 @@ def config_from_toml_path(
         as loaded from a .toml file,
         and used by the model method ``from_config``.
     """
+    from . import parse  # avoid circular import
+
     toml_dict = parse._load_toml_from_path(toml_path)
     return config_from_toml_dict(toml_dict, table, model_name)
