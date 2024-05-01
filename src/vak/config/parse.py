@@ -1,4 +1,7 @@
-from pathlib import Path
+"""Functions to parse toml config files."""
+from __future__ import annotations
+
+import pathlib
 
 import toml
 from toml.decoder import TomlDecodeError
@@ -111,7 +114,9 @@ def _validate_sections_arg_convert_list(sections):
     return sections
 
 
-def from_toml(config_toml, toml_path=None, sections=None):
+def from_toml(
+        config_toml: dict, toml_path: str | pathlib.Path | None = None, sections: list[str] | None = None
+        ) -> Config:
     """load a TOML configuration file
 
     Parameters
@@ -119,7 +124,7 @@ def from_toml(config_toml, toml_path=None, sections=None):
     config_toml : dict
         Python ``dict`` containing a .toml configuration file,
         parsed by the ``toml`` library.
-    toml_path : str, Path
+    toml_path : str, pathlib.Path
         path to a configuration file in TOML format. Default is None.
         Not required, used only to make any error messages clearer.
     sections : str, list
@@ -154,19 +159,21 @@ def from_toml(config_toml, toml_path=None, sections=None):
     return Config(**config_dict)
 
 
-def _load_toml_from_path(toml_path):
-    """helper function to load toml config file,
+def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
+    """Load a toml file from a path, and return as a :class:`dict`.
+
+    Helper function to load toml config file,
     factored out to use in other modules when needed
 
     checks if ``toml_path`` exists before opening,
     and tries to give a clear message if an error occurs when parsing"""
-    toml_path = Path(toml_path)
+    toml_path = pathlib.Path(toml_path)
     if not toml_path.is_file():
         raise FileNotFoundError(f".toml config file not found: {toml_path}")
 
     try:
         with toml_path.open("r") as fp:
-            config_toml = toml.load(fp)
+            config_toml: dict = toml.load(fp)
     except TomlDecodeError as e:
         raise Exception(
             f"Error when parsing .toml config file: {toml_path}"
@@ -175,12 +182,12 @@ def _load_toml_from_path(toml_path):
     return config_toml
 
 
-def from_toml_path(toml_path, sections=None):
-    """parse a TOML configuration file
+def from_toml_path(toml_path: str | pathlib.Path, sections: list[str] | None = None) -> Config:
+    """Parse a TOML configuration file and return as a :class:`Config`.
 
     Parameters
     ----------
-    toml_path : str, Path
+    toml_path : str, pathlib.Path
         path to a configuration file in TOML format.
         Parsed by ``toml`` library, then converted to an
         instance of ``vak.config.parse.Config`` by
@@ -195,7 +202,7 @@ def from_toml_path(toml_path, sections=None):
     Returns
     -------
     config : vak.config.parse.Config
-        instance of Config class, whose attributes correspond to
+        instance of :class:`Config` class, whose attributes correspond to
         sections in a config.toml file.
     """
     config_toml = _load_toml_from_path(toml_path)
