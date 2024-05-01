@@ -1,4 +1,8 @@
-"""Class and functions for [vak.eval] table in config"""
+"""Class and functions for ``[vak.eval]`` table in configuration file."""
+from __future__ import annotations
+
+import pathlib
+
 from attrs import define, field
 from attrs import converters, validators
 from attrs.validators import instance_of
@@ -69,7 +73,7 @@ def are_valid_post_tfm_kwargs(instance, attribute, value):
 
 @define
 class EvalConfig:
-    """Class that represents [vak.eval] table in config.toml file
+    """Class that represents [vak.eval] table in configuration file.
 
     Attributes
     ----------
