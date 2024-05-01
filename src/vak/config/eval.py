@@ -9,6 +9,8 @@ from attrs.validators import instance_of
 
 from ..common import device
 from ..common.converters import expanded_user_path
+from .dataset import DatasetConfig
+from .model import ModelConfig
 from .validators import is_valid_model_name
 
 
@@ -172,3 +174,14 @@ class EvalConfig:
         validator=validators.optional(instance_of(dict)),
         default=None,
     )
+
+    @classmethod
+    def from_config_dict(cls, config_dict: dict) -> EvalConfig:
+        """"""
+        # TODO: check for required keys here, including 'model' and 'dataset'
+        # use 
+        model_config = ModelConfig(config_dict['model'])
+        dataset_config = DatasetConfig(config_dict['dataset'])
+        return cls(
+            **config_dict
+        )
