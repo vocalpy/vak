@@ -1,16 +1,16 @@
-"""parses [TRAIN] section of config"""
-import attr
-from attr import converters, validators
-from attr.validators import instance_of
+"""Class that represents ``[vak.train]`` table of configuration file."""
+from attrs import define, field
+from attrs import converters, validators
+from attrs.validators import instance_of
 
 from ..common import device
 from ..common.converters import bool_from_str, expanded_user_path
 from .validators import is_valid_model_name
 
 
-@attr.s
+@define
 class TrainConfig:
-    """class that represents [TRAIN] section of config.toml file
+    """Class that represents ``[vak.train]`` table of configuration file.
 
     Attributes
     ----------
@@ -64,81 +64,81 @@ class TrainConfig:
     """
 
     # required
-    model = attr.ib(
+    model = field(
         validator=[instance_of(str), is_valid_model_name],
     )
-    num_epochs = attr.ib(converter=int, validator=instance_of(int))
-    batch_size = attr.ib(converter=int, validator=instance_of(int))
-    root_results_dir = attr.ib(converter=expanded_user_path)
+    num_epochs = field(converter=int, validator=instance_of(int))
+    batch_size = field(converter=int, validator=instance_of(int))
+    root_results_dir = field(converter=expanded_user_path)
 
     # optional
     # dataset_path is actually 'required' but we can't enforce that here because cli.prep looks at
     # what sections are defined to figure out where to add dataset_path after it creates the csv
-    dataset_path = attr.ib(
+    dataset_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
 
-    results_dirname = attr.ib(
+    results_dirname = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
 
-    normalize_spectrograms = attr.ib(
+    normalize_spectrograms = field(
         converter=bool_from_str,
         validator=validators.optional(instance_of(bool)),
         default=False,
     )
 
-    num_workers = attr.ib(validator=instance_of(int), default=2)
-    device = attr.ib(validator=instance_of(str), default=device.get_default())
-    shuffle = attr.ib(
+    num_workers = field(validator=instance_of(int), default=2)
+    device = field(validator=instance_of(str), default=device.get_default())
+    shuffle = field(
         converter=bool_from_str, validator=instance_of(bool), default=True
     )
 
-    val_step = attr.ib(
+    val_step = field(
         converter=converters.optional(int),
         validator=validators.optional(instance_of(int)),
         default=None,
     )
-    ckpt_step = attr.ib(
+    ckpt_step = field(
         converter=converters.optional(int),
         validator=validators.optional(instance_of(int)),
         default=None,
     )
-    patience = attr.ib(
+    patience = field(
         converter=converters.optional(int),
         validator=validators.optional(instance_of(int)),
         default=None,
     )
-    checkpoint_path = attr.ib(
+    checkpoint_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
-    spect_scaler_path = attr.ib(
+    spect_scaler_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
 
-    train_transform_params = attr.ib(
+    train_transform_params = field(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
     )
 
-    train_dataset_params = attr.ib(
+    train_dataset_params = field(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
     )
 
-    val_transform_params = attr.ib(
+    val_transform_params = field(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
     )
 
-    val_dataset_params = attr.ib(
+    val_dataset_params = field(
         converter=converters.optional(dict),
         validator=validators.optional(instance_of(dict)),
         default=None,
