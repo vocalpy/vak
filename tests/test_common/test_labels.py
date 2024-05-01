@@ -1,7 +1,7 @@
 import copy
-import pathlib
 
 import numpy as np
+import pandas as pd
 import pytest
 
 import vak.common.files.spect
@@ -72,7 +72,7 @@ def test_from_df(config_type, model_name, audio_format, spect_format, annot_form
 
     out = vak.common.labels.from_df(df, dataset_path)
     assert isinstance(out, list)
-    assert all([isinstance(labels, np.ndarray) for labels in out])
+    assert all([isinstance(labels, pd.arrays.StringArray) for labels in out])
 
 
 INTS_LABELMAP = {str(val): val for val in range(1, 20)}
