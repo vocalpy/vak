@@ -1,4 +1,4 @@
-"""Class that represents dataset table in toml config file."""
+"""Class that represents dataset table in configuration file."""
 from __future__ import annotations
 
 import pathlib
@@ -8,8 +8,8 @@ import attr.validators
 
 
 @define
-class Dataset:
-    """Class that represents dataset table in toml config file.
+class DatasetConfig:
+    """Class that represents dataset table in configuration file.
 
     Attributes
     ----------
@@ -32,7 +32,7 @@ class Dataset:
         )
 
     @classmethod
-    def from_dict(cls, dict_: dict) -> Dataset:
+    def from_config_dict(cls, dict_: dict) -> DatasetConfig:
         return cls(
             path=dict_.get('path'),
             name=dict_.get('name'),
