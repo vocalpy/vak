@@ -1,4 +1,4 @@
-"""parses [PREP] section of config"""
+"""parses [vak.prep] section of config"""
 import inspect
 
 import attr
