@@ -5,7 +5,7 @@
 # Options should be in the same order they are defined for the
 # attrs-based class that represents the config, for easy comparison
 # when changing that class + this file.
-[PREP]
+[vak.prep]
 data_dir = './tests/test_data/cbins/gy6or6/032312'
 output_dir = './tests/test_data/prep/learncurve'
 dataset_type = 'frame_classification'
@@ -22,7 +22,7 @@ test_dur = 30
 train_set_durs = [ 4.5, 6.0 ]
 num_replicates = 2
 
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 fft_size = 512
 step_size = 64
 freq_cutoffs = [ 500, 10000 ]
@@ -33,7 +33,7 @@ freqbins_key = 'f'
 timebins_key = 't'
 audio_path_key = 'audio_path'
 
-[TRAIN]
+[vak.train]
 model = 'TweetyNet'
 root_results_dir = './tests/test_data/results/train'
 dataset_path = 'tests/test_data/prep/train/032312_prep_191224_225912.csv'
@@ -54,7 +54,7 @@ train_dataset_params = {'window_size' = 80}
 val_transform_params = {'resize' = 128}
 val_dataset_params = {'window_size' = 80}
 
-[EVAL]
+[vak.eval]
 dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
@@ -68,7 +68,7 @@ post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 transform_params = {'resize' = 128}
 dataset_params = {'window_size' = 80}
 
-[LEARNCURVE]
+[vak.learncurve]
 model = 'TweetyNet'
 root_results_dir = './tests/test_data/results/learncurve'
 batch_size = 11
@@ -88,7 +88,7 @@ train_dataset_params = {'window_size' = 80}
 val_transform_params = {'resize' = 128}
 val_dataset_params = {'window_size' = 80}
 
-[PREDICT]
+[vak.predict]
 dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
