@@ -107,6 +107,8 @@ def config_from_toml_dict(toml_dict: dict, table: str, model_name: str) -> dict:
     ----------
     toml_dict : dict
         Configuration from a .toml file, loaded into a dictionary.
+    table : str
+        Name of top-level table to get model config from.
     model_name : str
         Name of a model, specified as the ``model`` option in a table
         (such as TRAIN or PREDICT),
@@ -131,7 +133,7 @@ def config_from_toml_dict(toml_dict: dict, table: str, model_name: str) -> dict:
     except KeyError as e:
         raise ValueError(
             f"A config section specifies the model name '{model_name}', "
-            f"but there is no section named '{model_name}' in the config."
+            f"but there is no section named '{model_name}' in the '{table}' table of the config."
         ) from e
 
     # check if config declares parameters for required attributes;
@@ -153,6 +155,8 @@ def config_from_toml_path(
     ----------
     toml_path : str, Path
         to configuration file in .toml format
+    table : str
+        Name of top-level table to get model config from.
      model_name : str
         of str, i.e. names of models specified by a section
         (such as TRAIN or PREDICT) that should each have corresponding sections
@@ -166,4 +170,4 @@ def config_from_toml_path(
         and used by the model method ``from_config``.
     """
     toml_dict = parse._load_toml_from_path(toml_path)
-    return config_from_toml_dict(toml_dict, model_name)
+    return config_from_toml_dict(toml_dict, table, model_name)
