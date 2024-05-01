@@ -1,7 +1,7 @@
 """validators used by attrs-based classes and by vak.parse.parse_config"""
 from pathlib import Path
 
-import toml
+import tomlkit
 
 from .. import models
 from ..common import constants
@@ -34,13 +34,13 @@ def is_valid_model_name(instance, attribute, value: str) -> None:
 
 
 def is_audio_format(instance, attribute, value):
-    """check if valid audio format"""
+    """Check if valid audio format"""
     if value not in constants.VALID_AUDIO_FORMATS:
         raise ValueError(f"{value} is not a valid format for audio files")
 
 
 def is_annot_format(instance, attribute, value):
-    """check if valid annotation format"""
+    """Check if valid annotation format"""
     if value not in constants.VALID_ANNOT_FORMATS:
         raise ValueError(
             f"{value} is not a valid format for annotation files.\n"
@@ -49,7 +49,7 @@ def is_annot_format(instance, attribute, value):
 
 
 def is_spect_format(instance, attribute, value):
-    """check if valid format for spectrograms"""
+    """Check if valid format for spectrograms"""
     if value not in constants.VALID_SPECT_FORMATS:
         raise ValueError(
             f"{value} is not a valid format for spectrogram files.\n"
@@ -60,70 +60,72 @@ def is_spect_format(instance, attribute, value):
 CONFIG_DIR = Path(__file__).parent
 VALID_TOML_PATH = CONFIG_DIR.joinpath("valid.toml")
 with VALID_TOML_PATH.open("r") as fp:
-    VALID_DICT = toml.load(fp)
-VALID_SECTIONS = list(VALID_DICT.keys())
+    VALID_DICT = tomlkit.load(fp)['vak']
+VALID_TOP_LEVEL_TABLES = list(VALID_DICT.keys())
 VALID_OPTIONS = {
-    section: list(options.keys()) for section, options in VALID_DICT.items()
+    table: list(options.keys()) for table, options in VALID_DICT.items()
 }
 
 
-def are_sections_valid(config_dict, toml_path=None):
-    sections = list(config_dict.keys())
+def are_tables_valid(config_dict, toml_path=None):
+    tables = list(config_dict.keys())
     from ..cli.cli import CLI_COMMANDS  # avoid circular import
 
     cli_commands_besides_prep = [
         command for command in CLI_COMMANDS if command != "prep"
     ]
-    sections_that_are_commands_besides_prep = [
-        section
-        for section in sections
-        if section.lower() in cli_commands_besides_prep
+    tables_that_are_commands_besides_prep = [
+        table
+        for table in tables
+        if table in cli_commands_besides_prep
     ]
-    if len(sections_that_are_commands_besides_prep) == 0:
+    if len(tables_that_are_commands_besides_prep) == 0:
         raise ValueError(
-            "did not find a section related to a vak command in config besides `prep`.\n"
-            f"Sections in config were: {sections}"
+            "Did not find a table related to a vak command in config besides `prep`.\n"
+            f"Sections in config were: {tables}\n"
+            "Please see example toml configuration files here: https://github.com/vocalpy/vak/tree/main/doc/toml"
         )
 
-    if len(sections_that_are_commands_besides_prep) > 1:
+    if len(tables_that_are_commands_besides_prep) > 1:
         raise ValueError(
-            "found multiple sections related to a vak command in config besides `prep`.\n"
-            f"Those sections are: {sections_that_are_commands_besides_prep}. "
-            f"Please use just one command besides `prep` per .toml configuration file"
+            "Found multiple tables related to a vak command in config besides `prep`.\n"
+            f"Those tables are: {tables_that_are_commands_besides_prep}. "
+            f"Please use just one command besides `prep` per .toml configuration file.\n"
+            "See example toml configuration files here: https://github.com/vocalpy/vak/tree/main/doc/toml"
         )
 
-    MODEL_NAMES = list(models.registry.MODEL_NAMES)
-    # add model names to valid sections so users can define model config in sections
-    valid_sections = VALID_SECTIONS + MODEL_NAMES
-    for section in sections:
-        if (
-            section not in valid_sections
-            and f"{section}Model" not in valid_sections
-        ):
+    for table in tables:
+        if table not in VALID_TOP_LEVEL_TABLES:
+        #     and f"{table}Model" not in valid_tables
+        # ):
             if toml_path:
                 err_msg = (
-                    f"section defined in {toml_path} is not valid: {section}"
+                    f"Top-level table defined in {toml_path} is not valid: {table}\n
+                    f"Valid top-level tables are: {VALID_TOP_LEVEL_TABLES}\n
+                    "Please see example toml configuration files here: https://github.com/vocalpy/vak/tree/main/doc/toml"
                 )
             else:
                 err_msg = (
-                    f"section defined in toml config is not valid: {section}"
+                    f"Table defined in toml config is not valid: {table}\n"
+                    f"Valid top-level tables are: {VALID_TOP_LEVEL_TABLES}\n"
+                    "Please see example toml configuration files here: https://github.com/vocalpy/vak/tree/main/doc/toml"
                 )
             raise ValueError(err_msg)
 
 
-def are_options_valid(config_dict, section, toml_path=None):
-    user_options = set(config_dict[section].keys())
-    valid_options = set(VALID_OPTIONS[section])
+def are_options_valid(config_dict, table, toml_path=None):
+    user_options = set(config_dict[table].keys())
+    valid_options = set(VALID_OPTIONS[table])
     if not user_options.issubset(valid_options):
         invalid_options = user_options - valid_options
         if toml_path:
             err_msg = (
-                f"the following options from {section} section in "
+                f"The following options from '{table}' table in "
                 f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
             )
         else:
             err_msg = (
-                f"the following options from {section} section in "
+                f"The following options from '{table}' table in "
                 f"the toml config are not valid:\n{invalid_options}"
             )
         raise ValueError(err_msg)
