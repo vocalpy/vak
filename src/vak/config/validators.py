@@ -96,12 +96,10 @@ def are_tables_valid(config_dict, toml_path=None):
 
     for table in tables:
         if table not in VALID_TOP_LEVEL_TABLES:
-        #     and f"{table}Model" not in valid_tables
-        # ):
             if toml_path:
                 err_msg = (
-                    f"Top-level table defined in {toml_path} is not valid: {table}\n
-                    f"Valid top-level tables are: {VALID_TOP_LEVEL_TABLES}\n
+                    f"Top-level table defined in {toml_path} is not valid: {table}\n"
+                    f"Valid top-level tables are: {VALID_TOP_LEVEL_TABLES}\n"
                     "Please see example toml configuration files here: https://github.com/vocalpy/vak/tree/main/doc/toml"
                 )
             else:
