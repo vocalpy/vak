@@ -1,5 +1,5 @@
 # PREP: options for preparing dataset
-[PREP]
+[vak.prep]
 # dataset_type: corresponds to the model family such as "frame classification" or "parametric umap"
 dataset_type = "frame classification"
 # input_type: input to model, either audio ("audio") or spectrogram ("spect")
@@ -22,7 +22,7 @@ val_dur = 15
 test_dur = 30
 
 # SPECT_PARAMS: parameters for computing spectrograms
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 # fft_size: size of window used for Fast Fourier Transform, in number of samples
 fft_size = 512
 # step_size: size of step to take when computing spectra with FFT for spectrogram
@@ -30,7 +30,7 @@ fft_size = 512
 step_size = 64
 
 # TRAIN: options for training model
-[TRAIN]
+[vak.train]
 # model: the string name of the model. must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
 model = "TweetyNet"
 # root_results_dir: directory where results should be saved, as a sub-directory within `root_results_dir`
@@ -60,21 +60,21 @@ device = "cuda"
 
 # train_dataset_params: parameters used when loading training dataset
 # for a frame classification model, we use a WindowDataset with a specific `window_size`
-[TRAIN.train_dataset_params]
+[vak.train.train_dataset_params]
 window_size = 176
 
 # val_transform_params: parameters used when transforming validation data
 # for a frame classification model, we use FrameDataset with the eval_item_transform,
 # that reshapes batches into consecutive adjacent windows with a specific `window_size`
-[TRAIN.val_transform_params]
+[vak.train.val_transform_params]
 window_size = 176
 
 # TweetyNet.optimizer: we specify options for the model's optimizer in this table
-[TweetyNet.optimizer]
+[vak.train.model.TweetyNet.optimizer]
 # lr: the learning rate
 lr = 0.001
 
 # TweetyNet.network: we specify options for the model's network in this table
-[TweetyNet.network]
+[vak.train.model.TweetyNet.network]
 # hidden_size: the number of elements in the hidden state in the recurrent layer of the network
 hidden_size = 256

@@ -1,4 +1,4 @@
-[PREP]
+[vak.prep]
 # dataset_type: corresponds to the model family such as "frame classification" or "parametric umap"
 dataset_type = "frame classification"
 # input_type: input to model, either audio ("audio") or spectrogram ("spect")
@@ -19,7 +19,7 @@ train_dur = 50
 val_dur = 15
 
 # SPECT_PARAMS: parameters for computing spectrograms
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 # fft_size: size of window used for Fast Fourier Transform, in number of samples
 fft_size = 512
 # step_size: size of step to take when computing spectra with FFT for spectrogram
@@ -27,7 +27,7 @@ fft_size = 512
 step_size = 64
 
 # EVAL: options for evaluating a trained model. This is done using the "test" split.
-[EVAL]
+[vak.eval]
 model = "TweetyNet"
 # checkpoint_path: path to saved model checkpoint
 checkpoint_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
@@ -51,7 +51,7 @@ output_dir = "/PATH/TO/FOLDER/results/eval"
 # ADD THE dataset_path OPTION FROM THE TRAIN FILE HERE (we already created a test split when we ran `vak prep` with that config)
 
 # EVAL.post_tfm_kwargs: options for post-processing
-[EVAL.post_tfm_kwargs]
+[vak.eval.post_tfm_kwargs]
 # both these transforms require that there is an "unlabeled" label,
 # and they will only be applied to segments that are bordered on both sides
 # by the "unlabeled" label.
@@ -68,9 +68,9 @@ min_segment_dur = 0.02
 # transform_params: parameters used when transforming data
 # for a frame classification model, we use FrameDataset with the eval_item_transform,
 # that reshapes batches into consecutive adjacent windows with a specific `window_size`
-[EVAL.transform_params]
+[vak.eval.transform_params]
 window_size = 176
 
-# Note we do not specify any options for the network, and just use the defaults
-# We need to put this "dummy" table here though for the config to parse correctly
-[TweetyNet]
+# Note we do not specify any options for the model, and just use the defaults
+# We need to put this table here though so we know which model we are using
+[vak.eval.model.TweetyNet]
