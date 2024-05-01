@@ -50,12 +50,12 @@ REQUIRED_OPTIONS = {
 }
 
 
-def parse_config_table(config_toml, table_name, toml_path=None):
+def parse_config_table(config_dict, table_name, toml_path=None):
     """Parse table of config.toml file
 
     Parameters
     ----------
-    config_toml : dict
+    config_dict : dict
         Containing config.toml file already loaded by parse function
     table_name : str
         Name of table from configuration
@@ -70,7 +70,7 @@ def parse_config_table(config_toml, table_name, toml_path=None):
         instance of class that represents table of config.toml file,
         e.g. PredictConfig for 'PREDICT' table
     """
-    table = dict(config_toml[table_name].items())
+    table = dict(config_dict[table_name].items())
 
     required_options = REQUIRED_OPTIONS[table_name]
     if required_options is not None:
@@ -115,13 +115,13 @@ def _validate_tables_arg_convert_list(tables):
 
 
 def from_toml(
-        config_toml: dict, toml_path: str | pathlib.Path | None = None, tables: list[str] | None = None
+        config_dict: dict, toml_path: str | pathlib.Path | None = None, tables: str | list[str] | None = None
         ) -> Config:
     """Load a TOML configuration file.
 
     Parameters
     ----------
-    config_toml : dict
+    config_dict : dict
         Python ``dict`` containing a .toml configuration file,
         parsed by the ``toml`` library.
     toml_path : str, pathlib.Path
@@ -140,23 +140,26 @@ def from_toml(
         instance of Config class, whose attributes correspond to
         tables in a config.toml file.
     """
-    are_tables_valid(config_toml, toml_path)
-
+    are_tables_valid(config_dict, toml_path)
     tables = _validate_tables_arg_convert_list(tables)
 
-    config_dict = {}
+    config_kwargs = {}
     if tables is None:
         tables = list(
             TABLE_CLASSES.keys()
         )  # i.e., parse all tables, except model
     for table_name in tables:
-        if table_name in config_toml:
-            are_options_valid(config_toml, table_name, toml_path)
-            config_dict[table_name.lower()] = parse_config_table(
-                config_toml, table_name, toml_path
+        if table_name in config_dict:
+            are_options_valid(config_dict, table_name, toml_path)
+            config_kwargs[table_name.lower()] = parse_config_table(
+                config_dict, table_name, toml_path
+            )
+        else:
+            raise KeyError(
+                f"A table specified in `tables` was not found in the config: {table_name}"
             )
 
-    return Config(**config_dict)
+    return Config(**config_kwargs)
 
 
 def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
@@ -172,19 +175,19 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
 
     try:
         with toml_path.open("r") as fp:
-            config_toml: dict = tomlkit.load(fp)
+            config_dict: dict = tomlkit.load(fp)
     except tomlkit.exceptions.TOMLKitError as e:
         raise Exception(
             f"Error when parsing .toml config file: {toml_path}"
         ) from e
 
-    if 'vak' not in config_toml:
+    if 'vak' not in config_dict:
         raise ValueError(
             "Toml file does not contain a top-level table named `vak`. "
             f"Please see example configuration files here: "
         )
 
-    return config_toml['vak']
+    return config_dict['vak']
 
 
 def from_toml_path(toml_path: str | pathlib.Path, tables: list[str] | None = None) -> Config:
@@ -210,5 +213,5 @@ def from_toml_path(toml_path: str | pathlib.Path, tables: list[str] | None = Non
         instance of :class:`Config` class, whose attributes correspond to
         tables in a config.toml file.
     """
-    config_toml = _load_toml_from_path(toml_path)
-    return from_toml(config_toml, toml_path, tables)
+    config_dict = _load_toml_from_path(toml_path)
+    return from_toml(config_dict, toml_path, tables)
