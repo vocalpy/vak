@@ -1,10 +1,12 @@
-"""parses [vak.prep] section of config"""
+"""Class and functions for ``[vak.prep]`` table in configuration file."""
+from __future__ import annotations
+
 import inspect
 
-import attr
+from attrs import define, field
 import dask.bag
-from attr import converters, validators
-from attr.validators import instance_of
+from attrs import converters, validators
+from attrs.validators import instance_of
 
 from .. import prep
 from ..common.converters import expanded_user_path, labelset_to_set
@@ -60,9 +62,9 @@ def are_valid_dask_bag_kwargs(instance, attribute, value):
         )
 
 
-@attr.s
+@define
 class PrepConfig:
-    """class to represent [PREP] section of config.toml file
+    """Class that represents ``[vak.prep]`` table of configuration file.
 
     Attributes
     ----------
@@ -127,10 +129,10 @@ class PrepConfig:
         Default is None. Required if config file has a learncurve section.
     """
 
-    data_dir = attr.ib(converter=expanded_user_path)
-    output_dir = attr.ib(converter=expanded_user_path)
+    data_dir = field(converter=expanded_user_path)
+    output_dir = field(converter=expanded_user_path)
 
-    dataset_type = attr.ib(validator=instance_of(str))
+    dataset_type = field(validator=instance_of(str))
 
     @dataset_type.validator
     def is_valid_dataset_type(self, attribute, value):
@@ -140,7 +142,7 @@ class PrepConfig:
                 f"Valid dataset types are: {prep.constants.DATASET_TYPES}"
             )
 
-    input_type = attr.ib(validator=instance_of(str))
+    input_type = field(validator=instance_of(str))
 
     @input_type.validator
     def is_valid_input_type(self, attribute, value):
@@ -149,49 +151,49 @@ class PrepConfig:
                 f"Invalid input type: {value}. Must be one of: {prep.constants.INPUT_TYPES}"
             )
 
-    audio_format = attr.ib(
+    audio_format = field(
         validator=validators.optional(is_audio_format), default=None
     )
-    spect_format = attr.ib(
+    spect_format = field(
         validator=validators.optional(is_spect_format), default=None
     )
-    annot_file = attr.ib(
+    annot_file = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
-    annot_format = attr.ib(
+    annot_format = field(
         validator=validators.optional(is_annot_format), default=None
     )
 
-    labelset = attr.ib(
+    labelset = field(
         converter=converters.optional(labelset_to_set),
         validator=validators.optional(instance_of(set)),
         default=None,
     )
 
-    audio_dask_bag_kwargs = attr.ib(
+    audio_dask_bag_kwargs = field(
         validator=validators.optional(are_valid_dask_bag_kwargs), default=None
     )
 
-    train_dur = attr.ib(
+    train_dur = field(
         converter=converters.optional(duration_from_toml_value),
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    val_dur = attr.ib(
+    val_dur = field(
         converter=converters.optional(duration_from_toml_value),
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    test_dur = attr.ib(
+    test_dur = field(
         converter=converters.optional(duration_from_toml_value),
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    train_set_durs = attr.ib(
+    train_set_durs = field(
         validator=validators.optional(instance_of(list)), default=None
     )
-    num_replicates = attr.ib(
+    num_replicates = field(
         validator=validators.optional(instance_of(int)), default=None
     )
 
