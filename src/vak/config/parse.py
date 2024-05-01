@@ -90,27 +90,32 @@ def parse_config_table(config_dict, table_name, toml_path=None):
     return TABLE_CLASSES[table_name](**table)
 
 
-def _validate_tables_arg_convert_list(tables):
+def _validate_tables_arg_convert_list(tables: str | list[str]) -> list[str]:
     if isinstance(tables, str):
         tables = [tables]
-    elif isinstance(tables, list):
-        if not all(
-            [isinstance(table_name, str) for table_name in tables]
-        ):
-            raise ValueError(
-                "all table names in 'tables' should be strings"
-            )
-        if not all(
-            [
-                table_name in list(TABLE_CLASSES.keys())
-                for table_name in tables
-            ]
-        ):
-            raise ValueError(
-                "all table names in 'tables' should be valid names of tables. "
-                f"Values for 'tables were: {tables}.\n"
-                f"Valid table names are: {list(TABLE_CLASSES.keys())}"
-            )
+
+    if not isinstance(tables, list):
+        raise TypeError(
+            f"`tables` should be a string or list of strings but type was: {type(tables)}"
+        )
+
+    if not all(
+        [isinstance(table_name, str) for table_name in tables]
+    ):
+        raise ValueError(
+            "All table names in 'tables' should be strings"
+        )
+    if not all(
+        [
+            table_name in list(TABLE_CLASSES.keys())
+            for table_name in tables
+        ]
+    ):
+        raise ValueError(
+            "All table names in 'tables' should be valid names of tables. "
+            f"Values for 'tables were: {tables}.\n"
+            f"Valid table names are: {list(TABLE_CLASSES.keys())}"
+        )
     return tables
 
 
