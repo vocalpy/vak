@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pathlib
 
-import toml
-from toml.decoder import TomlDecodeError
+import tomlkit
+import tomlkit.exceptions
 
 from .config import Config
 from .eval import EvalConfig
@@ -163,23 +163,28 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     """Load a toml file from a path, and return as a :class:`dict`.
 
     Helper function to load toml config file,
-    factored out to use in other modules when needed
-
-    checks if ``toml_path`` exists before opening,
-    and tries to give a clear message if an error occurs when parsing"""
+    factored out to use in other modules when needed.
+    Checks if ``toml_path`` exists before opening,
+    and tries to give a clear message if an error occurs when loading."""
     toml_path = pathlib.Path(toml_path)
     if not toml_path.is_file():
         raise FileNotFoundError(f".toml config file not found: {toml_path}")
 
     try:
         with toml_path.open("r") as fp:
-            config_toml: dict = toml.load(fp)
-    except TomlDecodeError as e:
+            config_toml: dict = tomlkit.load(fp)
+    except tomlkit.exceptions.TOMLKitError as e:
         raise Exception(
             f"Error when parsing .toml config file: {toml_path}"
         ) from e
 
-    return config_toml
+    if 'vak' not in config_toml:
+        raise ValueError(
+            "Toml file does not contain a top-level table named `vak`. "
+            f"Please see example configuration files here: "
+        )
+
+    return config_toml['vak']
 
 
 def from_toml_path(toml_path: str | pathlib.Path, tables: list[str] | None = None) -> Config:
