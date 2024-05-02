@@ -45,9 +45,6 @@ def learning_curve(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
-    model_name = cfg.learncurve.model
-    model_config = config.model.config_from_toml_path(toml_path, model_name)
-
     if cfg.learncurve.dataset_path is None:
         raise ValueError(
             "No value is specified for 'dataset_path' in this .toml config file."
@@ -56,8 +53,8 @@ def learning_curve(toml_path):
         )
 
     learncurve.learning_curve(
-        model_name=model_name,
-        model_config=model_config,
+        model_name=cfg.learncurve.model.name,
+        model_config=cfg.learncurve.model,
         dataset_path=cfg.learncurve.dataset_path,
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
