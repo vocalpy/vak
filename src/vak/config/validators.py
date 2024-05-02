@@ -112,28 +112,28 @@ def are_tables_valid(config_dict, toml_path=None):
 
 
 def are_options_valid(
-        config_dict: dict, table: str, toml_path: str | pathlib.Path | None = None
+        config_dict: dict, table_name: str, toml_path: str | pathlib.Path | None = None
         ) -> None:
     """Given a :class:`dict` containing the *entire* configuration loaded from a toml file,
     validate the option names for a specific top-level table, e.g. ``vak.train`` or ``vak.predict``"""
-    user_options = set(config_dict[table].keys())
-    valid_options = set(VALID_OPTIONS[table])
+    user_options = set(config_dict[table_name].keys())
+    valid_options = set(VALID_OPTIONS[table_name])
     if not user_options.issubset(valid_options):
         invalid_options = user_options - valid_options
         if toml_path:
             err_msg = (
-                f"The following options from '{table}' table in "
+                f"The following options from '{table_name}' table in "
                 f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
             )
         else:
             err_msg = (
-                f"The following options from '{table}' table in "
+                f"The following options from '{table_name}' table in "
                 f"the toml config are not valid:\n{invalid_options}"
             )
         raise ValueError(err_msg)
 
 
-def are_table_options_valid(table_config_dict: dict, table: str, toml_path: str | pathlib.Path | None = None) -> None:
+def are_table_options_valid(table_config_dict: dict, table_name: str, toml_path: str | pathlib.Path | None = None) -> None:
     """Given a :class:`dict` containing the configuration for a *specific* top-level table,
     loaded from a toml file, validate the option names for that table,
     e.g. ``vak.train`` or ``vak.predict``.
@@ -144,17 +144,17 @@ def are_table_options_valid(table_config_dict: dict, table: str, toml_path: str 
     classmethod of the top-level tables.
     """
     user_options = set(table_config_dict.keys())
-    valid_options = set(VALID_OPTIONS[table])
+    valid_options = set(VALID_OPTIONS[table_name])
     if not user_options.issubset(valid_options):
         invalid_options = user_options - valid_options
         if toml_path:
             err_msg = (
-                f"The following options from '{table}' table in "
+                f"The following options from '{table_name}' table in "
                 f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
             )
         else:
             err_msg = (
-                f"The following options from '{table}' table in "
+                f"The following options from '{table_name}' table in "
                 f"the toml config are not valid:\n{invalid_options}"
             )
         raise ValueError(err_msg)
