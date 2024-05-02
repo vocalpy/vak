@@ -28,7 +28,6 @@ step_size = 64
 
 # EVAL: options for evaluating a trained model. This is done using the "test" split.
 [vak.eval]
-model = "TweetyNet"
 # checkpoint_path: path to saved model checkpoint
 checkpoint_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 # labelmap_path: path to file that maps from outputs of model (integers) to text labels in annotations;

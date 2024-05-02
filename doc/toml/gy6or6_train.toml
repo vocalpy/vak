@@ -31,8 +31,6 @@ step_size = 64
 
 # TRAIN: options for training model
 [vak.train]
-# model: the string name of the model. must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
-model = "TweetyNet"
 # root_results_dir: directory where results should be saved, as a sub-directory within `root_results_dir`
 root_results_dir = "/PATH/TO/FOLDER/results/train"
 # batch_size: number of samples from dataset per batch fed into network
@@ -69,8 +67,11 @@ window_size = 176
 [vak.train.val_transform_params]
 window_size = 176
 
-# TweetyNet.optimizer: we specify options for the model's optimizer in this table
+# To indicate the model to train, we use a "dotted key" with `model` followed by the string name of the model.
+# This name must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
+# We use another dotted key to indicate options for configuring the model, e.g. `TweetyNet.optimizer`
 [vak.train.model.TweetyNet.optimizer]
+# vak.train.model.TweetyNet.optimizer: we specify options for the model's optimizer in this table
 # lr: the learning rate
 lr = 0.001
 

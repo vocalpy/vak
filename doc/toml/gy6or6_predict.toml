@@ -24,8 +24,6 @@ step_size = 64
 
 # PREDICT: options for generating predictions with a trained model
 [vak.predict]
-# model: the string name of the model. must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
-model = "TweetyNet"
 # checkpoint_path: path to saved model checkpoint
 checkpoint_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 # labelmap_path: path to file that maps from outputs of model (integers) to text labels in annotations;
@@ -68,5 +66,5 @@ min_segment_dur = 0.01
 window_size = 176
 
 # Note we do not specify any options for the network, and just use the defaults
-# We need to put this "dummy" table here though for the config to parse correctly
+# We need to put this table here though, to indicate which model we are using.
 [vak.predict.model.TweetyNet]
