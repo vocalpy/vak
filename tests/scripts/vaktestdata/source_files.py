@@ -47,7 +47,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
             f"using config:\n{config_path.name}"
         )
-        cfg = vak.config.parse.from_toml_path(config_path)
+        cfg = vak.config.Config.from_toml_path(config_path)
 
         source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
             data_dir=cfg.prep.data_dir,
@@ -72,7 +72,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
         source_files_df.to_csv(csv_path, index=False)
 
-        config_toml: dict = vak.config.parse._load_toml_from_path(config_path)
+        config_toml: dict = vak.config.load._load_toml_from_path(config_path)
         purpose = vak.cli.prep.purpose_from_toml(config_toml, config_path)
         dataset_df: pd.DataFrame = vak.prep.frame_classification.assign_samples_to_splits(
             purpose,
@@ -109,7 +109,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         with config_path.open("w") as fp:
             tomlkit.dump(config_toml, fp)
 
-        cfg = vak.config.parse.from_toml_path(config_path)
+        cfg = vak.config.Config.from_toml_path(config_path)
 
         source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
             data_dir=cfg.prep.data_dir,
@@ -127,7 +127,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
         source_files_df.to_csv(csv_path, index=False)
 
-        config_toml: dict = vak.config.parse._load_toml_from_path(config_path)
+        config_toml: dict = vak.config.load._load_toml_from_path(config_path)
         purpose = vak.cli.prep.purpose_from_toml(config_toml, config_path)
         dataset_df: pd.DataFrame = vak.prep.frame_classification.assign_samples_to_splits(
             purpose,
@@ -159,7 +159,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
             f"using config:\n{config_path.name}"
         )
-        cfg = vak.config.parse.from_toml_path(config_path)
+        cfg = vak.config.Config.from_toml_path(config_path)
         source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
             data_dir=cfg.prep.data_dir,
             input_type=cfg.prep.input_type,
@@ -176,7 +176,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
         source_files_df.to_csv(csv_path, index=False)
 
-        config_toml: dict = vak.config.parse._load_toml_from_path(config_path)
+        config_toml: dict = vak.config.load._load_toml_from_path(config_path)
         purpose = vak.cli.prep.purpose_from_toml(config_toml, config_path)
         dataset_df: pd.DataFrame = vak.prep.frame_classification.assign_samples_to_splits(
             purpose,

@@ -67,7 +67,7 @@ def test_eval_frame_classification_model(
         spect_format=spect_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
     vak.eval.frame_classification.eval_frame_classification_model(
@@ -125,7 +125,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
         vak.eval.frame_classification.eval_frame_classification_model(
@@ -183,7 +183,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
         vak.eval.frame_classification.eval_frame_classification_model(

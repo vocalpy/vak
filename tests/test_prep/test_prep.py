@@ -48,7 +48,7 @@ def test_prep(
         spect_format=spect_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     purpose = config_type.lower()
 
     # ---- test

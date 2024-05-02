@@ -95,7 +95,7 @@ def test_prep_frame_classification_dataset(
         spect_format=spect_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     purpose = config_type.lower()
     dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
@@ -167,7 +167,7 @@ def test_prep_frame_classification_dataset_raises_when_labelset_required_but_is_
         spect_format=spect_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     purpose = config_type.lower()
     with pytest.raises(ValueError):
@@ -235,7 +235,7 @@ def test_prep_frame_classification_dataset_with_single_audio_and_annot(source_te
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     purpose = 'eval'
     dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
@@ -293,7 +293,7 @@ def test_prep_frame_classification_dataset_when_annot_has_single_segment(source_
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     purpose = 'eval'
     dataset_df, dataset_path = vak.prep.frame_classification.frame_classification.prep_frame_classification_dataset(
@@ -340,7 +340,7 @@ def test_prep_frame_classification_dataset_raises_not_a_directory(
         spect_format=None,
         options_to_change=dir_option_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     purpose = "train"
     with pytest.raises(NotADirectoryError):
@@ -388,7 +388,7 @@ def test_prep_frame_classification_dataset_raises_file_not_found(
         spect_format=None,
         options_to_change=path_option_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     purpose = "train"
     with pytest.raises(FileNotFoundError):

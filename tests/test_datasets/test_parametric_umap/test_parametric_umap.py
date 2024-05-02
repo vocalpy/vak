@@ -19,7 +19,7 @@ class TestParametricUMAPDataset:
                                               audio_format=audio_format,
                                               spect_format=spect_format,
                                               annot_format=annot_format)
-        cfg = vak.config.parse.from_toml_path(toml_path)
+        cfg = vak.config.Config.from_toml_path(toml_path)
         cfg_command = getattr(cfg, config_type)
 
         transform = vak.transforms.defaults.get_default_transform(

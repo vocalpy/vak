@@ -58,7 +58,7 @@ def test_train_frame_classification_model(
         spect_format=spect_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     vak.train.frame_classification.train_frame_classification_model(
@@ -111,7 +111,7 @@ def test_continue_training(
         spect_format=spect_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     vak.train.frame_classification.train_frame_classification_model(
@@ -165,7 +165,7 @@ def test_train_raises_file_not_found(
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
@@ -220,7 +220,7 @@ def test_train_raises_not_a_directory(
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     # mock behavior of cli.train, building `results_path` from config option `root_results_dir`

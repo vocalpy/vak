@@ -36,7 +36,7 @@ def test_make_index_vectors_for_each_subsets(
         annot_format=annot_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     dataset_path = cfg.learncurve.dataset_path
     metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
@@ -148,7 +148,7 @@ def test_make_subsets_from_dataset_df(
         annot_format=annot_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     dataset_path = cfg.learncurve.dataset_path
     metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)

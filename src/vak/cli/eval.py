@@ -24,7 +24,7 @@ def eval(toml_path):
     None
     """
     toml_path = Path(toml_path)
-    cfg = config.parse.from_toml_path(toml_path)
+    cfg = config.Config.from_toml_path(toml_path)
 
     if cfg.eval is None:
         raise ValueError(

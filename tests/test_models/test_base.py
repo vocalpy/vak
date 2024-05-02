@@ -191,7 +191,7 @@ class TestModel:
         """
         definition = self.MODEL_DEFINITION_MAP[model_name]
         train_toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
-        train_cfg = vak.config.parse.from_toml_path(train_toml_path)
+        train_cfg = vak.config.Config.from_toml_path(train_toml_path)
 
         # stuff we need just to be able to instantiate network
         labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
@@ -225,7 +225,7 @@ class TestModel:
         model.to(device)
 
         eval_toml_path = specific_config_toml_path('eval', model_name, audio_format='cbin', annot_format='notmat')
-        eval_cfg = vak.config.parse.from_toml_path(eval_toml_path)
+        eval_cfg = vak.config.Config.from_toml_path(eval_toml_path)
         checkpoint_path = eval_cfg.eval.checkpoint_path
 
         # ---- actually test method

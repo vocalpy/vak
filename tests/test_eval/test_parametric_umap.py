@@ -45,7 +45,7 @@ def test_eval_parametric_umap_model(
         spect_format=spect_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
     vak.eval.parametric_umap.eval_parametric_umap_model(
@@ -97,7 +97,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
         vak.eval.parametric_umap.eval_parametric_umap_model(
@@ -153,7 +153,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         spect_format=None,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
         vak.eval.parametric_umap.eval_parametric_umap_model(

@@ -49,7 +49,7 @@ def test_predict_with_frame_classification_model(
         annot_format=annot_format,
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
@@ -124,7 +124,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
         annot_format="notmat",
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
@@ -188,7 +188,7 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
         annot_format="notmat",
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(NotADirectoryError):

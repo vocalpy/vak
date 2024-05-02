@@ -62,7 +62,7 @@ def test_learning_curve_for_frame_classification_model(
         options_to_change=options_to_change,
     )
 
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
@@ -116,7 +116,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         annot_format="notmat",
         options_to_change=options_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
     # mock behavior of cli.learncurve, building `results_path` from config option `root_results_dir`
     results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'

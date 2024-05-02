@@ -18,7 +18,7 @@ def predict(toml_path):
         path to a configuration file in TOML format.
     """
     toml_path = Path(toml_path)
-    cfg = config.parse.from_toml_path(toml_path)
+    cfg = config.Config.from_toml_path(toml_path)
 
     if cfg.predict is None:
         raise ValueError(

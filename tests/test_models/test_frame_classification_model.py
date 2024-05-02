@@ -86,7 +86,7 @@ class TestFrameClassificationModel:
         definition = vak.models.definition.validate(definition)
         model_name = definition.__name__.replace('Definition', '')
         toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
-        cfg = vak.config.parse.from_toml_path(toml_path)
+        cfg = vak.config.Config.from_toml_path(toml_path)
 
         # stuff we need just to be able to instantiate network
         labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
