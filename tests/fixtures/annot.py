@@ -1,7 +1,7 @@
 """fixtures relating to annotation files"""
 import crowsetta
 import pytest
-import toml
+import tomlkit
 
 
 from .config import GENERATED_TEST_CONFIGS_ROOT
@@ -75,7 +75,7 @@ a_train_notmat_config = sorted(
 )[0]  # get first config.toml from glob list
 # doesn't really matter which config, they all have labelset
 with a_train_notmat_config.open("r") as fp:
-    a_train_notmat_toml = toml.load(fp)
+    a_train_notmat_toml = tomlkit.load(fp)
 LABELSET_NOTMAT = a_train_notmat_toml["PREP"]["labelset"]
 
 
