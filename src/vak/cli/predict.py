@@ -35,9 +35,6 @@ def predict(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(cfg.prep.output_dir))
 
-    model_name = cfg.predict.model
-    model_config = config.model.config_from_toml_path(toml_path, model_name)
-
     if cfg.predict.dataset_path is None:
         raise ValueError(
             "No value is specified for 'dataset_path' in this .toml config file."
@@ -46,8 +43,8 @@ def predict(toml_path):
         )
 
     predict_module.predict(
-        model_name=model_name,
-        model_config=model_config,
+        model_name=cfg.predict.model.name,
+        model_config=cfg.predict.model,
         dataset_path=cfg.predict.dataset_path,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
