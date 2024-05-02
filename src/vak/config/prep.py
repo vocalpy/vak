@@ -1,4 +1,4 @@
-"""Class and functions for ``[vak.prep]`` table in configuration file."""
+"""Class and functions for ``[vak.prep]`` table of configuration file."""
 from __future__ import annotations
 
 import inspect
@@ -8,9 +8,10 @@ import dask.bag
 from attrs import converters, validators
 from attrs.validators import instance_of
 
+from .spect_params import SpectParamsConfig
+from .validators import is_annot_format, is_audio_format, is_spect_format
 from .. import prep
 from ..common.converters import expanded_user_path, labelset_to_set
-from .validators import is_annot_format, is_audio_format, is_spect_format
 
 
 def duration_from_toml_value(value):
@@ -62,6 +63,12 @@ def are_valid_dask_bag_kwargs(instance, attribute, value):
         )
 
 
+REQUIRED_KEYS = (
+    "data_dir",
+    "output_dir",
+)
+
+
 @define
 class PrepConfig:
     """Class that represents ``[vak.prep]`` table of configuration file.
@@ -86,6 +93,11 @@ class PrepConfig:
     spect_format : str
         format of files containg spectrograms as 2-d matrices.
         One of {'mat', 'npy'}.
+    spect_params: vak.config.SpectParamsConfig, optional
+        Parameters for Short-Time Fourier Transform and post-processing
+        of spectrograms.
+        Instance of :class:`vak.config.SpectParamsConfig` class.
+        Optional, default is None.
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid.
@@ -157,6 +169,10 @@ class PrepConfig:
     spect_format = field(
         validator=validators.optional(is_spect_format), default=None
     )
+    spect_params = field(
+        validator=validators.optional(instance_of(SpectParamsConfig)),
+        default=None,
+    )
     annot_file = field(
         converter=converters.optional(expanded_user_path),
         default=None,
@@ -205,3 +221,26 @@ class PrepConfig:
             raise ValueError(
                 "must specify either audio_format or spect_format"
             )
+
+    @classmethod
+    def from_config_dict(cls, config_dict: dict) -> PrepConfig:
+        """Return :class:`PrepConfig` instance from a :class:`dict`.
+
+        The :class:`dict` passed in should be the one found
+        by loading a valid configuration toml file with
+        :func:`vak.config.parse.from_toml_path`,
+        and then using key ``prep``,
+        i.e., ``PrepConfig.from_config_dict(config_dict['prep'])``."""
+        for required_key in REQUIRED_KEYS:
+            if required_key not in config_dict:
+                raise KeyError(
+                    "The `[vak.prep]` table in a configuration file requires "
+                    f"the key '{required_key}', but it was not found "
+                    "when loading the configuration file into a Python dictionary. "
+                    "Please check that the configuration file is formatted correctly."
+                )
+        if 'spect_params' in config_dict:
+            config_dict['spect_params'] = SpectParamsConfig(**config_dict['spect_params'])
+        return cls(
+            **config_dict
+        )
