@@ -3,8 +3,7 @@ import logging
 import pathlib
 import shutil
 
-# TODO: use tomli
-import toml
+import tomlkit
 
 import vak.cli.prep
 from . import constants
@@ -70,7 +69,7 @@ def add_dataset_path_from_prepped_configs():
         config_dataset_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.use_dataset_from_config
 
         with config_dataset_path.open("r") as fp:
-            dataset_config_toml = toml.load(fp)
+            dataset_config_toml = tomlkit.load(fp)
         purpose = vak.cli.prep.purpose_from_toml(dataset_config_toml)
         # next line, we can't use `section` here because we could get a KeyError,
         # e.g., when the config we are rewriting is an EVAL config, but
@@ -80,10 +79,10 @@ def add_dataset_path_from_prepped_configs():
         dataset_config_section = purpose.upper()  # need to be 'TRAIN', not 'train'
         dataset_path = dataset_config_toml[dataset_config_section]['dataset_path']
         with config_to_change_path.open("r") as fp:
-            config_to_change_toml = toml.load(fp)
+            config_to_change_toml = tomlkit.load(fp)
         config_to_change_toml[section]['dataset_path'] = dataset_path
         with config_to_change_path.open("w") as fp:
-            toml.dump(config_to_change_toml, fp)
+            tomlkit.dump(config_to_change_toml, fp)
 
 
 def fix_options_in_configs(config_metadata_list, command, single_train_result=True):
@@ -104,7 +103,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         # now use the config to find the results dir and get the values for the options we need to set
         # which are checkpoint_path, spect_scaler_path, and labelmap_path
         with config_to_use_result_from.open("r") as fp:
-            config_toml = toml.load(fp)
+            config_toml = tomlkit.load(fp)
         root_results_dir = pathlib.Path(config_toml["TRAIN"]["root_results_dir"])
         results_dir = sorted(root_results_dir.glob("results_*"))
         if len(results_dir) > 1:
@@ -150,7 +149,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
 
         # now add these values to corresponding options in predict / eval config
         with config_to_fix.open("r") as fp:
-            config_toml = toml.load(fp)
+            config_toml = tomlkit.load(fp)
 
         if command == 'train_continue':
             section = 'TRAIN'
@@ -169,4 +168,4 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
                 config_toml[section]["labelmap_path"] = str(labelmap_path)
 
         with config_to_fix.open("w") as fp:
-            toml.dump(config_toml, fp)
+            tomlkit.dump(config_toml, fp)
