@@ -225,6 +225,34 @@ def all_generated_predict_configs(generated_test_configs_root):
     return sorted(generated_test_configs_root.glob("test_predict*toml"))
 
 
+def _tomlkit_to_popo(d):
+    """Convert tomlkit to "popo" (Plain-Old Python Objects)
+
+    From https://github.com/python-poetry/tomlkit/issues/43#issuecomment-660415820
+    """
+    try:
+        result = getattr(d, "value")
+    except AttributeError:
+        result = d
+
+    if isinstance(result, list):
+        result = [_tomlkit_to_popo(x) for x in result]
+    elif isinstance(result, dict):
+        result = {
+            _tomlkit_to_popo(key): _tomlkit_to_popo(val) for key, val in result.items()
+        }
+    elif isinstance(result, tomlkit.items.Integer):
+        result = int(result)
+    elif isinstance(result, tomlkit.items.Float):
+        result = float(result)
+    elif isinstance(result, tomlkit.items.String):
+        result = str(result)
+    elif isinstance(result, tomlkit.items.Bool):
+        result = bool(result)
+
+    return result
+
+
 # ----  config dicts from paths ----
 def _load_config_dict(toml_path):
     """Return config as dict, loaded from toml file.
@@ -235,7 +263,7 @@ def _load_config_dict(toml_path):
     """
     with toml_path.open("r") as fp:
         config_dict = tomlkit.load(fp)
-    return config_dict['vak']
+    return _tomlkit_to_popo(config_dict['vak'])
 
 
 @pytest.fixture
