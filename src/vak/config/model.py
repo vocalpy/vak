@@ -98,3 +98,19 @@ class ModelConfig:
             name=model_name,
             **model_config
         )
+
+    def to_dict(self):
+        """Convert this :class:`ModelConfig` instance
+        to a :class:`dict` that can be passed
+        into functions that take a ``model_config`` argument,
+        like :func:`vak.train` and :func:`vak.predict`.
+
+        This function drops the ``name`` attribute,
+        and returns all other attributes in a :class:`dict`.
+        """
+        return {
+            'network': self.network,
+            'optimizer': self.optimizer,
+            'loss': self.loss,
+            'metrics': self.metrics,
+        }
