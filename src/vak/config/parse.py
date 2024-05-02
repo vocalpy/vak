@@ -12,10 +12,10 @@ from .learncurve import LearncurveConfig
 from .predict import PredictConfig
 from .prep import PrepConfig
 from .train import TrainConfig
-from .validators import are_options_valid, are_tables_valid
+from .validators import are_keys_valid, are_tables_valid
 
 
-TABLE_CLASSES = {
+TABLE_CLASSES_MAP = {
     "eval": EvalConfig,
     "learncurve": LearncurveConfig,
     "predict": PredictConfig,
@@ -68,14 +68,14 @@ def _validate_tables_to_parse_arg_convert_list(tables_to_parse: str | list[str])
         )
     if not all(
         [
-            table_name in list(TABLE_CLASSES.keys())
+            table_name in list(TABLE_CLASSES_MAP.keys())
             for table_name in tables_to_parse
         ]
     ):
         raise ValueError(
             "All table names in 'tables_to_parse' should be valid names of tables. "
             f"Values for 'tables were: {tables_to_parse}.\n"
-            f"Valid table names are: {list(TABLE_CLASSES.keys())}"
+            f"Valid table names are: {list(TABLE_CLASSES_MAP.keys())}"
         )
     return tables_to_parse
 
@@ -109,7 +109,7 @@ def from_toml(
     are_tables_valid(config_dict, toml_path)
     if tables_to_parse is None:
         tables_to_parse = list(
-            TABLE_CLASSES.keys()
+            TABLE_CLASSES_MAP.keys()
         )  # i.e., parse all tables
     else:
         tables_to_parse = _validate_tables_to_parse_arg_convert_list(tables_to_parse)
@@ -117,9 +117,9 @@ def from_toml(
     config_kwargs = {}
     for table_name in tables_to_parse:
         if table_name in config_dict:
-            are_options_valid(config_dict, table_name, toml_path)
+            are_keys_valid(config_dict, table_name, toml_path)
             table_config_dict = config_dict[table_name]
-            config_kwargs[table_name] = TABLE_CLASSES[table_name].from_config_dict(table_config_dict)
+            config_kwargs[table_name] = TABLE_CLASSES_MAP[table_name].from_config_dict(table_config_dict)
         else:
             raise KeyError(
                 f"A table specified in `tables_to_parse` was not found in the config: {table_name}"
