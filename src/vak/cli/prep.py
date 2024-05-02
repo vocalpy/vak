@@ -5,7 +5,7 @@ import pathlib
 import shutil
 import warnings
 
-import toml
+import tomlkit
 
 from .. import config
 from .. import prep as prep_module
@@ -145,7 +145,7 @@ def prep(toml_path):
     config_toml[table]["dataset"]["path"] = str(dataset_path)
 
     with toml_path.open("w") as fp:
-        toml.dump(config_toml, fp)
+        tomlkit.dump(config_toml, fp)
 
     # lastly, copy config to dataset directory root
     shutil.copy(src=toml_path, dst=dataset_path)
