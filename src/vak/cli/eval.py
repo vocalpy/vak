@@ -1,6 +1,8 @@
 import logging
 from pathlib import Path
 
+import attrs
+
 from .. import config
 from .. import eval as eval_module
 from ..common.logging import config_logging_for_cli, log_version
@@ -46,7 +48,7 @@ def eval(toml_path):
 
     eval_module.eval(
         model_name=cfg.eval.model.name,
-        model_config=cfg.eval.model,
+        model_config=cfg.eval.model.to_dict(),
         dataset_path=cfg.eval.dataset_path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,

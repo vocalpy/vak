@@ -44,7 +44,7 @@ def predict(toml_path):
 
     predict_module.predict(
         model_name=cfg.predict.model.name,
-        model_config=cfg.predict.model,
+        model_config=cfg.predict.model.to_dict(),
         dataset_path=cfg.predict.dataset_path,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
