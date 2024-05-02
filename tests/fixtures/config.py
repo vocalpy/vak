@@ -3,7 +3,7 @@ import json
 import shutil
 
 import pytest
-import toml
+import tomlkit
 
 from .test_data import GENERATED_TEST_DATA_ROOT, TEST_DATA_ROOT
 
@@ -76,15 +76,6 @@ GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA_ROOT.joinpath("configs")
 @pytest.fixture
 def generated_test_configs_root():
     return GENERATED_TEST_CONFIGS_ROOT
-
-
-ALL_GENERATED_CONFIGS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("*toml"))
-
-
-# ---- path to config files ----
-@pytest.fixture
-def all_generated_configs():
-    return ALL_GENERATED_CONFIGS
 
 
 @pytest.fixture
@@ -177,7 +168,7 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
                 )
 
             with config_copy_path.open("r") as fp:
-                config_toml = toml.load(fp)
+                config_toml = tomlkit.load(fp)
 
             for opt_dict in options_to_change:
                 if opt_dict["value"] == 'DELETE-OPTION':
@@ -187,11 +178,20 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
                     config_toml[opt_dict["section"]][opt_dict["option"]] = opt_dict["value"]
 
             with config_copy_path.open("w") as fp:
-                toml.dump(config_toml, fp)
+                tomlkit.dump(config_toml, fp)
 
         return config_copy_path
 
     return _specific_config
+
+
+ALL_GENERATED_CONFIG_PATHS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("*toml"))
+
+
+# ---- path to config files ----
+@pytest.fixture(params=ALL_GENERATED_CONFIG_PATHS)
+def a_generated_config_path(request):
+    return request.param
 
 
 @pytest.fixture
@@ -206,9 +206,18 @@ def all_generated_learncurve_configs(generated_test_configs_root):
     return ALL_GENERATED_LEARNCURVE_CONFIGS
 
 
+ALL_GENERATED_EVAL_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("test_eval*toml")
+)
+
+
 @pytest.fixture
-def all_generated_eval_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("test_eval*toml"))
+def all_generated_eval_configs():
+    return ALL_GENERATED_EVAL_CONFIG_PATHS
+
+@pytest.fixture(params=ALL_GENERATED_EVAL_CONFIG_PATHS)
+def a_generated_eval_config_toml(request):
+    return request.param
 
 
 @pytest.fixture
@@ -216,13 +225,17 @@ def all_generated_predict_configs(generated_test_configs_root):
     return sorted(generated_test_configs_root.glob("test_predict*toml"))
 
 
-# ----  config toml from paths ----
-def _return_toml(toml_path):
-    """return config files loaded into dicts with toml library
-    used to test functions that parse config sections, taking these dicts as inputs"""
+# ----  config dicts from paths ----
+def _load_config_dict(toml_path):
+    """Return config as dict, loaded from toml file.
+
+    Used to test functions that parse config sections, taking these dicts as inputs.
+
+    Note that we access the topmost table loaded from the toml: config_dict['vak']
+    """
     with toml_path.open("r") as fp:
-        config_toml = toml.load(fp)
-    return config_toml
+        config_dict = tomlkit.load(fp)
+    return config_dict['vak']
 
 
 @pytest.fixture
@@ -244,60 +257,48 @@ def specific_config_toml(specific_config_toml_path):
         config_path = specific_config_toml_path(
             config_type, model, annot_format, audio_format, spect_format
         )
-        return _return_toml(config_path)
+        return _load_config_dict(config_path)
 
     return _specific_config_toml
 
 
-ALL_GENERATED_CONFIGS_TOML = [_return_toml(config) for config in ALL_GENERATED_CONFIGS]
+ALL_GENERATED_CONFIG_DICTS = [
+    _load_config_dict(config)
+    for config in ALL_GENERATED_CONFIG_PATHS
+]
 
+@pytest.fixture(params=ALL_GENERATED_CONFIG_DICTS)
+def a_generated_config_dict(request):
+    return request.param
 
-@pytest.fixture
-def all_generated_configs_toml():
-    return ALL_GENERATED_CONFIGS_TOML
-
-
-@pytest.fixture
-def all_generated_train_configs_toml(all_generated_train_configs):
-    return [_return_toml(config) for config in all_generated_train_configs]
 
 
 @pytest.fixture
 def all_generated_learncurve_configs_toml(all_generated_learncurve_configs):
-    return [_return_toml(config) for config in all_generated_learncurve_configs]
-
-
-@pytest.fixture
-def all_generated_eval_configs_toml(all_generated_eval_configs):
-    return [_return_toml(config) for config in all_generated_eval_configs]
-
-
-@pytest.fixture
-def all_generated_predict_configs_toml(all_generated_predict_configs):
-    return [_return_toml(config) for config in all_generated_predict_configs]
+    return [_load_config_dict(config) for config in all_generated_learncurve_configs]
 
 
 ALL_GENERATED_CONFIGS_TOML_PATH_PAIRS = list(zip(
-    [_return_toml(config) for config in ALL_GENERATED_CONFIGS],
-    ALL_GENERATED_CONFIGS,
+    [_load_config_dict(config) for config in ALL_GENERATED_CONFIG_PATHS],
+    ALL_GENERATED_CONFIG_PATHS,
 ))
 
 
 # ---- config toml + path pairs ----
-@pytest.fixture
-def all_generated_configs_toml_path_pairs():
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    # we duplicate the constant above because we need to remake
-    # the variables for each unit test. Otherwise tests that modify values
-    # for config options cause other tests to fail
-    return zip(
-        [_return_toml(config) for config in ALL_GENERATED_CONFIGS],
-        ALL_GENERATED_CONFIGS
-    )
+# @pytest.fixture
+# def all_generated_configs_toml_path_pairs():
+#     """zip of tuple pairs: (dict, pathlib.Path)
+#     where ``Path`` is path to .toml config file and ``dict`` is
+#     the .toml config from that path
+#     loaded into a dict with the ``toml`` library
+#     """
+#     # we duplicate the constant above because we need to remake
+#     # the variables for each unit test. Otherwise tests that modify values
+#     # for config options cause other tests to fail
+#     return zip(
+#         [_load_config_dict(config) for config in ALL_GENERATED_CONFIGS],
+#         ALL_GENERATED_CONFIGS
+#     )
 
 
 @pytest.fixture
@@ -325,54 +326,3 @@ def configs_toml_path_pairs_by_model_factory(all_generated_configs_toml_path_pai
 
     return _wrapped
 
-
-@pytest.fixture
-def all_generated_train_configs_toml_path_pairs(all_generated_train_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_train_configs],
-        all_generated_train_configs,
-    )
-
-
-@pytest.fixture
-def all_generated_learncurve_configs_toml_path_pairs(all_generated_learncurve_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_learncurve_configs],
-        all_generated_learncurve_configs,
-    )
-
-
-@pytest.fixture
-def all_generated_eval_configs_toml_path_pairs(all_generated_eval_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_eval_configs],
-        all_generated_eval_configs,
-    )
-
-
-@pytest.fixture
-def all_generated_predict_configs_toml_path_pairs(all_generated_predict_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_predict_configs],
-        all_generated_predict_configs,
-    )
