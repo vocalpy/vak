@@ -61,13 +61,13 @@ def config_that_doesnt_exist(tmp_path):
 
 
 @pytest.fixture
-def invalid_section_config_path(test_configs_root):
-    return test_configs_root.joinpath("invalid_section_config.toml")
+def invalid_table_config_path(test_configs_root):
+    return test_configs_root.joinpath("invalid_table_config.toml")
 
 
 @pytest.fixture
-def invalid_option_config_path(test_configs_root):
-    return test_configs_root.joinpath("invalid_option_config.toml")
+def invalid_key_config_path(test_configs_root):
+    return test_configs_root.joinpath("invalid_key_config.toml")
 
 
 GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA_ROOT.joinpath("configs")
