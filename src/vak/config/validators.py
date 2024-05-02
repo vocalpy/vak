@@ -62,8 +62,8 @@ VALID_TOML_PATH = CONFIG_DIR.joinpath("valid.toml")
 with VALID_TOML_PATH.open("r") as fp:
     VALID_DICT = tomlkit.load(fp)['vak']
 VALID_TOP_LEVEL_TABLES = list(VALID_DICT.keys())
-VALID_OPTIONS = {
-    table: list(options.keys()) for table, options in VALID_DICT.items()
+VALID_KEYS = {
+    table_name: list(table_config_dict.keys()) for table_name, table_config_dict in VALID_DICT.items()
 }
 
 
@@ -111,50 +111,50 @@ def are_tables_valid(config_dict, toml_path=None):
             raise ValueError(err_msg)
 
 
-def are_options_valid(
+def are_keys_valid(
         config_dict: dict, table_name: str, toml_path: str | pathlib.Path | None = None
         ) -> None:
     """Given a :class:`dict` containing the *entire* configuration loaded from a toml file,
-    validate the option names for a specific top-level table, e.g. ``vak.train`` or ``vak.predict``"""
-    user_options = set(config_dict[table_name].keys())
-    valid_options = set(VALID_OPTIONS[table_name])
-    if not user_options.issubset(valid_options):
-        invalid_options = user_options - valid_options
+    validate the key names for a specific top-level table, e.g. ``vak.train`` or ``vak.predict``"""
+    table_keys = set(config_dict[table_name].keys())
+    valid_keys = set(VALID_KEYS[table_name])
+    if not table_keys.issubset(valid_keys):
+        invalid_keys = table_keys - valid_keys
         if toml_path:
             err_msg = (
-                f"The following options from '{table_name}' table in "
-                f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
+                f"The following keys from '{table_name}' table in "
+                f"the config file '{toml_path.name}' are not valid:\n{invalid_keys}"
             )
         else:
             err_msg = (
-                f"The following options from '{table_name}' table in "
-                f"the toml config are not valid:\n{invalid_options}"
+                f"The following keys from '{table_name}' table in "
+                f"the toml config are not valid:\n{invalid_keys}"
             )
         raise ValueError(err_msg)
 
 
-def are_table_options_valid(table_config_dict: dict, table_name: str, toml_path: str | pathlib.Path | None = None) -> None:
+def are_table_keys_valid(table_config_dict: dict, table_name: str, toml_path: str | pathlib.Path | None = None) -> None:
     """Given a :class:`dict` containing the configuration for a *specific* top-level table,
-    loaded from a toml file, validate the option names for that table,
+    loaded from a toml file, validate the key names for that table,
     e.g. ``vak.train`` or ``vak.predict``.
 
     This function assumes ``table_config_dict`` comes from the entire ``config_dict``
     returned by :func:`vak.config.parse.from_toml_path`, accessed using the table name as a key,
-    unlike :func:`are_options_valid`. This function is used by the ``from_config_dict``
+    unlike :func:`are_keys_valid`. This function is used by the ``from_config_dict``
     classmethod of the top-level tables.
     """
-    user_options = set(table_config_dict.keys())
-    valid_options = set(VALID_OPTIONS[table_name])
-    if not user_options.issubset(valid_options):
-        invalid_options = user_options - valid_options
+    table_keys = set(table_config_dict.keys())
+    valid_keys = set(VALID_KEYS[table_name])
+    if not table_keys.issubset(valid_keys):
+        invalid_keys = table_keys - valid_keys
         if toml_path:
             err_msg = (
-                f"The following options from '{table_name}' table in "
-                f"the config file '{toml_path.name}' are not valid:\n{invalid_options}"
+                f"The following keys from '{table_name}' table in "
+                f"the config file '{toml_path.name}' are not valid:\n{invalid_keys}"
             )
         else:
             err_msg = (
-                f"The following options from '{table_name}' table in "
-                f"the toml config are not valid:\n{invalid_options}"
+                f"The following keys from '{table_name}' table in "
+                f"the toml config are not valid:\n{invalid_keys}"
             )
         raise ValueError(err_msg)
