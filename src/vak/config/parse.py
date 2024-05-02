@@ -11,7 +11,6 @@ from .eval import EvalConfig
 from .learncurve import LearncurveConfig
 from .predict import PredictConfig
 from .prep import PrepConfig
-from .spect_params import SpectParamsConfig
 from .train import TrainConfig
 from .validators import are_options_valid, are_tables_valid
 
@@ -21,7 +20,6 @@ TABLE_CLASSES = {
     "learncurve": LearncurveConfig,
     "predict": PredictConfig,
     "prep": PrepConfig,
-    "spect_params": SpectParamsConfig,
     "train": TrainConfig,
 }
 
@@ -50,77 +48,40 @@ REQUIRED_OPTIONS = {
 }
 
 
-def parse_config_table(config_dict, table_name, toml_path=None):
-    """Parse table of config.toml file
+def _validate_tables_to_parse_arg_convert_list(tables_to_parse: str | list[str]) -> list[str]:
+    """Helper function used by :func:`from_toml` that
+    validates the ``tables_to_parse`` argument,
+    and returns it as a list of strings."""
+    if isinstance(tables_to_parse, str):
+        tables_to_parse = [tables_to_parse]
 
-    Parameters
-    ----------
-    config_dict : dict
-        Containing config.toml file already loaded by parse function
-    table_name : str
-        Name of table from configuration
-        file that should be parsed.
-    toml_path : str
-        path to a configuration file in TOML format. Default is None.
-        Used for error messages if specified.
-
-    Returns
-    -------
-    config : vak.config table class
-        instance of class that represents table of config.toml file,
-        e.g. PredictConfig for 'PREDICT' table
-    """
-    table = dict(config_dict[table_name].items())
-
-    required_options = REQUIRED_OPTIONS[table_name]
-    if required_options is not None:
-        for required_option in required_options:
-            if required_option not in table:
-                if toml_path:
-                    err_msg = (
-                        f"the '{required_option}' option is required but was not found in the "
-                        f"{table_name} table of the config.toml file: {toml_path}"
-                    )
-                else:
-                    err_msg = (
-                        f"the '{required_option}' option is required but was not found in the "
-                        f"{table_name} table of the toml config"
-                    )
-                raise KeyError(err_msg)
-    return TABLE_CLASSES[table_name](**table)
-
-
-def _validate_tables_arg_convert_list(tables: str | list[str]) -> list[str]:
-    if isinstance(tables, str):
-        tables = [tables]
-
-    if not isinstance(tables, list):
+    if not isinstance(tables_to_parse, list):
         raise TypeError(
-            f"`tables` should be a string or list of strings but type was: {type(tables)}"
+            f"`tables_to_parse` should be a string or list of strings but type was: {type(tables_to_parse)}"
         )
 
     if not all(
-        [isinstance(table_name, str) for table_name in tables]
+        [isinstance(table_name, str) for table_name in tables_to_parse]
     ):
         raise ValueError(
-            "All table names in 'tables' should be strings"
+            "All table names in 'tables_to_parse' should be strings"
         )
     if not all(
         [
             table_name in list(TABLE_CLASSES.keys())
-            for table_name in tables
+            for table_name in tables_to_parse
         ]
     ):
         raise ValueError(
-            "All table names in 'tables' should be valid names of tables. "
-            f"Values for 'tables were: {tables}.\n"
+            "All table names in 'tables_to_parse' should be valid names of tables. "
+            f"Values for 'tables were: {tables_to_parse}.\n"
             f"Valid table names are: {list(TABLE_CLASSES.keys())}"
         )
-    return tables
+    return tables_to_parse
 
 
 def from_toml(
-        config_dict: dict, toml_path: str | pathlib.Path | None = None, tables: str | list[str] | None = None
+        config_dict: dict, toml_path: str | pathlib.Path | None = None, tables_to_parse: str | list[str] | None = None
         ) -> Config:
     """Load a TOML configuration file.
 
@@ -132,8 +93,8 @@ def from_toml(
     toml_path : str, pathlib.Path
         path to a configuration file in TOML format. Default is None.
         Not required, used only to make any error messages clearer.
-    tables : str, list
-        Name of table or tables from configuration
+    tables_to_parse : str, list
+        Name of top-level table or tables from configuration
         file that should be parsed. Can be a string
         (single table) or list of strings (multiple
         tables). Default is None,
@@ -146,22 +107,22 @@ def from_toml(
         tables in a config.toml file.
     """
     are_tables_valid(config_dict, toml_path)
-    tables = _validate_tables_arg_convert_list(tables)
+    if tables_to_parse is None:
+        tables_to_parse = list(
+            TABLE_CLASSES.keys()
+        )  # i.e., parse all tables
+    else:
+        tables_to_parse = _validate_tables_to_parse_arg_convert_list(tables_to_parse)
 
     config_kwargs = {}
-    if tables is None:
-        tables = list(
-            TABLE_CLASSES.keys()
-        )  # i.e., parse all tables, except model
-    for table_name in tables:
+    for table_name in tables_to_parse:
         if table_name in config_dict:
             are_options_valid(config_dict, table_name, toml_path)
-            config_kwargs[table_name.lower()] = parse_config_table(
-                config_dict, table_name, toml_path
-            )
+            table_config_dict = config_dict[table_name]
+            config_kwargs[table_name] = TABLE_CLASSES[table_name].from_config_dict(table_config_dict)
         else:
             raise KeyError(
-                f"A table specified in `tables` was not found in the config: {table_name}"
+                f"A table specified in `tables_to_parse` was not found in the config: {table_name}"
             )
 
     return Config(**config_kwargs)
@@ -195,18 +156,18 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     return config_dict['vak']
 
 
-def from_toml_path(toml_path: str | pathlib.Path, tables: list[str] | None = None) -> Config:
+def from_toml_path(toml_path: str | pathlib.Path, tables_to_parse: list[str] | None = None) -> Config:
     """Parse a TOML configuration file and return as a :class:`Config`.
 
     Parameters
     ----------
     toml_path : str, pathlib.Path
-        path to a configuration file in TOML format.
+        Path to a configuration file in TOML format.
         Parsed by ``toml`` library, then converted to an
         instance of ``vak.config.parse.Config`` by
         calling ``vak.parse.from_toml``
-    tables : str, list
-        name of table or tables from configuration
+    tables_to_parse : str, list
+        Name of table or tables from configuration
         file that should be parsed. Can be a string
         (single table) or list of strings (multiple
         tables). Default is None,
@@ -218,5 +179,5 @@ def from_toml_path(toml_path: str | pathlib.Path, tables: list[str] | None = Non
         instance of :class:`Config` class, whose attributes correspond to
         tables in a config.toml file.
     """
-    config_dict = _load_toml_from_path(toml_path)
-    return from_toml(config_dict, toml_path, tables)
+    config_dict: dict = _load_toml_from_path(toml_path)
+    return from_toml(config_dict, toml_path, tables_to_parse)
