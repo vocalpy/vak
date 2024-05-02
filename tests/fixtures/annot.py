@@ -76,7 +76,7 @@ a_train_notmat_config = sorted(
 # doesn't really matter which config, they all have labelset
 with a_train_notmat_config.open("r") as fp:
     a_train_notmat_toml = tomlkit.load(fp)
-LABELSET_NOTMAT = a_train_notmat_toml["PREP"]["labelset"]
+LABELSET_NOTMAT = a_train_notmat_toml["vak"]["prep"]["labelset"]
 
 
 @pytest.fixture
@@ -135,4 +135,5 @@ def annotated_annot_no_segments(request):
     Used to test edge case for `has_unlabeled`,
     see https://github.com/vocalpy/vak/issues/378
     """
+
     return request.param
