@@ -20,7 +20,6 @@ transform_type = "log_spect"
 # this .toml file should cause 'vak.config.parse.from_toml' to raise a ValueError
 # because it defines both a vak.train and a vak.learncurve section
 [vak.train]
-model = "TweetyNet"
 normalize_spectrograms = true
 batch_size = 11
 num_epochs = 2
@@ -32,7 +31,6 @@ device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat"
 
 [vak.learncurve]
-model = 'TweetyNet'
 normalize_spectrograms = true
 batch_size = 11
 num_epochs = 2
@@ -45,5 +43,5 @@ num_replicates = 2
 device = "cuda"
 root_results_dir = './tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat'
 
-[TweetyNet.optimizer]
+[vak.learncurve.model.TweetyNet.optimizer]
 lr = 0.001

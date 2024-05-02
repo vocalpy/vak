@@ -18,7 +18,6 @@ thresh = 6.25
 transform_type = "log_spect"
 
 [vak.train]
-model = "TweetyNet"
 normalize_spectrograms = true
 batch_size = 11
 num_epochs = 2
@@ -35,7 +34,7 @@ window_size = 88
 [vak.train.val_transform_params]
 window_size = 88
 
-[TweetyNet.network]
+[vak.train.model.TweetyNet.network]
 conv1_filters = 8
 conv1_kernel_size = [3, 3]
 conv2_filters = 16
@@ -46,5 +45,5 @@ pool2_size = [4, 1]
 pool2_stride = [4, 1]
 hidden_size = 32
 
-[TweetyNet.optimizer]
+[vak.train.model.TweetyNet.optimizer]
 lr = 0.001

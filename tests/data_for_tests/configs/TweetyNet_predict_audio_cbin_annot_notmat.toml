@@ -16,7 +16,6 @@ transform_type = "log_spect"
 spect_scaler_path = "/home/user/results_181014_194418/spect_scaler"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 labelmap_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json"
-model = "TweetyNet"
 batch_size = 11
 num_workers = 16
 device = "cuda"
@@ -26,7 +25,7 @@ annot_csv_filename = "bl26lb16.041912.annot.csv"
 [vak.predict.transform_params]
 window_size = 88
 
-[TweetyNet.network]
+[vak.predict.model.TweetyNet.network]
 conv1_filters = 8
 conv1_kernel_size = [3, 3]
 conv2_filters = 16
@@ -37,5 +36,5 @@ pool2_size = [4, 1]
 pool2_stride = [4, 1]
 hidden_size = 32
 
-[TweetyNet.optimizer]
+[vak.predict.model.TweetyNet.optimizer]
 lr = 0.001

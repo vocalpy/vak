@@ -13,14 +13,14 @@ train_dur = 10
 val_dur = 5
 test_dur = 10
 
-[SPECTROGRAM]
+[vak.prep.spect_params]
 fft_size=512
 step_size=64
 freq_cutoffs = [500, 10000]
 thresh = 6.25
 transform_type = 'log_spect'
 
-[TRIAN]  # <-- invalid section 'TRIAN' (instead of 'vak.train')
+[vak.trian]  # <-- invalid section 'TRIAN' (instead of 'vak.train')
 model = 'TweetyNet'
 root_results_dir = '/home/user/data/subdir/'
 normalize_spectrograms = true
@@ -30,5 +30,5 @@ val_error_step = 1
 checkpoint_step = 1
 save_only_single_checkpoint_file = true
 
-[TweetyNet.optimizer]
+[vak.train.model.TweetyNet.optimizer]
 learning_rate = 0.001
