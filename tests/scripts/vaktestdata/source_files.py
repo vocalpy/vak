@@ -7,7 +7,7 @@ from numba.core.errors import NumbaDeprecationWarning
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 
 import pandas as pd
-import toml
+import tomlkit
 
 import vak
 
@@ -103,11 +103,11 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         )
 
         with config_path.open("r") as fp:
-            config_toml = toml.load(fp)
+            config_toml = tomlkit.load(fp)
         data_dir = constants.GENERATED_TEST_DATA_ROOT / config_metadata.data_dir
         config_toml['PREP']['data_dir'] = str(data_dir)
         with config_path.open("w") as fp:
-            toml.dump(config_toml, fp)
+            tomlkit.dump(config_toml, fp)
 
         cfg = vak.config.parse.from_toml_path(config_path)
 
