@@ -23,7 +23,7 @@ TABLE_CLASSES_MAP = {
     "train": TrainConfig,
 }
 
-REQUIRED_OPTIONS = {
+REQUIRED_KEYS = {
     "eval": [
         "checkpoint_path",
         "output_dir",
@@ -128,6 +128,42 @@ def from_toml(
     return Config(**config_kwargs)
 
 
+def _tomlkit_to_popo(d):
+    """Convert tomlkit to "popo" (Plain-Old Python Objects)
+
+    From https://github.com/python-poetry/tomlkit/issues/43#issuecomment-660415820
+
+    We need this so we don't get a ``tomlkit.items._ConvertError`` when
+    the `from_config_dict` classmethods try to add a class to a ``config_dict``,
+    e.g. when :meth:`EvalConfig.from_config_dict` converts the ``spect_params``
+    key-value pairs to a :class:`vak.config.SpectParamsConfig` instance
+    and then assigns it to the ``spect_params`` key.
+    We would get this error if we just return the result of :func:`tomlkit.load`,
+    which is a `tomlkit.TOMLDocument` that tries to ensure that everything is valid toml.
+    """
+    try:
+        result = getattr(d, "value")
+    except AttributeError:
+        result = d
+
+    if isinstance(result, list):
+        result = [_tomlkit_to_popo(x) for x in result]
+    elif isinstance(result, dict):
+        result = {
+            _tomlkit_to_popo(key): _tomlkit_to_popo(val) for key, val in result.items()
+        }
+    elif isinstance(result, tomlkit.items.Integer):
+        result = int(result)
+    elif isinstance(result, tomlkit.items.Float):
+        result = float(result)
+    elif isinstance(result, tomlkit.items.String):
+        result = str(result)
+    elif isinstance(result, tomlkit.items.Bool):
+        result = bool(result)
+
+    return result
+
+
 def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     """Load a toml file from a path, and return as a :class:`dict`.
 
@@ -153,7 +189,15 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
             f"Please see example configuration files here: "
         )
 
-    return config_dict['vak']
+    # Next line, convert TOMLDocument returned by tomlkit.load to a dict.
+    # We need this so we don't get a ``tomlkit.items._ConvertError`` when
+    # the `from_config_dict` classmethods try to add a class to a ``config_dict``,
+    # e.g. when :meth:`EvalConfig.from_config_dict` converts the ``spect_params``
+    # key-value pairs to a :class:`vak.config.SpectParamsConfig` instance
+    # and then assigns it to the ``spect_params`` key.
+    # We would get this error if we just return the result of :func:`tomlkit.load`,
+    # which is a `tomlkit.TOMLDocument` that tries to ensure that everything is valid toml.
+    return _tomlkit_to_popo(config_dict['vak'])
 
 
 def from_toml_path(toml_path: str | pathlib.Path, tables_to_parse: list[str] | None = None) -> Config:
