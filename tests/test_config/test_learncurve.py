@@ -169,6 +169,44 @@ class TestLearncurveConfig:
                     },
                     KeyError
                 ),
+                # missing 'root_results_dir', should raise KeyError
+                (
+                    {
+                        'normalize_spectrograms': True,
+                        'batch_size': 11,
+                        'num_epochs': 2,
+                        'val_step': 50,
+                        'ckpt_step': 200,
+                        'patience': 4,
+                        'num_workers': 16,
+                        'device': 'cuda',
+                        'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
+                        'train_dataset_params': {'window_size': 88},
+                        'val_transform_params': {'window_size': 88},
+                        'model': {
+                            'TweetyNet': {
+                                'network': {
+                                    'conv1_filters': 8,
+                                    'conv1_kernel_size': [3, 3],
+                                    'conv2_filters': 16,
+                                    'conv2_kernel_size': [5, 5],
+                                    'pool1_size': [4, 1],
+                                    'pool1_stride': [4, 1],
+                                    'pool2_size': [4, 1],
+                                    'pool2_stride': [4, 1],
+                                    'hidden_size': 32
+                                },
+                                'optimizer': {
+                                    'lr': 0.001
+                                }
+                            }
+                        },
+                        'dataset': {
+                            'path': 'tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/TweetyNet/032312-vak-frame-classification-dataset-generated-240502_234819'
+                        }
+                    },
+                    KeyError
+                )
             ]
     )
     def test_from_config_dict_raises(self, config_dict, expected_exception):
