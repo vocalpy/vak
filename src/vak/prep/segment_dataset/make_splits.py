@@ -12,31 +12,27 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def move_files_into_split_subdirs(
-    dataset_df: pd.DataFrame, dataset_path: pathlib.Path, purpose: str
+def make_splits(
+    dataset_df: pd.DataFrame, dataset_path: pathlib.Path
 ) -> None:
     """Move npy files in dataset into sub-directories, one for each split in the dataset.
 
-    This is run *after* calling :func:`vak.prep.unit_dataset.prep_unit_dataset`
+    This is run *after* calling :func:`vak.prep.segment_dataset.prep_segment_dataset`
     to generate ``dataset_df``.
 
     Parameters
     ----------
     dataset_df : pandas.DataFrame
         A ``pandas.DataFrame`` returned by
-        :func:`vak.prep.unit_dataset.prep_unit_dataset`
-        with a ``'split'`` column added, as a result of calling
-        :func:`vak.prep.split.unit_dataframe` or because it was added "manually"
-        by calling :func:`vak.core.prep.prep_helper.add_split_col` (as is done
-        for 'predict' when the entire ``DataFrame`` belongs to this
-        "split").
+        :func:`vak.prep.segment_dataset.prep_segment_dataset`
+        with a ``'split'`` column added. The ```split'`` is added
+         as a result of calling :func:`vak.prep.split.segment_dataframe`,
+        or because it was added "manually"
+        by calling :func:`vak.core.prep.prep_helper.add_split_col`
+        (as is done for 'predict' when the entire ``DataFrame``
+        belongs to this "split").
     dataset_path : pathlib.Path
         Path to directory that represents dataset.
-    purpose: str
-        A string indicating what the dataset will be used for.
-        One of {'train', 'eval', 'predict', 'learncurve'}.
-        Determined by :func:`vak.core.prep.prep`
-        using the TOML configuration file.
 
     Returns
     -------
@@ -104,11 +100,10 @@ def move_files_into_split_subdirs(
         dataset_df.loc[split_df.index, "spect_path"] = new_spect_paths
 
     # ---- clean up after moving/copying -------------------------------------------------------------------------------
-    # remove any directories that we just emptied
-    if moved_spect_paths:
-        unique_parents = set(
-            [moved_spect.parent for moved_spect in moved_spect_paths]
-        )
-        for parent in unique_parents:
-            if len(list(parent.iterdir())) < 1:
-                shutil.rmtree(parent)
+    # Remove any npy files that were *not* added to a split
+    npy_files_not_in_split = sorted(
+        dataset_path.glob(f"*npy")
+    )
+    if len(npy_files_not_in_split) > 0:
+        for npy_file in npy_files_not_in_split:
+            npy_file.unlink()

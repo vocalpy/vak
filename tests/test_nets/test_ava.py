@@ -4,7 +4,7 @@ import pytest
 import vak.nets
 
 
-class TestConvEncoder:
+class TestAVA:
 
     @pytest.mark.parametrize(
         'input_shape',
@@ -18,15 +18,22 @@ class TestConvEncoder:
         ]
     )
     def test_init(self, input_shape):
-        """test we can instantiate ConvEncoder
+        """test we can instantiate AVA
         and it has the expected attributes"""
-        net = vak.nets.ConvEncoder(input_shape)
-        assert isinstance(net, vak.nets.ConvEncoder)
+        net = vak.nets.AVA(input_shape)
+        assert isinstance(net, vak.nets.AVA)
         for expected_attr, expected_type in (
             ('input_shape', tuple),
-            ('num_input_channels', int),
-            ('conv', torch.nn.Module),
+            ('in_channels', int),
+            ('x_shape', tuple),
+            ('x_dim', int),
             ('encoder', torch.nn.Module),
+            ('shared_encoder_fc', torch.nn.Module),
+            ('mu_fc', torch.nn.Module),
+            ('cov_factor_fc', torch.nn.Module),
+            ('cov_diag_fc', torch.nn.Module),
+            ('decoder_fc', torch.nn.Module),
+            ('decoder', torch.nn.Module),
         ):
             assert hasattr(net, expected_attr)
             assert isinstance(getattr(net, expected_attr), expected_type)
@@ -45,6 +52,10 @@ class TestConvEncoder:
         and get the expected output"""
 
         input = torch.rand(batch_size, *input_shape)  # a "batch"
-        net = vak.nets.ConvEncoder(input_shape)
+        net = vak.nets.AVA(input_shape)
         out = net(input)
-        assert isinstance(out, torch.Tensor)
+        assert len(out) == 3
+        x_rec, z, latent_dist = out
+        for tensor in (x_rec, z):
+            assert isinstance(tensor, torch.Tensor)
+        assert isinstance(latent_dist, torch.distributions.LowRankMultivariateNormal)

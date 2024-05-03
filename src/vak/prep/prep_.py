@@ -6,6 +6,7 @@ import pathlib
 from . import constants
 from .frame_classification import prep_frame_classification_dataset
 from .parametric_umap import prep_parametric_umap_dataset
+from .vae import prep_vae_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,9 @@ def prep(
     spect_key: str = "s",
     timebins_key: str = "t",
     context_s: float = 0.015,
+    max_dur: float | None = None,
+    target_shape: tuple[int, int] | None = None,
+    normalize: bool = True,
 ):
     """Prepare datasets for use with neural network models.
 
@@ -143,6 +147,31 @@ def prep(
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
+    context_s : float
+        Number of seconds of "context" around a segment to
+        add, i.e., time before and after the onset
+        and offset respectively. Default is 0.005s,
+        5 milliseconds. This parameter is only used for
+        Parametric UMAP and segment-VAE datasets.
+    max_dur : float
+        Maximum duration for segments.
+        If a float value is specified,
+        any segment with a duration larger than
+        that value (in seconds) will be omitted
+        from the dataset. Default is None.
+        This parameter is only used for
+        segment-VAE datasets.
+    target_shape : tuple
+        Of ints, (target number of frequency bins,
+        target number of time bins).
+        Spectrograms of segments will be reshaped
+        by interpolation to have the specified
+        number of frequency and time bins.
+        The transformation is only applied if both this
+        parameter and ``max_dur`` are specified.
+        Default is None.
+        This parameter is only used for
+        segment-VAE datasets.
 
     Returns
     -------
@@ -223,6 +252,31 @@ def prep(
             annot_file,
             labelset,
             context_s,
+            train_dur,
+            val_dur,
+            test_dur,
+            train_set_durs,
+            num_replicates,
+            spect_key=spect_key,
+            timebins_key=timebins_key,
+        )
+        return dataset_df, dataset_path
+    elif dataset_type in {"vae-segment", "vae-window"}:
+        dataset_df, dataset_path = prep_vae_dataset(
+            data_dir,
+            purpose,
+            dataset_type,
+            output_dir,
+            audio_format,
+            spect_format,
+            spect_params,
+            annot_format,
+            annot_file,
+            labelset,
+            audio_dask_bag_kwargs,
+            context_s,
+            max_dur,
+            target_shape,
             train_dur,
             val_dur,
             test_dur,

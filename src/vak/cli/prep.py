@@ -139,6 +139,9 @@ def prep(toml_path):
         test_dur=cfg.prep.test_dur,
         train_set_durs=cfg.prep.train_set_durs,
         num_replicates=cfg.prep.num_replicates,
+        context_s=cfg.prep.context_s,
+        max_dur=cfg.prep.max_dur,
+        target_shape=cfg.prep.target_shape,
     )
 
     # use config and section from above to add dataset_path to config.toml file

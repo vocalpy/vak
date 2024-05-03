@@ -8,6 +8,8 @@ from .get import get
 from .parametric_umap_model import ParametricUMAPModel
 from .registry import model_family
 from .tweetynet import TweetyNet
+from .vae_model import VAEModel
+from .ava import AVA
 
 __all__ = [
     "base",
@@ -23,4 +25,7 @@ __all__ = [
     "ParametricUMAPModel",
     "registry",
     "TweetyNet",
+    "VAEModel",
+    "AVA",
+
 ]

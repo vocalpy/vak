@@ -127,6 +127,7 @@ def make_splits(
     spect_key: str = "s",
     timebins_key: str = "t",
     freqbins_key: str = "f",
+    prep_frame_label_vecs=True,
 ) -> pd.DataFrame:
     r"""Make each split of a frame classification dataset.
 
@@ -234,6 +235,11 @@ def make_splits(
         Key for accessing vector of time bins in files. Default is 't'.
     freqbins_key : str
         key for accessing vector of frequency bins in files. Default is 'f'.
+    prep_frame_label_vecs : bool
+        If True, prepare vectors of labels for each frame. Default is True.
+        This option is used by
+        :func:`vak.prep.vae.prep_window_vae_dataset`
+        since those datasets do not require frame labels.
 
     Returns
     -------
@@ -353,7 +359,7 @@ def make_splits(
             inds_in_sample_vec = np.arange(n_frames)
 
             # add to frame labels
-            if annot:
+            if prep_frame_label_vecs and annot:
                 lbls_int = [labelmap[lbl] for lbl in annot.seq.labels]
                 frame_labels = transforms.frame_labels.from_segments(
                     lbls_int,
