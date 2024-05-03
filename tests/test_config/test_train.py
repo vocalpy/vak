@@ -105,7 +105,7 @@ class TestTrainConfig:
         assert isinstance(train_config, vak.config.train.TrainConfig)
 
     @pytest.mark.parametrize(
-            'config_dict',
+            'config_dict, expected_exception',
             [
                 (
                     {
