@@ -175,12 +175,30 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
             with config_copy_path.open("r") as fp:
                 tomldoc = tomlkit.load(fp)
 
-            for opt_dict in keys_to_change:
-                if opt_dict["value"] == 'DELETE-KEY':
-                    # e.g., to test behavior of config without this key
-                    del tomldoc["vak"][opt_dict["table"]][opt_dict["key"]]
+            for table_key_val_dict in keys_to_change:
+                table_name = table_key_val_dict["table"]
+                key = table_key_val_dict["key"]
+                value = table_key_val_dict["value"]
+                if isinstance(key, str):
+                    if table_key_val_dict["value"] == 'DELETE-KEY':
+                        # e.g., to test behavior of config without this key
+                        del tomldoc["vak"][table_name][key]
+                    else:
+                        tomldoc["vak"][table_name][key] = value
+                elif isinstance(key, list) and len(key) == 2 and all([isinstance(el, str) for el in key]):
+                    # for the case where we need to access a sub-table
+                    # right now this applies mainly to ["vak"][table]["dataset"]["path"]
+                    # if we end up having to access more / deeper then we'll need something more general
+                    if table_key_val_dict["value"] == 'DELETE-KEY':
+                        # e.g., to test behavior of config without this key
+                        del tomldoc["vak"][table_name][key[0]][key[1]]
+                    else:
+                        tomldoc["vak"][table_name][key[0]][key[1]] = value
                 else:
-                    tomldoc["vak"][opt_dict["table"]][opt_dict["key"]] = opt_dict["value"]
+                    raise ValueError(
+                        f"Unexpected value for 'key' in `keys_to_change` dict: {key}.\n"
+                        f"`keys_to_change` dict: {table_key_val_dict}"
+                    )
 
             with config_copy_path.open("w") as fp:
                 tomlkit.dump(tomldoc, fp)
