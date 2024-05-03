@@ -62,9 +62,9 @@ def add_dataset_path_from_prepped_configs():
     for config_metadata in configs_to_change:
         config_to_change_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
         if config_metadata.config_type == 'train_continue':
-            section = 'TRAIN'
+            section = 'train'
         else:
-            section = config_metadata.config_type.upper()
+            section = config_metadata.config_type
 
         config_dataset_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.use_dataset_from_config
 
@@ -129,7 +129,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         # these are the only options whose values we need to change
         # and they are the same for both predict and eval
         checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
-        if 'normalize_spectrograms' in config_toml['TRAIN'] and config_toml['TRAIN']['normalize_spectrograms']:
+        if 'normalize_spectrograms' in config_toml['train'] and config_toml['train']['normalize_spectrograms']:
             spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
         else:
             spect_scaler_path = None
