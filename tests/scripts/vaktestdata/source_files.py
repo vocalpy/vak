@@ -47,14 +47,14 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
             f"using config:\n{config_path.name}"
         )
-        cfg = vak.config.Config.from_toml_path(config_path)
+        cfg = vak.config.Config.from_toml_path(config_path, tables_to_parse='prep')
 
         source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
             data_dir=cfg.prep.data_dir,
             input_type=cfg.prep.input_type,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
+            spect_params=cfg.prep.spect_params,
             spect_output_dir=spect_output_dir,
             annot_format=cfg.prep.annot_format,
             annot_file=cfg.prep.annot_file,
@@ -103,9 +103,9 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         )
 
         with config_path.open("r") as fp:
-            config_toml = tomlkit.load(fp)
+            tomldoc = tomlkit.load(fp)
         data_dir = constants.GENERATED_TEST_DATA_ROOT / config_metadata.data_dir
-        config_toml['PREP']['data_dir'] = str(data_dir)
+        tomldoc['vak']['prep']['data_dir'] = str(data_dir)
         with config_path.open("w") as fp:
             tomlkit.dump(config_toml, fp)
 
@@ -116,7 +116,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             input_type=cfg.prep.input_type,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
+            spect_params=cfg.prep.spect_params,
             spect_output_dir=None,
             annot_format=cfg.prep.annot_format,
             annot_file=cfg.prep.annot_file,
@@ -165,7 +165,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             input_type=cfg.prep.input_type,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
+            spect_params=cfg.prep.spect_params,
             spect_output_dir=None,
             annot_format=cfg.prep.annot_format,
             annot_file=cfg.prep.annot_file,
