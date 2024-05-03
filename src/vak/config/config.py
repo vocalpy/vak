@@ -97,7 +97,8 @@ class Config:
         This :func:`classmethod` expects the output
         of :func:`vak.config.load._load_from_toml_path`,
         that converts a :class:`tomlkit.TOMLDocument`
-        to a :class:`dict`.
+        to a :class:`dict`, and returns the :class:`dict`
+        that is accessed by the top-level key ``'vak'``.
 
         Parameters
         ----------
@@ -121,20 +122,11 @@ class Config:
             whose attributes correspond to the
             top-level tables in a config.toml file.
         """
-        try:
-            config_dict = config_dict['vak']
-        except KeyError as e:
-            raise KeyError(
-                "Did not find key 'vak' in `config_dict`."
-                "All top-level tables in toml configuration file must "
-                "use dotted names that begin with 'vak', e.g. ``[vak.eval]``.\n"
-                f"`config_dict`:\n{config_dict}"
-            )
         are_tables_valid(config_dict, toml_path)
         if tables_to_parse is None:
             tables_to_parse = list(
-                TABLE_CLASSES_MAP.keys()
-            )  # i.e., parse all tables
+                config_dict.keys()
+            )  # i.e., parse all top-level tables
         else:
             tables_to_parse = _validate_tables_to_parse_arg_convert_list(tables_to_parse)
 
@@ -181,4 +173,4 @@ class Config:
             tables in a config.toml file.
         """
         config_dict: dict = load._load_toml_from_path(toml_path)
-        return cls.from_toml(config_dict, toml_path, tables_to_parse)
+        return cls.from_config_dict(config_dict, toml_path, tables_to_parse)
