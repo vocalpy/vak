@@ -164,6 +164,79 @@ class TestEval:
                     },
                     KeyError
                 ),
+                # missing 'checkpoint_path', should raise KeyError
+                (
+                    {
+                        'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
+                        'batch_size': 11,
+                        'num_workers': 16,
+                        'device': 'cuda',
+                        'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                        'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
+                        'post_tfm_kwargs': {
+                            'majority_vote': True, 'min_segment_dur': 0.02
+                            },
+                        'transform_params': {
+                            'window_size': 88
+                            },
+                        'model': {
+                            'TweetyNet': {
+                                'network': {
+                                    'conv1_filters': 8,
+                                    'conv1_kernel_size': [3, 3],
+                                    'conv2_filters': 16,
+                                    'conv2_kernel_size': [5, 5],
+                                    'pool1_size': [4, 1],
+                                    'pool1_stride': [4, 1],
+                                    'pool2_size': [4, 1],
+                                    'pool2_stride': [4, 1],
+                                    'hidden_size': 32
+                                },
+                                'optimizer': {'lr': 0.001}
+                                }
+                            },
+                        'dataset': {
+                            'path': '~/some/path/I/made/up/for/now'
+                        },
+                    }
+                ),
+                # missing 'output_dir', should raise KeyError
+                (
+                    {
+                        'checkpoint_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt',
+                        'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
+                        'batch_size': 11,
+                        'num_workers': 16,
+                        'device': 'cuda',
+                        'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                        'post_tfm_kwargs': {
+                            'majority_vote': True, 'min_segment_dur': 0.02
+                            },
+                        'transform_params': {
+                            'window_size': 88
+                            },
+                        'model': {
+                            'TweetyNet': {
+                                'network': {
+                                    'conv1_filters': 8,
+                                    'conv1_kernel_size': [3, 3],
+                                    'conv2_filters': 16,
+                                    'conv2_kernel_size': [5, 5],
+                                    'pool1_size': [4, 1],
+                                    'pool1_stride': [4, 1],
+                                    'pool2_size': [4, 1],
+                                    'pool2_stride': [4, 1],
+                                    'hidden_size': 32
+                                },
+                                'optimizer': {'lr': 0.001}
+                                }
+                            },
+                        'dataset': {
+                            'path': '~/some/path/I/made/up/for/now'
+                        },
+                    },
+                    KeyError
+                )
             ]
     )
     def test_from_config_dict_raises(self, config_dict, expected_exception):
