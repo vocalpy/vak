@@ -45,7 +45,7 @@ def train(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
-    if cfg.train.dataset_path is None:
+    if cfg.train.dataset.path is None:
         raise ValueError(
             "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
@@ -55,7 +55,7 @@ def train(toml_path):
     train_module.train(
         model_name=cfg.train.model.name,
         model_config=cfg.train.model.to_dict(),
-        dataset_path=cfg.train.dataset_path,
+        dataset_path=cfg.train.dataset.path,
         train_transform_params=cfg.train.train_transform_params,
         train_dataset_params=cfg.train.train_dataset_params,
         val_transform_params=cfg.train.val_transform_params,

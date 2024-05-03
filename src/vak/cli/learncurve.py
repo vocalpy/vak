@@ -45,7 +45,7 @@ def learning_curve(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
-    if cfg.learncurve.dataset_path is None:
+    if cfg.learncurve.dataset.path is None:
         raise ValueError(
             "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
@@ -55,7 +55,7 @@ def learning_curve(toml_path):
     learncurve.learning_curve(
         model_name=cfg.learncurve.model.name,
         model_config=cfg.learncurve.model.to_dict(),
-        dataset_path=cfg.learncurve.dataset_path,
+        dataset_path=cfg.learncurve.dataset.path,
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,

@@ -39,7 +39,7 @@ def eval(toml_path):
 
     logger.info("Logging results to {}".format(cfg.eval.output_dir))
 
-    if cfg.eval.dataset_path is None:
+    if cfg.eval.dataset.path is None:
         raise ValueError(
             "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
@@ -49,7 +49,7 @@ def eval(toml_path):
     eval_module.eval(
         model_name=cfg.eval.model.name,
         model_config=cfg.eval.model.to_dict(),
-        dataset_path=cfg.eval.dataset_path,
+        dataset_path=cfg.eval.dataset.path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
