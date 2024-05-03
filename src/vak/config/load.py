@@ -6,12 +6,6 @@ import pathlib
 import tomlkit
 import tomlkit.exceptions
 
-from .config import Config
-from .eval import EvalConfig
-from .learncurve import LearncurveConfig
-from .predict import PredictConfig
-from .prep import PrepConfig
-from .train import TrainConfig
 from .validators import are_keys_valid, are_tables_valid
 
 
@@ -54,10 +48,22 @@ def _tomlkit_to_popo(d):
 def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     """Load a toml file from a path, and return as a :class:`dict`.
 
+    Notes
+    -----
     Helper function to load toml config file,
     factored out to use in other modules when needed.
     Checks if ``toml_path`` exists before opening,
-    and tries to give a clear message if an error occurs when loading."""
+    and tries to give a clear message if an error occurs when loading.
+
+    Note also this function checks that the loaded :class:`dict`
+    has a single top-level key ``'vak'``,
+    and that it returns the :class:`dict` one level down
+    that is accessed with that key.
+    This avoids the need to write ``['vak']`` everywhere in
+    calling functions.
+    However it also means you need to add back that key
+    if you are *writing* a toml file.
+    """
     toml_path = pathlib.Path(toml_path)
     if not toml_path.is_file():
         raise FileNotFoundError(f".toml config file not found: {toml_path}")
@@ -73,7 +79,8 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     if 'vak' not in config_dict:
         raise ValueError(
             "Toml file does not contain a top-level table named `vak`. "
-            f"Please see example configuration files here: "
+            "Please see example configuration files here:\n"
+            "https://github.com/vocalpy/vak/tree/main/doc/toml"
         )
 
     # Next line, convert TOMLDocument returned by tomlkit.load to a dict.
@@ -84,5 +91,4 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     # and then assigns it to the ``spect_params`` key.
     # We would get this error if we just return the result of :func:`tomlkit.load`,
     # which is a `tomlkit.TOMLDocument` that tries to ensure that everything is valid toml.
-    return _tomlkit_to_popo(config_dict)
-
+    return _tomlkit_to_popo(config_dict)['vak']
