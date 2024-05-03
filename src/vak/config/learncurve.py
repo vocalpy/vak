@@ -4,7 +4,9 @@ from __future__ import annotations
 from attrs import define, field
 from attrs import converters, validators
 
+from .dataset import DatasetConfig
 from .eval import are_valid_post_tfm_kwargs, convert_post_tfm_kwargs
+from .model import ModelConfig
 from .train import TrainConfig
 
 
@@ -90,8 +92,8 @@ class LearncurveConfig(TrainConfig):
                     "when loading the configuration file into a Python dictionary. "
                     "Please check that the configuration file is formatted correctly."
                 )
-        config_dict['model'] = ModelConfig(**config_dict['model'])
-        config_dict['dataset'] = DatasetConfig(**config_dict['dataset'])
+        config_dict['model'] = ModelConfig.from_config_dict(config_dict['model'])
+        config_dict['dataset'] = DatasetConfig.from_config_dict(config_dict['dataset'])
         return cls(
             **config_dict
         )
