@@ -87,8 +87,8 @@ class Config:
     def from_config_dict(
             cls,
             config_dict: dict,
+            tables_to_parse: str | list[str] | None = None,
             toml_path: str | pathlib.Path | None = None,
-            tables_to_parse: str | list[str] | None = None
             ) -> "Config":
         """Return instance of :class:`Config` class,
         given a :class:`dict` containing the contents of
@@ -173,4 +173,4 @@ class Config:
             tables in a config.toml file.
         """
         config_dict: dict = load._load_toml_from_path(toml_path)
-        return cls.from_config_dict(config_dict, toml_path, tables_to_parse)
+        return cls.from_config_dict(config_dict, tables_to_parse, toml_path)
