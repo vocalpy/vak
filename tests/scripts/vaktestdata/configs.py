@@ -162,7 +162,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         if spect_scaler_path:
             config_toml["vak"][table]["spect_scaler_path"] = str(spect_scaler_path)
         else:
-            if 'spect_scaler_path' in config_toml[table]:
+            if 'spect_scaler_path' in config_toml["vak"][table]:
                 # remove any existing 'spect_scaler_path' option
                 del config_toml["vak"][table]["spect_scaler_path"]
         if command != 'train_continue':  # train always gets labelmap from dataset dir, not from a config option
