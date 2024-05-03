@@ -61,11 +61,11 @@ def lint(session):
     """
     Run the linter.
     """
-    session.install(".[dev]")
+    session.install("isort", "black", "flake8")
     # run isort first since black disagrees with it
     session.run("isort", "./src")
     session.run("black", "./src", "--line-length=79")
-    session.run("flake8", "./src", "--max-line-length", "120", "--exclude", "./src/crowsetta/_vendor")
+    session.run("flake8", "./src", "--max-line-length", "120")
 
 
 @nox.session
