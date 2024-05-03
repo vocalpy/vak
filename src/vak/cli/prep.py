@@ -96,7 +96,7 @@ def prep(toml_path):
     # open here because need to check whether the `dataset` already has a `path`, see #314 & #333
     config_dict = _load_toml_from_path(toml_path)
 
-    # ---- figure out purpose of config file from tables; will save path of prep'd dataset in that table -------------------------
+    # ---- figure out purpose of config file from tables; will save path of prep'd dataset in that table ---------------
     purpose = purpose_from_toml(config_dict, toml_path)
     if (
         "dataset" in config_dict[purpose]

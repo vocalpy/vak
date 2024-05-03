@@ -105,13 +105,15 @@ def are_tables_valid(config_dict, toml_path=None):
                 err_msg = (
                     f"Top-level table defined in {toml_path} is not valid: {table}\n"
                     f"Valid top-level tables are: {VALID_TOP_LEVEL_TABLES}\n"
-                    "Please see example toml configuration files here: https://github.com/vocalpy/vak/tree/main/doc/toml"
+                    "Please see example toml configuration files here: "
+                    "https://github.com/vocalpy/vak/tree/main/doc/toml"
                 )
             else:
                 err_msg = (
                     f"Table defined in toml config is not valid: {table}\n"
                     f"Valid top-level tables are: {VALID_TOP_LEVEL_TABLES}\n"
-                    "Please see example toml configuration files here: https://github.com/vocalpy/vak/tree/main/doc/toml"
+                    "Please see example toml configuration files here: "
+                    "https://github.com/vocalpy/vak/tree/main/doc/toml"
                 )
             raise ValueError(err_msg)
 

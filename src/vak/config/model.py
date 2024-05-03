@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pathlib
-
 from attrs import define, field
 from attrs.validators import instance_of
 

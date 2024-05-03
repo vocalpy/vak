@@ -7,8 +7,6 @@ import pathlib
 import tomlkit
 import tomlkit.exceptions
 
-from .validators import are_keys_valid, are_tables_valid
-
 
 def _tomlkit_to_popo(d):
     """Convert tomlkit to "popo" (Plain-Old Python Objects)

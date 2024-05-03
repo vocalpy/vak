@@ -25,6 +25,7 @@ from .train import TrainConfig
 
 __all__ = [
     "config",
+    "dataset",
     "eval",
     "learncurve",
     "model",
