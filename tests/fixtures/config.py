@@ -70,6 +70,11 @@ def invalid_key_config_path(test_configs_root):
     return test_configs_root.joinpath("invalid_key_config.toml")
 
 
+@pytest.fixture
+def invalid_train_and_learncurve_config_toml(test_configs_root):
+    return test_configs_root.joinpath("invalid_train_and_learncurve_config.toml")
+
+
 GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA_ROOT.joinpath("configs")
 
 
@@ -194,37 +199,6 @@ def a_generated_config_path(request):
     return request.param
 
 
-@pytest.fixture
-def all_generated_train_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("test_train*toml"))
-
-
-ALL_GENERATED_LEARNCURVE_CONFIGS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("test_learncurve*toml"))
-
-@pytest.fixture
-def all_generated_learncurve_configs(generated_test_configs_root):
-    return ALL_GENERATED_LEARNCURVE_CONFIGS
-
-
-ALL_GENERATED_EVAL_CONFIG_PATHS = sorted(
-    GENERATED_TEST_CONFIGS_ROOT.glob("test_eval*toml")
-)
-
-
-@pytest.fixture
-def all_generated_eval_configs():
-    return ALL_GENERATED_EVAL_CONFIG_PATHS
-
-@pytest.fixture(params=ALL_GENERATED_EVAL_CONFIG_PATHS)
-def a_generated_eval_config_toml(request):
-    return request.param
-
-
-@pytest.fixture
-def all_generated_predict_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("test_predict*toml"))
-
-
 def _tomlkit_to_popo(d):
     """Convert tomlkit to "popo" (Plain-Old Python Objects)
 
@@ -290,15 +264,55 @@ def specific_config_toml(specific_config_toml_path):
     return _specific_config_toml
 
 
-ALL_GENERATED_CONFIG_DICTS = [
-    _load_config_dict(config)
-    for config in ALL_GENERATED_CONFIG_PATHS
-]
-
-@pytest.fixture(params=ALL_GENERATED_CONFIG_DICTS)
+@pytest.fixture(params=ALL_GENERATED_CONFIG_PATHS)
 def a_generated_config_dict(request):
-    return request.param
+    # we remake dict every time this gets called
+    # so that we're not returning a ``config_dict`` that was
+    # already mutated by a `Config.from_config_dict` function,
+    # e.g. the value for the 'spect_params' key gets mapped to a SpectParamsConfig
+    # by PrepConfig.from_config_dict
+    return _load_config_dict(request.param)
 
+
+ALL_GENERATED_EVAL_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*eval*toml")
+)
+
+ALL_GENERATED_LEARNCURVE_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*learncurve*toml")
+)
+
+ALL_GENERATED_PREDICT_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*predict*toml")
+)
+
+ALL_GENERATED_TRAIN_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*train*toml")
+)
+
+# as above, we remake dict every time these fixutres get called
+# so that we're not returning a ``config_dict`` that was
+# already mutated by a `Config.from_config_dict` function,
+# e.g. the value for the 'spect_params' key gets mapped to a SpectParamsConfig
+# by PrepConfig.from_config_dict
+@pytest.fixture(params=ALL_GENERATED_EVAL_CONFIG_PATHS)
+def a_generated_eval_config_dict(request):
+    return _load_config_dict(request.param)
+
+
+@pytest.fixture(params=ALL_GENERATED_LEARNCURVE_CONFIG_PATHS)
+def a_generated_learncurve_config_dict(request):
+    return _load_config_dict(request.param)
+
+
+@pytest.fixture(params=ALL_GENERATED_PREDICT_CONFIG_PATHS)
+def a_generated_predict_config_dict(request):
+    return _load_config_dict(request.param)
+
+
+@pytest.fixture(params=ALL_GENERATED_TRAIN_CONFIG_PATHS)
+def a_generated_train_config_dict(request):
+    return _load_config_dict(request.param)
 
 
 @pytest.fixture
@@ -313,20 +327,20 @@ ALL_GENERATED_CONFIGS_TOML_PATH_PAIRS = list(zip(
 
 
 # ---- config toml + path pairs ----
-# @pytest.fixture
-# def all_generated_configs_toml_path_pairs():
-#     """zip of tuple pairs: (dict, pathlib.Path)
-#     where ``Path`` is path to .toml config file and ``dict`` is
-#     the .toml config from that path
-#     loaded into a dict with the ``toml`` library
-#     """
-#     # we duplicate the constant above because we need to remake
-#     # the variables for each unit test. Otherwise tests that modify values
-#     # for config options cause other tests to fail
-#     return zip(
-#         [_load_config_dict(config) for config in ALL_GENERATED_CONFIGS],
-#         ALL_GENERATED_CONFIGS
-#     )
+@pytest.fixture
+def all_generated_configs_toml_path_pairs():
+    """zip of tuple pairs: (dict, pathlib.Path)
+    where ``Path`` is path to .toml config file and ``dict`` is
+    the .toml config from that path
+    loaded into a dict with the ``toml`` library
+    """
+    # we duplicate the constant above because we need to remake
+    # the variables for each unit test. Otherwise tests that modify values
+    # for config options cause other tests to fail
+    return zip(
+        [_load_config_dict(config) for config in ALL_GENERATED_CONFIG_PATHS],
+        ALL_GENERATED_CONFIG_PATHS
+    )
 
 
 @pytest.fixture
