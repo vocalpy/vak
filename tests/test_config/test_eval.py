@@ -98,7 +98,8 @@ class TestEval:
         assert isinstance(eval_config, vak.config.EvalConfig)
 
     def test_from_config_dict_with_real_config(self, a_generated_eval_config_dict):
-        """test that instantiating EvalConfig class works as expected"""
-        eval_section = a_generated_eval_config_dict["eval"]
-        config = vak.config.eval.EvalConfig.from_config_dict(eval_section)
-        assert isinstance(config, vak.config.eval.EvalConfig)
+        eval_table = a_generated_eval_config_dict["eval"]
+
+        eval_config = vak.config.eval.EvalConfig.from_config_dict(eval_table)
+
+        assert isinstance(eval_config, vak.config.eval.EvalConfig)
