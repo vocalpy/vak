@@ -48,10 +48,9 @@ def add_dataset_path_from_prepped_configs():
     """This helper function goes through all configs in
     :data:`vaktestdata.constants.CONFIG_METADATA`
     and for any that have a filename for the attribute
-    "use_dataset_from_config", it sets the option 'dataset_path'
+    "use_dataset_from_config", it sets the key 'path' in the 'dataset' table
     in the config file that the metadata corresponds to
-    to the same option from the file specified
-    by the attribute.
+    to the same value from the file specified by the attribute.
     """
     configs_to_change = [
         config_metadata
@@ -62,27 +61,30 @@ def add_dataset_path_from_prepped_configs():
     for config_metadata in configs_to_change:
         config_to_change_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
         if config_metadata.config_type == 'train_continue':
-            section = 'train'
+            table_to_add_dataset = 'train'
         else:
-            section = config_metadata.config_type
+            table_to_add_dataset = config_metadata.config_type
 
         config_dataset_path = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.use_dataset_from_config
 
-        with config_dataset_path.open("r") as fp:
-            dataset_config_toml = tomlkit.load(fp)
-        purpose = vak.cli.prep.purpose_from_toml(dataset_config_toml)
+        config_dict = vak.config.load._load_toml_from_path(config_dataset_path)
         # next line, we can't use `section` here because we could get a KeyError,
-        # e.g., when the config we are rewriting is an EVAL config, but
-        # the config we are getting the dataset from is a TRAIN config.
+        # e.g., when the config we are rewriting is an ``[vak.eval]`` config, but
+        # the config we are getting the dataset from is a ``[vak.train]`` config.
         # so instead we use `purpose_from_toml` to get the `purpose`
         # of the config we are getting the dataset from.
-        dataset_config_section = purpose.upper()  # need to be 'TRAIN', not 'train'
-        dataset_path = dataset_config_toml[dataset_config_section]['dataset_path']
-        with config_to_change_path.open("r") as fp:
-            config_to_change_toml = tomlkit.load(fp)
-        config_to_change_toml[section]['dataset_path'] = dataset_path
+        dataset_config_section = vak.cli.prep.purpose_from_toml(config_dict)
+        dataset_path = config_dict[dataset_config_section]['dataset']['path']
+
+        # we open config using tomlkit so we can add path to dataset table in style-preserving way
+        with config_to_change_path.open('r') as fp:
+            tomldoc = tomlkit.load(fp)
+        if 'dataset' not in tomldoc['vak'][table_to_add_dataset]:
+            dataset_table = tomlkit.table()
+            tomldoc["vak"][table_to_add_dataset].add("dataset", dataset_table)
+        tomldoc["vak"][table_to_add_dataset]["dataset"].add("path", str(dataset_path))
         with config_to_change_path.open("w") as fp:
-            tomlkit.dump(config_to_change_toml, fp)
+            tomlkit.dump(tomldoc, fp)
 
 
 def fix_options_in_configs(config_metadata_list, command, single_train_result=True):
@@ -104,7 +106,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         # which are checkpoint_path, spect_scaler_path, and labelmap_path
         with config_to_use_result_from.open("r") as fp:
             config_toml = tomlkit.load(fp)
-        root_results_dir = pathlib.Path(config_toml["TRAIN"]["root_results_dir"])
+        root_results_dir = pathlib.Path(config_toml["vak"]["train"]["root_results_dir"])
         results_dir = sorted(root_results_dir.glob("results_*"))
         if len(results_dir) > 1:
             if single_train_result:
@@ -129,7 +131,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         # these are the only options whose values we need to change
         # and they are the same for both predict and eval
         checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
-        if 'normalize_spectrograms' in config_toml['train'] and config_toml['train']['normalize_spectrograms']:
+        if 'normalize_spectrograms' in config_toml["vak"]['train'] and config_toml["vak"]['train']['normalize_spectrograms']:
             spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
         else:
             spect_scaler_path = None
@@ -152,20 +154,20 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
             config_toml = tomlkit.load(fp)
 
         if command == 'train_continue':
-            section = 'TRAIN'
+            table = 'train'
         else:
-            section = command.upper()
+            table = command
 
-        config_toml[section]["checkpoint_path"] = str(checkpoint_path)
+        config_toml["vak"][table]["checkpoint_path"] = str(checkpoint_path)
         if spect_scaler_path:
-            config_toml[section]["spect_scaler_path"] = str(spect_scaler_path)
+            config_toml["vak"][table]["spect_scaler_path"] = str(spect_scaler_path)
         else:
-            if 'spect_scaler_path' in config_toml[section]:
+            if 'spect_scaler_path' in config_toml[table]:
                 # remove any existing 'spect_scaler_path' option
-                del config_toml[section]["spect_scaler_path"]
+                del config_toml["vak"][table]["spect_scaler_path"]
         if command != 'train_continue':  # train always gets labelmap from dataset dir, not from a config option
             if labelmap_path is not None:
-                config_toml[section]["labelmap_path"] = str(labelmap_path)
+                config_toml["vak"][table]["labelmap_path"] = str(labelmap_path)
 
         with config_to_fix.open("w") as fp:
             tomlkit.dump(config_toml, fp)
