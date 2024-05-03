@@ -56,7 +56,7 @@ def test_train(
         vak.train.train(
             model_name=model_name,
             model_config=model_config,
-            dataset_path=cfg.train.dataset_path,
+            dataset_path=cfg.train.dataset.path,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,

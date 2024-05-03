@@ -70,7 +70,7 @@ def test_learning_curve_for_frame_classification_model(
     vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
         model_name=cfg.learncurve.model,
         model_config=model_config,
-        dataset_path=cfg.learncurve.dataset_path,
+        dataset_path=cfg.learncurve.dataset.path,
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
@@ -125,7 +125,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
             model_name=cfg.learncurve.model,
             model_config=model_config,
-            dataset_path=cfg.learncurve.dataset_path,
+            dataset_path=cfg.learncurve.dataset.path,
             batch_size=cfg.learncurve.batch_size,
             num_epochs=cfg.learncurve.num_epochs,
             num_workers=cfg.learncurve.num_workers,

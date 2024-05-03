@@ -201,7 +201,7 @@ class TestModel:
             transform_kwargs={},
         )
         train_dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
-            dataset_path=train_cfg.train.dataset_path,
+            dataset_path=train_cfg.train.dataset.path,
             split="train",
             window_size=train_cfg.train.train_dataset_params['window_size'],
             transform=transform,

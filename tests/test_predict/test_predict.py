@@ -48,7 +48,7 @@ def test_predict(
         vak.predict.predict(
             model_name=model_name,
             model_config=model_config,
-            dataset_path=cfg.predict.dataset_path,
+            dataset_path=cfg.predict.dataset.path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,

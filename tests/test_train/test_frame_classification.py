@@ -64,7 +64,7 @@ def test_train_frame_classification_model(
     vak.train.frame_classification.train_frame_classification_model(
         model_name=cfg.train.model,
         model_config=model_config,
-        dataset_path=cfg.train.dataset_path,
+        dataset_path=cfg.train.dataset.path,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -117,7 +117,7 @@ def test_continue_training(
     vak.train.frame_classification.train_frame_classification_model(
         model_name=cfg.train.model,
         model_config=model_config,
-        dataset_path=cfg.train.dataset_path,
+        dataset_path=cfg.train.dataset.path,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -174,7 +174,7 @@ def test_train_raises_file_not_found(
         vak.train.frame_classification.train_frame_classification_model(
             model_name=cfg.train.model,
             model_config=model_config,
-            dataset_path=cfg.train.dataset_path,
+            dataset_path=cfg.train.dataset.path,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -230,7 +230,7 @@ def test_train_raises_not_a_directory(
         vak.train.frame_classification.train_frame_classification_model(
             model_name=cfg.train.model,
             model_config=model_config,
-            dataset_path=cfg.train.dataset_path,
+            dataset_path=cfg.train.dataset.path,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,

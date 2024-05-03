@@ -52,7 +52,7 @@ def test_eval(
         vak.eval.eval(
             model_name=model_name,
             model_config=model_config,
-            dataset_path=cfg.eval.dataset_path,
+            dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,

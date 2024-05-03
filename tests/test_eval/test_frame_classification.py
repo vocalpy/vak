@@ -73,7 +73,7 @@ def test_eval_frame_classification_model(
     vak.eval.frame_classification.eval_frame_classification_model(
         model_name=cfg.eval.model,
         model_config=model_config,
-        dataset_path=cfg.eval.dataset_path,
+        dataset_path=cfg.eval.dataset.path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
@@ -131,7 +131,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
         vak.eval.frame_classification.eval_frame_classification_model(
             model_name=cfg.eval.model,
             model_config=model_config,
-            dataset_path=cfg.eval.dataset_path,
+            dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
@@ -189,7 +189,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         vak.eval.frame_classification.eval_frame_classification_model(
             model_name=cfg.eval.model,
             model_config=model_config,
-            dataset_path=cfg.eval.dataset_path,
+            dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
