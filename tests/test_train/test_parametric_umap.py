@@ -56,7 +56,7 @@ def test_train_parametric_umap_model(
     vak.train.parametric_umap.train_parametric_umap_model(
         model_name=cfg.train.model.name,
         model_config=cfg.train.model.to_dict(),
-        dataset_path=cfg.train,
+        dataset_path=cfg.train.dataset.path,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -72,7 +72,7 @@ def test_train_parametric_umap_model(
         device=cfg.train.device,
     )
 
-    assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
+    assert_train_output_matches_expected(cfg, cfg.train.model.name, results_path)
 
 
 @pytest.mark.parametrize(
@@ -108,7 +108,7 @@ def test_train_parametric_umap_model_raises_file_not_found(
         vak.train.parametric_umap.train_parametric_umap_model(
             model_name=cfg.train.model.name,
             model_config=cfg.train.model.to_dict(),
-            dataset_path=cfg.train,
+            dataset_path=cfg.train.dataset.path,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -161,7 +161,7 @@ def test_train_parametric_umap_model_raises_not_a_directory(
         vak.train.parametric_umap.train_parametric_umap_model(
             model_name=cfg.train.model,
             model_config=model_config,
-            dataset_path=cfg.train,
+            dataset_path=cfg.train.dataset.path,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,

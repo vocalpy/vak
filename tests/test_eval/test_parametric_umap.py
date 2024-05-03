@@ -50,7 +50,7 @@ def test_eval_parametric_umap_model(
     vak.eval.parametric_umap.eval_parametric_umap_model(
         model_name=cfg.eval.model.name,
         model_config=cfg.eval.model.to_dict(),
-        dataset_path=cfg.eval,
+        dataset_path=cfg.eval.dataset.path,
         checkpoint_path=cfg.eval.checkpoint_path,
         output_dir=cfg.eval.output_dir,
         batch_size=cfg.eval.batch_size,
@@ -60,7 +60,7 @@ def test_eval_parametric_umap_model(
         device=cfg.eval.device,
     )
 
-    assert_eval_output_matches_expected(cfg.eval.model, output_dir)
+    assert_eval_output_matches_expected(cfg.eval.model.name, output_dir)
 
 
 @pytest.mark.parametrize(
@@ -101,7 +101,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
         vak.eval.parametric_umap.eval_parametric_umap_model(
             model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.to_dict(),
-            dataset_path=cfg.eval,
+            dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
             batch_size=cfg.eval.batch_size,
@@ -156,7 +156,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         vak.eval.parametric_umap.eval_parametric_umap_model(
             model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.to_dict(),
-            dataset_path=cfg.eval,
+            dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
             batch_size=cfg.eval.batch_size,

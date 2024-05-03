@@ -28,7 +28,7 @@ class TestWindowDataset:
         )
 
         dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
-            dataset_path=cfg_command,
+            dataset_path=cfg_command.dataset.path,
             split=split,
             window_size=cfg_command.train_dataset_params['window_size'],
             transform=transform,

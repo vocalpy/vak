@@ -10,6 +10,7 @@ import vak.eval.frame_classification
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
 def assert_eval_output_matches_expected(model_name, output_dir):
     eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
+    breakpoint()
     assert len(eval_csv) == 1
 
 
@@ -72,7 +73,7 @@ def test_eval_frame_classification_model(
     vak.eval.frame_classification.eval_frame_classification_model(
         model_name=cfg.eval.model.name,
         model_config=cfg.eval.model.to_dict(),
-        dataset_path=cfg.eval,
+        dataset_path=cfg.eval.dataset.path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
@@ -84,7 +85,7 @@ def test_eval_frame_classification_model(
         post_tfm_kwargs=post_tfm_kwargs,
     )
 
-    assert_eval_output_matches_expected(cfg.eval.model, output_dir)
+    assert_eval_output_matches_expected(cfg.eval.model.name, output_dir)
 
 
 @pytest.mark.parametrize(
@@ -129,7 +130,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
         vak.eval.frame_classification.eval_frame_classification_model(
             model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.to_dict(),
-            dataset_path=cfg.eval,
+            dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
@@ -186,7 +187,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         vak.eval.frame_classification.eval_frame_classification_model(
             model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.to_dict(),
-            dataset_path=cfg.eval,
+            dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
