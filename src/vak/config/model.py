@@ -59,10 +59,7 @@ class ModelConfig:
         config_dict = vak.config.parse.from_toml_path(toml_path)
         model_config = vak.config.Model.from_config_dict(config_dict['train'])
         """
-        try:
-            model_name = list(config_dict.keys())
-        except:
-            breakpoint()
+        model_name = list(config_dict.keys())
         if len(model_name) == 0:
             raise ValueError(
                 "Did not find a single key in `config_dict` corresponding to model name. "
