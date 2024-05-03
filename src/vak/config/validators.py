@@ -68,6 +68,11 @@ VALID_KEYS = {
 
 
 def are_tables_valid(config_dict, toml_path=None):
+    """Validate top-level tables in class:`dict`.
+
+    This function expects the ``config_dict``
+    returned by :func:`vak.config.load._load_from_toml_path`.
+    """
     tables = list(config_dict.keys())
     from ..cli.cli import CLI_COMMANDS  # avoid circular import
 
