@@ -53,7 +53,7 @@ def test_predict(
             num_workers=cfg.predict.num_workers,
             transform_params=cfg.predict.transform_params,
             dataset_params=cfg.predict.dataset_params,
-            timebins_key=cfg.spect_params.timebins_key,
+            timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
             device=cfg.predict.device,
             annot_csv_filename=cfg.predict.annot_csv_filename,

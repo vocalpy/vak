@@ -61,7 +61,7 @@ def test_prep(
             purpose=purpose,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
+            spect_params=cfg.prep.spect_params,
             annot_format=cfg.prep.annot_format,
             annot_file=cfg.prep.annot_file,
             labelset=cfg.prep.labelset,
