@@ -128,7 +128,7 @@ def test_train_parametric_umap_model_raises_file_not_found(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"table": "train", "key": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "train", "key": ["dataset", "path"], "value": '/obviously/doesnt/exist/dataset-dir'},
         {"table": "train", "key": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
     ]
 )

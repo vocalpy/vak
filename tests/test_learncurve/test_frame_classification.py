@@ -94,7 +94,7 @@ def test_learning_curve_for_frame_classification_model(
     'dir_option_to_change',
     [
         {"table": "learncurve", "key": "root_results_dir", "value": '/obviously/does/not/exist/results/'},
-        {"table": "learncurve", "key": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "learncurve", "key": ["dataset", "path"], "value": '/obviously/doesnt/exist/dataset-dir'},
     ]
 )
 def test_learncurve_raises_not_a_directory(dir_option_to_change,

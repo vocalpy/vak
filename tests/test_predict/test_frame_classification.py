@@ -148,7 +148,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"table": "predict", "key": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "predict", "key": ["dataset", "path"], "value": '/obviously/doesnt/exist/dataset-dir'},
         {"table": "predict", "key": "output_dir", "value": '/obviously/does/not/exist/output'},
     ]
 )
