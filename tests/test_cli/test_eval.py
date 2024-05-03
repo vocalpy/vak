@@ -48,14 +48,14 @@ def test_eval(
     assert cli_asserts.log_file_contains_version(command="eval", output_path=output_dir)
 
 
-def test_eval_dataset_path_none_raises(
-        specific_config_toml_path, tmp_path,
+def test_eval_dataset_none_raises(
+        specific_config_toml_path
 ):
-    """Test that cli.eval raises ValueError when dataset_path is None
+    """Test that cli.eval raises ValueError when dataset is None
     (presumably because `vak prep` was not run yet)
     """
     keys_to_change = [
-        {"table": "eval", "key": "dataset_path", "value": "DELETE-OPTION"},
+        {"table": "eval", "key": "dataset", "value": "DELETE-OPTION"},
     ]
 
     toml_path = specific_config_toml_path(
@@ -67,5 +67,5 @@ def test_eval_dataset_path_none_raises(
         keys_to_change=keys_to_change,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         vak.cli.eval.eval(toml_path)
