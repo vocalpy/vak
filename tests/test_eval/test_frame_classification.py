@@ -10,7 +10,6 @@ import vak.eval.frame_classification
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
 def assert_eval_output_matches_expected(model_name, output_dir):
     eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
-    breakpoint()
     assert len(eval_csv) == 1
 
 
@@ -145,7 +144,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"table": "eval", "key": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "eval", "key": ["dataset","path"], "value": '/obviously/doesnt/exist/dataset-dir'},
         {"table": "eval", "key": "output_dir", "value": '/obviously/does/not/exist/output'},
     ]
 )
