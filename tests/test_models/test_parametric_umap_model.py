@@ -93,7 +93,7 @@ class TestParametricUMAPModel:
             vak.models.ParametricUMAPModel, 'definition', definition, raising=False
         )
 
-        config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+        config = cfg.train.model.to_dict()
         config["network"].update(
             encoder=dict(input_shape=input_shape)
         )

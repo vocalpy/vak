@@ -152,7 +152,7 @@ def test_train_parametric_umap_model_raises_not_a_directory(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+    model_config = cfg.train.model.to_dict()
 
     # mock behavior of cli.train, building `results_path` from config option `root_results_dir`
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
