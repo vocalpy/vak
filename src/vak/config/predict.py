@@ -1,18 +1,18 @@
 """Class that represents ``[vak.predict]`` table of configuration file."""
+
 from __future__ import annotations
 
 import os
 from pathlib import Path
 
-from attrs import define, field
 from attr import converters, validators
 from attr.validators import instance_of
+from attrs import define, field
 
-from .dataset import DatasetConfig
-from .model import ModelConfig
 from ..common import device
 from ..common.converters import expanded_user_path
-
+from .dataset import DatasetConfig
+from .model import ModelConfig
 
 REQUIRED_KEYS = (
     "checkpoint_path",
@@ -141,7 +141,6 @@ class PredictConfig:
         default=None,
     )
 
-
     @classmethod
     def from_config_dict(cls, config_dict: dict) -> PredictConfig:
         """Return :class:`PredictConfig` instance from a :class:`dict`.
@@ -159,8 +158,10 @@ class PredictConfig:
                     "when loading the configuration file into a Python dictionary. "
                     "Please check that the configuration file is formatted correctly."
                 )
-        config_dict['dataset'] = DatasetConfig.from_config_dict(config_dict['dataset'])
-        config_dict['model'] = ModelConfig.from_config_dict(config_dict['model'])
-        return cls(
-            **config_dict
+        config_dict["dataset"] = DatasetConfig.from_config_dict(
+            config_dict["dataset"]
         )
+        config_dict["model"] = ModelConfig.from_config_dict(
+            config_dict["model"]
+        )
+        return cls(**config_dict)

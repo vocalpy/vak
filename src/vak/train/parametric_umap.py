@@ -1,4 +1,5 @@
 """Function that trains models in the Parametric UMAP family."""
+
 from __future__ import annotations
 
 import datetime

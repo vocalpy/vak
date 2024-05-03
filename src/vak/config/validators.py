@@ -1,4 +1,5 @@
 """validators used by attrs-based classes and by vak.parse.parse_config"""
+
 import pathlib
 
 import tomlkit
@@ -60,10 +61,11 @@ def is_spect_format(instance, attribute, value):
 CONFIG_DIR = pathlib.Path(__file__).parent
 VALID_TOML_PATH = CONFIG_DIR.joinpath("valid-version-1.0.toml")
 with VALID_TOML_PATH.open("r") as fp:
-    VALID_DICT = tomlkit.load(fp)['vak']
+    VALID_DICT = tomlkit.load(fp)["vak"]
 VALID_TOP_LEVEL_TABLES = list(VALID_DICT.keys())
 VALID_KEYS = {
-    table_name: list(table_config_dict.keys()) for table_name, table_config_dict in VALID_DICT.items()
+    table_name: list(table_config_dict.keys())
+    for table_name, table_config_dict in VALID_DICT.items()
 }
 
 
@@ -80,9 +82,7 @@ def are_tables_valid(config_dict, toml_path=None):
         command for command in CLI_COMMANDS if command != "prep"
     ]
     tables_that_are_commands_besides_prep = [
-        table
-        for table in tables
-        if table in cli_commands_besides_prep
+        table for table in tables if table in cli_commands_besides_prep
     ]
     if len(tables_that_are_commands_besides_prep) == 0:
         raise ValueError(
@@ -117,10 +117,13 @@ def are_tables_valid(config_dict, toml_path=None):
 
 
 def are_keys_valid(
-        config_dict: dict, table_name: str, toml_path: str | pathlib.Path | None = None
-        ) -> None:
+    config_dict: dict,
+    table_name: str,
+    toml_path: str | pathlib.Path | None = None,
+) -> None:
     """Given a :class:`dict` containing the *entire* configuration loaded from a toml file,
-    validate the key names for a specific top-level table, e.g. ``vak.train`` or ``vak.predict``"""
+    validate the key names for a specific top-level table, e.g. ``vak.train`` or ``vak.predict``
+    """
     table_keys = set(config_dict[table_name].keys())
     valid_keys = set(VALID_KEYS[table_name])
     if not table_keys.issubset(valid_keys):
@@ -138,7 +141,11 @@ def are_keys_valid(
         raise ValueError(err_msg)
 
 
-def are_table_keys_valid(table_config_dict: dict, table_name: str, toml_path: str | pathlib.Path | None = None) -> None:
+def are_table_keys_valid(
+    table_config_dict: dict,
+    table_name: str,
+    toml_path: str | pathlib.Path | None = None,
+) -> None:
     """Given a :class:`dict` containing the configuration for a *specific* top-level table,
     loaded from a toml file, validate the key names for that table,
     e.g. ``vak.train`` or ``vak.predict``.

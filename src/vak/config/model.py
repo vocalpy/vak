@@ -1,4 +1,5 @@
 """Class representing the model table of a toml configuration file."""
+
 from __future__ import annotations
 
 import pathlib
@@ -7,7 +8,6 @@ from attrs import define, field
 from attrs.validators import instance_of
 
 from .. import models
-
 
 MODEL_TABLES = [
     "network",
@@ -36,6 +36,7 @@ class ModelConfig:
         A :class:`dict` of ``dict``s mapping
         metric names to keyword arguments.
     """
+
     name: str
     network: dict = field(validator=instance_of(dict))
     optimizer: dict = field(validator=instance_of(dict))
@@ -80,9 +81,7 @@ class ModelConfig:
                 f"Model names in registry:\n{MODEL_NAMES}"
             )
         model_config = config_dict[model_name]
-        if not all(
-            key in MODEL_TABLES for key in model_config.keys()
-        ):
+        if not all(key in MODEL_TABLES for key in model_config.keys()):
             invalid_keys = (
                 key for key in model_config.keys() if key not in MODEL_TABLES
             )
@@ -94,10 +93,7 @@ class ModelConfig:
         for model_table in MODEL_TABLES:
             if model_table not in config_dict:
                 model_config[model_table] = {}
-        return cls(
-            name=model_name,
-            **model_config
-        )
+        return cls(name=model_name, **model_config)
 
     def to_dict(self):
         """Convert this :class:`ModelConfig` instance
@@ -109,8 +105,8 @@ class ModelConfig:
         and returns all other attributes in a :class:`dict`.
         """
         return {
-            'network': self.network,
-            'optimizer': self.optimizer,
-            'loss': self.loss,
-            'metrics': self.metrics,
+            "network": self.network,
+            "optimizer": self.optimizer,
+            "loss": self.loss,
+            "metrics": self.metrics,
         }

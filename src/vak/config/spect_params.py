@@ -1,4 +1,5 @@
 """parses [SPECT_PARAMS] section of config"""
+
 import attr
 from attr import converters, validators
 from attr.validators import instance_of

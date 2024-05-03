@@ -1,4 +1,5 @@
 """High-level function that generates results for a learning curve for all models."""
+
 from __future__ import annotations
 
 import logging

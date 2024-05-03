@@ -52,10 +52,12 @@ def range_str(range_str, sort=True):
                     subrange, substr
                 )
             )
-        list_range.extend([int(subrange[0])]) if len(
-            subrange
-        ) == 1 else list_range.extend(
-            range(int(subrange[0]), int(subrange[1]) + 1)
+        (
+            list_range.extend([int(subrange[0])])
+            if len(subrange) == 1
+            else list_range.extend(
+                range(int(subrange[0]), int(subrange[1]) + 1)
+            )
         )
 
     if sort:

@@ -1,4 +1,5 @@
 """Function that generates results for a learning curve for frame classification models."""
+
 from __future__ import annotations
 
 import logging

@@ -2,6 +2,7 @@
 where a model predicts a label for each frame
 in a time series, e.g., each time bin in
 a window from a spectrogram."""
+
 from __future__ import annotations
 
 import logging

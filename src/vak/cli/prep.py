@@ -1,4 +1,5 @@
 """Function called by command-line interface for prep command"""
+
 from __future__ import annotations
 
 import pathlib
@@ -34,7 +35,9 @@ def purpose_from_toml(
     purpose = None
     for table_name in commands_that_are_not_prep:
         if table_name in config_dict:
-            purpose = table_name  # this top-level table is the "purpose" of the file
+            purpose = (
+                table_name  # this top-level table is the "purpose" of the file
+            )
     if purpose is None:
         raise ValueError(
             "Did not find a top-level table in configuration file that corresponds to a CLI command. "
@@ -43,6 +46,7 @@ def purpose_from_toml(
             f"Valid CLI commands besides ``prep`` (that correspond top-level tables) are: {commands_that_are_not_prep}"
         )
     return purpose
+
 
 # note NO LOGGING -- we configure logger inside `core.prep`
 # so we can save log file inside dataset directory
@@ -94,7 +98,10 @@ def prep(toml_path):
 
     # ---- figure out purpose of config file from tables; will save path of prep'd dataset in that table -------------------------
     purpose = purpose_from_toml(config_dict, toml_path)
-    if "dataset" in config_dict[purpose] and "path" in config_dict[purpose]["dataset"]:
+    if (
+        "dataset" in config_dict[purpose]
+        and "path" in config_dict[purpose]["dataset"]
+    ):
         raise ValueError(
             f"This configuration file already has a '{purpose}.dataset' table with a 'path' key, "
             f"and running `prep` would overwrite the value for that key. To `prep` a new dataset, please "
@@ -145,9 +152,9 @@ def prep(toml_path):
     )
 
     # we re-open config using tomlkit so we can add path to dataset table in style-preserving way
-    with toml_path.open('r') as fp:
+    with toml_path.open("r") as fp:
         tomldoc = tomlkit.load(fp)
-    if 'dataset' not in tomldoc['vak'][purpose]:
+    if "dataset" not in tomldoc["vak"][purpose]:
         dataset_table = tomlkit.table()
         tomldoc["vak"][purpose].add("dataset", dataset_table)
     tomldoc["vak"][purpose]["dataset"].add("path", str(dataset_path))

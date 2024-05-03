@@ -8,6 +8,7 @@ https://packaging.python.org/guides/creating-and-discovering-plugins/#using-pack
 https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins
 https://amir.rachum.com/blog/2017/07/28/python-entry-points/
 """
+
 from .. import entry_points
 
 METRICS_ENTRY_POINT = "vak.models"

@@ -1,4 +1,5 @@
 """functions for working with paths"""
+
 from pathlib import Path
 
 from . import constants, timenow

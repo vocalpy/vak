@@ -1,4 +1,5 @@
 """High-level function that evaluates trained models."""
+
 from __future__ import annotations
 
 import logging

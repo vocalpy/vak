@@ -8,6 +8,7 @@ coupling the FramesDataset __getitem__ implementation to the transforms
 needed for specific neural network models, e.g., whether the returned
 output includes a mask to crop off padding that was added.
 """
+
 from __future__ import annotations
 
 from typing import Callable

@@ -1,4 +1,5 @@
 """Helper functions for datasets annotated as sequences."""
+
 from __future__ import annotations
 
 import numpy as np

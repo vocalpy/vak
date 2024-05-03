@@ -1,5 +1,6 @@
 """Functionality to prepare splits of frame classification datasets
 to generate a learning curve."""
+
 from __future__ import annotations
 
 import logging

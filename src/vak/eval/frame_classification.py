@@ -1,4 +1,5 @@
 """Function that evaluates trained models in the frame classification family."""
+
 from __future__ import annotations
 
 import json

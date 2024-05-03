@@ -1,4 +1,5 @@
 """Default transforms for Parametric UMAP models."""
+
 from __future__ import annotations
 
 import torchvision.transforms

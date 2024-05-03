@@ -1,5 +1,6 @@
 """Function that gets an instance of a model,
 given its name and a configuration as a dict."""
+
 from __future__ import annotations
 
 import inspect

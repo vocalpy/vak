@@ -1,4 +1,5 @@
 """Functions dealing with ``tensorboard``"""
+
 from __future__ import annotations
 
 from pathlib import Path

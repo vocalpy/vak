@@ -1,10 +1,10 @@
 """Class and functions for ``[vak.eval]`` table in configuration file."""
+
 from __future__ import annotations
 
 import pathlib
 
-from attrs import define, field
-from attrs import converters, validators
+from attrs import converters, define, field, validators
 from attrs.validators import instance_of
 
 from ..common import device
@@ -200,8 +200,10 @@ class EvalConfig:
                     "when loading the configuration file into a Python dictionary. "
                     "Please check that the configuration file is formatted correctly."
                 )
-        config_dict['dataset'] = DatasetConfig.from_config_dict(config_dict['dataset'])
-        config_dict['model'] = ModelConfig.from_config_dict(config_dict['model'])
-        return cls(
-            **config_dict
+        config_dict["dataset"] = DatasetConfig.from_config_dict(
+            config_dict["dataset"]
         )
+        config_dict["model"] = ModelConfig.from_config_dict(
+            config_dict["model"]
+        )
+        return cls(**config_dict)

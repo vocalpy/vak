@@ -1,17 +1,17 @@
 """Class and functions for ``[vak.prep]`` table of configuration file."""
+
 from __future__ import annotations
 
 import inspect
 
-from attrs import define, field
 import dask.bag
-from attrs import converters, validators
+from attrs import converters, define, field, validators
 from attrs.validators import instance_of
 
-from .spect_params import SpectParamsConfig
-from .validators import is_annot_format, is_audio_format, is_spect_format
 from .. import prep
 from ..common.converters import expanded_user_path, labelset_to_set
+from .spect_params import SpectParamsConfig
+from .validators import is_annot_format, is_audio_format, is_spect_format
 
 
 def duration_from_toml_value(value):
@@ -239,8 +239,8 @@ class PrepConfig:
                     "when loading the configuration file into a Python dictionary. "
                     "Please check that the configuration file is formatted correctly."
                 )
-        if 'spect_params' in config_dict:
-            config_dict['spect_params'] = SpectParamsConfig(**config_dict['spect_params'])
-        return cls(
-            **config_dict
-        )
+        if "spect_params" in config_dict:
+            config_dict["spect_params"] = SpectParamsConfig(
+                **config_dict["spect_params"]
+            )
+        return cls(**config_dict)

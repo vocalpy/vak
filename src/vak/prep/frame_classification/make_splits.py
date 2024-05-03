@@ -1,4 +1,5 @@
 """Helper functions for frame classification dataset prep."""
+
 from __future__ import annotations
 
 import collections
@@ -437,9 +438,11 @@ def make_splits(
         ] = frames_paths
 
         frame_labels_npy_paths = [
-            sample.frame_labels_npy_path
-            if isinstance(sample.frame_labels_npy_path, str)
-            else None
+            (
+                sample.frame_labels_npy_path
+                if isinstance(sample.frame_labels_npy_path, str)
+                else None
+            )
             for sample in samples
         ]
         split_df[

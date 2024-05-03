@@ -1,6 +1,6 @@
 """Class that represents ``[vak.train]`` table of configuration file."""
-from attrs import define, field
-from attrs import converters, validators
+
+from attrs import converters, define, field, validators
 from attrs.validators import instance_of
 
 from ..common import device
@@ -8,12 +8,7 @@ from ..common.converters import bool_from_str, expanded_user_path
 from .dataset import DatasetConfig
 from .model import ModelConfig
 
-
-REQUIRED_KEYS = (
-    'dataset',
-    'model',
-    'root_results_dir'
-)
+REQUIRED_KEYS = ("dataset", "model", "root_results_dir")
 
 
 @define
@@ -169,8 +164,10 @@ class TrainConfig:
                     "when loading the configuration file into a Python dictionary. "
                     "Please check that the configuration file is formatted correctly."
                 )
-        config_dict['model'] = ModelConfig.from_config_dict(config_dict['model'])
-        config_dict['dataset'] = DatasetConfig.from_config_dict(config_dict['dataset'])
-        return cls(
-            **config_dict
+        config_dict["model"] = ModelConfig.from_config_dict(
+            config_dict["model"]
         )
+        config_dict["dataset"] = DatasetConfig.from_config_dict(
+            config_dict["dataset"]
+        )
+        return cls(**config_dict)

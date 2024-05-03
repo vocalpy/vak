@@ -5,6 +5,7 @@ https://github.com/elyxlz/umap_pytorch
 with changes made by Tim Sainburg:
 https://github.com/lmcinnes/umap/issues/580#issuecomment-1368649550.
 """
+
 from __future__ import annotations
 
 import torch

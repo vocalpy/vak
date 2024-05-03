@@ -1,6 +1,7 @@
 """A dataset class used for neural network models with the
 frame classification task, where the source data consists of audio signals
 or spectrograms of varying lengths."""
+
 from __future__ import annotations
 
 import pathlib

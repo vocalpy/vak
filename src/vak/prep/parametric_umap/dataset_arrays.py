@@ -1,6 +1,7 @@
 """Helper functions for `vak.prep.dimensionality_reduction` module
 that handle array files.
 """
+
 from __future__ import annotations
 
 import logging

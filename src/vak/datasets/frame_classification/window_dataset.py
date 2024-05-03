@@ -15,6 +15,7 @@ The entire dataset consists of some number of windows
 :math:`I` determined by a ``stride`` parameter :math:`s`,
 :math:`I = (T - w) / s`.
 """
+
 from __future__ import annotations
 
 import pathlib

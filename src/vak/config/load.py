@@ -1,4 +1,5 @@
 """Functions to parse toml config files."""
+
 from __future__ import annotations
 
 import pathlib
@@ -31,7 +32,8 @@ def _tomlkit_to_popo(d):
         result = [_tomlkit_to_popo(x) for x in result]
     elif isinstance(result, dict):
         result = {
-            _tomlkit_to_popo(key): _tomlkit_to_popo(val) for key, val in result.items()
+            _tomlkit_to_popo(key): _tomlkit_to_popo(val)
+            for key, val in result.items()
         }
     elif isinstance(result, tomlkit.items.Integer):
         result = int(result)
@@ -76,7 +78,7 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
             f"Error when parsing .toml config file: {toml_path}"
         ) from e
 
-    if 'vak' not in config_dict:
+    if "vak" not in config_dict:
         raise ValueError(
             "Toml file does not contain a top-level table named `vak`. "
             "Please see example configuration files here:\n"
@@ -91,4 +93,4 @@ def _load_toml_from_path(toml_path: str | pathlib.Path) -> dict:
     # and then assigns it to the ``spect_params`` key.
     # We would get this error if we just return the result of :func:`tomlkit.load`,
     # which is a `tomlkit.TOMLDocument` that tries to ensure that everything is valid toml.
-    return _tomlkit_to_popo(config_dict)['vak']
+    return _tomlkit_to_popo(config_dict)["vak"]
