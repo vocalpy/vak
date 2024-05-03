@@ -76,7 +76,7 @@ a_train_notmat_config = sorted(
 # doesn't really matter which config, they all have labelset
 with a_train_notmat_config.open("r") as fp:
     a_train_notmat_toml = tomlkit.load(fp)
-LABELSET_NOTMAT = a_train_notmat_toml["vak"]["prep"]["labelset"]
+LABELSET_NOTMAT = list(str(a_train_notmat_toml["vak"]["prep"]["labelset"]))
 
 
 @pytest.fixture
