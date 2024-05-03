@@ -22,7 +22,7 @@ def specific_dataset_path(specific_config_toml):
         config_toml = specific_config_toml(
             config_type, model, annot_format, audio_format, spect_format
         )
-        dataset_path = Path(config_toml[config_type.upper()]["dataset_path"])
+        dataset_path = Path(config_toml[config_type]["dataset"]["path"])
         return dataset_path
 
     return _specific_dataset_path
