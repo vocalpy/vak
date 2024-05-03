@@ -65,7 +65,7 @@ def test_train_dataset_path_none_raises(
 
     keys_to_change = [
         {"table": "train", "key": "root_results_dir", "value": str(root_results_dir)},
-        {"table": "train", "key": "dataset_path", "value": "DELETE-OPTION"},
+        {"table": "train", "key": "dataset", "value": "DELETE-KEY"},
     ]
 
     toml_path = specific_config_toml_path(
@@ -77,5 +77,5 @@ def test_train_dataset_path_none_raises(
         keys_to_change=keys_to_change,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         vak.cli.train.train(toml_path)

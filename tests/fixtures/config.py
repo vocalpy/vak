@@ -127,7 +127,7 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
         keys_to_change : list, dict
             list of dicts with keys 'table', 'key', and 'value'.
             Can be a single dict, in which case only that key is changed.
-            If the 'value' is set to 'DELETE-OPTION',
+            If the 'value' is set to 'DELETE-KEY',
             the key will be removed from the config.
             This can be used to test behavior when the key is not set.
 
@@ -176,7 +176,7 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
                 tomldoc = tomlkit.load(fp)
 
             for opt_dict in keys_to_change:
-                if opt_dict["value"] == 'DELETE-OPTION':
+                if opt_dict["value"] == 'DELETE-KEY':
                     # e.g., to test behavior of config without this key
                     del tomldoc["vak"][opt_dict["table"]][opt_dict["key"]]
                 else:

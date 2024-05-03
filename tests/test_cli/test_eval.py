@@ -55,7 +55,7 @@ def test_eval_dataset_none_raises(
     (presumably because `vak prep` was not run yet)
     """
     keys_to_change = [
-        {"table": "eval", "key": "dataset", "value": "DELETE-OPTION"},
+        {"table": "eval", "key": "dataset", "value": "DELETE-KEY"},
     ]
 
     toml_path = specific_config_toml_path(

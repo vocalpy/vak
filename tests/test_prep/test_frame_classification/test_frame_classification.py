@@ -156,7 +156,7 @@ def test_prep_frame_classification_dataset_raises_when_labelset_required_but_is_
          },
         {"table": "prep",
          "key": "labelset",
-         "value": "DELETE-OPTION",
+         "value": "DELETE-KEY",
          },
     ]
     toml_path = specific_config_toml_path(

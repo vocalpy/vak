@@ -45,14 +45,14 @@ def test_predict(
     assert cli_asserts.log_file_contains_version(command="predict", output_path=output_dir)
 
 
-def test_predict_dataset_path_none_raises(
-        specific_config_toml_path, tmp_path,
+def test_predict_dataset_none_raises(
+        specific_config_toml_path
 ):
     """Test that cli.predict raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
     """
     keys_to_change = [
-        {"table": "predict", "key": "dataset_path", "value": "DELETE-OPTION"},
+        {"table": "predict", "key": "dataset", "value": "DELETE-KEY"},
     ]
 
     toml_path = specific_config_toml_path(
@@ -64,5 +64,5 @@ def test_predict_dataset_path_none_raises(
         keys_to_change=keys_to_change,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         vak.cli.predict.predict(toml_path)

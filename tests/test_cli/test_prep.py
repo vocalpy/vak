@@ -68,9 +68,9 @@ def test_prep(
         {"table": "prep", "key": "output_dir", "value": str(output_dir)},
         # need to remove dataset_path option from configs we already ran prep on to avoid error
         {
-            "table": config_type.upper(),
-            "key": "dataset_path",
-            "value": None,
+            "table": config_type,
+            "key": "dataset",
+            "value": "DELETE-KEY",
         },
     ]
     toml_path = specific_config_toml_path(
@@ -98,16 +98,16 @@ def test_prep(
         ("train", None, "mat", "yarden"),
     ],
 )
-def test_prep_dataset_path_raises(
+def test_prep_dataset_raises(
     config_type,
     audio_format,
     spect_format,
     annot_format,
-        specific_config_toml_path,
+    specific_config_toml_path,
     default_model,
     tmp_path,
-
 ):
+    """Test that prep raises a ValueError when the config already has a dataset with a path"""
     output_dir = tmp_path.joinpath(
         f"test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}"
     )
