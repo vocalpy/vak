@@ -99,3 +99,100 @@ class TestPredictConfig:
         predict_config = vak.config.predict.PredictConfig.from_config_dict(predict_table)
 
         assert isinstance(predict_config, vak.config.predict.PredictConfig)
+
+    @pytest.mark.parametrize(
+            'config_dict, expected_exception',
+            [
+                # missing 'checkpoint_path', should raise KeyError
+                (
+                    {
+                        'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                        'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
+                        'batch_size': 11,
+                        'num_workers': 16,
+                        'device': 'cuda',
+                        'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
+                        'annot_csv_filename': 'bl26lb16.041912.annot.csv',
+                        'transform_params': {
+                            'window_size': 88
+                        },
+                        'model': {
+                            'TweetyNet': {
+                                'network': {
+                                    'conv1_filters': 8,
+                                    'conv1_kernel_size': [3, 3],
+                                    'conv2_filters': 16,
+                                    'conv2_kernel_size': [5, 5],
+                                    'pool1_size': [4, 1],
+                                    'pool1_stride': [4, 1],
+                                    'pool2_size': [4, 1],
+                                    'pool2_stride': [4, 1],
+                                    'hidden_size': 32
+                                    },
+                                    'optimizer': {'lr': 0.001}
+                                }
+                            },
+                        'dataset': {
+                            'path': '~/some/path/I/made/up/for/now'
+                        },
+                    },
+                    KeyError
+                ),
+                # missing 'dataset', should raise KeyError
+                (
+                    {
+                        'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                        'checkpoint_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt',
+                        'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
+                        'batch_size': 11,
+                        'num_workers': 16,
+                        'device': 'cuda',
+                        'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
+                        'annot_csv_filename': 'bl26lb16.041912.annot.csv',
+                        'transform_params': {
+                            'window_size': 88
+                        },
+                        'model': {
+                            'TweetyNet': {
+                                'network': {
+                                    'conv1_filters': 8,
+                                    'conv1_kernel_size': [3, 3],
+                                    'conv2_filters': 16,
+                                    'conv2_kernel_size': [5, 5],
+                                    'pool1_size': [4, 1],
+                                    'pool1_stride': [4, 1],
+                                    'pool2_size': [4, 1],
+                                    'pool2_stride': [4, 1],
+                                    'hidden_size': 32
+                                    },
+                                    'optimizer': {'lr': 0.001}
+                                }
+                            },
+                    },
+                    KeyError
+                ),
+                # missing 'model', should raise KeyError
+                (
+                    {
+                        'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                        'checkpoint_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt',
+                        'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
+                        'batch_size': 11,
+                        'num_workers': 16,
+                        'device': 'cuda',
+                        'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
+                        'annot_csv_filename': 'bl26lb16.041912.annot.csv',
+                        'transform_params': {
+                            'window_size': 88
+                        },
+                        'dataset': {
+                            'path': '~/some/path/I/made/up/for/now'
+                        },
+                    },
+                    KeyError
+                ),
+            ]
+    )
+    def test_from_config_dict_raises(self, config_dict, expected_exception):
+        with pytest.raises(expected_exception):
+            vak.config.PredictConfig.from_config_dict(config_dict)
