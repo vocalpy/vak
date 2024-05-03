@@ -27,7 +27,7 @@ class TestParametricUMAPDataset:
         )
 
         dataset = vak.datasets.parametric_umap.ParametricUMAPDataset.from_dataset_path(
-            dataset_path=cfg_command.dataset.path,
+            dataset_path=cfg_command,
             split=split,
             transform=transform,
         )

@@ -51,12 +51,10 @@ def test_predict_with_frame_classification_model(
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
-
     vak.predict.frame_classification.predict_with_frame_classification_model(
-        model_name=cfg.predict.model,
-        model_config=model_config,
-        dataset_path=cfg.predict.dataset.path,
+        model_name=cfg.predict.model.name,
+        model_config=cfg.predict.model.to_dict(),
+        dataset_path=cfg.predict,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
         num_workers=cfg.predict.num_workers,
@@ -78,8 +76,8 @@ def test_predict_with_frame_classification_model(
             Path(output_dir).glob(f"*{vak.common.constants.NET_OUTPUT_SUFFIX}")
         )
 
-        metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(cfg.predict.dataset.path)
-        dataset_csv_path = cfg.predict.dataset.path / metadata.dataset_csv_filename
+        metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(cfg.predict)
+        dataset_csv_path = cfg.predict / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
 
         for spect_path in dataset_df.spect_path.values:
@@ -126,13 +124,11 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
-
     with pytest.raises(FileNotFoundError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
-            model_name=cfg.predict.model,
-            model_config=model_config,
-            dataset_path=cfg.predict.dataset.path,
+            model_name=cfg.predict.model.name,
+            model_config=cfg.predict.model.to_dict(),
+            dataset_path=cfg.predict,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
@@ -189,13 +185,12 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     with pytest.raises(NotADirectoryError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
-            model_name=cfg.predict.model,
-            model_config=model_config,
-            dataset_path=cfg.predict.dataset.path,
+            model_name=cfg.predict.model.name,
+            model_config=cfg.predict.model.to_dict(),
+            dataset_path=cfg.predict,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,

@@ -27,7 +27,7 @@ class TestWindowDataset:
         )
 
         dataset = vak.datasets.frame_classification.FramesDataset.from_dataset_path(
-            dataset_path=cfg_command.dataset.path,
+            dataset_path=cfg_command,
             split=split,
             item_transform=item_transform,
         )

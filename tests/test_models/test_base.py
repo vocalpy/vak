@@ -201,7 +201,7 @@ class TestModel:
             transform_kwargs={},
         )
         train_dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
-            dataset_path=train_cfg.train.dataset.path,
+            dataset_path=train_cfg.train,
             split="train",
             window_size=train_cfg.train.train_dataset_params['window_size'],
             transform=transform,
@@ -216,7 +216,8 @@ class TestModel:
         )
         # network is the one thing that has required args
         # and we also need to use its config from the toml file
-        model_config = vak.config.model.config_from_toml_path(train_toml_path, model_name)
+        cfg = vak.config.Config.from_toml_path(train_toml_path)
+        model_config = cfg.train.model.to_dict()
         network = definition.network(num_classes=len(labelmap),
                                      num_input_channels=num_input_channels,
                                      num_freqbins=num_freqbins,

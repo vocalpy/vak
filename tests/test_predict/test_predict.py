@@ -39,16 +39,15 @@ def test_predict(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
 
     results_path = tmp_path / 'results_path'
     results_path.mkdir()
 
     with mock.patch(predict_function_to_mock, autospec=True) as mock_predict_function:
         vak.predict.predict(
-            model_name=model_name,
-            model_config=model_config,
-            dataset_path=cfg.predict.dataset.path,
+            model_name=cfg.predict.model.name,
+            model_config=cfg.predict.model.to_dict(),
+            dataset_path=cfg.predict,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,

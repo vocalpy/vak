@@ -46,12 +46,11 @@ def test_eval_parametric_umap_model(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
 
     vak.eval.parametric_umap.eval_parametric_umap_model(
-        model_name=cfg.eval.model,
-        model_config=model_config,
-        dataset_path=cfg.eval.dataset.path,
+        model_name=cfg.eval.model.name,
+        model_config=cfg.eval.model.to_dict(),
+        dataset_path=cfg.eval,
         checkpoint_path=cfg.eval.checkpoint_path,
         output_dir=cfg.eval.output_dir,
         batch_size=cfg.eval.batch_size,
@@ -98,12 +97,11 @@ def test_eval_frame_classification_model_raises_file_not_found(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(FileNotFoundError):
         vak.eval.parametric_umap.eval_parametric_umap_model(
-            model_name=cfg.eval.model,
-            model_config=model_config,
-            dataset_path=cfg.eval.dataset.path,
+            model_name=cfg.eval.model.name,
+            model_config=cfg.eval.model.to_dict(),
+            dataset_path=cfg.eval,
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
             batch_size=cfg.eval.batch_size,
@@ -154,12 +152,11 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
     with pytest.raises(NotADirectoryError):
         vak.eval.parametric_umap.eval_parametric_umap_model(
-            model_name=cfg.eval.model,
-            model_config=model_config,
-            dataset_path=cfg.eval.dataset.path,
+            model_name=cfg.eval.model.name,
+            model_config=cfg.eval.model.to_dict(),
+            dataset_path=cfg.eval,
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
             batch_size=cfg.eval.batch_size,

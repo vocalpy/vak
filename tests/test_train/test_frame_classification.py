@@ -59,12 +59,11 @@ def test_train_frame_classification_model(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     vak.train.frame_classification.train_frame_classification_model(
-        model_name=cfg.train.model,
-        model_config=model_config,
-        dataset_path=cfg.train.dataset.path,
+        model_name=cfg.train.model.name,
+        model_config=cfg.train.model.to_dict(),
+        dataset_path=cfg.train,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -112,12 +111,11 @@ def test_continue_training(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     vak.train.frame_classification.train_frame_classification_model(
-        model_name=cfg.train.model,
-        model_config=model_config,
-        dataset_path=cfg.train.dataset.path,
+        model_name=cfg.train.model.name,
+        model_config=cfg.train.model.to_dict(),
+        dataset_path=cfg.train,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -166,15 +164,14 @@ def test_train_raises_file_not_found(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):
         vak.train.frame_classification.train_frame_classification_model(
-            model_name=cfg.train.model,
-            model_config=model_config,
-            dataset_path=cfg.train.dataset.path,
+            model_name=cfg.train.model.name,
+            model_config=cfg.train.model.to_dict(),
+            dataset_path=cfg.train,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -221,16 +218,15 @@ def test_train_raises_not_a_directory(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     # mock behavior of cli.train, building `results_path` from config option `root_results_dir`
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
         vak.train.frame_classification.train_frame_classification_model(
-            model_name=cfg.train.model,
-            model_config=model_config,
-            dataset_path=cfg.train.dataset.path,
+            model_name=cfg.train.model.name,
+            model_config=cfg.train.model.to_dict(),
+            dataset_path=cfg.train,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,

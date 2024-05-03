@@ -47,16 +47,15 @@ def test_train(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
 
     results_path = tmp_path / 'results_path'
     results_path.mkdir()
 
     with mock.patch(train_function_to_mock, autospec=True) as mock_train_function:
         vak.train.train(
-            model_name=model_name,
-            model_config=model_config,
-            dataset_path=cfg.train.dataset.path,
+            model_name=cfg.train.model.name,
+            model_config=cfg.train.model.to_dict(),
+            dataset_path=cfg.train,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,

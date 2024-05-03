@@ -63,14 +63,13 @@ def test_learning_curve_for_frame_classification_model(
     )
 
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
-        model_name=cfg.learncurve.model,
-        model_config=model_config,
-        dataset_path=cfg.learncurve.dataset.path,
+        model_name=cfg.learncurve.model.name,
+        model_config=cfg.learncurve.model.to_dict(),
+        dataset_path=cfg.learncurve,
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
@@ -117,15 +116,14 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)
     # mock behavior of cli.learncurve, building `results_path` from config option `root_results_dir`
     results_path = cfg.learncurve.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
         vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
-            model_name=cfg.learncurve.model,
-            model_config=model_config,
-            dataset_path=cfg.learncurve.dataset.path,
+            model_name=cfg.learncurve.model.name,
+            model_config=cfg.learncurve.model.to_dict(),
+            dataset_path=cfg.learncurve,
             batch_size=cfg.learncurve.batch_size,
             num_epochs=cfg.learncurve.num_epochs,
             num_workers=cfg.learncurve.num_workers,
