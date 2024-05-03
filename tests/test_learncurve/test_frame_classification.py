@@ -87,7 +87,7 @@ def test_learning_curve_for_frame_classification_model(
         device=cfg.learncurve.device,
     )
 
-    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model, results_path)
+    assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model.name, results_path)
 
 
 @pytest.mark.parametrize(
