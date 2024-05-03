@@ -4,6 +4,7 @@ import vak.config.model
 
 
 class TestModelConfig:
+
     @pytest.mark.parametrize(
             'config_dict',
             [
@@ -103,3 +104,23 @@ class TestModelConfig:
             else:
                 assert getattr(model_config, attr) == {}
 
+    @pytest.mark.parametrize(
+            'config_dict, expected_exception',
+            [
+                # Raises ValueError because model name not in registry
+                (
+                    {
+                        'NonExistentModel': {
+                            'network': {},
+                            'optimizer': {},
+                            'loss': {},
+                            'metrics': {},
+                        }
+                    },
+                    ValueError,
+                )
+            ]
+    )
+    def test_from_config_dict_raises(self, config_dict, expected_exception):
+        with pytest.raises(expected_exception):
+            vak.config.model.ModelConfig.from_config_dict(config_dict)
