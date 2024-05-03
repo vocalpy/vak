@@ -35,7 +35,7 @@ def test_purpose_from_toml(
         annot_format=annot_format,
         spect_format=spect_format,
     )
-    config_toml = vak.config.parse._load_toml_from_path(toml_path)
+    config_toml = vak.config.load._load_toml_from_path(toml_path)
     vak.cli.prep.purpose_from_toml(config_toml)
 
 
