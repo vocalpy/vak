@@ -25,9 +25,9 @@ def test_eval(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "EVAL", "option": "output_dir", "value": str(output_dir)},
-        {"section": "EVAL", "option": "device", "value": device},
+    keys_to_change = [
+        {"table": "eval", "key": "output_dir", "value": str(output_dir)},
+        {"table": "eval", "key": "device", "value": device},
     ]
 
     toml_path = specific_config_toml_path(
@@ -36,7 +36,7 @@ def test_eval(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with mock.patch('vak.eval.eval', autospec=True) as mock_core_eval:
@@ -54,8 +54,8 @@ def test_eval_dataset_path_none_raises(
     """Test that cli.eval raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
     """
-    options_to_change = [
-        {"section": "EVAL", "option": "dataset_path", "value": "DELETE-OPTION"},
+    keys_to_change = [
+        {"table": "eval", "key": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
     toml_path = specific_config_toml_path(
@@ -64,7 +64,7 @@ def test_eval_dataset_path_none_raises(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with pytest.raises(ValueError):

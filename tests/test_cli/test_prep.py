@@ -64,12 +64,12 @@ def test_prep(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREP", "option": "output_dir", "value": str(output_dir)},
+    keys_to_change = [
+        {"table": "prep", "key": "output_dir", "value": str(output_dir)},
         # need to remove dataset_path option from configs we already ran prep on to avoid error
         {
-            "section": config_type.upper(),
-            "option": "dataset_path",
+            "table": config_type.upper(),
+            "key": "dataset_path",
             "value": None,
         },
     ]
@@ -79,7 +79,7 @@ def test_prep(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with mock.patch('vak.prep.prep', autospec=True) as mock_core_prep:
@@ -113,8 +113,8 @@ def test_prep_dataset_path_raises(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREP", "option": "output_dir", "value": str(output_dir)},
+    keys_to_change = [
+        {"table": "prep", "key": "output_dir", "value": str(output_dir)},
     ]
     toml_path = specific_config_toml_path(
         config_type=config_type,
@@ -122,7 +122,7 @@ def test_prep_dataset_path_raises(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with pytest.raises(ValueError):

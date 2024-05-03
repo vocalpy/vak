@@ -52,14 +52,14 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
 )
 def test_learning_curve_for_frame_classification_model(
         model_name, audio_format, annot_format, specific_config_toml_path, tmp_path, device):
-    options_to_change = {"section": "LEARNCURVE", "option": "device", "value": device}
+    keys_to_change = {"table": "learncurve", "key": "device", "value": device}
 
     toml_path = specific_config_toml_path(
         config_type="learncurve",
         model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     cfg = vak.config.Config.from_toml_path(toml_path)
@@ -94,8 +94,8 @@ def test_learning_curve_for_frame_classification_model(
 @pytest.mark.parametrize(
     'dir_option_to_change',
     [
-        {"section": "LEARNCURVE", "option": "root_results_dir", "value": '/obviously/does/not/exist/results/'},
-        {"section": "LEARNCURVE", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "learncurve", "key": "root_results_dir", "value": '/obviously/does/not/exist/results/'},
+        {"table": "learncurve", "key": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
     ]
 )
 def test_learncurve_raises_not_a_directory(dir_option_to_change,
@@ -105,8 +105,8 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
     when the following directories do not exist:
     results_path, previous_run_path, dataset_path
     """
-    options_to_change = [
-        {"section": "LEARNCURVE", "option": "device", "value": device},
+    keys_to_change = [
+        {"table": "learncurve", "key": "device", "value": device},
         dir_option_to_change
     ]
     toml_path = specific_config_toml_path(
@@ -114,7 +114,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.learncurve.model)

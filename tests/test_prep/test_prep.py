@@ -33,10 +33,10 @@ def test_prep(
     )
     output_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "PREP",
-            "option": "output_dir",
+            "table": "prep",
+            "key": "output_dir",
             "value": str(output_dir),
         },
     ]
@@ -46,7 +46,7 @@ def test_prep(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
     purpose = config_type.lower()

@@ -29,13 +29,13 @@ def test_train(
     root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
     root_results_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "TRAIN",
-            "option": "root_results_dir",
+            "table": "train",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"section": "TRAIN", "option": "device", "value": 'cpu'},
+        {"table": "train", "key": "device", "value": 'cpu'},
     ]
 
     toml_path = specific_config_toml_path(
@@ -44,7 +44,7 @@ def test_train(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)

@@ -19,7 +19,7 @@ def test_configs_root():
     1) those used by the tests/scripts/generate_data_for_tests.py script.
        Will be listed in configs.json. See ``specific_config_toml_path`` fixture below
        for details about types of configs.
-    2) those used by tests that are static, e.g., ``invalid_section_config.toml``
+    2) those used by tests that are static, e.g., ``invalid_table_config.toml``
 
     This fixture facilitates access to type (2), e.g. in test_config/test_parse
     """
@@ -97,7 +97,7 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
 
     If ``root_results_dir`` argument is specified
     when calling the factory function,
-    it will convert the value for that option in the section
+    it will convert the value for that key in the table
     corresponding to ``config_type`` to the value
     specified for ``root_results_dir``.
     This makes it possible to dynamically change the ``root_results_dir``
@@ -110,7 +110,7 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
         annot_format,
         audio_format=None,
         spect_format=None,
-        options_to_change=None,
+        keys_to_change=None,
     ):
         """returns path to a specific configuration file,
         determined by characteristics specified by the caller:
@@ -124,18 +124,18 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
             annotation format, recognized by ``crowsetta``
         audio_format : str
         spect_format : str
-        options_to_change : list, dict
-            list of dicts with keys 'section', 'option', and 'value'.
-            Can be a single dict, in which case only that option is changed.
+        keys_to_change : list, dict
+            list of dicts with keys 'table', 'key', and 'value'.
+            Can be a single dict, in which case only that key is changed.
             If the 'value' is set to 'DELETE-OPTION',
-            the option will be removed from the config.
-            This can be used to test behavior when the option is not set.
+            the key will be removed from the config.
+            This can be used to test behavior when the key is not set.
 
         Returns
         -------
         config_path : pathlib.Path
             that points to temporary copy of specified config,
-            with any options changed as specified
+            with any keys changed as specified
         """
         original_config_path = None
         for schematized_config in list_of_schematized_configs:
@@ -162,28 +162,28 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
         config_copy_path = tmp_path.joinpath(original_config_path.name)
         config_copy_path = shutil.copy(src=original_config_path, dst=config_copy_path)
 
-        if options_to_change is not None:
-            if isinstance(options_to_change, dict):
-                options_to_change = [options_to_change]
-            elif isinstance(options_to_change, list):
+        if keys_to_change is not None:
+            if isinstance(keys_to_change, dict):
+                keys_to_change = [keys_to_change]
+            elif isinstance(keys_to_change, list):
                 pass
             else:
                 raise TypeError(
-                    f"invalid type for `options_to_change`: {type(options_to_change)}"
+                    f"invalid type for `keys_to_change`: {type(keys_to_change)}"
                 )
 
             with config_copy_path.open("r") as fp:
-                config_toml = tomlkit.load(fp)
+                tomldoc = tomlkit.load(fp)
 
-            for opt_dict in options_to_change:
+            for opt_dict in keys_to_change:
                 if opt_dict["value"] == 'DELETE-OPTION':
-                    # e.g., to test behavior of config without this option
-                    del config_toml[opt_dict["section"]][opt_dict["option"]]
+                    # e.g., to test behavior of config without this key
+                    del tomldoc["vak"][opt_dict["table"]][opt_dict["key"]]
                 else:
-                    config_toml[opt_dict["section"]][opt_dict["option"]] = opt_dict["value"]
+                    tomldoc["vak"][opt_dict["table"]][opt_dict["key"]] = opt_dict["value"]
 
             with config_copy_path.open("w") as fp:
-                tomlkit.dump(config_toml, fp)
+                tomlkit.dump(tomldoc, fp)
 
         return config_copy_path
 
@@ -231,7 +231,7 @@ def _tomlkit_to_popo(d):
 def _load_config_dict(toml_path):
     """Return config as dict, loaded from toml file.
 
-    Used to test functions that parse config sections, taking these dicts as inputs.
+    Used to test functions that parse config tables, taking these dicts as inputs.
 
     Note that we access the topmost table loaded from the toml: config_dict['vak']
     """
@@ -336,7 +336,7 @@ def all_generated_configs_toml_path_pairs():
     """
     # we duplicate the constant above because we need to remake
     # the variables for each unit test. Otherwise tests that modify values
-    # for config options cause other tests to fail
+    # for config keys cause other tests to fail
     return zip(
         [_load_config_dict(config) for config in ALL_GENERATED_CONFIG_PATHS],
         ALL_GENERATED_CONFIG_PATHS
@@ -350,13 +350,13 @@ def configs_toml_path_pairs_by_model_factory(all_generated_configs_toml_path_pai
     """
 
     def _wrapped(model,
-                 section_name=None):
+                 table_name=None):
         out = []
         unzipped = list(all_generated_configs_toml_path_pairs)
         for config_toml, toml_path in unzipped:
             if toml_path.name.startswith(model):
-                if section_name:
-                    if section_name.lower() in toml_path.name:
+                if table_name:
+                    if table_name.lower() in toml_path.name:
                         out.append(
                             (config_toml, toml_path)
                         )

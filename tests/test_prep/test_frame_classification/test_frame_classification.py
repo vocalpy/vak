@@ -80,10 +80,10 @@ def test_prep_frame_classification_dataset(
     )
     output_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "PREP",
-            "option": "output_dir",
+            "table": "prep",
+            "key": "output_dir",
             "value": str(output_dir),
         },
     ]
@@ -93,7 +93,7 @@ def test_prep_frame_classification_dataset(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
@@ -149,13 +149,13 @@ def test_prep_frame_classification_dataset_raises_when_labelset_required_but_is_
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREP",
-         "option": "output_dir",
+    keys_to_change = [
+        {"table": "prep",
+         "key": "output_dir",
          "value": str(output_dir),
          },
-        {"section": "PREP",
-         "option": "labelset",
+        {"table": "prep",
+         "key": "labelset",
          "value": "DELETE-OPTION",
          },
     ]
@@ -165,7 +165,7 @@ def test_prep_frame_classification_dataset_raises_when_labelset_required_but_is_
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
@@ -214,15 +214,15 @@ def test_prep_frame_classification_dataset_with_single_audio_and_annot(source_te
     )
     output_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "PREP",
-            "option": "data_dir",
+            "table": "prep",
+            "key": "data_dir",
             "value": str(data_dir),
         },
         {
-            "section": "PREP",
-            "option": "output_dir",
+            "table": "prep",
+            "key": "output_dir",
             "value": str(output_dir),
         },
     ]
@@ -233,7 +233,7 @@ def test_prep_frame_classification_dataset_with_single_audio_and_annot(source_te
         audio_format='cbin',
         annot_format='notmat',
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
@@ -272,15 +272,15 @@ def test_prep_frame_classification_dataset_when_annot_has_single_segment(source_
     )
     output_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "PREP",
-            "option": "data_dir",
+            "table": "prep",
+            "key": "data_dir",
             "value": str(data_dir),
         },
         {
-            "section": "PREP",
-            "option": "output_dir",
+            "table": "prep",
+            "key": "output_dir",
             "value": str(output_dir),
         },
     ]
@@ -291,7 +291,7 @@ def test_prep_frame_classification_dataset_when_annot_has_single_segment(source_
         audio_format='cbin',
         annot_format='notmat',
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
@@ -318,8 +318,8 @@ def test_prep_frame_classification_dataset_when_annot_has_single_segment(source_
 @pytest.mark.parametrize(
     "dir_option_to_change",
     [
-        {"section": "PREP", "option": "data_dir", "value": '/obviously/does/not/exist/data'},
-        {"section": "PREP", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+        {"table": "prep", "key": "data_dir", "value": '/obviously/does/not/exist/data'},
+        {"table": "prep", "key": "output_dir", "value": '/obviously/does/not/exist/output'},
     ],
 )
 def test_prep_frame_classification_dataset_raises_not_a_directory(
@@ -338,7 +338,7 @@ def test_prep_frame_classification_dataset_raises_not_a_directory(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=dir_option_to_change,
+        keys_to_change=dir_option_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
@@ -364,7 +364,7 @@ def test_prep_frame_classification_dataset_raises_not_a_directory(
 @pytest.mark.parametrize(
     "path_option_to_change",
     [
-        {"section": "PREP", "option": "annot_file", "value": '/obviously/does/not/exist/annot.mat'},
+        {"table": "prep", "key": "annot_file", "value": '/obviously/does/not/exist/annot.mat'},
     ],
 )
 def test_prep_frame_classification_dataset_raises_file_not_found(
@@ -386,7 +386,7 @@ def test_prep_frame_classification_dataset_raises_file_not_found(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=path_option_to_change,
+        keys_to_change=path_option_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 

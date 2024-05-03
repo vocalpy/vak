@@ -26,9 +26,9 @@ def test_predict(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)},
-        {"section": "PREDICT", "option": "device", "value": 'cpu'},
+    keys_to_change = [
+        {"table": "predict", "key": "output_dir", "value": str(output_dir)},
+        {"table": "predict", "key": "device", "value": 'cpu'},
     ]
 
     toml_path = specific_config_toml_path(
@@ -36,7 +36,7 @@ def test_predict(
         model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)

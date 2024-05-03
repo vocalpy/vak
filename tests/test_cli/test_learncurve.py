@@ -14,13 +14,13 @@ def test_learncurve(specific_config_toml_path, tmp_path, device):
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
     root_results_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
+            "table": "learncurve",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"section": "LEARNCURVE", "option": "device", "value": device},
+        {"table": "learncurve", "key": "device", "value": device},
     ]
 
     toml_path = specific_config_toml_path(
@@ -28,7 +28,7 @@ def test_learncurve(specific_config_toml_path, tmp_path, device):
         model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with mock.patch('vak.learncurve.learning_curve', autospec=True) as mock_core_learning_curve:
@@ -54,15 +54,15 @@ def test_learning_curve_dataset_path_none_raises(
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
     root_results_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
+            "table": "learncurve",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
         {
-            "section": "LEARNCURVE",
-            "option": "dataset_path",
+            "table": "learncurve",
+            "key": "dataset_path",
             "value": "DELETE-OPTION"},
     ]
 
@@ -72,7 +72,7 @@ def test_learning_curve_dataset_path_none_raises(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with pytest.raises(ValueError):

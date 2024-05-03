@@ -54,9 +54,9 @@ def test_eval_frame_classification_model(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "EVAL", "option": "output_dir", "value": str(output_dir)},
-        {"section": "EVAL", "option": "device", "value": device},
+    keys_to_change = [
+        {"table": "eval", "key": "output_dir", "value": str(output_dir)},
+        {"table": "eval", "key": "device", "value": device},
     ]
 
     toml_path = specific_config_toml_path(
@@ -65,7 +65,7 @@ def test_eval_frame_classification_model(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
@@ -91,9 +91,9 @@ def test_eval_frame_classification_model(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"section": "EVAL", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"section": "EVAL", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "EVAL", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "eval", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
+        {"table": "eval", "key": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
+        {"table": "eval", "key": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
 def test_eval_frame_classification_model_raises_file_not_found(
@@ -111,9 +111,9 @@ def test_eval_frame_classification_model_raises_file_not_found(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "EVAL", "option": "output_dir", "value": str(output_dir)},
-        {"section": "EVAL", "option": "device", "value": device},
+    keys_to_change = [
+        {"table": "eval", "key": "output_dir", "value": str(output_dir)},
+        {"table": "eval", "key": "device", "value": device},
         path_option_to_change,
     ]
 
@@ -123,7 +123,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)
@@ -146,8 +146,8 @@ def test_eval_frame_classification_model_raises_file_not_found(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"section": "EVAL", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
-        {"section": "EVAL", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+        {"table": "eval", "key": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "eval", "key": "output_dir", "value": '/obviously/does/not/exist/output'},
     ]
 )
 def test_eval_frame_classification_model_raises_not_a_directory(
@@ -159,20 +159,20 @@ def test_eval_frame_classification_model_raises_not_a_directory(
     """Test that core.eval raises NotADirectory
     when directories don't exist
     """
-    options_to_change = [
+    keys_to_change = [
         path_option_to_change,
-        {"section": "EVAL", "option": "device", "value": device},
+        {"table": "eval", "key": "device", "value": device},
     ]
 
-    if path_option_to_change["option"] != "output_dir":
+    if path_option_to_change["key"] != "output_dir":
         # need to make sure output_dir *does* exist
         # so we don't detect spurious NotADirectoryError and assume test passes
         output_dir = tmp_path.joinpath(
             f"test_eval_raises_not_a_directory"
         )
         output_dir.mkdir()
-        options_to_change.append(
-            {"section": "EVAL", "option": "output_dir", "value": str(output_dir)}
+        keys_to_change.append(
+            {"table": "eval", "key": "output_dir", "value": str(output_dir)}
         )
 
     toml_path = specific_config_toml_path(
@@ -181,7 +181,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
     model_config = vak.config.model.config_from_toml_path(toml_path, cfg.eval.model)

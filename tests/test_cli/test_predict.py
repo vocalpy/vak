@@ -24,9 +24,9 @@ def test_predict(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)},
-        {"section": "PREDICT", "option": "device", "value": device},
+    keys_to_change = [
+        {"table": "predict", "key": "output_dir", "value": str(output_dir)},
+        {"table": "predict", "key": "device", "value": device},
     ]
 
     toml_path = specific_config_toml_path(
@@ -34,7 +34,7 @@ def test_predict(
         model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with mock.patch('vak.predict.predict', autospec=True) as mock_core_predict:
@@ -51,8 +51,8 @@ def test_predict_dataset_path_none_raises(
     """Test that cli.predict raises ValueError when dataset_path is None
     (presumably because `vak prep` was not run yet)
     """
-    options_to_change = [
-        {"section": "PREDICT", "option": "dataset_path", "value": "DELETE-OPTION"},
+    keys_to_change = [
+        {"table": "predict", "key": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
     toml_path = specific_config_toml_path(
@@ -61,7 +61,7 @@ def test_predict_dataset_path_none_raises(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with pytest.raises(ValueError):

@@ -24,13 +24,13 @@ def test_train(
     root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
     root_results_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "TRAIN",
-            "option": "root_results_dir",
+            "table": "train",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"section": "TRAIN", "option": "device", "value": device},
+        {"table": "train", "key": "device", "value": device},
     ]
 
     toml_path = specific_config_toml_path(
@@ -39,7 +39,7 @@ def test_train(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with mock.patch('vak.train.train', autospec=True) as mock_core_train:
@@ -63,9 +63,9 @@ def test_train_dataset_path_none_raises(
     root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
     root_results_dir.mkdir()
 
-    options_to_change = [
-        {"section": "TRAIN", "option": "root_results_dir", "value": str(root_results_dir)},
-        {"section": "TRAIN", "option": "dataset_path", "value": "DELETE-OPTION"},
+    keys_to_change = [
+        {"table": "train", "key": "root_results_dir", "value": str(root_results_dir)},
+        {"table": "train", "key": "dataset_path", "value": "DELETE-OPTION"},
     ]
 
     toml_path = specific_config_toml_path(
@@ -74,7 +74,7 @@ def test_train_dataset_path_none_raises(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with pytest.raises(ValueError):
