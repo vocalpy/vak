@@ -34,8 +34,8 @@ root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cb
 majority_vote = true
 min_segment_dur = 0.02
 
-[vak.learncurve.dataset.params]
-window_size = 88
+[vak.learncurve.dataset]
+params = { window_size = 88 }
 
 [vak.learncurve.model.TweetyNet.network]
 conv1_filters = 8

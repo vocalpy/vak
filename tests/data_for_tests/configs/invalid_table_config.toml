@@ -20,7 +20,7 @@ freq_cutoffs = [500, 10000]
 thresh = 6.25
 transform_type = 'log_spect'
 
-[vak.trian]  # <-- invalid section 'TRIAN' (instead of 'vak.train')
+[vak.trian]  # <-- invalid section 'trian' (instead of 'vak.train')
 model = 'TweetyNet'
 root_results_dir = '/home/user/data/subdir/'
 normalize_spectrograms = true

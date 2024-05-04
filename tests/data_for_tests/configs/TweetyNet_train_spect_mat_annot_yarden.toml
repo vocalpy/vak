@@ -28,8 +28,8 @@ num_workers = 16
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/TweetyNet"
 
-[vak.train.dataset.params]
-window_size = 88
+[vak.train.dataset]
+params = { window_size = 88 }
 
 [vak.train.model.TweetyNet.network]
 conv1_filters = 8
