@@ -97,6 +97,7 @@ class TestDatasetConfig:
 
         dataset_config_as_dict = dataset_config.asdict()
 
+        assert isinstance(dataset_config_as_dict, dict)
         for key in ('name', 'path', 'splits_path', 'params'):
             if key in config_dict:
                 if 'path' in key:
