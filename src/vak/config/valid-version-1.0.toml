@@ -47,15 +47,12 @@ patience = 4
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
-train_transform_params = {'resize' = 128}
-train_dataset_params = {'window_size' = 80}
-val_transform_params = {'resize' = 128}
-val_dataset_params = {'window_size' = 80}
 
 [vak.train.dataset]
 name = 'IntlDistributedSongbirdConsortiumPack'
 path = 'tests/test_data/prep/train/032312_prep_191224_225912.csv'
 splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
+params = {window_size = 2000}
 
 [vak.train.model.TweetyNet]
 
@@ -68,8 +65,6 @@ num_workers = 4
 device = 'cuda'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
-transform_params = {'resize' = 128}
-dataset_params = {'window_size' = 80}
 
 [vak.eval.dataset]
 name = 'IntlDistributedSongbirdConsortiumPack'
@@ -91,15 +86,12 @@ results_dir_made_by_main_script = '/some/path/to/learncurve/'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 num_workers = 4
 device = 'cuda'
-train_transform_params = {'resize' = 128}
-train_dataset_params = {'window_size' = 80}
-val_transform_params = {'resize' = 128}
-val_dataset_params = {'window_size' = 80}
 
 [vak.learncurve.dataset]
 name = 'IntlDistributedSongbirdConsortiumPack'
 path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
+params = {window_size = 2000}
 
 [vak.learncurve.model.TweetyNet]
 
@@ -115,12 +107,11 @@ spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 min_segment_dur = 0.004
 majority_vote = false
 save_net_outputs = false
-transform_params = {'resize' = 128}
-dataset_params = {'window_size' = 80}
 
 [vak.predict.dataset]
 name = 'IntlDistributedSongbirdConsortiumPack'
 path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
+params = {window_size = 2000}
 
 [vak.predict.model.TweetyNet]
