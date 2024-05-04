@@ -20,9 +20,15 @@ class DatasetConfig:
         datasets.
     splits_path : pathlib.Path, optional
         Path to file representing splits.
+        Default is None.
     name : str, optional
         Name of dataset. Only required for built-in datasets
-        from the :mod:`~vak.datasets` module.
+        from the :mod:`~vak.datasets` module. Default is None.
+    params: dict, optional
+        Parameters for dataset class,
+        passed in as keyword arguments.
+        E.g., ``window_size=2000``.
+        Default is None.
     """
 
     path: pathlib.Path = field(converter=pathlib.Path)
@@ -32,6 +38,9 @@ class DatasetConfig:
     name: str | None = field(
         converter=attr.converters.optional(str), default=None
     )
+    params : dict | None = field(
+        converter=attr.converters.optional(dict), default=None
+    )
 
     @classmethod
     def from_config_dict(cls, dict_: dict) -> DatasetConfig:
@@ -39,4 +48,5 @@ class DatasetConfig:
             path=dict_.get("path"),
             splits_path=dict_.get("splits_path"),
             name=dict_.get("name"),
+            params=dict_.get("params")
         )
