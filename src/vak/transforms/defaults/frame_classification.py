@@ -42,7 +42,7 @@ class TrainItemTransform:
                 vak_transforms.AddChannel(),
             ]
         )
-        self.source_transform = torchvision.transforms.Compose(
+        self.frames_transform = torchvision.transforms.Compose(
             frames_transform
         )
         self.frame_labels_transform = vak_transforms.ToLongTensor()
