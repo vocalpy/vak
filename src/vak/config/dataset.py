@@ -5,7 +5,7 @@ from __future__ import annotations
 import pathlib
 
 import attr.validators
-from attr import define, field
+from attr import asdict, define, field
 
 
 @define
@@ -50,3 +50,11 @@ class DatasetConfig:
             name=dict_.get("name"),
             params=dict_.get("params")
         )
+
+    def asdict(self):
+        """Convert this :class:`DatasetConfig` instance
+        to a :class:`dict` that can be passed
+        into functions that take a ``dataset_config`` argument,
+        like :func:`vak.train` and :func:`vak.predict`.
+        """
+        return asdict(self)
