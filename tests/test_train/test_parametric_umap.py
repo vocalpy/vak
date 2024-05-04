@@ -41,7 +41,7 @@ def test_train_parametric_umap_model(
     results_path.mkdir()
     keys_to_change = [
         {"table": "train", "key": "device", "value": device},
-        {"table": "train", "key": "root_results_dir", "value": results_path}
+        {"table": "train", "key": "root_results_dir", "value": str(results_path)}
     ]
     toml_path = specific_config_toml_path(
         config_type="train",
