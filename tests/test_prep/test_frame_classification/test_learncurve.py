@@ -150,7 +150,7 @@ def test_make_subsets_from_dataset_df(
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
-    dataset_path = cfg.learncurve
+    dataset_path = cfg.learncurve.dataset.path
     metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
