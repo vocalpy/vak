@@ -32,10 +32,10 @@ class PredictConfig:
         and optionally a path to a file representing splits,
         and the name, if it is a built-in dataset.
         Must be an instance of :class:`vak.config.DatasetConfig`.
-     checkpoint_path : str
-         path to directory with checkpoint files saved by Torch, to reload model
-     labelmap_path : str
-         path to 'labelmap.json' file.
+    checkpoint_path : str
+        path to directory with checkpoint files saved by Torch, to reload model
+    labelmap_path : str
+        path to 'labelmap.json' file.
     model : vak.config.ModelConfig
         The model to use: its name,
         and the parameters to configure it.
@@ -83,14 +83,6 @@ class PredictConfig:
          spectrogram with `spect_path` filename `gy6or6_032312_081416.npz`,
          and the network is `TweetyNet`, then the net output file
          will be `gy6or6_032312_081416.tweetynet.output.npz`.
-    transform_params: dict, optional
-        Parameters for data transform.
-        Passed as keyword arguments.
-        Optional, default is None.
-    dataset_params: dict, optional
-        Parameters for dataset.
-        Passed as keyword arguments.
-        Optional, default is None.
     """
 
     # required, external files
@@ -128,18 +120,6 @@ class PredictConfig:
     )
     majority_vote = field(validator=instance_of(bool), default=True)
     save_net_outputs = field(validator=instance_of(bool), default=False)
-
-    transform_params = field(
-        converter=converters.optional(dict),
-        validator=validators.optional(instance_of(dict)),
-        default=None,
-    )
-
-    dataset_params = field(
-        converter=converters.optional(dict),
-        validator=validators.optional(instance_of(dict)),
-        default=None,
-    )
 
     @classmethod
     def from_config_dict(cls, config_dict: dict) -> PredictConfig:
