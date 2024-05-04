@@ -123,30 +123,6 @@ class TrainConfig:
         default=None,
     )
 
-    train_transform_params = field(
-        converter=converters.optional(dict),
-        validator=validators.optional(instance_of(dict)),
-        default=None,
-    )
-
-    train_dataset_params = field(
-        converter=converters.optional(dict),
-        validator=validators.optional(instance_of(dict)),
-        default=None,
-    )
-
-    val_transform_params = field(
-        converter=converters.optional(dict),
-        validator=validators.optional(instance_of(dict)),
-        default=None,
-    )
-
-    val_dataset_params = field(
-        converter=converters.optional(dict),
-        validator=validators.optional(instance_of(dict)),
-        default=None,
-    )
-
     @classmethod
     def from_config_dict(cls, config_dict: dict) -> "TrainConfig":
         """Return :class:`TrainConfig` instance from a :class:`dict`.
