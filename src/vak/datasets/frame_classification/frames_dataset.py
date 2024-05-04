@@ -79,8 +79,8 @@ class FramesDataset:
         sample_ids: npt.NDArray,
         inds_in_sample: npt.NDArray,
         frame_dur: float,
+        item_transform: Callable,
         subset: str | None = None,
-        item_transform: Callable | None = None,
     ):
         """Initialize a new instance of a FramesDataset.
 
@@ -115,9 +115,9 @@ class FramesDataset:
             If specified, this takes precedence over split.
             Subsets are typically taken from the training data
             for use when generating a learning curve.
-        item_transform : callable, optional
-            Transform applied to each item :math:`(x, y)`
-            returned by :meth:`FramesDataset.__getitem__`.
+        item_transform : callable
+            The transform applied to each item :math:`(x, y)`
+            that is returned by :meth:`FramesDataset.__getitem__`.
         """
         from ... import (
             prep,
@@ -196,9 +196,9 @@ class FramesDataset:
     def from_dataset_path(
         cls,
         dataset_path: str | pathlib.Path,
+        item_transform: Callable,
         split: str = "val",
         subset: str | None = None,
-        item_transform: Callable | None = None,
     ):
         """Make a :class:`FramesDataset` instance,
         given the path to a frame classification dataset.
@@ -210,17 +210,18 @@ class FramesDataset:
             frame classification dataset,
             as created by
             :func:`vak.prep.prep_frame_classification_dataset`.
+        item_transform : callable, optional
+            Transform applied to each item :math:`(x, y)`
+            returned by :meth:`FramesDataset.__getitem__`.
         split : str
             The name of a split from the dataset,
             one of {'train', 'val', 'test'}.
+            Default is "val".
         subset : str, optional
             Name of subset to use.
             If specified, this takes precedence over split.
             Subsets are typically taken from the training data
             for use when generating a learning curve.
-        item_transform : callable, optional
-            Transform applied to each item :math:`(x, y)`
-            returned by :meth:`FramesDataset.__getitem__`.
 
         Returns
         -------
@@ -263,6 +264,6 @@ class FramesDataset:
             sample_ids,
             inds_in_sample,
             frame_dur,
-            subset,
             item_transform,
+            subset,
         )
