@@ -27,7 +27,7 @@ output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_not
 majority_vote = true
 min_segment_dur = 0.02
 
-[vak.eval.transform_params]
+[vak.eval.dataset.params]
 window_size = 88
 
 [vak.eval.model.TweetyNet.network]

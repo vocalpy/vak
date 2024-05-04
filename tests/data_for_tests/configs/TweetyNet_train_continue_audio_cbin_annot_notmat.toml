@@ -30,10 +30,7 @@ root_results_dir = "./tests/data_for_tests/generated/results/train_continue/audi
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 
-[vak.train.train_dataset_params]
-window_size = 88
-
-[vak.train.val_transform_params]
+[vak.train.dataset.params]
 window_size = 88
 
 [vak.train.model.TweetyNet.network]

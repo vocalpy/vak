@@ -22,7 +22,7 @@ device = "cuda"
 output_dir = "./tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet"
 annot_csv_filename = "bl26lb16.041912.annot.csv"
 
-[vak.predict.transform_params]
+[vak.predict.dataset.params]
 window_size = 88
 
 [vak.predict.model.TweetyNet.network]
