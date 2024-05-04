@@ -53,13 +53,8 @@ def train(toml_path):
         )
 
     train_module.train(
-        model_name=cfg.train.model.name,
         model_config=cfg.train.model.asdict(),
-        dataset_path=cfg.train.dataset.path,
-        train_transform_params=cfg.train.train_transform_params,
-        train_dataset_params=cfg.train.train_dataset_params,
-        val_transform_params=cfg.train.val_transform_params,
-        val_dataset_params=cfg.train.val_dataset_params,
+        dataset_config=cfg.train.dataset.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
