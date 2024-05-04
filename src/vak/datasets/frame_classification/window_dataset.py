@@ -174,11 +174,10 @@ class WindowDataset:
         inds_in_sample: npt.NDArray,
         window_size: int,
         frame_dur: float,
+        item_transform: Callable,
         stride: int = 1,
         subset: str | None = None,
         window_inds: npt.NDArray | None = None,
-        transform: Callable | None = None,
-        target_transform: Callable | None = None,
     ):
         """Initialize a new instance of a WindowDataset.
 
@@ -211,6 +210,9 @@ class WindowDataset:
         frame_dur: float
             Duration of a frame, i.e., a single sample in audio
             or a single timebin in a spectrogram.
+        item_transform : callable
+            The transform applied to each item :math:`(x, y)`
+            that is returned by :meth:`WindowDataset.__getitem__`.
         stride : int
             The size of the stride used to determine which windows
             are included in the dataset. The default is 1.
@@ -267,8 +269,7 @@ class WindowDataset:
                 sample_ids.shape[-1], window_size, stride
             )
         self.window_inds = window_inds
-        self.transform = transform
-        self.target_transform = target_transform
+        self.item_transform = item_transform
 
     @property
     def duration(self):
@@ -277,10 +278,10 @@ class WindowDataset:
     @property
     def shape(self):
         tmp_x_ind = 0
-        one_x, _ = self.__getitem__(tmp_x_ind)
+        tmp_item = self.__getitem__(tmp_x_ind)
         # used by vak functions that need to determine size of window,
         # e.g. when initializing a neural network model
-        return one_x.shape
+        return tmp_item['frames'].shape
 
     def _load_frames(self, frames_path):
         """Helper function that loads "frames",
@@ -338,12 +339,8 @@ class WindowDataset:
         frame_labels = frame_labels[
             inds_in_sample : inds_in_sample + self.window_size  # noqa: E203
         ]
-        if self.transform:
-            frames = self.transform(frames)
-        if self.target_transform:
-            frame_labels = self.target_transform(frame_labels)
-
-        return frames, frame_labels
+        item = self.item_transform(frames, frame_labels)
+        return item
 
     def __len__(self):
         """number of batches"""
@@ -354,11 +351,10 @@ class WindowDataset:
         cls,
         dataset_path: str | pathlib.Path,
         window_size: int,
+        item_transform: Callable,
         stride: int = 1,
         split: str = "train",
         subset: str | None = None,
-        transform: Callable | None = None,
-        target_transform: Callable | None = None,
     ):
         """Make a :class:`WindowDataset` instance,
         given the path to a frame classification dataset.
@@ -441,9 +437,8 @@ class WindowDataset:
             inds_in_sample,
             window_size,
             frame_dur,
+            item_transform,
             stride,
             subset,
             window_inds,
-            transform,
-            target_transform,
         )
