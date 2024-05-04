@@ -56,15 +56,9 @@ num_workers = 4
 device = "cuda"
 # dataset_path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
 
-# train_dataset_params: parameters used when loading training dataset
-# for a frame classification model, we use a WindowDataset with a specific `window_size`
-[vak.train.train_dataset_params]
-window_size = 176
-
-# val_transform_params: parameters used when transforming validation data
-# for a frame classification model, we use FrameDataset with the eval_item_transform,
-# that reshapes batches into consecutive adjacent windows with a specific `window_size`
-[vak.train.val_transform_params]
+# dataset.params = parameters used for datasets
+# for a frame classification model, we use dataset classes with a specific `window_size`
+[vak.train.dataset.params]
 window_size = 176
 
 # To indicate the model to train, we use a "dotted key" with `model` followed by the string name of the model.

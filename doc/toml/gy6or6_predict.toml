@@ -59,10 +59,9 @@ majority_vote = true
 min_segment_dur = 0.01
 # dataset_path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
 
-# transform_params: parameters used when transforming data
-# for a frame classification model, we use FrameDataset with the eval_item_transform,
-# that reshapes batches into consecutive adjacent windows with a specific `window_size`
-[vak.predict.transform_params]
+# dataset.params = parameters used for datasets
+# for a frame classification model, we use dataset classes with a specific `window_size`
+[vak.predict.dataset.params]
 window_size = 176
 
 # Note we do not specify any options for the network, and just use the defaults

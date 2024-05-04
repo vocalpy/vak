@@ -64,10 +64,9 @@ majority_vote = true
 # Only applied if this option is specified.
 min_segment_dur = 0.02
 
-# transform_params: parameters used when transforming data
-# for a frame classification model, we use FrameDataset with the eval_item_transform,
-# that reshapes batches into consecutive adjacent windows with a specific `window_size`
-[vak.eval.transform_params]
+# dataset.params = parameters used for datasets
+# for a frame classification model, we use dataset classes with a specific `window_size`
+[vak.eval.dataset.params]
 window_size = 176
 
 # Note we do not specify any options for the model, and just use the defaults
