@@ -200,9 +200,9 @@ class FrameClassificationModel(base.Model):
             Scalar loss value computed by
             the loss function, ``self.loss``.
         """
-        x, y = batch[0], batch[1]
-        out = self.network(x)
-        loss = self.loss(out, y)
+        frames, frame_labels = batch["frames"], batch["frame_labels"]
+        out = self.network(frames)
+        loss = self.loss(out, frame_labels)
         self.log("train_loss", loss, on_step=True)
         return loss
 
