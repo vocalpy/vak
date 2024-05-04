@@ -46,7 +46,7 @@ def eval(toml_path):
 
     eval_module.eval(
         model_name=cfg.eval.model.name,
-        model_config=cfg.eval.model.to_dict(),
+        model_config=cfg.eval.model.asdict(),
         dataset_path=cfg.eval.dataset.path,
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,

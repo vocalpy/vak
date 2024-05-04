@@ -54,7 +54,7 @@ def train(toml_path):
 
     train_module.train(
         model_name=cfg.train.model.name,
-        model_config=cfg.train.model.to_dict(),
+        model_config=cfg.train.model.asdict(),
         dataset_path=cfg.train.dataset.path,
         train_transform_params=cfg.train.train_transform_params,
         train_dataset_params=cfg.train.train_dataset_params,
