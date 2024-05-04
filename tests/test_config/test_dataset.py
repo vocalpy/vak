@@ -75,3 +75,33 @@ class TestDatasetConfig:
         else:
             assert dataset_config.name is None
 
+    @pytest.mark.parametrize(
+        'config_dict',
+        [
+            {
+                'path' :'~/datasets/BioSoundSegBench',
+                'splits_path': 'splits/Bengalese-Finch-song-gy6or6-replicate-1.json',
+                'name': 'BioSoundSegBench',
+            },
+            {
+                'path' :'~/user/prepped/dataset',
+            },
+            {
+                'path' :'~/user/prepped/dataset',
+                'splits_path': 'splits/replicate-1.json'
+            },
+        ]
+    )
+    def test_asdict(self, config_dict):
+        dataset_config = vak.config.dataset.DatasetConfig.from_config_dict(config_dict)
+
+        dataset_config_as_dict = dataset_config.asdict()
+
+        for key in ('name', 'path', 'splits_path', 'params'):
+            if key in config_dict:
+                if 'path' in key:
+                    assert dataset_config_as_dict[key] == pathlib.Path(config_dict[key])
+                else:
+                    assert dataset_config_as_dict[key] == config_dict[key]
+            else:
+                assert dataset_config_as_dict[key] is None
