@@ -98,11 +98,11 @@ def test_eval_frame_classification_model_raises_file_not_found(
         vak.eval.parametric_umap.eval_parametric_umap_model(
             model_config=cfg.eval.model.asdict(),
             dataset_config=cfg.eval.dataset.asdict(),
+            trainer_config=cfg.eval.trainer.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
             batch_size=cfg.eval.batch_size,
             num_workers=cfg.eval.num_workers,
-            device=cfg.eval.device,
         )
 
 
