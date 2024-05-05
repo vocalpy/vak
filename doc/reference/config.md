@@ -19,7 +19,7 @@ for each class.
 ## Valid section names
 
 Following is the set of valid section names:
-`{PREP, SPECT_PARAMS, DATALOADER, TRAIN, PREDICT, LEARNCURVE}`.
+`{eval, learncurve, predict, prep, train}`.
 In the code, these names correspond to attributes
 of the main `Config` class, as shown below.
 
@@ -43,50 +43,42 @@ that are considered valid.
 Valid options for each section are presented below.
 
 (ref-config-prep)=
-### `[PREP]` section
+### `[vak.prep]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.prep.PrepConfig
 ```
 
 (ref-config-spect-params)=
-### `[SPECT_PARAMS]` section
+### `[vak.prep.spect_params]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.spect_params.SpectParamsConfig
 ```
 
-(ref-config-dataloader)=
-### `[DATALOADER]` section
-
-```{eval-rst}
-.. autoclass:: vak.config.dataloader.DataLoaderConfig
-
-```
-
 (ref-config-train)=
-### `[TRAIN]` section
+### `[vak.train]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.train.TrainConfig
 ```
 
 (ref-config-eval)=
-### `[EVAL]` section
+### `[vak.eval]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.eval.EvalConfig
 ```
 
 (ref-config-predict)=
-### `[PREDICT]` section
+### `[vak.predict]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.predict.PredictConfig
 ```
 
 (ref-config-learncurve)=
-### `[LEARNCURVE]` section
+### `[vak.learncurve]` section
 
 ```{eval-rst}
 .. autoclass:: vak.config.learncurve.LearncurveConfig

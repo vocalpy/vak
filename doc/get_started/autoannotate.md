@@ -20,10 +20,10 @@ Below is an example of some annotated Bengalese finch song, which is what we'll 
 
 :::{hint}
 `vak` has built-in support for widely-used annotation formats.
-Even if your data is not annotated with one of these formats, 
-you can use `vak` by converting your annotations to a simple `.csv` format 
+Even if your data is not annotated with one of these formats,
+you can use `vak` by converting your annotations to a simple `.csv` format
 that is easy to create with Python libraries like `pandas`.
-For more information, please see:  
+For more information, please see:
 {ref}`howto-user-annot`
 :::
 
@@ -42,39 +42,39 @@ Before going through this tutorial, you'll need to:
    or [notepad++](https://notepad-plus-plus.org/)
 3. Download example data from this dataset: <https://figshare.com/articles/Bengalese_Finch_song_repository/4805749>
 
-   - one day of birdsong, for training data (click to download)  
+   - one day of birdsong, for training data (click to download)
      {download}`https://figshare.com/ndownloader/files/41668980`
    - another day, to use to predict annotations (click to download)
      {download}`https://figshare.com/ndownloader/files/41668983`
-   - Be sure to extract the files from these archives! 
-     Please use the program "tar" to extract the archives, 
+   - Be sure to extract the files from these archives!
+     Please use the program "tar" to extract the archives,
      on either macOS/Linux or Windows.
-     Using other programs like WinZIP on Windows 
+     Using other programs like WinZIP on Windows
      can corrupt the files when extracting them,
      causing confusing errors.
      Tar should be available on newer Windows systems
-     (as described 
+     (as described
      [here](https://learn.microsoft.com/en-us/virtualization/community/team-blog/2017/20171219-tar-and-curl-come-to-windows)).
-   - Alternatively you can copy the following command and then 
-     paste it into a terminal to run a Python script 
-     that will download and extract the files for you. 
+   - Alternatively you can copy the following command and then
+     paste it into a terminal to run a Python script
+     that will download and extract the files for you.
 
      :::{eval-rst}
-    
+
      .. tabs::
-    
+
         .. code-tab:: shell macOS / Linux
-    
+
            curl -sSL https://raw.githubusercontent.com/vocalpy/vak/main/src/scripts/download_autoannotate_data.py | python3 -
-     
+
         .. code-tab:: shell Windows
-    
+
            (Invoke-WebRequest -Uri https://raw.githubusercontent.com/vocalpy/vak/main/src/scripts/download_autoannotate_data.py -UseBasicParsing).Content | py -
      :::
 
 4. Download the corresponding configuration files (click to download):
    {download}`gy6or6_train.toml <../toml/gy6or6_train.toml>`,
-   {download}`gy6or6_eval.toml <../toml/gy6or6_eval.toml>`, 
+   {download}`gy6or6_eval.toml <../toml/gy6or6_eval.toml>`,
    and {download}`gy6or6_predict.toml <../toml/gy6or6_predict.toml>`
 
 ## Overview
@@ -181,7 +181,7 @@ Change the part of the path in capital letters to the actual location
 on your computer:
 
 ```toml
-[PREP]
+[vak.prep]
 dataset_type = "frame classification"
 input_type = "spect"
 # we change the next line
@@ -230,11 +230,11 @@ When you run `prep`, `vak` converts the data from `data_dir` into a special data
 automatically adds the path to that file to the `[TRAIN]` section of the `config.toml` file, as the option
 `csv_path`.
 
-You have now prepared a dataset for training a model!  
-You'll probably have more questions about 
-how to do this later, 
-when you start to work with your own data. 
-When that time comes, please see the how-to page: 
+You have now prepared a dataset for training a model!
+You'll probably have more questions about
+how to do this later,
+when you start to work with your own data.
+When that time comes, please see the how-to page:
 {ref}`howto-prep-annotate`.
 For now, let's move on to training a neural network with this dataset.
 
@@ -294,7 +294,7 @@ from that checkpoint later when we predict annotations for new data.
 
 (prepare-prediction-dataset)=
 
-An important step when using neural network models is to evaluate the model's performance 
+An important step when using neural network models is to evaluate the model's performance
 on a held-out dataset that has never been used during training, often called the "test" set.
 
 Here we show you how to evaluate the model we just trained.
@@ -356,33 +356,33 @@ This file will also be found in the root `results_{timestamp}` directory.
 spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{timestamp}/SpectScaler"
 ```
 
-The last path you need is actually in the TOML file that we used 
+The last path you need is actually in the TOML file that we used
 to train the neural network: `dataset_path`.
-You should copy that `dataset_path` option exactly as it is 
-and then paste it at the bottom of the `[EVAL]` table 
+You should copy that `dataset_path` option exactly as it is
+and then paste it at the bottom of the `[EVAL]` table
 in the configuration file for evaluation.
-We do this instead of preparing another dataset, 
-because we already created a test split when we ran 
+We do this instead of preparing another dataset,
+because we already created a test split when we ran
 `vak prep` with the training configuration.
-This is a good practice, because it helps ensure 
+This is a good practice, because it helps ensure
 that we do not mix the training data with the test data;
-`vak` makes sure that the data from the `data_dir` option 
+`vak` makes sure that the data from the `data_dir` option
 is placed in two separate splits, the train and test splits.
 
-Once you have prepared the configuration file as described, 
+Once you have prepared the configuration file as described,
 you can run the following in the terminal:
 
 ```shell
 vak eval gy6o6_eval.toml
 ```
 
-You will see output to the console as the network is evaluated. 
-Notice that for this model we evaluate it *with* and *without* 
-post-processing transforms that clean up the predictions 
+You will see output to the console as the network is evaluated.
+Notice that for this model we evaluate it *with* and *without*
+post-processing transforms that clean up the predictions
 of the model.
-The parameters of the post-processing transform are specified 
+The parameters of the post-processing transform are specified
 with the `post_tfm_kwargs` option in the configuration file.
-You may find this helpful to understand factors affecting 
+You may find this helpful to understand factors affecting
 the performance of your own model.
 
 ## 4. Preparing a prediction dataset
@@ -400,7 +400,7 @@ Just like before, you're going to modify the `data_dir` option of the
 This time you'll change it to the path to the directory with the other day of data we downloaded.
 
 ```toml
-[PREP]
+[vak.prep]
 data_dir = "/home/users/You/Data/vak_tutorial_data/032312"
 ```
 
@@ -428,7 +428,7 @@ and then add the path to that file as the option `csv_path` in the `[PREDICT]` s
 Finally you will use the trained network to predict annotations.
 This is the part that requires you to find paths to files saved by `vak`.
 
-There's three you need. These are the exact same paths we used above 
+There's three you need. These are the exact same paths we used above
 in the configuration file for evaluation, so you can copy them from that file.
 We explain them again here for completeness.
 All three paths will be in the `results` directory
