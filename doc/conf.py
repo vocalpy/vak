@@ -107,8 +107,8 @@ html_theme_options = {
     "announcement":
         """ 🚧 vak version 1.0.0 is in development! 🚧
         📣 Test out the alpha release: <code>pip install vak==1.0.0a3</code>. 📣
-        For more info, please see 
-        <a href="https://forum.vocalpy.org/t/vak-1-0-0a1-released/55"> this forum post<a>. 
+        For more info, please see
+        <a href="https://forum.vocalpy.org/t/vak-1-0-0a1-released/55"> this forum post<a>.
         """,
     "sidebar_hide_name": True,
     "light_css_variables": {
@@ -217,7 +217,8 @@ intersphinx_mapping = intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
-    "pytorch": ("https://pytorch.org/docs/stable/", None)
+    "pytorch": ("https://pytorch.org/docs/stable/", None),
+    "lightning": ("https://lightning.ai/docs/pytorch/stable/", None),
 }
 
 # -- Options for todo extension ----------------------------------------------
