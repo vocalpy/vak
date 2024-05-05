@@ -18,7 +18,7 @@ checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRep
 labelmap_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json"
 batch_size = 11
 num_workers = 16
-device = "cuda"
+
 output_dir = "./tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet"
 annot_csv_filename = "bl26lb16.041912.annot.csv"
 

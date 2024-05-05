@@ -27,7 +27,7 @@ val_step = 50
 ckpt_step = 200
 patience = 4
 num_workers = 16
-device = "cuda"
+
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat"
 
 [vak.train.trainer]
@@ -44,7 +44,7 @@ patience = 4
 num_workers = 16
 train_set_durs = [ 4, 6 ]
 num_replicates = 2
-device = "cuda"
+
 root_results_dir = './tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat'
 
 [vak.learncurve.model.TweetyNet.optimizer]
