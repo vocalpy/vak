@@ -15,13 +15,12 @@ import lightning
 import torch
 import torch.utils.data
 
-from . import base
 from .definition import ModelDefinition
 from .registry import model_family
 
 
 @model_family
-class ParametricUMAPModel(base.Model):
+class ParametricUMAPModel(lightning.pytorch.LightningModule):
     """Parametric UMAP model, as described in [1]_.
 
     Notes
@@ -103,27 +102,6 @@ class ParametricUMAPModel(base.Model):
             )
         # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
         self.log("val_loss", loss, on_step=True)
-
-    @classmethod
-    def from_config(cls, config: dict):
-        """Return an initialized model instance from a config ``dict``
-
-        Parameters
-        ----------
-        config : dict
-            Returned by calling :func:`vak.config.models.map_from_path`
-            or :func:`vak.config.models.map_from_config_dict`.
-
-        Returns
-        -------
-        cls : vak.models.base.Model
-            An instance of the model with its attributes
-            initialized using parameters from ``config``.
-        """
-        network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(
-            network=network, optimizer=optimizer, loss=loss, metrics=metrics
-        )
 
 
 class ParametricUMAPDatamodule(lightning.pytorch.LightningDataModule):
