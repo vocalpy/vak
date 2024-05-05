@@ -124,6 +124,6 @@ params = {window_size = 2000}
 
 [vak.predict.model.TweetyNet]
 
-[vak.predictor.trainer]
+[vak.predict.trainer]
 accelerator = "gpu"
 devices = [0]
