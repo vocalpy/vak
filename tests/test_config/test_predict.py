@@ -18,9 +18,6 @@ class TestPredictConfig:
                     'device': 'cuda',
                     'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                     'annot_csv_filename': 'bl26lb16.041912.annot.csv',
-                    'transform_params': {
-                        'window_size': 88
-                    },
                     'model': {
                         'TweetyNet': {
                             'network': {
@@ -63,9 +60,6 @@ class TestPredictConfig:
                     'device': 'cuda',
                     'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                     'annot_csv_filename': 'bl26lb16.041912.annot.csv',
-                    'transform_params': {
-                        'window_size': 88
-                    },
                     'model': {
                         'TweetyNet': {
                             'network': {
@@ -113,9 +107,6 @@ class TestPredictConfig:
                         'device': 'cuda',
                         'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                         'annot_csv_filename': 'bl26lb16.041912.annot.csv',
-                        'transform_params': {
-                            'window_size': 88
-                        },
                         'model': {
                             'TweetyNet': {
                                 'network': {
@@ -149,9 +140,6 @@ class TestPredictConfig:
                         'device': 'cuda',
                         'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                         'annot_csv_filename': 'bl26lb16.041912.annot.csv',
-                        'transform_params': {
-                            'window_size': 88
-                        },
                         'model': {
                             'TweetyNet': {
                                 'network': {
@@ -182,9 +170,6 @@ class TestPredictConfig:
                         'device': 'cuda',
                         'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                         'annot_csv_filename': 'bl26lb16.041912.annot.csv',
-                        'transform_params': {
-                            'window_size': 88
-                        },
                         'dataset': {
                             'path': '~/some/path/I/made/up/for/now'
                         },

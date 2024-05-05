@@ -19,8 +19,6 @@ class TestTrainConfig:
                     'num_workers': 16,
                     'device': 'cuda',
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
-                    'train_dataset_params': {'window_size': 88},
-                    'val_transform_params': {'window_size': 88},
                     'model': {
                         'TweetyNet': {
                             'network': {
@@ -66,8 +64,6 @@ class TestTrainConfig:
                     'num_workers': 16,
                     'device': 'cuda',
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
-                    'train_dataset_params': {'window_size': 88},
-                    'val_transform_params': {'window_size': 88},
                     'model': {
                         'TweetyNet': {
                             'network': {
@@ -118,8 +114,6 @@ class TestTrainConfig:
                         'num_workers': 16,
                         'device': 'cuda',
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
-                        'train_dataset_params': {'window_size': 88},
-                        'val_transform_params': {'window_size': 88},
                         'dataset': {
                             'path': 'tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/TweetyNet/032312-vak-frame-classification-dataset-generated-240502_234819'
                         }
@@ -137,8 +131,6 @@ class TestTrainConfig:
                         'num_workers': 16,
                         'device': 'cuda',
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
-                        'train_dataset_params': {'window_size': 88},
-                        'val_transform_params': {'window_size': 88},
                         'model': {
                             'TweetyNet': {
                                 'network': {

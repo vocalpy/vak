@@ -20,8 +20,6 @@ class TestLearncurveConfig:
                     'device': 'cuda',
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
-                    'train_dataset_params': {'window_size': 88},
-                    'val_transform_params': {'window_size': 88},
                     'model': {
                         'TweetyNet': {
                             'network': {
@@ -68,8 +66,6 @@ class TestLearncurveConfig:
                     'device': 'cuda',
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
-                    'train_dataset_params': {'window_size': 88},
-                    'val_transform_params': {'window_size': 88},
                     'model': {
                         'TweetyNet': {
                             'network': {
@@ -125,8 +121,6 @@ class TestLearncurveConfig:
                         'device': 'cuda',
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                         'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
-                        'train_dataset_params': {'window_size': 88},
-                        'val_transform_params': {'window_size': 88},
                         'dataset': {
                             'path': 'tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/TweetyNet/032312-vak-frame-classification-dataset-generated-240502_234819'
                         }
@@ -146,8 +140,6 @@ class TestLearncurveConfig:
                         'device': 'cuda',
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                         'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
-                        'train_dataset_params': {'window_size': 88},
-                        'val_transform_params': {'window_size': 88},
                         'model': {
                             'TweetyNet': {
                                 'network': {
@@ -181,8 +173,6 @@ class TestLearncurveConfig:
                         'num_workers': 16,
                         'device': 'cuda',
                         'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
-                        'train_dataset_params': {'window_size': 88},
-                        'val_transform_params': {'window_size': 88},
                         'model': {
                             'TweetyNet': {
                                 'network': {

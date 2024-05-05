@@ -20,9 +20,6 @@ class TestEval:
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
                         },
-                    'transform_params': {
-                        'window_size': 88
-                        },
                     'model': {
                         'TweetyNet': {
                             'network': {
@@ -66,9 +63,6 @@ class TestEval:
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
-                        },
-                    'transform_params': {
-                        'window_size': 88
                         },
                     'model': {
                         'TweetyNet': {
@@ -120,9 +114,6 @@ class TestEval:
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
                         },
-                    'transform_params': {
-                        'window_size': 88
-                        },
                     'dataset': {
                         'path': '~/some/path/I/made/up/for/now'
                     },
@@ -141,9 +132,6 @@ class TestEval:
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
-                        },
-                    'transform_params': {
-                        'window_size': 88
                         },
                     'model': {
                         'TweetyNet': {
@@ -175,9 +163,6 @@ class TestEval:
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
-                        },
-                    'transform_params': {
-                        'window_size': 88
                         },
                     'model': {
                         'TweetyNet': {
@@ -212,9 +197,6 @@ class TestEval:
                     'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
-                        },
-                    'transform_params': {
-                        'window_size': 88
                         },
                     'model': {
                         'TweetyNet': {
