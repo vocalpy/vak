@@ -17,17 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 def learning_curve_for_frame_classification_model(
-    model_name: str,
     model_config: dict,
-    dataset_path: str | pathlib.Path,
+    dataset_config: dict,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
     results_path: str | pathlib.Path,
-    train_transform_params: dict | None = None,
-    train_dataset_params: dict | None = None,
-    val_transform_params: dict | None = None,
-    val_dataset_params: dict | None = None,
     post_tfm_kwargs: dict | None = None,
     normalize_spectrograms: bool = True,
     shuffle: bool = True,
@@ -48,12 +43,12 @@ def learning_curve_for_frame_classification_model(
 
     Parameters
     ----------
-    model_name : str
-        Model name, must be one of vak.models.registry.MODEL_NAMES.
     model_config : dict
-        Model configuration in a ``dict``,
-        as loaded from a .toml file,
-        and used by the model method ``from_config``.
+        Model configuration in a :class:`dict`.
+        Can be obtained by calling :meth:`vak.config.ModelConfig.asdict`.
+    dataset_config: dict
+        Dataset configuration in a :class:`dict`.
+        Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
     dataset_path : str
         path to where dataset was saved as a csv.
     batch_size : int
@@ -66,24 +61,6 @@ def learning_curve_for_frame_classification_model(
         Argument to torch.DataLoader.
     results_path : str, pathlib.Path
         Directory where results will be saved.
-    train_transform_params: dict, optional
-        Parameters for training data transform.
-        Passed as keyword arguments.
-        Optional, default is None.
-    train_dataset_params: dict, optional
-        Parameters for training dataset.
-        Passed as keyword arguments to
-        :class:`vak.datasets.frame_classification.WindowDataset`.
-        Optional, default is None.
-    val_transform_params: dict, optional
-        Parameters for validation data transform.
-        Passed as keyword arguments.
-        Optional, default is None.
-    val_dataset_params: dict, optional
-        Parameters for validation dataset.
-        Passed as keyword arguments to
-        :class:`vak.datasets.frame_classification.FramesDataset`.
-        Optional, default is None.
     previous_run_path : str, Path
         Path to directory containing dataset .csv files
         that represent subsets of training set, created by
@@ -206,16 +183,11 @@ def learning_curve_for_frame_classification_model(
         )
 
         train_frame_classification_model(
-            model_name,
             model_config,
-            dataset_path,
+            dataset_config,
             batch_size,
             num_epochs,
             num_workers,
-            train_transform_params,
-            train_dataset_params,
-            val_transform_params,
-            val_dataset_params,
             results_path=results_path_this_replicate,
             normalize_spectrograms=normalize_spectrograms,
             shuffle=shuffle,
@@ -261,15 +233,12 @@ def learning_curve_for_frame_classification_model(
             spect_scaler_path = None
 
         eval_frame_classification_model(
-            model_name,
             model_config,
-            dataset_path,
+            dataset_config,
             ckpt_path,
             labelmap_path,
             results_path_this_replicate,
             num_workers,
-            val_transform_params,
-            val_dataset_params,
             "test",
             spect_scaler_path,
             post_tfm_kwargs,
