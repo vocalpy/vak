@@ -67,7 +67,7 @@ DEFAULT_DEFAULT_CONFIG = {
 }
 
 
-def validate(definition: Type[ModelDefinition]) -> Type[ModelDefinition]:
+def validate(definition: Type) -> Type:
     """Validate a model definition.
 
     A model definition is a class that has the following class variables:
