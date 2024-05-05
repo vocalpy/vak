@@ -53,16 +53,11 @@ def test_train(
 
     with mock.patch(train_function_to_mock, autospec=True) as mock_train_function:
         vak.train.train(
-            model_name=cfg.train.model.name,
             model_config=cfg.train.model.asdict(),
-            dataset_path=cfg.train.dataset.path,
+            dataset_config=cfg.train.dataset.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
-            train_transform_params=cfg.train.train_transform_params,
-            train_dataset_params=cfg.train.train_dataset_params,
-            val_transform_params=cfg.train.val_transform_params,
-            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             spect_scaler_path=cfg.train.spect_scaler_path,
             results_path=results_path,

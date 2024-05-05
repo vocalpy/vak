@@ -52,14 +52,11 @@ def test_predict_with_frame_classification_model(
     cfg = vak.config.Config.from_toml_path(toml_path)
 
     vak.predict.frame_classification.predict_with_frame_classification_model(
-        model_name=cfg.predict.model.name,
         model_config=cfg.predict.model.asdict(),
-        dataset_path=cfg.predict.dataset.path,
+        dataset_config=cfg.predict.dataset.asdict(),
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
         num_workers=cfg.predict.num_workers,
-        transform_params=cfg.predict.transform_params,
-        dataset_params=cfg.predict.dataset_params,
         timebins_key=cfg.prep.spect_params.timebins_key,
         spect_scaler_path=cfg.predict.spect_scaler_path,
         device=cfg.predict.device,
@@ -126,14 +123,11 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
 
     with pytest.raises(FileNotFoundError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
-            model_name=cfg.predict.model.name,
             model_config=cfg.predict.model.asdict(),
-            dataset_path=cfg.predict.dataset.path,
+            dataset_config=cfg.predict.dataset.asdict(),
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
-            transform_params=cfg.predict.transform_params,
-            dataset_params=cfg.predict.dataset_params,
             timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
             device=cfg.predict.device,
@@ -188,14 +182,11 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
 
     with pytest.raises(NotADirectoryError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
-            model_name=cfg.predict.model.name,
             model_config=cfg.predict.model.asdict(),
-            dataset_path=cfg.predict.dataset.path,
+            dataset_config=cfg.predict.dataset.asdict(),
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
-            transform_params=cfg.predict.transform_params,
-            dataset_params=cfg.predict.dataset_params,
             timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
             device=cfg.predict.device,

@@ -70,15 +70,12 @@ def test_eval_frame_classification_model(
     cfg = vak.config.Config.from_toml_path(toml_path)
 
     vak.eval.frame_classification.eval_frame_classification_model(
-        model_name=cfg.eval.model.name,
         model_config=cfg.eval.model.asdict(),
-        dataset_path=cfg.eval.dataset.path,
+        dataset_config=cfg.eval.dataset.asdict(),
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
         num_workers=cfg.eval.num_workers,
-        transform_params=cfg.eval.transform_params,
-        dataset_params=cfg.eval.dataset_params,
         spect_scaler_path=cfg.eval.spect_scaler_path,
         device=cfg.eval.device,
         post_tfm_kwargs=post_tfm_kwargs,
@@ -127,15 +124,12 @@ def test_eval_frame_classification_model_raises_file_not_found(
     cfg = vak.config.Config.from_toml_path(toml_path)
     with pytest.raises(FileNotFoundError):
         vak.eval.frame_classification.eval_frame_classification_model(
-            model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.asdict(),
-            dataset_path=cfg.eval.dataset.path,
+            dataset_config=cfg.eval.dataset.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
-            transform_params=cfg.eval.transform_params,
-            dataset_params=cfg.eval.dataset_params,
             spect_scaler_path=cfg.eval.spect_scaler_path,
             device=cfg.eval.device,
         )
@@ -184,15 +178,12 @@ def test_eval_frame_classification_model_raises_not_a_directory(
     cfg = vak.config.Config.from_toml_path(toml_path)
     with pytest.raises(NotADirectoryError):
         vak.eval.frame_classification.eval_frame_classification_model(
-            model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.asdict(),
-            dataset_path=cfg.eval.dataset.path,
+            dataset_config=cfg.eval.dataset.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
-            transform_params=cfg.eval.transform_params,
-            dataset_params=cfg.eval.dataset_params,
             spect_scaler_path=cfg.eval.spect_scaler_path,
             device=cfg.eval.device,
         )

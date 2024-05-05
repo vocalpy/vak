@@ -48,15 +48,12 @@ def test_eval_parametric_umap_model(
     cfg = vak.config.Config.from_toml_path(toml_path)
 
     vak.eval.parametric_umap.eval_parametric_umap_model(
-        model_name=cfg.eval.model.name,
         model_config=cfg.eval.model.asdict(),
-        dataset_path=cfg.eval.dataset.path,
+        dataset_config=cfg.eval.dataset.asdict(),
         checkpoint_path=cfg.eval.checkpoint_path,
         output_dir=cfg.eval.output_dir,
         batch_size=cfg.eval.batch_size,
         num_workers=cfg.eval.num_workers,
-        transform_params=cfg.eval.transform_params,
-        dataset_params=cfg.eval.dataset_params,
         device=cfg.eval.device,
     )
 
@@ -99,15 +96,12 @@ def test_eval_frame_classification_model_raises_file_not_found(
     cfg = vak.config.Config.from_toml_path(toml_path)
     with pytest.raises(FileNotFoundError):
         vak.eval.parametric_umap.eval_parametric_umap_model(
-            model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.asdict(),
-            dataset_path=cfg.eval.dataset.path,
+            dataset_config=cfg.eval.dataset.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
             batch_size=cfg.eval.batch_size,
             num_workers=cfg.eval.num_workers,
-            transform_params=cfg.eval.transform_params,
-            dataset_params=cfg.eval.dataset_params,
             device=cfg.eval.device,
         )
 
@@ -154,15 +148,11 @@ def test_eval_frame_classification_model_raises_not_a_directory(
     cfg = vak.config.Config.from_toml_path(toml_path)
     with pytest.raises(NotADirectoryError):
         vak.eval.parametric_umap.eval_parametric_umap_model(
-            model_name=cfg.eval.model.name,
             model_config=cfg.eval.model.asdict(),
-            dataset_path=cfg.eval.dataset.path,
+            dataset_config=cfg.eval.dataset.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
             batch_size=cfg.eval.batch_size,
             num_workers=cfg.eval.num_workers,
-            transform_params=cfg.eval.transform_params,
-            dataset_params=cfg.eval.dataset_params,
             device=cfg.eval.device,
         )
-

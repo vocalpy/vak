@@ -67,16 +67,11 @@ def test_learning_curve_for_frame_classification_model(
     results_path.mkdir()
 
     vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
-        model_name=cfg.learncurve.model.name,
         model_config=cfg.learncurve.model.asdict(),
-        dataset_path=cfg.learncurve.dataset.path,
+        dataset_config=cfg.learncurve.dataset.asdict(),
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
-        train_transform_params=cfg.learncurve.train_transform_params,
-        train_dataset_params=cfg.learncurve.train_dataset_params,
-        val_transform_params=cfg.learncurve.val_transform_params,
-        val_dataset_params=cfg.learncurve.val_dataset_params,
         results_path=results_path,
         post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
@@ -121,16 +116,11 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
 
     with pytest.raises(NotADirectoryError):
         vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
-            model_name=cfg.learncurve.model.name,
             model_config=cfg.learncurve.model.asdict(),
-            dataset_path=cfg.learncurve.dataset.path,
+            dataset_config=cfg.learncurve.dataset.asdict(),
             batch_size=cfg.learncurve.batch_size,
             num_epochs=cfg.learncurve.num_epochs,
             num_workers=cfg.learncurve.num_workers,
-            train_transform_params=cfg.learncurve.train_transform_params,
-            train_dataset_params=cfg.learncurve.train_dataset_params,
-            val_transform_params=cfg.learncurve.val_transform_params,
-            val_dataset_params=cfg.learncurve.val_dataset_params,
             results_path=results_path,
             post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
             normalize_spectrograms=cfg.learncurve.normalize_spectrograms,

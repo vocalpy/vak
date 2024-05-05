@@ -54,16 +54,11 @@ def test_train_parametric_umap_model(
     cfg = vak.config.Config.from_toml_path(toml_path)
 
     vak.train.parametric_umap.train_parametric_umap_model(
-        model_name=cfg.train.model.name,
         model_config=cfg.train.model.asdict(),
-        dataset_path=cfg.train.dataset.path,
+        dataset_config=cfg.train.dataset.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
-        train_transform_params=cfg.train.train_transform_params,
-        train_dataset_params=cfg.train.train_dataset_params,
-        val_transform_params=cfg.train.val_transform_params,
-        val_dataset_params=cfg.train.val_dataset_params,
         checkpoint_path=cfg.train.checkpoint_path,
         results_path=results_path,
         shuffle=cfg.train.shuffle,
@@ -106,16 +101,11 @@ def test_train_parametric_umap_model_raises_file_not_found(
 
     with pytest.raises(FileNotFoundError):
         vak.train.parametric_umap.train_parametric_umap_model(
-            model_name=cfg.train.model.name,
             model_config=cfg.train.model.asdict(),
-            dataset_path=cfg.train.dataset.path,
+            dataset_config=cfg.train.dataset.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
-            train_transform_params=cfg.train.train_transform_params,
-            train_dataset_params=cfg.train.train_dataset_params,
-            val_transform_params=cfg.train.val_transform_params,
-            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             results_path=results_path,
             shuffle=cfg.train.shuffle,
@@ -159,16 +149,11 @@ def test_train_parametric_umap_model_raises_not_a_directory(
 
     with pytest.raises(NotADirectoryError):
         vak.train.parametric_umap.train_parametric_umap_model(
-            model_name=cfg.train.model,
             model_config=model_config,
-            dataset_path=cfg.train.dataset.path,
+            dataset_config=cfg.train.dataset.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
-            train_transform_params=cfg.train.train_transform_params,
-            train_dataset_params=cfg.train.train_dataset_params,
-            val_transform_params=cfg.train.val_transform_params,
-            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             results_path=results_path,
             shuffle=cfg.train.shuffle,
