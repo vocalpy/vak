@@ -45,12 +45,10 @@ class DatasetConfig:
     )
 
     @classmethod
-    def from_config_dict(cls, dict_: dict) -> DatasetConfig:
+    def from_config_dict(cls, config_dict: dict) -> DatasetConfig:
+
         return cls(
-            path=dict_.get("path"),
-            splits_path=dict_.get("splits_path"),
-            name=dict_.get("name"),
-            params=dict_.get("params")
+            **config_dict
         )
 
     def asdict(self):
