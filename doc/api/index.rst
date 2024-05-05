@@ -267,10 +267,10 @@ used by multiple other modules.
    :template: module.rst
    :recursive:
 
+   common.accelerator
    common.annotation
    common.constants
    common.converters
-   common.device
    common.files
    common.labels
    common.learncurve
