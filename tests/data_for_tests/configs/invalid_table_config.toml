@@ -32,3 +32,7 @@ save_only_single_checkpoint_file = true
 
 [vak.train.model.TweetyNet.optimizer]
 learning_rate = 0.001
+
+[vak.train.trainer]
+accelerator = "gpu"
+devices = [0]

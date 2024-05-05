@@ -7,12 +7,11 @@ import logging
 import pathlib
 
 import pandas as pd
-import pytorch_lightning as lightning
+import lightning
 import torch.utils.data
 
 from .. import datasets, models, transforms
 from ..common import validators
-from ..common.device import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
 from ..datasets.parametric_umap import ParametricUMAPDataset
 
@@ -25,22 +24,17 @@ def get_split_dur(df: pd.DataFrame, split: str) -> float:
 
 
 def get_trainer(
+    accelerator: str,
+    devices: int | list[int],
     max_epochs: int,
     ckpt_root: str | pathlib.Path,
     ckpt_step: int,
     log_save_dir: str | pathlib.Path,
-    device: str = "cuda",
-) -> lightning.Trainer:
-    """Returns an instance of ``lightning.Trainer``
+) -> lightning.pytorch.Trainer:
+    """Returns an instance of ``lightning.pytorch.Trainer``
     with a default set of callbacks.
     Used by ``vak.core`` functions."""
-    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
-    if device == "cuda":
-        accelerator = "gpu"
-    else:
-        accelerator = "auto"
-
-    ckpt_callback = lightning.callbacks.ModelCheckpoint(
+    ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
         dirpath=ckpt_root,
         filename="checkpoint",
         every_n_train_steps=ckpt_step,
@@ -50,7 +44,7 @@ def get_trainer(
     ckpt_callback.CHECKPOINT_NAME_LAST = "checkpoint"
     ckpt_callback.FILE_EXTENSION = ".pt"
 
-    val_ckpt_callback = lightning.callbacks.ModelCheckpoint(
+    val_ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
         monitor="val_loss",
         dirpath=ckpt_root,
         save_top_k=1,
@@ -66,11 +60,12 @@ def get_trainer(
         val_ckpt_callback,
     ]
 
-    logger = lightning.loggers.TensorBoardLogger(save_dir=log_save_dir)
+    logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=log_save_dir)
 
-    trainer = lightning.Trainer(
+    trainer = lightning.pytorch.Trainer(
         max_epochs=max_epochs,
         accelerator=accelerator,
+        devices=devices,
         logger=logger,
         callbacks=callbacks,
     )
@@ -80,6 +75,7 @@ def get_trainer(
 def train_parametric_umap_model(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
@@ -89,7 +85,6 @@ def train_parametric_umap_model(
     shuffle: bool = True,
     val_step: int | None = None,
     ckpt_step: int | None = None,
-    device: str | None = None,
     subset: str | None = None,
 ) -> None:
     """Train a model from the parametric UMAP family
@@ -109,6 +104,9 @@ def train_parametric_umap_model(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer` in a :class:`dict`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     batch_size : int
         number of samples per batch presented to models during training.
     num_epochs : int
@@ -137,10 +135,6 @@ def train_parametric_umap_model(
         If ckpt_step is n, then a checkpoint is saved every time
         the global step / n is a whole number, i.e., when ckpt_step modulo the global step is 0.
         Default is None, in which case checkpoint is only saved at the last epoch.
-    device : str
-        Device on which to work with model + data.
-        Default is None. If None, then a device will be selected with vak.split.get_default.
-        That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     split : str
@@ -248,9 +242,6 @@ def train_parametric_umap_model(
     else:
         val_loader = None
 
-    if device is None:
-        device = get_default_device()
-
     model = models.get(
         model_name,
         model_config,
@@ -269,9 +260,10 @@ def train_parametric_umap_model(
     ckpt_root.mkdir()
     logger.info(f"training {model_name}")
     trainer = get_trainer(
+        accelerator=trainer_config["accelerator"],
+        devices=trainer_config["devices"],
         max_epochs=num_epochs,
         log_save_dir=results_model_root,
-        device=device,
         ckpt_root=ckpt_root,
         ckpt_step=ckpt_step,
     )

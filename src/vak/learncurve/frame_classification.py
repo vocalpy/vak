@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 def learning_curve_for_frame_classification_model(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
@@ -29,7 +30,6 @@ def learning_curve_for_frame_classification_model(
     val_step: int | None = None,
     ckpt_step: int | None = None,
     patience: int | None = None,
-    device: str | None = None,
 ) -> None:
     """Generate results for a learning curve,
     where model performance is measured as a
@@ -49,6 +49,9 @@ def learning_curve_for_frame_classification_model(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     dataset_path : str
         path to where dataset was saved as a csv.
     batch_size : int
@@ -188,6 +191,7 @@ def learning_curve_for_frame_classification_model(
         train_frame_classification_model(
             model_config,
             dataset_config,
+            trainer_config,
             batch_size,
             num_epochs,
             num_workers,
@@ -197,7 +201,6 @@ def learning_curve_for_frame_classification_model(
             val_step=val_step,
             ckpt_step=ckpt_step,
             patience=patience,
-            device=device,
             subset=subset,
         )
 
@@ -238,6 +241,7 @@ def learning_curve_for_frame_classification_model(
         eval_frame_classification_model(
             model_config,
             dataset_config,
+            trainer_config,
             ckpt_path,
             labelmap_path,
             results_path_this_replicate,
@@ -245,7 +249,6 @@ def learning_curve_for_frame_classification_model(
             "test",
             spect_scaler_path,
             post_tfm_kwargs,
-            device,
         )
 
     # ---- make a csv for analysis -------------------------------------------------------------------------------------

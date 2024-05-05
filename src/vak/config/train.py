@@ -3,12 +3,18 @@
 from attrs import converters, define, field, validators
 from attrs.validators import instance_of
 
-from ..common import device
 from ..common.converters import bool_from_str, expanded_user_path
 from .dataset import DatasetConfig
 from .model import ModelConfig
+from .trainer import TrainerConfig
 
-REQUIRED_KEYS = ("dataset", "model", "root_results_dir")
+
+REQUIRED_KEYS = (
+    "dataset",
+    "model",
+    "root_results_dir",
+    "trainer",
+)
 
 
 @define
@@ -21,11 +27,6 @@ class TrainConfig:
         The model to use: its name,
         and the parameters to configure it.
         Must be an instance of :class:`vak.config.ModelConfig`
-    dataset : vak.config.DatasetConfig
-        The dataset to use: the path to it,
-        and optionally a path to a file representing splits,
-        and the name, if it is a built-in dataset.
-        Must be an instance of :class:`vak.config.DatasetConfig`.
     num_epochs : int
         number of training epochs. One epoch = one iteration through the entire
         training set.
@@ -35,12 +36,17 @@ class TrainConfig:
         directory in which results will be created.
         The vak.cli.train function will create
         a subdirectory in this directory each time it runs.
+    dataset : vak.config.DatasetConfig
+        The dataset to use: the path to it,
+        and optionally a path to a file representing splits,
+        and the name, if it is a built-in dataset.
+        Must be an instance of :class:`vak.config.DatasetConfig`.
+    trainer : vak.config.TrainerConfig
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Must be an instance of :class:`vak.config.TrainerConfig`.
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader.
-    device : str
-        Device on which to work with model + data.
-        Defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
@@ -81,6 +87,9 @@ class TrainConfig:
     dataset: DatasetConfig = field(
         validator=instance_of(DatasetConfig),
     )
+    trainer: TrainerConfig = field(
+        validator=instance_of(TrainerConfig),
+    )
 
     results_dirname = field(
         converter=converters.optional(expanded_user_path),
@@ -94,7 +103,6 @@ class TrainConfig:
     )
 
     num_workers = field(validator=instance_of(int), default=2)
-    device = field(validator=instance_of(str), default=device.get_default())
     shuffle = field(
         converter=bool_from_str, validator=instance_of(bool), default=True
     )
@@ -130,7 +138,7 @@ class TrainConfig:
         The :class:`dict` passed in should be the one found
         by loading a valid configuration toml file with
         :func:`vak.config.parse.from_toml_path`,
-        and then using key ``prep``,
+        and then using key ``train``,
         i.e., ``TrainConfig.from_config_dict(config_dict['train'])``."""
         for required_key in REQUIRED_KEYS:
             if required_key not in config_dict:
@@ -146,4 +154,5 @@ class TrainConfig:
         config_dict["dataset"] = DatasetConfig.from_config_dict(
             config_dict["dataset"]
         )
+        config_dict["trainer"] = TrainerConfig(**config_dict["trainer"])
         return cls(**config_dict)

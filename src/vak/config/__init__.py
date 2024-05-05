@@ -11,6 +11,7 @@ from . import (
     prep,
     spect_params,
     train,
+    trainer,
     validators,
 )
 from .config import Config
@@ -22,6 +23,8 @@ from .predict import PredictConfig
 from .prep import PrepConfig
 from .spect_params import SpectParamsConfig
 from .train import TrainConfig
+from .trainer import TrainerConfig
+
 
 __all__ = [
     "config",
@@ -34,6 +37,7 @@ __all__ = [
     "prep",
     "spect_params",
     "train",
+    "trainer",
     "validators",
     "Config",
     "DatasetConfig",
@@ -44,4 +48,5 @@ __all__ = [
     "PrepConfig",
     "SpectParamsConfig",
     "TrainConfig",
+    "TrainerConfig",
 ]

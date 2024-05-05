@@ -7,10 +7,10 @@ import pathlib
 from attrs import converters, define, field, validators
 from attrs.validators import instance_of
 
-from ..common import device
 from ..common.converters import expanded_user_path
 from .dataset import DatasetConfig
 from .model import ModelConfig
+from .trainer import TrainerConfig
 
 
 def convert_post_tfm_kwargs(post_tfm_kwargs: dict) -> dict:
@@ -77,6 +77,7 @@ REQUIRED_KEYS = (
     "dataset",
     "output_dir",
     "model",
+    "trainer",
 )
 
 
@@ -86,29 +87,29 @@ class EvalConfig:
 
     Attributes
     ----------
-    dataset : vak.config.DatasetConfig
-        The dataset to use: the path to it,
-        and optionally a path to a file representing splits,
-        and the name, if it is a built-in dataset.
-        Must be an instance of :class:`vak.config.DatasetConfig`.
     checkpoint_path : str
         path to directory with checkpoint files saved by Torch, to reload model
     output_dir : str
         Path to location where .csv files with evaluation metrics should be saved.
-    labelmap_path : str
-        path to 'labelmap.json' file.
     model : vak.config.ModelConfig
         The model to use: its name,
         and the parameters to configure it.
         Must be an instance of :class:`vak.config.ModelConfig`
     batch_size : int
         number of samples per batch presented to models during training.
+    dataset : vak.config.DatasetConfig
+        The dataset to use: the path to it,
+        and optionally a path to a file representing splits,
+        and the name, if it is a built-in dataset.
+        Must be an instance of :class:`vak.config.DatasetConfig`.
+    trainer : vak.config.TrainerConfig
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Must be an instance of :class:`vak.config.TrainerConfig`.
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
-    device : str
-        Device on which to work with model + data.
-        Defaults to 'cuda' if torch.cuda.is_available is True.
+    labelmap_path : str
+        path to 'labelmap.json' file.
     spect_scaler_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
@@ -140,6 +141,9 @@ class EvalConfig:
     dataset: DatasetConfig = field(
         validator=instance_of(DatasetConfig),
     )
+    trainer: TrainerConfig = field(
+        validator=instance_of(TrainerConfig),
+    )
 
     # "optional" but actually required for frame classification models
     # TODO: check model family in __post_init__ and raise ValueError if labelmap
@@ -161,7 +165,6 @@ class EvalConfig:
 
     # optional, data loader
     num_workers = field(validator=instance_of(int), default=2)
-    device = field(validator=instance_of(str), default=device.get_default())
 
     @classmethod
     def from_config_dict(cls, config_dict: dict) -> EvalConfig:
@@ -186,4 +189,5 @@ class EvalConfig:
         config_dict["model"] = ModelConfig.from_config_dict(
             config_dict["model"]
         )
+        config_dict["trainer"] = TrainerConfig(**config_dict["trainer"])
         return cls(**config_dict)

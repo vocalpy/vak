@@ -39,7 +39,7 @@ batch_size = 1
 # num_workers: number of workers to use when loading data with multiprocessing
 num_workers = 4
 # device: name of device to run model on, one of "cuda", "cpu"
-device = "cuda"
+
 # output_dir: directory where output should be saved, as a sub-directory within `output_dir`
 output_dir = "/PATH/TO/FOLDER/results/predict"
 # annot_csv_filename
@@ -67,3 +67,10 @@ window_size = 176
 # Note we do not specify any options for the network, and just use the defaults
 # We need to put this table here though, to indicate which model we are using.
 [vak.predict.model.TweetyNet]
+
+# this sub-table configures the `lightning.pytorch.Trainer`
+[vak.predict.trainer]
+# setting to 'gpu' means "train models on 'gpu' (not 'cpu')"
+accelerator = "gpu"
+# use the first GPU (numbering starts from 0)
+devices = [0]

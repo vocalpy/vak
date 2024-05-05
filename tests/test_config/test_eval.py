@@ -14,7 +14,7 @@ class TestEval:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
@@ -45,6 +45,7 @@ class TestEval:
     def test_init(self, config_dict):
         config_dict['model'] = vak.config.ModelConfig.from_config_dict(config_dict['model'])
         config_dict['dataset'] = vak.config.DatasetConfig.from_config_dict(config_dict['dataset'])
+        config_dict['trainer'] = vak.config.TrainerConfig(**config_dict['trainer'])
 
         eval_config = vak.config.EvalConfig(**config_dict)
 
@@ -58,7 +59,7 @@ class TestEval:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
@@ -108,7 +109,7 @@ class TestEval:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
@@ -127,7 +128,7 @@ class TestEval:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
@@ -158,7 +159,7 @@ class TestEval:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
@@ -193,7 +194,7 @@ class TestEval:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02

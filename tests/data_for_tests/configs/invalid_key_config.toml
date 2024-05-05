@@ -35,3 +35,7 @@ params = { window_size = 88 }
 
 [vak.train.model.TweetyNet.optimizer]
 learning_rate = 0.001
+
+[vak.train.trainer]
+accelerator = "gpu"
+devices = [0]

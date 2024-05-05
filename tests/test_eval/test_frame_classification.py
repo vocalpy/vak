@@ -46,7 +46,7 @@ def test_eval_frame_classification_model(
         annot_format,
         specific_config_toml_path,
         tmp_path,
-        device,
+        trainer_table,
         post_tfm_kwargs
 ):
     output_dir = tmp_path.joinpath(
@@ -56,7 +56,7 @@ def test_eval_frame_classification_model(
 
     keys_to_change = [
         {"table": "eval", "key": "output_dir", "value": str(output_dir)},
-        {"table": "eval", "key": "device", "value": device},
+        {"table": "eval", "key": "trainer", "value": trainer_table},
     ]
 
     toml_path = specific_config_toml_path(
@@ -72,12 +72,12 @@ def test_eval_frame_classification_model(
     vak.eval.frame_classification.eval_frame_classification_model(
         model_config=cfg.eval.model.asdict(),
         dataset_config=cfg.eval.dataset.asdict(),
+        trainer_config=cfg.eval.trainer.asdict(),
         checkpoint_path=cfg.eval.checkpoint_path,
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
         num_workers=cfg.eval.num_workers,
         spect_scaler_path=cfg.eval.spect_scaler_path,
-        device=cfg.eval.device,
         post_tfm_kwargs=post_tfm_kwargs,
     )
 
@@ -96,7 +96,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
     path_option_to_change,
         specific_config_toml_path,
     tmp_path,
-    device
+    trainer_table
 ):
     """Test that core.eval raises FileNotFoundError
     when one of the following does not exist:
@@ -109,7 +109,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
 
     keys_to_change = [
         {"table": "eval", "key": "output_dir", "value": str(output_dir)},
-        {"table": "eval", "key": "device", "value": device},
+        {"table": "eval", "key": "trainer", "value": trainer_table},
         path_option_to_change,
     ]
 
@@ -126,12 +126,12 @@ def test_eval_frame_classification_model_raises_file_not_found(
         vak.eval.frame_classification.eval_frame_classification_model(
             model_config=cfg.eval.model.asdict(),
             dataset_config=cfg.eval.dataset.asdict(),
+            trainer_config=cfg.eval.trainer.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
             spect_scaler_path=cfg.eval.spect_scaler_path,
-            device=cfg.eval.device,
         )
 
 
@@ -145,7 +145,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
 def test_eval_frame_classification_model_raises_not_a_directory(
     path_option_to_change,
         specific_config_toml_path,
-    device,
+    trainer_table,
     tmp_path,
 ):
     """Test that core.eval raises NotADirectory
@@ -153,7 +153,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
     """
     keys_to_change = [
         path_option_to_change,
-        {"table": "eval", "key": "device", "value": device},
+        {"table": "eval", "key": "trainer", "value": trainer_table},
     ]
 
     if path_option_to_change["key"] != "output_dir":
@@ -180,10 +180,10 @@ def test_eval_frame_classification_model_raises_not_a_directory(
         vak.eval.frame_classification.eval_frame_classification_model(
             model_config=cfg.eval.model.asdict(),
             dataset_config=cfg.eval.dataset.asdict(),
+            trainer_config=cfg.eval.trainer.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
             spect_scaler_path=cfg.eval.spect_scaler_path,
-            device=cfg.eval.device,
         )

@@ -36,7 +36,6 @@ audio_path_key = 'audio_path'
 [vak.train]
 root_results_dir = './tests/test_data/results/train'
 num_workers = 4
-device = 'cuda'
 batch_size = 11
 num_epochs = 2
 normalize_spectrograms = true
@@ -56,13 +55,16 @@ params = {window_size = 2000}
 
 [vak.train.model.TweetyNet]
 
+[vak.train.trainer]
+accelerator = "gpu"
+devices = [0]
+
 [vak.eval]
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 output_dir = './tests/test_data/prep/learncurve'
 batch_size = 11
 num_workers = 4
-device = 'cuda'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 
@@ -72,6 +74,10 @@ path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
 
 [vak.eval.model.TweetyNet]
+
+[vak.eval.trainer]
+accelerator = "gpu"
+devices = [0]
 
 [vak.learncurve]
 root_results_dir = './tests/test_data/results/learncurve'
@@ -85,7 +91,6 @@ patience = 4
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 num_workers = 4
-device = 'cuda'
 
 [vak.learncurve.dataset]
 name = 'IntlDistributedSongbirdConsortiumPack'
@@ -95,6 +100,10 @@ params = {window_size = 2000}
 
 [vak.learncurve.model.TweetyNet]
 
+[vak.learncurve.trainer]
+accelerator = "gpu"
+devices = [0]
+
 [vak.predict]
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
@@ -102,7 +111,6 @@ annot_csv_filename = '032312_prep_191224_225910.annot.csv'
 output_dir = './tests/test_data/prep/learncurve'
 batch_size = 11
 num_workers = 4
-device = 'cuda'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 min_segment_dur = 0.004
 majority_vote = false
@@ -115,3 +123,7 @@ splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
 params = {window_size = 2000}
 
 [vak.predict.model.TweetyNet]
+
+[vak.predict.trainer]
+accelerator = "gpu"
+devices = [0]

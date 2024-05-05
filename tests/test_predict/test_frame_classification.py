@@ -30,7 +30,7 @@ def test_predict_with_frame_classification_model(
     save_net_outputs,
         specific_config_toml_path,
     tmp_path,
-    device,
+    trainer_table,
 ):
     output_dir = tmp_path.joinpath(
         f"test_predict_{audio_format}_{spect_format}_{annot_format}"
@@ -39,7 +39,7 @@ def test_predict_with_frame_classification_model(
 
     keys_to_change = [
         {"table": "predict", "key": "output_dir", "value": str(output_dir)},
-        {"table": "predict", "key": "device", "value": device},
+        {"table": "predict", "key": "trainer", "value": trainer_table},
         {"table": "predict", "key": "save_net_outputs", "value": save_net_outputs},
     ]
     toml_path = specific_config_toml_path(
@@ -54,12 +54,12 @@ def test_predict_with_frame_classification_model(
     vak.predict.frame_classification.predict_with_frame_classification_model(
         model_config=cfg.predict.model.asdict(),
         dataset_config=cfg.predict.dataset.asdict(),
+        trainer_config=cfg.predict.trainer.asdict(),
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
         num_workers=cfg.predict.num_workers,
         timebins_key=cfg.prep.spect_params.timebins_key,
         spect_scaler_path=cfg.predict.spect_scaler_path,
-        device=cfg.predict.device,
         annot_csv_filename=cfg.predict.annot_csv_filename,
         output_dir=cfg.predict.output_dir,
         min_segment_dur=cfg.predict.min_segment_dur,
@@ -98,7 +98,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
     path_option_to_change,
         specific_config_toml_path,
     tmp_path,
-    device
+    trainer_table
 ):
     """Test that core.eval raises FileNotFoundError
     when `dataset_path` does not exist."""
@@ -109,7 +109,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
 
     keys_to_change = [
         {"table": "predict", "key": "output_dir", "value": str(output_dir)},
-        {"table": "predict", "key": "device", "value": device},
+        {"table": "predict", "key": "trainer", "value": trainer_table},
         path_option_to_change,
     ]
     toml_path = specific_config_toml_path(
@@ -125,12 +125,12 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
         vak.predict.frame_classification.predict_with_frame_classification_model(
             model_config=cfg.predict.model.asdict(),
             dataset_config=cfg.predict.dataset.asdict(),
+            trainer_config=cfg.predict.trainer.asdict(),
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
             timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
-            device=cfg.predict.device,
             annot_csv_filename=cfg.predict.annot_csv_filename,
             output_dir=cfg.predict.output_dir,
             min_segment_dur=cfg.predict.min_segment_dur,
@@ -149,7 +149,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
 def test_predict_with_frame_classification_model_raises_not_a_directory(
     path_option_to_change,
         specific_config_toml_path,
-    device,
+    trainer_table,
     tmp_path,
 ):
     """Test that core.eval raises NotADirectory
@@ -157,7 +157,7 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
     """
     keys_to_change = [
         path_option_to_change,
-        {"table": "predict", "key": "device", "value": device},
+        {"table": "predict", "key": "trainer", "value": trainer_table},
     ]
 
     if path_option_to_change["key"] != "output_dir":
@@ -184,12 +184,12 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
         vak.predict.frame_classification.predict_with_frame_classification_model(
             model_config=cfg.predict.model.asdict(),
             dataset_config=cfg.predict.dataset.asdict(),
+            trainer_config=cfg.predict.trainer.asdict(),
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
             timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
-            device=cfg.predict.device,
             annot_csv_filename=cfg.predict.annot_csv_filename,
             output_dir=cfg.predict.output_dir,
             min_segment_dur=cfg.predict.min_segment_dur,

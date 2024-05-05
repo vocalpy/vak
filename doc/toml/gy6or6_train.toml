@@ -53,7 +53,7 @@ patience = 4
 # num_workers: number of workers to use when loading data with multiprocessing
 num_workers = 4
 # device: name of device to run model on, one of "cuda", "cpu"
-device = "cuda"
+
 # dataset_path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
 
 # dataset.params = parameters used for datasets
@@ -73,3 +73,10 @@ lr = 0.001
 [vak.train.model.TweetyNet.network]
 # hidden_size: the number of elements in the hidden state in the recurrent layer of the network
 hidden_size = 256
+
+# this sub-table configures the `lightning.pytorch.Trainer`
+[vak.train.trainer]
+# setting to 'gpu' means "train models on 'gpu' (not 'cpu')"
+accelerator = "gpu"
+# use the first GPU (numbering starts from 0)
+devices = [0]

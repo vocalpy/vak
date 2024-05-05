@@ -160,7 +160,7 @@ class FrameClassificationModel(base.Model):
     def configure_optimizers(self):
         """Returns the model's optimizer.
 
-        Method required by ``lightning.LightningModule``.
+        Method required by ``lightning.pytorch.LightningModule``.
         This method returns the ``optimizer`` instance passed into ``__init__``.
         If None was passed in, an instance that was created
         with default arguments will be returned.
@@ -185,7 +185,7 @@ class FrameClassificationModel(base.Model):
     def training_step(self, batch: tuple, batch_idx: int):
         """Perform one training step.
 
-        Method required by ``lightning.LightningModule``.
+        Method required by ``lightning.pytorch.LightningModule``.
 
         Parameters
         ----------
@@ -209,7 +209,7 @@ class FrameClassificationModel(base.Model):
     def validation_step(self, batch: tuple, batch_idx: int):
         """Perform one validation step.
 
-        Method required by ``lightning.LightningModule``.
+        Method required by ``lightning.pytorch.LightningModule``.
         Logs metrics using ``self.log``
 
         Parameters
@@ -322,7 +322,7 @@ class FrameClassificationModel(base.Model):
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
 
-        Method required by ``lightning.LightningModule``.
+        Method required by ``lightning.pytorch.LightningModule``.
 
         Parameters
         ----------

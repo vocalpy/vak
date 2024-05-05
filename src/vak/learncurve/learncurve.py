@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def learning_curve(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
@@ -25,7 +26,6 @@ def learning_curve(
     val_step: int | None = None,
     ckpt_step: int | None = None,
     patience: int | None = None,
-    device: str | None = None,
 ) -> None:
     """Generate results for a learning curve,
     where model performance is measured as a
@@ -45,6 +45,9 @@ def learning_curve(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     batch_size : int
         number of samples per batch presented to models during training.
     num_epochs : int
@@ -74,10 +77,6 @@ def learning_curve(
         a float value for ``min_segment_dur``.
         See the docstring of the transform for more details on
         these arguments and how they work.
-    device : str
-        Device on which to work with model + data.
-        Default is None. If None, then a device will be selected with vak.device.get_default.
-        That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
@@ -118,6 +117,7 @@ def learning_curve(
         learning_curve_for_frame_classification_model(
             model_config=model_config,
             dataset_config=dataset_config,
+            trainer_config=trainer_config,
             batch_size=batch_size,
             num_epochs=num_epochs,
             num_workers=num_workers,
@@ -128,7 +128,6 @@ def learning_curve(
             val_step=val_step,
             ckpt_step=ckpt_step,
             patience=patience,
-            device=device,
         )
     else:
         raise ValueError(f"Model family not recognized: {model_family}")

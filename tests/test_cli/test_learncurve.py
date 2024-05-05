@@ -10,7 +10,7 @@ import vak.cli.learncurve
 from . import cli_asserts
 
 
-def test_learncurve(specific_config_toml_path, tmp_path, device):
+def test_learncurve(specific_config_toml_path, tmp_path, trainer_table):
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
     root_results_dir.mkdir()
 
@@ -20,7 +20,7 @@ def test_learncurve(specific_config_toml_path, tmp_path, device):
             "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"table": "learncurve", "key": "device", "value": device},
+        {"table": "learncurve", "key": "trainer", "value": trainer_table},
     ]
 
     toml_path = specific_config_toml_path(

@@ -11,7 +11,7 @@ from __future__ import annotations
 import pathlib
 from typing import Callable, ClassVar, Type
 
-import pytorch_lightning as lightning
+import lightning
 import torch
 import torch.utils.data
 
@@ -126,7 +126,7 @@ class ParametricUMAPModel(base.Model):
         )
 
 
-class ParametricUMAPDatamodule(lightning.LightningDataModule):
+class ParametricUMAPDatamodule(lightning.pytorch.LightningDataModule):
     def __init__(
         self,
         dataset,
@@ -178,7 +178,7 @@ class ParametricUMAP:
 
     def fit(
         self,
-        trainer: lightning.Trainer,
+        trainer: lightning.pytorch.Trainer,
         dataset_path: str | pathlib.Path,
         transform=None,
     ):

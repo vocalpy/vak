@@ -17,7 +17,7 @@ transform_type = "log_spect_plus_one"
 checkpoint_path = "tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP/results_230727_210112/ConvEncoderUMAP/checkpoints/checkpoint.pt"
 batch_size = 64
 num_workers = 16
-device = "cuda"
+
 output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/ConvEncoderUMAP"
 
 [vak.eval.model.ConvEncoderUMAP.network]
@@ -31,3 +31,7 @@ n_components = 2
 
 [vak.eval.model.ConvEncoderUMAP.optimizer]
 lr = 0.001
+
+[vak.eval.trainer]
+accelerator = "gpu"
+devices = [0]

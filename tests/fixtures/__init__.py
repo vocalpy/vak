@@ -6,6 +6,7 @@ from .das import *
 from .dataframe import *
 from .dataset import *
 from .device import *
+from .trainer import *
 from .model import *
 from .path import *
 from .source_files import *

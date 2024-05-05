@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 def train(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
@@ -27,7 +28,6 @@ def train(
     val_step: int | None = None,
     ckpt_step: int | None = None,
     patience: int | None = None,
-    device: str | None = None,
     subset: str | None = None,
 ):
     """Train a model and save results.
@@ -44,6 +44,9 @@ def train(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer` in a :class:`dict`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     window_size : int
         size of windows taken from spectrograms, in number of time bins,
         shown to neural networks
@@ -147,6 +150,7 @@ def train(
         train_frame_classification_model(
             model_config=model_config,
             dataset_config=dataset_config,
+            trainer_config=trainer_config,
             batch_size=batch_size,
             num_epochs=num_epochs,
             num_workers=num_workers,
@@ -158,13 +162,13 @@ def train(
             val_step=val_step,
             ckpt_step=ckpt_step,
             patience=patience,
-            device=device,
             subset=subset,
         )
     elif model_family == "ParametricUMAPModel":
         train_parametric_umap_model(
             model_config=model_config,
             dataset_config=dataset_config,
+            trainer_config=trainer_config,
             batch_size=batch_size,
             num_epochs=num_epochs,
             num_workers=num_workers,
@@ -173,7 +177,6 @@ def train(
             shuffle=shuffle,
             val_step=val_step,
             ckpt_step=ckpt_step,
-            device=device,
             subset=subset,
         )
     else:

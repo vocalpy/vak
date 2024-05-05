@@ -18,7 +18,7 @@ from . import cli_asserts
     ],
 )
 def test_eval(
-    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, trainer_table
 ):
     output_dir = tmp_path.joinpath(
         f"test_eval_{audio_format}_{spect_format}_{annot_format}"
@@ -27,7 +27,7 @@ def test_eval(
 
     keys_to_change = [
         {"table": "eval", "key": "output_dir", "value": str(output_dir)},
-        {"table": "eval", "key": "device", "value": device},
+        {"table": "eval", "key": "trainer", "value": trainer_table},
     ]
 
     toml_path = specific_config_toml_path(

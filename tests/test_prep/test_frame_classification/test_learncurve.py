@@ -18,7 +18,7 @@ import vak.prep.frame_classification
     ]
 )
 def test_make_index_vectors_for_each_subsets(
-    model_name, audio_format, annot_format, input_type, specific_config_toml_path, device, tmp_path,
+    model_name, audio_format, annot_format, input_type, specific_config_toml_path, trainer_table, tmp_path,
 ):
     root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()
@@ -130,7 +130,7 @@ def test_make_index_vectors_for_each_subsets(
     ]
 )
 def test_make_subsets_from_dataset_df(
-    model_name, audio_format, annot_format, input_type, specific_config_toml_path, device, tmp_path,
+    model_name, audio_format, annot_format, input_type, specific_config_toml_path, trainer_table, tmp_path,
 ):
     root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()

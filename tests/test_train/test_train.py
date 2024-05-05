@@ -35,7 +35,7 @@ def test_train(
             "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"table": "train", "key": "device", "value": 'cpu'},
+        {"table": "train", "key": "trainer", "value": {"accelerator": "cpu", "devices": 1}},
     ]
 
     toml_path = specific_config_toml_path(
@@ -55,6 +55,7 @@ def test_train(
         vak.train.train(
             model_config=cfg.train.model.asdict(),
             dataset_config=cfg.train.dataset.asdict(),
+            trainer_config=cfg.train.trainer.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -66,6 +67,5 @@ def test_train(
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,
             patience=cfg.train.patience,
-            device=cfg.train.device,
         )
         assert mock_train_function.called

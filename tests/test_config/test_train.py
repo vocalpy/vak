@@ -17,7 +17,7 @@ class TestTrainConfig:
                     'ckpt_step': 200,
                     'patience': 4,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                     'model': {
                         'TweetyNet': {
@@ -46,6 +46,7 @@ class TestTrainConfig:
     def test_init(self, config_dict):
         config_dict['model'] = vak.config.ModelConfig.from_config_dict(config_dict['model'])
         config_dict['dataset'] = vak.config.DatasetConfig.from_config_dict(config_dict['dataset'])
+        config_dict['trainer'] = vak.config.TrainerConfig(**config_dict['trainer'])
 
         train_config = vak.config.TrainConfig(**config_dict)
 
@@ -62,7 +63,7 @@ class TestTrainConfig:
                     'ckpt_step': 200,
                     'patience': 4,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                     'model': {
                         'TweetyNet': {
@@ -112,7 +113,7 @@ class TestTrainConfig:
                         'ckpt_step': 200,
                         'patience': 4,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                         'dataset': {
                             'path': 'tests/data_for_tests/generated/prep/train/audio_cbin_annot_notmat/TweetyNet/032312-vak-frame-classification-dataset-generated-240502_234819'
@@ -129,7 +130,7 @@ class TestTrainConfig:
                         'ckpt_step': 200,
                         'patience': 4,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                         'model': {
                             'TweetyNet': {

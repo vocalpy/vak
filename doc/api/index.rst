@@ -130,14 +130,16 @@ and dataclasses that represent tables from those files.
    :recursive:
 
    config.config
+   config.dataset
    config.eval
    config.learncurve
+   config.load
    config.model
-   config.parse
    config.predict
    config.prep
    config.spect_params
    config.train
+   config.trainer
    config.validators
 
 Datasets
@@ -265,10 +267,10 @@ used by multiple other modules.
    :template: module.rst
    :recursive:
 
+   common.accelerator
    common.annotation
    common.constants
    common.converters
-   common.device
    common.files
    common.labels
    common.learncurve

@@ -14,7 +14,6 @@ import torch.utils.data
 
 from .. import datasets, models, transforms
 from ..common import validators
-from ..common.device import get_default as get_default_device
 from ..common.trainer import get_default_trainer
 from ..datasets.frame_classification import FramesDataset, WindowDataset
 
@@ -29,6 +28,7 @@ def get_split_dur(df: pd.DataFrame, split: str) -> float:
 def train_frame_classification_model(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
@@ -40,7 +40,6 @@ def train_frame_classification_model(
     val_step: int | None = None,
     ckpt_step: int | None = None,
     patience: int | None = None,
-    device: str | None = None,
     subset: str | None = None,
 ) -> None:
     """Train a model from the frame classification family
@@ -60,6 +59,9 @@ def train_frame_classification_model(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer` in a :class:`dict`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     batch_size : int
         number of samples per batch presented to models during training.
     num_epochs : int
@@ -86,10 +88,6 @@ def train_frame_classification_model(
     results_path : str, pathlib.Path
         Directory where results will be saved.
         If specified, this parameter overrides ``root_results_dir``.
-    device : str
-        Device on which to work with model + data.
-        Default is None. If None, then a device will be selected with vak.split.get_default.
-        That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
@@ -279,9 +277,6 @@ def train_frame_classification_model(
     else:
         val_loader = None
 
-    if device is None:
-        device = get_default_device()
-
     model = models.get(
         model_name,
         model_config,
@@ -308,11 +303,12 @@ def train_frame_classification_model(
         "patience": patience,
     }
     trainer = get_default_trainer(
+        accelerator=trainer_config["accelerator"],
+        devices=trainer_config["devices"],
         max_steps=max_steps,
         log_save_dir=results_model_root,
         val_step=val_step,
         default_callback_kwargs=default_callback_kwargs,
-        device=device,
     )
     train_time_start = datetime.datetime.now()
     logger.info(f"Training start time: {train_time_start.isoformat()}")
