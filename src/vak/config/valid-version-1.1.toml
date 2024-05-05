@@ -56,6 +56,10 @@ params = {window_size = 2000}
 
 [vak.train.model.TweetyNet]
 
+[vak.train.trainer]
+accelerator = "gpu"
+devices = [0]
+
 [vak.eval]
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
@@ -72,6 +76,10 @@ path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
 
 [vak.eval.model.TweetyNet]
+
+[vak.eval.trainer]
+accelerator = "gpu"
+devices = [0]
 
 [vak.learncurve]
 root_results_dir = './tests/test_data/results/learncurve'
@@ -95,6 +103,10 @@ params = {window_size = 2000}
 
 [vak.learncurve.model.TweetyNet]
 
+[vak.learncurve.trainer]
+accelerator = "gpu"
+devices = [0]
+
 [vak.predict]
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
@@ -115,3 +127,7 @@ splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
 params = {window_size = 2000}
 
 [vak.predict.model.TweetyNet]
+
+[vak.predictor.trainer]
+accelerator = "gpu"
+devices = [0]
