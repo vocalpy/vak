@@ -1,7 +1,7 @@
 """fixtures relating to annotation files"""
 import crowsetta
 import pytest
-import toml
+import tomlkit
 
 
 from .config import GENERATED_TEST_CONFIGS_ROOT
@@ -75,8 +75,8 @@ a_train_notmat_config = sorted(
 )[0]  # get first config.toml from glob list
 # doesn't really matter which config, they all have labelset
 with a_train_notmat_config.open("r") as fp:
-    a_train_notmat_toml = toml.load(fp)
-LABELSET_NOTMAT = a_train_notmat_toml["PREP"]["labelset"]
+    a_train_notmat_toml = tomlkit.load(fp)
+LABELSET_NOTMAT = list(str(a_train_notmat_toml["vak"]["prep"]["labelset"]))
 
 
 @pytest.fixture
@@ -135,4 +135,5 @@ def annotated_annot_no_segments(request):
     Used to test edge case for `has_unlabeled`,
     see https://github.com/vocalpy/vak/issues/378
     """
+
     return request.param

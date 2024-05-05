@@ -1,25 +1,22 @@
 import pytest
-import toml
 
 import vak.config.validators
 
 
-def test_are_sections_valid(invalid_section_config_path):
-    """test that invalid section name raises a ValueError"""
-    with invalid_section_config_path.open("r") as fp:
-        config_toml = toml.load(fp)
+def test_are_tables_valid(invalid_table_config_path):
+    """test that invalid table name raises a ValueError"""
+    config_dict = vak.config.load._load_toml_from_path(invalid_table_config_path)
     with pytest.raises(ValueError):
-        vak.config.validators.are_sections_valid(
-            config_toml, invalid_section_config_path
+        vak.config.validators.are_tables_valid(
+            config_dict, invalid_table_config_path
         )
 
 
-def test_are_options_valid(invalid_option_config_path):
-    """test that section with an invalid option name raises a ValueError"""
-    section_with_invalid_option = "PREP"
-    with invalid_option_config_path.open("r") as fp:
-        config_toml = toml.load(fp)
+def test_are_keys_valid(invalid_key_config_path):
+    """test that table with an invalid key name raises a ValueError"""
+    table_with_invalid_key = "prep"
+    config_dict = vak.config.load._load_toml_from_path(invalid_key_config_path)
     with pytest.raises(ValueError):
-        vak.config.validators.are_options_valid(
-            config_toml, section_with_invalid_option, invalid_option_config_path
+        vak.config.validators.are_keys_valid(
+            config_dict, table_with_invalid_key, invalid_key_config_path
         )

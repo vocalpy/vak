@@ -1,4 +1,4 @@
-[PREP]
+[vak.prep]
 dataset_type = "frame classification"
 input_type = "spect"
 labelset = "iabcdefghjk"
@@ -7,31 +7,30 @@ output_dir = "./tests/data_for_tests/generated/prep/eval/audio_cbin_annot_notmat
 audio_format = "cbin"
 annot_format = "notmat"
 
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 fft_size = 512
 step_size = 64
 freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[EVAL]
+[vak.eval]
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 labelmap_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/labelmap.json"
-model = "TweetyNet"
 batch_size = 11
 num_workers = 16
 device = "cuda"
 spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet"
 
-[EVAL.post_tfm_kwargs]
+[vak.eval.post_tfm_kwargs]
 majority_vote = true
 min_segment_dur = 0.02
 
-[EVAL.transform_params]
-window_size = 88
+[vak.eval.dataset]
+params = { window_size = 88 }
 
-[TweetyNet.network]
+[vak.eval.model.TweetyNet.network]
 conv1_filters = 8
 conv1_kernel_size = [3, 3]
 conv2_filters = 16
@@ -42,5 +41,5 @@ pool2_size = [4, 1]
 pool2_stride = [4, 1]
 hidden_size = 32
 
-[TweetyNet.optimizer]
+[vak.eval.model.TweetyNet.optimizer]
 lr = 0.001

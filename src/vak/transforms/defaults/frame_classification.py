@@ -8,6 +8,7 @@ coupling the FramesDataset __getitem__ implementation to the transforms
 needed for specific neural network models, e.g., whether the returned
 output includes a mask to crop off padding that was added.
 """
+
 from __future__ import annotations
 
 from typing import Callable
@@ -26,32 +27,32 @@ class TrainItemTransform:
     ):
         if spect_standardizer is not None:
             if isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
-                source_transform = [spect_standardizer]
+                frames_transform = [spect_standardizer]
             else:
                 raise TypeError(
                     f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
                     "Should be an instance of vak.transforms.StandardizeSpect"
                 )
         else:
-            source_transform = []
+            frames_transform = []
 
-        source_transform.extend(
+        frames_transform.extend(
             [
                 vak_transforms.ToFloatTensor(),
                 vak_transforms.AddChannel(),
             ]
         )
-        self.source_transform = torchvision.transforms.Compose(
-            source_transform
+        self.frames_transform = torchvision.transforms.Compose(
+            frames_transform
         )
-        self.annot_transform = vak_transforms.ToLongTensor()
+        self.frame_labels_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, source, annot, spect_path=None):
-        source = self.source_transform(source)
-        annot = self.annot_transform(annot)
+    def __call__(self, frames, frame_labels, spect_path=None):
+        frames = self.frames_transform(frames)
+        frame_labels = self.frame_labels_transform(frame_labels)
         item = {
-            "frames": source,
-            "frame_labels": annot,
+            "frames": frames,
+            "frame_labels": frame_labels,
         }
 
         if spect_path is not None:
@@ -199,15 +200,18 @@ class PredictItemTransform:
 
 
 def get_default_frame_classification_transform(
-    mode: str, transform_kwargs: dict
+    mode: str, transform_kwargs: dict | None = None
 ) -> tuple[Callable, Callable] | Callable:
     """Get default transform for frame classification model.
 
     Parameters
     ----------
     mode : str
-    transform_kwargs : dict
-        A dict with the following key-value pairs:
+    transform_kwargs : dict, optional
+        Keyword arguments for transform class.
+        Default is None.
+        If supplied, should be a :class:`dict`,
+        that can include the following key-value pairs:
             spect_standardizer : vak.transforms.StandardizeSpect
                 instance that has already been fit to dataset, using fit_df method.
                 Default is None, in which case no standardization transform is applied.
@@ -226,8 +230,10 @@ def get_default_frame_classification_transform(
 
     Returns
     -------
-
+    transform: TrainItemTransform, EvalItemTransform, or PredictItemTransform
     """
+    if transform_kwargs is None:
+        transform_kwargs = {}
     spect_standardizer = transform_kwargs.get("spect_standardizer", None)
     # regardless of mode, transform always starts with StandardizeSpect, if used
     if spect_standardizer is not None:
@@ -238,21 +244,7 @@ def get_default_frame_classification_transform(
             )
 
     if mode == "train":
-        if spect_standardizer is not None:
-            transform = [spect_standardizer]
-        else:
-            transform = []
-
-        transform.extend(
-            [
-                vak_transforms.ToFloatTensor(),
-                vak_transforms.AddChannel(),
-            ]
-        )
-        transform = torchvision.transforms.Compose(transform)
-
-        target_transform = vak_transforms.ToLongTensor()
-        return transform, target_transform
+        return TrainItemTransform(spect_standardizer)
 
     elif mode == "predict":
         item_transform = PredictItemTransform(

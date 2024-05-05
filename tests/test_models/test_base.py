@@ -191,21 +191,20 @@ class TestModel:
         """
         definition = self.MODEL_DEFINITION_MAP[model_name]
         train_toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
-        train_cfg = vak.config.parse.from_toml_path(train_toml_path)
+        train_cfg = vak.config.Config.from_toml_path(train_toml_path)
 
         # stuff we need just to be able to instantiate network
         labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
-        transform, target_transform = vak.transforms.defaults.get_default_transform(
+        item_transform = vak.transforms.defaults.get_default_transform(
             model_name,
             "train",
             transform_kwargs={},
         )
         train_dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
-            dataset_path=train_cfg.train.dataset_path,
+            dataset_path=train_cfg.train.dataset.path,
             split="train",
-            window_size=train_cfg.train.train_dataset_params['window_size'],
-            transform=transform,
-            target_transform=target_transform,
+            window_size=train_cfg.train.dataset.params['window_size'],
+            item_transform=item_transform,
         )
         input_shape = train_dataset.shape
         num_input_channels = input_shape[-3]
@@ -216,7 +215,8 @@ class TestModel:
         )
         # network is the one thing that has required args
         # and we also need to use its config from the toml file
-        model_config = vak.config.model.config_from_toml_path(train_toml_path, model_name)
+        cfg = vak.config.Config.from_toml_path(train_toml_path)
+        model_config = cfg.train.model.asdict()
         network = definition.network(num_classes=len(labelmap),
                                      num_input_channels=num_input_channels,
                                      num_freqbins=num_freqbins,
@@ -225,7 +225,7 @@ class TestModel:
         model.to(device)
 
         eval_toml_path = specific_config_toml_path('eval', model_name, audio_format='cbin', annot_format='notmat')
-        eval_cfg = vak.config.parse.from_toml_path(eval_toml_path)
+        eval_cfg = vak.config.Config.from_toml_path(eval_toml_path)
         checkpoint_path = eval_cfg.eval.checkpoint_path
 
         # ---- actually test method

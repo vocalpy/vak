@@ -3,6 +3,7 @@
 Makes it possible to register a model declared outside of ``vak``
 with a decorator, so that the model can be used at runtime.
 """
+
 from __future__ import annotations
 
 import inspect

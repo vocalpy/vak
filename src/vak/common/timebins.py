@@ -1,5 +1,6 @@
 """module for functions that deal with vector of times from a spectrogram,
 i.e. where elements are the times at bin centers"""
+
 import numpy as np
 
 

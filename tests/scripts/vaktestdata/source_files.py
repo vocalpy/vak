@@ -7,7 +7,7 @@ from numba.core.errors import NumbaDeprecationWarning
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 
 import pandas as pd
-import toml
+import tomlkit
 
 import vak
 
@@ -47,14 +47,14 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
             f"using config:\n{config_path.name}"
         )
-        cfg = vak.config.parse.from_toml_path(config_path)
+        cfg = vak.config.Config.from_toml_path(config_path, tables_to_parse='prep')
 
         source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
             data_dir=cfg.prep.data_dir,
             input_type=cfg.prep.input_type,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
+            spect_params=cfg.prep.spect_params,
             spect_output_dir=spect_output_dir,
             annot_format=cfg.prep.annot_format,
             annot_file=cfg.prep.annot_file,
@@ -72,7 +72,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
         source_files_df.to_csv(csv_path, index=False)
 
-        config_toml: dict = vak.config.parse._load_toml_from_path(config_path)
+        config_toml: dict = vak.config.load._load_toml_from_path(config_path)
         purpose = vak.cli.prep.purpose_from_toml(config_toml, config_path)
         dataset_df: pd.DataFrame = vak.prep.frame_classification.assign_samples_to_splits(
             purpose,
@@ -103,20 +103,20 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         )
 
         with config_path.open("r") as fp:
-            config_toml = toml.load(fp)
+            tomldoc = tomlkit.load(fp)
         data_dir = constants.GENERATED_TEST_DATA_ROOT / config_metadata.data_dir
-        config_toml['PREP']['data_dir'] = str(data_dir)
+        tomldoc['vak']['prep']['data_dir'] = str(data_dir)
         with config_path.open("w") as fp:
-            toml.dump(config_toml, fp)
+            tomlkit.dump(tomldoc, fp)
 
-        cfg = vak.config.parse.from_toml_path(config_path)
+        cfg = vak.config.Config.from_toml_path(config_path, tables_to_parse='prep')
 
         source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
             data_dir=cfg.prep.data_dir,
             input_type=cfg.prep.input_type,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
+            spect_params=cfg.prep.spect_params,
             spect_output_dir=None,
             annot_format=cfg.prep.annot_format,
             annot_file=cfg.prep.annot_file,
@@ -127,7 +127,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
         source_files_df.to_csv(csv_path, index=False)
 
-        config_toml: dict = vak.config.parse._load_toml_from_path(config_path)
+        config_toml: dict = vak.config.load._load_toml_from_path(config_path)
         purpose = vak.cli.prep.purpose_from_toml(config_toml, config_path)
         dataset_df: pd.DataFrame = vak.prep.frame_classification.assign_samples_to_splits(
             purpose,
@@ -159,13 +159,13 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
             f"\nRunning :func:`vak.prep.frame_classification.get_or_make_source_files` to generate data for tests, "
             f"using config:\n{config_path.name}"
         )
-        cfg = vak.config.parse.from_toml_path(config_path)
+        cfg = vak.config.Config.from_toml_path(config_path, tables_to_parse='prep')
         source_files_df: pd.DataFrame = vak.prep.frame_classification.get_or_make_source_files(
             data_dir=cfg.prep.data_dir,
             input_type=cfg.prep.input_type,
             audio_format=cfg.prep.audio_format,
             spect_format=cfg.prep.spect_format,
-            spect_params=cfg.spect_params,
+            spect_params=cfg.prep.spect_params,
             spect_output_dir=None,
             annot_format=cfg.prep.annot_format,
             annot_file=cfg.prep.annot_file,
@@ -176,7 +176,7 @@ def set_up_source_files_and_csv_files_for_frame_classification_models():
         csv_path = constants.GENERATED_SOURCE_FILES_CSV_DIR / f'{config_metadata.filename}-source-files.csv'
         source_files_df.to_csv(csv_path, index=False)
 
-        config_toml: dict = vak.config.parse._load_toml_from_path(config_path)
+        config_toml: dict = vak.config.load._load_toml_from_path(config_path)
         purpose = vak.cli.prep.purpose_from_toml(config_toml, config_path)
         dataset_df: pd.DataFrame = vak.prep.frame_classification.assign_samples_to_splits(
             purpose,

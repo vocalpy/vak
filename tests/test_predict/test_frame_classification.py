@@ -37,32 +37,27 @@ def test_predict_with_frame_classification_model(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)},
-        {"section": "PREDICT", "option": "device", "value": device},
-        {"section": "PREDICT", "option": "save_net_outputs", "value": save_net_outputs},
+    keys_to_change = [
+        {"table": "predict", "key": "output_dir", "value": str(output_dir)},
+        {"table": "predict", "key": "device", "value": device},
+        {"table": "predict", "key": "save_net_outputs", "value": save_net_outputs},
     ]
     toml_path = specific_config_toml_path(
         config_type="predict",
         model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     vak.predict.frame_classification.predict_with_frame_classification_model(
-        model_name=cfg.predict.model,
-        model_config=model_config,
-        dataset_path=cfg.predict.dataset_path,
+        model_config=cfg.predict.model.asdict(),
+        dataset_config=cfg.predict.dataset.asdict(),
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
         num_workers=cfg.predict.num_workers,
-        transform_params=cfg.predict.transform_params,
-        dataset_params=cfg.predict.dataset_params,
-        timebins_key=cfg.spect_params.timebins_key,
+        timebins_key=cfg.prep.spect_params.timebins_key,
         spect_scaler_path=cfg.predict.spect_scaler_path,
         device=cfg.predict.device,
         annot_csv_filename=cfg.predict.annot_csv_filename,
@@ -78,8 +73,8 @@ def test_predict_with_frame_classification_model(
             Path(output_dir).glob(f"*{vak.common.constants.NET_OUTPUT_SUFFIX}")
         )
 
-        metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(cfg.predict.dataset_path)
-        dataset_csv_path = cfg.predict.dataset_path / metadata.dataset_csv_filename
+        metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(cfg.predict.dataset.path)
+        dataset_csv_path = cfg.predict.dataset.path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
 
         for spect_path in dataset_df.spect_path.values:
@@ -94,9 +89,9 @@ def test_predict_with_frame_classification_model(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"section": "PREDICT", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"section": "PREDICT", "option": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"section": "PREDICT", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "predict", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
+        {"table": "predict", "key": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
+        {"table": "predict", "key": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
 def test_predict_with_frame_classification_model_raises_file_not_found(
@@ -112,9 +107,9 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)},
-        {"section": "PREDICT", "option": "device", "value": device},
+    keys_to_change = [
+        {"table": "predict", "key": "output_dir", "value": str(output_dir)},
+        {"table": "predict", "key": "device", "value": device},
         path_option_to_change,
     ]
     toml_path = specific_config_toml_path(
@@ -122,23 +117,18 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
         model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     with pytest.raises(FileNotFoundError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
-            model_name=cfg.predict.model,
-            model_config=model_config,
-            dataset_path=cfg.predict.dataset_path,
+            model_config=cfg.predict.model.asdict(),
+            dataset_config=cfg.predict.dataset.asdict(),
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
-            transform_params=cfg.predict.transform_params,
-            dataset_params=cfg.predict.dataset_params,
-            timebins_key=cfg.spect_params.timebins_key,
+            timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
             device=cfg.predict.device,
             annot_csv_filename=cfg.predict.annot_csv_filename,
@@ -152,8 +142,8 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"section": "PREDICT", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
-        {"section": "PREDICT", "option": "output_dir", "value": '/obviously/does/not/exist/output'},
+        {"table": "predict", "key": ["dataset", "path"], "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "predict", "key": "output_dir", "value": '/obviously/does/not/exist/output'},
     ]
 )
 def test_predict_with_frame_classification_model_raises_not_a_directory(
@@ -165,20 +155,20 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
     """Test that core.eval raises NotADirectory
     when ``output_dir`` does not exist
     """
-    options_to_change = [
+    keys_to_change = [
         path_option_to_change,
-        {"section": "PREDICT", "option": "device", "value": device},
+        {"table": "predict", "key": "device", "value": device},
     ]
 
-    if path_option_to_change["option"] != "output_dir":
+    if path_option_to_change["key"] != "output_dir":
         # need to make sure output_dir *does* exist
         # so we don't detect spurious NotADirectoryError and assume test passes
         output_dir = tmp_path.joinpath(
             f"test_predict_raises_not_a_directory"
         )
         output_dir.mkdir()
-        options_to_change.append(
-            {"section": "PREDICT", "option": "output_dir", "value": str(output_dir)}
+        keys_to_change.append(
+            {"table": "predict", "key": "output_dir", "value": str(output_dir)}
         )
 
     toml_path = specific_config_toml_path(
@@ -186,22 +176,18 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
         model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.predict.model)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     with pytest.raises(NotADirectoryError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
-            model_name=cfg.predict.model,
-            model_config=model_config,
-            dataset_path=cfg.predict.dataset_path,
+            model_config=cfg.predict.model.asdict(),
+            dataset_config=cfg.predict.dataset.asdict(),
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
-            transform_params=cfg.predict.transform_params,
-            dataset_params=cfg.predict.dataset_params,
-            timebins_key=cfg.spect_params.timebins_key,
+            timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
             device=cfg.predict.device,
             annot_csv_filename=cfg.predict.annot_csv_filename,

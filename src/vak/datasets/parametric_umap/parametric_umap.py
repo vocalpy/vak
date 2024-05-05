@@ -1,4 +1,5 @@
 """A dataset class used to train Parametric UMAP models."""
+
 from __future__ import annotations
 
 import pathlib

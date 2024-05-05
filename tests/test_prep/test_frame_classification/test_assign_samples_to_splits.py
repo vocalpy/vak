@@ -27,7 +27,7 @@ def test_assign_samples_to_splits(
         spect_format,
     )
 
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     # ---- set up ----
     tmp_dataset_path = tmp_path / 'dataset_dir'

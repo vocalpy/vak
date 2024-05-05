@@ -46,9 +46,9 @@ def test_train_frame_classification_model(
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
-    options_to_change = [
-        {"section": "TRAIN", "option": "device", "value": device},
-        {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
+    keys_to_change = [
+        {"table": "train", "key": "device", "value": device},
+        {"table": "train", "key": "root_results_dir", "value": str(results_path)}
     ]
     toml_path = specific_config_toml_path(
         config_type="train",
@@ -56,22 +56,16 @@ def test_train_frame_classification_model(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     vak.train.frame_classification.train_frame_classification_model(
-        model_name=cfg.train.model,
-        model_config=model_config,
-        dataset_path=cfg.train.dataset_path,
+        model_config=cfg.train.model.asdict(),
+        dataset_config=cfg.train.dataset.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
-        train_transform_params=cfg.train.train_transform_params,
-        train_dataset_params=cfg.train.train_dataset_params,
-        val_transform_params=cfg.train.val_transform_params,
-        val_dataset_params=cfg.train.val_dataset_params,
         checkpoint_path=cfg.train.checkpoint_path,
         spect_scaler_path=cfg.train.spect_scaler_path,
         results_path=results_path,
@@ -83,7 +77,7 @@ def test_train_frame_classification_model(
         device=cfg.train.device,
     )
 
-    assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
+    assert_train_output_matches_expected(cfg, cfg.train.model.name, results_path)
 
 
 @pytest.mark.slow
@@ -99,9 +93,9 @@ def test_continue_training(
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
-    options_to_change = [
-        {"section": "TRAIN", "option": "device", "value": device},
-        {"section": "TRAIN", "option": "root_results_dir", "value": results_path}
+    keys_to_change = [
+        {"table": "train", "key": "device", "value": device},
+        {"table": "train", "key": "root_results_dir", "value": str(results_path)}
     ]
     toml_path = specific_config_toml_path(
         config_type="train_continue",
@@ -109,22 +103,16 @@ def test_continue_training(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     vak.train.frame_classification.train_frame_classification_model(
-        model_name=cfg.train.model,
-        model_config=model_config,
-        dataset_path=cfg.train.dataset_path,
+        model_config=cfg.train.model.asdict(),
+        dataset_config=cfg.train.dataset.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
-        train_transform_params=cfg.train.train_transform_params,
-        train_dataset_params=cfg.train.train_dataset_params,
-        val_transform_params=cfg.train.val_transform_params,
-        val_dataset_params=cfg.train.val_dataset_params,
         checkpoint_path=cfg.train.checkpoint_path,
         spect_scaler_path=cfg.train.spect_scaler_path,
         results_path=results_path,
@@ -136,14 +124,14 @@ def test_continue_training(
         device=cfg.train.device,
     )
 
-    assert_train_output_matches_expected(cfg, cfg.train.model, results_path)
+    assert_train_output_matches_expected(cfg, cfg.train.model.name, results_path)
 
 
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"section": "TRAIN", "option": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"section": "TRAIN", "option": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "train", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
+        {"table": "train", "key": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
 def test_train_raises_file_not_found(
@@ -153,8 +141,8 @@ def test_train_raises_file_not_found(
     when one of the following does not exist:
     checkpoint_path, dataset_path, spect_scaler_path
     """
-    options_to_change = [
-        {"section": "TRAIN", "option": "device", "value": device},
+    keys_to_change = [
+        {"table": "train", "key": "device", "value": device},
         path_option_to_change
     ]
     toml_path = specific_config_toml_path(
@@ -163,25 +151,19 @@ def test_train_raises_file_not_found(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+    cfg = vak.config.Config.from_toml_path(toml_path)
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
 
     with pytest.raises(FileNotFoundError):
         vak.train.frame_classification.train_frame_classification_model(
-            model_name=cfg.train.model,
-            model_config=model_config,
-            dataset_path=cfg.train.dataset_path,
+            model_config=cfg.train.model.asdict(),
+            dataset_config=cfg.train.dataset.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
-            train_transform_params=cfg.train.train_transform_params,
-            train_dataset_params=cfg.train.train_dataset_params,
-            val_transform_params=cfg.train.val_transform_params,
-            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             spect_scaler_path=cfg.train.spect_scaler_path,
             results_path=results_path,
@@ -197,8 +179,8 @@ def test_train_raises_file_not_found(
 @pytest.mark.parametrize(
     'path_option_to_change',
     [
-        {"section": "TRAIN", "option": "dataset_path", "value": '/obviously/doesnt/exist/dataset-dir'},
-        {"section": "TRAIN", "option": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
+        {"table": "train", "key": ["dataset", "path"], "value": '/obviously/doesnt/exist/dataset-dir'},
+        {"table": "train", "key": "root_results_dir", "value": '/obviously/doesnt/exist/results/'},
     ]
 )
 def test_train_raises_not_a_directory(
@@ -207,9 +189,9 @@ def test_train_raises_not_a_directory(
     """Test that core.train raises NotADirectory
     when directory does not exist
     """
-    options_to_change = [
+    keys_to_change = [
         path_option_to_change,
-        {"section": "TRAIN", "option": "device", "value": device},
+        {"table": "train", "key": "device", "value": device},
     ]
 
     toml_path = specific_config_toml_path(
@@ -218,26 +200,20 @@ def test_train_raises_not_a_directory(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
-    model_config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
     # mock behavior of cli.train, building `results_path` from config option `root_results_dir`
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'
 
     with pytest.raises(NotADirectoryError):
         vak.train.frame_classification.train_frame_classification_model(
-            model_name=cfg.train.model,
-            model_config=model_config,
-            dataset_path=cfg.train.dataset_path,
+            model_config=cfg.train.model.asdict(),
+            dataset_config=cfg.train.dataset.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
-            train_transform_params=cfg.train.train_transform_params,
-            train_dataset_params=cfg.train.train_dataset_params,
-            val_transform_params=cfg.train.val_transform_params,
-            val_dataset_params=cfg.train.val_dataset_params,
             checkpoint_path=cfg.train.checkpoint_path,
             spect_scaler_path=cfg.train.spect_scaler_path,
             results_path=results_path,

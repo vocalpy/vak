@@ -17,6 +17,7 @@ This module is structured as followed:
     and apply the most "popular" label within each segment to all timebins in that segment
   - postprocess: combines remove_short_segments and take_majority_vote in one transform
 """
+
 from __future__ import annotations
 
 import numpy as np

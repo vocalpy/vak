@@ -35,7 +35,7 @@ def test_purpose_from_toml(
         annot_format=annot_format,
         spect_format=spect_format,
     )
-    config_toml = vak.config.parse._load_toml_from_path(toml_path)
+    config_toml = vak.config.load._load_toml_from_path(toml_path)
     vak.cli.prep.purpose_from_toml(config_toml)
 
 
@@ -64,13 +64,13 @@ def test_prep(
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREP", "option": "output_dir", "value": str(output_dir)},
+    keys_to_change = [
+        {"table": "prep", "key": "output_dir", "value": str(output_dir)},
         # need to remove dataset_path option from configs we already ran prep on to avoid error
         {
-            "section": config_type.upper(),
-            "option": "dataset_path",
-            "value": None,
+            "table": config_type,
+            "key": "dataset",
+            "value": "DELETE-KEY",
         },
     ]
     toml_path = specific_config_toml_path(
@@ -79,7 +79,7 @@ def test_prep(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with mock.patch('vak.prep.prep', autospec=True) as mock_core_prep:
@@ -98,23 +98,23 @@ def test_prep(
         ("train", None, "mat", "yarden"),
     ],
 )
-def test_prep_dataset_path_raises(
+def test_prep_dataset_raises(
     config_type,
     audio_format,
     spect_format,
     annot_format,
-        specific_config_toml_path,
+    specific_config_toml_path,
     default_model,
     tmp_path,
-
 ):
+    """Test that prep raises a ValueError when the config already has a dataset with a path"""
     output_dir = tmp_path.joinpath(
         f"test_prep_{config_type}_{audio_format}_{spect_format}_{annot_format}"
     )
     output_dir.mkdir()
 
-    options_to_change = [
-        {"section": "PREP", "option": "output_dir", "value": str(output_dir)},
+    keys_to_change = [
+        {"table": "prep", "key": "output_dir", "value": str(output_dir)},
     ]
     toml_path = specific_config_toml_path(
         config_type=config_type,
@@ -122,7 +122,7 @@ def test_prep_dataset_path_raises(
         audio_format=audio_format,
         annot_format=annot_format,
         spect_format=spect_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with pytest.raises(ValueError):

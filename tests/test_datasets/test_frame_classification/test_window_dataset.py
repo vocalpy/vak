@@ -20,18 +20,17 @@ class TestWindowDataset:
                                               audio_format=audio_format,
                                               spect_format=spect_format,
                                               annot_format=annot_format)
-        cfg = vak.config.parse.from_toml_path(toml_path)
+        cfg = vak.config.Config.from_toml_path(toml_path)
         cfg_command = getattr(cfg, config_type)
 
-        transform, target_transform = vak.transforms.defaults.get_default_transform(
+        transform = vak.transforms.defaults.get_default_transform(
             model_name, config_type, transform_kwargs
         )
 
         dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
-            dataset_path=cfg_command.dataset_path,
+            dataset_path=cfg_command.dataset.path,
             split=split,
-            window_size=cfg_command.train_dataset_params['window_size'],
-            transform=transform,
-            target_transform=target_transform,
+            window_size=cfg_command.dataset.params['window_size'],
+            item_transform=transform,
         )
         assert isinstance(dataset, vak.datasets.frame_classification.WindowDataset)

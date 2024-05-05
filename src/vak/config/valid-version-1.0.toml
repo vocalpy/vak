@@ -5,7 +5,7 @@
 # Options should be in the same order they are defined for the
 # attrs-based class that represents the config, for easy comparison
 # when changing that class + this file.
-[PREP]
+[vak.prep]
 data_dir = './tests/test_data/cbins/gy6or6/032312'
 output_dir = './tests/test_data/prep/learncurve'
 dataset_type = 'frame_classification'
@@ -22,7 +22,7 @@ test_dur = 30
 train_set_durs = [ 4.5, 6.0 ]
 num_replicates = 2
 
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 fft_size = 512
 step_size = 64
 freq_cutoffs = [ 500, 10000 ]
@@ -33,10 +33,8 @@ freqbins_key = 'f'
 timebins_key = 't'
 audio_path_key = 'audio_path'
 
-[TRAIN]
-model = 'TweetyNet'
+[vak.train]
 root_results_dir = './tests/test_data/results/train'
-dataset_path = 'tests/test_data/prep/train/032312_prep_191224_225912.csv'
 num_workers = 4
 device = 'cuda'
 batch_size = 11
@@ -49,27 +47,33 @@ patience = 4
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
-train_transform_params = {'resize' = 128}
-train_dataset_params = {'window_size' = 80}
-val_transform_params = {'resize' = 128}
-val_dataset_params = {'window_size' = 80}
 
-[EVAL]
-dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
+[vak.train.dataset]
+name = 'IntlDistributedSongbirdConsortiumPack'
+path = 'tests/test_data/prep/train/032312_prep_191224_225912.csv'
+splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
+params = {window_size = 2000}
+
+[vak.train.model.TweetyNet]
+
+[vak.eval]
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 output_dir = './tests/test_data/prep/learncurve'
-model = 'TweetyNet'
 batch_size = 11
 num_workers = 4
 device = 'cuda'
 spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
-transform_params = {'resize' = 128}
-dataset_params = {'window_size' = 80}
 
-[LEARNCURVE]
-model = 'TweetyNet'
+[vak.eval.dataset]
+name = 'IntlDistributedSongbirdConsortiumPack'
+path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
+splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
+
+[vak.eval.model.TweetyNet]
+
+[vak.learncurve]
 root_results_dir = './tests/test_data/results/learncurve'
 batch_size = 11
 num_epochs = 2
@@ -78,23 +82,24 @@ shuffle = true
 val_step = 1
 ckpt_step = 1
 patience = 4
-dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 num_workers = 4
 device = 'cuda'
-train_transform_params = {'resize' = 128}
-train_dataset_params = {'window_size' = 80}
-val_transform_params = {'resize' = 128}
-val_dataset_params = {'window_size' = 80}
 
-[PREDICT]
-dataset_path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
+[vak.learncurve.dataset]
+name = 'IntlDistributedSongbirdConsortiumPack'
+path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
+splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
+params = {window_size = 2000}
+
+[vak.learncurve.model.TweetyNet]
+
+[vak.predict]
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
 labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 annot_csv_filename = '032312_prep_191224_225910.annot.csv'
 output_dir = './tests/test_data/prep/learncurve'
-model = 'TweetyNet'
 batch_size = 11
 num_workers = 4
 device = 'cuda'
@@ -102,5 +107,11 @@ spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
 min_segment_dur = 0.004
 majority_vote = false
 save_net_outputs = false
-transform_params = {'resize' = 128}
-dataset_params = {'window_size' = 80}
+
+[vak.predict.dataset]
+name = 'IntlDistributedSongbirdConsortiumPack'
+path = 'tests/test_data/prep/learncurve/032312_prep_191224_225910.csv'
+splits_path = 'tests/test_data/prep/train/032312_prep_191224_225912.splits.json'
+params = {window_size = 2000}
+
+[vak.predict.model.TweetyNet]

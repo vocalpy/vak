@@ -1,6 +1,7 @@
 """Base class for a model in ``vak``,
 that other families of models should subclass.
 """
+
 from __future__ import annotations
 
 import inspect

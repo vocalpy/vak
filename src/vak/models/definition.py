@@ -1,6 +1,7 @@
 """Code that handles classes that represent the definition
 of a neural network model; the abstraction of how models
 are declared with code in vak."""
+
 from __future__ import annotations
 
 import dataclasses

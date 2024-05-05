@@ -2,6 +2,7 @@
 Invokes __main__ when the module is run as a script.
 Example: python -m vak --help
 """
+
 import argparse
 from pathlib import Path
 

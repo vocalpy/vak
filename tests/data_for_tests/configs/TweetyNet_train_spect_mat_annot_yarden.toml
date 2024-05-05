@@ -1,4 +1,4 @@
-[PREP]
+[vak.prep]
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/spect_mat_annot_yarden/llb3/spect"
@@ -10,15 +10,14 @@ labelset = "range: 1-3,6-14,17-19"
 train_dur = 213
 val_dur = 213
 
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 fft_size = 512
 step_size = 64
 freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[TRAIN]
-model = "TweetyNet"
+[vak.train]
 normalize_spectrograms = false
 batch_size = 11
 num_epochs = 2
@@ -29,13 +28,10 @@ num_workers = 16
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/spect_mat_annot_yarden/TweetyNet"
 
-[TRAIN.train_dataset_params]
-window_size = 88
+[vak.train.dataset]
+params = { window_size = 88 }
 
-[TRAIN.val_transform_params]
-window_size = 88
-
-[TweetyNet.network]
+[vak.train.model.TweetyNet.network]
 conv1_filters = 8
 conv1_kernel_size = [3, 3]
 conv2_filters = 16
@@ -46,5 +42,5 @@ pool2_size = [4, 1]
 pool2_stride = [4, 1]
 hidden_size = 32
 
-[TweetyNet.optimizer]
+[vak.train.model.TweetyNet.optimizer]
 lr = 0.001

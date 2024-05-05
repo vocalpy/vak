@@ -1,6 +1,7 @@
 """constants used by multiple modules.
 Defined here to avoid circular imports.
 """
+
 from functools import partial
 
 import crowsetta

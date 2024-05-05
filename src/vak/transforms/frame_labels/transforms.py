@@ -20,6 +20,7 @@ dataloaders and models.
 - PostProcess: combines two post-processing transforms applied to frame labels,
   ``remove_short_segments`` and ``take_majority_vote``, in one class.
 """
+
 from __future__ import annotations
 
 import numpy as np

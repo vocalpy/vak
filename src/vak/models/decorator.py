@@ -8,6 +8,7 @@ of the class representing the family of models.
 The subclass can then be instantiated
 and have all model methods.
 """
+
 from __future__ import annotations
 
 from typing import Type

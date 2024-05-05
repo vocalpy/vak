@@ -23,7 +23,7 @@ def train(toml_path):
         path to a configuration file in TOML format.
     """
     toml_path = Path(toml_path)
-    cfg = config.parse.from_toml_path(toml_path)
+    cfg = config.Config.from_toml_path(toml_path)
 
     if cfg.train is None:
         raise ValueError(
@@ -45,10 +45,7 @@ def train(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
-    model_name = cfg.train.model
-    model_config = config.model.config_from_toml_path(toml_path, model_name)
-
-    if cfg.train.dataset_path is None:
+    if cfg.train.dataset.path is None:
         raise ValueError(
             "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
@@ -56,13 +53,8 @@ def train(toml_path):
         )
 
     train_module.train(
-        model_name=model_name,
-        model_config=model_config,
-        dataset_path=cfg.train.dataset_path,
-        train_transform_params=cfg.train.train_transform_params,
-        train_dataset_params=cfg.train.train_dataset_params,
-        val_transform_params=cfg.train.val_transform_params,
-        val_dataset_params=cfg.train.val_dataset_params,
+        model_config=cfg.train.model.asdict(),
+        dataset_config=cfg.train.dataset.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,

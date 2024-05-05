@@ -176,9 +176,11 @@ def prep_audio_dataset(
             [
                 abspath(audio_path),
                 abspath(annot_path),
-                annot_format
-                if annot_format
-                else constants.NO_ANNOTATION_FORMAT,
+                (
+                    annot_format
+                    if annot_format
+                    else constants.NO_ANNOTATION_FORMAT
+                ),
                 samplerate,
                 sample_dur,
                 audio_dur,

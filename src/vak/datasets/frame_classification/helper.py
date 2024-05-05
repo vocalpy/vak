@@ -1,4 +1,5 @@
 """Helper functions used with frame classification datasets."""
+
 from __future__ import annotations
 
 from ... import common

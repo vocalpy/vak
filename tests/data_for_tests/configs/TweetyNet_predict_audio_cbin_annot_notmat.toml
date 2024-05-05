@@ -1,32 +1,31 @@
-[PREP]
+[vak.prep]
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032412"
 output_dir = "./tests/data_for_tests/generated/prep/predict/audio_cbin_annot_notmat/TweetyNet"
 spect_format = "npz"
 
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 fft_size = 512
 step_size = 64
 freq_cutoffs = [ 500, 10000,]
 thresh = 6.25
 transform_type = "log_spect"
 
-[PREDICT]
+[vak.predict]
 spect_scaler_path = "/home/user/results_181014_194418/spect_scaler"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 labelmap_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json"
-model = "TweetyNet"
 batch_size = 11
 num_workers = 16
 device = "cuda"
 output_dir = "./tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet"
 annot_csv_filename = "bl26lb16.041912.annot.csv"
 
-[PREDICT.transform_params]
-window_size = 88
+[vak.predict.dataset]
+params = { window_size = 88 }
 
-[TweetyNet.network]
+[vak.predict.model.TweetyNet.network]
 conv1_filters = 8
 conv1_kernel_size = [3, 3]
 conv2_filters = 16
@@ -37,5 +36,5 @@ pool2_size = [4, 1]
 pool2_stride = [4, 1]
 hidden_size = 32
 
-[TweetyNet.optimizer]
+[vak.predict.model.TweetyNet.optimizer]
 lr = 0.001

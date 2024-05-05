@@ -1,11 +1,12 @@
-# used to test that invalid option 'ouput_dir' (instead of 'output_dir')
+# used to test that invalid key 'ouput_dir' (instead of 'output_dir')
 # raises a ValueError when passed to
-# vak.config.validators.are_options_valid
-[PREP]
+# vak.config.validators.are_keys_valid
+[vak.prep]
 dataset_type = "frame classification"
 input_type = "spect"
 data_dir = '/home/user/data/subdir/'
-ouput_dir = '/why/do/i/keep/typing/ouput'  # <-- invalid option 'ouput' instead of 'output'
+# next line, invalid key 'ouput' instead of 'output'
+ouput_dir = '/why/do/i/keep/typing/ouput'
 audio_format = 'cbin'
 annot_format = 'notmat'
 labelset = 'iabcdefghjk'
@@ -20,8 +21,7 @@ freq_cutoffs = [500, 10000]
 thresh = 6.25
 transform_type = 'log_spect'
 
-[TRAIN]
-model = 'TweetyNet'
+[vak.train]
 root_results_dir = '/home/user/data/subdir/'
 normalize_spectrograms = true
 num_epochs = 2
@@ -30,8 +30,8 @@ val_error_step = 1
 checkpoint_step = 1
 save_only_single_checkpoint_file = true
 
-[TRAIN.dataset_params]
-window_size = 88
+[vak.train.dataset]
+params = { window_size = 88 }
 
-[TweetyNet.optimizer]
+[vak.train.model.TweetyNet.optimizer]
 learning_rate = 0.001

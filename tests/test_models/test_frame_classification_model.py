@@ -86,7 +86,7 @@ class TestFrameClassificationModel:
         definition = vak.models.definition.validate(definition)
         model_name = definition.__name__.replace('Definition', '')
         toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
-        cfg = vak.config.parse.from_toml_path(toml_path)
+        cfg = vak.config.Config.from_toml_path(toml_path)
 
         # stuff we need just to be able to instantiate network
         labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
@@ -95,7 +95,7 @@ class TestFrameClassificationModel:
             vak.models.FrameClassificationModel, 'definition', definition, raising=False
         )
 
-        config = vak.config.model.config_from_toml_path(toml_path, cfg.train.model)
+        config = cfg.train.model.asdict()
         num_input_channels, num_freqbins = self.MOCK_INPUT_SHAPE[0], self.MOCK_INPUT_SHAPE[1]
 
         config["network"].update(

@@ -1,4 +1,5 @@
 """Parametric UMAP loss function."""
+
 from __future__ import annotations
 
 import warnings
@@ -77,7 +78,7 @@ def umap_loss(
     distance_embedding = torch.cat(
         (
             (embedding_to - embedding_from).norm(dim=1),
-            (embedding_neg_to - embedding_neg_from).norm(dim=1)
+            (embedding_neg_to - embedding_neg_from).norm(dim=1),
             # ``to`` method in next line to avoid error `Expected all tensors to be on the same device`
         ),
         dim=0,

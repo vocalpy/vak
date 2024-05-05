@@ -45,10 +45,21 @@ def test_freq_cutoffs_wrong_order_raises():
         )
 
 
-def test_spect_params_attrs_class(all_generated_configs_toml_path_pairs):
-    """test that instantiating SpectParamsConfig class works as expected"""
-    for config_toml, toml_path in all_generated_configs_toml_path_pairs:
-        if "SPECT_PARAMS" in config_toml:
-            spect_params_section = config_toml["SPECT_PARAMS"]
-            config = vak.config.spect_params.SpectParamsConfig(**spect_params_section)
-            assert isinstance(config, vak.config.spect_params.SpectParamsConfig)
+class TestSpectParamsConfig:
+    @pytest.mark.parametrize(
+        'config_dict',
+        [
+            {'fft_size': 512, 'step_size': 64, 'freq_cutoffs': [500, 10000], 'thresh': 6.25, 'transform_type': 'log_spect'},
+        ]
+    )
+    def test_init(self, config_dict):
+        spect_params_config = vak.config.SpectParamsConfig(**config_dict)
+        assert isinstance(spect_params_config, vak.config.spect_params.SpectParamsConfig)
+
+    def test_with_real_config(self, a_generated_config_dict):
+        if "spect_params" in a_generated_config_dict['prep']:
+            spect_config_dict = a_generated_config_dict['prep']['spect_params']
+        else:
+            pytest.skip("No spect params in config")
+        spect_params_config = vak.config.spect_params.SpectParamsConfig(**spect_config_dict)
+        assert isinstance(spect_params_config, vak.config.spect_params.SpectParamsConfig)

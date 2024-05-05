@@ -22,10 +22,10 @@ def test_make_index_vectors_for_each_subsets(
 ):
     root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
+            "table": "learncurve",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
     ]
@@ -34,11 +34,11 @@ def test_make_index_vectors_for_each_subsets(
         model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
-    dataset_path = cfg.learncurve.dataset_path
+    dataset_path = cfg.learncurve.dataset.path
     metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
@@ -134,10 +134,10 @@ def test_make_subsets_from_dataset_df(
 ):
     root_results_dir = tmp_path.joinpath("tmp_root_results_dir")
     root_results_dir.mkdir()
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
+            "table": "learncurve",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
     ]
@@ -146,11 +146,11 @@ def test_make_subsets_from_dataset_df(
         model=model_name,
         audio_format=audio_format,
         annot_format=annot_format,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
-    cfg = vak.config.parse.from_toml_path(toml_path)
+    cfg = vak.config.Config.from_toml_path(toml_path)
 
-    dataset_path = cfg.learncurve.dataset_path
+    dataset_path = cfg.learncurve.dataset.path
     metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)

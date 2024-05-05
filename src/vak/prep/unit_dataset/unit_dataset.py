@@ -1,5 +1,6 @@
 """Functions for making a dataset of units from sequences,
 as used to train dimensionality reduction models."""
+
 from __future__ import annotations
 
 import logging

@@ -1,4 +1,5 @@
 """Functions for input validation"""
+
 import pathlib
 import warnings
 

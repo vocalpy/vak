@@ -19,15 +19,18 @@ class TestWindowDataset:
                                               audio_format=audio_format,
                                               spect_format=spect_format,
                                               annot_format=annot_format)
-        cfg = vak.config.parse.from_toml_path(toml_path)
+        cfg = vak.config.Config.from_toml_path(toml_path)
         cfg_command = getattr(cfg, config_type)
 
+        transform_kwargs = {
+            "window_size": cfg.eval.dataset.params["window_size"]
+        }
         item_transform = vak.transforms.defaults.get_default_transform(
-            model_name, config_type, cfg.eval.transform_params
+            model_name, config_type, transform_kwargs
         )
 
         dataset = vak.datasets.frame_classification.FramesDataset.from_dataset_path(
-            dataset_path=cfg_command.dataset_path,
+            dataset_path=cfg_command.dataset.path,
             split=split,
             item_transform=item_transform,
         )

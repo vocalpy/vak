@@ -14,13 +14,13 @@ def test_learncurve(specific_config_toml_path, tmp_path, device):
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
     root_results_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
+            "table": "learncurve",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"section": "LEARNCURVE", "option": "device", "value": device},
+        {"table": "learncurve", "key": "device", "value": device},
     ]
 
     toml_path = specific_config_toml_path(
@@ -28,7 +28,7 @@ def test_learncurve(specific_config_toml_path, tmp_path, device):
         model="TweetyNet",
         audio_format="cbin",
         annot_format="notmat",
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
     with mock.patch('vak.learncurve.learning_curve', autospec=True) as mock_core_learning_curve:
@@ -44,26 +44,26 @@ def test_learncurve(specific_config_toml_path, tmp_path, device):
     assert cli_asserts.log_file_contains_version(command="learncurve", output_path=results_path)
 
 
-def test_learning_curve_dataset_path_none_raises(
+def test_learning_curve_dataset_none_raises(
         specific_config_toml_path, tmp_path,
 ):
     """Test that cli.learncurve.learning_curve
-    raises ValueError when dataset_path is None
+    raises ValueError when dataset is None
     (presumably because `vak prep` was not run yet)
     """
     root_results_dir = tmp_path.joinpath("test_learncurve_root_results_dir")
     root_results_dir.mkdir()
 
-    options_to_change = [
+    keys_to_change = [
         {
-            "section": "LEARNCURVE",
-            "option": "root_results_dir",
+            "table": "learncurve",
+            "key": "root_results_dir",
             "value": str(root_results_dir),
         },
         {
-            "section": "LEARNCURVE",
-            "option": "dataset_path",
-            "value": "DELETE-OPTION"},
+            "table": "learncurve",
+            "key": "dataset",
+            "value": "DELETE-KEY"},
     ]
 
     toml_path = specific_config_toml_path(
@@ -72,8 +72,8 @@ def test_learning_curve_dataset_path_none_raises(
         audio_format="cbin",
         annot_format="notmat",
         spect_format=None,
-        options_to_change=options_to_change,
+        keys_to_change=keys_to_change,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         vak.cli.learncurve.learning_curve(toml_path)

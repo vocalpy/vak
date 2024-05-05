@@ -1,4 +1,5 @@
 """Helper functions for working with datasets represented as a pandas.DataFrame"""
+
 from __future__ import annotations
 
 import pathlib

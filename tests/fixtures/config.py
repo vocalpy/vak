@@ -3,7 +3,7 @@ import json
 import shutil
 
 import pytest
-import toml
+import tomlkit
 
 from .test_data import GENERATED_TEST_DATA_ROOT, TEST_DATA_ROOT
 
@@ -19,7 +19,7 @@ def test_configs_root():
     1) those used by the tests/scripts/generate_data_for_tests.py script.
        Will be listed in configs.json. See ``specific_config_toml_path`` fixture below
        for details about types of configs.
-    2) those used by tests that are static, e.g., ``invalid_section_config.toml``
+    2) those used by tests that are static, e.g., ``invalid_table_config.toml``
 
     This fixture facilitates access to type (2), e.g. in test_config/test_parse
     """
@@ -61,13 +61,18 @@ def config_that_doesnt_exist(tmp_path):
 
 
 @pytest.fixture
-def invalid_section_config_path(test_configs_root):
-    return test_configs_root.joinpath("invalid_section_config.toml")
+def invalid_table_config_path(test_configs_root):
+    return test_configs_root.joinpath("invalid_table_config.toml")
 
 
 @pytest.fixture
-def invalid_option_config_path(test_configs_root):
-    return test_configs_root.joinpath("invalid_option_config.toml")
+def invalid_key_config_path(test_configs_root):
+    return test_configs_root.joinpath("invalid_key_config.toml")
+
+
+@pytest.fixture
+def invalid_train_and_learncurve_config_toml(test_configs_root):
+    return test_configs_root.joinpath("invalid_train_and_learncurve_config.toml")
 
 
 GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA_ROOT.joinpath("configs")
@@ -76,15 +81,6 @@ GENERATED_TEST_CONFIGS_ROOT = GENERATED_TEST_DATA_ROOT.joinpath("configs")
 @pytest.fixture
 def generated_test_configs_root():
     return GENERATED_TEST_CONFIGS_ROOT
-
-
-ALL_GENERATED_CONFIGS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("*toml"))
-
-
-# ---- path to config files ----
-@pytest.fixture
-def all_generated_configs():
-    return ALL_GENERATED_CONFIGS
 
 
 @pytest.fixture
@@ -101,7 +97,7 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
 
     If ``root_results_dir`` argument is specified
     when calling the factory function,
-    it will convert the value for that option in the section
+    it will convert the value for that key in the table
     corresponding to ``config_type`` to the value
     specified for ``root_results_dir``.
     This makes it possible to dynamically change the ``root_results_dir``
@@ -114,7 +110,7 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
         annot_format,
         audio_format=None,
         spect_format=None,
-        options_to_change=None,
+        keys_to_change=None,
     ):
         """returns path to a specific configuration file,
         determined by characteristics specified by the caller:
@@ -128,18 +124,18 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
             annotation format, recognized by ``crowsetta``
         audio_format : str
         spect_format : str
-        options_to_change : list, dict
-            list of dicts with keys 'section', 'option', and 'value'.
-            Can be a single dict, in which case only that option is changed.
-            If the 'value' is set to 'DELETE-OPTION',
-            the option will be removed from the config.
-            This can be used to test behavior when the option is not set.
+        keys_to_change : list, dict
+            list of dicts with keys 'table', 'key', and 'value'.
+            Can be a single dict, in which case only that key is changed.
+            If the 'value' is set to 'DELETE-KEY',
+            the key will be removed from the config.
+            This can be used to test behavior when the key is not set.
 
         Returns
         -------
         config_path : pathlib.Path
             that points to temporary copy of specified config,
-            with any options changed as specified
+            with any keys changed as specified
         """
         original_config_path = None
         for schematized_config in list_of_schematized_configs:
@@ -166,63 +162,100 @@ def specific_config_toml_path(generated_test_configs_root, list_of_schematized_c
         config_copy_path = tmp_path.joinpath(original_config_path.name)
         config_copy_path = shutil.copy(src=original_config_path, dst=config_copy_path)
 
-        if options_to_change is not None:
-            if isinstance(options_to_change, dict):
-                options_to_change = [options_to_change]
-            elif isinstance(options_to_change, list):
+        if keys_to_change is not None:
+            if isinstance(keys_to_change, dict):
+                keys_to_change = [keys_to_change]
+            elif isinstance(keys_to_change, list):
                 pass
             else:
                 raise TypeError(
-                    f"invalid type for `options_to_change`: {type(options_to_change)}"
+                    f"invalid type for `keys_to_change`: {type(keys_to_change)}"
                 )
 
             with config_copy_path.open("r") as fp:
-                config_toml = toml.load(fp)
+                tomldoc = tomlkit.load(fp)
 
-            for opt_dict in options_to_change:
-                if opt_dict["value"] == 'DELETE-OPTION':
-                    # e.g., to test behavior of config without this option
-                    del config_toml[opt_dict["section"]][opt_dict["option"]]
+            for table_key_val_dict in keys_to_change:
+                table_name = table_key_val_dict["table"]
+                key = table_key_val_dict["key"]
+                value = table_key_val_dict["value"]
+                if isinstance(key, str):
+                    if table_key_val_dict["value"] == 'DELETE-KEY':
+                        # e.g., to test behavior of config without this key
+                        del tomldoc["vak"][table_name][key]
+                    else:
+                        tomldoc["vak"][table_name][key] = value
+                elif isinstance(key, list) and len(key) == 2 and all([isinstance(el, str) for el in key]):
+                    # for the case where we need to access a sub-table
+                    # right now this applies mainly to ["vak"][table]["dataset"]["path"]
+                    # if we end up having to access more / deeper then we'll need something more general
+                    if table_key_val_dict["value"] == 'DELETE-KEY':
+                        # e.g., to test behavior of config without this key
+                        del tomldoc["vak"][table_name][key[0]][key[1]]
+                    else:
+                        tomldoc["vak"][table_name][key[0]][key[1]] = value
                 else:
-                    config_toml[opt_dict["section"]][opt_dict["option"]] = opt_dict["value"]
+                    raise ValueError(
+                        f"Unexpected value for 'key' in `keys_to_change` dict: {key}.\n"
+                        f"`keys_to_change` dict: {table_key_val_dict}"
+                    )
 
             with config_copy_path.open("w") as fp:
-                toml.dump(config_toml, fp)
+                tomlkit.dump(tomldoc, fp)
 
         return config_copy_path
 
     return _specific_config
 
 
-@pytest.fixture
-def all_generated_train_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("test_train*toml"))
+ALL_GENERATED_CONFIG_PATHS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("*toml"))
 
 
-ALL_GENERATED_LEARNCURVE_CONFIGS = sorted(GENERATED_TEST_CONFIGS_ROOT.glob("test_learncurve*toml"))
-
-@pytest.fixture
-def all_generated_learncurve_configs(generated_test_configs_root):
-    return ALL_GENERATED_LEARNCURVE_CONFIGS
-
-
-@pytest.fixture
-def all_generated_eval_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("test_eval*toml"))
+# ---- path to config files ----
+@pytest.fixture(params=ALL_GENERATED_CONFIG_PATHS)
+def a_generated_config_path(request):
+    return request.param
 
 
-@pytest.fixture
-def all_generated_predict_configs(generated_test_configs_root):
-    return sorted(generated_test_configs_root.glob("test_predict*toml"))
+def _tomlkit_to_popo(d):
+    """Convert tomlkit to "popo" (Plain-Old Python Objects)
+
+    From https://github.com/python-poetry/tomlkit/issues/43#issuecomment-660415820
+    """
+    try:
+        result = getattr(d, "value")
+    except AttributeError:
+        result = d
+
+    if isinstance(result, list):
+        result = [_tomlkit_to_popo(x) for x in result]
+    elif isinstance(result, dict):
+        result = {
+            _tomlkit_to_popo(key): _tomlkit_to_popo(val) for key, val in result.items()
+        }
+    elif isinstance(result, tomlkit.items.Integer):
+        result = int(result)
+    elif isinstance(result, tomlkit.items.Float):
+        result = float(result)
+    elif isinstance(result, tomlkit.items.String):
+        result = str(result)
+    elif isinstance(result, tomlkit.items.Bool):
+        result = bool(result)
+
+    return result
 
 
-# ----  config toml from paths ----
-def _return_toml(toml_path):
-    """return config files loaded into dicts with toml library
-    used to test functions that parse config sections, taking these dicts as inputs"""
+# ----  config dicts from paths ----
+def _load_config_dict(toml_path):
+    """Return config as dict, loaded from toml file.
+
+    Used to test functions that parse config tables, taking these dicts as inputs.
+
+    Note that we access the topmost table loaded from the toml: config_dict['vak']
+    """
     with toml_path.open("r") as fp:
-        config_toml = toml.load(fp)
-    return config_toml
+        config_dict = tomlkit.load(fp)
+    return _tomlkit_to_popo(config_dict['vak'])
 
 
 @pytest.fixture
@@ -244,42 +277,70 @@ def specific_config_toml(specific_config_toml_path):
         config_path = specific_config_toml_path(
             config_type, model, annot_format, audio_format, spect_format
         )
-        return _return_toml(config_path)
+        return _load_config_dict(config_path)
 
     return _specific_config_toml
 
 
-ALL_GENERATED_CONFIGS_TOML = [_return_toml(config) for config in ALL_GENERATED_CONFIGS]
+@pytest.fixture(params=ALL_GENERATED_CONFIG_PATHS)
+def a_generated_config_dict(request):
+    # we remake dict every time this gets called
+    # so that we're not returning a ``config_dict`` that was
+    # already mutated by a `Config.from_config_dict` function,
+    # e.g. the value for the 'spect_params' key gets mapped to a SpectParamsConfig
+    # by PrepConfig.from_config_dict
+    return _load_config_dict(request.param)
 
 
-@pytest.fixture
-def all_generated_configs_toml():
-    return ALL_GENERATED_CONFIGS_TOML
+ALL_GENERATED_EVAL_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*eval*toml")
+)
+
+ALL_GENERATED_LEARNCURVE_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*learncurve*toml")
+)
+
+ALL_GENERATED_PREDICT_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*predict*toml")
+)
+
+ALL_GENERATED_TRAIN_CONFIG_PATHS = sorted(
+    GENERATED_TEST_CONFIGS_ROOT.glob("*train*toml")
+)
+
+# as above, we remake dict every time these fixutres get called
+# so that we're not returning a ``config_dict`` that was
+# already mutated by a `Config.from_config_dict` function,
+# e.g. the value for the 'spect_params' key gets mapped to a SpectParamsConfig
+# by PrepConfig.from_config_dict
+@pytest.fixture(params=ALL_GENERATED_EVAL_CONFIG_PATHS)
+def a_generated_eval_config_dict(request):
+    return _load_config_dict(request.param)
 
 
-@pytest.fixture
-def all_generated_train_configs_toml(all_generated_train_configs):
-    return [_return_toml(config) for config in all_generated_train_configs]
+@pytest.fixture(params=ALL_GENERATED_LEARNCURVE_CONFIG_PATHS)
+def a_generated_learncurve_config_dict(request):
+    return _load_config_dict(request.param)
+
+
+@pytest.fixture(params=ALL_GENERATED_PREDICT_CONFIG_PATHS)
+def a_generated_predict_config_dict(request):
+    return _load_config_dict(request.param)
+
+
+@pytest.fixture(params=ALL_GENERATED_TRAIN_CONFIG_PATHS)
+def a_generated_train_config_dict(request):
+    return _load_config_dict(request.param)
 
 
 @pytest.fixture
 def all_generated_learncurve_configs_toml(all_generated_learncurve_configs):
-    return [_return_toml(config) for config in all_generated_learncurve_configs]
-
-
-@pytest.fixture
-def all_generated_eval_configs_toml(all_generated_eval_configs):
-    return [_return_toml(config) for config in all_generated_eval_configs]
-
-
-@pytest.fixture
-def all_generated_predict_configs_toml(all_generated_predict_configs):
-    return [_return_toml(config) for config in all_generated_predict_configs]
+    return [_load_config_dict(config) for config in all_generated_learncurve_configs]
 
 
 ALL_GENERATED_CONFIGS_TOML_PATH_PAIRS = list(zip(
-    [_return_toml(config) for config in ALL_GENERATED_CONFIGS],
-    ALL_GENERATED_CONFIGS,
+    [_load_config_dict(config) for config in ALL_GENERATED_CONFIG_PATHS],
+    ALL_GENERATED_CONFIG_PATHS,
 ))
 
 
@@ -293,10 +354,10 @@ def all_generated_configs_toml_path_pairs():
     """
     # we duplicate the constant above because we need to remake
     # the variables for each unit test. Otherwise tests that modify values
-    # for config options cause other tests to fail
+    # for config keys cause other tests to fail
     return zip(
-        [_return_toml(config) for config in ALL_GENERATED_CONFIGS],
-        ALL_GENERATED_CONFIGS
+        [_load_config_dict(config) for config in ALL_GENERATED_CONFIG_PATHS],
+        ALL_GENERATED_CONFIG_PATHS
     )
 
 
@@ -307,13 +368,13 @@ def configs_toml_path_pairs_by_model_factory(all_generated_configs_toml_path_pai
     """
 
     def _wrapped(model,
-                 section_name=None):
+                 table_name=None):
         out = []
         unzipped = list(all_generated_configs_toml_path_pairs)
         for config_toml, toml_path in unzipped:
             if toml_path.name.startswith(model):
-                if section_name:
-                    if section_name.lower() in toml_path.name:
+                if table_name:
+                    if table_name.lower() in toml_path.name:
                         out.append(
                             (config_toml, toml_path)
                         )
@@ -325,54 +386,3 @@ def configs_toml_path_pairs_by_model_factory(all_generated_configs_toml_path_pai
 
     return _wrapped
 
-
-@pytest.fixture
-def all_generated_train_configs_toml_path_pairs(all_generated_train_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_train_configs],
-        all_generated_train_configs,
-    )
-
-
-@pytest.fixture
-def all_generated_learncurve_configs_toml_path_pairs(all_generated_learncurve_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_learncurve_configs],
-        all_generated_learncurve_configs,
-    )
-
-
-@pytest.fixture
-def all_generated_eval_configs_toml_path_pairs(all_generated_eval_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_eval_configs],
-        all_generated_eval_configs,
-    )
-
-
-@pytest.fixture
-def all_generated_predict_configs_toml_path_pairs(all_generated_predict_configs):
-    """zip of tuple pairs: (dict, pathlib.Path)
-    where ``Path`` is path to .toml config file and ``dict`` is
-    the .toml config from that path
-    loaded into a dict with the ``toml`` library
-    """
-    return zip(
-        [_return_toml(config) for config in all_generated_predict_configs],
-        all_generated_predict_configs,
-    )

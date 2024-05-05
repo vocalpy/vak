@@ -172,8 +172,7 @@ def multi_char_labels_to_single_char(
     # which would map it to a new integer and cause us to lose the original integer
     # from the mapping
     single_char_labels_not_in_labelmap = [
-        lbl for lbl in DUMMY_SINGLE_CHAR_LABELS
-        if lbl not in labelmap
+        lbl for lbl in DUMMY_SINGLE_CHAR_LABELS if lbl not in labelmap
     ]
     n_needed_to_remap = len(
         [lbl for lbl in current_str_labels if len(lbl) > 1]
@@ -187,7 +186,9 @@ def multi_char_labels_to_single_char(
     new_labelmap = {}
     for dummy_label_ind, label_str in enumerate(current_str_labels):
         label_int = labelmap[label_str]
-        if len(label_str) > 1 and label_str not in skip:  # default for `skip` is ('unlabeled',)
+        if (
+            len(label_str) > 1 and label_str not in skip
+        ):  # default for `skip` is ('unlabeled',)
             # replace with dummy label
             new_label_str = single_char_labels_not_in_labelmap[dummy_label_ind]
             new_labelmap[new_label_str] = label_int

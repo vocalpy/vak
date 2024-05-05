@@ -5,6 +5,7 @@ https://scipy-cookbook.readthedocs.io/items/ButterworthBandpass.html
 spectrogram adapted from code by Kyle Kastner and Tim Sainburg
 https://github.com/timsainb/python_spectrograms_and_inversion
 """
+
 import numpy as np
 from matplotlib.mlab import specgram
 from scipy.signal import butter, lfilter
@@ -89,9 +90,9 @@ def spectrogram(
                 spect[spect < thresh] = thresh
     else:
         if thresh:
-            spect[
-                spect < thresh
-            ] = thresh  # set anything less than the threshold as the threshold
+            spect[spect < thresh] = (
+                thresh  # set anything less than the threshold as the threshold
+            )
 
     if freq_cutoffs:
         f_inds = np.nonzero(

@@ -1,13 +1,16 @@
-"""parses [PREP] section of config"""
+"""Class and functions for ``[vak.prep]`` table of configuration file."""
+
+from __future__ import annotations
+
 import inspect
 
-import attr
 import dask.bag
-from attr import converters, validators
-from attr.validators import instance_of
+from attrs import converters, define, field, validators
+from attrs.validators import instance_of
 
 from .. import prep
 from ..common.converters import expanded_user_path, labelset_to_set
+from .spect_params import SpectParamsConfig
 from .validators import is_annot_format, is_audio_format, is_spect_format
 
 
@@ -60,9 +63,15 @@ def are_valid_dask_bag_kwargs(instance, attribute, value):
         )
 
 
-@attr.s
+REQUIRED_KEYS = (
+    "data_dir",
+    "output_dir",
+)
+
+
+@define
 class PrepConfig:
-    """class to represent [PREP] section of config.toml file
+    """Class that represents ``[vak.prep]`` table of configuration file.
 
     Attributes
     ----------
@@ -84,6 +93,11 @@ class PrepConfig:
     spect_format : str
         format of files containg spectrograms as 2-d matrices.
         One of {'mat', 'npy'}.
+    spect_params: vak.config.SpectParamsConfig, optional
+        Parameters for Short-Time Fourier Transform and post-processing
+        of spectrograms.
+        Instance of :class:`vak.config.SpectParamsConfig` class.
+        Optional, default is None.
     annot_format : str
         format of annotations. Any format that can be used with the
         crowsetta library is valid.
@@ -127,10 +141,10 @@ class PrepConfig:
         Default is None. Required if config file has a learncurve section.
     """
 
-    data_dir = attr.ib(converter=expanded_user_path)
-    output_dir = attr.ib(converter=expanded_user_path)
+    data_dir = field(converter=expanded_user_path)
+    output_dir = field(converter=expanded_user_path)
 
-    dataset_type = attr.ib(validator=instance_of(str))
+    dataset_type = field(validator=instance_of(str))
 
     @dataset_type.validator
     def is_valid_dataset_type(self, attribute, value):
@@ -140,7 +154,7 @@ class PrepConfig:
                 f"Valid dataset types are: {prep.constants.DATASET_TYPES}"
             )
 
-    input_type = attr.ib(validator=instance_of(str))
+    input_type = field(validator=instance_of(str))
 
     @input_type.validator
     def is_valid_input_type(self, attribute, value):
@@ -149,49 +163,53 @@ class PrepConfig:
                 f"Invalid input type: {value}. Must be one of: {prep.constants.INPUT_TYPES}"
             )
 
-    audio_format = attr.ib(
+    audio_format = field(
         validator=validators.optional(is_audio_format), default=None
     )
-    spect_format = attr.ib(
+    spect_format = field(
         validator=validators.optional(is_spect_format), default=None
     )
-    annot_file = attr.ib(
+    spect_params = field(
+        validator=validators.optional(instance_of(SpectParamsConfig)),
+        default=None,
+    )
+    annot_file = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )
-    annot_format = attr.ib(
+    annot_format = field(
         validator=validators.optional(is_annot_format), default=None
     )
 
-    labelset = attr.ib(
+    labelset = field(
         converter=converters.optional(labelset_to_set),
         validator=validators.optional(instance_of(set)),
         default=None,
     )
 
-    audio_dask_bag_kwargs = attr.ib(
+    audio_dask_bag_kwargs = field(
         validator=validators.optional(are_valid_dask_bag_kwargs), default=None
     )
 
-    train_dur = attr.ib(
+    train_dur = field(
         converter=converters.optional(duration_from_toml_value),
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    val_dur = attr.ib(
+    val_dur = field(
         converter=converters.optional(duration_from_toml_value),
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    test_dur = attr.ib(
+    test_dur = field(
         converter=converters.optional(duration_from_toml_value),
         validator=validators.optional(is_valid_duration),
         default=None,
     )
-    train_set_durs = attr.ib(
+    train_set_durs = field(
         validator=validators.optional(instance_of(list)), default=None
     )
-    num_replicates = attr.ib(
+    num_replicates = field(
         validator=validators.optional(instance_of(int)), default=None
     )
 
@@ -203,3 +221,26 @@ class PrepConfig:
             raise ValueError(
                 "must specify either audio_format or spect_format"
             )
+
+    @classmethod
+    def from_config_dict(cls, config_dict: dict) -> PrepConfig:
+        """Return :class:`PrepConfig` instance from a :class:`dict`.
+
+        The :class:`dict` passed in should be the one found
+        by loading a valid configuration toml file with
+        :func:`vak.config.parse.from_toml_path`,
+        and then using key ``prep``,
+        i.e., ``PrepConfig.from_config_dict(config_dict['prep'])``."""
+        for required_key in REQUIRED_KEYS:
+            if required_key not in config_dict:
+                raise KeyError(
+                    "The `[vak.prep]` table in a configuration file requires "
+                    f"the key '{required_key}', but it was not found "
+                    "when loading the configuration file into a Python dictionary. "
+                    "Please check that the configuration file is formatted correctly."
+                )
+        if "spect_params" in config_dict:
+            config_dict["spect_params"] = SpectParamsConfig(
+                **config_dict["spect_params"]
+            )
+        return cls(**config_dict)

@@ -1,4 +1,4 @@
-[PREP]
+[vak.prep]
 dataset_type = "parametric umap"
 input_type = "spect"
 data_dir = "./tests/data_for_tests/source/audio_cbin_annot_notmat/gy6or6/032312"
@@ -10,13 +10,12 @@ train_dur = 0.5
 val_dur = 0.2
 test_dur = 0.25
 
-[SPECT_PARAMS]
+[vak.prep.spect_params]
 fft_size = 512
 step_size = 32
 transform_type = "log_spect_plus_one"
 
-[TRAIN]
-model = "ConvEncoderUMAP"
+[vak.train]
 batch_size = 64
 num_epochs = 1
 val_step = 1
@@ -25,7 +24,7 @@ num_workers = 16
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP"
 
-[ConvEncoderUMAP.network]
+[vak.train.model.ConvEncoderUMAP.network]
 conv1_filters = 8
 conv2_filters = 16
 conv_kernel_size = 3
@@ -34,5 +33,5 @@ conv_padding = 1
 n_features_linear = 32
 n_components = 2
 
-[ConvEncoderUMAP.optimizer]
+[vak.train.model.ConvEncoderUMAP.optimizer]
 lr = 0.001

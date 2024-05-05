@@ -6,6 +6,7 @@
    Paper: https://elifesciences.org/articles/63853
    Code: https://github.com/yardencsGitHub/tweetynet
 """
+
 from __future__ import annotations
 
 import torch

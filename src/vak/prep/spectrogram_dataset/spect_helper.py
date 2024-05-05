@@ -4,6 +4,7 @@ into a pandas DataFrame that represents a dataset used by ``vak``.
 The columns of the dataframe are specified by
  :const:`vak.prep.spectrogram_dataset.spect_helper.DF_COLUMNS`.
 """
+
 from __future__ import annotations
 
 import logging
@@ -239,9 +240,11 @@ def make_dataframe_of_spect_files(
                 abspath(audio_path),
                 abspath(spect_path),
                 abspath(annot_path),
-                annot_format
-                if annot_format
-                else constants.NO_ANNOTATION_FORMAT,
+                (
+                    annot_format
+                    if annot_format
+                    else constants.NO_ANNOTATION_FORMAT
+                ),
                 spect_dur,
                 timebin_dur,
             ]

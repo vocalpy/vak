@@ -23,7 +23,7 @@ def learning_curve(toml_path):
         path to a configuration file in TOML format.
     """
     toml_path = Path(toml_path)
-    cfg = config.parse.from_toml_path(toml_path)
+    cfg = config.Config.from_toml_path(toml_path)
 
     if cfg.learncurve is None:
         raise ValueError(
@@ -45,10 +45,7 @@ def learning_curve(toml_path):
     log_version(logger)
     logger.info("Logging results to {}".format(results_path))
 
-    model_name = cfg.learncurve.model
-    model_config = config.model.config_from_toml_path(toml_path, model_name)
-
-    if cfg.learncurve.dataset_path is None:
+    if cfg.learncurve.dataset.path is None:
         raise ValueError(
             "No value is specified for 'dataset_path' in this .toml config file."
             f"To generate a .csv file that represents the dataset, "
@@ -56,16 +53,11 @@ def learning_curve(toml_path):
         )
 
     learncurve.learning_curve(
-        model_name=model_name,
-        model_config=model_config,
-        dataset_path=cfg.learncurve.dataset_path,
+        model_config=cfg.learncurve.model.asdict(),
+        dataset_config=cfg.learncurve.dataset.asdict(),
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
-        train_transform_params=cfg.learncurve.train_transform_params,
-        train_dataset_params=cfg.learncurve.train_dataset_params,
-        val_transform_params=cfg.learncurve.val_transform_params,
-        val_dataset_params=cfg.learncurve.val_dataset_params,
         results_path=results_path,
         post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,

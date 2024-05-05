@@ -1,48 +1,58 @@
 """Function called by command-line interface for prep command"""
+
 from __future__ import annotations
 
 import pathlib
 import shutil
 import warnings
 
-import toml
+import tomlkit
 
 from .. import config
 from .. import prep as prep_module
-from ..config.parse import _load_toml_from_path
-from ..config.validators import are_sections_valid
+from ..config.load import _load_toml_from_path
+from ..config.validators import are_tables_valid
 
 
 def purpose_from_toml(
-    config_toml: dict, toml_path: str | pathlib.Path | None = None
+    config_dict: dict, toml_path: str | pathlib.Path | None = None
 ) -> str:
-    """determine "purpose" from toml config,
+    """Determine "purpose" from toml config,
     i.e., the command that will be run after we ``prep`` the data.
 
-    By convention this is the other section in the config file
-    that correspond to a cli command besides '[PREP]'
+    By convention this is the other top-level table in the config file
+    that correspond to a cli command besides ``[vak.prep]``, e.g. ``[vak.train]``.
     """
     # validate, make sure there aren't multiple commands in one config file first
-    are_sections_valid(config_toml, toml_path=toml_path)
+    are_tables_valid(config_dict, toml_path=toml_path)
+    config_dict = config_dict
 
     from ..cli.cli import CLI_COMMANDS  # avoid circular imports
 
-    commands_that_are_not_prep = (
+    commands_that_are_not_prep = [
         command for command in CLI_COMMANDS if command != "prep"
-    )
-    for command in commands_that_are_not_prep:
-        section_name = (
-            command.upper()
-        )  # we write section names in uppercase, e.g. `[PREP]`, by convention
-        if section_name in config_toml:
-            return section_name.lower()  # this is the "purpose" of the file
+    ]
+    purpose = None
+    for table_name in commands_that_are_not_prep:
+        if table_name in config_dict:
+            purpose = (
+                table_name  # this top-level table is the "purpose" of the file
+            )
+    if purpose is None:
+        raise ValueError(
+            "Did not find a top-level table in configuration file that corresponds to a CLI command. "
+            f"Configuration file path: {toml_path}\n"
+            f"Found the following top-level tables: {config_dict.keys()}\n"
+            f"Valid CLI commands besides ``prep`` (that correspond top-level tables) are: {commands_that_are_not_prep}"
+        )
+    return purpose
 
 
 # note NO LOGGING -- we configure logger inside `core.prep`
 # so we can save log file inside dataset directory
 
 # see https://github.com/NickleDave/vak/issues/334
-SECTIONS_PREP_SHOULD_PARSE = ("PREP", "SPECT_PARAMS", "DATALOADER")
+TABLES_PREP_SHOULD_PARSE = "prep"
 
 
 def prep(toml_path):
@@ -83,52 +93,52 @@ def prep(toml_path):
     """
     toml_path = pathlib.Path(toml_path)
 
-    # open here because need to check for `dataset_path` in this function, see #314 & #333
-    config_toml = _load_toml_from_path(toml_path)
-    # ---- figure out purpose of config file from sections; will save csv path in that section -------------------------
-    purpose = purpose_from_toml(config_toml, toml_path)
+    # open here because need to check whether the `dataset` already has a `path`, see #314 & #333
+    config_dict = _load_toml_from_path(toml_path)
+
+    # ---- figure out purpose of config file from tables; will save path of prep'd dataset in that table ---------------
+    purpose = purpose_from_toml(config_dict, toml_path)
     if (
-        "dataset_path" in config_toml[purpose.upper()]
-        and config_toml[purpose.upper()]["dataset_path"] is not None
+        "dataset" in config_dict[purpose]
+        and "path" in config_dict[purpose]["dataset"]
     ):
         raise ValueError(
-            f"config .toml file already has a 'dataset_path' option in the '{purpose.upper()}' section, "
-            f"and running `prep` would overwrite that value. To `prep` a new dataset, please remove "
-            f"the 'dataset_path' option from the '{purpose.upper()}' section in the config file:\n{toml_path}"
+            f"This configuration file already has a '{purpose}.dataset' table with a 'path' key, "
+            f"and running `prep` would overwrite the value for that key. To `prep` a new dataset, please "
+            "either create a new configuration file, or remove "
+            f"the 'path' key-value pair from the '{purpose}.dataset' table in the file:\n{toml_path}"
         )
 
-    # now that we've checked that, go ahead and parse the sections we want
-    cfg = config.parse.from_toml_path(
-        toml_path, sections=SECTIONS_PREP_SHOULD_PARSE
-    )
-    # notice we ignore any other option/values in the 'purpose' section,
+    # now that we've checked that, go ahead and parse just the prep tabel;
+    # we don't load the 'purpose' table into a config, to avoid error messages like non-existent paths, etc.
     # see https://github.com/NickleDave/vak/issues/334 and https://github.com/NickleDave/vak/issues/314
+    cfg = config.Config.from_toml_path(
+        toml_path, tables_to_parse=TABLES_PREP_SHOULD_PARSE
+    )
     if cfg.prep is None:
         raise ValueError(
-            f"prep called with a config.toml file that does not have a PREP section: {toml_path}"
+            f"prep called with a config.toml file that does not have a [vak.prep] table: {toml_path}"
         )
 
     if purpose == "predict":
         if cfg.prep.labelset is not None:
             warnings.warn(
-                "config has a PREDICT section, but labelset option is specified in PREP section."
-                "This would cause an error because the dataframe.from_files section will attempt to "
+                "config has a [vak.predict] table, but labelset option is specified in [vak.prep] table."
+                "This would cause an error because the dataframe.from_files method will attempt to "
                 f"check whether the files in the data_dir ({cfg.prep.data_dir}) have labels in "
                 "labelset, even though those files don't have annotation.\n"
                 "Setting labelset to None."
             )
             cfg.prep.labelset = None
 
-    section = purpose.upper()
-
-    dataset_df, dataset_path = prep_module.prep(
+    _, dataset_path = prep_module.prep(
         data_dir=cfg.prep.data_dir,
         purpose=purpose,
         dataset_type=cfg.prep.dataset_type,
         input_type=cfg.prep.input_type,
         audio_format=cfg.prep.audio_format,
         spect_format=cfg.prep.spect_format,
-        spect_params=cfg.spect_params,
+        spect_params=cfg.prep.spect_params,
         annot_format=cfg.prep.annot_format,
         annot_file=cfg.prep.annot_file,
         labelset=cfg.prep.labelset,
@@ -141,11 +151,15 @@ def prep(toml_path):
         num_replicates=cfg.prep.num_replicates,
     )
 
-    # use config and section from above to add dataset_path to config.toml file
-    config_toml[section]["dataset_path"] = str(dataset_path)
-
+    # we re-open config using tomlkit so we can add path to dataset table in style-preserving way
+    with toml_path.open("r") as fp:
+        tomldoc = tomlkit.load(fp)
+    if "dataset" not in tomldoc["vak"][purpose]:
+        dataset_table = tomlkit.table()
+        tomldoc["vak"][purpose].add("dataset", dataset_table)
+    tomldoc["vak"][purpose]["dataset"].add("path", str(dataset_path))
     with toml_path.open("w") as fp:
-        toml.dump(config_toml, fp)
+        tomlkit.dump(tomldoc, fp)
 
     # lastly, copy config to dataset directory root
     shutil.copy(src=toml_path, dst=dataset_path)
