@@ -53,16 +53,11 @@ def learning_curve(toml_path):
         )
 
     learncurve.learning_curve(
-        model_name=cfg.learncurve.model.name,
         model_config=cfg.learncurve.model.asdict(),
-        dataset_path=cfg.learncurve.dataset.path,
+        dataset_config=cfg.learncurve.dataset.asdict(),
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
-        train_transform_params=cfg.learncurve.train_transform_params,
-        train_dataset_params=cfg.learncurve.train_dataset_params,
-        val_transform_params=cfg.learncurve.val_transform_params,
-        val_dataset_params=cfg.learncurve.val_dataset_params,
         results_path=results_path,
         post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
         normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
