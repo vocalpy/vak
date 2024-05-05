@@ -189,7 +189,5 @@ class EvalConfig:
         config_dict["model"] = ModelConfig.from_config_dict(
             config_dict["model"]
         )
-        config_dict["trainer"] = TrainerConfig.from_config_dict(
-            config_dict["trainer"]
-        )
+        config_dict["trainer"] = TrainerConfig(**config_dict["trainer"])
         return cls(**config_dict)

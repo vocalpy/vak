@@ -154,7 +154,5 @@ class TrainConfig:
         config_dict["dataset"] = DatasetConfig.from_config_dict(
             config_dict["dataset"]
         )
-        config_dict["trainer"] = TrainerConfig.from_config_dict(
-            config_dict["trainer"]
-        )
+        config_dict["trainer"] = TrainerConfig(**config_dict["trainer"])
         return cls(**config_dict)
