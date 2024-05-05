@@ -6,21 +6,20 @@ a window from a spectrogram."""
 from __future__ import annotations
 
 import logging
-from typing import Callable, ClassVar, Mapping
+from typing import Callable, Mapping
 
+import pytorch_lightning as lightning
 import torch
 
 from .. import transforms
 from ..common import labels
-from . import base
-from .definition import ModelDefinition
 from .registry import model_family
 
 logger = logging.getLogger(__name__)
 
 
 @model_family
-class FrameClassificationModel(base.Model):
+class FrameClassificationModel(lightning.LightningModule):
     """Class that represents a family of neural network models
     that predicts a label for each frame in a time series,
     e.g., each time bin in a window from a spectrogram.
@@ -86,9 +85,6 @@ class FrameClassificationModel(base.Model):
         to string labels inside of ``validation_step``,
         for computing edit distance.
     """
-
-    definition: ClassVar[ModelDefinition]
-
     def __init__(
         self,
         labelmap: Mapping,
@@ -351,35 +347,3 @@ class FrameClassificationModel(base.Model):
             raise ValueError(f"invalid shape for x: {x.shape}")
         y_pred = self.network(x)
         return {frames_path: y_pred}
-
-    @classmethod
-    def from_config(
-        cls, config: dict, labelmap: Mapping, post_tfm: Callable | None = None
-    ):
-        """Return an initialized model instance from a config ``dict``
-
-        Parameters
-        ----------
-        config : dict
-            Returned by calling :func:`vak.config.models.map_from_path`
-            or :func:`vak.config.models.map_from_config_dict`.
-        post_tfm : callable
-            Post-processing transformation.
-            A callable applied to the network output.
-            Default is None.
-
-        Returns
-        -------
-        cls : vak.models.base.Model
-            An instance of the model with its attributes
-            initialized using parameters from ``config``.
-        """
-        network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(
-            labelmap=labelmap,
-            network=network,
-            optimizer=optimizer,
-            loss=loss,
-            metrics=metrics,
-            post_tfm=post_tfm,
-        )
