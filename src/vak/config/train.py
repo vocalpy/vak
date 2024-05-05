@@ -141,7 +141,7 @@ class TrainConfig:
         The :class:`dict` passed in should be the one found
         by loading a valid configuration toml file with
         :func:`vak.config.parse.from_toml_path`,
-        and then using key ``prep``,
+        and then using key ``train``,
         i.e., ``TrainConfig.from_config_dict(config_dict['train'])``."""
         for required_key in REQUIRED_KEYS:
             if required_key not in config_dict:
