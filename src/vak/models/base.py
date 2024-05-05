@@ -1,6 +1,4 @@
-"""Base class for a model in ``vak``,
-that other families of models should subclass.
-"""
+"""Class that represent a model builit into ``vak``."""
 
 from __future__ import annotations
 
@@ -14,27 +12,26 @@ from .definition import ModelDefinition
 from .definition import validate as validate_definition
 
 
-class Model(lightning.pytorch.LightningModule):
-    """Base class for a model in ``vak``,
-    that other families of models should subclass.
+class Model:
+    """Class that represent a model builit into ``vak``.
 
-    This class provides methods for working with
-    neural network models, e.g. training the model
-    and generating productions,
-    and it also converts a
-    model definition into a model instance.
+    Attributes
+    ----------
+    definition: vak.models.definition.ModelDefinition
+    family: lighting.pytorch.LightningModule
 
-    It provides the methods for working with neural
-    network models by subclassing
-    ``lighting.LightningModule``, and it handles
-    converting a model definition into a model instance
-    inside its ``__init__`` method.
-    Model definitions are declared programmatically
-    using a ``vak.model.ModelDefinition``;
-    see the documentation on that class for more detail.
+    Notes
+    -----
+    This class is used by the :func:`vak.models.decorator.model`
+    decorator to make a new class representing a model
+    from a model definition.
+    As such, this class is not meant to be used directly.
+    See the docstring of :func:`vak.models.decorator.model`
+    for more detail.
     """
 
     definition: ClassVar[ModelDefinition]
+    model_family: ClassVar[lightning.pytorch.LightningModule]
 
     def __init__(
         self,
@@ -74,8 +71,6 @@ class Model(lightning.pytorch.LightningModule):
             performance of the model.
         """
         from .decorator import ModelDefinitionValidationError
-
-        super().__init__()
 
         # check that we are a sub-class of some other class with required class variables
         if not hasattr(self, "definition"):
@@ -314,14 +309,14 @@ class Model(lightning.pytorch.LightningModule):
         """Get attributes for an instance of a model,
         given a configuration.
 
-        Given a ``dict``, ``config``, return instances of
-        class variables
+        Given a :class:`dict`, ``config``, return instances of
+        class variables.
 
         Parameters
         ----------
         config : dict
-            Returned by calling ``vak.config.models.map_from_path``
-            or ``vak.config.models.map_from_config_dict``.
+            A :class:`dict` obtained by calling
+            :meth:`vak.config.ModelConfig.to_dict()`.
 
         Returns
         -------
@@ -387,8 +382,7 @@ class Model(lightning.pytorch.LightningModule):
 
         return network, loss, optimizer, metrics
 
-    @classmethod
-    def from_config(cls, config: dict):
+    def from_config(self, config: dict, **kwargs):
         """Return an initialized model instance from a config ``dict``
 
         Parameters
@@ -403,7 +397,7 @@ class Model(lightning.pytorch.LightningModule):
             An instance of the model with its attributes
             initialized using parameters from ``config``.
         """
-        network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics
+        network, loss, optimizer, metrics = self.attributes_from_config(config)
+        return self.model_family(
+            network=network, loss=loss, optimizer=optimizer, metrics=metrics, **kwargs
         )
