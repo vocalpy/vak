@@ -39,7 +39,9 @@ class DatasetConfig:
         converter=attr.converters.optional(str), default=None
     )
     params : dict | None = field(
-        converter=attr.converters.optional(dict), default=None
+        # we default to an empty dict instead of None
+        # so we can still do **['dataset']['params'] everywhere we do when params are specified
+        converter=attr.converters.optional(dict), default={}
     )
 
     @classmethod
