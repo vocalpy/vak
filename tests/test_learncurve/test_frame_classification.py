@@ -69,6 +69,7 @@ def test_learning_curve_for_frame_classification_model(
     vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
         model_config=cfg.learncurve.model.asdict(),
         dataset_config=cfg.learncurve.dataset.asdict(),
+        trainer_config=cfg.learncurve.trainer.asdict(),
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
@@ -79,7 +80,6 @@ def test_learning_curve_for_frame_classification_model(
         val_step=cfg.learncurve.val_step,
         ckpt_step=cfg.learncurve.ckpt_step,
         patience=cfg.learncurve.patience,
-        device=cfg.learncurve.device,
     )
 
     assert_learncurve_output_matches_expected(cfg, cfg.learncurve.model.name, results_path)
@@ -118,6 +118,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
         vak.learncurve.frame_classification.learning_curve_for_frame_classification_model(
             model_config=cfg.learncurve.model.asdict(),
             dataset_config=cfg.learncurve.dataset.asdict(),
+            trainer_config=cfg.learncurve.trainer.asdict(),
             batch_size=cfg.learncurve.batch_size,
             num_epochs=cfg.learncurve.num_epochs,
             num_workers=cfg.learncurve.num_workers,
@@ -128,5 +129,4 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
             val_step=cfg.learncurve.val_step,
             ckpt_step=cfg.learncurve.ckpt_step,
             patience=cfg.learncurve.patience,
-            device=cfg.learncurve.device,
         )

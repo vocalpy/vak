@@ -56,6 +56,7 @@ def test_train_parametric_umap_model(
     vak.train.parametric_umap.train_parametric_umap_model(
         model_config=cfg.train.model.asdict(),
         dataset_config=cfg.train.dataset.asdict(),
+        trainer_config=cfg.train.trainer.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -64,7 +65,6 @@ def test_train_parametric_umap_model(
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
         ckpt_step=cfg.train.ckpt_step,
-        device=cfg.train.device,
     )
 
     assert_train_output_matches_expected(cfg, cfg.train.model.name, results_path)
@@ -103,6 +103,7 @@ def test_train_parametric_umap_model_raises_file_not_found(
         vak.train.parametric_umap.train_parametric_umap_model(
             model_config=cfg.train.model.asdict(),
             dataset_config=cfg.train.dataset.asdict(),
+            trainer_config=cfg.train.trainer.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -111,7 +112,6 @@ def test_train_parametric_umap_model_raises_file_not_found(
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,
-            device=cfg.train.device,
         )
 
 
@@ -151,6 +151,7 @@ def test_train_parametric_umap_model_raises_not_a_directory(
         vak.train.parametric_umap.train_parametric_umap_model(
             model_config=model_config,
             dataset_config=cfg.train.dataset.asdict(),
+            trainer_config=cfg.train.trainer.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -159,5 +160,4 @@ def test_train_parametric_umap_model_raises_not_a_directory(
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,
-            device=cfg.train.device,
         )

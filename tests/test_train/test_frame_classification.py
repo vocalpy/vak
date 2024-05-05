@@ -63,6 +63,7 @@ def test_train_frame_classification_model(
     vak.train.frame_classification.train_frame_classification_model(
         model_config=cfg.train.model.asdict(),
         dataset_config=cfg.train.dataset.asdict(),
+        trainer_config=cfg.train.trainer.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -74,7 +75,6 @@ def test_train_frame_classification_model(
         val_step=cfg.train.val_step,
         ckpt_step=cfg.train.ckpt_step,
         patience=cfg.train.patience,
-        device=cfg.train.device,
     )
 
     assert_train_output_matches_expected(cfg, cfg.train.model.name, results_path)
@@ -110,6 +110,7 @@ def test_continue_training(
     vak.train.frame_classification.train_frame_classification_model(
         model_config=cfg.train.model.asdict(),
         dataset_config=cfg.train.dataset.asdict(),
+        trainer_config=cfg.train.trainer.asdict(),
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
@@ -121,7 +122,6 @@ def test_continue_training(
         val_step=cfg.train.val_step,
         ckpt_step=cfg.train.ckpt_step,
         patience=cfg.train.patience,
-        device=cfg.train.device,
     )
 
     assert_train_output_matches_expected(cfg, cfg.train.model.name, results_path)
@@ -161,6 +161,7 @@ def test_train_raises_file_not_found(
         vak.train.frame_classification.train_frame_classification_model(
             model_config=cfg.train.model.asdict(),
             dataset_config=cfg.train.dataset.asdict(),
+            trainer_config=cfg.train.trainer.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -172,7 +173,6 @@ def test_train_raises_file_not_found(
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,
             patience=cfg.train.patience,
-            device=cfg.train.device,
         )
 
 
@@ -211,6 +211,7 @@ def test_train_raises_not_a_directory(
         vak.train.frame_classification.train_frame_classification_model(
             model_config=cfg.train.model.asdict(),
             dataset_config=cfg.train.dataset.asdict(),
+            trainer_config=cfg.train.trainer.asdict(),
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
@@ -222,5 +223,4 @@ def test_train_raises_not_a_directory(
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,
             patience=cfg.train.patience,
-            device=cfg.train.device,
         )

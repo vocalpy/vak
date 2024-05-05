@@ -51,13 +51,13 @@ def test_eval(
         vak.eval.eval(
             model_config=cfg.eval.model.asdict(),
             dataset_config=cfg.eval.dataset.asdict(),
+            trainer_config=cfg.eval.trainer.asdict(),
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
             batch_size=cfg.eval.batch_size,
             spect_scaler_path=cfg.eval.spect_scaler_path,
-            device=cfg.eval.device,
             post_tfm_kwargs=cfg.eval.post_tfm_kwargs,
         )
 

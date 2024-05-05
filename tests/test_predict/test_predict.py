@@ -47,12 +47,12 @@ def test_predict(
         vak.predict.predict(
             model_config=cfg.predict.model.asdict(),
             dataset_config=cfg.predict.dataset.asdict(),
+            trainer_config=cfg.predict.trainer.asdict(),
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
             timebins_key=cfg.prep.spect_params.timebins_key,
             spect_scaler_path=cfg.predict.spect_scaler_path,
-            device=cfg.predict.device,
             annot_csv_filename=cfg.predict.annot_csv_filename,
             output_dir=cfg.predict.output_dir,
             min_segment_dur=cfg.predict.min_segment_dur,
