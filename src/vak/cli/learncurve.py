@@ -55,6 +55,7 @@ def learning_curve(toml_path):
     learncurve.learning_curve(
         model_config=cfg.learncurve.model.asdict(),
         dataset_config=cfg.learncurve.dataset.asdict(),
+        trainer_config=cfg.learncurve.trainer.asdict(),
         batch_size=cfg.learncurve.batch_size,
         num_epochs=cfg.learncurve.num_epochs,
         num_workers=cfg.learncurve.num_workers,
@@ -65,5 +66,4 @@ def learning_curve(toml_path):
         val_step=cfg.learncurve.val_step,
         ckpt_step=cfg.learncurve.ckpt_step,
         patience=cfg.learncurve.patience,
-        device=cfg.learncurve.device,
     )
