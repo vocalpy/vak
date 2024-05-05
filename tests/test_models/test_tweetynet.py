@@ -1,7 +1,7 @@
 import itertools
 
 import pytest
-import pytorch_lightning as lightning
+import lightning
 
 import vak
 
@@ -37,7 +37,7 @@ class TestTweetyNet:
         assert issubclass(vak.models.TweetyNet,
                           vak.models.base.Model)
         assert issubclass(vak.models.TweetyNet,
-                          lightning.LightningModule)
+                          lightning.pytorch.LightningModule)
 
     @pytest.mark.parametrize(
         'labelmap, input_shape',
