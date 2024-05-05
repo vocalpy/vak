@@ -101,12 +101,13 @@ def learning_curve(
         Default is None, in which case training only stops after the specified number of epochs.
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    dataset_path = expanded_user_path(dataset_path)
+    dataset_path = expanded_user_path(dataset_config["path"])
     if not dataset_path.exists() or not dataset_path.is_dir():
         raise NotADirectoryError(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
 
+    model_name = model_config["name"]
     try:
         model_family = models.registry.MODEL_FAMILY_FROM_NAME[model_name]
     except KeyError as e:
