@@ -35,3 +35,7 @@ n_components = 2
 
 [vak.train.model.ConvEncoderUMAP.optimizer]
 lr = 0.001
+
+[vak.train.trainer]
+accelerator = "gpu"
+devices = [0]

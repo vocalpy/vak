@@ -30,6 +30,10 @@ num_workers = 16
 device = "cuda"
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat"
 
+[vak.train.trainer]
+accelerator = "gpu"
+devices = [0]
+
 [vak.learncurve]
 normalize_spectrograms = true
 batch_size = 11

@@ -50,3 +50,7 @@ hidden_size = 32
 
 [vak.learncurve.model.TweetyNet.optimizer]
 lr = 0.001
+
+[vak.learncurve.trainer]
+accelerator = "gpu"
+devices = [0]
