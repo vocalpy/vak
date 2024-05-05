@@ -53,7 +53,7 @@ patience = 4
 # num_workers: number of workers to use when loading data with multiprocessing
 num_workers = 4
 # device: name of device to run model on, one of "cuda", "cpu"
-device = "cuda"
+
 # dataset_path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
 
 # dataset.params = parameters used for datasets

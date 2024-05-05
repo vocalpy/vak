@@ -43,7 +43,7 @@ batch_size = 11
 # num_workers: number of workers to use when loading data with multiprocessing
 num_workers = 16
 # device: name of device to run model on, one of "cuda", "cpu"
-device = "cuda"
+
 # output_dir: directory where output should be saved, as a sub-directory within `output_dir`
 output_dir = "/PATH/TO/FOLDER/results/eval"
 # dataset_path : path to dataset created by prep
