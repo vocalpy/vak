@@ -15,7 +15,7 @@ class TestPredictConfig:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                     'annot_csv_filename': 'bl26lb16.041912.annot.csv',
                     'model': {
@@ -43,6 +43,7 @@ class TestPredictConfig:
     def test_init(self, config_dict):
         config_dict['model'] = vak.config.ModelConfig.from_config_dict(config_dict['model'])
         config_dict['dataset'] = vak.config.DatasetConfig.from_config_dict(config_dict['dataset'])
+        config_dict['trainer'] = vak.config.TrainerConfig(**config_dict['trainer'])
 
         predict_config = vak.config.PredictConfig(**config_dict)
 
@@ -57,7 +58,7 @@ class TestPredictConfig:
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                     'batch_size': 11,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                     'annot_csv_filename': 'bl26lb16.041912.annot.csv',
                     'model': {
@@ -104,7 +105,7 @@ class TestPredictConfig:
                         'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                         'batch_size': 11,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                         'annot_csv_filename': 'bl26lb16.041912.annot.csv',
                         'model': {
@@ -137,7 +138,7 @@ class TestPredictConfig:
                         'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                         'batch_size': 11,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                         'annot_csv_filename': 'bl26lb16.041912.annot.csv',
                         'model': {
@@ -167,7 +168,7 @@ class TestPredictConfig:
                         'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                         'batch_size': 11,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'output_dir': './tests/data_for_tests/generated/results/predict/audio_cbin_annot_notmat/TweetyNet',
                         'annot_csv_filename': 'bl26lb16.041912.annot.csv',
                         'dataset': {

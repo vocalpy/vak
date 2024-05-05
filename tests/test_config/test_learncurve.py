@@ -17,7 +17,7 @@ class TestLearncurveConfig:
                     'ckpt_step': 200,
                     'patience': 4,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
                     'model': {
@@ -47,6 +47,7 @@ class TestLearncurveConfig:
     def test_init(self, config_dict):
         config_dict['model'] = vak.config.ModelConfig.from_config_dict(config_dict['model'])
         config_dict['dataset'] = vak.config.DatasetConfig.from_config_dict(config_dict['dataset'])
+        config_dict['trainer'] = vak.config.TrainerConfig(**config_dict['trainer'])
 
         learncurve_config = vak.config.LearncurveConfig(**config_dict)
 
@@ -63,7 +64,7 @@ class TestLearncurveConfig:
                     'ckpt_step': 200,
                     'patience': 4,
                     'num_workers': 16,
-                    'device': 'cuda',
+                    'trainer': {'accelerator': 'gpu', 'devices': [0]},
                     'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
                     'model': {
@@ -118,7 +119,7 @@ class TestLearncurveConfig:
                         'ckpt_step': 200,
                         'patience': 4,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                         'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
                         'dataset': {
@@ -137,7 +138,7 @@ class TestLearncurveConfig:
                         'ckpt_step': 200,
                         'patience': 4,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'root_results_dir': './tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/TweetyNet',
                         'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
                         'model': {
@@ -171,7 +172,7 @@ class TestLearncurveConfig:
                         'ckpt_step': 200,
                         'patience': 4,
                         'num_workers': 16,
-                        'device': 'cuda',
+                        'trainer': {'accelerator': 'gpu', 'devices': [0]},
                         'post_tfm_kwargs': {'majority_vote': True, 'min_segment_dur': 0.02},
                         'model': {
                             'TweetyNet': {
