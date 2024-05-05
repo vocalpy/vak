@@ -80,7 +80,7 @@ class TrainerConfig:
         if self.devices is None:
             if self.accelerator == "cpu":
                 # ~"use all available"
-                self.devices = -1
+                self.devices = 1
             elif self.accelerator in ("gpu", "tpu", "ipu"):
                 # we can only use a single device, assume there's only one
                 self.devices = [0]
@@ -102,6 +102,10 @@ class TrainerConfig:
                 raise ValueError(
                     f"Value for `devices` cannot be a list when `accelerator` is `cpu`. Value was: {self.devices}\n"
                     "When `accelerator` is `cpu`, please set `devices` to 1 or -1 (which are equivalent)."
+                )
+            if self.devices < 1:
+                raise ValueError(
+                    f"When value for 'accelerator' is 'cpu', value for `devices` should be an int > 0, but was: {self.devices}"
                 )
 
     def asdict(self):
