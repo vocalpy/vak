@@ -22,8 +22,11 @@ class TestWindowDataset:
         cfg = vak.config.Config.from_toml_path(toml_path)
         cfg_command = getattr(cfg, config_type)
 
+        transform_kwargs = {
+            "window_size": cfg.eval.dataset.params["window_size"]
+        }
         item_transform = vak.transforms.defaults.get_default_transform(
-            model_name, config_type, cfg.eval.transform_params
+            model_name, config_type, transform_kwargs
         )
 
         dataset = vak.datasets.frame_classification.FramesDataset.from_dataset_path(
