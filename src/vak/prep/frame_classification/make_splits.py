@@ -228,7 +228,7 @@ def make_splits(
         network model. As returned by :func:`vak.labels.to_map`.
     audio_format : str
         A :class:`string` representing the format of audio files.
-        One of :constant:`vak.common.constants.VALID_AUDIO_FORMATS`.
+        One of :const:`vak.common.constants.VALID_AUDIO_FORMATS`.
     spect_key : str
         Key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
