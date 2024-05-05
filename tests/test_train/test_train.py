@@ -35,7 +35,7 @@ def test_train(
             "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"table": "train", "key": "trainer", "value": {"accelerator": "cpu", "devices": -1}},
+        {"table": "train", "key": "trainer", "value": {"accelerator": "cpu", "devices": 1}},
     ]
 
     toml_path = specific_config_toml_path(

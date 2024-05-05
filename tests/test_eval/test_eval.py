@@ -31,7 +31,7 @@ def test_eval(
 
     keys_to_change = [
         {"table": "eval", "key": "output_dir", "value": str(output_dir)},
-        {"table": "eval", "key": "trainer", "value": {"accelerator": "cpu", "devices": -1}},
+        {"table": "eval", "key": "trainer", "value": {"accelerator": "cpu", "devices": 1}},
     ]
 
     toml_path = specific_config_toml_path(
