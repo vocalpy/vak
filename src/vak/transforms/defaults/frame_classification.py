@@ -200,15 +200,18 @@ class PredictItemTransform:
 
 
 def get_default_frame_classification_transform(
-    mode: str, transform_kwargs: dict
+    mode: str, transform_kwargs: dict | None = None
 ) -> tuple[Callable, Callable] | Callable:
     """Get default transform for frame classification model.
 
     Parameters
     ----------
     mode : str
-    transform_kwargs : dict
-        A dict with the following key-value pairs:
+    transform_kwargs : dict, optional
+        Keyword arguments for transform class.
+        Default is None.
+        If supplied, should be a :class:`dict`,
+        that can include the following key-value pairs:
             spect_standardizer : vak.transforms.StandardizeSpect
                 instance that has already been fit to dataset, using fit_df method.
                 Default is None, in which case no standardization transform is applied.
@@ -227,8 +230,10 @@ def get_default_frame_classification_transform(
 
     Returns
     -------
-
+    transform: TrainItemTransform, EvalItemTransform, or PredictItemTransform
     """
+    if transform_kwargs is None:
+        transform_kwargs = {}
     spect_standardizer = transform_kwargs.get("spect_standardizer", None)
     # regardless of mode, transform always starts with StandardizeSpect, if used
     if spect_standardizer is not None:
