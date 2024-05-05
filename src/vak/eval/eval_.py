@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 def eval(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     checkpoint_path: str | pathlib.Path,
     output_dir: str | pathlib.Path,
     num_workers: int,
@@ -36,6 +37,9 @@ def eval(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     checkpoint_path : str, pathlib.Path
         path to directory with checkpoint files saved by Torch, to reload model
     output_dir : str, pathlib.Path
@@ -111,25 +115,25 @@ def eval(
         eval_frame_classification_model(
             model_config=model_config,
             dataset_config=dataset_config,
+            trainer_config=trainer_config,
             checkpoint_path=checkpoint_path,
             labelmap_path=labelmap_path,
             output_dir=output_dir,
             num_workers=num_workers,
             split=split,
             spect_scaler_path=spect_scaler_path,
-            device=device,
             post_tfm_kwargs=post_tfm_kwargs,
         )
     elif model_family == "ParametricUMAPModel":
         eval_parametric_umap_model(
             model_config=model_config,
             dataset_config=dataset_config,
+            trainer_config=trainer_config,
             checkpoint_path=checkpoint_path,
             output_dir=output_dir,
             batch_size=batch_size,
             num_workers=num_workers,
             split=split,
-            device=device,
         )
     else:
         raise ValueError(f"Model family not recognized: {model_family}")

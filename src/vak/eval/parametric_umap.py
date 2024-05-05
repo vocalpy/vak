@@ -8,7 +8,7 @@ from collections import OrderedDict
 from datetime import datetime
 
 import pandas as pd
-import pytorch_lightning as lightning
+import lightning
 import torch.utils.data
 
 from .. import models, transforms
@@ -25,8 +25,8 @@ def eval_parametric_umap_model(
     output_dir: str | pathlib.Path,
     batch_size: int,
     num_workers: int,
+    trainer_config: dict,
     split: str = "test",
-    device: str | None = None,
 ) -> None:
     """Evaluate a trained model.
 
@@ -44,15 +44,15 @@ def eval_parametric_umap_model(
         Path to location where .csv files with evaluation metrics should be saved.
     batch_size : int
         Number of samples per batch fed into model.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
     split : str
         Split of dataset on which model should be evaluated.
         One of {'train', 'val', 'test'}. Default is 'test'.
-    device : str
-        Device on which to work with model + data.
-        Defaults to 'cuda' if torch.cuda.is_available is True.
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
@@ -111,14 +111,12 @@ def eval_parametric_umap_model(
 
     model.load_state_dict_from_path(checkpoint_path)
 
-    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
-    if device == "cuda":
-        accelerator = "gpu"
-    else:
-        accelerator = "auto"
-
-    trainer_logger = lightning.loggers.TensorBoardLogger(save_dir=output_dir)
-    trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
+    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
+    trainer = lightning.pytorch.Trainer(
+        accelerator=trainer_config["accelerator"],
+        devices=trainer_config["devices"],
+        logger=trainer_logger
+        )
     # TODO: check for hasattr(model, test_step) and if so run test
     # below, [0] because validate returns list of dicts, length of no. of val loaders
     metric_vals = trainer.validate(model, dataloaders=val_loader)[0]

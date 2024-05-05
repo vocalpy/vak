@@ -10,7 +10,7 @@ from datetime import datetime
 
 import joblib
 import pandas as pd
-import pytorch_lightning as lightning
+import lightning
 import torch.utils.data
 
 from .. import datasets, models, transforms
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 def eval_frame_classification_model(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     checkpoint_path: str | pathlib.Path,
     labelmap_path: str | pathlib.Path,
     output_dir: str | pathlib.Path,
@@ -30,7 +31,6 @@ def eval_frame_classification_model(
     split: str = "test",
     spect_scaler_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
-    device: str | None = None,
 ) -> None:
     """Evaluate a trained model.
 
@@ -42,6 +42,9 @@ def eval_frame_classification_model(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     checkpoint_path : str, pathlib.Path
         Path to directory with checkpoint files saved by Torch, to reload model
     output_dir : str, pathlib.Path
@@ -71,18 +74,15 @@ def eval_frame_classification_model(
         a float value for ``min_segment_dur``.
         See the docstring of the transform for more details on
         these arguments and how they work.
-    device : str
-        Device on which to work with model + data.
-        Defaults to 'cuda' if torch.cuda.is_available is True.
 
     Notes
     -----
-    Note that unlike ``core.predict``, this function
+    Note that unlike :func:`core.predict`, this function
     can modify ``labelmap`` so that metrics like edit distance
     are correctly computed, by converting any string labels
     in ``labelmap`` with multiple characters
     to (mock) single-character labels,
-    with ``vak.labels.multi_char_labels_to_single_char``.
+    with :func:`vak.labels.multi_char_labels_to_single_char`.
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
@@ -190,14 +190,12 @@ def eval_frame_classification_model(
 
     model.load_state_dict_from_path(checkpoint_path)
 
-    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
-    if device == "cuda":
-        accelerator = "gpu"
-    else:
-        accelerator = "auto"
-
-    trainer_logger = lightning.loggers.TensorBoardLogger(save_dir=output_dir)
-    trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
+    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
+    trainer = lightning.pytorch.Trainer(
+        accelerator=trainer_config["accelerator"],
+        devices=trainer_config["devices"],
+        logger=trainer_logger
+        )
     # TODO: check for hasattr(model, test_step) and if so run test
     # below, [0] because validate returns list of dicts, length of no. of val loaders
     metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
