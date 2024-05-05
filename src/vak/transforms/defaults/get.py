@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+from typing import Callable, Literal
+
 from ... import models
 from . import frame_classification, parametric_umap
 
 
 def get_default_transform(
     model_name: str,
-    mode: str,
-    transform_kwargs: dict,
-):
-    """Get default transforms for a model,
+    mode: Literal["eval", "predict", "train"],
+    transform_kwargs: dict | None = None,
+) -> Callable:
+    """Get default transform for a model,
     according to its family and what mode
     the model is being used in.
 
@@ -20,14 +22,13 @@ def get_default_transform(
     model_name : str
         Name of model.
     mode : str
-        one of {'train', 'eval', 'predict'}. Determines set of transforms.
+        One of {'eval', 'predict', 'train'}.
 
     Returns
     -------
-    transform, target_transform : callable
-        one or more vak transforms to be applied to inputs x and, during training, the target y.
-        If more than one transform, they are combined into an instance of torchvision.transforms.Compose.
-        Note that when mode is 'predict', the target transform is None.
+    item_transform : callable
+        Transform to be applied to input :math:`x` to a model and,
+        during training, the target :math:`y`.
     """
     try:
         model_family = models.registry.MODEL_FAMILY_FROM_NAME[model_name]
