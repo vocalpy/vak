@@ -11,7 +11,6 @@ import torch.utils.data
 
 from .. import datasets, models, transforms
 from ..common import validators
-from ..common.accelerator import get_default as get_default_device
 from ..datasets.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
@@ -20,12 +19,12 @@ logger = logging.getLogger(__name__)
 def predict_with_parametric_umap_model(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     checkpoint_path,
     num_workers=2,
     transform_params: dict | None = None,
     dataset_params: dict | None = None,
     timebins_key="t",
-    device=None,
     output_dir=None,
 ):
     """Make predictions on a dataset with a trained
@@ -39,6 +38,9 @@ def predict_with_parametric_umap_model(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     checkpoint_path : str
         path to directory with checkpoint files saved by Torch, to reload model
     num_workers : int
@@ -54,9 +56,6 @@ def predict_with_parametric_umap_model(
         Optional, default is None.
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
-    device : str
-        Device on which to work with model + data.
-        Defaults to 'cuda' if torch.cuda.is_available is True.
     annot_csv_filename : str
         name of .csv file containing predicted annotations.
         Default is None, in which case the name of the dataset .csv
@@ -96,9 +95,6 @@ def predict_with_parametric_umap_model(
         raise NotADirectoryError(
             f"value specified for output_dir is not recognized as a directory: {output_dir}"
         )
-
-    if device is None:
-        device = get_default_device()
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
     model_name = model_config["name"]
@@ -157,14 +153,12 @@ def predict_with_parametric_umap_model(
     )
     model.load_state_dict_from_path(checkpoint_path)
 
-    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
-    if device == "cuda":
-        accelerator = "gpu"
-    else:
-        accelerator = "auto"
-
     trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
-    trainer = lightning.pytorch.Trainer(accelerator=accelerator, logger=trainer_logger)
+    trainer = lightning.pytorch.Trainer(
+        accelerator=trainer_config["accelerator"],
+        devices=trainer_config["devices"],
+        logger=trainer_logger
+    )
 
     logger.info(f"running predict method of {model_name}")
     results = trainer.predict(model, pred_loader)  # noqa : F841

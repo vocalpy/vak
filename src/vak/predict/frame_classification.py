@@ -16,7 +16,6 @@ from tqdm import tqdm
 
 from .. import datasets, models, transforms
 from ..common import constants, files, validators
-from ..common.accelerator import get_default as get_default_device
 from ..datasets.frame_classification import FramesDataset
 
 logger = logging.getLogger(__name__)
@@ -25,12 +24,12 @@ logger = logging.getLogger(__name__)
 def predict_with_frame_classification_model(
     model_config: dict,
     dataset_config: dict,
+    trainer_config: dict,
     checkpoint_path,
     labelmap_path,
     num_workers=2,
     timebins_key="t",
     spect_scaler_path=None,
-    device=None,
     annot_csv_filename=None,
     output_dir=None,
     min_segment_dur=None,
@@ -48,6 +47,9 @@ def predict_with_frame_classification_model(
     dataset_config: dict
         Dataset configuration in a :class:`dict`.
         Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
+    trainer_config: dict
+        Configuration for :class:`lightning.pytorch.Trainer`.
+        Can be obtained by calling :meth:`vak.config.TrainerConfig.asdict`.
     checkpoint_path : str
         path to directory with checkpoint files saved by Torch, to reload model
     labelmap_path : str
@@ -59,9 +61,6 @@ def predict_with_frame_classification_model(
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
-    device : str
-        Device on which to work with model + data.
-        Defaults to 'cuda' if torch.cuda.is_available is True.
     spect_scaler_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
@@ -123,9 +122,6 @@ def predict_with_frame_classification_model(
         raise NotADirectoryError(
             f"value specified for output_dir is not recognized as a directory: {output_dir}"
         )
-
-    if device is None:
-        device = get_default_device()
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
     if spect_scaler_path:
@@ -226,14 +222,12 @@ def predict_with_frame_classification_model(
     )
     model.load_state_dict_from_path(checkpoint_path)
 
-    # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
-    if device == "cuda":
-        accelerator = "gpu"
-    else:
-        accelerator = "auto"
-
     trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
-    trainer = lightning.pytorch.Trainer(accelerator=accelerator, logger=trainer_logger)
+    trainer = lightning.pytorch.Trainer(
+        accelerator=trainer_config["accelerator"],
+        devices=trainer_config["devices"],
+        logger=trainer_logger
+    )
 
     logger.info(f"running predict method of {model_name}")
     results = trainer.predict(model, pred_loader)
