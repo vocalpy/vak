@@ -47,9 +47,6 @@ class TrainConfig:
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader.
-    device : str
-        Device on which to work with model + data.
-        Defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     normalize_spectrograms : bool
