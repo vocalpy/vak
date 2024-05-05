@@ -140,7 +140,7 @@ def eval_frame_classification_model(
         raise KeyError(
             f"The `dataset_config` for frame classification model '{model_name}' must include a 'params' sub-table "
             f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
-        )
+        ) from e
     transform_params = {
         "spect_standardizer": spect_standardizer,
         "window_size": window_size,
