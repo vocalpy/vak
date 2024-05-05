@@ -13,16 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 def learning_curve(
-    model_name: str,
     model_config: dict,
-    dataset_path: str | pathlib.Path,
+    dataset_config: dict,
     batch_size: int,
     num_epochs: int,
     num_workers: int,
-    train_transform_params: dict | None = None,
-    train_dataset_params: dict | None = None,
-    val_transform_params: dict | None = None,
-    val_dataset_params: dict | None = None,
     results_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
     normalize_spectrograms: bool = True,
@@ -44,14 +39,12 @@ def learning_curve(
 
     Parameters
     ----------
-    model_name : str
-        Model name, must be one of vak.models.registry.MODEL_NAMES.
     model_config : dict
-        Model configuration in a ``dict``,
-        as loaded from a .toml file,
-        and used by the model method ``from_config``.
-    dataset_path : str
-        path to where dataset was saved as a csv.
+        Model configuration in a :class:`dict`.
+        Can be obtained by calling :meth:`vak.config.ModelConfig.asdict`.
+    dataset_config: dict
+        Dataset configuration in a :class:`dict`.
+        Can be obtained by calling :meth:`vak.config.DatasetConfig.asdict`.
     batch_size : int
         number of samples per batch presented to models during training.
     num_epochs : int
@@ -122,16 +115,11 @@ def learning_curve(
         ) from e
     if model_family == "FrameClassificationModel":
         learning_curve_for_frame_classification_model(
-            model_name=model_name,
             model_config=model_config,
-            dataset_path=dataset_path,
+            dataset_config=dataset_config,
             batch_size=batch_size,
             num_epochs=num_epochs,
             num_workers=num_workers,
-            train_transform_params=train_transform_params,
-            train_dataset_params=train_dataset_params,
-            val_transform_params=val_transform_params,
-            val_dataset_params=val_dataset_params,
             results_path=results_path,
             post_tfm_kwargs=post_tfm_kwargs,
             normalize_spectrograms=normalize_spectrograms,
