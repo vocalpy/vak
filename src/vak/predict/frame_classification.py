@@ -166,8 +166,8 @@ def predict_with_frame_classification_model(
     logger.info(
         f"loading dataset to predict from csv path: {dataset_csv_path}"
     )
-    if dataset_params is None:
-        dataset_params = {}
+
+    # TODO: fix this when we build transforms into datasets; pass in `window_size` here
     pred_dataset = FramesDataset.from_dataset_path(
         dataset_path=dataset_path,
         split="predict",
