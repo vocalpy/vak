@@ -3,7 +3,7 @@
 from attrs import converters, define, field, validators
 from attrs.validators import instance_of
 
-from ..common import device
+from ..common import accelerator
 from ..common.converters import bool_from_str, expanded_user_path
 from .dataset import DatasetConfig
 from .model import ModelConfig
@@ -94,7 +94,7 @@ class TrainConfig:
     )
 
     num_workers = field(validator=instance_of(int), default=2)
-    device = field(validator=instance_of(str), default=device.get_default())
+    device = field(validator=instance_of(str), default=accelerator.get_default())
     shuffle = field(
         converter=bool_from_str, validator=instance_of(bool), default=True
     )

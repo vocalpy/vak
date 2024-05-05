@@ -7,7 +7,7 @@ import pathlib
 from attrs import converters, define, field, validators
 from attrs.validators import instance_of
 
-from ..common import device
+from ..common import accelerator
 from ..common.converters import expanded_user_path
 from .dataset import DatasetConfig
 from .model import ModelConfig
@@ -161,7 +161,7 @@ class EvalConfig:
 
     # optional, data loader
     num_workers = field(validator=instance_of(int), default=2)
-    device = field(validator=instance_of(str), default=device.get_default())
+    device = field(validator=instance_of(str), default=accelerator.get_default())
 
     @classmethod
     def from_config_dict(cls, config_dict: dict) -> EvalConfig:

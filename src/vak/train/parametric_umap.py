@@ -12,7 +12,7 @@ import torch.utils.data
 
 from .. import datasets, models, transforms
 from ..common import validators
-from ..common.device import get_default as get_default_device
+from ..common.accelerator import get_default as get_default_device
 from ..common.paths import generate_results_dir_name_as_path
 from ..datasets.parametric_umap import ParametricUMAPDataset
 

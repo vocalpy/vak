@@ -9,7 +9,7 @@ from attr import converters, validators
 from attr.validators import instance_of
 from attrs import define, field
 
-from ..common import device
+from ..common import accelerator
 from ..common.converters import expanded_user_path
 from .dataset import DatasetConfig
 from .model import ModelConfig
@@ -106,7 +106,7 @@ class PredictConfig:
 
     # optional, data loader
     num_workers = field(validator=instance_of(int), default=2)
-    device = field(validator=instance_of(str), default=device.get_default())
+    device = field(validator=instance_of(str), default=accelerator.get_default())
 
     annot_csv_filename = field(
         validator=validators.optional(instance_of(str)), default=None

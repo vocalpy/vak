@@ -9,10 +9,10 @@ See for example :mod:`vak.prep.prep_helper` or
 """
 
 from . import (
+    accelerator,
     annotation,
     constants,
     converters,
-    device,
     files,
     labels,
     learncurve,
@@ -30,7 +30,7 @@ __all__ = [
     "annotation",
     "constants",
     "converters",
-    "device",
+    "accelerator",
     "files",
     "labels",
     "learncurve",

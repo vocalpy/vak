@@ -11,7 +11,7 @@ import torch.utils.data
 
 from .. import datasets, models, transforms
 from ..common import validators
-from ..common.device import get_default as get_default_device
+from ..common.accelerator import get_default as get_default_device
 from ..datasets.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
