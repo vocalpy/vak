@@ -24,10 +24,6 @@ class TestTrainerConfig:
                     'devices': 1,
                 },
                 {
-                    'accelerator': 'cpu',
-                    'devices': -1,
-                },
-                {
                     'devices': 1,
                 },
             ]
@@ -43,6 +39,11 @@ class TestTrainerConfig:
             assert getattr(trainer_config, 'accelerator') == vak.common.accelerator.get_default()
         if 'devices' in config_dict:
             assert getattr(trainer_config, 'devices') == config_dict['devices']
+        else:
+            if 'accelerator' == 'cpu':
+                assert getattr(trainer_config, 'devices') == 1
+            elif 'accelerator' in ('gpu', 'tpu', 'ipu'):
+                assert getattr(trainer_config, 'devices') == [0]
 
     @pytest.mark.parametrize(
             'config_dict, expected_exception',
@@ -77,6 +78,14 @@ class TestTrainerConfig:
                     },
                     ValueError,
                 ),
+                # when accelerator is CPU, devices must be int gt 0
+                (
+                    {
+                        'accelerator': 'cpu',
+                        'devices': -1,
+                    },
+                    ValueError,
+                )
             ]
     )
     def test_init_raises(self, config_dict, expected_exception):
@@ -105,10 +114,6 @@ class TestTrainerConfig:
                     'devices': 1,
                 },
                 {
-                    'accelerator': 'cpu',
-                    'devices': -1,
-                },
-                {
                     'devices': 1,
                 },
             ]
@@ -128,6 +133,6 @@ class TestTrainerConfig:
             assert trainer_config_asdict['devices'] == config_dict['devices']
         else:
             if config_dict["accelerator"] == 'cpu':
-                assert trainer_config_asdict['devices'] == -1
+                assert trainer_config_asdict['devices'] == 1
             elif config_dict["accelerator"] == 'gpu':
                 assert trainer_config_asdict['devices'] == [0]
