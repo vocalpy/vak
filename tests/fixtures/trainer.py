@@ -3,7 +3,7 @@ import torch
 
 
 TRAINER_TABLE = [
-    {"accelerator": "cpu", "devices": -1}
+    {"accelerator": "cpu", "devices": 1}
 ]
 if torch.cuda.is_available():
     {"accelerator": "gpu", "devices": [0]}
