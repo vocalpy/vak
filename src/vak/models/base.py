@@ -7,14 +7,14 @@ from __future__ import annotations
 import inspect
 from typing import Callable, ClassVar
 
-import pytorch_lightning as lightning
+import lightning
 import torch
 
 from .definition import ModelDefinition
 from .definition import validate as validate_definition
 
 
-class Model(lightning.LightningModule):
+class Model(lightning.pytorch.LightningModule):
     """Base class for a model in ``vak``,
     that other families of models should subclass.
 
@@ -286,7 +286,7 @@ class Model(lightning.LightningModule):
         in that chekcpoint.
 
         This method allows loading a state dict into an instance.
-        It's necessary because `lightning.LightningModule.load`` is a
+        It's necessary because `lightning.pytorch.LightningModule.load`` is a
         ``classmethod``, so calling that method will trigger
          ``LightningModule.__init__`` instead of running
         ``vak.models.Model.__init__``.
@@ -297,7 +297,7 @@ class Model(lightning.LightningModule):
             Path to a checkpoint saved by a model in ``vak``.
             This checkpoint has the same key-value pairs as
             any other checkpoint saved by a
-            ``lightning.LightningModule``.
+            ``lightning.pytorch.LightningModule``.
 
         Returns
         -------

@@ -7,7 +7,7 @@ import logging
 import pathlib
 
 import pandas as pd
-import pytorch_lightning as lightning
+import lightning
 import torch.utils.data
 
 from .. import datasets, models, transforms
@@ -30,8 +30,8 @@ def get_trainer(
     ckpt_step: int,
     log_save_dir: str | pathlib.Path,
     device: str = "cuda",
-) -> lightning.Trainer:
-    """Returns an instance of ``lightning.Trainer``
+) -> lightning.pytorch.Trainer:
+    """Returns an instance of ``lightning.pytorch.Trainer``
     with a default set of callbacks.
     Used by ``vak.core`` functions."""
     # TODO: use accelerator parameter, https://github.com/vocalpy/vak/issues/691
@@ -40,7 +40,7 @@ def get_trainer(
     else:
         accelerator = "auto"
 
-    ckpt_callback = lightning.callbacks.ModelCheckpoint(
+    ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
         dirpath=ckpt_root,
         filename="checkpoint",
         every_n_train_steps=ckpt_step,
@@ -50,7 +50,7 @@ def get_trainer(
     ckpt_callback.CHECKPOINT_NAME_LAST = "checkpoint"
     ckpt_callback.FILE_EXTENSION = ".pt"
 
-    val_ckpt_callback = lightning.callbacks.ModelCheckpoint(
+    val_ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
         monitor="val_loss",
         dirpath=ckpt_root,
         save_top_k=1,
@@ -66,9 +66,9 @@ def get_trainer(
         val_ckpt_callback,
     ]
 
-    logger = lightning.loggers.TensorBoardLogger(save_dir=log_save_dir)
+    logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=log_save_dir)
 
-    trainer = lightning.Trainer(
+    trainer = lightning.pytorch.Trainer(
         max_epochs=max_epochs,
         accelerator=accelerator,
         logger=logger,

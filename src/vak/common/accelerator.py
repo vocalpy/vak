@@ -2,7 +2,7 @@ import torch
 
 
 def get_default() -> str:
-    """Get default `accelerator` for :class:`lightning.Trainer`.
+    """Get default `accelerator` for :class:`lightning.pytorch.Trainer`.
 
     Returns
     -------

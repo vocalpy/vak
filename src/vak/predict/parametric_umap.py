@@ -6,7 +6,7 @@ import logging
 import os
 import pathlib
 
-import pytorch_lightning as lightning
+import lightning
 import torch.utils.data
 
 from .. import datasets, models, transforms
@@ -163,8 +163,8 @@ def predict_with_parametric_umap_model(
     else:
         accelerator = "auto"
 
-    trainer_logger = lightning.loggers.TensorBoardLogger(save_dir=output_dir)
-    trainer = lightning.Trainer(accelerator=accelerator, logger=trainer_logger)
+    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
+    trainer = lightning.pytorch.Trainer(accelerator=accelerator, logger=trainer_logger)
 
     logger.info(f"running predict method of {model_name}")
     results = trainer.predict(model, pred_loader)  # noqa : F841
