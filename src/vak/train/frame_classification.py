@@ -233,7 +233,7 @@ def train_frame_classification_model(
         split="train",
         subset=subset,
         item_transform=train_transform,
-        window_size=dataset_config['params']['window_size'],
+        **dataset_config['params'],
     )
     logger.info(
         f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration}",
