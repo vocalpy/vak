@@ -28,7 +28,7 @@ def test_predict(
 
     keys_to_change = [
         {"table": "predict", "key": "output_dir", "value": str(output_dir)},
-        {"table": "predict", "key": "device", "value": 'cpu'},
+        {"table": "predict", "key": "trainer", "value": {"accelerator": "cpu", "devices": -1}},
     ]
 
     toml_path = specific_config_toml_path(

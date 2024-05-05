@@ -25,7 +25,7 @@ def test_eval_parametric_umap_model(
         annot_format,
         specific_config_toml_path,
         tmp_path,
-        device,
+        trainer_table,
 ):
     output_dir = tmp_path.joinpath(
         f"test_eval_{audio_format}_{spect_format}_{annot_format}"
@@ -34,7 +34,7 @@ def test_eval_parametric_umap_model(
 
     keys_to_change = [
         {"table": "eval", "key": "output_dir", "value": str(output_dir)},
-        {"table": "eval", "key": "device", "value": device},
+        {"table": "eval", "key": "trainer", "value": trainer_table},
     ]
 
     toml_path = specific_config_toml_path(
@@ -70,7 +70,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
     path_option_to_change,
         specific_config_toml_path,
     tmp_path,
-    device
+    trainer_table
 ):
     """Test that :func:`vak.eval.parametric_umap.eval_parametric_umap_model`
     raises FileNotFoundError when expected"""
@@ -81,7 +81,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
 
     keys_to_change = [
         {"table": "eval", "key": "output_dir", "value": str(output_dir)},
-        {"table": "eval", "key": "device", "value": device},
+        {"table": "eval", "key": "trainer", "value": trainer_table},
         path_option_to_change,
     ]
 
@@ -116,14 +116,14 @@ def test_eval_frame_classification_model_raises_file_not_found(
 def test_eval_frame_classification_model_raises_not_a_directory(
     path_option_to_change,
         specific_config_toml_path,
-    device,
+    trainer_table,
     tmp_path,
 ):
     """Test that :func:`vak.eval.parametric_umap.eval_parametric_umap_model`
     raises NotADirectoryError when expected"""
     keys_to_change = [
         path_option_to_change,
-        {"table": "eval", "key": "device", "value": device},
+        {"table": "eval", "key": "trainer", "value": trainer_table},
     ]
 
     if path_option_to_change["key"] != "output_dir":

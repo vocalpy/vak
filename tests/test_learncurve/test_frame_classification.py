@@ -51,8 +51,8 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
     ]
 )
 def test_learning_curve_for_frame_classification_model(
-        model_name, audio_format, annot_format, specific_config_toml_path, tmp_path, device):
-    keys_to_change = {"table": "learncurve", "key": "device", "value": device}
+        model_name, audio_format, annot_format, specific_config_toml_path, tmp_path, trainer_table):
+    keys_to_change = {"table": "learncurve", "key": "trainer", "value": trainer_table}
 
     toml_path = specific_config_toml_path(
         config_type="learncurve",
@@ -94,13 +94,13 @@ def test_learning_curve_for_frame_classification_model(
 )
 def test_learncurve_raises_not_a_directory(dir_option_to_change,
                                            specific_config_toml_path,
-                                           tmp_path, device):
+                                           tmp_path, trainer_table):
     """Test that core.learncurve.learning_curve raises NotADirectoryError
     when the following directories do not exist:
     results_path, previous_run_path, dataset_path
     """
     keys_to_change = [
-        {"table": "learncurve", "key": "device", "value": device},
+        {"table": "learncurve", "key": "trainer", "value": trainer_table},
         dir_option_to_change
     ]
     toml_path = specific_config_toml_path(

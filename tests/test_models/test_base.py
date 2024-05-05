@@ -183,7 +183,7 @@ class TestModel:
                                        specific_config_toml_path,
                                        # pytest fixtures
                                        monkeypatch,
-                                       device
+                                       trainer_table
                                        ):
         """Smoke test that makes sure ``load_state_dict_from_path`` runs without failure.
 
@@ -222,7 +222,7 @@ class TestModel:
                                      num_freqbins=num_freqbins,
                                      **model_config['network'])
         model = vak.models.base.Model(network=network)
-        model.to(device)
+        model.to(trainer_table)
 
         eval_toml_path = specific_config_toml_path('eval', model_name, audio_format='cbin', annot_format='notmat')
         eval_cfg = vak.config.Config.from_toml_path(eval_toml_path)
@@ -231,12 +231,12 @@ class TestModel:
         # ---- actually test method
         sd_before = copy.deepcopy(model.state_dict())
         sd_before = {
-            k: v.to(device) for k, v in sd_before.items()
+            k: v.to(trainer_table) for k, v in sd_before.items()
         }
         ckpt = torch.load(checkpoint_path)
         sd_to_be_loaded = ckpt['state_dict']
         sd_to_be_loaded = {
-            k: v.to(device) for k, v in sd_to_be_loaded.items()
+            k: v.to(trainer_table) for k, v in sd_to_be_loaded.items()
         }
 
         model.load_state_dict_from_path(checkpoint_path)

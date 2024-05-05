@@ -42,12 +42,12 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
     ],
 )
 def test_train_frame_classification_model(
-    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, trainer_table
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
     keys_to_change = [
-        {"table": "train", "key": "device", "value": device},
+        {"table": "train", "key": "trainer", "value": trainer_table},
         {"table": "train", "key": "root_results_dir", "value": str(results_path)}
     ]
     toml_path = specific_config_toml_path(
@@ -89,12 +89,12 @@ def test_train_frame_classification_model(
     ],
 )
 def test_continue_training(
-    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, trainer_table
 ):
     results_path = vak.common.paths.generate_results_dir_name_as_path(tmp_path)
     results_path.mkdir()
     keys_to_change = [
-        {"table": "train", "key": "device", "value": device},
+        {"table": "train", "key": "trainer", "value": trainer_table},
         {"table": "train", "key": "root_results_dir", "value": str(results_path)}
     ]
     toml_path = specific_config_toml_path(
@@ -135,14 +135,14 @@ def test_continue_training(
     ]
 )
 def test_train_raises_file_not_found(
-    path_option_to_change, specific_config_toml_path, tmp_path, device
+    path_option_to_change, specific_config_toml_path, tmp_path, trainer_table
 ):
     """Test that pre-conditions in `vak.train` raise FileNotFoundError
     when one of the following does not exist:
     checkpoint_path, dataset_path, spect_scaler_path
     """
     keys_to_change = [
-        {"table": "train", "key": "device", "value": device},
+        {"table": "train", "key": "trainer", "value": trainer_table},
         path_option_to_change
     ]
     toml_path = specific_config_toml_path(
@@ -184,14 +184,14 @@ def test_train_raises_file_not_found(
     ]
 )
 def test_train_raises_not_a_directory(
-    path_option_to_change, specific_config_toml_path, device, tmp_path
+    path_option_to_change, specific_config_toml_path, trainer_table, tmp_path
 ):
     """Test that core.train raises NotADirectory
     when directory does not exist
     """
     keys_to_change = [
         path_option_to_change,
-        {"table": "train", "key": "device", "value": device},
+        {"table": "train", "key": "trainer", "value": trainer_table},
     ]
 
     toml_path = specific_config_toml_path(

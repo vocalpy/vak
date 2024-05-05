@@ -19,7 +19,7 @@ from . import cli_asserts
     ],
 )
 def test_train(
-    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, device
+    model_name, audio_format, spect_format, annot_format, specific_config_toml_path, tmp_path, trainer_table
 ):
     root_results_dir = tmp_path.joinpath("test_train_root_results_dir")
     root_results_dir.mkdir()
@@ -30,7 +30,7 @@ def test_train(
             "key": "root_results_dir",
             "value": str(root_results_dir),
         },
-        {"table": "train", "key": "device", "value": device},
+        {"table": "train", "key": "trainer", "value": trainer_table},
     ]
 
     toml_path = specific_config_toml_path(
