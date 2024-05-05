@@ -55,7 +55,7 @@ def test_train_parametric_umap_model(
 
     vak.train.parametric_umap.train_parametric_umap_model(
         model_name=cfg.train.model.name,
-        model_config=cfg.train.model.to_dict(),
+        model_config=cfg.train.model.asdict(),
         dataset_path=cfg.train.dataset.path,
         batch_size=cfg.train.batch_size,
         num_epochs=cfg.train.num_epochs,
@@ -107,7 +107,7 @@ def test_train_parametric_umap_model_raises_file_not_found(
     with pytest.raises(FileNotFoundError):
         vak.train.parametric_umap.train_parametric_umap_model(
             model_name=cfg.train.model.name,
-            model_config=cfg.train.model.to_dict(),
+            model_config=cfg.train.model.asdict(),
             dataset_path=cfg.train.dataset.path,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,
@@ -152,7 +152,7 @@ def test_train_parametric_umap_model_raises_not_a_directory(
         keys_to_change=keys_to_change,
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
-    model_config = cfg.train.model.to_dict()
+    model_config = cfg.train.model.asdict()
 
     # mock behavior of cli.train, building `results_path` from config option `root_results_dir`
     results_path = cfg.train.root_results_dir / 'results-dir-timestamp'

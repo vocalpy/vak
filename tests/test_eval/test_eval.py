@@ -50,7 +50,7 @@ def test_eval(
     with mock.patch(eval_function_to_mock, autospec=True) as mock_eval_function:
         vak.eval.eval(
             model_name=cfg.eval.model.name,
-            model_config=cfg.eval.model.to_dict(),
+            model_config=cfg.eval.model.asdict(),
             dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             labelmap_path=cfg.eval.labelmap_path,

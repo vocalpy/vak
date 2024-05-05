@@ -54,7 +54,7 @@ def test_train(
     with mock.patch(train_function_to_mock, autospec=True) as mock_train_function:
         vak.train.train(
             model_name=cfg.train.model.name,
-            model_config=cfg.train.model.to_dict(),
+            model_config=cfg.train.model.asdict(),
             dataset_path=cfg.train.dataset.path,
             batch_size=cfg.train.batch_size,
             num_epochs=cfg.train.num_epochs,

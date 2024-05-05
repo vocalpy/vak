@@ -53,7 +53,7 @@ def test_predict_with_frame_classification_model(
 
     vak.predict.frame_classification.predict_with_frame_classification_model(
         model_name=cfg.predict.model.name,
-        model_config=cfg.predict.model.to_dict(),
+        model_config=cfg.predict.model.asdict(),
         dataset_path=cfg.predict.dataset.path,
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
@@ -127,7 +127,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
     with pytest.raises(FileNotFoundError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
             model_name=cfg.predict.model.name,
-            model_config=cfg.predict.model.to_dict(),
+            model_config=cfg.predict.model.asdict(),
             dataset_path=cfg.predict.dataset.path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,
@@ -189,7 +189,7 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
     with pytest.raises(NotADirectoryError):
         vak.predict.frame_classification.predict_with_frame_classification_model(
             model_name=cfg.predict.model.name,
-            model_config=cfg.predict.model.to_dict(),
+            model_config=cfg.predict.model.asdict(),
             dataset_path=cfg.predict.dataset.path,
             checkpoint_path=cfg.predict.checkpoint_path,
             labelmap_path=cfg.predict.labelmap_path,

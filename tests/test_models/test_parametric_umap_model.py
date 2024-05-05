@@ -93,7 +93,7 @@ class TestParametricUMAPModel:
             vak.models.ParametricUMAPModel, 'definition', definition, raising=False
         )
 
-        config = cfg.train.model.to_dict()
+        config = cfg.train.model.asdict()
         config["network"].update(
             encoder=dict(input_shape=input_shape)
         )

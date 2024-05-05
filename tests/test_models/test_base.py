@@ -217,7 +217,7 @@ class TestModel:
         # network is the one thing that has required args
         # and we also need to use its config from the toml file
         cfg = vak.config.Config.from_toml_path(train_toml_path)
-        model_config = cfg.train.model.to_dict()
+        model_config = cfg.train.model.asdict()
         network = definition.network(num_classes=len(labelmap),
                                      num_input_channels=num_input_channels,
                                      num_freqbins=num_freqbins,

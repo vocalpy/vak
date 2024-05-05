@@ -49,7 +49,7 @@ def test_eval_parametric_umap_model(
 
     vak.eval.parametric_umap.eval_parametric_umap_model(
         model_name=cfg.eval.model.name,
-        model_config=cfg.eval.model.to_dict(),
+        model_config=cfg.eval.model.asdict(),
         dataset_path=cfg.eval.dataset.path,
         checkpoint_path=cfg.eval.checkpoint_path,
         output_dir=cfg.eval.output_dir,
@@ -100,7 +100,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
     with pytest.raises(FileNotFoundError):
         vak.eval.parametric_umap.eval_parametric_umap_model(
             model_name=cfg.eval.model.name,
-            model_config=cfg.eval.model.to_dict(),
+            model_config=cfg.eval.model.asdict(),
             dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,
@@ -155,7 +155,7 @@ def test_eval_frame_classification_model_raises_not_a_directory(
     with pytest.raises(NotADirectoryError):
         vak.eval.parametric_umap.eval_parametric_umap_model(
             model_name=cfg.eval.model.name,
-            model_config=cfg.eval.model.to_dict(),
+            model_config=cfg.eval.model.asdict(),
             dataset_path=cfg.eval.dataset.path,
             checkpoint_path=cfg.eval.checkpoint_path,
             output_dir=cfg.eval.output_dir,

@@ -95,7 +95,7 @@ class TestFrameClassificationModel:
             vak.models.FrameClassificationModel, 'definition', definition, raising=False
         )
 
-        config = cfg.train.model.to_dict()
+        config = cfg.train.model.asdict()
         num_input_channels, num_freqbins = self.MOCK_INPUT_SHAPE[0], self.MOCK_INPUT_SHAPE[1]
 
         config["network"].update(
