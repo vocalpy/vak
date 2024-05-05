@@ -107,7 +107,7 @@ def learning_curve_for_frame_classification_model(
         Default is None, in which case training only stops after the specified number of epochs.
     """
     # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    dataset_path = expanded_user_path(dataset_path)
+    dataset_path = expanded_user_path(dataset_config["path"])
     if not dataset_path.exists() or not dataset_path.is_dir():
         raise NotADirectoryError(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
@@ -158,6 +158,7 @@ def learning_curve_for_frame_classification_model(
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
     logger.info("Starting training for learning curve.")
+    model_name = model_config["name"]  # used below when getting checkpoint path, etc
     for train_dur, replicate_num in to_do:
         logger.info(
             f"Training model with training set of size: {train_dur}s, replicate number {replicate_num}.",
