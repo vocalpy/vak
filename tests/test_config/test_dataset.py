@@ -60,6 +60,15 @@ class TestDatasetConfig:
                 'path' :'~/user/prepped/dataset',
                 'splits_path': 'splits/replicate-1.json'
             },
+            {
+                'path' :'~/user/prepped/dataset',
+                'params': {'window_size': 2000}
+            },
+            {
+                'name' : 'BioSoundSegBench',
+                'path' :'~/user/prepped/dataset',
+                'params': {'window_size': 2000},
+            },
         ]
     )
     def test_from_config_dict(self, config_dict):
@@ -74,6 +83,10 @@ class TestDatasetConfig:
             assert dataset_config.name == config_dict['name']
         else:
             assert dataset_config.name is None
+        if 'params' in config_dict:
+            assert dataset_config.params == config_dict['params']
+        else:
+            assert dataset_config.params == {}
 
     @pytest.mark.parametrize(
         'config_dict',
@@ -90,6 +103,15 @@ class TestDatasetConfig:
                 'path' :'~/user/prepped/dataset',
                 'splits_path': 'splits/replicate-1.json'
             },
+            {
+                'path' :'~/user/prepped/dataset',
+                'params': {'window_size': 2000}
+            },
+            {
+                'name' : 'BioSoundSegBench',
+                'path' :'~/user/prepped/dataset',
+                'params': {'window_size': 2000},
+            },
         ]
     )
     def test_asdict(self, config_dict):
@@ -105,4 +127,7 @@ class TestDatasetConfig:
                 else:
                     assert dataset_config_as_dict[key] == config_dict[key]
             else:
-                assert dataset_config_as_dict[key] is None
+                if key == 'params':
+                    assert dataset_config_as_dict[key] == {}
+                else:
+                    assert dataset_config_as_dict[key] is None
