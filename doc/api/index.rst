@@ -130,14 +130,16 @@ and dataclasses that represent tables from those files.
    :recursive:
 
    config.config
+   config.dataset
    config.eval
    config.learncurve
+   config.load
    config.model
-   config.parse
    config.predict
    config.prep
    config.spect_params
    config.train
+   config.trainer
    config.validators
 
 Datasets
