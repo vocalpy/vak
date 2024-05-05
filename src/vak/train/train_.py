@@ -130,13 +130,13 @@ def train(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
-    dataset_path = pathlib.Path(dataset_config['path'])
+    dataset_path = pathlib.Path(dataset_config["path"])
     if not dataset_path.exists() or not dataset_path.is_dir():
         raise NotADirectoryError(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
 
-    model_name = model_config['name']
+    model_name = model_config["name"]
     try:
         model_family = models.registry.MODEL_FAMILY_FROM_NAME[model_name]
     except KeyError as e:

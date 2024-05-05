@@ -158,7 +158,9 @@ def learning_curve_for_frame_classification_model(
 
     # ---- main loop that creates "learning curve" ---------------------------------------------------------------------
     logger.info("Starting training for learning curve.")
-    model_name = model_config["name"]  # used below when getting checkpoint path, etc
+    model_name = model_config[
+        "name"
+    ]  # used below when getting checkpoint path, etc
     for train_dur, replicate_num in to_do:
         logger.info(
             f"Training model with training set of size: {train_dur}s, replicate number {replicate_num}.",

@@ -281,7 +281,7 @@ class WindowDataset:
         tmp_item = self.__getitem__(tmp_x_ind)
         # used by vak functions that need to determine size of window,
         # e.g. when initializing a neural network model
-        return tmp_item['frames'].shape
+        return tmp_item["frames"].shape
 
     def _load_frames(self, frames_path):
         """Helper function that loads "frames",

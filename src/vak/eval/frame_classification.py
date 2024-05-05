@@ -95,7 +95,7 @@ def eval_frame_classification_model(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
-    dataset_path = pathlib.Path(dataset_config['path'])
+    dataset_path = pathlib.Path(dataset_config["path"])
     if not dataset_path.exists() or not dataset_path.is_dir():
         raise NotADirectoryError(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
@@ -143,7 +143,7 @@ def eval_frame_classification_model(
         )
     transform_params = {
         "spect_standardizer": spect_standardizer,
-        "window_size": window_size
+        "window_size": window_size,
     }
 
     item_transform = transforms.defaults.get_default_transform(

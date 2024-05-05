@@ -127,7 +127,7 @@ def train_frame_classification_model(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
-    dataset_path = pathlib.Path(dataset_config['path'])
+    dataset_path = pathlib.Path(dataset_config["path"])
     if not dataset_path.exists() or not dataset_path.is_dir():
         raise NotADirectoryError(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
@@ -209,7 +209,7 @@ def train_frame_classification_model(
         )
         spect_standardizer = None
 
-    model_name = model_config['name']
+    model_name = model_config["name"]
     # TODO: move this into datapipe once each datapipe uses a fixed set of transforms
     # that will require adding `spect_standardizer`` as a parameter to the datapipe,
     # maybe rename to `frames_standardizer`?
@@ -233,7 +233,7 @@ def train_frame_classification_model(
         split="train",
         subset=subset,
         item_transform=train_transform,
-        **dataset_config['params'],
+        **dataset_config["params"],
     )
     logger.info(
         f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration}",

@@ -105,7 +105,8 @@ def predict_with_parametric_umap_model(
     # TODO: fix this when we build transforms into datasets
     transform_params = {
         "padding": dataset_config["params"].get(
-            "padding", models.convencoder_umap.get_default_padding(metadata.shape)
+            "padding",
+            models.convencoder_umap.get_default_padding(metadata.shape),
         )
     }
     item_transform = transforms.defaults.get_default_transform(

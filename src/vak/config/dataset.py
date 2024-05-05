@@ -38,18 +38,17 @@ class DatasetConfig:
     name: str | None = field(
         converter=attr.converters.optional(str), default=None
     )
-    params : dict | None = field(
+    params: dict | None = field(
         # we default to an empty dict instead of None
         # so we can still do **['dataset']['params'] everywhere we do when params are specified
-        converter=attr.converters.optional(dict), default={}
+        converter=attr.converters.optional(dict),
+        default={},
     )
 
     @classmethod
     def from_config_dict(cls, config_dict: dict) -> DatasetConfig:
 
-        return cls(
-            **config_dict
-        )
+        return cls(**config_dict)
 
     def asdict(self):
         """Convert this :class:`DatasetConfig` instance
