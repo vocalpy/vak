@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import inspect
-from typing import Callable, ClassVar
+from typing import Callable, Type
 
 import lightning
 import torch
 
-from .definition import ModelDefinition
 from .definition import validate as validate_definition
+from .decorator import ModelDefinitionValidationError
 
 
 class Model:
@@ -30,11 +30,32 @@ class Model:
     for more detail.
     """
 
-    definition: ClassVar[ModelDefinition]
-    model_family: ClassVar[lightning.pytorch.LightningModule]
+    def __init__(self,
+                definition: Type,
+                family: lightning.pytorch.LightningModule,
+            ) -> None:
+        if not issubclass(family, lightning.pytorch.LightningModule):
+            raise TypeError(
+                "The ``family`` argument to the ``vak.models.model`` decorator"
+                "should be a subclass of ``lightning.pytorch.LightningModule``,"
+                f"but the type was: {type(family)}, "
+                "which was not recognized as a subclass "
+                "of ``lightning.pytorch.LightningModule``."
+            )
 
-    def __init__(self) -> None:
-        pass
+        try:
+            validate_definition(definition)
+        except ValueError as err:
+            raise ModelDefinitionValidationError(
+                f"Validation failed for the following model definition:\n{definition}"
+            ) from err
+        except TypeError as err:
+            raise ModelDefinitionValidationError(
+                f"Validation failed for the following model definition:\n{definition}"
+            ) from err
+
+        self.definition = definition
+        self.family = family
 
     def attributes_from_config(self, config: dict):
         """Get attributes for an instance of a model,
@@ -368,6 +389,6 @@ class Model:
         network, loss, optimizer, metrics = self.validate_instances_or_get_default(
             network, loss, optimizer, metrics,
         )
-        return self.model_family(
+        return self.family(
             network=network, loss=loss, optimizer=optimizer, metrics=metrics, **kwargs
         )
