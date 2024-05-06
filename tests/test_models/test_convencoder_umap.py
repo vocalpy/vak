@@ -15,8 +15,8 @@ class TestConvEncoderUMAP:
         network = {
             'encoder': vak.models.ConvEncoderUMAP.definition.network['encoder'](input_shape=input_shape)
         }
-        model = vak.models.ConvEncoderUMAP(network=network)
-        assert isinstance(model, vak.models.ConvEncoderUMAP)
+        model = vak.models.ConvEncoderUMAP.from_instances(network=network)
+        assert isinstance(model, vak.models.ParametricUMAPModel)
         for attr in ('network', 'loss', 'optimizer'):
             assert hasattr(model, attr)
             attr_from_definition = getattr(vak.models.convencoder_umap.ConvEncoderUMAP.definition, attr)
