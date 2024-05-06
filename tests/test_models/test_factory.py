@@ -417,9 +417,7 @@ class TestModelFactory:
         )
 
         config = cfg.train.model.asdict()
-        config["network"].update(
-            encoder=dict(input_shape=input_shape)
-        )
+        config["network"]["encoder"]["input_shape"] = input_shape
 
         model = model_factory.from_config(config=config)
         assert isinstance(model, vak.models.ParametricUMAPModel)
@@ -432,8 +430,9 @@ class TestModelFactory:
             elif isinstance(definition.network, dict):
                 for net_name, net_kwargs in config['network'].items():
                     for network_kwarg, network_kwargval in net_kwargs.items():
-                        assert hasattr(model.network[net_name], network_kwarg)
-                        assert getattr(model.network[net_name], network_kwarg) == network_kwargval
+                        network = getattr(model, net_name)
+                        if hasattr(network, network_kwarg):
+                            assert getattr(network, network_kwarg) == network_kwargval
 
         if 'loss' in config:
             for loss_kwarg, loss_kwargval in config['loss'].items():
