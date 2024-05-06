@@ -13,7 +13,7 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
                                          results_path: pathlib.Path):
     assert results_path.joinpath("labelmap.json").exists()
 
-    if cfg.train.normalize_spectrograms or cfg.train.frames_standardizer_path:
+    if cfg.train.standardize_frames or cfg.train.frames_standardizer_path:
         assert results_path.joinpath("StandardizeSpect").exists()
     else:
         assert not results_path.joinpath("StandardizeSpect").exists()
@@ -70,7 +70,7 @@ def test_train_frame_classification_model(
         checkpoint_path=cfg.train.checkpoint_path,
         frames_standardizer_path=cfg.train.frames_standardizer_path,
         results_path=results_path,
-        normalize_spectrograms=cfg.train.normalize_spectrograms,
+        standardize_frames=cfg.train.standardize_frames,
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
         ckpt_step=cfg.train.ckpt_step,
@@ -117,7 +117,7 @@ def test_continue_training(
         checkpoint_path=cfg.train.checkpoint_path,
         frames_standardizer_path=cfg.train.frames_standardizer_path,
         results_path=results_path,
-        normalize_spectrograms=cfg.train.normalize_spectrograms,
+        standardize_frames=cfg.train.standardize_frames,
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
         ckpt_step=cfg.train.ckpt_step,
@@ -168,7 +168,7 @@ def test_train_raises_file_not_found(
             checkpoint_path=cfg.train.checkpoint_path,
             frames_standardizer_path=cfg.train.frames_standardizer_path,
             results_path=results_path,
-            normalize_spectrograms=cfg.train.normalize_spectrograms,
+            standardize_frames=cfg.train.standardize_frames,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,
@@ -218,7 +218,7 @@ def test_train_raises_not_a_directory(
             checkpoint_path=cfg.train.checkpoint_path,
             frames_standardizer_path=cfg.train.frames_standardizer_path,
             results_path=results_path,
-            normalize_spectrograms=cfg.train.normalize_spectrograms,
+            standardize_frames=cfg.train.standardize_frames,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,

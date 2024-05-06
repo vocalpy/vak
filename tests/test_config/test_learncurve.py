@@ -10,7 +10,7 @@ class TestLearncurveConfig:
             'config_dict',
             [
                 {
-                    'normalize_spectrograms': True,
+                    'standardize_frames': True,
                     'batch_size': 11,
                     'num_epochs': 2,
                     'val_step': 50,
@@ -57,7 +57,7 @@ class TestLearncurveConfig:
             'config_dict',
             [
                 {
-                    'normalize_spectrograms': True,
+                    'standardize_frames': True,
                     'batch_size': 11,
                     'num_epochs': 2,
                     'val_step': 50,
@@ -112,7 +112,7 @@ class TestLearncurveConfig:
                 # missing 'model', should raise KeyError
                 (
                     {
-                        'normalize_spectrograms': True,
+                        'standardize_frames': True,
                         'batch_size': 11,
                         'num_epochs': 2,
                         'val_step': 50,
@@ -131,7 +131,7 @@ class TestLearncurveConfig:
                 # missing 'dataset', should raise KeyError
                (
                     {
-                        'normalize_spectrograms': True,
+                        'standardize_frames': True,
                         'batch_size': 11,
                         'num_epochs': 2,
                         'val_step': 50,
@@ -165,7 +165,7 @@ class TestLearncurveConfig:
                 # missing 'root_results_dir', should raise KeyError
                 (
                     {
-                        'normalize_spectrograms': True,
+                        'standardize_frames': True,
                         'batch_size': 11,
                         'num_epochs': 2,
                         'val_step': 50,

@@ -45,7 +45,7 @@ class LearncurveConfig(TrainConfig):
         Argument to torch.DataLoader.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    normalize_spectrograms : bool
+    standardize_frames : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.

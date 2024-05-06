@@ -62,7 +62,7 @@ def test_train(
             checkpoint_path=cfg.train.checkpoint_path,
             frames_standardizer_path=cfg.train.frames_standardizer_path,
             results_path=results_path,
-            normalize_spectrograms=cfg.train.normalize_spectrograms,
+            standardize_frames=cfg.train.standardize_frames,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,

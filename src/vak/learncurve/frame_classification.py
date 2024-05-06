@@ -25,7 +25,7 @@ def learning_curve_for_frame_classification_model(
     num_workers: int,
     results_path: str | pathlib.Path,
     post_tfm_kwargs: dict | None = None,
-    normalize_spectrograms: bool = True,
+    standardize_frames: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
     ckpt_step: int | None = None,
@@ -89,7 +89,7 @@ def learning_curve_for_frame_classification_model(
         That function defaults to 'cuda' if torch.cuda.is_available is True.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    normalize_spectrograms : bool
+    standardize_frames : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
@@ -196,7 +196,7 @@ def learning_curve_for_frame_classification_model(
             num_epochs,
             num_workers,
             results_path=results_path_this_replicate,
-            normalize_spectrograms=normalize_spectrograms,
+            standardize_frames=standardize_frames,
             shuffle=shuffle,
             val_step=val_step,
             ckpt_step=ckpt_step,
@@ -228,7 +228,7 @@ def learning_curve_for_frame_classification_model(
         logger.info(f"Using checkpoint: {ckpt_path}")
         labelmap_path = results_path_this_replicate.joinpath("labelmap.json")
         logger.info(f"Using labelmap: {labelmap_path}")
-        if normalize_spectrograms:
+        if standardize_frames:
             frames_standardizer_path = results_path_this_replicate.joinpath(
                 "StandardizeSpect"
             )

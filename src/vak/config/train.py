@@ -49,7 +49,7 @@ class TrainConfig:
         Argument to torch.DataLoader.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    normalize_spectrograms : bool
+    standardize_frames : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
@@ -96,7 +96,7 @@ class TrainConfig:
         default=None,
     )
 
-    normalize_spectrograms = field(
+    standardize_frames = field(
         converter=bool_from_str,
         validator=validators.optional(instance_of(bool)),
         default=False,

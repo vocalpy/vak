@@ -10,7 +10,7 @@ class TestTrainConfig:
             'config_dict',
             [
                 {
-                    'normalize_spectrograms': True,
+                    'standardize_frames': True,
                     'batch_size': 11,
                     'num_epochs': 2,
                     'val_step': 50,
@@ -56,7 +56,7 @@ class TestTrainConfig:
             'config_dict',
             [
                 {
-                    'normalize_spectrograms': True,
+                    'standardize_frames': True,
                     'batch_size': 11,
                     'num_epochs': 2,
                     'val_step': 50,
@@ -106,7 +106,7 @@ class TestTrainConfig:
             [
                 (
                     {
-                        'normalize_spectrograms': True,
+                        'standardize_frames': True,
                         'batch_size': 11,
                         'num_epochs': 2,
                         'val_step': 50,
@@ -123,7 +123,7 @@ class TestTrainConfig:
                 ),
                 (
                     {
-                        'normalize_spectrograms': True,
+                        'standardize_frames': True,
                         'batch_size': 11,
                         'num_epochs': 2,
                         'val_step': 50,

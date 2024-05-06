@@ -131,7 +131,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         # these are the only options whose values we need to change
         # and they are the same for both predict and eval
         checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
-        if 'normalize_spectrograms' in config_toml["vak"]['train'] and config_toml["vak"]['train']['normalize_spectrograms']:
+        if 'standardize_frames' in config_toml["vak"]['train'] and config_toml["vak"]['train']['standardize_frames']:
             frames_standardizer_path = sorted(results_dir.glob("StandardizeSpect"))[0]
         else:
             frames_standardizer_path = None

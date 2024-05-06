@@ -61,7 +61,7 @@ def learning_curve(toml_path):
         num_workers=cfg.learncurve.num_workers,
         results_path=results_path,
         post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
-        normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
+        standardize_frames=cfg.learncurve.standardize_frames,
         shuffle=cfg.learncurve.shuffle,
         val_step=cfg.learncurve.val_step,
         ckpt_step=cfg.learncurve.ckpt_step,

@@ -35,7 +35,7 @@ def train_frame_classification_model(
     checkpoint_path: str | pathlib.Path | None = None,
     frames_standardizer_path: str | pathlib.Path | None = None,
     results_path: str | pathlib.Path | None = None,
-    normalize_spectrograms: bool = True,
+    standardize_frames: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
     ckpt_step: int | None = None,
@@ -90,7 +90,7 @@ def train_frame_classification_model(
         If specified, this parameter overrides ``root_results_dir``.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    normalize_spectrograms : bool
+    standardize_frames : bool
         if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
@@ -184,12 +184,12 @@ def train_frame_classification_model(
     with open(results_path.joinpath("labelmap.json"), "w") as f:
         json.dump(labelmap, f)
 
-    if frames_standardizer_path is not None and normalize_spectrograms:
+    if frames_standardizer_path is not None and standardize_frames:
         logger.info(f"loading spect scaler from path: {frames_standardizer_path}")
         spect_standardizer = joblib.load(frames_standardizer_path)
         shutil.copy(frames_standardizer_path, results_path)
     # get transforms just before creating datasets with them
-    elif normalize_spectrograms and frames_standardizer_path is None:
+    elif standardize_frames and frames_standardizer_path is None:
         logger.info(
             "no frames_standardizer_path provided, not loading",
         )
@@ -202,14 +202,14 @@ def train_frame_classification_model(
         joblib.dump(
             spect_standardizer, results_path.joinpath("StandardizeSpect")
         )
-    elif frames_standardizer_path is not None and not normalize_spectrograms:
+    elif frames_standardizer_path is not None and not standardize_frames:
         raise ValueError(
-            "frames_standardizer_path provided but normalize_spectrograms was False, these options conflict"
+            "frames_standardizer_path provided but standardize_frames was False, these options conflict"
         )
     else:
-        # not normalize_spectrograms and frames_standardizer_path is None:
+        # not standardize_frames and frames_standardizer_path is None:
         logger.info(
-            "normalize_spectrograms is False and no frames_standardizer_path was provided, "
+            "standardize_frames is False and no frames_standardizer_path was provided, "
             "will not standardize spectrograms",
         )
         spect_standardizer = None
