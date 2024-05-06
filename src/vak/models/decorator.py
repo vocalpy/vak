@@ -15,7 +15,6 @@ from typing import Type
 
 import lightning
 
-from .base import Model
 from .definition import validate as validate_definition
 from .registry import register_model
 
@@ -70,37 +69,16 @@ def model(family: lightning.pytorch.LightningModule):
     """
 
     def _model(definition: Type):
-        if not issubclass(family, lightning.pytorch.LightningModule):
-            raise TypeError(
-                "The ``family`` argument to the ``vak.models.model`` decorator"
-                "should be a subclass of ``lightning.pytorch.LightningModule``,"
-                f"but the type was: {type(family)}, "
-                "which was not recognized as a subclass "
-                "of ``lightning.pytorch.LightningModule``."
-            )
+        from .base import Model  # avoid circular import
 
-        try:
-            validate_definition(definition)
-        except ValueError as err:
-            raise ModelDefinitionValidationError(
-                f"Validation failed for the following model definition:\n{definition}"
-            ) from err
-        except TypeError as err:
-            raise ModelDefinitionValidationError(
-                f"Validation failed for the following model definition:\n{definition}"
-            ) from err
-
-        attributes = dict(family.__dict__)
-        attributes.update({"definition": definition})
-        attributes.update({"family": family})
-        subclass_name = definition.__name__
-        subclass = type(subclass_name, (Model,), attributes)
-        subclass.__module__ = definition.__module__
-
-        instance = subclass()
-        # finally, add model to registry
-        register_model(instance)
-
-        return instance
+        model = Model(
+            definition,
+            family
+        )
+        model.__name__ = definition.__name__
+        model.__doc__ = definition.__doc__
+        model.__module__ = definition.__module__
+        register_model(model)
+        return model
 
     return _model
