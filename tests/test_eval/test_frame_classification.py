@@ -89,7 +89,7 @@ def test_eval_frame_classification_model(
     [
         {"table": "eval", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"table": "eval", "key": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"table": "eval", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "eval", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/FramesStandardizer'},
     ]
 )
 def test_eval_frame_classification_model_raises_file_not_found(

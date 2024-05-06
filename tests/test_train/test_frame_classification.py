@@ -131,7 +131,7 @@ def test_continue_training(
     'path_option_to_change',
     [
         {"table": "train", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"table": "train", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "train", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/FramesStandardizer'},
     ]
 )
 def test_train_raises_file_not_found(

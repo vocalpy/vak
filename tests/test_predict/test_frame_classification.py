@@ -91,7 +91,7 @@ def test_predict_with_frame_classification_model(
     [
         {"table": "predict", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"table": "predict", "key": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"table": "predict", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "predict", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/FramesStandardizer'},
     ]
 )
 def test_predict_with_frame_classification_model_raises_file_not_found(
