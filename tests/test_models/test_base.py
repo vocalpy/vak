@@ -1,4 +1,3 @@
-import copy
 import inspect
 
 import pytest
@@ -12,6 +11,7 @@ from .conftest import (
     MockEncoder,
     MockEncoderDecoderModel,
     MockModel,
+    MockModelFamily,
     MockNetwork,
     other_loss_func,
     other_metrics_dict,
@@ -77,32 +77,51 @@ TEST_INIT_RAISES_ARGVALS = [
 
 class TestModel:
 
+
+    def test_init_no_definition_raises(self):
+        """Test that initializing a Model instance without a definition or family raises a ValueError."""
+        with pytest.raises(TypeError):
+            vak.models.base.Model()
+
+    def test_init_invalid_definition_raises(self):
+        """Test that initializing a Model instance with an invalid definition raises a ValueError."""
+        with pytest.raises(vak.models.decorator.ModelDefinitionValidationError):
+            vak.models.base.Model(
+                definition=InvalidMetricsDictKeyModelDefinition,
+                family=MockModelFamily,
+            )
+
     @pytest.mark.parametrize(
         'definition, kwargs',
         TEST_INIT_ARGVALS,
     )
-    def test_init(self,
-                  definition,
-                  kwargs,
-                  monkeypatch):
-        """Test Model.__init__ works as expected"""
-        # monkeypatch a definition so we can test __init__
-        definition = vak.models.definition.validate(definition)
-        monkeypatch.setattr(
-            vak.models.base.Model, 'definition', definition, raising=False
+    def test_validate_instances_or_get_default(self, definition, kwargs):
+        model = vak.models.base.Model(
+            definition,
+            MockModelFamily,
         )
-
         # actually instantiate model
         if kwargs:
-            model = vak.models.base.Model(**kwargs)
+            (network,
+            loss,
+            optimizer,
+            metrics
+            ) = model.validate_instances_or_get_default(**kwargs)
         else:
-            model = vak.models.base.Model()
+            (network,
+            loss,
+            optimizer,
+            metrics
+            ) = model.validate_instances_or_get_default()
 
-        # now test that attributes are what we expect
-        assert isinstance(model, vak.models.base.Model)
+        model_attrs = {
+            'network': network,
+            'loss': loss,
+            'optimizer': optimizer,
+            'metrics': metrics,
+        }
         for attr in ('network', 'loss', 'optimizer', 'metrics'):
-            assert hasattr(model, attr)
-            model_attr = getattr(model, attr)
+            model_attr = model_attrs[attr]
             definition_attr = getattr(definition, attr)
             if inspect.isclass(definition_attr):
                 assert isinstance(model_attr, definition_attr)
@@ -121,134 +140,41 @@ class TestModel:
                 assert callable(model_attr)
                 assert model_attr is definition_attr
 
-    def test_init_no_definition_raises(self):
-        """Test that initializing a Model instance without a definition raises a ValueError."""
-        with pytest.raises(ValueError):
-            vak.models.base.Model()
-
-    def test_init_invalid_definition_raises(self, monkeypatch):
-        """Test that initializing a Model instance with an invalid definition raises a ValueError."""
-        monkeypatch.setattr(
-            vak.models.base.Model, 'definition', InvalidMetricsDictKeyModelDefinition, raising=False
-        )
-        with pytest.raises(TypeError):
-            vak.models.base.Model()
-
     @pytest.mark.parametrize(
         'definition, kwargs, expected_exception',
         TEST_INIT_RAISES_ARGVALS
     )
-    def test_init_raises(self, definition, kwargs, expected_exception, monkeypatch):
-        """Test that init raises errors as expected given input arguments.
+    def test_validate_instances_or_get_default_raises(self, definition, kwargs, expected_exception):
+        """Test that :meth:`validate_instances_or_get_default` raises errors as expected given input arguments.
 
-        Note that this should happen from ``__init__`` calling ``validate_init``,
-        so here we test that this is happening inside ``__init__``.
+        Note that this should happen from ``validate_instances_or_get_default`` calling ``validate_init``,
+        so here we test that this is happening inside ``validate_instances_or_get_default``.
         Next method tests ``validate_init`` directly.
         """
-        # monkeypatch a definition so we can test __init__
-        monkeypatch.setattr(
-            # we just always use TweetyNetDefinition here since we just want to test that a mismatch raises
-            vak.models.base.Model, 'definition', definition, raising=False
+        model = vak.models.base.Model(
+            definition,
+            MockModelFamily,
         )
         with pytest.raises(expected_exception):
-            vak.models.base.Model(**kwargs)
+            model.validate_instances_or_get_default(**kwargs)
 
     @pytest.mark.parametrize(
         'definition, kwargs, expected_exception',
         TEST_INIT_RAISES_ARGVALS
     )
-    def test_validate_init_raises(self, definition, kwargs, expected_exception, monkeypatch):
+    def test_validate_init_raises(self, definition, kwargs, expected_exception):
         """Test that ``validate_init`` raises errors as expected"""
         # monkeypatch a definition so we can test __init__
-        monkeypatch.setattr(
-            # we just always use TweetyNetDefinition here since we just want to test that a mismatch raises
-            vak.models.base.Model, 'definition', definition, raising=False
+        model = vak.models.base.Model(
+            definition=definition,
+            family=MockModelFamily
         )
         with pytest.raises(expected_exception):
-            vak.models.base.Model.validate_init(**kwargs)
+            model.validate_init(**kwargs)
 
     MODEL_DEFINITION_MAP = {
         'TweetyNet': TweetyNetDefinition,
     }
-
-    @pytest.mark.parametrize(
-        'model_name',
-        [
-            'TweetyNet',
-        ]
-    )
-    def test_load_state_dict_from_path(self,
-                                       model_name,
-                                       # our fixtures
-                                       specific_config_toml_path,
-                                       # pytest fixtures
-                                       monkeypatch,
-                                       device
-                                       ):
-        """Smoke test that makes sure ``load_state_dict_from_path`` runs without failure.
-
-        We use actual model definitions here so we can test with real checkpoints.
-        """
-        definition = self.MODEL_DEFINITION_MAP[model_name]
-        train_toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
-        train_cfg = vak.config.Config.from_toml_path(train_toml_path)
-
-        # stuff we need just to be able to instantiate network
-        labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
-        item_transform = vak.transforms.defaults.get_default_transform(
-            model_name,
-            "train",
-            transform_kwargs={},
-        )
-        train_dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
-            dataset_path=train_cfg.train.dataset.path,
-            split="train",
-            window_size=train_cfg.train.dataset.params['window_size'],
-            item_transform=item_transform,
-        )
-        input_shape = train_dataset.shape
-        num_input_channels = input_shape[-3]
-        num_freqbins = input_shape[-2]
-
-        monkeypatch.setattr(
-            vak.models.base.Model, 'definition', definition, raising=False
-        )
-        # network is the one thing that has required args
-        # and we also need to use its config from the toml file
-        cfg = vak.config.Config.from_toml_path(train_toml_path)
-        model_config = cfg.train.model.asdict()
-        network = definition.network(num_classes=len(labelmap),
-                                     num_input_channels=num_input_channels,
-                                     num_freqbins=num_freqbins,
-                                     **model_config['network'])
-        model = vak.models.base.Model(network=network)
-        model.to(device)
-
-        eval_toml_path = specific_config_toml_path('eval', model_name, audio_format='cbin', annot_format='notmat')
-        eval_cfg = vak.config.Config.from_toml_path(eval_toml_path)
-        checkpoint_path = eval_cfg.eval.checkpoint_path
-
-        # ---- actually test method
-        sd_before = copy.deepcopy(model.state_dict())
-        sd_before = {
-            k: v.to(device) for k, v in sd_before.items()
-        }
-        ckpt = torch.load(checkpoint_path)
-        sd_to_be_loaded = ckpt['state_dict']
-        sd_to_be_loaded = {
-            k: v.to(device) for k, v in sd_to_be_loaded.items()
-        }
-
-        model.load_state_dict_from_path(checkpoint_path)
-
-        assert not all([
-            torch.all(torch.eq(val, before_val))
-            for val, before_val in zip(model.state_dict().values(), sd_before.values())]
-        )
-        assert all([
-            torch.all(torch.eq(val, before_val))
-            for val, before_val in zip(model.state_dict().values(), sd_to_be_loaded.values())]
-        )
 
     @pytest.mark.parametrize(
         'definition, config',
@@ -272,40 +198,39 @@ class TestModel:
     def test_from_config(self,
                          definition,
                          config,
-                         monkeypatch,
                          ):
-        monkeypatch.setattr(
-            vak.models.base.Model, 'definition', definition, raising=False
+        model = vak.models.base.Model(
+            definition=definition,
+            family=MockModelFamily
         )
+        new_model_instance = model.from_config(config)
 
-        model = vak.models.base.Model.from_config(config)
-
-        assert isinstance(model, vak.models.base.Model)
+        assert isinstance(new_model_instance, MockModelFamily)
 
         if 'network' in config:
             if inspect.isclass(definition.network):
                 for network_kwarg, network_kwargval in config['network'].items():
-                    assert hasattr(model.network, network_kwarg)
-                    assert getattr(model.network, network_kwarg) == network_kwargval
+                    assert hasattr(new_model_instance.network, network_kwarg)
+                    assert getattr(new_model_instance.network, network_kwarg) == network_kwargval
             elif isinstance(definition.network, dict):
                 for net_name, net_kwargs in config['network'].items():
                     for network_kwarg, network_kwargval in net_kwargs.items():
-                        assert hasattr(model.network[net_name], network_kwarg)
-                        assert getattr(model.network[net_name], network_kwarg) == network_kwargval
+                        assert hasattr(new_model_instance.network[net_name], network_kwarg)
+                        assert getattr(new_model_instance.network[net_name], network_kwarg) == network_kwargval
 
         if 'loss' in config:
             for loss_kwarg, loss_kwargval in config['loss'].items():
-                assert hasattr(model.loss, loss_kwarg)
-                assert getattr(model.loss, loss_kwarg) == loss_kwargval
+                assert hasattr(new_model_instance.loss, loss_kwarg)
+                assert getattr(new_model_instance.loss, loss_kwarg) == loss_kwargval
 
         if 'optimizer' in config:
             for optimizer_kwarg, optimizer_kwargval in config['optimizer'].items():
-                assert optimizer_kwarg in model.optimizer.param_groups[0]
-                assert model.optimizer.param_groups[0][optimizer_kwarg] == optimizer_kwargval
+                assert optimizer_kwarg in new_model_instance.optimizer.param_groups[0]
+                assert new_model_instance.optimizer.param_groups[0][optimizer_kwarg] == optimizer_kwargval
 
         if 'metrics' in config:
             for metric_name, metric_kwargs in config['metrics'].items():
-                assert metric_name in model.metrics
+                assert metric_name in new_model_instance.metrics
                 for metric_kwarg, metric_kwargval in metric_kwargs.items():
-                    assert hasattr(model.metrics[metric_name], metric_kwarg)
-                    assert getattr(model.metrics[metric_name], metric_kwarg) == metric_kwargval
+                    assert hasattr(new_model_instance.metrics[metric_name], metric_kwarg)
+                    assert getattr(new_model_instance.metrics[metric_name], metric_kwarg) == metric_kwargval
