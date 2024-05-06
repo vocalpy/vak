@@ -188,7 +188,7 @@ def train_frame_classification_model(
 
     if frames_standardizer_path is not None and standardize_frames:
         logger.info(f"loading spect scaler from path: {frames_standardizer_path}")
-        spect_standardizer = joblib.load(frames_standardizer_path)
+        frames_standardizer = joblib.load(frames_standardizer_path)
         shutil.copy(frames_standardizer_path, results_path)
     # get transforms just before creating datasets with them
     elif standardize_frames and frames_standardizer_path is None:
@@ -196,13 +196,13 @@ def train_frame_classification_model(
             "no frames_standardizer_path provided, not loading",
         )
         logger.info("will standardize (normalize) frames")
-        spect_standardizer = transforms.FramesStandardizer.fit_dataset_path(
+        frames_standardizer = transforms.FramesStandardizer.fit_dataset_path(
             dataset_path,
             split="train",
             subset=subset,
         )
         joblib.dump(
-            spect_standardizer, results_path.joinpath("FramesStandardizer")
+            frames_standardizer, results_path.joinpath("FramesStandardizer")
         )
     elif frames_standardizer_path is not None and not standardize_frames:
         raise ValueError(
@@ -214,14 +214,14 @@ def train_frame_classification_model(
             "standardize_frames is False and no frames_standardizer_path was provided, "
             "will not standardize spectrograms",
         )
-        spect_standardizer = None
+        frames_standardizer = None
 
     train_dataset = TrainDatapipe.from_dataset_path(
         dataset_path=dataset_path,
         split="train",
         subset=subset,
         window_size=dataset_config["params"]["window_size"],
-        spect_standardizer=spect_standardizer,
+        frames_standardizer=frames_standardizer,
     )
     logger.info(
         f"Duration of TrainDatapipe used for training, in seconds: {train_dataset.duration}",
@@ -248,7 +248,7 @@ def train_frame_classification_model(
             dataset_path=dataset_path,
             split="val",
             **dataset_config["params"],
-            frames_standardizer=spect_standardizer,
+            frames_standardizer=frames_standardizer,
         )
         logger.info(
             f"Duration of InferDatapipe used for evaluation, in seconds: {val_dataset.duration}",
