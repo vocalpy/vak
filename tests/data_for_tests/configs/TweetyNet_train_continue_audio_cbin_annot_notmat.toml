@@ -28,7 +28,7 @@ num_workers = 16
 
 root_results_dir = "./tests/data_for_tests/generated/results/train_continue/audio_cbin_annot_notmat/TweetyNet"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
-spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
+frames_standardizer_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 
 [vak.train.dataset]
 params = { window_size = 88 }

@@ -71,7 +71,7 @@ class TrainConfig:
     checkpoint_path : str
         path to directory with checkpoint files saved by Torch, to reload model.
         Default is None, in which case a new model is initialized.
-    spect_scaler_path : str
+    frames_standardizer_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results. Default is None.
@@ -126,7 +126,7 @@ class TrainConfig:
         converter=converters.optional(expanded_user_path),
         default=None,
     )
-    spect_scaler_path = field(
+    frames_standardizer_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )

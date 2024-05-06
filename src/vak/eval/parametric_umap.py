@@ -59,7 +59,7 @@ def eval_parametric_umap_model(
         (checkpoint_path,),
         ("checkpoint_path",),
     ):
-        if path is not None:  # because `spect_scaler_path` is optional
+        if path is not None:  # because `frames_standardizer_path` is optional
             if not validators.is_a_file(path):
                 raise FileNotFoundError(
                     f"value for ``{path_name}`` not recognized as a file: {path}"

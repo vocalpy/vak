@@ -52,7 +52,7 @@ def test_predict(
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
             timebins_key=cfg.prep.spect_params.timebins_key,
-            spect_scaler_path=cfg.predict.spect_scaler_path,
+            frames_standardizer_path=cfg.predict.frames_standardizer_path,
             annot_csv_filename=cfg.predict.annot_csv_filename,
             output_dir=cfg.predict.output_dir,
             min_segment_dur=cfg.predict.min_segment_dur,

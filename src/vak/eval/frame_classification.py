@@ -29,7 +29,7 @@ def eval_frame_classification_model(
     output_dir: str | pathlib.Path,
     num_workers: int,
     split: str = "test",
-    spect_scaler_path: str | pathlib.Path = None,
+    frames_standardizer_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
 ) -> None:
     """Evaluate a trained model.
@@ -57,7 +57,7 @@ def eval_frame_classification_model(
     split : str
         Split of dataset on which model should be evaluated.
         One of {'train', 'val', 'test'}. Default is 'test'.
-    spect_scaler_path : str, pathlib.Path
+    frames_standardizer_path : str, pathlib.Path
         Path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
@@ -86,10 +86,10 @@ def eval_frame_classification_model(
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
-        (checkpoint_path, labelmap_path, spect_scaler_path),
-        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
+        (checkpoint_path, labelmap_path, frames_standardizer_path),
+        ("checkpoint_path", "labelmap_path", "frames_standardizer_path"),
     ):
-        if path is not None:  # because `spect_scaler_path` is optional
+        if path is not None:  # because `frames_standardizer_path` is optional
             if not validators.is_a_file(path):
                 raise FileNotFoundError(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
@@ -126,12 +126,12 @@ def eval_frame_classification_model(
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------
-    if spect_scaler_path:
-        logger.info(f"loading spect scaler from path: {spect_scaler_path}")
-        spect_standardizer = joblib.load(spect_scaler_path)
+    if frames_standardizer_path:
+        logger.info(f"loading spect scaler from path: {frames_standardizer_path}")
+        frames_standardizer = joblib.load(frames_standardizer_path)
     else:
         logger.info("not using a spect scaler")
-        spect_standardizer = None
+        frames_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
@@ -141,7 +141,7 @@ def eval_frame_classification_model(
         dataset_path=dataset_path,
         split=split,
         window_size=dataset_config["params"]["window_size"],
-        frames_standarizer=spect_standardizer,
+        frames_standarizer=frames_standardizer,
         return_padding_mask=True,
     )
     val_loader = torch.utils.data.DataLoader(
@@ -201,7 +201,7 @@ def eval_frame_classification_model(
             ("model_name", model_name),
             ("checkpoint_path", checkpoint_path),
             ("labelmap_path", labelmap_path),
-            ("spect_scaler_path", spect_scaler_path),
+            ("frames_standardizer_path", frames_standardizer_path),
             ("dataset_path", dataset_path),
         ]
     )

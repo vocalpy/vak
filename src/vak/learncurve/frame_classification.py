@@ -229,14 +229,14 @@ def learning_curve_for_frame_classification_model(
         labelmap_path = results_path_this_replicate.joinpath("labelmap.json")
         logger.info(f"Using labelmap: {labelmap_path}")
         if normalize_spectrograms:
-            spect_scaler_path = results_path_this_replicate.joinpath(
+            frames_standardizer_path = results_path_this_replicate.joinpath(
                 "StandardizeSpect"
             )
             logger.info(
-                f"Using spect scaler to normalize: {spect_scaler_path}",
+                f"Using spect scaler to normalize: {frames_standardizer_path}",
             )
         else:
-            spect_scaler_path = None
+            frames_standardizer_path = None
 
         eval_frame_classification_model(
             model_config,
@@ -247,7 +247,7 @@ def learning_curve_for_frame_classification_model(
             results_path_this_replicate,
             num_workers,
             "test",
-            spect_scaler_path,
+            frames_standardizer_path,
             post_tfm_kwargs,
         )
 

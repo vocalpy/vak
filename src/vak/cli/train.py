@@ -60,7 +60,7 @@ def train(toml_path):
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
         checkpoint_path=cfg.train.checkpoint_path,
-        spect_scaler_path=cfg.train.spect_scaler_path,
+        frames_standardizer_path=cfg.train.frames_standardizer_path,
         results_path=results_path,
         normalize_spectrograms=cfg.train.normalize_spectrograms,
         shuffle=cfg.train.shuffle,

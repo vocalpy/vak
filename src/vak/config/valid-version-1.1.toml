@@ -45,7 +45,7 @@ ckpt_step = 1
 patience = 4
 results_dir_made_by_main_script = '/some/path/to/learncurve/'
 checkpoint_path = '/home/user/results_181014_194418/TweetyNet/checkpoints/'
-spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
+frames_standardizer_path = '/home/user/results_181014_194418/spect_scaler'
 
 [vak.train.dataset]
 name = 'IntlDistributedSongbirdConsortiumPack'
@@ -65,7 +65,7 @@ labelmap_path = '/home/user/results_181014_194418/labelmap.json'
 output_dir = './tests/test_data/prep/learncurve'
 batch_size = 11
 num_workers = 4
-spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
+frames_standardizer_path = '/home/user/results_181014_194418/spect_scaler'
 post_tfm_kwargs = {'majority_vote' = true, 'min_segment_dur' = 0.01}
 
 [vak.eval.dataset]
@@ -111,7 +111,7 @@ annot_csv_filename = '032312_prep_191224_225910.annot.csv'
 output_dir = './tests/test_data/prep/learncurve'
 batch_size = 11
 num_workers = 4
-spect_scaler_path = '/home/user/results_181014_194418/spect_scaler'
+frames_standardizer_path = '/home/user/results_181014_194418/spect_scaler'
 min_segment_dur = 0.004
 majority_vote = false
 save_net_outputs = false

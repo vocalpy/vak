@@ -103,7 +103,7 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         config_to_use_result_from = constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.use_result_from_config
 
         # now use the config to find the results dir and get the values for the options we need to set
-        # which are checkpoint_path, spect_scaler_path, and labelmap_path
+        # which are checkpoint_path, frames_standardizer_path, and labelmap_path
         with config_to_use_result_from.open("r") as fp:
             config_toml = tomlkit.load(fp)
         root_results_dir = pathlib.Path(config_toml["vak"]["train"]["root_results_dir"])
@@ -132,9 +132,9 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
         # and they are the same for both predict and eval
         checkpoint_path = sorted(results_dir.glob("**/checkpoints/checkpoint.pt"))[0]
         if 'normalize_spectrograms' in config_toml["vak"]['train'] and config_toml["vak"]['train']['normalize_spectrograms']:
-            spect_scaler_path = sorted(results_dir.glob("StandardizeSpect"))[0]
+            frames_standardizer_path = sorted(results_dir.glob("StandardizeSpect"))[0]
         else:
-            spect_scaler_path = None
+            frames_standardizer_path = None
 
         labelmap_path = sorted(results_dir.glob("labelmap.json"))
         if len(labelmap_path) == 1:
@@ -159,12 +159,12 @@ def fix_options_in_configs(config_metadata_list, command, single_train_result=Tr
             table = command
 
         config_toml["vak"][table]["checkpoint_path"] = str(checkpoint_path)
-        if spect_scaler_path:
-            config_toml["vak"][table]["spect_scaler_path"] = str(spect_scaler_path)
+        if frames_standardizer_path:
+            config_toml["vak"][table]["frames_standardizer_path"] = str(frames_standardizer_path)
         else:
-            if 'spect_scaler_path' in config_toml["vak"][table]:
-                # remove any existing 'spect_scaler_path' option
-                del config_toml["vak"][table]["spect_scaler_path"]
+            if 'frames_standardizer_path' in config_toml["vak"][table]:
+                # remove any existing 'frames_standardizer_path' option
+                del config_toml["vak"][table]["frames_standardizer_path"]
         if command != 'train_continue':  # train always gets labelmap from dataset dir, not from a config option
             if labelmap_path is not None:
                 config_toml["vak"][table]["labelmap_path"] = str(labelmap_path)

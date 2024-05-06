@@ -13,7 +13,7 @@ thresh = 6.25
 transform_type = "log_spect"
 
 [vak.predict]
-spect_scaler_path = "/home/user/results_181014_194418/spect_scaler"
+frames_standardizer_path = "/home/user/results_181014_194418/spect_scaler"
 checkpoint_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
 labelmap_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json"
 batch_size = 11

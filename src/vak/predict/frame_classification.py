@@ -29,7 +29,7 @@ def predict_with_frame_classification_model(
     labelmap_path,
     num_workers=2,
     timebins_key="t",
-    spect_scaler_path=None,
+    frames_standardizer_path=None,
     annot_csv_filename=None,
     output_dir=None,
     min_segment_dur=None,
@@ -61,7 +61,7 @@ def predict_with_frame_classification_model(
         key for accessing spectrogram in files. Default is 's'.
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
-    spect_scaler_path : str
+    frames_standardizer_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
@@ -98,8 +98,8 @@ def predict_with_frame_classification_model(
         will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
     for path, path_name in zip(
-        (checkpoint_path, labelmap_path, spect_scaler_path),
-        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
+        (checkpoint_path, labelmap_path, frames_standardizer_path),
+        ("checkpoint_path", "labelmap_path", "frames_standardizer_path"),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -131,9 +131,9 @@ def predict_with_frame_classification_model(
         )
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
-    if spect_scaler_path:
-        logger.info(f"loading SpectScaler from path: {spect_scaler_path}")
-        spect_standardizer = joblib.load(spect_scaler_path)
+    if frames_standardizer_path:
+        logger.info(f"loading SpectScaler from path: {frames_standardizer_path}")
+        spect_standardizer = joblib.load(frames_standardizer_path)
     else:
         logger.info("Not loading SpectScaler, no path was specified")
         spect_standardizer = None

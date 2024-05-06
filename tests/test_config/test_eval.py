@@ -15,7 +15,7 @@ class TestEval:
                     'batch_size': 11,
                     'num_workers': 16,
                     'trainer': {'accelerator': 'gpu', 'devices': [0]},
-                    'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                    'frames_standardizer_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
@@ -60,7 +60,7 @@ class TestEval:
                     'batch_size': 11,
                     'num_workers': 16,
                     'trainer': {'accelerator': 'gpu', 'devices': [0]},
-                    'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                    'frames_standardizer_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
@@ -110,7 +110,7 @@ class TestEval:
                     'batch_size': 11,
                     'num_workers': 16,
                     'trainer': {'accelerator': 'gpu', 'devices': [0]},
-                    'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                    'frames_standardizer_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
@@ -129,7 +129,7 @@ class TestEval:
                     'batch_size': 11,
                     'num_workers': 16,
                     'trainer': {'accelerator': 'gpu', 'devices': [0]},
-                    'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                    'frames_standardizer_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
@@ -160,7 +160,7 @@ class TestEval:
                     'batch_size': 11,
                     'num_workers': 16,
                     'trainer': {'accelerator': 'gpu', 'devices': [0]},
-                    'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                    'frames_standardizer_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'output_dir': './tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
@@ -195,7 +195,7 @@ class TestEval:
                     'batch_size': 11,
                     'num_workers': 16,
                     'trainer': {'accelerator': 'gpu', 'devices': [0]},
-                    'spect_scaler_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
+                    'frames_standardizer_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect',
                     'post_tfm_kwargs': {
                         'majority_vote': True, 'min_segment_dur': 0.02
                         },

@@ -50,7 +50,7 @@ class PredictConfig:
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
-    spect_scaler_path : str
+    frames_standardizer_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
@@ -104,7 +104,7 @@ class PredictConfig:
     )
 
     # optional, transform
-    spect_scaler_path = field(
+    frames_standardizer_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )

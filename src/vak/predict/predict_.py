@@ -22,7 +22,7 @@ def predict(
     labelmap_path: str | pathlib.Path,
     num_workers: int = 2,
     timebins_key: str = "t",
-    spect_scaler_path: str | pathlib.Path | None = None,
+    frames_standardizer_path: str | pathlib.Path | None = None,
     device: str | None = None,
     annot_csv_filename: str | None = None,
     output_dir: str | pathlib.Path | None = None,
@@ -56,7 +56,7 @@ def predict(
         Argument to torch.DataLoader. Default is 2.
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
-    spect_scaler_path : str
+    frames_standardizer_path : str
         path to a saved SpectScaler object used to normalize spectrograms.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
@@ -93,8 +93,8 @@ def predict(
         will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
     for path, path_name in zip(
-        (checkpoint_path, labelmap_path, spect_scaler_path),
-        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
+        (checkpoint_path, labelmap_path, frames_standardizer_path),
+        ("checkpoint_path", "labelmap_path", "frames_standardizer_path"),
     ):
         if path is not None:
             if not validators.is_a_file(path):
@@ -137,7 +137,7 @@ def predict(
             labelmap_path=labelmap_path,
             num_workers=num_workers,
             timebins_key=timebins_key,
-            spect_scaler_path=spect_scaler_path,
+            frames_standardizer_path=frames_standardizer_path,
             annot_csv_filename=annot_csv_filename,
             output_dir=output_dir,
             min_segment_dur=min_segment_dur,

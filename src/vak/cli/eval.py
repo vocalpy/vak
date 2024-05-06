@@ -58,6 +58,6 @@ def eval(toml_path: str | pathlib.Path) -> None:
         output_dir=cfg.eval.output_dir,
         num_workers=cfg.eval.num_workers,
         batch_size=cfg.eval.batch_size,
-        spect_scaler_path=cfg.eval.spect_scaler_path,
+        frames_standardizer_path=cfg.eval.frames_standardizer_path,
         post_tfm_kwargs=cfg.eval.post_tfm_kwargs,
     )

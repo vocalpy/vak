@@ -77,7 +77,7 @@ def test_eval_frame_classification_model(
         labelmap_path=cfg.eval.labelmap_path,
         output_dir=cfg.eval.output_dir,
         num_workers=cfg.eval.num_workers,
-        spect_scaler_path=cfg.eval.spect_scaler_path,
+        frames_standardizer_path=cfg.eval.frames_standardizer_path,
         post_tfm_kwargs=post_tfm_kwargs,
     )
 
@@ -89,7 +89,7 @@ def test_eval_frame_classification_model(
     [
         {"table": "eval", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"table": "eval", "key": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"table": "eval", "key": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "eval", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/SpectScaler'},
     ]
 )
 def test_eval_frame_classification_model_raises_file_not_found(
@@ -100,7 +100,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
 ):
     """Test that core.eval raises FileNotFoundError
     when one of the following does not exist:
-    checkpoint_path, labelmap_path, dataset_path, spect_scaler_path
+    checkpoint_path, labelmap_path, dataset_path, frames_standardizer_path
     """
     output_dir = tmp_path.joinpath(
         f"test_eval_cbin_notmat_invalid_dataset_path"
@@ -131,7 +131,7 @@ def test_eval_frame_classification_model_raises_file_not_found(
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
-            spect_scaler_path=cfg.eval.spect_scaler_path,
+            frames_standardizer_path=cfg.eval.frames_standardizer_path,
         )
 
 
@@ -185,5 +185,5 @@ def test_eval_frame_classification_model_raises_not_a_directory(
             labelmap_path=cfg.eval.labelmap_path,
             output_dir=cfg.eval.output_dir,
             num_workers=cfg.eval.num_workers,
-            spect_scaler_path=cfg.eval.spect_scaler_path,
+            frames_standardizer_path=cfg.eval.frames_standardizer_path,
         )
