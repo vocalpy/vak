@@ -33,9 +33,9 @@ checkpoint_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/TweetyNet/che
 # labelmap_path: path to file that maps from outputs of model (integers) to text labels in annotations;
 # this is used when generating predictions
 labelmap_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/labelmap.json"
-# spect_scaler_path: path to file containing SpectScaler that was fit to training set
+# frames_standardizer_path: path to file containing SpectScaler that was fit to training set
 # We want to transform the data we predict on in the exact same way
-spect_scaler_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/StandardizeSpect"
+frames_standardizer_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/StandardizeSpect"
 # batch_size
 # for predictions with a frame classification model, this should always be 1
 # and will be ignored if it's not
