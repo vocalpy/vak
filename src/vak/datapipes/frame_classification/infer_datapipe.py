@@ -13,6 +13,7 @@ import pandas as pd
 
 from . import constants, helper
 from .metadata import Metadata
+from ...transforms import FramesStandardizer
 
 
 class InferDatapipe:
