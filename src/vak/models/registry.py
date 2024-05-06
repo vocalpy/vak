@@ -9,19 +9,19 @@ from __future__ import annotations
 import inspect
 from typing import Any, Type
 
-from .base import Model
+import lightning
 
 MODEL_FAMILY_REGISTRY = {}
 
 
 def model_family(family_class: Type) -> None:
     """Decorator that adds a class to the registry of model families."""
-    if family_class not in Model.__subclasses__():
+    if not issubclass(family_class, lightning.pytorch.LightningModule):
         raise TypeError(
             "The ``family_class`` provided to the `vak.models.model_family` decorator"
-            "must be a subclass of `vak.models.base.Model`, "
+            "must be a subclass of `lightning.pytorch.LightningModule`, "
             f"but the class specified is not: {family_class}. "
-            f"Subclasses of `vak.models.base.Model` are: {Model.__subclasses__()}"
+            f"Subclasses of `lightning.pytorch.LightningModule` are: {lightning.pytorch.LightningModule.__subclasses__()}"
         )
 
     model_family_name = family_class.__name__
