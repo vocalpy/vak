@@ -247,7 +247,7 @@ def train_frame_classification_model(
         val_dataset = InferDatapipe.from_dataset_path(
             dataset_path=dataset_path,
             split="val",
-            **dataset_config["params"]
+            **dataset_config["params"],
             frames_standardizer=spect_standardizer,
         )
         logger.info(
