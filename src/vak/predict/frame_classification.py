@@ -138,8 +138,6 @@ def predict_with_frame_classification_model(
         logger.info("Not loading SpectScaler, no path was specified")
         spect_standardizer = None
 
-    model_name = model_config["name"]
-
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
