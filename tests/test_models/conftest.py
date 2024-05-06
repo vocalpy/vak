@@ -1,3 +1,4 @@
+import lightning
 import torch
 
 import vak.models.registry
@@ -76,7 +77,7 @@ class MockAcc:
 
 
 # ---- mock model families ---------------------------------------------------------------------------------------------
-class UnregisteredMockModelFamily(vak.models.Model):
+class UnregisteredMockModelFamily(lightning.LightningModule):
     """A model family defined only for tests.
     Used to test :func:`vak.models.registry.model_family`.
     """
@@ -90,17 +91,6 @@ class UnregisteredMockModelFamily(vak.models.Model):
 
     def validation_step(self, *args, **kwargs):
         pass
-
-    @classmethod
-    def from_config(cls, config: dict):
-        """Return an initialized model instance from a config ``dict``."""
-        network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(
-            network=network,
-            optimizer=optimizer,
-            loss=loss,
-            metrics=metrics,
-        )
 
 
 # Make a "copy" of UnregisteredModelFamily that we *do* register

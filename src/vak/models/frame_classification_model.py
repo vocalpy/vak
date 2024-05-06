@@ -124,6 +124,11 @@ class FrameClassificationModel(lightning.LightningModule):
         """
         super().__init__()
 
+        self.network = network
+        self.loss = loss
+        self.optimizer = optimizer
+        self.metrics = metrics
+
         self.labelmap = labelmap
         # replace any multiple character labels in mapping
         # with single-character labels
