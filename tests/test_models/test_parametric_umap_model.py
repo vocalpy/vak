@@ -1,130 +1,89 @@
-import inspect
+import copy
 
 import pytest
 import torch
 
 import vak.models
 
+from .test_factory import ConvEncoderUMAPDefinition
 
-class ConvEncoderUMAPDefinition:
-    network = {"encoder": vak.nets.ConvEncoder}
-    loss = vak.nn.UmapLoss
-    optimizer = torch.optim.AdamW
-    metrics = {
-        "acc": vak.metrics.Accuracy,
-        "levenshtein": vak.metrics.Levenshtein,
-        "character_error_rate": vak.metrics.CharacterErrorRate,
-        "loss": torch.nn.CrossEntropyLoss,
-    }
-    default_config = {
-        "optimizer": {"lr": 1e-3},
-    }
 
 
 class TestParametricUMAPModel:
 
+    MODEL_DEFINITION_MAP = {
+        'ConvEncoderUMAP': ConvEncoderUMAPDefinition,
+    }
+
     @pytest.mark.parametrize(
-        'input_shape, definition',
+        'model_name',
         [
-            ((1, 128, 128), ConvEncoderUMAPDefinition),
+            'ConvEncoderUMAP',
         ]
     )
-    def test_init(
-            self,
-            input_shape,
+    def test_load_state_dict_from_path(self,
+                                       model_name,
+                                       specific_config_toml_path,
+                                       device
+                                       ):
+        """Smoke test that makes sure ``load_state_dict_from_path`` runs without failure.
+
+        We use actual model definitions here so we can test with real checkpoints.
+        """
+        definition = self.MODEL_DEFINITION_MAP[model_name]
+        train_toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
+        train_cfg = vak.config.Config.from_toml_path(train_toml_path)
+
+        # stuff we need just to be able to instantiate network
+        item_transform = vak.transforms.defaults.get_default_transform(
+            model_name,
+            "train",
+            transform_kwargs={},
+        )
+        train_dataset = vak.datasets.parametric_umap.ParametricUMAPDataset.from_dataset_path(
+            dataset_path=train_cfg.train.dataset.path,
+            split="train",
+            transform=item_transform,
+        )
+
+        # network is the one thing that has required args
+        # and we also need to use its config from the toml file
+        cfg = vak.config.Config.from_toml_path(train_toml_path)
+        model_config = cfg.train.model.asdict()
+        network = {
+            'encoder': definition.network['encoder'](
+                input_shape=train_dataset.shape,
+                **model_config['network']
+                )
+        }
+        model_factory = vak.models.factory.ModelFactory(
             definition,
-            monkeypatch,
-    ):
-        """Test ParametricUMAPModel.__init__ works as expected"""
-        # monkeypatch a definition so we can test __init__
-        definition = vak.models.definition.validate(definition)
-        monkeypatch.setattr(
             vak.models.ParametricUMAPModel,
-            'definition',
-            definition,
-            raising=False
         )
-        network = {'encoder': vak.nets.ConvEncoder(input_shape)}
-        model = vak.models.ParametricUMAPModel(network=network)
+        model = model_factory.from_instances(network=network)
+        model.to(device)
+        eval_toml_path = specific_config_toml_path('eval', model_name, audio_format='cbin', annot_format='notmat')
+        eval_cfg = vak.config.Config.from_toml_path(eval_toml_path)
+        checkpoint_path = eval_cfg.eval.checkpoint_path
 
-        # now test that attributes are what we expect
-        assert isinstance(model, vak.models.ParametricUMAPModel)
-        for attr in ('network', 'loss', 'optimizer', 'metrics'):
-            assert hasattr(model, attr)
-            model_attr = getattr(model, attr)
-            definition_attr = getattr(definition, attr)
-            if inspect.isclass(definition_attr):
-                assert isinstance(model_attr, definition_attr)
-            elif isinstance(definition_attr, dict):
-                assert isinstance(model_attr, dict)
-                for definition_key, definition_val in definition_attr.items():
-                    assert definition_key in model_attr
-                    model_val = model_attr[definition_key]
-                    if inspect.isclass(definition_val):
-                        assert isinstance(model_val, definition_val)
-                    else:
-                        assert callable(definition_val)
-                        assert model_val is definition_val
-            else:
-                # must be a function
-                assert callable(model_attr)
-                assert model_attr is definition_attr
+        # ---- actually test method
+        sd_before = copy.deepcopy(model.state_dict())
+        sd_before = {
+            k: v.to(device) for k, v in sd_before.items()
+        }
+        ckpt = torch.load(checkpoint_path)
+        sd_to_be_loaded = ckpt['state_dict']
+        sd_to_be_loaded = {
+            k: v.to(device) for k, v in sd_to_be_loaded.items()
+        }
 
-    @pytest.mark.xfail
-    @pytest.mark.parametrize(
-        'input_shape, definition',
-        [
-            ((1, 128, 128), ConvEncoderUMAPDefinition),
-        ]
-    )
-    def test_from_config(
-            self,
-            input_shape,
-            definition,
-            specific_config_toml_path,
-            monkeypatch,
-    ):
-        definition = vak.models.definition.validate(definition)
-        model_name = definition.__name__.replace('Definition', '')
-        toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
-        cfg = vak.config.Config.from_toml_path(toml_path)
+        model.load_state_dict_from_path(checkpoint_path)
 
-        monkeypatch.setattr(
-            vak.models.ParametricUMAPModel, 'definition', definition, raising=False
+        assert not all([
+            torch.all(torch.eq(val, before_val))
+            for val, before_val in zip(model.state_dict().values(), sd_before.values())]
         )
-
-        config = cfg.train.model.asdict()
-        config["network"].update(
-            encoder=dict(input_shape=input_shape)
+        assert all([
+            torch.all(torch.eq(val, before_val))
+            for val, before_val in zip(model.state_dict().values(), sd_to_be_loaded.values())]
         )
-
-        model = vak.models.ParametricUMAPModel.from_config(config=config)
-        assert isinstance(model, vak.models.ParametricUMAPModel)
-
-        if 'network' in config:
-            if inspect.isclass(definition.network):
-                for network_kwarg, network_kwargval in config['network'].items():
-                    assert hasattr(model.network, network_kwarg)
-                    assert getattr(model.network, network_kwarg) == network_kwargval
-            elif isinstance(definition.network, dict):
-                for net_name, net_kwargs in config['network'].items():
-                    for network_kwarg, network_kwargval in net_kwargs.items():
-                        assert hasattr(model.network[net_name], network_kwarg)
-                        assert getattr(model.network[net_name], network_kwarg) == network_kwargval
-
-        if 'loss' in config:
-            for loss_kwarg, loss_kwargval in config['loss'].items():
-                assert hasattr(model.loss, loss_kwarg)
-                assert getattr(model.loss, loss_kwarg) == loss_kwargval
-
-        if 'optimizer' in config:
-            for optimizer_kwarg, optimizer_kwargval in config['optimizer'].items():
-                assert optimizer_kwarg in model.optimizer.param_groups[0]
-                assert model.optimizer.param_groups[0][optimizer_kwarg] == optimizer_kwargval
-
-        if 'metrics' in config:
-            for metric_name, metric_kwargs in config['metrics'].items():
-                assert metric_name in model.metrics
-                for metric_kwarg, metric_kwargval in metric_kwargs.items():
-                    assert hasattr(model.metrics[metric_name], metric_kwarg)
-                    assert getattr(model.metrics[metric_name], metric_kwarg) == metric_kwargval
