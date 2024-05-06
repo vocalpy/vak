@@ -19,7 +19,6 @@ The entire dataset consists of some number of windows
 from __future__ import annotations
 
 import pathlib
-from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -445,8 +444,8 @@ class TrainDatapipe:
             inds_in_sample,
             window_size,
             frame_dur,
-            item_transform,
             stride,
             subset,
             window_inds,
+            frames_standardizer,
         )
