@@ -187,7 +187,7 @@ def train_frame_classification_model(
             "no spect_scaler_path provided, not loading",
         )
         logger.info("will normalize spectrograms")
-        spect_standardizer = transforms.StandardizeSpect.fit_dataset_path(
+        spect_standardizer = transforms.FramesStandardizer.fit_dataset_path(
             dataset_path,
             split="train",
             subset=subset,

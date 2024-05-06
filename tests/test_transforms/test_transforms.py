@@ -19,10 +19,10 @@ class TestStandardizeSpect:
         ]
     )
     def test_instance(self, mean_freqs, std_freqs, non_zero_std):
-        standardizer = vak.transforms.StandardizeSpect(
+        standardizer = vak.transforms.FramesStandardizer(
             mean_freqs=mean_freqs, std_freqs=std_freqs, non_zero_std=non_zero_std
         )
-        assert isinstance(standardizer, vak.transforms.StandardizeSpect)
+        assert isinstance(standardizer, vak.transforms.FramesStandardizer)
         for attr_name, expected in zip(
                 ('mean_freqs', 'std_freqs', 'non_zero_std',),
                 (mean_freqs, std_freqs, non_zero_std),
@@ -83,10 +83,10 @@ class TestStandardizeSpect:
 
         # ---- actually do fit
         if split:
-            standardizer = vak.transforms.StandardizeSpect.fit_dataset_path(dataset_path, split=split)
+            standardizer = vak.transforms.FramesStandardizer.fit_dataset_path(dataset_path, split=split)
         else:
             # this tests that default value for split 'train' works as expected
-            standardizer = vak.transforms.StandardizeSpect.fit_dataset_path(dataset_path)
+            standardizer = vak.transforms.FramesStandardizer.fit_dataset_path(dataset_path)
 
         # ---- test
         for attr_name, expected in zip(
@@ -102,7 +102,7 @@ class TestStandardizeSpect:
 
     def test_fit(self):
         spect = np.random.rand(513, 1000)
-        standardizer = vak.transforms.StandardizeSpect.fit(spect)
+        standardizer = vak.transforms.FramesStandardizer.fit(spect)
 
         expected_mean_freqs = np.mean(spect, axis=1)
         expected_std_freqs = np.std(spect, axis=1)

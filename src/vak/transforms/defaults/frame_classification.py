@@ -26,7 +26,7 @@ class TrainItemTransform:
         spect_standardizer=None,
     ):
         if spect_standardizer is not None:
-            if isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
+            if isinstance(spect_standardizer, vak_transforms.FramesStandardizer):
                 frames_transform = [spect_standardizer]
             else:
                 raise TypeError(
@@ -81,7 +81,7 @@ class EvalItemTransform:
     ):
         if spect_standardizer is not None:
             if not isinstance(
-                spect_standardizer, vak_transforms.StandardizeSpect
+                spect_standardizer, vak_transforms.FramesStandardizer
             ):
                 raise TypeError(
                     f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
@@ -152,7 +152,7 @@ class PredictItemTransform:
     ):
         if spect_standardizer is not None:
             if not isinstance(
-                spect_standardizer, vak_transforms.StandardizeSpect
+                spect_standardizer, vak_transforms.FramesStandardizer
             ):
                 raise TypeError(
                     f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
@@ -237,7 +237,7 @@ def get_default_frame_classification_transform(
     spect_standardizer = transform_kwargs.get("spect_standardizer", None)
     # regardless of mode, transform always starts with StandardizeSpect, if used
     if spect_standardizer is not None:
-        if not isinstance(spect_standardizer, vak_transforms.StandardizeSpect):
+        if not isinstance(spect_standardizer, vak_transforms.FramesStandardizer):
             raise TypeError(
                 f"invalid type for spect_standardizer: {type(spect_standardizer)}. "
                 "Should be an instance of vak.transforms.StandardizeSpect"

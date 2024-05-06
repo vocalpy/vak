@@ -12,7 +12,7 @@ from . import functional as F
 __all__ = [
     "AddChannel",
     "PadToWindow",
-    "StandardizeSpect",
+    "FramesStandardizer",
     "ToFloatTensor",
     "ToLongTensor",
     "ViewAsWindowBatch",
@@ -21,7 +21,7 @@ __all__ = [
 
 # adapted from:
 # https://github.com/NickleDave/hybrid-vocal-classifier/blob/master/hvc/neuralnet/utils.py
-class StandardizeSpect:
+class FramesStandardizer:
     """transform that standardizes spectrograms so they are all
     on the same scale, by subtracting off the mean and dividing by the
     standard deviation from a 'fit' set of spectrograms.
