@@ -48,6 +48,11 @@ class ParametricUMAPModel(lightning.LightningModule):
         metrics: dict[str:Type] | None = None,
     ):
         super().__init__()
+        self.network = network
+        self.loss = loss
+        self.optimizer = optimizer
+        self.metrics = metrics
+
         self.encoder = network["encoder"]
         self.decoder = network.get("decoder", None)
 
