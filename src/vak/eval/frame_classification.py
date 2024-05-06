@@ -95,6 +95,13 @@ def eval_frame_classification_model(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
+    model_name = model_config["name"]  # we use this var again below
+    if "window_size" not in dataset_config["params"]:
+        raise KeyError(
+            f"The `dataset_config` for frame classification model '{model_name}' must include a 'params' sub-table "
+            f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
+        )
+
     dataset_path = pathlib.Path(dataset_config["path"])
     if not dataset_path.exists() or not dataset_path.is_dir():
         raise NotADirectoryError(
@@ -130,29 +137,12 @@ def eval_frame_classification_model(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    model_name = model_config["name"]
-    # TODO: move this into datapipe once each datapipe uses a fixed set of transforms
-    # that will require adding `spect_standardizer`` as a parameter to the datapipe,
-    # maybe rename to `frames_standardizer`?
-    try:
-        window_size = dataset_config["params"]["window_size"]
-    except KeyError as e:
-        raise KeyError(
-            f"The `dataset_config` for frame classification model '{model_name}' must include a 'params' sub-table "
-            f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
-        ) from e
-    transform_params = {
-        "spect_standardizer": spect_standardizer,
-        "window_size": window_size,
-    }
-
-    item_transform = transforms.defaults.get_default_transform(
-        model_name, "eval", transform_params
-    )
     val_dataset = InferDatapipe.from_dataset_path(
         dataset_path=dataset_path,
         split=split,
-        item_transform=item_transform,
+        window_size=dataset_config["params"]["window_size"],
+        frames_standarizer=spect_standardizer,
+        return_padding_mask=True,
     )
     val_loader = torch.utils.data.DataLoader(
         dataset=val_dataset,
