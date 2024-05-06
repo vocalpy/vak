@@ -53,7 +53,7 @@ class TestParametricUMAPModel:
         network = {
             'encoder': definition.network['encoder'](
                 input_shape=train_dataset.shape,
-                **model_config['network']
+                **model_config['network']['encoder']
                 )
         }
         model_factory = vak.models.factory.ModelFactory(
