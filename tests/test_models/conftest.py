@@ -82,9 +82,11 @@ class UnregisteredMockModelFamily(lightning.LightningModule):
     Used to test :func:`vak.models.registry.model_family`.
     """
     def __init__(self, network, optimizer, loss, metrics):
-        super().__init__(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics
-        )
+        super().__init__()
+        self.network=network
+        self.loss=loss
+        self.optimizer=optimizer
+        self.metrics=metrics
 
     def training_step(self, *args, **kwargs):
         pass
@@ -98,9 +100,23 @@ class UnregisteredMockModelFamily(lightning.LightningModule):
 # that require a registered ModelFamily.
 # Used when testing :func:`vak.models.decorator.model` -- we need a model in the registry to test
 # and we don't want to have to deal with the idiosyncrasies of actual model families
-MockModelFamily = type('MockModelFamily',
-                       UnregisteredMockModelFamily.__bases__,
-                       dict(UnregisteredMockModelFamily.__dict__))
+class MockModelFamily(lightning.LightningModule):
+    """A model family defined only for tests.
+    Used to test :func:`vak.models.registry.model_family`.
+    """
+    def __init__(self, network, optimizer, loss, metrics):
+        super().__init__()
+        self.network=network
+        self.loss=loss
+        self.optimizer=optimizer
+        self.metrics=metrics
+
+    def training_step(self, *args, **kwargs):
+        pass
+
+    def validation_step(self, *args, **kwargs):
+        pass
+
 vak.models.registry.model_family(MockModelFamily)
 
 
