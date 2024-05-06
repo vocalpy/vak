@@ -80,9 +80,13 @@ class InferItemTransform:
         Default is None, in which case no standardization transform is applied.
     window_size : int
         width of window in number of elements. Argument to PadToWindow transform.
-    padval : float
-        value to pad with. Added to end of array, the "right side" if 2-dimensional.
-        Argument to PadToWindow transform. Default is 0.
+    frames_padval : float
+        Value to pad frames with. Added to end of array, the "right side".
+        Argument to PadToWindow transform. Default is 0.0.
+    frame_labels_padval : int
+        Value to pad frame labels vector with. Added to the end of the array.
+        Argument to PadToWindow transform. Default is -1.
+        Used with ``ignore_index`` argument of :mod:`torch.nn.CrossEntropyLoss`.
     return_padding_mask : bool
         if True, the dictionary returned by ItemTransform classes will include
         a boolean vector to use for cropping back down to size before padding.
@@ -96,7 +100,8 @@ class InferItemTransform:
         self,
         window_size,
         frames_standardizer=None,
-        padval=0.0,
+        frames_padval=0.0,
+        frame_labels_padval=-1,
         return_padding_mask=True,
         channel_dim=1,
     ):
@@ -111,7 +116,7 @@ class InferItemTransform:
         self.frames_standardizer = frames_standardizer
 
         self.pad_to_window = vak_transforms.PadToWindow(
-            window_size, padval, return_padding_mask=return_padding_mask
+            window_size, frames_padval, return_padding_mask=return_padding_mask
         )
 
         self.frames_transform_after_pad = torchvision.transforms.Compose(
@@ -123,7 +128,17 @@ class InferItemTransform:
             ]
         )
 
-        self.frame_labels_transform = vak_transforms.ToLongTensor()
+        self.frame_labels_padval = frame_labels_padval
+        self.frame_labels_transform = torchvision.transforms.Compose(
+            [
+                vak_transforms.PadToWindow(
+                    # we set `return_padding_mask` to False because we will have the 
+                    self.window_size, self.frame_labels_padval, return_padding_mask=False
+                ),
+                vak_transforms.ViewAsWindowBatch(window_size),
+                vak_transforms.ToLongTensor()
+            ]
+        )
 
     def __call__(self, frames: torch.Tensor, frame_labels: torch.Tensor | None = None, frames_path=None) -> dict:
         if self.frames_standardizer:
