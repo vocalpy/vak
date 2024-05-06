@@ -272,7 +272,6 @@ class FrameClassificationModel(lightning.LightningModule):
             # convert back to tensor so we can compute accuracy
             y_pred_tfm = torch.from_numpy(y_pred_tfm).to(self.device)
 
-        # TODO: figure out smarter way to do this
         for metric_name, metric_callable in self.metrics.items():
             if metric_name == "loss":
                 self.log(
