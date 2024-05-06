@@ -64,7 +64,17 @@ class TestModelConfig:
                 },
                 {
                     "ConvEncoderUMAP": {
-                        "optimizer": 1e-3
+                        "optimizer": {'lr': 1e-3},
+                    }
+                },
+                {
+                    "ConvEncoderUMAP": {
+                        "network": {
+                            "encoder": {
+                                "conv1_filters": 8,
+                            }
+                        },
+                        "optimizer": {'lr': 1e-3},
                     }
                 }
             ]
@@ -127,7 +137,17 @@ class TestModelConfig:
                 },
                 {
                     "ConvEncoderUMAP": {
-                        "optimizer": 1e-3
+                        "optimizer": {'lr': 1e-3},
+                    }
+                },
+                {
+                    "ConvEncoderUMAP": {
+                        "network": {
+                            "encoder": {
+                                "conv1_filters": 8,
+                            }
+                        },
+                        "optimizer": {'lr': 1e-3},
                     }
                 }
             ]
