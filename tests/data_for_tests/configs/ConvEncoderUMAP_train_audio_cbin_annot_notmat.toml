@@ -24,7 +24,7 @@ num_workers = 16
 
 root_results_dir = "./tests/data_for_tests/generated/results/train/audio_cbin_annot_notmat/ConvEncoderUMAP"
 
-[vak.train.model.ConvEncoderUMAP.network]
+[vak.train.model.ConvEncoderUMAP.network.encoder]
 conv1_filters = 8
 conv2_filters = 16
 conv_kernel_size = 3

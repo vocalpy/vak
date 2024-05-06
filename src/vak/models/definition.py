@@ -27,10 +27,7 @@ VALID_CONFIG_KEYS = REQUIRED_MODEL_DEFINITION_CLASS_VARS[
 class ModelDefinition:
     """A class that represents the definition of a neural network model.
 
-    Note it is **not** necessary to sub-class this class;
-    it exists mainly for type-checking purposes.
-
-    A model definition is a class that has the following class variables:
+    A model definition is any class that has the following class variables:
 
     network: torch.nn.Module or dict
         Neural network.
@@ -48,6 +45,12 @@ class ModelDefinition:
         Used by ``vak.models.base.Model`` and its
         sub-classes that represent model families. E.g., those classes will do:
         ``network = self.definition.network(**self.definition.default_config['network'])``.
+
+    Note it is **not** necessary to sub-class this class;
+    it exists mainly for type-checking purposes.
+
+    For more detail, see :func:`vak.models.decorator.model`
+    and :class:`vak.models.ModelFactory`.
     """
 
     network: Union[torch.nn.Module, dict]
@@ -67,7 +70,7 @@ DEFAULT_DEFAULT_CONFIG = {
 }
 
 
-def validate(definition: Type[ModelDefinition]) -> Type[ModelDefinition]:
+def validate(definition: Type) -> Type:
     """Validate a model definition.
 
     A model definition is a class that has the following class variables:
@@ -124,8 +127,8 @@ def validate(definition: Type[ModelDefinition]) -> Type[ModelDefinition]:
     converting it into a sub-class ofhttps://peps.python.org/pep-0416/
     ``vak.models.Model``.
 
-    It's also used by ``vak.models.Model``
-    to validate a definition when initializing
+    It's also used by :class:`vak.models.ModelFactory`,
+    to validate a definition before building 
     a new model instance from the definition.
     """
     # need to set this default first

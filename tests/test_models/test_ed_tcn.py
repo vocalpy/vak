@@ -15,8 +15,8 @@ class TestED_TCN:
         num_input_channels = input_shape[-3]
         num_freqbins = input_shape[-2]
         network = vak.models.ED_TCN.definition.network(len(labelmap), num_input_channels, num_freqbins)
-        model = vak.models.ED_TCN(labelmap=labelmap, network=network)
-        assert isinstance(model, vak.models.ED_TCN)
+        model = vak.models.ED_TCN.from_instances(network=network, labelmap=labelmap)
+        assert isinstance(model, vak.models.FrameClassificationModel)
         for attr in ('network', 'loss', 'optimizer'):
             assert hasattr(model, attr)
             assert isinstance(getattr(model, attr),

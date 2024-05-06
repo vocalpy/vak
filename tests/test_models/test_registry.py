@@ -39,17 +39,18 @@ def test_register_model(family, definition):
     """Test that :func:`vak.models.registry.register_model`
     adds a model to the registry"""
     # to set up, we repeat what :func:`vak.models.decorator.model` does
-    attributes = dict(family.__dict__)
-    attributes.update({"definition": definition})
-    subclass_name = definition.__name__
-    subclass = type(subclass_name, (family,), attributes)
-    subclass.__module__ = definition.__module__
+    model_name = definition.__name__
+    model_factory = vak.models.factory.ModelFactory(
+        definition,
+        family
+    )
+    model_factory.__name__ = model_name
 
-    assert subclass_name not in vak.models.registry.MODEL_REGISTRY
-    vak.models.registry.register_model(subclass)
-    assert subclass_name in vak.models.registry.MODEL_REGISTRY
-    assert vak.models.registry.MODEL_REGISTRY[subclass_name] == subclass
-    del vak.models.registry.MODEL_REGISTRY[subclass_name]  # so this test doesn't fail for the second case
+    assert model_name not in vak.models.registry.MODEL_REGISTRY
+    vak.models.registry.register_model(model_factory)
+    assert model_name in vak.models.registry.MODEL_REGISTRY
+    assert vak.models.registry.MODEL_REGISTRY[model_name] == model_factory
+    del vak.models.registry.MODEL_REGISTRY[model_name]  # so this test doesn't fail for the second case
 
 
 def test_register_model_raises_family():
@@ -57,14 +58,13 @@ def test_register_model_raises_family():
     raises an error if parent class is not in model_family_classes"""
     # to set up, we repeat what :func:`vak.models.decorator.model` does,
     # but notice that we use an unregistered model family
-    attributes = dict(UnregisteredMockModelFamily.__dict__)
-    attributes.update({"definition": MockModel})
-    subclass_name = MockModel.__name__
-    subclass = type(subclass_name, (UnregisteredMockModelFamily,), attributes)
-    subclass.__module__ = MockModel.__module__
+    model_factory = vak.models.ModelFactory(
+        MockModel,
+        UnregisteredMockModelFamily,
+    )
 
     with pytest.raises(TypeError):
-        vak.models.registry.register_model(subclass)
+        vak.models.registry.register_model(model_factory)
 
 
 @pytest.mark.parametrize(
@@ -77,31 +77,34 @@ def test_register_model_raises_registered(family, definition):
     """Test that :func:`vak.models.registry.register_model`
     raises an error if a class is already registered"""
     # to set up, we repeat what :func:`vak.models.decorator.model` does
-    attributes = dict(family.__dict__)
-    attributes.update({"definition": definition})
+    model_factory = vak.models.ModelFactory(
+        definition,
+        family
+    )
+
     # NOTE we replace 'Definition' with an empty string
     # so that the name clashes with an existing model name
-    subclass_name = definition.__name__.replace('Definition', '')
-    subclass = type(subclass_name, (family,), attributes)
-    subclass.__module__ = definition.__module__
+    model_factory.__name__ = definition.__name__.replace('Definition', '')
 
     with pytest.raises(ValueError):
-        vak.models.registry.register_model(subclass)
+        vak.models.registry.register_model(model_factory)
 
 
 def test___get_attr__MODEL_FAMILY_FROM_NAME():
     assert hasattr(vak.models.registry, 'MODEL_FAMILY_FROM_NAME')
-    attr = getattr(vak.models.registry, 'MODEL_FAMILY_FROM_NAME')
-    assert isinstance(attr, dict)
-    for model_name, model_class in vak.models.registry.MODEL_REGISTRY.items():
-        model_parent_class = inspect.getmro(model_class)[1]
-        family_name = model_parent_class.__name__
-        assert attr[model_name] == family_name
+
+    model_family_from_name_dict = getattr(vak.models.registry, 'MODEL_FAMILY_FROM_NAME')
+    assert isinstance(model_family_from_name_dict, dict)
+
+    for model_name, model_factory in vak.models.registry.MODEL_REGISTRY.items():
+        model_family = model_factory.family
+        family_name = model_family.__name__
+        assert model_family_from_name_dict[model_name] == family_name
 
 
 def test___get_attr__MODEL_NAMES():
     assert hasattr(vak.models.registry, 'MODEL_NAMES')
-    attr = getattr(vak.models.registry, 'MODEL_NAMES')
-    assert isinstance(attr, list)
+    model_names_list = getattr(vak.models.registry, 'MODEL_NAMES')
+    assert isinstance(model_names_list, list)
     for model_name in vak.models.registry.MODEL_REGISTRY.keys():
-            assert model_name in attr
+            assert model_name in model_names_list

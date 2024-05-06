@@ -78,6 +78,8 @@ class ModelConfig:
                 f"Model name not found in registry: {model_name}\n"
                 f"Model names in registry:\n{MODEL_NAMES}"
             )
+
+        # NOTE: we are getting model_config here
         model_config = config_dict[model_name]
         if not all(key in MODEL_TABLES for key in model_config.keys()):
             invalid_keys = (
@@ -89,7 +91,7 @@ class ModelConfig:
             )
         # for any tables not specified, default to empty dict so we can still use ``**`` operator on it
         for model_table in MODEL_TABLES:
-            if model_table not in config_dict:
+            if model_table not in model_config:
                 model_config[model_table] = {}
         return cls(name=model_name, **model_config)
 

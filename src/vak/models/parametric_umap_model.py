@@ -15,13 +15,12 @@ import lightning
 import torch
 import torch.utils.data
 
-from . import base
 from .definition import ModelDefinition
 from .registry import model_family
 
 
 @model_family
-class ParametricUMAPModel(base.Model):
+class ParametricUMAPModel(lightning.LightningModule):
     """Parametric UMAP model, as described in [1]_.
 
     Notes
@@ -43,28 +42,29 @@ class ParametricUMAPModel(base.Model):
 
     def __init__(
         self,
-        network: dict | None = None,
-        loss: torch.nn.Module | Callable | None = None,
-        optimizer: torch.optim.Optimizer | None = None,
-        metrics: dict[str:Type] | None = None,
+        network: dict,
+        loss: torch.nn.Module | Callable,
+        optimizer: torch.optim.Optimizer,
+        metrics: dict[str:Type],
     ):
-        super().__init__(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics
+        super().__init__()
+        self.network = torch.nn.ModuleDict(
+            network
         )
-        self.encoder = network["encoder"]
-        self.decoder = network.get("decoder", None)
+        self.loss = loss
+        self.optimizer = optimizer
+        self.metrics = metrics
 
     def configure_optimizers(self):
         return self.optimizer
 
     def training_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to, embedding_from = self.encoder(
-            edges_to_exp
-        ), self.encoder(edges_from_exp)
+        embedding_to = self.network['encoder'](edges_to_exp)
+        embedding_from = self.network['encoder'](edges_from_exp)
 
-        if self.decoder is not None:
-            reconstruction = self.decoder(embedding_to)
+        if 'decoder' in self.network:
+            reconstruction = self.network['decoder'](embedding_to)
             before_encoding = edges_to_exp
         else:
             reconstruction = None
@@ -83,12 +83,11 @@ class ParametricUMAPModel(base.Model):
 
     def validation_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to, embedding_from = self.encoder(
-            edges_to_exp
-        ), self.encoder(edges_from_exp)
+        embedding_to = self.network['encoder'](edges_to_exp)
+        embedding_from = self.network['encoder'](edges_from_exp)
 
-        if self.decoder is not None:
-            reconstruction = self.decoder(embedding_to)
+        if 'decoder' in self.network is not None:
+            reconstruction = self.network['decoder'](embedding_to)
             before_encoding = edges_to_exp
         else:
             reconstruction = None
@@ -104,26 +103,36 @@ class ParametricUMAPModel(base.Model):
         # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
         self.log("val_loss", loss, on_step=True)
 
-    @classmethod
-    def from_config(cls, config: dict):
-        """Return an initialized model instance from a config ``dict``
+    def load_state_dict_from_path(self, ckpt_path):
+        """Loads a model from the path to a saved checkpoint.
+
+        Loads the checkpoint and then calls
+        ``self.load_state_dict`` with the ``state_dict``
+        in that chekcpoint.
+
+        This method allows loading a state dict into an instance.
+        It's necessary because `lightning.pytorch.LightningModule.load`` is a
+        ``classmethod``, so calling that method will trigger
+         ``LightningModule.__init__`` instead of running
+        ``vak.models.Model.__init__``.
 
         Parameters
         ----------
-        config : dict
-            Returned by calling :func:`vak.config.models.map_from_path`
-            or :func:`vak.config.models.map_from_config_dict`.
+        ckpt_path : str, pathlib.Path
+            Path to a checkpoint saved by a model in ``vak``.
+            This checkpoint has the same key-value pairs as
+            any other checkpoint saved by a
+            ``lightning.pytorch.LightningModule``.
 
         Returns
         -------
-        cls : vak.models.base.Model
-            An instance of the model with its attributes
-            initialized using parameters from ``config``.
+        None
+
+        This method modifies the model state by loading the ``state_dict``;
+        it does not return anything.
         """
-        network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(
-            network=network, optimizer=optimizer, loss=loss, metrics=metrics
-        )
+        ckpt = torch.load(ckpt_path)
+        self.load_state_dict(ckpt["state_dict"])
 
 
 class ParametricUMAPDatamodule(lightning.pytorch.LightningDataModule):

@@ -6,21 +6,20 @@ a window from a spectrogram."""
 from __future__ import annotations
 
 import logging
-from typing import Callable, ClassVar, Mapping
+from typing import Callable, Mapping
 
+import lightning
 import torch
 
 from .. import transforms
 from ..common import labels
-from . import base
-from .definition import ModelDefinition
 from .registry import model_family
 
 logger = logging.getLogger(__name__)
 
 
 @model_family
-class FrameClassificationModel(base.Model):
+class FrameClassificationModel(lightning.LightningModule):
     """Class that represents a family of neural network models
     that predicts a label for each frame in a time series,
     e.g., each time bin in a window from a spectrogram.
@@ -86,9 +85,6 @@ class FrameClassificationModel(base.Model):
         to string labels inside of ``validation_step``,
         for computing edit distance.
     """
-
-    definition: ClassVar[ModelDefinition]
-
     def __init__(
         self,
         labelmap: Mapping,
@@ -126,9 +122,12 @@ class FrameClassificationModel(base.Model):
         post_tfm : callable
             Post-processing transform applied to predictions.
         """
-        super().__init__(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics
-        )
+        super().__init__()
+
+        self.network = network
+        self.loss = loss
+        self.optimizer = optimizer
+        self.metrics = metrics
 
         self.labelmap = labelmap
         # replace any multiple character labels in mapping
@@ -352,34 +351,33 @@ class FrameClassificationModel(base.Model):
         y_pred = self.network(x)
         return {frames_path: y_pred}
 
-    @classmethod
-    def from_config(
-        cls, config: dict, labelmap: Mapping, post_tfm: Callable | None = None
-    ):
-        """Return an initialized model instance from a config ``dict``
+    def load_state_dict_from_path(self, ckpt_path):
+        """Loads a model from the path to a saved checkpoint.
+
+        Loads the checkpoint and then calls
+        ``self.load_state_dict`` with the ``state_dict``
+        in that chekcpoint.
+
+        This method allows loading a state dict into an instance.
+        It's necessary because `lightning.pytorch.LightningModule.load`` is a
+        ``classmethod``, so calling that method will trigger
+         ``LightningModule.__init__`` instead of running
+        ``vak.models.Model.__init__``.
 
         Parameters
         ----------
-        config : dict
-            Returned by calling :func:`vak.config.models.map_from_path`
-            or :func:`vak.config.models.map_from_config_dict`.
-        post_tfm : callable
-            Post-processing transformation.
-            A callable applied to the network output.
-            Default is None.
+        ckpt_path : str, pathlib.Path
+            Path to a checkpoint saved by a model in ``vak``.
+            This checkpoint has the same key-value pairs as
+            any other checkpoint saved by a
+            ``lightning.pytorch.LightningModule``.
 
         Returns
         -------
-        cls : vak.models.base.Model
-            An instance of the model with its attributes
-            initialized using parameters from ``config``.
+        None
+
+        This method modifies the model state by loading the ``state_dict``;
+        it does not return anything.
         """
-        network, loss, optimizer, metrics = cls.attributes_from_config(config)
-        return cls(
-            labelmap=labelmap,
-            network=network,
-            optimizer=optimizer,
-            loss=loss,
-            metrics=metrics,
-            post_tfm=post_tfm,
-        )
+        ckpt = torch.load(ckpt_path)
+        self.load_state_dict(ckpt["state_dict"])

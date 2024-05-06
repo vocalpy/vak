@@ -6,6 +6,8 @@ from __future__ import annotations
 import inspect
 from typing import Callable
 
+import lightning
+
 from . import registry
 
 
@@ -16,7 +18,7 @@ def get(
     num_classes: int | None = None,
     labelmap: dict | None = None,
     post_tfm: Callable | None = None,
-):
+) -> lightning.LightningModule:
     """Get a model instance, given its name and
     a configuration as a :class:`dict`.
 
@@ -44,13 +46,13 @@ def get(
 
     Returns
     -------
-    model : vak.models.Model
-        Instance of a sub-class of the base Model class,
-        e.g. a TweetyNet instance.
+    model : lightning.LightningModule
+        Instance of :class:`lightning.LightningModule`,
+        one of the model familes.
     """
     # we do this dynamically so we always get all registered models
     try:
-        model_class = registry.MODEL_REGISTRY[name]
+        model_factory = registry.MODEL_REGISTRY[name]
     except KeyError as e:
         raise ValueError(
             f"Invalid model name: '{name}'.\n"
@@ -63,7 +65,7 @@ def get(
         # still need to special case model logic here
         net_init_params = list(
             inspect.signature(
-                model_class.definition.network.__init__
+                model_factory.definition.network.__init__
             ).parameters.keys()
         )
         if ("num_input_channels" in net_init_params) and (
@@ -82,13 +84,13 @@ def get(
                 f"unable to determine network init arguments for model. Currently all models "
                 f"in this family must have networks with parameters ``num_input_channels`` and ``num_freqbins``"
             )
-        model = model_class.from_config(
+        model = model_factory.from_config(
             config=config, labelmap=labelmap, post_tfm=post_tfm
         )
     elif model_family == "ParametricUMAPModel":
         encoder_init_params = list(
             inspect.signature(
-                model_class.definition.network["encoder"].__init__
+                model_factory.definition.network["encoder"].__init__
             ).parameters.keys()
         )
         if "input_shape" in encoder_init_params:
@@ -97,7 +99,7 @@ def get(
             else:
                 config["network"]["encoder"] = dict(input_shape=input_shape)
 
-        model = model_class.from_config(config=config)
+        model = model_factory.from_config(config=config)
     else:
         raise ValueError(
             f"Value for ``model_family`` not recognized: {model_family}"

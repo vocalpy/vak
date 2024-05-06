@@ -1,7 +1,6 @@
 import itertools
 
 import pytest
-import lightning
 
 import vak
 
@@ -31,13 +30,6 @@ TEST_INIT_ARGVALS = itertools.product(LABELMAPS, INPUT_SHAPES)
 
 
 class TestTweetyNet:
-    def test_model_is_decorated(self):
-        assert issubclass(vak.models.TweetyNet,
-                          vak.models.FrameClassificationModel)
-        assert issubclass(vak.models.TweetyNet,
-                          vak.models.base.Model)
-        assert issubclass(vak.models.TweetyNet,
-                          lightning.pytorch.LightningModule)
 
     @pytest.mark.parametrize(
         'labelmap, input_shape',
@@ -48,8 +40,8 @@ class TestTweetyNet:
         num_input_channels = input_shape[-3]
         num_freqbins = input_shape[-2]
         network = vak.models.TweetyNet.definition.network(len(labelmap), num_input_channels, num_freqbins)
-        model = vak.models.TweetyNet(labelmap=labelmap, network=network)
-        assert isinstance(model, vak.models.TweetyNet)
+        model = vak.models.TweetyNet.from_instances(network=network, labelmap=labelmap)
+        assert isinstance(model, vak.models.FrameClassificationModel)
         for attr in ('network', 'loss', 'optimizer'):
             assert hasattr(model, attr)
             assert isinstance(getattr(model, attr),

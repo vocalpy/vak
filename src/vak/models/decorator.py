@@ -1,22 +1,25 @@
-"""Decorator that makes a model class,
+"""Decorator that makes a :class:`vak.models.ModelFactory`,
 given a definition of the model,
-and another class that represents a
+and a :class:`lightning.LightningModule` that represents a
 family of models that the new model belongs to.
 
-The function returns a newly-created subclass
-of the class representing the family of models.
-The subclass can then be instantiated
-and have all model methods.
+The function returns a new instance of :class:`vak.models.ModelFactory`,
+that can create new instances of the model with its
+:meth:`~:class:`vak.models.ModelFactory.from_config` and
+:meth:`~:class:`vak.models.ModelFactory.from_instances` methods.
 """
 
 from __future__ import annotations
 
-from typing import Type
+from typing import Type, TYPE_CHECKING
 
-from .base import Model
+import lightning
+
 from .definition import validate as validate_definition
 from .registry import register_model
 
+if TYPE_CHECKING:
+    from .factory import ModelFactory
 
 class ModelDefinitionValidationError(Exception):
     """Exception raised when validating a model
@@ -28,16 +31,16 @@ class ModelDefinitionValidationError(Exception):
     pass
 
 
-def model(family: Type[Model]):
-    """Decorator that makes a model class,
+def model(family: lightning.pytorch.LightningModule):
+    """Decorator that makes a :class:`vak.models.ModelFactory`,
     given a definition of the model,
-    and another class that represents a
+    and a :class:`lightning.LightningModule` that represents a
     family of models that the new model belongs to.
 
-    Returns a newly-created subclass
-    of the class representing the family of models.
-    The subclass can then be instantiated
-    and have all model methods.
+    The function returns a new instance of :class:`vak.models.ModelFactory`,
+    that can create new instances of the model with its
+    :meth:`~:class:`vak.models.ModelFactory.from_config` and
+    :meth:`~:class:`vak.models.ModelFactory.from_instances` methods.
 
     Parameters
     ----------
@@ -46,50 +49,40 @@ def model(family: Type[Model]):
         A class with all the class variables required
         by :func:`vak.models.definition.validate`.
         See docstring of that function for specification.
-    family : subclass of vak.models.Model
+        See also :class:`vak.models.definition.ModelDefinition`,
+        but note that it is not necessary to subclass
+        :class:`~vak.models.definition.ModelDefinition` to
+        define a model.
+    family : lightning.LightningModule
         The class representing the family of models
         that the new model will belong to.
         E.g., :class:`vak.models.FrameClassificationModel`.
+        Should be a subclass of :class:`lightning.LightningModule`
+        that was registered with the
+        :func:`vak.models.registry.model_family` decorator.
 
     Returns
     -------
-    model : type
-        A sub-class of ``model_family``,
-        with attribute ``definition``,
+    model_factory : vak.models.ModelFactory
+        An instance of :class:`~vak.models.ModelFactory`,
+        with attribute ``definition`` and ``family``,
         that will be used when making
-        new instances of the model.
+        new instances of the model by calling the
+        :meth:`~vak.models.ModelFactory.from_config` method
+        or the :meth:`~:class:`vak.models.ModelFactory.from_instances` method.
     """
 
-    def _model(definition: Type):
-        if not issubclass(family, Model):
-            raise TypeError(
-                "The ``family`` argument to the ``vak.models.model`` decorator"
-                "should be a subclass of ``vak.models.base.Model``,"
-                f"but the type was: {type(family)}, "
-                "which was not recognized as a subclass "
-                "of ``vak.models.base.Model``."
-            )
+    def _model(definition: Type) -> ModelFactory:
+        from .factory import ModelFactory  # avoid circular import
 
-        try:
-            validate_definition(definition)
-        except ValueError as err:
-            raise ModelDefinitionValidationError(
-                f"Validation failed for the following model definition:\n{definition}"
-            ) from err
-        except TypeError as err:
-            raise ModelDefinitionValidationError(
-                f"Validation failed for the following model definition:\n{definition}"
-            ) from err
-
-        attributes = dict(family.__dict__)
-        attributes.update({"definition": definition})
-        subclass_name = definition.__name__
-        subclass = type(subclass_name, (family,), attributes)
-        subclass.__module__ = definition.__module__
-
-        # finally, add model to registry
-        register_model(subclass)
-
-        return subclass
+        model_factory = ModelFactory(
+            definition,
+            family
+        )
+        model_factory.__name__ = definition.__name__
+        model_factory.__doc__ = definition.__doc__
+        model_factory.__module__ = definition.__module__
+        register_model(model_factory)
+        return model_factory
 
     return _model

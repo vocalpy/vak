@@ -1,5 +1,5 @@
-from . import base, decorator, definition, registry
-from .base import Model
+from . import decorator, definition, factory, registry
+from .factory import ModelFactory
 from .convencoder_umap import ConvEncoderUMAP
 from .decorator import model
 from .ed_tcn import ED_TCN
@@ -10,14 +10,14 @@ from .registry import model_family
 from .tweetynet import TweetyNet
 
 __all__ = [
-    "base",
+    "factory",
     "ConvEncoderUMAP",
     "decorator",
     "definition",
     "ED_TCN",
     "FrameClassificationModel",
     "get",
-    "Model",
+    "ModelFactory",
     "model",
     "model_family",
     "ParametricUMAPModel",
