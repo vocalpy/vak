@@ -35,11 +35,13 @@ TweetyNet.__name__ = 'TweetyNet'
 )
 def test_model(definition, family, expected_name):
     """Test that :func:`vak.models.decorator.model` decorator
-    returns a subclass of the specified model family,
+    returns a new instance of ModelFactory,
     and has the expected name"""
     model_class = vak.models.decorator.model(family)(definition)
-    assert issubclass(model_class, family)
+
+    assert isinstance(model_class, vak.models.factory.ModelFactory)
     assert model_class.__name__ == expected_name
+
     # need to delete model from registry so other tests don't fail
     del vak.models.registry.MODEL_REGISTRY[model_class.__name__]
 
@@ -61,4 +63,4 @@ def test_model(definition, family, expected_name):
 )
 def test_model_raises(definition):
     with pytest.raises(vak.models.decorator.ModelDefinitionValidationError):
-        vak.models.decorator.model(vak.models.base.Model)(definition)
+        vak.models.decorator.model(MockModelFamily)(definition)
