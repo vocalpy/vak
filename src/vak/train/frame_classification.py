@@ -15,7 +15,7 @@ import torch.utils.data
 from .. import datapipes, models, transforms
 from ..common import validators
 from ..common.trainer import get_default_trainer
-from ..datapipes.frame_classification import FramesDataset, WindowDataset
+from ..datapipes.frame_classification import FramesDataset, TrainDatapipe
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +226,7 @@ def train_frame_classification_model(
         model_name, "train", transform_kwargs=transform_kwargs
     )
 
-    train_dataset = WindowDataset.from_dataset_path(
+    train_dataset = TrainDatapipe.from_dataset_path(
         dataset_path=dataset_path,
         split="train",
         subset=subset,

@@ -59,7 +59,7 @@ def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
     return np.arange(stop=n_frames - (window_size - 1), step=stride)
 
 
-class WindowDataset:
+class TrainDatapipe:
     """Dataset used for training neural network models
     on the frame classification task,
     where the source data consists of audio signals

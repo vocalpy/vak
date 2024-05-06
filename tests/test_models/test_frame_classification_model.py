@@ -39,7 +39,7 @@ class TestFrameClassificationModel:
             "train",
             transform_kwargs={},
         )
-        train_dataset = vak.datapipes.frame_classification.WindowDataset.from_dataset_path(
+        train_dataset = vak.datapipes.frame_classification.TrainDatapipe.from_dataset_path(
             dataset_path=train_cfg.train.dataset.path,
             split="train",
             window_size=train_cfg.train.dataset.params['window_size'],

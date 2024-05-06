@@ -27,10 +27,10 @@ class TestWindowDataset:
             model_name, config_type, transform_kwargs
         )
 
-        dataset = vak.datapipes.frame_classification.WindowDataset.from_dataset_path(
+        dataset = vak.datapipes.frame_classification.TrainDatapipe.from_dataset_path(
             dataset_path=cfg_command.dataset.path,
             split=split,
             window_size=cfg_command.dataset.params['window_size'],
             item_transform=transform,
         )
-        assert isinstance(dataset, vak.datapipes.frame_classification.WindowDataset)
+        assert isinstance(dataset, vak.datapipes.frame_classification.TrainDatapipe)
