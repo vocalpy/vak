@@ -394,3 +394,60 @@ class TestModelFactory:
                 # must be a function
                 assert callable(model_attr)
                 assert model_attr is definition_attr
+
+    @pytest.mark.parametrize(
+        'input_shape, definition',
+        [
+            ((1, 128, 128), ConvEncoderUMAPDefinition),
+        ]
+    )
+    def test_from_config_with_parametric_umap(
+            self,
+            input_shape,
+            definition,
+            specific_config_toml_path,
+    ):
+        model_name = definition.__name__.replace('Definition', '')
+        toml_path = specific_config_toml_path('train', model_name, audio_format='cbin', annot_format='notmat')
+        cfg = vak.config.Config.from_toml_path(toml_path)
+
+        model_factory = vak.models.ModelFactory(
+            definition,
+            vak.models.ParametricUMAPModel,
+        )
+
+        config = cfg.train.model.asdict()
+        config["network"].update(
+            encoder=dict(input_shape=input_shape)
+        )
+
+        model = model_factory.from_config(config=config)
+        assert isinstance(model, vak.models.ParametricUMAPModel)
+
+        if 'network' in config:
+            if inspect.isclass(definition.network):
+                for network_kwarg, network_kwargval in config['network'].items():
+                    assert hasattr(model.network, network_kwarg)
+                    assert getattr(model.network, network_kwarg) == network_kwargval
+            elif isinstance(definition.network, dict):
+                for net_name, net_kwargs in config['network'].items():
+                    for network_kwarg, network_kwargval in net_kwargs.items():
+                        assert hasattr(model.network[net_name], network_kwarg)
+                        assert getattr(model.network[net_name], network_kwarg) == network_kwargval
+
+        if 'loss' in config:
+            for loss_kwarg, loss_kwargval in config['loss'].items():
+                assert hasattr(model.loss, loss_kwarg)
+                assert getattr(model.loss, loss_kwarg) == loss_kwargval
+
+        if 'optimizer' in config:
+            for optimizer_kwarg, optimizer_kwargval in config['optimizer'].items():
+                assert optimizer_kwarg in model.optimizer.param_groups[0]
+                assert model.optimizer.param_groups[0][optimizer_kwarg] == optimizer_kwargval
+
+        if 'metrics' in config:
+            for metric_name, metric_kwargs in config['metrics'].items():
+                assert metric_name in model.metrics
+                for metric_kwarg, metric_kwargval in metric_kwargs.items():
+                    assert hasattr(model.metrics[metric_name], metric_kwarg)
+                    assert getattr(model.metrics[metric_name], metric_kwarg) == metric_kwargval
