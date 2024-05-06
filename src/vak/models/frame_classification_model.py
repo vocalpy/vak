@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Callable, Mapping
 
-import pytorch_lightning as lightning
+import lightning
 import torch
 
 from .. import transforms
@@ -122,9 +122,7 @@ class FrameClassificationModel(lightning.LightningModule):
         post_tfm : callable
             Post-processing transform applied to predictions.
         """
-        super().__init__(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics
-        )
+        super().__init__()
 
         self.labelmap = labelmap
         # replace any multiple character labels in mapping
