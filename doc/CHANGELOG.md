@@ -45,6 +45,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add initial parametric UMAP implementation
   [#688](https://github.com/vocalpy/vak/pull/688).
   Fixes [#631](https://github.com/vocalpy/vak/issues/631).
+- Add `trainer` table to configuration file that makes it possible to
+  directly specifies arguments to `lightning.Trainer`: the `accelerator`
+  and the `devices`
+  [#752](https://github.com/vocalpy/vak/pull/752).
+  Fixes [#691](https://github.com/vocalpy/vak/issues/691),
+  [#687](https://github.com/vocalpy/vak/issues/687),
+  [#742](https://github.com/vocalpy/vak/issues/742), and
+  [#745](https://github.com/vocalpy/vak/issues/745).
 
 ### Changed
 - Rename config file option `csv_path` to `dataset_path`,
