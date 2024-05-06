@@ -27,6 +27,8 @@ import pandas as pd
 
 from . import constants, helper
 from .metadata import Metadata
+from ...transforms import FramesStandardizer
+from ...transforms.defaults.frame_classification import TrainItemTransform
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
@@ -144,6 +146,11 @@ class TrainDatapipe:
     window_size : int
         Size of windows to return;
         number of frames.
+    frames_standardizer : vak.transforms.FramesStandardizer, optional
+        Transform applied to frames, the input to the neural network model.
+        Optional, default is None.
+        If supplied, will be used with the transform applied to inputs and targets,
+        :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
     frame_dur: float
         Duration of a frame, i.e., a single sample in audio
         or a single timebin in a spectrogram.
@@ -156,12 +163,11 @@ class TrainDatapipe:
     window_inds : numpy.ndarray, optional
         A vector of valid window indices for the dataset.
         If specified, this takes precedence over ``stride``.
-    transform : callable
-        The transform applied to the frames,
-         the input to the neural network :math:`x`.
-    target_transform : callable
-        The transform applied to the target for the output
-        of the neural network :math:`y`.
+    frames_standardizer : vak.transforms.FramesStandardizer, optional
+        Transform applied to frames, the input to the neural network model.
+        Optional, default is None.
+        If supplied, will be used with the transform applied to inputs and targets,
+        :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
     """
 
     def __init__(
@@ -174,10 +180,10 @@ class TrainDatapipe:
         inds_in_sample: npt.NDArray,
         window_size: int,
         frame_dur: float,
-        item_transform: Callable,
         stride: int = 1,
         subset: str | None = None,
         window_inds: npt.NDArray | None = None,
+        frames_standardizer: FramesStandardizer | None = None,
     ):
         """Initialize a new instance of a TrainDatapipe.
 
@@ -227,11 +233,11 @@ class TrainDatapipe:
         window_inds : numpy.ndarray, optional
             A vector of valid window indices for the dataset.
             If specified, this takes precedence over ``stride``.
-        transform : callable
-            The transform applied to the input to the neural network :math:`x`.
-        target_transform : callable
-            The transform applied to the target for the output
-            of the neural network :math:`y`.
+        frames_standardizer : vak.transforms.FramesStandardizer, optional
+            Transform applied to frames, the input to the neural network model.
+            Optional, default is None.
+            If supplied, will be used with the transform applied to inputs and targets,
+            :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
         """
         from ... import (
             prep,
@@ -269,7 +275,9 @@ class TrainDatapipe:
                 sample_ids.shape[-1], window_size, stride
             )
         self.window_inds = window_inds
-        self.item_transform = item_transform
+        self.item_transform = TrainItemTransform(
+            spect_standardizer=frames_standardizer
+        )
 
     @property
     def duration(self):
