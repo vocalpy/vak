@@ -20,7 +20,7 @@ from .registry import model_family
 
 
 @model_family
-class ParametricUMAPModel(lightning.pytorch.LightningModule):
+class ParametricUMAPModel(lightning.LightningModule):
     """Parametric UMAP model, as described in [1]_.
 
     Notes
@@ -47,9 +47,7 @@ class ParametricUMAPModel(lightning.pytorch.LightningModule):
         optimizer: torch.optim.Optimizer | None = None,
         metrics: dict[str:Type] | None = None,
     ):
-        super().__init__(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics
-        )
+        super().__init__()
         self.encoder = network["encoder"]
         self.decoder = network.get("decoder", None)
 
