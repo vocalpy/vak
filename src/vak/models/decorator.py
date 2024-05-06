@@ -69,9 +69,9 @@ def model(family: lightning.pytorch.LightningModule):
     """
 
     def _model(definition: Type):
-        from .base import Model  # avoid circular import
+        from .factory import ModelFactory  # avoid circular import
 
-        model = Model(
+        model = ModelFactory(
             definition,
             family
         )

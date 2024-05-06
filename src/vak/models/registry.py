@@ -12,7 +12,7 @@ from typing import Any, Type, TYPE_CHECKING
 import lightning
 
 if TYPE_CHECKING:
-    from .base import Model
+    from .factory import ModelFactory
 
 MODEL_FAMILY_REGISTRY = {}
 
@@ -43,7 +43,7 @@ def model_family(family_class: Type) -> None:
 MODEL_REGISTRY = {}
 
 
-def register_model(model: Model) -> Model:
+def register_model(model: ModelFactory) -> ModelFactory:
     """Decorator that registers a model in the model registry.
 
     This function is called by :func:`vak.models.decorator.model`,

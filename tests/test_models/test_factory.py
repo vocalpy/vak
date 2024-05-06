@@ -81,12 +81,12 @@ class TestModel:
     def test_init_no_definition_raises(self):
         """Test that initializing a Model instance without a definition or family raises a ValueError."""
         with pytest.raises(TypeError):
-            vak.models.base.Model()
+            vak.models.factory.ModelFactory()
 
     def test_init_invalid_definition_raises(self):
         """Test that initializing a Model instance with an invalid definition raises a ValueError."""
         with pytest.raises(vak.models.decorator.ModelDefinitionValidationError):
-            vak.models.base.Model(
+            vak.models.factory.ModelFactory(
                 definition=InvalidMetricsDictKeyModelDefinition,
                 family=MockModelFamily,
             )
@@ -96,7 +96,7 @@ class TestModel:
         TEST_INIT_ARGVALS,
     )
     def test_validate_instances_or_get_default(self, definition, kwargs):
-        model = vak.models.base.Model(
+        model = vak.models.factory.ModelFactory(
             definition,
             MockModelFamily,
         )
@@ -151,7 +151,7 @@ class TestModel:
         so here we test that this is happening inside ``validate_instances_or_get_default``.
         Next method tests ``validate_init`` directly.
         """
-        model = vak.models.base.Model(
+        model = vak.models.factory.ModelFactory(
             definition,
             MockModelFamily,
         )
@@ -165,7 +165,7 @@ class TestModel:
     def test_validate_init_raises(self, definition, kwargs, expected_exception):
         """Test that ``validate_init`` raises errors as expected"""
         # monkeypatch a definition so we can test __init__
-        model = vak.models.base.Model(
+        model = vak.models.factory.ModelFactory(
             definition=definition,
             family=MockModelFamily
         )
@@ -199,7 +199,7 @@ class TestModel:
                          definition,
                          config,
                          ):
-        model = vak.models.base.Model(
+        model = vak.models.factory.ModelFactory(
             definition=definition,
             family=MockModelFamily
         )

@@ -12,7 +12,7 @@ from .definition import validate as validate_definition
 from .decorator import ModelDefinitionValidationError
 
 
-class Model:
+class ModelFactory:
     """Class that represent a model builit into ``vak``.
 
     Attributes
