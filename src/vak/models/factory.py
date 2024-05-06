@@ -371,19 +371,19 @@ class ModelFactory:
         return network, loss, optimizer, metrics
 
     def from_config(self, config: dict, **kwargs):
-        """Return a a new instance of a model, given a config ``dict``
+        """Return a a new instance of a model, given a config :class:`dict`.
 
         Parameters
         ----------
         config : dict
-            Returned by calling ``vak.config.models.map_from_path``
-            or ``vak.config.models.map_from_config_dict``.
+            The dict obtained by by calling :meth:`vak.config.ModelConfig.asdict`.
 
         Returns
         -------
-        cls : vak.models.base.Model
-            An instance of the model with its attributes
-            initialized using parameters from ``config``.
+        model : lightning.LightningModule
+            An instance of the model :attr:`~ModelFactory.family`
+            with attributes specified by :attr:`~ModelFactory.definition`,
+            that are initialized using parameters from ``config``.
         """
         network, loss, optimizer, metrics = self.attributes_from_config(config)
         network, loss, optimizer, metrics = self.validate_instances_or_get_default(
