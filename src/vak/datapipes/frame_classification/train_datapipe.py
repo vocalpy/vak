@@ -359,10 +359,10 @@ class TrainDatapipe:
         cls,
         dataset_path: str | pathlib.Path,
         window_size: int,
-        item_transform: Callable,
         stride: int = 1,
         split: str = "train",
         subset: str | None = None,
+        frames_standardizer: FramesStandardizer | None = None,
     ):
         """Make a :class:`TrainDatapipe` instance,
         given the path to a frame classification dataset.
@@ -391,11 +391,11 @@ class TrainDatapipe:
             If specified, this takes precedence over split.
             Subsets are typically taken from the training data
             for use when generating a learning curve.
-        transform : callable
-            The transform applied to the input to the neural network :math:`x`.
-        target_transform : callable
-            The transform applied to the target for the output
-            of the neural network :math:`y`.
+        frames_standardizer : vak.transforms.FramesStandardizer, optional
+            Transform applied to frames, the input to the neural network model.
+            Optional, default is None.
+            If supplied, will be used with the transform applied to inputs and targets,
+            :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
 
         Returns
         -------
