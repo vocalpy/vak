@@ -59,7 +59,7 @@ def is_spect_format(instance, attribute, value):
 
 
 CONFIG_DIR = pathlib.Path(__file__).parent
-VALID_TOML_PATH = CONFIG_DIR.joinpath("valid-version-1.1.toml")
+VALID_TOML_PATH = CONFIG_DIR.joinpath("valid-version-1.2.toml")
 with VALID_TOML_PATH.open("r") as fp:
     VALID_DICT = tomlkit.load(fp)["vak"]
 VALID_TOP_LEVEL_TABLES = list(VALID_DICT.keys())
