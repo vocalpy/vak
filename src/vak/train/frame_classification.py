@@ -125,6 +125,13 @@ def train_frame_classification_model(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
+    model_name = model_config["name"]  # we use this var again below
+    if "window_size" not in dataset_config["params"]:
+        raise KeyError(
+            f"The `dataset_config` for frame classification model '{model_name}' must include a 'params' sub-table "
+            f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
+        )
+
     dataset_path = pathlib.Path(dataset_config["path"])
     if not dataset_path.exists() or not dataset_path.is_dir():
         raise NotADirectoryError(
@@ -207,31 +214,12 @@ def train_frame_classification_model(
         )
         spect_standardizer = None
 
-    model_name = model_config["name"]
-    # TODO: move this into datapipe once each datapipe uses a fixed set of transforms
-    # that will require adding `spect_standardizer`` as a parameter to the datapipe,
-    # maybe rename to `frames_standardizer`?
-    try:
-        window_size = dataset_config["params"]["window_size"]
-    except KeyError as e:
-        raise KeyError(
-            f"The `dataset_config` for frame classification model '{model_name}' must include a 'params' sub-table "
-            f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
-        ) from e
-    transform_kwargs = {
-        "spect_standardizer": spect_standardizer,
-        "window_size": window_size,
-    }
-    train_transform = transforms.defaults.get_default_transform(
-        model_name, "train", transform_kwargs=transform_kwargs
-    )
-
     train_dataset = TrainDatapipe.from_dataset_path(
         dataset_path=dataset_path,
         split="train",
         subset=subset,
-        item_transform=train_transform,
-        **dataset_config["params"],
+        window_size=dataset_config["params"]["window_size"],
+        spect_standardizer=spect_standardizer,
     )
     logger.info(
         f"Duration of TrainDatapipe used for training, in seconds: {train_dataset.duration}",
@@ -254,15 +242,11 @@ def train_frame_classification_model(
             f"Total duration of validation split from dataset (in s): {val_dur}",
         )
 
-        # NOTE: we use same `transform_kwargs` here; will need to change to a `dataset_param`
-        # when we factor transform *into* fixed DataPipes as above
-        val_transform = transforms.defaults.get_default_transform(
-            model_name, "eval", transform_kwargs
-        )
         val_dataset = InferDatapipe.from_dataset_path(
             dataset_path=dataset_path,
             split="val",
-            item_transform=val_transform,
+            **dataset_config["params"]
+            frames_standardizer=spect_standardizer,
         )
         logger.info(
             f"Duration of InferDatapipe used for evaluation, in seconds: {val_dataset.duration}",
