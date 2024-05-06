@@ -11,7 +11,7 @@ class TestConvEncoderUMAP:
             (1, 64, 64),
         ]
     )
-    def test_init(self, input_shape):
+    def test_from_instances(self, input_shape):
         network = {
             'encoder': vak.models.ConvEncoderUMAP.definition.network['encoder'](input_shape=input_shape)
         }
