@@ -65,6 +65,21 @@ TEST_WITH_FRAME_CLASSIFICATION_ARGVALS = itertools.product(LABELMAPS, INPUT_SHAP
 MOCK_INPUT_SHAPE = torch.Size([1, 128, 44])
 
 
+class ConvEncoderUMAPDefinition:
+    network = {"encoder": vak.nets.ConvEncoder}
+    loss = vak.nn.UmapLoss
+    optimizer = torch.optim.AdamW
+    metrics = {
+        "acc": vak.metrics.Accuracy,
+        "levenshtein": vak.metrics.Levenshtein,
+        "character_error_rate": vak.metrics.CharacterErrorRate,
+        "loss": torch.nn.CrossEntropyLoss,
+    }
+    default_config = {
+        "optimizer": {"lr": 1e-3},
+    }
+
+
 class TestModelFactory:
     def test_init_no_definition_raises(self):
         """Test that initializing a Model instance without a definition or family raises a ValueError."""
@@ -336,3 +351,46 @@ class TestModelFactory:
                 for metric_kwarg, metric_kwargval in metric_kwargs.items():
                     if hasattr(model.metrics[metric_name], metric_kwarg):
                         assert getattr(model.metrics[metric_name], metric_kwarg) == metric_kwargval
+
+    @pytest.mark.parametrize(
+        'input_shape, definition',
+        [
+            ((1, 128, 128), ConvEncoderUMAPDefinition),
+        ]
+    )
+    def test_from_instances_parametric_umap(
+            self,
+            input_shape,
+            definition,
+    ):
+        # monkeypatch a definition so we can test __init__
+        network = {'encoder': vak.nets.ConvEncoder(input_shape)}
+
+        model_factory = vak.models.ModelFactory(
+            definition,
+            vak.models.ParametricUMAPModel,
+        )
+        model = model_factory.from_instances(network=network)
+
+        # now test that attributes are what we expect
+        assert isinstance(model, vak.models.ParametricUMAPModel)
+        for attr in ('network', 'loss', 'optimizer', 'metrics'):
+            assert hasattr(model, attr)
+            model_attr = getattr(model, attr)
+            definition_attr = getattr(definition, attr)
+            if inspect.isclass(definition_attr):
+                assert isinstance(model_attr, definition_attr)
+            elif isinstance(definition_attr, dict):
+                assert isinstance(model_attr, dict)
+                for definition_key, definition_val in definition_attr.items():
+                    assert definition_key in model_attr
+                    model_val = model_attr[definition_key]
+                    if inspect.isclass(definition_val):
+                        assert isinstance(model_val, definition_val)
+                    else:
+                        assert callable(definition_val)
+                        assert model_val is definition_val
+            else:
+                # must be a function
+                assert callable(model_attr)
+                assert model_attr is definition_attr
