@@ -1,5 +1,10 @@
+"""Functional forms of input transforms."""
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 import torch
+
 
 __all__ = [
     "pad_to_window",
@@ -38,9 +43,11 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     return tfm
 
 
-def pad_to_window(arr, window_size, padval=0.0, return_padding_mask=True):
-    """pad a 1d or 2d array so that it can be reshaped
-    into consecutive windows of specified size
+def pad_to_window(
+        arr: npt.NDArray, window_size: int, padval: float = 0.0, return_padding_mask: bool = True
+    ) -> npt.NDArray:
+    """Pad a 1d or 2d array so that it can be reshaped
+    into consecutive windows of specified size.
 
     Parameters
     ----------
@@ -98,7 +105,7 @@ def pad_to_window(arr, window_size, padval=0.0, return_padding_mask=True):
         return padded
 
 
-def view_as_window_batch(arr, window_width):
+def view_as_window_batch(arr: npt.NDArray, window_size: int) -> npt.NDArray:
     """return view of a 1d or 2d array as a batch of non-overlapping windows
 
     Parameters
@@ -108,7 +115,7 @@ def view_as_window_batch(arr, window_width):
         or a 2-d array representing a spectrogram.
         If the array has 2-d dimensions, the returned array will
         have dimensions (batch, height of array, window width)
-    window_width : int
+    window_size : int
         width of window in number of elements.
 
     Returns
@@ -116,7 +123,7 @@ def view_as_window_batch(arr, window_width):
     batch_windows : numpy.ndarray
         with shape (batch size, window_size) if array is 1d,
         or with shape (batch size, height, window_size) if array is 2d.
-        Batch size will be arr.shape[-1] // window_width.
+        Batch size will be arr.shape[-1] // window_size.
         Window width must divide arr.shape[-1] evenly.
         To pad the array so it can be divided into windows of the specified
         width, use the `pad_to_window` transform
@@ -126,16 +133,16 @@ def view_as_window_batch(arr, window_width):
     adapted from skimage.util.view_as_blocks
     https://github.com/scikit-image/scikit-image/blob/f1b7cf60fb80822849129cb76269b75b8ef18db1/skimage/util/shape.py#L9
     """
-    if not isinstance(window_width, int) or window_width < 1:
+    if not isinstance(window_size, int) or window_size < 1:
         raise ValueError(
-            f"`window_width` must be a positive integer, but was: {window_width}"
+            f"`window_size` must be a positive integer, but was: {window_size}"
         )
 
     if arr.ndim == 1:
-        window_shape = (window_width,)
+        window_shape = (window_size,)
     elif arr.ndim == 2:
         height, _ = arr.shape
-        window_shape = (height, window_width)
+        window_shape = (height, window_size)
     else:
         raise ValueError(
             f"input array must be 1d or 2d but number of dimensions was: {arr.ndim}"
@@ -145,7 +152,7 @@ def view_as_window_batch(arr, window_width):
     arr_shape = np.array(arr.shape)
     if (arr_shape % window_shape).sum() != 0:
         raise ValueError(
-            "'window_width' does not divide evenly into with 'arr' shape. "
+            "'window_size' does not divide evenly into with 'arr' shape. "
             "Use 'pad_to_window' transform to pad array so it can be windowed."
         )
 
@@ -154,10 +161,12 @@ def view_as_window_batch(arr, window_width):
     batch_windows = np.lib.stride_tricks.as_strided(
         arr, shape=new_shape, strides=new_strides
     )
-    # TODO: figure out if there's a better way to do this where we don't need to squeeze
-    # The current version always add an initial dim of size 1
-    batch_windows = np.squeeze(batch_windows, axis=0)
-    # By squeezing just that first axis, we always end up with (batch, freq. bins, time bins) for a spectrogram
+
+    if arr.ndim == 2: # avoids bug in vak version of transform, by not doing this to 1-D arrays
+        # TODO: figure out if there's a better way to do this where we don't need to squeeze
+        # The current version always add an initial dim of size 1
+        batch_windows = np.squeeze(batch_windows, axis=0)
+        # By squeezing just that first axis, we always end up with (batch, freq. bins, time bins) for a spectrogram
     return batch_windows
 
 
