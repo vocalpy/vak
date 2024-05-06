@@ -1,6 +1,6 @@
 from . import constants, helper
-from .frames_dataset import FramesDataset
+from .infer_datapipe import InferDatapipe
 from .metadata import Metadata
 from .train_datapipe import TrainDatapipe
 
-__all__ = ["constants", "helper", "Metadata", "FramesDataset", "TrainDatapipe"]
+__all__ = ["constants", "helper", "Metadata", "InferDatapipe", "TrainDatapipe"]

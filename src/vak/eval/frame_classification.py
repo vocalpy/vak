@@ -15,7 +15,7 @@ import torch.utils.data
 
 from .. import datapipes, models, transforms
 from ..common import validators
-from ..datapipes.frame_classification import FramesDataset
+from ..datapipes.frame_classification import InferDatapipe
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +149,7 @@ def eval_frame_classification_model(
     item_transform = transforms.defaults.get_default_transform(
         model_name, "eval", transform_params
     )
-    val_dataset = FramesDataset.from_dataset_path(
+    val_dataset = InferDatapipe.from_dataset_path(
         dataset_path=dataset_path,
         split=split,
         item_transform=item_transform,

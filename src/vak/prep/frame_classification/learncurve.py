@@ -57,7 +57,7 @@ def make_index_vectors_for_each_subset(
 
     The indexing vectors are used by
     :class:`vak.datasets.frame_classification.TrainDatapipe`
-    and :class:`vak.datasets.frame_classification.FramesDataset`.
+    and :class:`vak.datasets.frame_classification.InferDatapipe`.
     These vectors make it possible to work with files,
     to avoid loading the entire dataset into memory,
     and to avoid working with memory-mapped arrays.

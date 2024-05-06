@@ -1,4 +1,4 @@
-"""A dataset class used for neural network models with the
+"""A datapipe class used for neural network models with the
 frame classification task, where the source data consists of audio signals
 or spectrograms of varying lengths."""
 
@@ -15,8 +15,8 @@ from . import constants, helper
 from .metadata import Metadata
 
 
-class FramesDataset:
-    """A dataset class used for
+class InferDatapipe:
+    """A datapipe class used for
     neural network models
     with the frame classification task,
     where the source data consists of audio signals
@@ -67,7 +67,7 @@ class FramesDataset:
         or a single timebin in a spectrogram.
     item_transform : callable, optional
         Transform applied to each item :math:`(x, y)`
-        returned by :meth:`FramesDataset.__getitem__`.
+        returned by :meth:`InferDatapipe.__getitem__`.
     """
 
     def __init__(
@@ -79,10 +79,11 @@ class FramesDataset:
         sample_ids: npt.NDArray,
         inds_in_sample: npt.NDArray,
         frame_dur: float,
-        item_transform: Callable,
+        window_size: int,
+        frames_standardizer: FramesStandardizer | None = None,
         subset: str | None = None,
     ):
-        """Initialize a new instance of a FramesDataset.
+        """Initialize a new instance of a InferDatapipe.
 
         Parameters
         ----------
@@ -117,7 +118,7 @@ class FramesDataset:
             for use when generating a learning curve.
         item_transform : callable
             The transform applied to each item :math:`(x, y)`
-            that is returned by :meth:`FramesDataset.__getitem__`.
+            that is returned by :meth:`InferDatapipe.__getitem__`.
         """
         from ... import (
             prep,
@@ -200,7 +201,7 @@ class FramesDataset:
         split: str = "val",
         subset: str | None = None,
     ):
-        """Make a :class:`FramesDataset` instance,
+        """Make a :class:`InferDatapipe` instance,
         given the path to a frame classification dataset.
 
         Parameters
@@ -212,7 +213,7 @@ class FramesDataset:
             :func:`vak.prep.prep_frame_classification_dataset`.
         item_transform : callable, optional
             Transform applied to each item :math:`(x, y)`
-            returned by :meth:`FramesDataset.__getitem__`.
+            returned by :meth:`InferDatapipe.__getitem__`.
         split : str
             The name of a split from the dataset,
             one of {'train', 'val', 'test'}.
@@ -225,7 +226,7 @@ class FramesDataset:
 
         Returns
         -------
-        frames_dataset : FramesDataset
+        infer_datapipe : InferDatapipe
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)

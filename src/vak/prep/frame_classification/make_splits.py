@@ -184,7 +184,7 @@ def make_splits(
     This function also creates two additional npy files for each split.
     These npy files are "indexing" vectors that
     are used by :class:`vak.datasets.frame_classification.TrainDatapipe`
-    and :class:`vak.datasets.frame_classification.FramesDataset`.
+    and :class:`vak.datasets.frame_classification.InferDatapipe`.
     These vectors make it possible to work with files,
     to avoid loading the entire dataset into memory,
     and to avoid working with memory-mapped arrays.

@@ -2,7 +2,7 @@
 frame classification task, where the source data consists of audio signals
 or spectrograms of varying lengths.
 
-Unlike :class:`vak.datasets.frame_classification.FramesDataset`,
+Unlike :class:`vak.datasets.frame_classification.InferDatapipe`,
 this class does not return entire samples
 from the source dataset.
 Instead each paired samples :math:`(x_i, y_i)`
@@ -66,7 +66,7 @@ class TrainDatapipe:
     or spectrograms of varying lengths.
 
     Unlike
-    :class:`vak.datasets.frame_classification.FramesDataset`,
+    :class:`vak.datasets.frame_classification.InferDatapipe`,
     this class does not return entire samples
     from the source dataset.
     Instead each paired samples :math:`(x_i, y_i)`
@@ -86,7 +86,7 @@ class TrainDatapipe:
     created by concatenating samples from the source
     data, e.g., audio files or spectrogram arrays.
     (This is true for
-    :class:`vak.datasets.frame_classification.FramesDataset`
+    :class:`vak.datasets.frame_classification.InferDatapipe`
     as well.)
     The dimensions of :math:`X`  will be (channels, ..., frames),
     i.e., audio will have dimensions (channels, samples)

@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from .. import datapipes, models, transforms
 from ..common import constants, files, validators
-from ..datapipes.frame_classification import FramesDataset
+from ..datapipes.frame_classification import InferDatapipe
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +164,7 @@ def predict_with_frame_classification_model(
     )
 
     # TODO: fix this when we build transforms into datasets; pass in `window_size` here
-    pred_dataset = FramesDataset.from_dataset_path(
+    pred_dataset = InferDatapipe.from_dataset_path(
         dataset_path=dataset_path,
         split="predict",
         item_transform=item_transform,

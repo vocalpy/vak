@@ -29,9 +29,9 @@ class TestWindowDataset:
             model_name, config_type, transform_kwargs
         )
 
-        dataset = vak.datapipes.frame_classification.FramesDataset.from_dataset_path(
+        dataset = vak.datapipes.frame_classification.InferDatapipe.from_dataset_path(
             dataset_path=cfg_command.dataset.path,
             split=split,
             item_transform=item_transform,
         )
-        assert isinstance(dataset, vak.datapipes.frame_classification.FramesDataset)
+        assert isinstance(dataset, vak.datapipes.frame_classification.InferDatapipe)
