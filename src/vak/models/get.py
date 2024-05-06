@@ -6,6 +6,8 @@ from __future__ import annotations
 import inspect
 from typing import Callable
 
+import lightning
+
 from . import registry
 
 
@@ -16,7 +18,7 @@ def get(
     num_classes: int | None = None,
     labelmap: dict | None = None,
     post_tfm: Callable | None = None,
-):
+) -> lightning.LightningModule:
     """Get a model instance, given its name and
     a configuration as a :class:`dict`.
 
@@ -44,9 +46,9 @@ def get(
 
     Returns
     -------
-    model : vak.models.Model
-        Instance of a sub-class of the base Model class,
-        e.g. a TweetyNet instance.
+    model : lightning.LightningModule
+        Instance of :class:`lightning.LightningModule`,
+        one of the model familes.
     """
     # we do this dynamically so we always get all registered models
     try:
