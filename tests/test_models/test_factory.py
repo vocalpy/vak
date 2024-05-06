@@ -363,7 +363,6 @@ class TestModelFactory:
             input_shape,
             definition,
     ):
-        # monkeypatch a definition so we can test __init__
         network = {'encoder': vak.nets.ConvEncoder(input_shape)}
 
         model_factory = vak.models.ModelFactory(
@@ -381,7 +380,7 @@ class TestModelFactory:
             if inspect.isclass(definition_attr):
                 assert isinstance(model_attr, definition_attr)
             elif isinstance(definition_attr, dict):
-                assert isinstance(model_attr, dict)
+                assert isinstance(model_attr, (dict, torch.nn.ModuleDict))
                 for definition_key, definition_val in definition_attr.items():
                     assert definition_key in model_attr
                     model_val = model_attr[definition_key]
@@ -430,7 +429,7 @@ class TestModelFactory:
             elif isinstance(definition.network, dict):
                 for net_name, net_kwargs in config['network'].items():
                     for network_kwarg, network_kwargval in net_kwargs.items():
-                        network = getattr(model, net_name)
+                        network = model.network[net_name]
                         if hasattr(network, network_kwarg):
                             assert getattr(network, network_kwarg) == network_kwargval
 
