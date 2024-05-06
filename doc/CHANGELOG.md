@@ -91,6 +91,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Fixes [#685](https://github.com/vocalpy/vak/issues/685),
   [#345](https://github.com/vocalpy/vak/issues/345), and
   [#748](https://github.com/vocalpy/vak/issues/748).
+- Re-factor model abstraction: replace `vak.models.base.Model` class
+  with `vak.models.factory.ModelFactory`
+  [#753](https://github.com/vocalpy/vak/pull/753).
+  Fixes [#737](https://github.com/vocalpy/vak/issues/737) and
+  [#726](https://github.com/vocalpy/vak/issues/726).
 
 ### Removed
 - Remove entry points since they are not being used
