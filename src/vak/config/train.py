@@ -50,7 +50,7 @@ class TrainConfig:
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     standardize_frames : bool
-        if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
+        if True, use :class:`vak.transforms.FramesStandardizer` to normalize the spectrograms.
         Normalization is done by subtracting off the mean for each frequency bin
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
@@ -72,7 +72,7 @@ class TrainConfig:
         path to directory with checkpoint files saved by Torch, to reload model.
         Default is None, in which case a new model is initialized.
     frames_standardizer_path : str
-        path to a saved SpectScaler object used to normalize spectrograms.
+        path to a saved :class:`vak.transforms.FramesStandardizer` object used to standardize (normalize) frames.
         If spectrograms were normalized and this is not provided, will give
         incorrect results. Default is None.
     """

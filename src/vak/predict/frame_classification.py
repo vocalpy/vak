@@ -62,7 +62,7 @@ def predict_with_frame_classification_model(
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
     frames_standardizer_path : str
-        path to a saved SpectScaler object used to normalize spectrograms.
+        path to a saved :class:`vak.transforms.FramesStandardizer` object used to standardize (normalize) frames.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     annot_csv_filename : str
@@ -132,10 +132,10 @@ def predict_with_frame_classification_model(
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
     if frames_standardizer_path:
-        logger.info(f"loading SpectScaler from path: {frames_standardizer_path}")
+        logger.info(f"loading FramesStandardizer from path: {frames_standardizer_path}")
         spect_standardizer = joblib.load(frames_standardizer_path)
     else:
-        logger.info("Not loading SpectScaler, no path was specified")
+        logger.info("Not loading FramesStandardizer, no path was specified")
         spect_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")

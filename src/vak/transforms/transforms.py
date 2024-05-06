@@ -164,13 +164,13 @@ class FramesStandardizer:
         -------
         z_norm_spect : numpy.ndarray
             array standardized to same scale as set of spectrograms that
-            SpectScaler was fit with
+            :class:`vak.transforms.FramesStandardizer` was fit with
         """
         if any(
             [not hasattr(self, attr) for attr in ["mean_freqs", "std_freqs"]]
         ):
             raise AttributeError(
-                "SpectScaler properties are set to None,"
+                "FramesStandardizer properties are set to None,"
                 "must call fit method first to set the"
                 "value of these properties before calling"
                 "transform"

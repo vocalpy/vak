@@ -51,7 +51,7 @@ class PredictConfig:
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
     frames_standardizer_path : str
-        path to a saved SpectScaler object used to normalize spectrograms.
+        path to a saved :class:`vak.transforms.FramesStandardizer` object used to standardize (normalize) frames.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
     annot_csv_filename : str

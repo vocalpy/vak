@@ -58,7 +58,7 @@ def eval_frame_classification_model(
         Split of dataset on which model should be evaluated.
         One of {'train', 'val', 'test'}. Default is 'test'.
     frames_standardizer_path : str, pathlib.Path
-        Path to a saved SpectScaler object used to normalize spectrograms.
+        Path to a saved :class:`vak.transforms.FramesStandardizer` object used to standardize (normalize) frames.
         If spectrograms were normalized and this is not provided, will give
         incorrect results.
         Default is None.
