@@ -93,8 +93,8 @@ def train_frame_classification_model(
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
     standardize_frames : bool
-        if True, use :class:`vak.transforms.FramesStandardizer` to normalize the spectrograms.
-        Normalization is done by subtracting off the mean for each frequency bin
+        if True, use :class:`vak.transforms.FramesStandardizer` to standardize the frames.
+        Normalization is done by subtracting off the mean for each row
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     val_step : int

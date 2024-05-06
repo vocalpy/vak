@@ -29,9 +29,9 @@ class FramesStandardizer:
     Attributes
     ----------
     mean_freqs : numpy.ndarray
-        mean values for each frequency bin across the fit set of spectrograms
+        mean values for each row across the fit set of spectrograms
     std_freqs : numpy.ndarray
-        standard deviation for each frequency bin across the fit set of spectrograms
+        standard deviation for each row across the fit set of spectrograms
     non_zero_std : numpy.ndarray
         boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
     """
@@ -42,9 +42,9 @@ class FramesStandardizer:
         Parameters
         ----------
         mean_freqs : numpy.ndarray
-            vector of mean values for each frequency bin across the fit set of spectrograms
+            vector of mean values for each row across the fit set of spectrograms
         std_freqs : numpy.ndarray
-            vector of standard deviations for each frequency bin across the fit set of spectrograms
+            vector of standard deviations for each row across the fit set of spectrograms
         non_zero_std : numpy.ndarray
             boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
         """
@@ -140,7 +140,7 @@ class FramesStandardizer:
         Notes
         -----
         Input should be spectrogram.
-        Fit function finds the mean and standard deviation of each frequency bin,
+        Fit function finds the mean and standard deviation of each row,
         which are used by `transform` method to scale other spectrograms.
         """
         # TODO: make this function accept list and/or ndarray with batch dimension

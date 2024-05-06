@@ -23,9 +23,9 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
     spect : numpy.ndarray
         with shape (frequencies, time bins)
     mean_freqs : numpy.ndarray
-        vector of mean values for each frequency bin across the fit set of spectrograms
+        vector of mean values for each row across the fit set of spectrograms
     std_freqs : numpy.ndarray
-        vector of standard deviations for each frequency bin across the fit set of spectrograms
+        vector of standard deviations for each row across the fit set of spectrograms
     non_zero_std : numpy.ndarray
         boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
 
