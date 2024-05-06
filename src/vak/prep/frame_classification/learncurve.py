@@ -56,7 +56,7 @@ def make_index_vectors_for_each_subset(
     in the "train" directory split inside ``dataset_path``.
 
     The indexing vectors are used by
-    :class:`vak.datasets.frame_classification.WindowDataset`
+    :class:`vak.datasets.frame_classification.TrainDatapipe`
     and :class:`vak.datasets.frame_classification.FramesDataset`.
     These vectors make it possible to work with files,
     to avoid loading the entire dataset into memory,

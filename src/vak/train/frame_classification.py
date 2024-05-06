@@ -234,7 +234,7 @@ def train_frame_classification_model(
         **dataset_config["params"],
     )
     logger.info(
-        f"Duration of WindowDataset used for training, in seconds: {train_dataset.duration}",
+        f"Duration of TrainDatapipe used for training, in seconds: {train_dataset.duration}",
     )
     train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,

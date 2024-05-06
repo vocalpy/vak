@@ -87,15 +87,15 @@ def train(
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     source_ids : numpy.ndarray
-        Parameter for WindowDataset. Represents the 'id' of any spectrogram,
+        Parameter for TrainDatapipe. Represents the 'id' of any spectrogram,
         i.e., the index into spect_paths that will let us load it.
         Default is None.
     source_inds : numpy.ndarray
-        Parameter for WindowDataset. Same length as source_ids
+        Parameter for TrainDatapipe. Same length as source_ids
         but values represent indices within each spectrogram.
         Default is None.
     window_inds : numpy.ndarray
-        Parameter for WindowDataset.
+        Parameter for TrainDatapipe.
         Indices of each window in the dataset. The value at x[0]
         represents the start index of the first window; using that
         value, we can index into source_ids to get the path

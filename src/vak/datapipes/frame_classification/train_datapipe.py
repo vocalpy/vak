@@ -30,11 +30,11 @@ from .metadata import Metadata
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
-    """Get indices of windows for a :class:`WindowDataset`,
+    """Get indices of windows for a :class:`TrainDatapipe`,
     given the number of frames in the dataset,
     the window size, and the stride.
 
-    This function is used by :class:`WindowDataset`
+    This function is used by :class:`TrainDatapipe`
     to compute the indices of windows in the dataset.
     The length of the vector of indices it returns
     is the number of windows in the dataset,
@@ -152,7 +152,7 @@ class TrainDatapipe:
         are included in the dataset. The default is 1.
         Used to compute ``window_inds``,
         with the function
-        :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+        :func:`vak.datasets.frame_classification.train_datapipe.get_window_inds`.
     window_inds : numpy.ndarray, optional
         A vector of valid window indices for the dataset.
         If specified, this takes precedence over ``stride``.
@@ -179,7 +179,7 @@ class TrainDatapipe:
         subset: str | None = None,
         window_inds: npt.NDArray | None = None,
     ):
-        """Initialize a new instance of a WindowDataset.
+        """Initialize a new instance of a TrainDatapipe.
 
         Parameters
         ----------
@@ -212,13 +212,13 @@ class TrainDatapipe:
             or a single timebin in a spectrogram.
         item_transform : callable
             The transform applied to each item :math:`(x, y)`
-            that is returned by :meth:`WindowDataset.__getitem__`.
+            that is returned by :meth:`TrainDatapipe.__getitem__`.
         stride : int
             The size of the stride used to determine which windows
             are included in the dataset. The default is 1.
             Used to compute ``window_inds``,
             with the function
-            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+            :func:`vak.datasets.frame_classification.train_datapipe.get_window_inds`.
         subset : str, optional
             Name of subset to use.
             If specified, this takes precedence over split.
@@ -356,7 +356,7 @@ class TrainDatapipe:
         split: str = "train",
         subset: str | None = None,
     ):
-        """Make a :class:`WindowDataset` instance,
+        """Make a :class:`TrainDatapipe` instance,
         given the path to a frame classification dataset.
 
         Parameters
@@ -374,7 +374,7 @@ class TrainDatapipe:
             are included in the dataset. The default is 1.
             Used to compute ``window_inds``,
             with the function
-            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+            :func:`vak.datasets.frame_classification.train_datapipe.get_window_inds`.
         split : str
             The name of a split from the dataset,
             one of {'train', 'val', 'test'}.
@@ -391,7 +391,7 @@ class TrainDatapipe:
 
         Returns
         -------
-        dataset : vak.datasets.frame_classification.WindowDataset
+        dataset : vak.datasets.frame_classification.TrainDatapipe
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
