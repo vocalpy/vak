@@ -128,5 +128,5 @@ def events2df(
         ).set_index("step")
         if drop_wall_time:
             dfs[scalar_tag].drop("wall_time", axis=1, inplace=True)
-    df = pd.concat([v for k, v in dfs.items()], axis=1)
+    df = pd.concat([v for k, v in dfs.items() if k != "epoch"], axis=1)
     return df
