@@ -106,6 +106,37 @@ class ParametricUMAPModel(lightning.LightningModule):
         # note if there's no ``loss_reconstruction``, then ``loss`` == ``loss_umap``
         self.log("val_loss", loss, on_step=True)
 
+    def load_state_dict_from_path(self, ckpt_path):
+        """Loads a model from the path to a saved checkpoint.
+
+        Loads the checkpoint and then calls
+        ``self.load_state_dict`` with the ``state_dict``
+        in that chekcpoint.
+
+        This method allows loading a state dict into an instance.
+        It's necessary because `lightning.pytorch.LightningModule.load`` is a
+        ``classmethod``, so calling that method will trigger
+         ``LightningModule.__init__`` instead of running
+        ``vak.models.Model.__init__``.
+
+        Parameters
+        ----------
+        ckpt_path : str, pathlib.Path
+            Path to a checkpoint saved by a model in ``vak``.
+            This checkpoint has the same key-value pairs as
+            any other checkpoint saved by a
+            ``lightning.pytorch.LightningModule``.
+
+        Returns
+        -------
+        None
+
+        This method modifies the model state by loading the ``state_dict``;
+        it does not return anything.
+        """
+        ckpt = torch.load(ckpt_path)
+        self.load_state_dict(ckpt["state_dict"])
+
 
 class ParametricUMAPDatamodule(lightning.pytorch.LightningDataModule):
     def __init__(
@@ -189,34 +220,3 @@ class ParametricUMAP:
     @torch.no_grad()
     def inverse_transform(self, Z):
         return self.model.decoder(Z).detach().cpu().numpy()
-
-    def load_state_dict_from_path(self, ckpt_path):
-        """Loads a model from the path to a saved checkpoint.
-
-        Loads the checkpoint and then calls
-        ``self.load_state_dict`` with the ``state_dict``
-        in that chekcpoint.
-
-        This method allows loading a state dict into an instance.
-        It's necessary because `lightning.pytorch.LightningModule.load`` is a
-        ``classmethod``, so calling that method will trigger
-         ``LightningModule.__init__`` instead of running
-        ``vak.models.Model.__init__``.
-
-        Parameters
-        ----------
-        ckpt_path : str, pathlib.Path
-            Path to a checkpoint saved by a model in ``vak``.
-            This checkpoint has the same key-value pairs as
-            any other checkpoint saved by a
-            ``lightning.pytorch.LightningModule``.
-
-        Returns
-        -------
-        None
-
-        This method modifies the model state by loading the ``state_dict``;
-        it does not return anything.
-        """
-        ckpt = torch.load(ckpt_path)
-        self.load_state_dict(ckpt["state_dict"])
