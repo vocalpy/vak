@@ -22,7 +22,6 @@ class TestFrameClassificationModel:
     def test_load_state_dict_from_path(self,
                                        model_name,
                                        specific_config_toml_path,
-                                       monkeypatch,
                                        device
                                        ):
         """Smoke test that makes sure ``load_state_dict_from_path`` runs without failure.
