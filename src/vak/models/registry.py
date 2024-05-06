@@ -78,12 +78,10 @@ def register_model(model: Model) -> Model:
 def __getattr__(name: str) -> Any:
     """Module-level __getattr__ function that we use to dynamically determine models."""
     if name == "MODEL_FAMILY_FROM_NAME":
-        model_name_family_name_map = {}
-        for model_name, model_class in MODEL_REGISTRY.items():
-            model_parent_class = inspect.getmro(model_class)[1]
-            family_name = model_parent_class.__name__
-            model_name_family_name_map[model_name] = family_name
-        return model_name_family_name_map
+        return {
+            model_name: model.family.__name__
+            for model_name, model in MODEL_REGISTRY.items()
+        }
     elif name == "MODEL_NAMES":
         return list(MODEL_REGISTRY.keys())
     else:
