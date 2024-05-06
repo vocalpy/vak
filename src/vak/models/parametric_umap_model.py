@@ -42,31 +42,29 @@ class ParametricUMAPModel(lightning.LightningModule):
 
     def __init__(
         self,
-        network: dict | None = None,
-        loss: torch.nn.Module | Callable | None = None,
-        optimizer: torch.optim.Optimizer | None = None,
-        metrics: dict[str:Type] | None = None,
+        network: dict,
+        loss: torch.nn.Module | Callable,
+        optimizer: torch.optim.Optimizer,
+        metrics: dict[str:Type],
     ):
         super().__init__()
-        self.network = network
+        self.network = torch.nn.ModuleDict(
+            network
+        )
         self.loss = loss
         self.optimizer = optimizer
         self.metrics = metrics
-
-        self.encoder = network["encoder"]
-        self.decoder = network.get("decoder", None)
 
     def configure_optimizers(self):
         return self.optimizer
 
     def training_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to, embedding_from = self.encoder(
-            edges_to_exp
-        ), self.encoder(edges_from_exp)
+        embedding_to = self.network['encoder'](edges_to_exp)
+        embedding_from = self.network['encoder'](edges_from_exp)
 
-        if self.decoder is not None:
-            reconstruction = self.decoder(embedding_to)
+        if 'decoder' in self.network:
+            reconstruction = self.network['decoder'](embedding_to)
             before_encoding = edges_to_exp
         else:
             reconstruction = None
@@ -85,12 +83,11 @@ class ParametricUMAPModel(lightning.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to, embedding_from = self.encoder(
-            edges_to_exp
-        ), self.encoder(edges_from_exp)
+        embedding_to = self.network['encoder'](edges_to_exp)
+        embedding_from = self.network['encoder'](edges_from_exp)
 
-        if self.decoder is not None:
-            reconstruction = self.decoder(embedding_to)
+        if 'decoder' in self.network is not None:
+            reconstruction = self.network['decoder'](embedding_to)
             before_encoding = edges_to_exp
         else:
             reconstruction = None
