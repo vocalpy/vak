@@ -12,10 +12,10 @@ import joblib
 import pandas as pd
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import datapipes, models, transforms
 from ..common import validators
 from ..common.trainer import get_default_trainer
-from ..datasets.frame_classification import FramesDataset, WindowDataset
+from ..datapipes.frame_classification import FramesDataset, WindowDataset
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +134,7 @@ def train_frame_classification_model(
     logger.info(
         f"Loading dataset from `dataset_path`: {dataset_path}",
     )
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
         dataset_path
     )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename

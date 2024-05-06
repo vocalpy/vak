@@ -269,7 +269,7 @@ def test_split_frame_classification_dataframe(
         config_type=config_type,
         model=model_name,
     )
-    metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    metadata = vak.datapipes.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
     dataset_df = dataset_df.drop(columns=('split'))
@@ -314,7 +314,7 @@ def test_split_unit_dataframe(
         config_type=config_type,
         model=model_name,
     )
-    metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(dataset_path)
+    metadata = vak.datapipes.parametric_umap.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
     dataset_df = dataset_df.drop(columns=('split'))

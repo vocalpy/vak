@@ -13,9 +13,9 @@ import pandas as pd
 import lightning
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import datapipes, models, transforms
 from ..common import validators
-from ..datasets.frame_classification import FramesDataset
+from ..datapipes.frame_classification import FramesDataset
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ def eval_frame_classification_model(
         )
 
     # we unpack `frame_dur` to log it, regardless of whether we use it with post_tfm below
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
         dataset_path
     )
     frame_dur = metadata.frame_dur

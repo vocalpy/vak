@@ -39,7 +39,7 @@ def test_make_index_vectors_for_each_subsets(
     cfg = vak.config.Config.from_toml_path(toml_path)
 
     dataset_path = cfg.learncurve.dataset.path
-    metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    metadata = vak.datapipes.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
 
@@ -56,12 +56,12 @@ def test_make_index_vectors_for_each_subsets(
                     train_dur, replicate_num
                 )
             sample_id_vec_path = (tmp_dataset_path / "train" /
-                                  vak.datasets.frame_classification.helper.sample_ids_array_filename_for_subset(
+                                  vak.datapipes.frame_classification.helper.sample_ids_array_filename_for_subset(
                                       train_dur_replicate_subset_name)
                                   )
             sample_id_vec_path.unlink()
             inds_in_sample_vec_path = (tmp_dataset_path / "train" /
-                                       vak.datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(
+                                       vak.datapipes.frame_classification.helper.inds_in_sample_array_filename_for_subset(
                                        train_dur_replicate_subset_name)
                                   )
             inds_in_sample_vec_path.unlink()
@@ -92,25 +92,25 @@ def test_make_index_vectors_for_each_subsets(
 
             # test that indexing vectors got made
             sample_id_vec_path = (tmp_dataset_path / "train" /
-                                  vak.datasets.frame_classification.helper.sample_ids_array_filename_for_subset(
+                                  vak.datapipes.frame_classification.helper.sample_ids_array_filename_for_subset(
                                       subset_name)
                                   )
             assert sample_id_vec_path.exists()
 
             inds_in_sample_vec_path = (tmp_dataset_path / "train" /
-                                       vak.datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(
+                                       vak.datapipes.frame_classification.helper.inds_in_sample_array_filename_for_subset(
                                            subset_name)
                                        )
             assert inds_in_sample_vec_path.exists()
 
             this_subset_df = subsets_df[subsets_df['subset'] == subset_name]
             frames_paths = this_subset_df[
-                vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+                vak.datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
             ].values
             sample_id_vec, inds_in_sample_vec = [], []
             for sample_id, frames_path in enumerate(frames_paths):
                 # make indexing vectors that we use to test
-                frames = vak.datasets.frame_classification.helper.load_frames(tmp_dataset_path / frames_path,
+                frames = vak.datapipes.frame_classification.helper.load_frames(tmp_dataset_path / frames_path,
                                                                               input_type)
                 n_frames = frames.shape[-1]
                 sample_id_vec.append(np.ones((n_frames,)).astype(np.int32) * sample_id)
@@ -151,7 +151,7 @@ def test_make_subsets_from_dataset_df(
     cfg = vak.config.Config.from_toml_path(toml_path)
 
     dataset_path = cfg.learncurve.dataset.path
-    metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(dataset_path)
+    metadata = vak.datapipes.frame_classification.Metadata.from_dataset_path(dataset_path)
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     dataset_df = pd.read_csv(dataset_csv_path)
 
@@ -168,12 +168,12 @@ def test_make_subsets_from_dataset_df(
                     train_dur, replicate_num
                 )
             sample_id_vec_path = (tmp_dataset_path / "train" /
-                                  vak.datasets.frame_classification.helper.sample_ids_array_filename_for_subset(
+                                  vak.datapipes.frame_classification.helper.sample_ids_array_filename_for_subset(
                                       train_dur_replicate_subset_name)
                                   )
             sample_id_vec_path.unlink()
             inds_in_sample_vec_path = (tmp_dataset_path / "train" /
-                                       vak.datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(
+                                       vak.datapipes.frame_classification.helper.inds_in_sample_array_filename_for_subset(
                                        train_dur_replicate_subset_name)
                                   )
             inds_in_sample_vec_path.unlink()

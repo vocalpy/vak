@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from dask.diagnostics import ProgressBar
 
-from ... import common, datasets
+from ... import common, datapipes
 from .. import split
 
 logger = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ def make_index_vectors_for_each_subset(
         logger.info(f"Making indexing vectors for subset: {subset}")
         subset_df = subsets_df[subsets_df.subset == subset].copy()
         frames_paths = subset_df[
-            datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+            datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
         ].values
 
         def _return_index_arrays(
@@ -116,7 +116,7 @@ def make_index_vectors_for_each_subset(
 
             frames_path = dataset_path / pathlib.Path(frames_path)
 
-            frames = datasets.frame_classification.helper.load_frames(
+            frames = datapipes.frame_classification.helper.load_frames(
                 frames_path, input_type
             )
 
@@ -151,7 +151,7 @@ def make_index_vectors_for_each_subset(
         np.save(
             dataset_path
             / "train"
-            / datasets.frame_classification.helper.sample_ids_array_filename_for_subset(
+            / datapipes.frame_classification.helper.sample_ids_array_filename_for_subset(
                 subset
             ),
             sample_id_vec,
@@ -162,7 +162,7 @@ def make_index_vectors_for_each_subset(
         np.save(
             dataset_path
             / "train"
-            / datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(
+            / datapipes.frame_classification.helper.inds_in_sample_array_filename_for_subset(
                 subset
             ),
             inds_in_sample_vec,

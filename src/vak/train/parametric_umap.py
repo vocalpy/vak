@@ -10,10 +10,10 @@ import pandas as pd
 import lightning
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import datapipes, models, transforms
 from ..common import validators
 from ..common.paths import generate_results_dir_name_as_path
-from ..datasets.parametric_umap import ParametricUMAPDataset
+from ..datapipes.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +162,7 @@ def train_parametric_umap_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.parametric_umap.Metadata.from_dataset_path(
+    metadata = datapipes.parametric_umap.Metadata.from_dataset_path(
         dataset_path
     )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename

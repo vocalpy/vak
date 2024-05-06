@@ -341,10 +341,10 @@ class ParametricUMAPDataset(Dataset):
         -------
         dataset : vak.datasets.parametric_umap.ParametricUMAPDataset
         """
-        import vak.datasets  # import here just to make classmethod more explicit
+        import vak.datapipes  # import here just to make classmethod more explicit
 
         dataset_path = pathlib.Path(dataset_path)
-        metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(
+        metadata = vak.datapipes.parametric_umap.Metadata.from_dataset_path(
             dataset_path
         )
 
@@ -423,10 +423,10 @@ class ParametricUMAPInferenceDataset(Dataset):
         -------
 
         """
-        import vak.datasets  # import here just to make classmethod more explicit
+        import vak.datapipes  # import here just to make classmethod more explicit
 
         dataset_path = pathlib.Path(dataset_path)
-        metadata = vak.datasets.parametric_umap.Metadata.from_dataset_path(
+        metadata = vak.datapipes.parametric_umap.Metadata.from_dataset_path(
             dataset_path
         )
 

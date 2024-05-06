@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from dask.diagnostics import ProgressBar
 
-from ... import common, datasets, transforms
+from ... import common, datapipes, transforms
 from .. import constants as prep_constants
 
 logger = logging.getLogger(__name__)
@@ -365,7 +365,7 @@ def make_splits(
                 )
                 frame_labels_npy_path = split_subdir / (
                     source_path.stem
-                    + datasets.frame_classification.constants.FRAME_LABELS_EXT
+                    + datapipes.frame_classification.constants.FRAME_LABELS_EXT
                 )
                 np.save(frame_labels_npy_path, frame_labels)
                 frame_labels_npy_path = str(
@@ -417,7 +417,7 @@ def make_splits(
         )
         np.save(
             split_subdir
-            / datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME,
+            / datapipes.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME,
             sample_id_vec,
         )
         inds_in_sample_vec = np.concatenate(
@@ -425,7 +425,7 @@ def make_splits(
         )
         np.save(
             split_subdir
-            / datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME,
+            / datapipes.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME,
             inds_in_sample_vec,
         )
 
@@ -434,7 +434,7 @@ def make_splits(
         # Note that these are all in split dirs, written relative to ``dataset_path``.
         frames_paths = [str(sample.source_path) for sample in samples]
         split_df[
-            datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+            datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
         ] = frames_paths
 
         frame_labels_npy_paths = [
@@ -446,7 +446,7 @@ def make_splits(
             for sample in samples
         ]
         split_df[
-            datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            datapipes.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
         ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 

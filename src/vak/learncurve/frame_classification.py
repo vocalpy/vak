@@ -7,7 +7,7 @@ import pathlib
 
 import pandas as pd
 
-from .. import common, datasets
+from .. import common, datapipes
 from ..common.converters import expanded_user_path
 from ..eval.frame_classification import eval_frame_classification_model
 from ..train.frame_classification import train_frame_classification_model
@@ -119,7 +119,7 @@ def learning_curve_for_frame_classification_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
         dataset_path
     )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename

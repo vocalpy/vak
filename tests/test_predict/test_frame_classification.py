@@ -73,7 +73,7 @@ def test_predict_with_frame_classification_model(
             Path(output_dir).glob(f"*{vak.common.constants.NET_OUTPUT_SUFFIX}")
         )
 
-        metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(cfg.predict.dataset.path)
+        metadata = vak.datapipes.frame_classification.Metadata.from_dataset_path(cfg.predict.dataset.path)
         dataset_csv_path = cfg.predict.dataset.path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
 

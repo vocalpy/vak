@@ -191,7 +191,7 @@ class ParametricUMAP:
         dataset_path: str | pathlib.Path,
         transform=None,
     ):
-        from vak.datasets.parametric_umap import ParametricUMAPDataset
+        from vak.datapipes.parametric_umap import ParametricUMAPDataset
 
         dataset = ParametricUMAPDataset.from_dataset_path(
             dataset_path,

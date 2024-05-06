@@ -1,7 +1,7 @@
 import pytest
 
 import vak
-import vak.datasets.parametric_umap
+import vak.datapipes.parametric_umap
 
 
 class TestParametricUMAPDataset:
@@ -26,9 +26,9 @@ class TestParametricUMAPDataset:
             model_name, config_type, transform_kwargs
         )
 
-        dataset = vak.datasets.parametric_umap.ParametricUMAPDataset.from_dataset_path(
+        dataset = vak.datapipes.parametric_umap.ParametricUMAPDataset.from_dataset_path(
             dataset_path=cfg_command.dataset.path,
             split=split,
             transform=transform,
         )
-        assert isinstance(dataset, vak.datasets.parametric_umap.ParametricUMAPDataset)
+        assert isinstance(dataset, vak.datapipes.parametric_umap.ParametricUMAPDataset)

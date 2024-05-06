@@ -14,9 +14,9 @@ import lightning
 import torch.utils.data
 from tqdm import tqdm
 
-from .. import datasets, models, transforms
+from .. import datapipes, models, transforms
 from ..common import constants, files, validators
-from ..datasets.frame_classification import FramesDataset
+from ..datapipes.frame_classification import FramesDataset
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ def predict_with_frame_classification_model(
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
         dataset_path
     )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
@@ -187,7 +187,7 @@ def predict_with_frame_classification_model(
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
     metadata = (
-        datasets.frame_classification.metadata.Metadata.from_dataset_path(
+        datapipes.frame_classification.metadata.Metadata.from_dataset_path(
             dataset_path
         )
     )

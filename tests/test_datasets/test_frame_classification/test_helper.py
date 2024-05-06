@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-import vak.datasets.frame_classification.helper
+import vak.datapipes.frame_classification.helper
 
 from ... import fixtures
 
@@ -14,9 +14,9 @@ from ... import fixtures
     ]
 )
 def test_sample_ids_array_filename_for_subset(subset):
-    out = vak.datasets.frame_classification.helper.sample_ids_array_filename_for_subset(subset)
+    out = vak.datapipes.frame_classification.helper.sample_ids_array_filename_for_subset(subset)
     assert isinstance(out, str)
-    assert out == vak.datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME.replace(
+    assert out == vak.datapipes.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME.replace(
                 '.npy', f'-{subset}.npy'
             )
 
@@ -29,9 +29,9 @@ def test_sample_ids_array_filename_for_subset(subset):
     ]
 )
 def test_inds_in_sample_array_filename_for_subset(subset):
-    out = vak.datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(subset)
+    out = vak.datapipes.frame_classification.helper.inds_in_sample_array_filename_for_subset(subset)
     assert isinstance(out, str)
-    assert out == vak.datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME.replace(
+    assert out == vak.datapipes.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME.replace(
                 '.npy', f'-{subset}.npy'
             )
 
@@ -42,5 +42,5 @@ def frames_path(request):
 
 
 def test_load_frames(frames_path):
-    out = vak.datasets.frame_classification.helper.load_frames(frames_path, input_type="spect")
+    out = vak.datapipes.frame_classification.helper.load_frames(frames_path, input_type="spect")
     assert isinstance(out, np.ndarray)

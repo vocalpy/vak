@@ -11,7 +11,7 @@ import warnings
 import crowsetta.formats.seq
 import pandas as pd
 
-from ... import datasets
+from ... import datapipes
 from ...common import labels
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
@@ -360,7 +360,7 @@ def prep_frame_classification_dataset(
         # We need this to be correct for other functions, e.g. predict when it loads spectrogram files
         spect_format = "npz"
 
-    metadata = datasets.frame_classification.Metadata(
+    metadata = datapipes.frame_classification.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
         frame_dur=frame_dur,
         input_type=input_type,

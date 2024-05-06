@@ -9,9 +9,9 @@ import pathlib
 import lightning
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import datapipes, models, transforms
 from ..common import validators
-from ..datasets.parametric_umap import ParametricUMAPDataset
+from ..datapipes.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ def predict_with_parametric_umap_model(
     logger.info(
         f"Loading metadata from dataset path: {dataset_path}",
     )
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
         dataset_path
     )
 

@@ -97,8 +97,8 @@ class StandardizeSpect:
         standardize_spect : StandardizeSpect
             Instance that has been fit to input data from split.
         """
-        from vak.datasets import frame_classification
-        from vak.datasets.frame_classification import Metadata
+        from vak.datapipes import frame_classification
+        from vak.datapipes.frame_classification import Metadata
 
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)

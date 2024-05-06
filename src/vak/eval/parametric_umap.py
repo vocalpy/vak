@@ -13,7 +13,7 @@ import torch.utils.data
 
 from .. import models, transforms
 from ..common import validators
-from ..datasets.parametric_umap import ParametricUMAPDataset
+from ..datapipes.parametric_umap import ParametricUMAPDataset
 
 logger = logging.getLogger(__name__)
 

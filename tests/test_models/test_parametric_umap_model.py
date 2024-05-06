@@ -40,7 +40,7 @@ class TestParametricUMAPModel:
             "train",
             transform_kwargs={},
         )
-        train_dataset = vak.datasets.parametric_umap.ParametricUMAPDataset.from_dataset_path(
+        train_dataset = vak.datapipes.parametric_umap.ParametricUMAPDataset.from_dataset_path(
             dataset_path=train_cfg.train.dataset.path,
             split="train",
             transform=item_transform,
