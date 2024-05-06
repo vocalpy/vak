@@ -371,7 +371,7 @@ class Model:
         return network, loss, optimizer, metrics
 
     def from_config(self, config: dict, **kwargs):
-        """Return an initialized model instance from a config ``dict``
+        """Return a a new instance of a model, given a config ``dict``
 
         Parameters
         ----------
@@ -386,6 +386,44 @@ class Model:
             initialized using parameters from ``config``.
         """
         network, loss, optimizer, metrics = self.attributes_from_config(config)
+        network, loss, optimizer, metrics = self.validate_instances_or_get_default(
+            network, loss, optimizer, metrics,
+        )
+        return self.family(
+            network=network, loss=loss, optimizer=optimizer, metrics=metrics, **kwargs
+        )
+
+    def from_instances(
+        self,
+        network: torch.nn.Module | dict | None = None,
+        loss: torch.nn.Module | Callable | None = None,
+        optimizer: torch.optim.Optimizer | None = None,
+        metrics: dict | None = None,
+        **kwargs,
+    ):
+        """
+
+        Parameters
+        ----------
+        network : torch.nn.Module, dict
+            An instance of a ``torch.nn.Module``
+            that implements a neural network,
+            or a ``dict`` that maps human-readable string names
+            to a set of such instances.
+        loss : torch.nn.Module, callable
+            An instance of a ``torch.nn.Module``
+            that implements a loss function,
+            or a callable Python function that
+            computes a scalar loss.
+        optimizer : torch.optim.Optimizer
+            An instance of a ``torch.optim.Optimizer`` class
+            used with ``loss`` to optimize
+            the parameters of ``network``.
+        metrics : dict
+            A ``dict`` that maps human-readable string names
+            to ``Callable`` functions, used to measure
+            performance of the model.
+        """
         network, loss, optimizer, metrics = self.validate_instances_or_get_default(
             network, loss, optimizer, metrics,
         )
