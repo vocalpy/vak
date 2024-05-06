@@ -88,9 +88,9 @@ class InferDatapipe:
         frame_dur: float,
         window_size: int,
         frames_standardizer: FramesStandardizer | None = None,
-        return_padding_mask: bool = False,
         frames_padval: float = 0.0,
         frame_labels_padval: int = -1,
+        return_padding_mask: bool = False,
         subset: str | None = None,
     ):
         """Initialize a new instance of an :class:`InferDatapipe`.
@@ -232,7 +232,11 @@ class InferDatapipe:
     def from_dataset_path(
         cls,
         dataset_path: str | pathlib.Path,
-        item_transform: Callable,
+        window_size: int,
+        frames_standardizer: FramesStandardizer | None = None,
+        frames_padval: float = 0.0,
+        frame_labels_padval: int = -1,
+        return_padding_mask: bool = False,
         split: str = "val",
         subset: str | None = None,
     ):
@@ -246,9 +250,28 @@ class InferDatapipe:
             frame classification dataset,
             as created by
             :func:`vak.prep.prep_frame_classification_dataset`.
-        item_transform : callable, optional
-            Transform applied to each item :math:`(x, y)`
-            returned by :meth:`InferDatapipe.__getitem__`.
+        window_size : int
+            Size of windows to return;
+            number of frames.
+        frames_standardizer : vak.transforms.FramesStandardizer, optional
+            Transform applied to frames, the input to the neural network model.
+            Optional, default is None.
+            If supplied, will be used with the transform applied to inputs and targets,
+            :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
+        frames_padval : float
+            Value to pad frames with. Added to end of array, the "right side".
+            Argument to PadToWindow transform. Default is 0.0.
+        frame_labels_padval : int
+            Value to pad frame labels vector with. Added to the end of the array.
+            Argument to PadToWindow transform. Default is -1.
+            Used with ``ignore_index`` argument of :mod:`torch.nn.CrossEntropyLoss`.
+        return_padding_mask : bool
+            if True, the dictionary returned by ItemTransform classes will include
+            a boolean vector to use for cropping back down to size before padding.
+            padding_mask has size equal to width of padded array, i.e. original size
+            plus padding at the end, and has values of 1 where
+            columns in padded are from the original array,
+            and values of 0 where columns were added for padding.
         split : str
             The name of a split from the dataset,
             one of {'train', 'val', 'test'}.
@@ -300,6 +323,10 @@ class InferDatapipe:
             sample_ids,
             inds_in_sample,
             frame_dur,
-            item_transform,
+            window_size,
+            frames_standardizer,
+            frames_padval,
+            frame_labels_padval,
+            return_padding_mask,
             subset,
         )
