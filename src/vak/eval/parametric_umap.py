@@ -13,7 +13,7 @@ import torch.utils.data
 
 from .. import models, transforms
 from ..common import validators
-from ..datapipes.parametric_umap import ParametricUMAPDataset
+from ..datapipes.parametric_umap import Datapipe
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ def eval_parametric_umap_model(
     item_transform = transforms.defaults.get_default_transform(
         model_name, "eval"
     )
-    val_dataset = ParametricUMAPDataset.from_dataset_path(
+    val_dataset = InferDatapipe.from_dataset_path(
         dataset_path=dataset_path,
         split=split,
         transform=item_transform,

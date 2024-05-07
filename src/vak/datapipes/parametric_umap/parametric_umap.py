@@ -10,9 +10,13 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import scipy.sparse._coo
+import torchvision.transforms
 from pynndescent import NNDescent
 from sklearn.utils import check_random_state
 from torch.utils.data import Dataset
+
+from .. import transforms as vak_transforms
+
 
 # isort: off
 # Ignore warnings from Numba deprecation:
@@ -187,8 +191,8 @@ def get_graph_elements(
     return graph, epochs_per_sample, head, tail, weight, n_vertices
 
 
-class ParametricUMAPDataset(Dataset):
-    """A dataset class used to train Parametric UMAP models."""
+class Datapipe(Dataset):
+    """A datapipe used with Parametric UMAP models."""
 
     def __init__(
         self,
@@ -200,7 +204,6 @@ class ParametricUMAPDataset(Dataset):
         n_neighbors: int = 10,
         metric: str = "euclidean",
         random_state: int | None = None,
-        transform: Callable | None = None,
     ):
         """Initialize a :class:`ParametricUMAPDataset` instance.
 
@@ -251,8 +254,8 @@ class ParametricUMAPDataset(Dataset):
             epochs_per_sample,
             head,
             tail,
-            weight,
-            n_vertices,
+            _,
+            _,
         ) = get_graph_elements(graph, n_epochs)
 
         # we repeat each sample in (head, tail) a certain number of times depending on its probability
@@ -269,7 +272,10 @@ class ParametricUMAPDataset(Dataset):
 
         self.data = data
         self.dataset_df = dataset_df
-        self.transform = transform
+        self.transform = torchvision.transforms.Compose([
+            vak_transforms.ToFloatTensor(),
+            vak_transforms.AddChannel(),
+        ])
 
     @property
     def duration(self):
@@ -287,9 +293,8 @@ class ParametricUMAPDataset(Dataset):
     def __getitem__(self, index):
         edges_to_exp = self.data[self.edges_to_exp[index]]
         edges_from_exp = self.data[self.edges_from_exp[index]]
-        if self.transform:
-            edges_to_exp = self.transform(edges_to_exp)
-            edges_from_exp = self.transform(edges_from_exp)
+        edges_to_exp = self.transform(edges_to_exp)
+        edges_from_exp = self.transform(edges_from_exp)
         return (edges_to_exp, edges_from_exp)
 
     @classmethod
@@ -302,7 +307,6 @@ class ParametricUMAPDataset(Dataset):
         metric: str = "euclidean",
         random_state: int | None = None,
         n_epochs: int = 200,
-        transform: Callable | None = None,
     ):
         """Make a :class:`ParametricUMAPDataset` instance,
         given the path to parametric UMAP dataset.
@@ -334,12 +338,10 @@ class ParametricUMAPDataset(Dataset):
         random_state : numpy.random.RandomState
             Either a numpy.random.RandomState instance,
             or None.
-        transform : callable
-            The transform applied to the input to the neural network :math:`x`.
 
         Returns
         -------
-        dataset : vak.datasets.parametric_umap.ParametricUMAPDataset
+        dataset : vak.datasets.parametric_umap.TrainDatapipe
         """
         import vak.datapipes  # import here just to make classmethod more explicit
 
@@ -360,88 +362,4 @@ class ParametricUMAPDataset(Dataset):
             n_neighbors,
             metric,
             random_state,
-            transform,
-        )
-
-
-class ParametricUMAPInferenceDataset(Dataset):
-    def __init__(
-        self,
-        data: npt.NDArray,
-        dataset_df: pd.DataFrame,
-        transform: Callable | None = None,
-    ):
-        self.data = data
-        self.dataset_df = dataset_df
-        self.transform = transform
-
-    @property
-    def duration(self):
-        return self.dataset_df["duration"].sum()
-
-    def __len__(self):
-        return self.data.shape[0]
-
-    @property
-    def shape(self):
-        tmp_x_ind = 0
-        tmp_item = self.__getitem__(tmp_x_ind)
-        return tmp_item[0].shape
-
-    def __getitem__(self, index):
-        x = self.data[index]
-        df_index = self.dataset_df.index[index]
-        if self.transform:
-            x = self.transform(x)
-        return {"x": x, "df_index": df_index}
-
-    @classmethod
-    def from_dataset_path(
-        cls,
-        dataset_path: str | pathlib.Path,
-        split: str,
-        n_neighbors: int = 10,
-        metric: str = "euclidean",
-        random_state: int | None = None,
-        n_epochs: int = 200,
-        transform: Callable | None = None,
-    ):
-        """
-
-        Parameters
-        ----------
-        dataset_path : str, pathlib.Path
-            Path to a directory that represents a dataset.
-        split
-        n_neighbors
-        metric
-        random_state
-        n_epochs
-        transform
-
-        Returns
-        -------
-
-        """
-        import vak.datapipes  # import here just to make classmethod more explicit
-
-        dataset_path = pathlib.Path(dataset_path)
-        metadata = vak.datapipes.parametric_umap.Metadata.from_dataset_path(
-            dataset_path
-        )
-
-        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-        dataset_df = pd.read_csv(dataset_csv_path)
-        split_df = dataset_df[dataset_df.split == split]
-
-        data = np.stack(
-            [
-                np.load(dataset_path / spect_path)
-                for spect_path in split_df.spect_path.values
-            ]
-        )
-        return cls(
-            data,
-            split_df,
-            transform=transform,
         )

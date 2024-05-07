@@ -1,4 +1,8 @@
 from .metadata import Metadata
-from .parametric_umap import ParametricUMAPDataset
+from .parametric_umap import Datapipe
 
-__all__ = ["Metadata", "ParametricUMAPDataset"]
+__all__ = [
+    "InferDatapipe",
+    "Metadata",
+    "Datapipe",
+]

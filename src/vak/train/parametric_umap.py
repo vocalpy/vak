@@ -13,7 +13,7 @@ import torch.utils.data
 from .. import datapipes, models, transforms
 from ..common import validators
 from ..common.paths import generate_results_dir_name_as_path
-from ..datapipes.parametric_umap import ParametricUMAPDataset
+from ..datapipes.parametric_umap import Datapipe
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +202,7 @@ def train_parametric_umap_model(
     )
 
     dataset_params = dataset_config["params"]
-    train_dataset = ParametricUMAPDataset.from_dataset_path(
+    train_dataset = Datapipe.from_dataset_path(
         dataset_path=dataset_path,
         split="train",
         subset=subset,
@@ -224,7 +224,7 @@ def train_parametric_umap_model(
         transform = transforms.defaults.get_default_transform(
             model_name, "eval"
         )
-        val_dataset = ParametricUMAPDataset.from_dataset_path(
+        val_dataset = Datapipe.from_dataset_path(
             dataset_path=dataset_path,
             split="val",
             transform=transform,
