@@ -58,10 +58,10 @@ def eval_frame_classification_model(
         Split of dataset on which model should be evaluated.
         One of {'train', 'val', 'test'}. Default is 'test'.
     frames_standardizer_path : str, pathlib.Path
-        Path to a saved :class:`vak.transforms.FramesStandardizer` object used to standardize (normalize) frames.
-        If spectrograms were normalized and this is not provided, will give
-        incorrect results.
-        Default is None.
+        Path to a saved :class:`vak.transforms.FramesStandardizer`
+        object used to standardize (normalize) frames.
+        If frames were standardized during training and this is not provided,
+        will give incorrect results. Default is None.
     post_tfm_kwargs : dict
         Keyword arguments to post-processing transform.
         If None, then no additional clean-up is applied
@@ -77,7 +77,7 @@ def eval_frame_classification_model(
 
     Notes
     -----
-    Note that unlike :func:`core.predict`, this function
+    Note that unlike :func:`~vak.predict.predict`, this function
     can modify ``labelmap`` so that metrics like edit distance
     are correctly computed, by converting any string labels
     in ``labelmap`` with multiple characters
