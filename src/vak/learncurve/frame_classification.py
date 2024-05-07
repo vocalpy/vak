@@ -230,10 +230,10 @@ def learning_curve_for_frame_classification_model(
         logger.info(f"Using labelmap: {labelmap_path}")
         if standardize_frames:
             frames_standardizer_path = results_path_this_replicate.joinpath(
-                "StandardizeSpect"
+                "FramesStandardizer"
             )
             logger.info(
-                f"Using spect scaler to normalize: {frames_standardizer_path}",
+                f"Using FramesStandardizer to standardize frames, from path: {frames_standardizer_path}",
             )
         else:
             frames_standardizer_path = None
