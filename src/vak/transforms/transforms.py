@@ -77,16 +77,21 @@ class FramesStandardizer:
         self.non_zero_std = non_zero_std
 
     @classmethod
-    def fit_inputs_targets_csv_path(cls,
-                                    inputs_targets_csv_path: str | pathlib.Path,
-                                    dataset_path: str | pathlib.Path,
-                                    split: str = 'train',
-                                    subset: str | None = None,
-                                    frames_path_col_name: str | None = None,
-                                    frames_key: str | None = None):
+    def fit_inputs_targets_csv_path(
+        cls,
+        inputs_targets_csv_path: str | pathlib.Path,
+        dataset_path: str | pathlib.Path,
+        split: str = "train",
+        subset: str | None = None,
+        frames_path_col_name: str | None = None,
+        frames_key: str | None = None,
+    ):
         if frames_path_col_name is None:
             from .. import datapipes
-            frames_path_col_name = datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
+
+            frames_path_col_name = (
+                datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
+            )
         if frames_key is None:
             frames_key = constants.SPECT_KEY
 
@@ -107,9 +112,7 @@ class FramesStandardizer:
             df = df[df.split == split].copy()
         else:
             df = df[df.split == split].copy()
-        frames_paths = df[
-            frames_path_col_name
-        ].values
+        frames_paths = df[frames_path_col_name].values
         frames = np.load(dataset_path / frames_paths[0])[frames_key]
 
         # in spectrograms files, spectrograms are in orientation (freq bins, time bins)
@@ -153,7 +156,9 @@ class FramesStandardizer:
         metadata = Metadata.from_dataset_path(dataset_path)
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
-        return cls.fit_inputs_targets_csv_path(dataset_csv_path, dataset_path, split, subset)
+        return cls.fit_inputs_targets_csv_path(
+            dataset_csv_path, dataset_path, split, subset
+        )
 
     @classmethod
     def fit(cls, spect):
