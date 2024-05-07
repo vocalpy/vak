@@ -99,7 +99,8 @@ class TrainerConfig:
             ):
                 raise ValueError(
                     "Setting a value for the `lightning.pytorch.Trainer` parameter `devices` that is not either 1 "
-                    '(meaning "use a single GPU") or a list with a single number (meaning "use this exact GPU") currently '
+                    '(meaning "use a single GPU") or a list with a single number '
+                    '(meaning "use this exact GPU") currently '
                     "breaks functionality for the command-line interface of `vak`. "
                     "Please see this issue: https://github.com/vocalpy/vak/issues/691"
                     "If you need to use multiple GPUs, please use `vak` directly in a script."
@@ -112,7 +113,8 @@ class TrainerConfig:
                 )
             if self.devices < 1:
                 raise ValueError(
-                    f"When value for 'accelerator' is 'cpu', value for `devices` should be an int > 0, but was: {self.devices}"
+                    "When value for 'accelerator' is 'cpu', value for `devices` "
+                    f"should be an int > 0, but was: {self.devices}"
                 )
 
     def asdict(self):

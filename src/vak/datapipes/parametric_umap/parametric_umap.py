@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pathlib
 import warnings
-from typing import Callable
 
 import numpy as np
 import numpy.typing as npt

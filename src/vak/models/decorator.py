@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING, Type
 
 import lightning
 
-from .definition import validate as validate_definition
 from .registry import register_model
 
 if TYPE_CHECKING:
