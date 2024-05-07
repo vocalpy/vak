@@ -8,7 +8,6 @@ from .dataset import DatasetConfig
 from .model import ModelConfig
 from .trainer import TrainerConfig
 
-
 REQUIRED_KEYS = (
     "dataset",
     "model",

@@ -9,8 +9,8 @@ import pathlib
 
 import crowsetta
 import joblib
-import numpy as np
 import lightning
+import numpy as np
 import torch.utils.data
 from tqdm import tqdm
 
@@ -132,7 +132,9 @@ def predict_with_frame_classification_model(
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
     if frames_standardizer_path:
-        logger.info(f"loading FramesStandardizer from path: {frames_standardizer_path}")
+        logger.info(
+            f"loading FramesStandardizer from path: {frames_standardizer_path}"
+        )
         spect_standardizer = joblib.load(frames_standardizer_path)
     else:
         logger.info("Not loading FramesStandardizer, no path was specified")
@@ -156,7 +158,7 @@ def predict_with_frame_classification_model(
         split="predict",
         window_size=dataset_config["params"]["window_size"],
         frames_standardizer=spect_standardizer,
-        return_padding_mask=True
+        return_padding_mask=True,
     )
 
     pred_loader = torch.utils.data.DataLoader(
@@ -211,11 +213,13 @@ def predict_with_frame_classification_model(
     )
     model.load_state_dict_from_path(checkpoint_path)
 
-    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
+    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(
+        save_dir=output_dir
+    )
     trainer = lightning.pytorch.Trainer(
         accelerator=trainer_config["accelerator"],
         devices=trainer_config["devices"],
-        logger=trainer_logger
+        logger=trainer_logger,
     )
 
     logger.info(f"running predict method of {model_name}")

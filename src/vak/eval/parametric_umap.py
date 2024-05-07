@@ -7,8 +7,8 @@ import pathlib
 from collections import OrderedDict
 from datetime import datetime
 
-import pandas as pd
 import lightning
+import pandas as pd
 import torch.utils.data
 
 from .. import models
@@ -107,12 +107,14 @@ def eval_parametric_umap_model(
 
     model.load_state_dict_from_path(checkpoint_path)
 
-    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
+    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(
+        save_dir=output_dir
+    )
     trainer = lightning.pytorch.Trainer(
         accelerator=trainer_config["accelerator"],
         devices=trainer_config["devices"],
-        logger=trainer_logger
-        )
+        logger=trainer_logger,
+    )
     # TODO: check for hasattr(model, test_step) and if so run test
     # below, [0] because validate returns list of dicts, length of no. of val loaders
     metric_vals = trainer.validate(model, dataloaders=val_loader)[0]

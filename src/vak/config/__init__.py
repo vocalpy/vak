@@ -25,7 +25,6 @@ from .spect_params import SpectParamsConfig
 from .train import TrainConfig
 from .trainer import TrainerConfig
 
-
 __all__ = [
     "config",
     "dataset",

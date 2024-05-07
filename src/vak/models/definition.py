@@ -128,7 +128,7 @@ def validate(definition: Type) -> Type:
     ``vak.models.Model``.
 
     It's also used by :class:`vak.models.ModelFactory`,
-    to validate a definition before building 
+    to validate a definition before building
     a new model instance from the definition.
     """
     # need to set this default first

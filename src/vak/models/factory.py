@@ -8,8 +8,8 @@ from typing import Callable, Type
 import lightning
 import torch
 
-from .definition import validate as validate_definition
 from .decorator import ModelDefinitionValidationError
+from .definition import validate as validate_definition
 
 
 class ModelFactory:
@@ -30,10 +30,11 @@ class ModelFactory:
     for more detail.
     """
 
-    def __init__(self,
-                definition: Type,
-                family: lightning.pytorch.LightningModule,
-            ) -> None:
+    def __init__(
+        self,
+        definition: Type,
+        family: lightning.pytorch.LightningModule,
+    ) -> None:
         if not issubclass(family, lightning.pytorch.LightningModule):
             raise TypeError(
                 "The ``family`` argument to the ``vak.models.model`` decorator"
@@ -112,7 +113,9 @@ class ModelFactory:
         optimizer_kwargs = config.get(
             "optimizer", self.definition.default_config["optimizer"]
         )
-        optimizer = self.definition.optimizer(params=params, **optimizer_kwargs)
+        optimizer = self.definition.optimizer(
+            params=params, **optimizer_kwargs
+        )
 
         if inspect.isclass(self.definition.loss):
             loss_kwargs = config.get(
@@ -386,11 +389,20 @@ class ModelFactory:
             that are initialized using parameters from ``config``.
         """
         network, loss, optimizer, metrics = self.attributes_from_config(config)
-        network, loss, optimizer, metrics = self.validate_instances_or_get_default(
-            network, loss, optimizer, metrics,
+        network, loss, optimizer, metrics = (
+            self.validate_instances_or_get_default(
+                network,
+                loss,
+                optimizer,
+                metrics,
+            )
         )
         return self.family(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics, **kwargs
+            network=network,
+            loss=loss,
+            optimizer=optimizer,
+            metrics=metrics,
+            **kwargs,
         )
 
     def from_instances(
@@ -424,9 +436,18 @@ class ModelFactory:
             to ``Callable`` functions, used to measure
             performance of the model.
         """
-        network, loss, optimizer, metrics = self.validate_instances_or_get_default(
-            network, loss, optimizer, metrics,
+        network, loss, optimizer, metrics = (
+            self.validate_instances_or_get_default(
+                network,
+                loss,
+                optimizer,
+                metrics,
+            )
         )
         return self.family(
-            network=network, loss=loss, optimizer=optimizer, metrics=metrics, **kwargs
+            network=network,
+            loss=loss,
+            optimizer=optimizer,
+            metrics=metrics,
+            **kwargs,
         )

@@ -48,9 +48,7 @@ class ParametricUMAPModel(lightning.LightningModule):
         metrics: dict[str:Type],
     ):
         super().__init__()
-        self.network = torch.nn.ModuleDict(
-            network
-        )
+        self.network = torch.nn.ModuleDict(network)
         self.loss = loss
         self.optimizer = optimizer
         self.metrics = metrics
@@ -60,11 +58,11 @@ class ParametricUMAPModel(lightning.LightningModule):
 
     def training_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to = self.network['encoder'](edges_to_exp)
-        embedding_from = self.network['encoder'](edges_from_exp)
+        embedding_to = self.network["encoder"](edges_to_exp)
+        embedding_from = self.network["encoder"](edges_from_exp)
 
-        if 'decoder' in self.network:
-            reconstruction = self.network['decoder'](embedding_to)
+        if "decoder" in self.network:
+            reconstruction = self.network["decoder"](embedding_to)
             before_encoding = edges_to_exp
         else:
             reconstruction = None
@@ -83,11 +81,11 @@ class ParametricUMAPModel(lightning.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         (edges_to_exp, edges_from_exp) = batch
-        embedding_to = self.network['encoder'](edges_to_exp)
-        embedding_from = self.network['encoder'](edges_from_exp)
+        embedding_to = self.network["encoder"](edges_to_exp)
+        embedding_from = self.network["encoder"](edges_from_exp)
 
-        if 'decoder' in self.network is not None:
-            reconstruction = self.network['decoder'](embedding_to)
+        if "decoder" in self.network is not None:
+            reconstruction = self.network["decoder"](embedding_to)
             before_encoding = edges_to_exp
         else:
             reconstruction = None

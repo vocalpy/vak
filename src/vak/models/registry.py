@@ -7,7 +7,7 @@ with a decorator, so that the model can be used at runtime.
 from __future__ import annotations
 
 import inspect
-from typing import Any, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Type
 
 import lightning
 

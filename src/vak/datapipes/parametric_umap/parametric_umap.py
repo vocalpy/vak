@@ -17,7 +17,6 @@ from torch.utils.data import Dataset
 
 from ... import transforms as vak_transforms
 
-
 # isort: off
 # Ignore warnings from Numba deprecation:
 # https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit
@@ -272,10 +271,12 @@ class Datapipe(Dataset):
 
         self.data = data
         self.dataset_df = dataset_df
-        self.transform = torchvision.transforms.Compose([
-            vak_transforms.ToFloatTensor(),
-            vak_transforms.AddChannel(),
-        ])
+        self.transform = torchvision.transforms.Compose(
+            [
+                vak_transforms.ToFloatTensor(),
+                vak_transforms.AddChannel(),
+            ]
+        )
 
     @property
     def duration(self):

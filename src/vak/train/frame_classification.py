@@ -187,7 +187,9 @@ def train_frame_classification_model(
         json.dump(labelmap, f)
 
     if frames_standardizer_path is not None and standardize_frames:
-        logger.info(f"loading spect scaler from path: {frames_standardizer_path}")
+        logger.info(
+            f"loading spect scaler from path: {frames_standardizer_path}"
+        )
         frames_standardizer = joblib.load(frames_standardizer_path)
         shutil.copy(frames_standardizer_path, results_path)
     # get transforms just before creating datasets with them
@@ -249,7 +251,7 @@ def train_frame_classification_model(
             split="val",
             **dataset_config["params"],
             frames_standardizer=frames_standardizer,
-            return_padding_mask=True
+            return_padding_mask=True,
         )
         logger.info(
             f"Duration of InferDatapipe used for evaluation, in seconds: {val_dataset.duration}",

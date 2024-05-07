@@ -28,7 +28,9 @@ class TrainItemTransform:
         frames_standardizer: FramesStandardizer | None = None,
     ):
         if frames_standardizer is not None:
-            if isinstance(frames_standardizer, vak_transforms.FramesStandardizer):
+            if isinstance(
+                frames_standardizer, vak_transforms.FramesStandardizer
+            ):
                 frames_transform = [frames_standardizer]
             else:
                 raise TypeError(
@@ -135,9 +137,14 @@ class InferItemTransform:
         )
 
         self.frame_labels_padval = frame_labels_padval
-        self.frame_labels_transform =  vak_transforms.ToLongTensor()
+        self.frame_labels_transform = vak_transforms.ToLongTensor()
 
-    def __call__(self, frames: torch.Tensor, frame_labels: torch.Tensor | None = None, frames_path=None) -> dict:
+    def __call__(
+        self,
+        frames: torch.Tensor,
+        frame_labels: torch.Tensor | None = None,
+        frames_path=None,
+    ) -> dict:
         if self.frames_standardizer:
             frames = self.frames_standardizer(frames)
 
@@ -204,7 +211,9 @@ def get_default_frame_classification_transform(
     frames_standardizer = transform_kwargs.get("frames_standardizer", None)
     # regardless of mode, transform always starts with StandardizeSpect, if used
     if frames_standardizer is not None:
-        if not isinstance(frames_standardizer, vak_transforms.FramesStandardizer):
+        if not isinstance(
+            frames_standardizer, vak_transforms.FramesStandardizer
+        ):
             raise TypeError(
                 f"invalid type for frames_standardizer: {type(frames_standardizer)}. "
                 "Should be an instance of vak.transforms.StandardizeSpect"

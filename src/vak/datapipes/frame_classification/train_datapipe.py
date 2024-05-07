@@ -24,10 +24,10 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from . import constants, helper
-from .metadata import Metadata
 from ...transforms import FramesStandardizer
 from ...transforms.defaults.frame_classification import TrainItemTransform
+from . import constants, helper
+from .metadata import Metadata
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):

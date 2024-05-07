@@ -1,10 +1,10 @@
 """Functional forms of input transforms."""
+
 from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
 import torch
-
 
 __all__ = [
     "pad_to_window",
@@ -44,8 +44,11 @@ def standardize_spect(spect, mean_freqs, std_freqs, non_zero_std):
 
 
 def pad_to_window(
-        arr: npt.NDArray, window_size: int, padval: float = 0.0, return_padding_mask: bool = True
-    ) -> npt.NDArray:
+    arr: npt.NDArray,
+    window_size: int,
+    padval: float = 0.0,
+    return_padding_mask: bool = True,
+) -> npt.NDArray:
     """Pad a 1d or 2d array so that it can be reshaped
     into consecutive windows of specified size.
 
@@ -162,7 +165,9 @@ def view_as_window_batch(arr: npt.NDArray, window_size: int) -> npt.NDArray:
         arr, shape=new_shape, strides=new_strides
     )
 
-    if arr.ndim == 2: # avoids bug in vak version of transform, by not doing this to 1-D arrays
+    if (
+        arr.ndim == 2
+    ):  # avoids bug in vak version of transform, by not doing this to 1-D arrays
         # TODO: figure out if there's a better way to do this where we don't need to squeeze
         # The current version always add an initial dim of size 1
         batch_windows = np.squeeze(batch_windows, axis=0)

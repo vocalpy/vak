@@ -14,7 +14,6 @@ from .dataset import DatasetConfig
 from .model import ModelConfig
 from .trainer import TrainerConfig
 
-
 REQUIRED_KEYS = (
     "checkpoint_path",
     "dataset",

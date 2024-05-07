@@ -11,10 +11,10 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from . import constants, helper
-from .metadata import Metadata
 from ...transforms import FramesStandardizer
 from ...transforms.defaults.frame_classification import InferItemTransform
+from . import constants, helper
+from .metadata import Metadata
 
 
 class InferDatapipe:

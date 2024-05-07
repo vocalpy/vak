@@ -85,6 +85,7 @@ class FrameClassificationModel(lightning.LightningModule):
         to string labels inside of ``validation_step``,
         for computing edit distance.
     """
+
     def __init__(
         self,
         labelmap: Mapping,
