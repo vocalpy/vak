@@ -34,16 +34,10 @@ class TestFrameClassificationModel:
 
         # stuff we need just to be able to instantiate network
         labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
-        item_transform = vak.transforms.defaults.get_default_transform(
-            model_name,
-            "train",
-            transform_kwargs={},
-        )
         train_dataset = vak.datapipes.frame_classification.TrainDatapipe.from_dataset_path(
             dataset_path=train_cfg.train.dataset.path,
             split="train",
             window_size=train_cfg.train.dataset.params['window_size'],
-            item_transform=item_transform,
         )
         input_shape = train_dataset.shape
         num_input_channels = input_shape[-3]
