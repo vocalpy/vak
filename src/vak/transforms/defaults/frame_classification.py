@@ -105,13 +105,19 @@ class InferItemTransform:
         return_padding_mask=True,
         channel_dim=1,
     ):
+        self.window_size = window_size
+        self.frames_padval = frames_padval
+        self.frame_labels_padval = frame_labels_padval
+        self.return_padding_mask = return_padding_mask
+        self.channel_dim = channel_dim
+
         if frames_standardizer is not None:
             if not isinstance(
                 frames_standardizer, vak_transforms.FramesStandardizer
             ):
                 raise TypeError(
-                    f"invalid type for frames_standardizer: {type(frames_standardizer)}. "
-                    "Should be an instance of vak.transforms.StandardizeSpect"
+                    f"Invalid type for frames_standardizer: {type(frames_standardizer)}. "
+                    "Should be an instance of vak.transforms.FramesStandardizer"
                 )
         self.frames_standardizer = frames_standardizer
 
@@ -129,16 +135,7 @@ class InferItemTransform:
         )
 
         self.frame_labels_padval = frame_labels_padval
-        self.frame_labels_transform = torchvision.transforms.Compose(
-            [
-                vak_transforms.PadToWindow(
-                    # we set `return_padding_mask` to False because we will have the 
-                    self.window_size, self.frame_labels_padval, return_padding_mask=False
-                ),
-                vak_transforms.ViewAsWindowBatch(window_size),
-                vak_transforms.ToLongTensor()
-            ]
-        )
+        self.frame_labels_transform =  vak_transforms.ToLongTensor()
 
     def __call__(self, frames: torch.Tensor, frame_labels: torch.Tensor | None = None, frames_path=None) -> dict:
         if self.frames_standardizer:
