@@ -5,15 +5,18 @@ or spectrograms of varying lengths."""
 from __future__ import annotations
 
 import pathlib
+from typing import TYPE_CHECKING
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from ...transforms import FramesStandardizer
 from ...transforms.defaults.frame_classification import InferItemTransform
 from . import constants, helper
 from .metadata import Metadata
+
+if TYPE_CHECKING:
+    from ...transforms import FramesStandardizer
 
 
 class InferDatapipe:
