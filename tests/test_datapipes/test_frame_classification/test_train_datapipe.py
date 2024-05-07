@@ -1,14 +1,15 @@
 import pytest
 
 import vak
-import vak.datapipes.parametric_umap
+import vak.datapipes.frame_classification
 
 
-class TestParametricUMAPDataset:
+class TestTrainDatapipe:
     @pytest.mark.parametrize(
         'config_type, model_name, audio_format, spect_format, annot_format, split, transform_kwargs',
         [
-            ('train', 'ConvEncoderUMAP', 'cbin', None, 'notmat', 'train', {}),
+            ('train', 'TweetyNet', 'cbin', None, 'notmat', 'train', {}),
+            ('train', 'TweetyNet', None, 'mat', 'yarden', 'train', {}),
         ]
     )
     def test_from_dataset_path(self, config_type, model_name, audio_format, spect_format, annot_format,
@@ -22,13 +23,9 @@ class TestParametricUMAPDataset:
         cfg = vak.config.Config.from_toml_path(toml_path)
         cfg_command = getattr(cfg, config_type)
 
-        transform = vak.transforms.defaults.get_default_transform(
-            model_name, config_type, transform_kwargs
-        )
-
-        dataset = vak.datapipes.parametric_umap.ParametricUMAPDataset.from_dataset_path(
+        dataset = vak.datapipes.frame_classification.TrainDatapipe.from_dataset_path(
             dataset_path=cfg_command.dataset.path,
             split=split,
-            transform=transform,
+            window_size=cfg_command.dataset.params['window_size'],
         )
-        assert isinstance(dataset, vak.datapipes.parametric_umap.ParametricUMAPDataset)
+        assert isinstance(dataset, vak.datapipes.frame_classification.TrainDatapipe)
