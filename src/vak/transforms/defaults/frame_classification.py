@@ -11,8 +11,6 @@ output includes a mask to crop off padding that was added.
 
 from __future__ import annotations
 
-from typing import Callable
-
 import torch
 import torchvision.transforms
 
