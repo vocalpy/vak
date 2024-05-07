@@ -249,6 +249,7 @@ def train_frame_classification_model(
             split="val",
             **dataset_config["params"],
             frames_standardizer=frames_standardizer,
+            return_padding_mask=True
         )
         logger.info(
             f"Duration of InferDatapipe used for evaluation, in seconds: {val_dataset.duration}",
