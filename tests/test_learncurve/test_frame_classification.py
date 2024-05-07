@@ -21,7 +21,7 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
             assert replicate_path.joinpath("labelmap.json").exists()
 
             if cfg.learncurve.standardize_frames:
-                assert replicate_path.joinpath("StandardizeSpect").exists()
+                assert replicate_path.joinpath("FramesStandardizer").exists()
 
             eval_csv = sorted(replicate_path.glob(f"eval_{model_name}*csv"))
             assert len(eval_csv) == 1

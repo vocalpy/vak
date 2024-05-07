@@ -14,9 +14,9 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
     assert results_path.joinpath("labelmap.json").exists()
 
     if cfg.train.standardize_frames or cfg.train.frames_standardizer_path:
-        assert results_path.joinpath("StandardizeSpect").exists()
+        assert results_path.joinpath("FramesStandardizer").exists()
     else:
-        assert not results_path.joinpath("StandardizeSpect").exists()
+        assert not results_path.joinpath("FramesStandardizer").exists()
 
     model_path = results_path.joinpath(model_name)
     assert model_path.exists()
