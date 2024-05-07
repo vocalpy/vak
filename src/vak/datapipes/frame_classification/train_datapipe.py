@@ -215,9 +215,6 @@ class TrainDatapipe:
         frame_dur: float
             Duration of a frame, i.e., a single sample in audio
             or a single timebin in a spectrogram.
-        item_transform : callable
-            The transform applied to each item :math:`(x, y)`
-            that is returned by :meth:`TrainDatapipe.__getitem__`.
         stride : int
             The size of the stride used to determine which windows
             are included in the dataset. The default is 1.
