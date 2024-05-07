@@ -156,6 +156,7 @@ def predict_with_frame_classification_model(
         split="predict",
         window_size=dataset_config["params"]["window_size"],
         frames_standardizer=spect_standardizer,
+        return_padding_mask=True
     )
 
     pred_loader = torch.utils.data.DataLoader(
