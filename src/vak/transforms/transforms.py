@@ -86,7 +86,7 @@ class FramesStandardizer:
                                     frames_key: str | None = None):
         if frames_path_col_name is None:
             from .. import datapipes
-            frames_path_col = datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
+            frames_path_col_name = datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
         if frames_key is None:
             frames_key = constants.SPECT_KEY
 
