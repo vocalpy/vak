@@ -275,7 +275,7 @@ class TrainDatapipe:
             )
         self.window_inds = window_inds
         self.item_transform = TrainItemTransform(
-            spect_standardizer=frames_standardizer
+            frames_standardizer=frames_standardizer
         )
 
     @property
