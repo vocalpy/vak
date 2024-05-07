@@ -15,7 +15,7 @@ from pynndescent import NNDescent
 from sklearn.utils import check_random_state
 from torch.utils.data import Dataset
 
-from .. import transforms as vak_transforms
+from ... import transforms as vak_transforms
 
 
 # isort: off

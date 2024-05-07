@@ -11,7 +11,7 @@ import pandas as pd
 import lightning
 import torch.utils.data
 
-from .. import models, transforms
+from .. import models
 from ..common import validators
 from ..datapipes.parametric_umap import Datapipe
 
@@ -84,13 +84,9 @@ def eval_parametric_umap_model(
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------
     model_name = model_config["name"]
-    item_transform = transforms.defaults.get_default_transform(
-        model_name, "eval"
-    )
-    val_dataset = InferDatapipe.from_dataset_path(
+    val_dataset = Datapipe.from_dataset_path(
         dataset_path=dataset_path,
         split=split,
-        transform=item_transform,
         **dataset_config["params"],
     )
     val_loader = torch.utils.data.DataLoader(
