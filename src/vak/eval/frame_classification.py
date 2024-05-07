@@ -141,7 +141,7 @@ def eval_frame_classification_model(
         dataset_path=dataset_path,
         split=split,
         window_size=dataset_config["params"]["window_size"],
-        frames_standarizer=frames_standardizer,
+        frames_standardizer=frames_standardizer,
         return_padding_mask=True,
     )
     val_loader = torch.utils.data.DataLoader(
