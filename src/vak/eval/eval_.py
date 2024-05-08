@@ -22,7 +22,6 @@ def eval(
     num_workers: int,
     labelmap_path: str | pathlib.Path | None = None,
     batch_size: int | None = None,
-    split: str = "test",
     frames_standardizer_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
     device: str | None = None,
@@ -120,7 +119,6 @@ def eval(
             labelmap_path=labelmap_path,
             output_dir=output_dir,
             num_workers=num_workers,
-            split=split,
             frames_standardizer_path=frames_standardizer_path,
             post_tfm_kwargs=post_tfm_kwargs,
         )
@@ -133,7 +131,6 @@ def eval(
             output_dir=output_dir,
             batch_size=batch_size,
             num_workers=num_workers,
-            split=split,
         )
     else:
         raise ValueError(f"Model family not recognized: {model_family}")
