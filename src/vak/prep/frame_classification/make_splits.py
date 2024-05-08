@@ -365,7 +365,7 @@ def make_splits(
                 )
                 frame_labels_npy_path = split_subdir / (
                     source_path.stem
-                    + datapipes.frame_classification.constants.FRAME_LABELS_EXT
+                    + datapipes.frame_classification.constants.MULTI_FRAME_LABELS_EXT
                 )
                 np.save(frame_labels_npy_path, frame_labels)
                 frame_labels_npy_path = str(
