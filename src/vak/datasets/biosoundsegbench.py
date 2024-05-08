@@ -392,12 +392,6 @@ class BioSoundSegBench:
         self.splits_metadata = SplitsMetadata.from_paths(
             json_path=splits_path, dataset_path=dataset_path
         )
-        # this is a bit convoluted: we are setting metadata, to set frame dur,
-        # to be able to compute duration in property below
-        self.training_replicate_metadata = metadata_from_splits_json_path(
-            self.splits_path, self.dataset_path
-        )
-        self.frame_dur = self.training_replicate_metadata.frame_dur
 
         if target_type is None and split != "predict":
             raise ValueError(
@@ -436,6 +430,45 @@ class BioSoundSegBench:
             # make single str a tuple so we can do ``if 'some target' in self.target_type``
             target_type = (target_type,)
         self.target_type = target_type
+
+        # this is a bit convoluted: we are setting metadata, to set frame dur,
+        # to be able to compute duration in property below
+        self.training_replicate_metadata = metadata_from_splits_json_path(
+            self.splits_path, self.dataset_path
+        )
+        self.frame_dur = self.training_replicate_metadata.frame_dur
+
+        if "multi_frame_labels" in target_type:
+            labelmaps_json_path = self.dataset_path / "labelmaps.json"
+            if not labelmaps_json_path.exists():
+                raise FileNotFoundError(
+                    "`target_type` includes \"multi_frame_labels\" but "
+                    "'labelmaps.json' was not found in root of dataset path:\n"
+                    f"{labelmaps_json_path}"
+                )
+            with labelmaps_json_path.open("r") as fp:
+                labelmaps = json.load(fp)
+                group = self.training_replicate_metadata.biosound_group
+                unit = self.training_replicate_metadata.unit
+                id_ = self.training_replicate_metadata.id
+            if id_ is not None:
+                if group == "Mouse-Pup-Call":
+                    self.labelmap = labelmaps[group][unit]["all"]
+                else:
+                    self.labelmap = labelmaps[group][unit][id_]
+            else:
+                if group == "Human-Speech":
+                    self.labelmap = labelmaps[group][unit]["all"]
+                else:
+                    raise ValueError(
+                        "Unable to determine labelmap to use for "
+                        f"group '{group}', unit '{unit}', and id '{id}'. "
+                        "Please check that splits_json path is correct."
+                    )
+        elif target_type == ('binary_frame_labels',):
+            self.labelmap = {0: 'no segment', 1: 'segment'}
+        elif target_type == ('boundary_frame_labels',):
+            self.labelmap = {0: 'no boundary', 1: 'boundary'}
 
         self.split = split
         split_df = pd.read_csv(self.splits_metadata.splits_csv_path)
