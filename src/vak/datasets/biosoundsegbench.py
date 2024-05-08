@@ -22,10 +22,7 @@ VALID_TARGET_TYPES = (
     "boundary_frame_labels",
     "multi_frame_labels",
     "binary_frame_labels",
-    ("boundary_frame_labels", "binary_frame_labels"),
-    ("binary_frame_labels", "boundary_frame_labels"),
     ("boundary_frame_labels", "multi_frame_labels"),
-    ("multi_frame_labels", "boundary_frame_labels"),
     "None",
 )
 
@@ -142,16 +139,25 @@ class TrainItemTransform:
         )
         self.frame_labels_transform = transforms.ToLongTensor()
 
-    def __call__(self, frames, frame_labels, spect_path=None):
+    def __call__(
+            self,
+            frames: torch.Tensor,
+            multi_frame_labels: torch.Tensor | None = None,
+            binary_frame_labels: torch.Tensor | None = None,
+            boundary_frame_labels: torch.Tensor | None = None,
+            ) -> dict:
         frames = self.frames_transform(frames)
-        frame_labels = self.frame_labels_transform(frame_labels)
         item = {
             "frames": frames,
-            "frame_labels": frame_labels,
         }
+        if multi_frame_labels is not None:
+            item["multi_frame_labels"] = self.frame_labels_transform(multi_frame_labels)
 
-        if spect_path is not None:
-            item["spect_path"] = spect_path
+        if binary_frame_labels is not None:
+            item["binary_frame_labels"] = self.frame_labels_transform(binary_frame_labels)
+
+        if boundary_frame_labels is not None:
+            item["boundary_frame_labels"] = self.frame_labels_transform(boundary_frame_labels)
 
         return item
 
@@ -291,18 +297,18 @@ class BioSoundSegBench:
         item_transform: Callable | None = None
     ):
         """BioSoundSegBench dataset."""
-        if split in ("train", "val", "test") and target_type is None:
-            raise ValueError(
-                f"Must specify `target_type` if split is '{split}', but "
-                "`target_type` is None."
-            )
-
+        # ---- validate args, roughly in order
         dataset_path = pathlib.Path(dataset_path)
         if not dataset_path.exists() or not dataset_path.is_dir():
             raise NotADirectoryError(
                 f"`dataset_path` for dataset not found, or not a directory: {dataset_path}"
             )
         self.dataset_path = dataset_path
+        if split not in common.constants.VALID_SPLITS:
+            raise ValueError(
+                f"Invalid split name: {split}\n"
+                f"Valid splits are: {common.constants.VALID_SPLITS}"
+            )
 
         splits_path = pathlib.Path(splits_path)
         if not splits_path.exists():
@@ -311,6 +317,11 @@ class BioSoundSegBench:
             json_path=splits_path, dataset_path=dataset_path
         )
 
+        if target_type is None and split != "predict":
+            raise ValueError(
+                f"Must specify `target_type` if split is '{split}', but "
+                "`target_type` is None. `target_type` can only be None if split is 'predict'."
+            )
         if target_type is None:
             target_type = "None"
         if target_type not in VALID_TARGET_TYPES:
@@ -357,13 +368,13 @@ class BioSoundSegBench:
             self.window_inds = datapipes.frame_classification.train_datapipe.get_window_inds(
                 self.sample_ids.shape[-1], window_size, stride
             )
+
         if item_transform is None:
             if split == "train":
                 self.item_transform = TrainItemTransform(
                     frames_standardizer=frames_standardizer
                 )
             elif split in ("val", "test", "predict"):
-                # we just need the `item_transform`, no vectors for windows
                 self.item_transform = InferItemTransform(
                     window_size,
                     frames_standardizer,
@@ -451,10 +462,11 @@ class BioSoundSegBench:
         frames_path = self.dataset_path / self.frames_paths[idx]
         spect_dict = common.files.spect.load(frames_path)
         item["frames"] = spect_dict[common.constants.SPECT_KEY]
-        for target_type in self.target_type:
-            item[target_type] = np.load(
-                self.dataset_path / self.target_paths[target_type][idx]
-            )
+        if target_type != "None":  # target_type can be None for predict
+            for target_type in self.target_type:
+                item[target_type] = np.load(
+                    self.dataset_path / self.target_paths[target_type][idx]
+                )
         item = self.item_transform(**item)
         return item
 
