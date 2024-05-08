@@ -154,7 +154,8 @@ def train_frame_classification_model(
     logger.info(
         f"Loading dataset from `dataset_path`: {dataset_path}\nUsing dataset config: {dataset_config}"
     )
-    # ---- *not* using a built-in dataset ----------------------------------------------------------------------------------
+    # ---------------- load training data  -----------------------------------------------------------------------------
+    # ---- *not* using a built-in dataset ------------------------------------------------------------------------------
     if dataset_config["name"] is None:
         metadata = datapipes.frame_classification.Metadata.from_dataset_path(
             dataset_path
@@ -173,7 +174,6 @@ def train_frame_classification_model(
             f"Duration of a frame in dataset, in seconds: {frame_dur}",
         )
 
-        # ---------------- load training data  -----------------------------------------------------------------------------
         logger.info(f"Using training split from dataset: {dataset_path}")
         train_dur = get_split_dur(dataset_df, "train")
         logger.info(
@@ -212,6 +212,7 @@ def train_frame_classification_model(
             raise ValueError(
                 "`frames_standardizer_path` provided but `standardize_frames` was False, these options conflict"
             )
+        # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
         else:
             # not standardize_frames and frames_standardizer_path is None:
             logger.info(
@@ -228,7 +229,7 @@ def train_frame_classification_model(
             frames_standardizer=frames_standardizer,
         )
     else:
-        # ---- we are using a built-in dataset
+        # ---- we are using a built-in dataset -----------------------------------------
         # TODO: fix this hack
         # (by doing the same thing with the built-in datapipes, making this a Boolean parameter
         # while still accepting a transform but defaulting to None)
