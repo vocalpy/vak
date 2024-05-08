@@ -538,7 +538,7 @@ class BioSoundSegBench:
             self.item_transform = item_transform
 
     @property
-    def input_shape(self):
+    def shape(self):
         tmp_x_ind = 0
         tmp_item = self.__getitem__(tmp_x_ind)
         input_shape = tmp_item["frames"].shape
