@@ -625,7 +625,7 @@ class BioSoundSegBench:
         frames_path = self.dataset_path / self.frames_paths[idx]
         spect_dict = common.files.spect.load(frames_path)
         item["frames"] = spect_dict[common.constants.SPECT_KEY]
-        if target_type != "None":  # target_type can be None for predict
+        if self.target_type != "None":  # target_type can be None for predict
             for target_type in self.target_type:
                 item[target_type] = np.load(
                     self.dataset_path / self.target_paths[target_type][idx]
