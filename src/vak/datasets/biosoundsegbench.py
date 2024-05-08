@@ -312,7 +312,8 @@ class BioSoundSegBench:
 
         splits_path = pathlib.Path(splits_path)
         if not splits_path.exists():
-            raise NotADirectoryError(f"`splits_path` not found: {splits_path}")
+            raise FileNotFoundError(f"`splits_path` not found: {splits_path}")
+        self.splits_path = splits_path
         self.splits_metadata = SplitsMetadata.from_paths(
             json_path=splits_path, dataset_path=dataset_path
         )
@@ -324,6 +325,27 @@ class BioSoundSegBench:
             )
         if target_type is None:
             target_type = "None"
+        if not isinstance(target_type, (str, list, tuple)):
+            raise TypeError(
+                f"`target_type` must be string or sequence of strings but type was: {type(target_type)}\n"
+                f"Valid `target_type` arguments are: {VALID_TARGET_TYPES}"
+            )
+        if isinstance(target_type, (list, tuple)):
+            if not all([
+                isinstance(target_type_, str)
+                for target_type_ in target_type
+            ]):
+                types_in_target_types = set(
+                    [type(target_type_) for target_type_ in target_type]
+                )
+                raise TypeError(
+                    "A list or tuple of `target_type` must be all strings, "
+                    f"but found the following types: {types_in_target_types}\n"
+                    f"`target_type` was: {target_type}\n"
+                    f"Valid `target_type` arguments are: {VALID_TARGET_TYPES}"
+                )
+            # alphabetically sort list or tuple, and make sure it's a tuple
+            target_type = tuple(sorted(target_type))
         if target_type not in VALID_TARGET_TYPES:
             raise ValueError(
                 f"Invalid `target_type`: {target_type}. "
