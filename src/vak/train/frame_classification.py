@@ -12,7 +12,7 @@ import joblib
 import pandas as pd
 import torch.utils.data
 
-from .. import datapipes, models, transforms
+from .. import datapipes, datasets, models, transforms
 from ..common import validators
 from ..common.trainer import get_default_trainer
 from ..datapipes.frame_classification import InferDatapipe, TrainDatapipe
@@ -140,93 +140,125 @@ def train_frame_classification_model(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
 
-    logger.info(
-        f"Loading dataset from `dataset_path`: {dataset_path}",
-    )
-    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
-        dataset_path
-    )
-    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
-    dataset_df = pd.read_csv(dataset_csv_path)
-    # ---------------- pre-conditions ----------------------------------------------------------------------------------
-    if val_step and not dataset_df["split"].str.contains("val").any():
-        raise ValueError(
-            f"val_step set to {val_step} but dataset does not contain a validation set; "
-            f"please run `vak prep` with a config.toml file that specifies a duration for the validation set."
-        )
-
     # ---- set up directory to save output -----------------------------------------------------------------------------
+    # we do this first to make sure we can save things in `results_path`: copy of toml config file, labelset.json, etc
     results_path = pathlib.Path(results_path).expanduser().resolve()
     if not results_path.is_dir():
         raise NotADirectoryError(
-            f"results_path not recognized as a directory: {results_path}"
+            f"`results_path` not recognized as a directory: {results_path}"
         )
-
-    frame_dur = metadata.frame_dur
     logger.info(
-        f"Duration of a frame in dataset, in seconds: {frame_dur}",
+        f"Will save results in `results_path`: {results_path}",
     )
 
-    # ---------------- load training data  -----------------------------------------------------------------------------
-    logger.info(f"Using training split from dataset: {dataset_path}")
-    # below, if we're going to train network to predict unlabeled segments, then
-    # we need to include a class for those unlabeled segments in labelmap,
-    # the mapping from labelset provided by user to a set of consecutive
-    # integers that the network learns to predict
-    train_dur = get_split_dur(dataset_df, "train")
     logger.info(
-        f"Total duration of training split from dataset (in s): {train_dur}",
+        f"Loading dataset from `dataset_path`: {dataset_path}\nUsing dataset config: {dataset_config}"
     )
-
-    labelmap_path = dataset_path / "labelmap.json"
-    logger.info(f"loading labelmap from path: {labelmap_path}")
-    with labelmap_path.open("r") as f:
-        labelmap = json.load(f)
-    # copy to new results_path
-    with open(results_path.joinpath("labelmap.json"), "w") as f:
-        json.dump(labelmap, f)
-
-    if frames_standardizer_path is not None and standardize_frames:
-        logger.info(
-            f"loading spect scaler from path: {frames_standardizer_path}"
+    # ---- *not* using a built-in dataset ----------------------------------------------------------------------------------
+    if dataset_config["name"] is None:
+        metadata = datapipes.frame_classification.Metadata.from_dataset_path(
+            dataset_path
         )
-        frames_standardizer = joblib.load(frames_standardizer_path)
-        shutil.copy(frames_standardizer_path, results_path)
-    # get transforms just before creating datasets with them
-    elif standardize_frames and frames_standardizer_path is None:
+        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+        dataset_df = pd.read_csv(dataset_csv_path)
+        # we have to check this pre-condition here since we need `dataset_df` to check
+        if val_step and not dataset_df["split"].str.contains("val").any():
+            raise ValueError(
+                f"val_step set to {val_step} but dataset does not contain a validation set; "
+                f"please run `vak prep` with a config.toml file that specifies a duration for the validation set."
+            )
+
+        frame_dur = metadata.frame_dur
         logger.info(
-            "no frames_standardizer_path provided, not loading",
+            f"Duration of a frame in dataset, in seconds: {frame_dur}",
         )
-        logger.info("will standardize (normalize) frames")
-        frames_standardizer = transforms.FramesStandardizer.fit_dataset_path(
-            dataset_path,
+
+        # ---------------- load training data  -----------------------------------------------------------------------------
+        logger.info(f"Using training split from dataset: {dataset_path}")
+        train_dur = get_split_dur(dataset_df, "train")
+        logger.info(
+            f"Total duration of training split from dataset (in s): {train_dur}",
+        )
+
+        labelmap_path = dataset_path / "labelmap.json"
+        logger.info(f"loading labelmap from path: {labelmap_path}")
+        with labelmap_path.open("r") as f:
+            labelmap = json.load(f)
+        # copy to new results_path
+        with open(results_path.joinpath("labelmap.json"), "w") as f:
+            json.dump(labelmap, f)
+
+        if frames_standardizer_path is not None and standardize_frames:
+            logger.info(
+                f"Loading frames standardizer from path: {frames_standardizer_path}"
+            )
+            frames_standardizer = joblib.load(frames_standardizer_path)
+            shutil.copy(frames_standardizer_path, results_path)
+        # get transforms just before creating datasets with them
+        elif standardize_frames and frames_standardizer_path is None:
+            logger.info(
+                "No `frames_standardizer_path` provided, not loading",
+            )
+            logger.info("Will standardize (normalize) frames")
+            frames_standardizer = transforms.FramesStandardizer.fit_dataset_path(
+                dataset_path,
+                split="train",
+                subset=subset,
+            )
+            joblib.dump(
+                frames_standardizer, results_path.joinpath("FramesStandardizer")
+            )
+        elif frames_standardizer_path is not None and not standardize_frames:
+            raise ValueError(
+                "`frames_standardizer_path` provided but `standardize_frames` was False, these options conflict"
+            )
+        else:
+            # not standardize_frames and frames_standardizer_path is None:
+            logger.info(
+                "`standardize_frames` is False and no `frames_standardizer_path` was provided, "
+                "will not standardize spectrograms",
+            )
+            frames_standardizer = None
+
+        train_dataset = TrainDatapipe.from_dataset_path(
+            dataset_path=dataset_path,
             split="train",
             subset=subset,
-        )
-        joblib.dump(
-            frames_standardizer, results_path.joinpath("FramesStandardizer")
-        )
-    elif frames_standardizer_path is not None and not standardize_frames:
-        raise ValueError(
-            "frames_standardizer_path provided but standardize_frames was False, these options conflict"
+            window_size=dataset_config["params"]["window_size"],
+            frames_standardizer=frames_standardizer,
         )
     else:
-        # not standardize_frames and frames_standardizer_path is None:
+        # ---- we are using a built-in dataset
+        # TODO: fix this hack
+        # (by doing the same thing with the built-in datapipes, making this a Boolean parameter
+        # while still accepting a transform but defaulting to None)
+        if "standardize_frames" not in dataset_config:
+            logger.info(
+                f"Adding `standardize_frames` argument to dataset_config[\"params\"]: {standardize_frames}"
+            )
+            dataset_config["params"]["standardize_frames"] = standardize_frames
+        train_dataset = datasets.get(
+            dataset_config,
+            split="train",
+            )
         logger.info(
-            "standardize_frames is False and no frames_standardizer_path was provided, "
-            "will not standardize spectrograms",
+            f"Duration of a frame in dataset, in seconds: {train_dataset.frame_dur}",
         )
-        frames_standardizer = None
+        # copy labelmap from dataset to new results_path
+        labelmap = train_dataset.labelmap
+        with open(results_path.joinpath("labelmap.json"), "w") as fp:
+            json.dump(labelmap, fp)
+        frames_standardizer = getattr(train_dataset.item_transform, 'frames_standardizer')
+        if frames_standardizer is not None:
+            logger.info(
+                f"Saving `frames_standardizer` from item transform on training dataset"
+            )
+            joblib.dump(
+                frames_standardizer, results_path.joinpath("FramesStandardizer")
+            )
 
-    train_dataset = TrainDatapipe.from_dataset_path(
-        dataset_path=dataset_path,
-        split="train",
-        subset=subset,
-        window_size=dataset_config["params"]["window_size"],
-        frames_standardizer=frames_standardizer,
-    )
     logger.info(
-        f"Duration of TrainDatapipe used for training, in seconds: {train_dataset.duration}",
+        f"Duration of {train_dataset.__class__.__name__} used for training, in seconds: {train_dataset.duration}",
     )
     train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,
@@ -240,21 +272,28 @@ def train_frame_classification_model(
         logger.info(
             f"Will measure error on validation set every {val_step} steps of training",
         )
-        logger.info(f"Using validation split from dataset:\n{dataset_path}")
-        val_dur = get_split_dur(dataset_df, "val")
+        if dataset_config["name"] is None:
+            logger.info(f"Using validation split from dataset:\n{dataset_path}")
+            val_dur = get_split_dur(dataset_df, "val")
+            logger.info(
+                f"Total duration of validation split from dataset (in s): {val_dur}",
+            )
+            val_dataset = InferDatapipe.from_dataset_path(
+                dataset_path=dataset_path,
+                split="val",
+                **dataset_config["params"],
+                frames_standardizer=frames_standardizer,
+                return_padding_mask=True,
+            )
+        else:
+            dataset_config["params"]["return_padding_mask"] = True
+            val_dataset = datasets.get(
+                dataset_config,
+                split="val",
+                frames_standardizer=frames_standardizer,
+            )
         logger.info(
-            f"Total duration of validation split from dataset (in s): {val_dur}",
-        )
-
-        val_dataset = InferDatapipe.from_dataset_path(
-            dataset_path=dataset_path,
-            split="val",
-            **dataset_config["params"],
-            frames_standardizer=frames_standardizer,
-            return_padding_mask=True,
-        )
-        logger.info(
-            f"Duration of InferDatapipe used for evaluation, in seconds: {val_dataset.duration}",
+            f"Duration of {val_dataset.__class__.__name__} used for evaluation, in seconds: {val_dataset.duration}",
         )
         val_loader = torch.utils.data.DataLoader(
             dataset=val_dataset,
