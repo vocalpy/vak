@@ -312,7 +312,14 @@ class BioSoundSegBench:
 
         splits_path = pathlib.Path(splits_path)
         if not splits_path.exists():
-            raise FileNotFoundError(f"`splits_path` not found: {splits_path}")
+            tmp_splits_path = dataset_path / "splits" / "splits-json" / splits_path
+            if not tmp_splits_path.exists():
+                raise FileNotFoundError(
+                    f"Did not find `splits_path` using either absolute path ({splits_path})"
+                    f"or relative to `dataset_path` ({tmp_splits_path})"
+                )
+            # if tmp_splits_path *does* exist, replace splits_path with it
+            splits_path = tmp_splits_path
         self.splits_path = splits_path
         self.splits_metadata = SplitsMetadata.from_paths(
             json_path=splits_path, dataset_path=dataset_path
