@@ -47,9 +47,9 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
         for frames_path in frames_paths:
             assert (dataset_path / frames_path).exists()
 
-    if vak.datapipes.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME in df_returned_by_prep.columns:
+    if vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME in df_returned_by_prep.columns:
         frame_labels_paths = df_returned_by_prep[
-            vak.datapipes.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME
         ].values
         if not all([frame_labels_path is None for frame_labels_path in frame_labels_paths]):
             for frame_labels_path in frame_labels_paths:

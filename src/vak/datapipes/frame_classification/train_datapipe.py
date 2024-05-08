@@ -259,7 +259,7 @@ class TrainDatapipe:
             constants.FRAMES_PATH_COL_NAME
         ].values
         self.frame_labels_paths = self.dataset_df[
-            constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            constants.MULTI_FRAME_LABELS_PATH_COL_NAME
         ].values
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample

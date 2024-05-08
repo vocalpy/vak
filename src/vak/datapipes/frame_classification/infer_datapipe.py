@@ -176,7 +176,7 @@ class InferDatapipe:
         ].values
         if split != "predict":
             self.frame_labels_paths = self.dataset_df[
-                constants.FRAME_LABELS_NPY_PATH_COL_NAME
+                constants.MULTI_FRAME_LABELS_PATH_COL_NAME
             ].values
         else:
             self.frame_labels_paths = None

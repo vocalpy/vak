@@ -148,10 +148,10 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
         ].values
 
         if purpose != "predict":
-            assert vak.datapipes.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME in split_df.columns
+            assert vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME in split_df.columns
 
             frame_labels_paths = split_df[
-                vak.datapipes.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+                vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME
             ].values
 
             annots = vak.common.annotation.from_df(split_df)

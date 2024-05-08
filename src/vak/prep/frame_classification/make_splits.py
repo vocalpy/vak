@@ -446,7 +446,7 @@ def make_splits(
             for sample in samples
         ]
         split_df[
-            datapipes.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME
         ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 
