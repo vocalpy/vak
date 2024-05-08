@@ -7,6 +7,8 @@ import pathlib
 import attr.validators
 from attr import asdict, define, field
 
+from ..common.converters import expanded_user_path
+
 
 @define
 class DatasetConfig:
@@ -31,9 +33,9 @@ class DatasetConfig:
         Default is None.
     """
 
-    path: pathlib.Path = field(converter=pathlib.Path)
+    path: pathlib.Path = field(converter=expanded_user_path)
     splits_path: pathlib.Path | None = field(
-        converter=attr.converters.optional(pathlib.Path), default=None
+        converter=attr.converters.optional(expanded_user_path), default=None
     )
     name: str | None = field(
         converter=attr.converters.optional(str), default=None
