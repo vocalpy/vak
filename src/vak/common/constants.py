@@ -1,4 +1,4 @@
-"""constants used by multiple modules.
+"""Constants used by multiple modules.
 Defined here to avoid circular imports.
 """
 
@@ -57,3 +57,5 @@ SPECT_FORMAT_EXT_MAP = {
     "npz": SPECT_NPZ_EXTENSION,
     "mat": ".mat",
 }
+
+VALID_SPLITS = ("predict", "test", "train", "val")
