@@ -183,6 +183,7 @@ class TrainItemTransform:
         self,
         frames_standardizer: FramesStandardizer | None = None,
     ):
+        from ..transforms import FramesStandardizer  # avoid circular import
         if frames_standardizer is not None:
             if isinstance(
                 frames_standardizer, FramesStandardizer
@@ -385,7 +386,7 @@ class BioSoundSegBench:
 
         splits_path = pathlib.Path(splits_path)
         if not splits_path.exists():
-            tmp_splits_path = dataset_path / "splits" / "splits-json" / splits_path
+            tmp_splits_path = dataset_path / "splits" / "splits-jsons" / splits_path
             if not tmp_splits_path.exists():
                 raise FileNotFoundError(
                     f"Did not find `splits_path` using either absolute path ({splits_path})"
@@ -553,6 +554,13 @@ class BioSoundSegBench:
     @property
     def duration(self):
         return self.sample_ids.shape[-1] * self.frame_dur
+
+    def __len__(self):
+        """number of batches"""
+        if self.split == "train":
+            return len(self.window_inds)
+        else:
+            return len(np.unique(self.sample_ids))
 
     def _getitem_train(self, idx):
         window_idx = self.window_inds[idx]
