@@ -1,11 +1,11 @@
 """Class representing BioSoundSegBench dataset."""
 from __future__ import annotations
 
-import dataclasses
 import json
 import pathlib
 from typing import Callable, Literal, TYPE_CHECKING
 
+from attrs import define
 import numpy as np
 import pandas as pd
 
@@ -33,24 +33,24 @@ BINARY_FRAME_LABELS_PATH_COL_NAME = "binary_frame_labels_path"
 BOUNDARY_FRAME_LABELS_PATH_COL_NAME = "boundary_frame_labels_path"
 
 
-@dataclasses.dataclass
+@define
 class SampleIDVectorPaths:
     train: pathlib.Path
     val: pathlib.Path
     test: pathlib.Path
 
 
-@dataclasses.dataclass
+@define
 class IndsInSampleVectorPaths:
     train: pathlib.Path
     val: pathlib.Path
     test: pathlib.Path
 
 
-@dataclasses.dataclass
+@define
 class SplitsMetadata:
-    """Dataclass that represents metadata about dataset splits,
-    loaded from a json file"""
+    """Class that represents metadata about dataset splits
+    in the BioSoundSegBench dataset, loaded from a json file"""
 
     splits_csv_path: pathlib.Path
     sample_id_vector_paths: SampleIDVectorPaths
@@ -105,6 +105,74 @@ class SplitsMetadata:
             sample_id_vector_paths,
             inds_in_sample_vector_paths,
         )
+
+
+@define
+class TrainingReplicateMetadata:
+    """Class representing metadata for a
+    pre-defined training replicate
+    in the BioSoundSegBench dataset.
+    """
+    biosound_group: str
+    id: str | None
+    frame_dur: float
+    unit: str
+    data_source: str | None
+    train_dur: float
+    replicate_num: int
+
+
+def metadata_from_splits_json_path(
+        splits_json_path: pathlib.Path, datset_path: pathlib.Path
+    ) -> TrainingReplicateMetadata:
+    try:
+        # Human-Speech doesn't have ID or data source in filename
+        # so it will raise a ValueError
+        name = splits_json_path.name
+        (biosound_group,
+        id_,
+        timebin_dur_1st_half,
+        timebin_dur_2nd_half,
+        unit,
+        data_source,
+        train_dur_1st_half,
+        train_dur_2nd_half,
+        replicate_num,
+        _, _
+        ) = name.split('.')
+    except ValueError:
+        name = splits_json_path.name
+        (biosound_group,
+        timebin_dur_1st_half,
+        timebin_dur_2nd_half,
+        unit,
+        train_dur_1st_half,
+        train_dur_2nd_half,
+        replicate_num,
+        _, _
+        ) = name.split('.')
+        id_ = None
+        data_source = None
+    if id_ is not None:
+        id_ = id_.split('-')[-1]
+    timebin_dur = float(
+        timebin_dur_1st_half.split('-')[-1] + '.' + timebin_dur_2nd_half.split('-')[0]
+    )
+    train_dur = float(
+        train_dur_1st_half.split('-')[-1] + '.' + train_dur_2nd_half.split('-')[0]
+    )
+    replicate_num = int(
+            replicate_num.split('-')[-1]
+    )
+    return TrainingReplicateMetadata(
+        biosound_group,
+        id_,
+        timebin_dur,
+        unit,
+        data_source,
+        train_dur,
+        replicate_num,
+    )
 
 
 class TrainItemTransform:
@@ -324,6 +392,12 @@ class BioSoundSegBench:
         self.splits_metadata = SplitsMetadata.from_paths(
             json_path=splits_path, dataset_path=dataset_path
         )
+        # this is a bit convoluted: we are setting metadata, to set frame dur,
+        # to be able to compute duration in property below
+        self.training_replicate_metadata = metadata_from_splits_json_path(
+            self.splits_path, self.dataset_path
+        )
+        self.frame_dur = self.training_replicate_metadata.frame_dur
 
         if target_type is None and split != "predict":
             raise ValueError(
@@ -386,17 +460,17 @@ class BioSoundSegBench:
         self.window_size = window_size
         self.stride = stride
 
-        if split == "train":
-            # we need all these vectors for getting batches of windows during training
-            self.sample_ids = np.load(
-                getattr(self.splits_metadata.sample_id_vector_paths, split)
-            )
-            self.inds_in_sample = np.load(
-                getattr(self.splits_metadata.inds_in_sample_vector_paths, split)
-            )
-            self.window_inds = datapipes.frame_classification.train_datapipe.get_window_inds(
-                self.sample_ids.shape[-1], window_size, stride
-            )
+        # we need all these vectors for getting batches of windows during training
+        # for other splits, we use these to determine the duration of the dataset
+        self.sample_ids = np.load(
+            getattr(self.splits_metadata.sample_id_vector_paths, split)
+        )
+        self.inds_in_sample = np.load(
+            getattr(self.splits_metadata.inds_in_sample_vector_paths, split)
+        )
+        self.window_inds = datapipes.frame_classification.train_datapipe.get_window_inds(
+            self.sample_ids.shape[-1], window_size, stride
+        )
 
         if item_transform is None:
             if split == "train":
@@ -427,6 +501,10 @@ class BioSoundSegBench:
             # discard windows dimension from shape --
             # it's sample dependent and not what we want
             return input_shape[1:]
+
+    @property
+    def duration(self):
+        return self.sample_ids.shape[-1] * self.frame_dur
 
     def _getitem_train(self, idx):
         window_idx = self.window_inds[idx]
