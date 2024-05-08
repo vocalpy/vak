@@ -1,36 +1,39 @@
+"""Class representing BioSoundSegBench dataset."""
 from __future__ import annotations
 
-from typing import Callable, Literal, Mapping
-
-import collections
 import dataclasses
 import json
 import pathlib
+from typing import Callable, Literal, TYPE_CHECKING
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import vak
 
-from biosoundsegbench import transforms
+import torch
+import torchvision.transforms
+
+from .. import common, datapipes, transforms
+
+if TYPE_CHECKING:
+    from ..transforms import FramesStandardizer
 
 
 VALID_TARGET_TYPES = (
-    'boundary_onehot',
-    'multi_frame_labels',
-    'binary_frame_labels',
-    ('boundary_onehot', 'binary_frame_labels'),
-    ('binary_frame_labels', 'boundary_onehot'),
-    ('boundary_onehot', 'multi_frame_labels'),
-    ('multi_frame_labels', 'boundary_onehot'),
-    'None',
+    "boundary_frame_labels",
+    "multi_frame_labels",
+    "binary_frame_labels",
+    ("boundary_frame_labels", "binary_frame_labels"),
+    ("binary_frame_labels", "boundary_frame_labels"),
+    ("boundary_frame_labels", "multi_frame_labels"),
+    ("multi_frame_labels", "boundary_frame_labels"),
+    "None",
 )
 
 
 FRAMES_PATH_COL_NAME = "frames_path"
 MULTI_FRAME_LABELS_PATH_COL_NAME = "multi_frame_labels_path"
 BINARY_FRAME_LABELS_PATH_COL_NAME = "binary_frame_labels_path"
-BOUNDARY_ONEHOT_PATH_COL_NAME = "boundary_onehot_path"
+BOUNDARY_ONEHOT_PATH_COL_NAME = "boundary_frame_labels_path"
 
 
 @dataclasses.dataclass
@@ -51,6 +54,7 @@ class IndsInSampleVectorPaths:
 class SplitsMetadata:
     """Dataclass that represents metadata about dataset splits,
     loaded from a json file"""
+
     splits_csv_path: pathlib.Path
     sample_id_vector_paths: SampleIDVectorPaths
     inds_in_sample_vector_paths: IndsInSampleVectorPaths
@@ -58,7 +62,7 @@ class SplitsMetadata:
     @classmethod
     def from_paths(cls, json_path, dataset_path):
         json_path = pathlib.Path(json_path)
-        with json_path.open('r') as fp:
+        with json_path.open("r") as fp:
             splits_json = json.load(fp)
 
         dataset_path = pathlib.Path(dataset_path)
@@ -68,7 +72,7 @@ class SplitsMetadata:
             )
 
         splits_csv_path = pathlib.Path(
-            dataset_path / splits_json['splits_csv_path']
+            dataset_path / splits_json["splits_csv_path"]
         )
         if not splits_csv_path.exists():
             raise FileNotFoundError(
@@ -77,20 +81,18 @@ class SplitsMetadata:
 
         sample_id_vector_paths = {
             split: dataset_path / path
-            for split, path in splits_json['sample_id_vec_path'].items()
+            for split, path in splits_json["sample_id_vec_path"].items()
         }
         for split, vec_path in sample_id_vector_paths.items():
             if not vec_path.exists():
                 raise FileNotFoundError(
                     f"`sample_id_vector_path` for split '{split}' not found: {vec_path}"
                 )
-        sample_id_vector_paths = SampleIDVectorPaths(
-            **sample_id_vector_paths
-        )
+        sample_id_vector_paths = SampleIDVectorPaths(**sample_id_vector_paths)
 
         inds_in_sample_vector_paths = {
             split: dataset_path / path
-            for split, path in splits_json['inds_in_sample_vec_path'].items()
+            for split, path in splits_json["inds_in_sample_vec_path"].items()
         }
         for split, vec_path in inds_in_sample_vector_paths.items():
             if not vec_path.exists():
@@ -104,51 +106,213 @@ class SplitsMetadata:
         return cls(
             splits_csv_path,
             sample_id_vector_paths,
-            inds_in_sample_vector_paths
+            inds_in_sample_vector_paths,
         )
+
+
+class TrainItemTransform:
+    """Default transform used when training frame classification models
+    with :class:`BioSoundSegBench` dataset."""
+
+    def __init__(
+        self,
+        frames_standardizer: FramesStandardizer | None = None,
+    ):
+        if frames_standardizer is not None:
+            if isinstance(
+                frames_standardizer, FramesStandardizer
+            ):
+                frames_transform = [frames_standardizer]
+            else:
+                raise TypeError(
+                    f"invalid type for frames_standardizer: {type(frames_standardizer)}. "
+                    "Should be an instance of vak.transforms.StandardizeSpect"
+                )
+        else:
+            frames_transform = []
+
+        frames_transform.extend(
+            [
+                transforms.ToFloatTensor(),
+                transforms.AddChannel(),
+            ]
+        )
+        self.frames_transform = torchvision.transforms.Compose(
+            frames_transform
+        )
+        self.frame_labels_transform = transforms.ToLongTensor()
+
+    def __call__(self, frames, frame_labels, spect_path=None):
+        frames = self.frames_transform(frames)
+        frame_labels = self.frame_labels_transform(frame_labels)
+        item = {
+            "frames": frames,
+            "frame_labels": frame_labels,
+        }
+
+        if spect_path is not None:
+            item["spect_path"] = spect_path
+
+        return item
+
+
+class InferItemTransform:
+    """Default transform used when running inference on classification models
+    with :class:`BioSoundSegBench` dataset, for evaluation or to generate new predictions.
+
+    Returned item includes frames reshaped into a stack of windows,
+    with padded added to make reshaping possible.
+    Any `frame_labels` are not padded and reshaped,
+    but are converted to :class:`torch.LongTensor`.
+    If return_padding_mask is True, item includes 'padding_mask' that
+    can be used to crop off any predictions made on the padding.
+
+    Attributes
+    ----------
+    frames_standardizer : vak.transforms.FramesStandardizer
+        instance that has already been fit to dataset, using fit_df method.
+        Default is None, in which case no standardization transform is applied.
+    window_size : int
+        width of window in number of elements. Argument to PadToWindow transform.
+    frames_padval : float
+        Value to pad frames with. Added to end of array, the "right side".
+        Argument to PadToWindow transform. Default is 0.0.
+    frame_labels_padval : int
+        Value to pad frame labels vector with. Added to the end of the array.
+        Argument to PadToWindow transform. Default is -1.
+        Used with ``ignore_index`` argument of :mod:`torch.nn.CrossEntropyLoss`.
+    return_padding_mask : bool
+        if True, the dictionary returned by ItemTransform classes will include
+        a boolean vector to use for cropping back down to size before padding.
+        padding_mask has size equal to width of padded array, i.e. original size
+        plus padding at the end, and has values of 1 where
+        columns in padded are from the original array,
+        and values of 0 where columns were added for padding.
+    """
+
+    def __init__(
+        self,
+        window_size,
+        frames_standardizer=None,
+        frames_padval=0.0,
+        frame_labels_padval=-1,
+        return_padding_mask=True,
+        channel_dim=1,
+    ):
+        from ..transforms import FramesStandardizer  # avoid circular import
+
+        self.window_size = window_size
+        self.frames_padval = frames_padval
+        self.frame_labels_padval = frame_labels_padval
+        self.return_padding_mask = return_padding_mask
+        self.channel_dim = channel_dim
+
+        if frames_standardizer is not None:
+            if not isinstance(
+                frames_standardizer, FramesStandardizer
+            ):
+                raise TypeError(
+                    f"Invalid type for frames_standardizer: {type(frames_standardizer)}. "
+                    "Should be an instance of vak.transforms.FramesStandardizer"
+                )
+        self.frames_standardizer = frames_standardizer
+
+        self.pad_to_window = transforms.PadToWindow(
+            window_size, frames_padval, return_padding_mask=return_padding_mask
+        )
+
+        self.frames_transform_after_pad = torchvision.transforms.Compose(
+            [
+                transforms.ViewAsWindowBatch(window_size),
+                transforms.ToFloatTensor(),
+                # below, add channel at first dimension because windows become batch
+                transforms.AddChannel(channel_dim=channel_dim),
+            ]
+        )
+
+        self.frame_labels_padval = frame_labels_padval
+        self.frame_labels_transform = transforms.ToLongTensor()
+
+    def __call__(
+        self,
+        frames: torch.Tensor,
+        multi_frame_labels: torch.Tensor | None = None,
+        binary_frame_labels: torch.Tensor | None = None,
+        boundary_frame_labels: torch.Tensor | None = None,
+        frames_path=None,
+    ) -> dict:
+        if self.frames_standardizer:
+            frames = self.frames_standardizer(frames)
+
+        if self.pad_to_window.return_padding_mask:
+            frames, padding_mask = self.pad_to_window(frames)
+        else:
+            frames = self.pad_to_window(frames)
+            padding_mask = None
+        frames = self.frames_transform_after_pad(frames)
+
+        item = {
+            "frames": frames,
+        }
+
+        if multi_frame_labels is not None:
+            item["multi_frame_labels"] = self.frame_labels_transform(multi_frame_labels)
+
+        if binary_frame_labels is not None:
+            item["binary_frame_labels"] = self.frame_labels_transform(binary_frame_labels)
+
+        if boundary_frame_labels is not None:
+            item["boundary_frame_labels"] = self.frame_labels_transform(boundary_frame_labels)
+
+        if padding_mask is not None:
+            item["padding_mask"] = padding_mask
+
+        if frames_path is not None:
+            # make sure frames_path is a str, not a pathlib.Path
+            item["frames_path"] = str(frames_path)
+
+        return item
 
 
 class BioSoundSegBench:
+    """Class representing BioSoundSegBench dataset."""
     def __init__(
         self,
-        root: str | pathlib.Path,
+        dataset_path: str | pathlib.Path,
         splits_path: str | pathlib.Path,
         split: Literal["train", "val", "test"],
-        item_transform: Callable,
+        window_size: int,
         target_type: str | list[str] | tuple[str] | None = None,
-        window_size: int | None = None,
         stride: int = 1,
+        frames_standardizer: FramesStandardizer | None = None,
+        frames_padval: float = 0.0,
+        frame_labels_padval: int = -1,
+        return_padding_mask: bool = False,
+        item_transform: Callable | None = None
     ):
         """BioSoundSegBench dataset."""
-        if split == 'train' and window_size is None:
+        if split in ("train", "val", "test") and target_type is None:
             raise ValueError(
-                "Must specify `window_size` if split is 'train'`, but "
-                "`window_size` is None."
-            )
-        if split == 'train' and target_type is None:
-            raise ValueError(
-                "Must specify `target_type` if split is 'train'`, but "
+                f"Must specify `target_type` if split is '{split}', but "
                 "`target_type` is None."
             )
 
-        root = pathlib.Path(root)
-        if not root.exists() or not root.is_dir():
+        dataset_path = pathlib.Path(dataset_path)
+        if not dataset_path.exists() or not dataset_path.is_dir():
             raise NotADirectoryError(
-                f"`root` for dataset not found, or not a directory: {root}"
+                f"`dataset_path` for dataset not found, or not a directory: {dataset_path}"
             )
-        self.root = root
+        self.dataset_path = dataset_path
 
         splits_path = pathlib.Path(splits_path)
         if not splits_path.exists():
-            raise NotADirectoryError(
-                f"`splits_path` not found: {splits_path}"
-            )
+            raise NotADirectoryError(f"`splits_path` not found: {splits_path}")
         self.splits_metadata = SplitsMetadata.from_paths(
-            json_path=splits_path, dataset_path=root
+            json_path=splits_path, dataset_path=dataset_path
         )
 
         if target_type is None:
-            target_type = 'None'
+            target_type = "None"
         if target_type not in VALID_TARGET_TYPES:
             raise ValueError(
                 f"Invalid `target_type`: {target_type}. "
@@ -164,50 +328,62 @@ class BioSoundSegBench:
         split_df = split_df[split_df.split == split].copy()
         self.split_df = split_df
 
-        self.frames_paths = self.split_df[
-            FRAMES_PATH_COL_NAME
-        ].values
+        self.frames_paths = self.split_df[FRAMES_PATH_COL_NAME].values
         self.target_paths = {}
-        if 'multi_frame_labels' in self.target_type:
-            self.target_paths['multi_frame_labels'] = self.split_df[
+        if "multi_frame_labels" in self.target_type:
+            self.target_paths["multi_frame_labels"] = self.split_df[
                 MULTI_FRAME_LABELS_PATH_COL_NAME
             ].values
-        if 'binary_frame_labels' in self.target_type:
-            self.target_paths['binary_frame_labels'] = self.split_df[
+        if "binary_frame_labels" in self.target_type:
+            self.target_paths["binary_frame_labels"] = self.split_df[
                 BINARY_FRAME_LABELS_PATH_COL_NAME
             ].values
-        if 'boundary_onehot' in self.target_type:
-            self.target_paths['boundary_onehot'] = self.split_df[
+        if "boundary_frame_labels" in self.target_type:
+            self.target_paths["boundary_frame_labels"] = self.split_df[
                 BOUNDARY_ONEHOT_PATH_COL_NAME
             ].values
-        else:
-            self.boundary_onehot_paths = None
 
-        self.sample_ids = np.load(
-            getattr(self.splits_metadata.sample_id_vector_paths, split)
-        )
-        self.inds_in_sample = np.load(
-            getattr(self.splits_metadata.inds_in_sample_vector_paths, split)
-        )
         self.window_size = window_size
         self.stride = stride
-        if split == 'train':
-            window_inds = vak.datasets.frame_classification.window_dataset.get_window_inds(
+
+        if split == "train":
+            # we need all these vectors for getting batches of windows during training
+            self.sample_ids = np.load(
+                getattr(self.splits_metadata.sample_id_vector_paths, split)
+            )
+            self.inds_in_sample = np.load(
+                getattr(self.splits_metadata.inds_in_sample_vector_paths, split)
+            )
+            self.window_inds = datapipes.frame_classification.train_datapipe.get_window_inds(
                 self.sample_ids.shape[-1], window_size, stride
             )
+        if item_transform is None:
+            if split == "train":
+                self.item_transform = TrainItemTransform(
+                    frames_standardizer=frames_standardizer
+                )
+            elif split in ("val", "test", "predict"):
+                # we just need the `item_transform`, no vectors for windows
+                self.item_transform = InferItemTransform(
+                    window_size,
+                    frames_standardizer,
+                    frames_padval,
+                    frame_labels_padval,
+                    return_padding_mask,
+                )
         else:
-            window_inds = None
-        self.window_inds = window_inds
-        self.item_transform = item_transform
+            self.item_transform = item_transform
 
     @property
     def input_shape(self):
         tmp_x_ind = 0
         tmp_item = self.__getitem__(tmp_x_ind)
         input_shape = tmp_item["frames"].shape
-        if self.split == 'train' and len(input_shape) == 3:
+        if self.split == "train" and len(input_shape) == 3:
             return input_shape
-        elif self.split in ('val', 'test', 'predict') and len(input_shape) == 4:
+        elif (
+            self.split in ("val", "test", "predict") and len(input_shape) == 4
+        ):
             # discard windows dimension from shape --
             # it's sample dependent and not what we want
             return input_shape[1:]
@@ -222,34 +398,35 @@ class BioSoundSegBench:
         if len(uniq_sample_ids) == 1:
             # repeat myself to avoid running a loop on one item
             sample_id = uniq_sample_ids[0]
-            frames_path = self.root / self.frames_paths[sample_id]
-            spect_dict = vak.common.files.spect.load(frames_path)
-            item['frames'] = spect_dict[vak.common.constants.SPECT_KEY]
+            frames_path = self.dataset_path / self.frames_paths[sample_id]
+            spect_dict = common.files.spect.load(frames_path)
+            item["frames"] = spect_dict[common.constants.SPECT_KEY]
             for target_type in self.target_type:
                 item[target_type] = np.load(
-                    self.root / self.target_paths[target_type][sample_id]
+                    self.dataset_path / self.target_paths[target_type][sample_id]
                 )
 
         elif len(uniq_sample_ids) > 1:
-            item['frames'] = []
+            item["frames"] = []
             for target_type in self.target_type:
                 # do this to append instead of using defaultdict
                 # so that when we do `'target_type' in item` we don't get empty list
                 item[target_type] = []
             for sample_id in sorted(uniq_sample_ids):
-                frames_path = self.root / self.frames_paths[sample_id]
-                spect_dict = vak.common.files.spect.load(frames_path)
-                item['frames'].append(
-                    spect_dict[vak.common.constants.SPECT_KEY]
+                frames_path = self.dataset_path / self.frames_paths[sample_id]
+                spect_dict = common.files.spect.load(frames_path)
+                item["frames"].append(
+                    spect_dict[common.constants.SPECT_KEY]
                 )
                 for target_type in self.target_type:
                     item[target_type].append(
                         np.load(
-                            self.root / self.target_paths[target_type][sample_id]
+                            self.dataset_path
+                            / self.target_paths[target_type][sample_id]
                         )
                     )
 
-            item['frames'] = np.concatenate(item['frames'], axis=1)
+            item["frames"] = np.concatenate(item["frames"], axis=1)
             for target_type in self.target_type:
                 item[target_type] = np.concatenate(item[target_type])
         else:
@@ -258,7 +435,7 @@ class BioSoundSegBench:
             )
 
         ind_in_sample = self.inds_in_sample[window_idx]
-        item['frames'] = item['frames'][
+        item["frames"] = item["frames"][
             ...,
             ind_in_sample : ind_in_sample + self.window_size,  # noqa: E203
         ]
@@ -266,81 +443,24 @@ class BioSoundSegBench:
             item[target_type] = item[target_type][
                 ind_in_sample : ind_in_sample + self.window_size  # noqa: E203
             ]
-        item = self.item_transform(item)
+        item = self.item_transform(**item)
         return item
 
-    def _getitem_val(self, idx):
+    def _getitem_infer(self, idx):
         item = {}
-        frames_path = self.root / self.frames_paths[idx]
-        spect_dict = vak.common.files.spect.load(frames_path)
-        item['frames'] = spect_dict[vak.common.constants.SPECT_KEY]
+        frames_path = self.dataset_path / self.frames_paths[idx]
+        spect_dict = common.files.spect.load(frames_path)
+        item["frames"] = spect_dict[common.constants.SPECT_KEY]
         for target_type in self.target_type:
             item[target_type] = np.load(
-                self.root / self.target_paths[target_type][idx]
+                self.dataset_path / self.target_paths[target_type][idx]
             )
-        item = self.item_transform(item)
+        item = self.item_transform(**item)
         return item
 
     def __getitem__(self, idx):
-        if self.split == 'train':
+        if self.split == "train":
             item = self._getitem_train(idx)
-        else:
-            item = self._getitem_val(idx)
+        elif self.split in ("val", "test", "predict"):
+            item = self._getitem_infer(idx)
         return item
-
-
-# def get_biosoundsegbench(
-#     root: str | pathlib.Path,
-#     species: str | list[str] | tuple[str],
-#     target_type: str | list[str] | tuple[str],
-#     unit: str,
-#     id: str | None,
-#     split: str,
-#     window_size: int,
-#     stride: int = 1,
-#     labelmap: Mapping | None = None
-# ):
-#     """Get a :class:`DataPipe` instance
-#     for loading samples from the BioSoundSegBench.
-
-#     This function determines the correct data to use,
-#     according to the `species`, `unit`, and `id`
-#     specified.
-
-#     It also determines which `transform` to use,
-#     according to the `target_type`.
-#     """
-#     root = pathlib.Path(root)
-#     if not root.exists() or not root.is_dir():
-#         raise NotADirectoryError()
-
-#     species_dict = INIT_ARGS_CSV_MAP[species]
-#     if id is None:
-#         # we ignore individual ID and concatenate all CSVs
-#         ids_dict = species_dict[unit]
-#         csv_paths = [
-#             csv_path for id, csv_path in ids_dict.items()
-#         ]
-#     else:
-#         csv_paths = [species_dict[unit][id]]
-#     dataset_df = []
-#     for csv_path in csv_paths:
-#         dataset_df.append(pd.read_csv(csv_path))
-#     dataset_df = pd.concat(dataset_df)
-
-#     # TODO: I think this is a case where we need an "item transform" for train,
-#     # to encapsulate the logic of dealing with different target types
-#     if split == 'train':
-#         # for boundary detection and binary classification, we use target transforms
-#         # instead of loading from separate vectors for now
-#         # TODO: fix this to load from separate data we prep -- be more frugal at runtime
-#         if target_type == 'boundary':
-#             target_transform = transforms.FrameLabelsToBoundaryOnehot()
-#         elif target_type == 'label-binary':
-#             target_transform = transforms.
-#         elif target_type == 'label-multi':
-#             # all we have to do is load the frame labels vector
-#             target_transform = None
-
-
-#     elif split in ('val', 'test', 'predict'):
