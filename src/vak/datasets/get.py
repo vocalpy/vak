@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import Literal, Mapping, TYPE_CHECKING
 
-from . import DATASETS
 from .. import common
 
 Dataset = Mapping
@@ -33,6 +32,8 @@ def get(
         An instance of a class from :mod:`vak.datasets`,
         e.g. :class:`vak.datasets.BioSoundSegBench`.
     """
+    from . import DATASETS  # avoid circular import
+
     if "name" not in dataset_config:
         raise KeyError(
             "A name is required to get a dataset, but "
