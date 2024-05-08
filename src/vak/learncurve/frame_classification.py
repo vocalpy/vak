@@ -246,7 +246,6 @@ def learning_curve_for_frame_classification_model(
             labelmap_path,
             results_path_this_replicate,
             num_workers,
-            "test",
             frames_standardizer_path,
             post_tfm_kwargs,
         )
