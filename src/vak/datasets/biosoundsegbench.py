@@ -30,7 +30,7 @@ VALID_TARGET_TYPES = (
 FRAMES_PATH_COL_NAME = "frames_path"
 MULTI_FRAME_LABELS_PATH_COL_NAME = "multi_frame_labels_path"
 BINARY_FRAME_LABELS_PATH_COL_NAME = "binary_frame_labels_path"
-BOUNDARY_ONEHOT_PATH_COL_NAME = "boundary_frame_labels_path"
+BOUNDARY_FRAME_LABELS_PATH_COL_NAME = "boundary_frame_labels_path"
 
 
 @dataclasses.dataclass
@@ -380,7 +380,7 @@ class BioSoundSegBench:
             ].values
         if "boundary_frame_labels" in self.target_type:
             self.target_paths["boundary_frame_labels"] = self.split_df[
-                BOUNDARY_ONEHOT_PATH_COL_NAME
+                BOUNDARY_FRAME_LABELS_PATH_COL_NAME
             ].values
 
         self.window_size = window_size
