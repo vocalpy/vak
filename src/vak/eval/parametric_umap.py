@@ -82,7 +82,7 @@ def eval_parametric_umap_model(
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------
-    if split in dataset_config["params"]:
+    if "split" in dataset_config["params"]:
         split = dataset_config["params"]["split"]
     else:
         split = "test"
