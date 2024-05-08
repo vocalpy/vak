@@ -54,7 +54,7 @@ class TrainItemTransform:
         frame_labels = self.frame_labels_transform(frame_labels)
         item = {
             "frames": frames,
-            "frame_labels": frame_labels,
+            "multi_frame_labels": frame_labels,
         }
 
         if spect_path is not None:
@@ -160,7 +160,7 @@ class InferItemTransform:
 
         if frame_labels is not None:
             frame_labels = self.frame_labels_transform(frame_labels)
-            item["frame_labels"] = frame_labels
+            item["multi_frame_labels"] = frame_labels
 
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
