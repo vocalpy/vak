@@ -1,16 +1,20 @@
 """Helper function that gets instances of classes representing datasets built into :mod:`vak`."""
 from __future__ import annotations
 
-from typing import Literal, Mapping
+from typing import Literal, Mapping, TYPE_CHECKING
 
+from . import DATASETS
 from .. import common
 
 Dataset = Mapping
 
+if TYPE_CHECKING:
+    from ..transforms import FramesStandardizer
 
 def get(
         dataset_config: dict,
         split: Literal["predict", "test", "train", "val"],
+        frames_standardizer: FramesStandardizer | None = None,
         ) -> Dataset:
     """Get an instance of a dataset class from :mod:`vak.datasets`.
 
@@ -42,7 +46,16 @@ def get(
         )
 
     from .. import datasets
-    dataset_class = getattr(datasets, dataset_config["name"])
+    dataset_name = dataset_config["name"]
+    try:
+        dataset_class = DATASETS[dataset_name]
+    except KeyError as e:
+        raise ValueError(
+            f"Invalid dataset name: {dataset_name}\n."
+            f"Built-in dataset names are: {DATASETS.keys()}"
+        )
+    if frames_standardizer is not None:
+        dataset_config["params"]["frames_standardizer"] = frames_standardizer
     dataset = dataset_class(
         dataset_path=dataset_config["path"],
         splits_path=dataset_config["splits_path"],
