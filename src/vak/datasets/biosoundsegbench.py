@@ -195,6 +195,8 @@ class TrainItemTransform:
                 )
         else:
             frames_transform = []
+        # add as an attribute on self so that high-level functions can save this class as needed
+        self.frames_standardizer = frames_standardizer
 
         frames_transform.extend(
             [
@@ -289,6 +291,8 @@ class InferItemTransform:
                     f"Invalid type for frames_standardizer: {type(frames_standardizer)}. "
                     "Should be an instance of vak.transforms.FramesStandardizer"
                 )
+        # add as an attribute on self to use inside __call__
+        # *and* so that high-level functions can save this class as needed
         self.frames_standardizer = frames_standardizer
 
         self.pad_to_window = transforms.PadToWindow(
@@ -358,7 +362,8 @@ class BioSoundSegBench:
         window_size: int,
         target_type: str | list[str] | tuple[str] | None = None,
         stride: int = 1,
-        frames_standardizer: FramesStandardizer | None = None,
+        standardize_frames: bool = False,
+        frames_standardizer: transforms.FramesStandardizer | None = None,
         frames_padval: float = 0.0,
         frame_labels_padval: int = -1,
         return_padding_mask: bool = False,
@@ -506,6 +511,11 @@ class BioSoundSegBench:
         )
 
         if item_transform is None:
+            if standardize_frames and frames_standardizer is None:
+                from ..transforms import FramesStandardizer
+                frames_standardizer = FramesStandardizer.fit_inputs_targets_csv_path(
+                    self.splits_metadata.splits_csv_path, self.dataset_path
+                )
             if split == "train":
                 self.item_transform = TrainItemTransform(
                     frames_standardizer=frames_standardizer
@@ -519,6 +529,11 @@ class BioSoundSegBench:
                     return_padding_mask,
                 )
         else:
+            if not callable(item_transform):
+                raise ValueError(
+                    "`item_transform` should be `callable` "
+                    f"but value for `item_transform` was not: {item_transform}"
+                )
             self.item_transform = item_transform
 
     @property
