@@ -14,7 +14,7 @@ import numpy as np
 import torch.utils.data
 from tqdm import tqdm
 
-from .. import datapipes, models, transforms
+from .. import datapipes, datasets, models, transforms
 from ..common import constants, files, validators
 from ..datapipes.frame_classification import InferDatapipe
 
@@ -97,6 +97,7 @@ def predict_with_frame_classification_model(
         and the network is `TweetyNet`, then the net output file
         will be `gy6or6_032312_081416.tweetynet.output.npz`.
     """
+    # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
         (checkpoint_path, labelmap_path, frames_standardizer_path),
         ("checkpoint_path", "labelmap_path", "frames_standardizer_path"),
@@ -120,6 +121,8 @@ def predict_with_frame_classification_model(
             f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
         )
 
+    # ---- set up directory to save output -----------------------------------------------------------------------------
+    # we do this first to make sure we can save things
     if output_dir is None:
         output_dir = pathlib.Path(os.getcwd())
     else:
@@ -130,36 +133,59 @@ def predict_with_frame_classification_model(
             f"value specified for output_dir is not recognized as a directory: {output_dir}"
         )
 
-    # ---------------- load data for prediction ------------------------------------------------------------------------
+    # ---- load what we need to transform data -------------------------------------------------------------------------
     if frames_standardizer_path:
         logger.info(
             f"loading FramesStandardizer from path: {frames_standardizer_path}"
         )
-        spect_standardizer = joblib.load(frames_standardizer_path)
+        frames_standardizer = joblib.load(frames_standardizer_path)
     else:
         logger.info("Not loading FramesStandardizer, no path was specified")
-        spect_standardizer = None
+        frames_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
-        dataset_path
-    )
-    dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+    # ---------------- load data for prediction ------------------------------------------------------------------------
+    if split in dataset_config["params"]:
+        split = dataset_config["params"]["split"]
+    else:
+        split = "predict"
+    # ---- *not* using a built-in dataset ------------------------------------------------------------------------------
+    if dataset_config["name"] is None:
+        metadata = datapipes.frame_classification.Metadata.from_dataset_path(
+            dataset_path
+        )
+        dataset_csv_path = dataset_path / metadata.dataset_csv_filename
+        metadata = (
+            datapipes.frame_classification.metadata.Metadata.from_dataset_path(
+                dataset_path
+            )
+        )
+        # we use this below to convert annotations from frames to seconds
+        frame_dur = metadata.frame_dur
 
-    logger.info(
-        f"loading dataset to predict from csv path: {dataset_csv_path}"
-    )
+        logger.info(
+            f"loading dataset to predict from csv path: {dataset_csv_path}"
+        )
 
-    pred_dataset = InferDatapipe.from_dataset_path(
-        dataset_path=dataset_path,
-        split="predict",
-        window_size=dataset_config["params"]["window_size"],
-        frames_standardizer=spect_standardizer,
-        return_padding_mask=True,
-    )
+        pred_dataset = InferDatapipe.from_dataset_path(
+            dataset_path=dataset_path,
+            split=split,
+            window_size=dataset_config["params"]["window_size"],
+            frames_standardizer=frames_standardizer,
+            return_padding_mask=True,
+        )
+    else:
+        dataset_config["params"]["return_padding_mask"] = True
+        pred_dataset = datasets.get(
+            dataset_config,
+            split=split,
+            frames_standardizer=frames_standardizer,
+        )
+        # we use this below to convert annotations from frames to seconds
+        frame_dur = pred_dataset.frame_dur
 
     pred_loader = torch.utils.data.DataLoader(
         dataset=pred_dataset,
@@ -177,12 +203,6 @@ def predict_with_frame_classification_model(
     annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
     logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
-    metadata = (
-        datapipes.frame_classification.metadata.Metadata.from_dataset_path(
-            dataset_path
-        )
-    )
-    frame_dur = metadata.frame_dur
     logger.info(
         f"Duration of a frame in dataset, in seconds: {frame_dur}",
     )
