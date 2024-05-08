@@ -148,7 +148,7 @@ def predict_with_frame_classification_model(
         labelmap = json.load(f)
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
-    if split in dataset_config["params"]:
+    if "split" in dataset_config["params"]:
         split = dataset_config["params"]["split"]
     else:
         split = "predict"
