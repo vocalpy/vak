@@ -13,7 +13,7 @@ import lightning
 import pandas as pd
 import torch.utils.data
 
-from .. import datapipes, models, transforms
+from .. import datapipes, datasets, models, transforms
 from ..common import validators
 from ..datapipes.frame_classification import InferDatapipe
 
@@ -28,7 +28,6 @@ def eval_frame_classification_model(
     labelmap_path: str | pathlib.Path,
     output_dir: str | pathlib.Path,
     num_workers: int,
-    split: str = "test",
     frames_standardizer_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
 ) -> None:
@@ -54,9 +53,6 @@ def eval_frame_classification_model(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
-    split : str
-        Split of dataset on which model should be evaluated.
-        One of {'train', 'val', 'test'}. Default is 'test'.
     frames_standardizer_path : str, pathlib.Path
         Path to a saved :class:`vak.transforms.FramesStandardizer`
         object used to standardize (normalize) frames.
@@ -102,21 +98,6 @@ def eval_frame_classification_model(
             f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
         )
 
-    dataset_path = pathlib.Path(dataset_config["path"])
-    if not dataset_path.exists() or not dataset_path.is_dir():
-        raise NotADirectoryError(
-            f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
-        )
-
-    # we unpack `frame_dur` to log it, regardless of whether we use it with post_tfm below
-    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
-        dataset_path
-    )
-    frame_dur = metadata.frame_dur
-    logger.info(
-        f"Duration of a frame in dataset, in seconds: {frame_dur}",
-    )
-
     if not validators.is_a_directory(output_dir):
         raise NotADirectoryError(
             f"value for ``output_dir`` not recognized as a directory: {output_dir}"
@@ -125,27 +106,57 @@ def eval_frame_classification_model(
     # ---- get time for .csv file --------------------------------------------------------------------------------------
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
-    # ---------------- load data for evaluation ------------------------------------------------------------------------
+    # ---- load what we need to transform data -------------------------------------------------------------------------
     if frames_standardizer_path:
         logger.info(
-            f"loading spect scaler from path: {frames_standardizer_path}"
+            f"loading frames standardizer from path: {frames_standardizer_path}"
         )
         frames_standardizer = joblib.load(frames_standardizer_path)
     else:
-        logger.info("not using a spect scaler")
+        logger.info("No `frames_standardizer_path` provided, not standardizing frames.")
         frames_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    val_dataset = InferDatapipe.from_dataset_path(
-        dataset_path=dataset_path,
-        split=split,
-        window_size=dataset_config["params"]["window_size"],
-        frames_standardizer=frames_standardizer,
-        return_padding_mask=True,
-    )
+    # ---------------- load data for evaluation ------------------------------------------------------------------------
+    if split in dataset_config["params"]:
+        split = dataset_config["params"]["split"]
+    else:
+        split = "test"
+    # ---- *not* using a built-in dataset ------------------------------------------------------------------------------
+    if dataset_config["name"] is None:
+        dataset_path = pathlib.Path(dataset_config["path"])
+        if not dataset_path.exists() or not dataset_path.is_dir():
+            raise NotADirectoryError(
+                f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+            )
+
+        # we unpack `frame_dur` to log it, regardless of whether we use it with post_tfm below
+        metadata = datapipes.frame_classification.Metadata.from_dataset_path(
+            dataset_path
+        )
+        frame_dur = metadata.frame_dur
+        logger.info(
+            f"Duration of a frame in dataset, in seconds: {frame_dur}",
+        )
+        val_dataset = InferDatapipe.from_dataset_path(
+            dataset_path=dataset_path,
+            split=split,
+            window_size=dataset_config["params"]["window_size"],
+            frames_standardizer=frames_standardizer,
+            return_padding_mask=True,
+        )
+    # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------# ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
+    else:
+        dataset_config["params"]["return_padding_mask"] = True
+        val_dataset = datasets.get(
+            dataset_config,
+            split=split,
+            frames_standardizer=frames_standardizer,
+        )
+
     val_loader = torch.utils.data.DataLoader(
         dataset=val_dataset,
         shuffle=False,
