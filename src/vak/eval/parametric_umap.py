@@ -26,7 +26,6 @@ def eval_parametric_umap_model(
     batch_size: int,
     num_workers: int,
     trainer_config: dict,
-    split: str = "test",
 ) -> None:
     """Evaluate a trained model.
 
@@ -83,6 +82,10 @@ def eval_parametric_umap_model(
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
     # ---------------- load data for evaluation ------------------------------------------------------------------------
+    if split in dataset_config["params"]:
+        split = dataset_config["params"]["split"]
+    else:
+        split = "test"
     model_name = model_config["name"]
     val_dataset = Datapipe.from_dataset_path(
         dataset_path=dataset_path,
