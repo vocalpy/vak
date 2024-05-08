@@ -69,7 +69,8 @@ class InferItemTransform:
 
     Returned item includes frames reshaped into a stack of windows,
     with padded added to make reshaping possible.
-    If `frame_labels` are supplied, then these are also padded and reshaped.
+    Any `frame_labels` are not padded and reshaped,
+    but are converted to :class:`torch.LongTensor`.
     If return_padding_mask is True, item includes 'padding_mask' that
     can be used to crop off any predictions made on the padding.
 
