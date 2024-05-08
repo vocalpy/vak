@@ -8,3 +8,8 @@ __all__ = [
     "get",
     "SplitsMetadata",
 ]
+
+# TODO: make this a proper registry
+DATASETS = {
+    "BioSoundSegBench": BioSoundSegBench
+}
