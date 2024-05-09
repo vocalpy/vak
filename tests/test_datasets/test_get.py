@@ -53,9 +53,20 @@ import vak.datasets
                     'name': 'BioSoundSegBench',
                     'params': {
                         'window_size': 2000,
+                        'target_type': 'boundary_frame_labels',
                         },
                 },
-                'predict',
+                'val',
+            ),
+            (
+                {
+                    'name': 'BioSoundSegBench',
+                    'params': {
+                        'window_size': 2000,
+                        'target_type': 'boundary_frame_labels',
+                        },
+                },
+                'test',
             ),
 
         ]
