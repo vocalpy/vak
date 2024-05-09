@@ -368,6 +368,7 @@ class BioSoundSegBench:
         frames_padval: float = 0.0,
         frame_labels_padval: int = -1,
         return_padding_mask: bool = False,
+        return_frames_path: bool = False,
         item_transform: Callable | None = None
     ):
         """BioSoundSegBench dataset."""
@@ -537,6 +538,8 @@ class BioSoundSegBench:
                 )
             self.item_transform = item_transform
 
+        self.return_frames_path = return_frames_path
+
     @property
     def shape(self):
         tmp_x_ind = 0
@@ -623,6 +626,8 @@ class BioSoundSegBench:
     def _getitem_infer(self, idx):
         item = {}
         frames_path = self.dataset_path / self.frames_paths[idx]
+        if self.return_frames_path:
+            item["frames_path"] = frames_path
         spect_dict = common.files.spect.load(frames_path)
         item["frames"] = spect_dict[common.constants.SPECT_KEY]
         if self.target_type != "None":  # target_type can be None for predict
