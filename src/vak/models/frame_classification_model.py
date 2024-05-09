@@ -383,7 +383,8 @@ class FrameClassificationModel(lightning.LightningModule):
             ) and "multi_frame_labels" in target_types:
                 self.log(
                     f"val_{metric_name}",
-                    metric_callable(frame_preds_str, multi_frame_labels_str),
+                    # next line: convert to float to squelch warning from lightning
+                    float(metric_callable(frame_preds_str, multi_frame_labels_str)),
                     batch_size=1,
                     on_step=True,
                     sync_dist=True,
@@ -391,7 +392,8 @@ class FrameClassificationModel(lightning.LightningModule):
                 if self.post_tfm:
                     self.log(
                         f"val_{metric_name}_tfm",
-                        metric_callable(frame_preds_tfm_str, multi_frame_labels_str),
+                        # next line: convert to float to squelch warning from lightning
+                        float(metric_callable(frame_preds_tfm_str, multi_frame_labels_str)),
                         batch_size=1,
                         on_step=True,
                         sync_dist=True,
