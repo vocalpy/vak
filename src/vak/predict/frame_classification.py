@@ -179,8 +179,11 @@ def predict_with_frame_classification_model(
             frames_standardizer=frames_standardizer,
             return_padding_mask=True,
         )
+    # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
     else:
         dataset_config["params"]["return_padding_mask"] = True
+        # next line, required to be true regardless of split so we set it here
+        dataset_config["params"]["return_frames_path"] = True
         pred_dataset = datasets.get(
             dataset_config,
             split=split,
