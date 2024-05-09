@@ -442,7 +442,7 @@ class BioSoundSegBench:
         self.training_replicate_metadata = metadata_from_splits_json_path(
             self.splits_path, self.dataset_path
         )
-        self.frame_dur = self.training_replicate_metadata.frame_dur
+        self.frame_dur = self.training_replicate_metadata.frame_dur * 1e-3  # convert from ms to s!
 
         if "multi_frame_labels" in target_type:
             labelmaps_json_path = self.dataset_path / "labelmaps.json"
@@ -472,9 +472,9 @@ class BioSoundSegBench:
                         "Please check that splits_json path is correct."
                     )
         elif target_type == ('binary_frame_labels',):
-            self.labelmap = {0: 'no segment', 1: 'segment'}
+            self.labelmap = {'no segment': 0, 'segment': 1}
         elif target_type == ('boundary_frame_labels',):
-            self.labelmap = {0: 'no boundary', 1: 'boundary'}
+            self.labelmap = {'no boundary': 0, 'boundary': 1}
 
         self.split = split
         split_df = pd.read_csv(self.splits_metadata.splits_csv_path)
