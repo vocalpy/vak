@@ -49,7 +49,7 @@ def predict(toml_path):
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
         num_workers=cfg.predict.num_workers,
-        timebins_key=cfg.prep.spect_params.timebins_key if cfg.prep else common.constants.SPECT_KEY,
+        timebins_key=cfg.prep.spect_params.timebins_key if cfg.prep else common.constants.TIMEBINS_KEY,
         frames_standardizer_path=cfg.predict.frames_standardizer_path,
         annot_csv_filename=cfg.predict.annot_csv_filename,
         output_dir=cfg.predict.output_dir,
