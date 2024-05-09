@@ -201,36 +201,42 @@ class FrameClassificationModel(lightning.LightningModule):
             the loss function, ``self.loss``.
         """
         frames = batch["frames"]
-        frame_logits = self.network(frames)
 
+        # we repeat this code in validation step
+        # because I'm assuming it's faster than a call to a staticmethod that factors it out
         if (  # multi-class frame classificaton
             "multi_frame_labels" in batch and
             "binary_frame_labels" not in batch and
             "boundary_frame_labels" not in batch
             ):
-                loss = self.loss(frame_logits, batch["multi_frame_labels"])
+                target_types = ("multi_frame_labels",)
         elif (  # binary frame classification
             "binary_frame_labels" in batch and
             "multi_frame_labels" not in batch and
             "boundary_frame_labels" not in batch
             ):
-
-                loss = self.loss(frame_logits, batch["binary_frame_labels"])
+                target_types = ("binary_frame_labels",)
         elif (  # boundary "detection" -- i.e. different kind of binary frame classification
             "boundary_frame_labels" in batch and
             "multi_frame_labels" not in batch and
             "binary_frame_labels" not in batch
             ):
-                loss = self.loss(frame_logits, batch["boundary_frame_labels"])
+                target_types = ("boundary_frame_labels",)
         elif (  # multi-class frame classification *and* boundary detection
             "multi_frame_labels" in batch and
             "boundary_frame_labels" in batch and
             "binary_frame_labels" not in batch
             ):
-                multi_logits, boundary_logits = self.network(frames)
-                multi_loss = self.loss(multi_logits, batch["multi_frame_labels"])
-                boundary_loss = self.loss(boundary_logits, batch["boundary_frame_labels"])
-                loss = multi_loss + boundary_loss
+                target_types = ("multi_frame_labels", "boundary_frame_labels")
+
+        if len(target_types) == 1:
+            class_logits = self.network(frames)
+            loss = self.loss(class_logits, batch[target_types[0]])
+        else:
+            multi_logits, boundary_logits = self.network(frames)
+            multi_loss = self.loss(multi_logits, batch["multi_frame_labels"])
+            boundary_loss = self.loss(boundary_logits, batch["boundary_frame_labels"])
+            loss = multi_loss + boundary_loss
 
         self.log("train_loss", loss, on_step=True)
         return loss
@@ -261,6 +267,8 @@ class FrameClassificationModel(lightning.LightningModule):
         else:
             raise ValueError(f"invalid shape for frames: {frames.shape}")
 
+        # we repeat this code in training step
+        # because I'm assuming it's faster than a call to a staticmethod that factors it out
         if (  # multi-class frame classificaton
             "multi_frame_labels" in batch and
             "binary_frame_labels" not in batch and
@@ -285,26 +293,32 @@ class FrameClassificationModel(lightning.LightningModule):
             "binary_frame_labels" not in batch
             ):
                 target_types = ("multi_frame_labels", "boundary_frame_labels")
-        if len(target_types) == 1:
-            target = batch[target_types[0]]
-        else:
-            target = tuple(batch[target_types_] for target_types_ in target_types)
 
         if len(target_types) == 1:
-            frame_logits = self.network(frames)
+            class_logits = self.network(frames)
+            boundary_logits = None
         else:
-            frame_logits, boundary_logits = self.network(frames)
+            class_logits, boundary_logits = self.network(frames)
 
         # permute and flatten out
         # so that it has shape (1, number classes, number of time bins)
         # ** NOTICE ** just calling out.reshape(1, out.shape(1), -1) does not work, it will change the data
-        frame_logits = frame_logits.permute(1, 0, 2)
-        frame_logits = torch.flatten(frame_logits, start_dim=1)
-        frame_logits = torch.unsqueeze(frame_logits, dim=0)
+        class_logits = class_logits.permute(1, 0, 2)
+        class_logits = torch.flatten(class_logits, start_dim=1)
+        class_logits = torch.unsqueeze(class_logits, dim=0)
         # reduce to predictions, assuming class dimension is 1
-        frame_preds = torch.argmax(
-            frame_logits, dim=1
+        class_preds = torch.argmax(
+            class_logits, dim=1
         )  # y_pred has dims (batch size 1, predicted label per time bin)
+
+        if boundary_logits is not None:
+            boundary_logits = boundary_logits.permute(1, 0, 2)
+            boundary_logits = torch.flatten(boundary_logits, start_dim=1)
+            boundary_logits = torch.unsqueeze(boundary_logits, dim=0)
+            # reduce to predictions, assuming class dimension is 1
+            boundary_preds = torch.argmax(
+                boundary_logits, dim=1
+            )  # y_pred has dims (batch size 1, predicted label per time bin)
 
         if "padding_mask" in batch:
             padding_mask = batch[
@@ -320,35 +334,43 @@ class FrameClassificationModel(lightning.LightningModule):
                     f"invalid shape for padding mask: {padding_mask.shape}"
                 )
 
-            frame_logits = frame_logits[:, :, padding_mask]
-            frame_preds = frame_preds[:, padding_mask]
+            class_logits = class_logits[:, :, padding_mask]
+            class_preds = class_preds[:, padding_mask]
+
+            if boundary_logits is not None:
+                 boundary_logits = boundary_logits[:, :, padding_mask]
+                 boundary_preds = boundary_preds[:, padding_mask]
 
         if "multi_frame_labels" in target_types:
             multi_frame_labels_str = self.to_labels_eval(batch["multi_frame_labels"].cpu().numpy())
-            frame_preds_str = self.to_labels_eval(frame_preds.cpu().numpy())
+            class_preds_str = self.to_labels_eval(class_preds.cpu().numpy())
 
             if self.post_tfm:
-                frame_preds_tfm = self.post_tfm(
-                    frame_preds.cpu().numpy(),
+                class_preds_tfm = self.post_tfm(
+                    class_preds.cpu().numpy(),
                 )
-                frame_preds_tfm_str = self.to_labels_eval(frame_preds_tfm)
+                class_preds_tfm_str = self.to_labels_eval(class_preds_tfm)
                 # convert back to tensor so we can compute accuracy
-                frame_preds_tfm = torch.from_numpy(frame_preds_tfm).to(self.device)
+                class_preds_tfm = torch.from_numpy(class_preds_tfm).to(self.device)
+
+        if len(target_types) == 1:
+            target = batch[target_types[0]]
+        else:
+            target = {target_type: batch[target_type] for target_type in target_types}
 
         for metric_name, metric_callable in self.metrics.items():
             if metric_name == "loss":
                 if len(target_types) == 1:
                     self.log(
                         f"val_{metric_name}",
-                        metric_callable(frame_logits, target),
+                        metric_callable(class_logits, target),
                         batch_size=1,
                         on_step=True,
                         sync_dist=True,
                     )
                 else:
-                    multi_logits, boundary_logits = self.network(frames)
-                    multi_loss = self.loss(multi_logits, batch["multi_frame_labels"])
-                    boundary_loss = self.loss(boundary_logits, batch["boundary_frame_labels"])
+                    multi_loss = self.loss(class_logits, target["multi_frame_labels"])
+                    boundary_loss = self.loss(boundary_logits, target["boundary_frame_labels"])
                     loss = multi_loss + boundary_loss
                     self.log(
                         f"val_{metric_name}",
@@ -361,7 +383,7 @@ class FrameClassificationModel(lightning.LightningModule):
                 if len(target_types) == 1:
                     self.log(
                         f"val_{metric_name}",
-                        metric_callable(frame_preds, target),
+                        metric_callable(class_preds, target),
                         batch_size=1,
                         on_step=True,
                         sync_dist=True,
@@ -369,14 +391,34 @@ class FrameClassificationModel(lightning.LightningModule):
                     if self.post_tfm and "multi_frame_labels" in target_types:
                         self.log(
                             f"val_{metric_name}_tfm",
-                            metric_callable(frame_preds_tfm, target),
+                            metric_callable(class_preds_tfm, target),
                             batch_size=1,
                             on_step=True,
                             sync_dist=True,
                         )
                 else:
-                    # FIXME
-                    pass
+                    self.log(
+                        f"val_{metric_name}",
+                        metric_callable(class_preds, target["multi_frame_labels"]),
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+                    self.log(
+                        f"val_boundary_{metric_name}",
+                        metric_callable(boundary_preds, target["boundary_frame_labels"]),
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+                    if self.post_tfm and "multi_frame_labels" in target_types:
+                        self.log(
+                            f"val_multi_{metric_name}_tfm",
+                            metric_callable(class_preds_tfm, target["multi_frame_labels"]),
+                            batch_size=1,
+                            on_step=True,
+                            sync_dist=True,
+                        )
             elif (
                 metric_name == "levenshtein"
                 or metric_name == "character_error_rate"
@@ -384,7 +426,7 @@ class FrameClassificationModel(lightning.LightningModule):
                 self.log(
                     f"val_{metric_name}",
                     # next line: convert to float to squelch warning from lightning
-                    float(metric_callable(frame_preds_str, multi_frame_labels_str)),
+                    float(metric_callable(class_preds_str, multi_frame_labels_str)),
                     batch_size=1,
                     on_step=True,
                     sync_dist=True,
@@ -393,7 +435,7 @@ class FrameClassificationModel(lightning.LightningModule):
                     self.log(
                         f"val_{metric_name}_tfm",
                         # next line: convert to float to squelch warning from lightning
-                        float(metric_callable(frame_preds_tfm_str, multi_frame_labels_str)),
+                        float(metric_callable(class_preds_tfm_str, multi_frame_labels_str)),
                         batch_size=1,
                         on_step=True,
                         sync_dist=True,
