@@ -14,7 +14,7 @@ import numpy as np
 import torch.utils.data
 from tqdm import tqdm
 
-from .. import datapipes, datasets, models, transforms
+from .. import common, datapipes, datasets, models, transforms
 from ..common import constants, files, validators
 from ..datapipes.frame_classification import InferDatapipe
 
@@ -258,13 +258,19 @@ def predict_with_frame_classification_model(
     # ----------------  converting to annotations ------------------------------------------------------------------
     progress_bar = tqdm(pred_loader)
 
-    input_type = (
-        metadata.input_type
-    )  # we use this to get frame_times inside loop
-    if input_type == "audio":
-        audio_format = metadata.audio_format
-    elif input_type == "spect":
-        spect_format = metadata.spect_format
+    if dataset_config["name"] is None:
+        # we're using a user-prepped dataset, not a built-in dataset
+        # so assume we have metadata from above
+        input_type = (
+            metadata.input_type
+        )  # we use this to get frame_times inside loop
+        if input_type == "audio":
+            audio_format = metadata.audio_format
+        elif input_type == "spect":
+            spect_format = metadata.spect_format
+    else:
+        input_type = "spect"  # assume this for now
+        spect_format = common.constants.DEFAULT_SPECT_FORMAT
     annots = []
     logger.info("converting predictions to annotations")
     for ind, batch in enumerate(progress_bar):
