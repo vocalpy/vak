@@ -123,6 +123,8 @@ def eval_frame_classification_model(
     # ---------------- load data for evaluation ------------------------------------------------------------------------
     if "split" in dataset_config["params"]:
         split = dataset_config["params"]["split"]
+        # we do this convoluted thing to avoid 'TypeError: Dataset got multiple values for split`
+        del dataset_config["params"]["split"]
     else:
         split = "test"
     # ---- *not* using a built-in dataset ------------------------------------------------------------------------------
