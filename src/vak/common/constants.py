@@ -26,6 +26,7 @@ SPECT_FORMAT_LOAD_FUNCTION_MAP = {
     "npz": np.load,
 }
 VALID_SPECT_FORMATS = list(SPECT_FORMAT_LOAD_FUNCTION_MAP.keys())
+DEFAULT_SPECT_FORMAT = "npz"
 
 # ---- valid types of training data, the $x$ that goes into a network
 VALID_X_SOURCES = {"audio", "spect"}
