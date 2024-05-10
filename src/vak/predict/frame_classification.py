@@ -7,9 +7,11 @@ import logging
 import os
 import pathlib
 
+from attrs import define
 import crowsetta
 import joblib
 import lightning
+import pandas as pd
 import numpy as np
 import torch.utils.data
 from tqdm import tqdm
@@ -19,6 +21,19 @@ from ..common import constants, files, validators
 from ..datapipes.frame_classification import InferDatapipe
 
 logger = logging.getLogger(__name__)
+
+
+
+@define
+class AnnotationDataFrame:
+    """Data class that represents annotations
+    for an audio file, in a :class:`pandas.DataFrame`.
+
+    Used to save annotations that currently can't
+    be saved with :mod:`crowsetta`, e.g. boundary times.
+    """
+    df: pd.DataFrame
+    audio_path : str | pathlib.Path
 
 
 def predict_with_frame_classification_model(
@@ -181,6 +196,16 @@ def predict_with_frame_classification_model(
         )
     # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
     else:
+        # we need "target_type" below when converting predictions to annotations,
+        # but fail early here if we don't have it
+        if "target_type" not in dataset_config["params"]:
+            from ..datasets.biosoundsegbench import VALID_TARGET_TYPES
+            raise ValueError(
+                "The dataset table in the configuration file requires a 'target_type' "
+                "when running predictions on built-in datasets. "
+                "Please add a key to the table whose value is a valid target type: "
+                f"{VALID_TARGET_TYPES}"
+            )
         dataset_config["params"]["return_padding_mask"] = True
         # next line, required to be true regardless of split so we set it here
         dataset_config["params"]["return_frames_path"] = True
@@ -199,14 +224,6 @@ def predict_with_frame_classification_model(
         batch_size=1,
         num_workers=num_workers,
     )
-
-    # ---------------- set up to convert predictions to annotation files -----------------------------------------------
-    if annot_csv_filename is None:
-        annot_csv_filename = (
-            pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
-        )
-    annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
-    logger.info(f"will save annotations in .csv file: {annot_csv_path}")
 
     logger.info(
         f"Duration of a frame in dataset, in seconds: {frame_dur}",
@@ -255,6 +272,26 @@ def predict_with_frame_classification_model(
         for result in results
         for frames_path, y_pred in result.items()
     }
+
+    # ---------------- set up to convert predictions to annotation files -----------------------------------------------
+    if dataset_config["name"] is None:
+        # we assume this default for now -- prep'd datasets are always multi-class frame label
+        target_type = "multi_frame_label"
+    else:
+        # we made sure we have this above when determining the kind of dataset
+        target_type = dataset_config["params"]["target_type"]
+        if isinstance(target_type, str):
+            pass
+        elif isinstance(target_type, (list, tuple)):
+            target_type = tuple(sorted(target_type))
+
+    if annot_csv_filename is None:
+        annot_csv_filename = (
+            pathlib.Path(dataset_path).stem + constants.ANNOT_CSV_SUFFIX
+        )
+    annot_csv_path = pathlib.Path(output_dir).joinpath(annot_csv_filename)
+    logger.info(f"will save annotations in .csv file: {annot_csv_path}")
+
     # ----------------  converting to annotations ------------------------------------------------------------------
     progress_bar = tqdm(pred_loader)
 
@@ -271,6 +308,7 @@ def predict_with_frame_classification_model(
     else:
         input_type = "spect"  # assume this for now
         spect_format = common.constants.DEFAULT_SPECT_FORMAT
+
     annots = []
     logger.info("converting predictions to annotations")
     for ind, batch in enumerate(progress_bar):
@@ -278,14 +316,22 @@ def predict_with_frame_classification_model(
         padding_mask = np.squeeze(padding_mask)
         if isinstance(frames_path, list) and len(frames_path) == 1:
             frames_path = frames_path[0]
-        y_pred = pred_dict[frames_path]
+        # we do all this basically to have clear naming below
+        if target_type == "multi_frame_labels" or target_type == "binary_frame_labels":
+            class_logits = pred_dict[frames_path]
+            boundary_logits = None
+        elif target_type == "boundary_frame_labels":
+            boundary_logits = pred_dict[frames_path]
+            class_logits = None
+        elif target_type == ("boundary_frame_labels", "multi_frame_labels"):
+            class_logits, boundary_logits = pred_dict[frames_path]
 
         if save_net_outputs:
             # not sure if there's a better way to get outputs into right shape;
             # can't just call y_pred.reshape() because that basically flattens the whole array first
             # meaning we end up with elements in the wrong order
             # so instead we convert to sequence then stack horizontally, on column axis
-            net_output = torch.hstack(y_pred.unbind())
+            net_output = torch.hstack(class_logits.unbind())
             net_output = net_output[:, padding_mask]
             net_output = net_output.cpu().numpy()
             net_output_path = output_dir.joinpath(
@@ -294,8 +340,12 @@ def predict_with_frame_classification_model(
             )
             np.savez(net_output_path, net_output)
 
-        y_pred = torch.argmax(y_pred, dim=1)  # assumes class dimension is 1
-        y_pred = torch.flatten(y_pred).cpu().numpy()[padding_mask]
+        if class_logits is not None:
+            class_preds = torch.argmax(class_logits, dim=1)  # assumes class dimension is 1
+            class_preds = torch.flatten(class_preds).cpu().numpy()[padding_mask]
+        if boundary_logits is not None:
+            boundary_preds = torch.argmax(boundary_logits, dim=1)  # assumes class dimension is 1
+            boundary_preds = torch.flatten(boundary_preds).cpu().numpy()[padding_mask]
 
         if input_type == "audio":
             frames, samplefreq = constants.AUDIO_FORMAT_FUNC_MAP[audio_format](
@@ -308,32 +358,69 @@ def predict_with_frame_classification_model(
             )
             frame_times = spect_dict[timebins_key]
 
-        if majority_vote or min_segment_dur:
-            y_pred = transforms.frame_labels.postprocess(
-                y_pred,
-                timebin_dur=frame_dur,
-                min_segment_dur=min_segment_dur,
-                majority_vote=majority_vote,
+        # audio_fname is used for audio_path attribute of crowsetta.Annotation below
+        audio_fname = files.spect.find_audio_fname(frames_path)
+        if target_type == "multi_frame_labels" or target_type == "binary_frame_labels":
+            if majority_vote or min_segment_dur:
+                class_pred = transforms.frame_labels.postprocess(
+                    class_pred,
+                    timebin_dur=frame_dur,
+                    min_segment_dur=min_segment_dur,
+                    majority_vote=majority_vote,
+                )
+            labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
+                class_pred,
+                labelmap=labelmap,
+                frame_times=frame_times,
+            )
+            if labels is None and onsets_s is None and offsets_s is None:
+                # handle the case when all time bins are predicted to be unlabeled
+                # see https://github.com/NickleDave/vak/issues/383
+                continue
+            seq = crowsetta.Sequence.from_keyword(
+                labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
             )
 
-        labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
-            y_pred,
-            labelmap=labelmap,
-            frame_times=frame_times,
-        )
-        if labels is None and onsets_s is None and offsets_s is None:
-            # handle the case when all time bins are predicted to be unlabeled
-            # see https://github.com/NickleDave/vak/issues/383
-            continue
-        seq = crowsetta.Sequence.from_keyword(
-            labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
-        )
+            annot = crowsetta.Annotation(
+                seq=seq, notated_path=audio_fname, annot_path=annot_csv_path.name
+            )
+            annots.append(annot)
 
-        audio_fname = files.spect.find_audio_fname(frames_path)
-        annot = crowsetta.Annotation(
-            seq=seq, notated_path=audio_fname, annot_path=annot_csv_path.name
-        )
-        annots.append(annot)
+        elif target_type == "boundary_frame_labels":
+            boundary_times = frame_times[np.nonzero(boundary_preds)[0]]
+            df = pd.DataFrame.from_records({'boundary_time':  boundary_times})
+            annots.append(
+                AnnotationDataFrame(df=df, audio_path=audio_fname)
+                )
+        elif target_type == ("boundary_frame_labels", "multi_frame_labels"):
+            # TODO: fixme
+            # labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
+            #     class_pred,
+            #     labelmap=labelmap,
+            #     frame_times=frame_times,
+            # )
+            if labels is None and onsets_s is None and offsets_s is None:
+                # handle the case when all time bins are predicted to be unlabeled
+                # see https://github.com/NickleDave/vak/issues/383
+                continue
+            seq = crowsetta.Sequence.from_keyword(
+                labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
+            )
 
-    generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
-    generic_seq.to_file(annot_path=annot_csv_path)
+            annot = crowsetta.Annotation(
+                seq=seq, notated_path=audio_fname, annot_path=annot_csv_path.name
+            )
+            annots.append(annot)
+
+    if all([isinstance(annot, crowsetta.Annotation) for annot in annots]):
+        generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
+        generic_seq.to_file(annot_path=annot_csv_path)
+    elif all([isinstance(annot, AnnotationDataFrame) for annot in annots]):
+        df_out = []
+        for sample_num, annot_df in enumerate(annots):
+            df = annot_df.df
+            df['audio_path'] = str(annot_df.audio_path)
+            df['sample_num'] = sample_num
+            df_out.append(df)
+        df_out = pd.concat(df_out)
+        df_out.to_csv(annot_csv_path, index=False)
