@@ -36,7 +36,7 @@ class TestFromSegments:
                 'Annotation with label not in labelset, would not include in dataset'
             )
 
-        from_segments_tfm = vak.transforms.frame_labels.FromSegments(unlabeled_label=labelmap['unlabeled'])
+        from_segments_tfm = vak.transforms.frame_labels.FromSegments(background_label=labelmap['unlabeled'])
         lbl_tb = from_segments_tfm(
             lbls_int,
             annot.seq.onsets_s,
@@ -130,7 +130,7 @@ class TestToLabels:
             annot.seq.onsets_s,
             annot.seq.offsets_s,
             timebins,
-            unlabeled_label=labelmap["unlabeled"],
+            background_label=labelmap["unlabeled"],
         )
 
         to_labels_tfm = vak.transforms.frame_labels.ToLabels(
@@ -195,7 +195,7 @@ class TestToSegments:
             annot.seq.onsets_s,
             annot.seq.offsets_s,
             timebins,
-            unlabeled_label=labelmap["unlabeled"],
+            background_label=labelmap["unlabeled"],
         )
 
         to_segments_tfm = vak.transforms.frame_labels.ToSegments(
@@ -229,10 +229,10 @@ class TestPostprocess:
         assert isinstance(to_labels_tfm, vak.transforms.frame_labels.PostProcess)
 
     @pytest.mark.parametrize(
-        'lbl_tb, timebin_dur, unlabeled_label, min_segment_dur, majority_vote, lbl_tb_expected',
+        'lbl_tb, timebin_dur, background_label, min_segment_dur, majority_vote, lbl_tb_expected',
         POSTPROCESS_PARAMS_ARGVALS
     )
-    def test_call(self, lbl_tb, timebin_dur, unlabeled_label, min_segment_dur, majority_vote, lbl_tb_expected):
+    def test_call(self, lbl_tb, timebin_dur, background_label, min_segment_dur, majority_vote, lbl_tb_expected):
         # Note that we add an 'unlabeled' class because post-processing transforms *require* it
         # This is default, just making it explicit
         postprocess_tfm = vak.transforms.frame_labels.PostProcess(
