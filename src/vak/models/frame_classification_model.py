@@ -51,7 +51,7 @@ class FrameClassificationModel(lightning.LightningModule):
         or a ``dict`` that maps human-readable string names
         to a set of such instances.
     loss : torch.nn.Module, callable
-        An instance of a ``torch.nn.Module``
+        An instance of a ``torch.nn.Module`    `
         that implements a loss function,
         or a callable Python function that
         computes a scalar loss.
@@ -462,16 +462,16 @@ class FrameClassificationModel(lightning.LightningModule):
             containing the spectrogram
             for which a prediction was generated.
         """
-        x, frames_path = batch["frames"].to(self.device), batch["frames_path"]
+        frames, frames_path = batch["frames"].to(self.device), batch["frames_path"]
         if isinstance(frames_path, list) and len(frames_path) == 1:
             frames_path = frames_path[0]
         # TODO: fix this weirdness. Diff't collate_fn?
-        if x.ndim in (5, 4):
-            if x.shape[0] == 1:
-                x = torch.squeeze(x, dim=0)
+        if frames.ndim in (5, 4):
+            if frames.shape[0] == 1:
+                frames = torch.squeeze(frames, dim=0)
         else:
-            raise ValueError(f"invalid shape for x: {x.shape}")
-        y_pred = self.network(x)
+            raise ValueError(f"invalid shape for `frames`: {frames.shape}")
+        y_pred = self.network(frames)
         return {frames_path: y_pred}
 
     def load_state_dict_from_path(self, ckpt_path):
