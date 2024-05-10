@@ -11,7 +11,7 @@ This module is structured as followed:
 - to_segments: transform to get back segment onsets, offsets, and labels from frame labels.
   Inverse of ``from_segments``.
 - post-processing transforms that can be used to "clean up" a vector of frame labels
-  - to_inds_list: helper function used to find segments in a vector of frame labels
+  - segment_inds_list_from_class_labels: helper function used to find segments in a vector of frame labels
   - remove_short_segments: remove any segment less than a minimum duration
   - take_majority_vote: take a "majority vote" within each segment bounded by the "unlabeled" label,
     and apply the most "popular" label within each segment to all timebins in that segment
@@ -21,6 +21,7 @@ This module is structured as followed:
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 import scipy.stats
 
 from ...common.timebins import timebin_dur_from_vec
@@ -28,23 +29,24 @@ from ...common.validators import column_or_1d, row_or_1d
 
 __all__ = [
     # keep alphabetized
+    "boundary_inds_from_boundary_labels",
     "from_segments",
     "postprocess",
     "remove_short_segments",
     "take_majority_vote",
-    "to_inds_list",
+    "segment_inds_list_from_class_labels",
     "to_labels",
     "to_segments",
 ]
 
 
 def from_segments(
-    labels_int: np.ndarray,
-    onsets_s: np.ndarray,
-    offsets_s: np.ndarray,
-    time_bins: np.ndarray,
+    labels_int: npt.NDArray,
+    onsets_s: npt.NDArray,
+    offsets_s: npt.NDArray,
+    time_bins: npt.NDArray,
     background_label: int = 0,
-) -> np.ndarray:
+) -> npt.NDArray:
     """Make a vector of labels for a vector of frames,
     given labeled segments in the form of onset times,
     offset times, and segment labels.
@@ -92,7 +94,7 @@ def from_segments(
     return label_vec
 
 
-def to_labels(frame_labels: np.ndarray, labelmap: dict) -> str:
+def to_labels(frame_labels: npt.NDArray, labelmap: dict) -> str:
     """Convert vector of frame labels to a string,
     one character for each continuous segment.
 
@@ -141,11 +143,11 @@ def to_labels(frame_labels: np.ndarray, labelmap: dict) -> str:
 
 
 def to_segments(
-    frame_labels: np.ndarray,
+    frame_labels: npt.NDArray,
     labelmap: dict,
-    frame_times: np.ndarray,
+    frame_times: npt.NDArray,
     n_decimals_trunc: int = 5,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     """Convert a vector of frame labels
     into segments in the form of onset indices,
     offset indices, and labels.
@@ -252,12 +254,13 @@ def to_segments(
     return labels, onsets_s, offsets_s
 
 
-def to_inds_list(
-    frame_labels: np.ndarray, background_label: int = 0
-) -> list[np.ndarray]:
+def segment_inds_list_from_class_labels(
+    frame_labels: npt.NDArray, background_label: int = 0
+) -> list[npt.NDArray]:
     """Given a vector of frame labels,
     returns a list of indexing vectors,
-    one for each labeled segment in the vector.
+    one for each segment in the vector
+    that is not labeled with the background label.
 
     Parameters
     ----------
@@ -268,26 +271,24 @@ def to_inds_list(
     background_label : int
         Label that was given to segments that were not labeled in annotation,
         e.g. silent periods between annotated segments. Default is 0.
-    return_inds : bool
-        If True, return list of indices for segments in frame_labels, in addition to the segments themselves.
-        If False, just return list of numpy.ndarrays that are the segments from frame_labels.
 
     Returns
     -------
     segment_inds_list : list
-        of numpy.ndarray, indices that will recover segments list from frame_labels.
+        Of fancy indexing arrays. Each array can be used to index
+        one segment in ``frame_labels``.
     """
     segment_inds = np.nonzero(frame_labels != background_label)[0]
     return np.split(segment_inds, np.where(np.diff(segment_inds) != 1)[0] + 1)
 
 
 def remove_short_segments(
-    frame_labels: np.ndarray,
-    segment_inds_list: list[np.ndarray],
+    frame_labels: npt.NDArray,
+    segment_inds_list: list[npt.NDArray],
     timebin_dur: float,
     min_segment_dur: float | int,
     background_label: int = 0,
-) -> tuple[np.ndarray, list[np.ndarray]]:
+) -> tuple[npt.NDArray, list[npt.NDArray]]:
     """Remove segments from vector of frame labels
     that are shorter than a specified duration.
 
@@ -339,8 +340,8 @@ def remove_short_segments(
 
 
 def take_majority_vote(
-    frame_labels: np.ndarray, segment_inds_list: list[np.ndarray]
-) -> np.ndarray:
+    frame_labels: npt.NDArray, segment_inds_list: list[npt.NDArray]
+) -> npt.NDArray:
     """Transform segments containing multiple labels
     into segments with a single label by taking a "majority vote",
     i.e. assign all frames in the segment the most frequently
@@ -370,13 +371,79 @@ def take_majority_vote(
     return frame_labels
 
 
+def boundary_inds_from_boundary_labels(
+    boundary_labels: npt.NDArray,
+    force_boundary_first_ind: bool = True
+) -> npt.NDArray:
+    """Return a :class:`numpy.ndarray` with the indices
+    of boundaries, given a 1-D vector of boundary labels.
+
+    Parameters
+    ----------
+    boundary_labels : numpy.ndarray
+        Vector of integers ``{0, 1}``, where ``1`` indicates a boundary,
+        and ``0`` indicates no boundary.
+        Output of a frame classification model trained to classify each
+        frame as "boundary" or "no boundary".
+    force_boundary_first_ind : bool
+        If ``True``, and the first index of ``boundary_labels`` is not classified as a boundary,
+        force it to be a boundary.
+    """
+    boundary_inds = np.nonzero(boundary_labels)[0]
+
+    if boundary_inds[0] != 0 and force_boundary_first_ind:
+        # force there to be a boundary at index 0
+        np.insert(boundary_inds, 0, 0)
+
+    return boundary_inds
+
+
+def segment_inds_list_from_boundary_labels(
+    boundary_labels: npt.NDArray,
+    force_boundary_first_ind: bool = True
+) -> list[npt.NDArray]:
+    """Given an array of boundary labels,
+    return a list of :class:`numpy.ndarray` vectors,
+    each of which can be used to index one segment
+    in a vector of frame labels.
+
+    Parameters
+    ----------
+    boundary_labels : numpy.ndarray
+        Vector of integers ``{0, 1}``, where ``1`` indicates a boundary,
+        and ``0`` indicates no boundary.
+        Output of a frame classification model trained to classify each
+        frame as "boundary" or "no boundary".
+    force_boundary_first_ind : bool
+        If ``True``, and the first index of ``boundary_labels`` is not classified as a boundary,
+        force it to be a boundary.
+
+    Returns
+    -------
+    segment_inds_list : list
+        Of fancy indexing arrays. Each array can be used to index
+        one segment in ``frame_labels``.
+    """
+    boundary_inds = boundary_inds_from_boundary_labels(boundary_labels, force_boundary_first_ind)
+
+    # at the end of `boundary_inds``, insert an imaginary "last" boundary we use just with ``np.arange`` below
+    np.insert(boundary_inds, boundary_inds.shape[0], boundary_labels.shape[0])
+
+    segment_inds_list = []
+    for start, stop in zip(boundary_inds[:-1], boundary_inds[1:]):
+        segment_inds_list.append(np.arange(start, stop))
+
+    return segment_inds_list
+
+
 def postprocess(
-    frame_labels: np.ndarray,
+    frame_labels: npt.NDArray,
     timebin_dur: float,
     background_label: int = 0,
     min_segment_dur: float | None = None,
     majority_vote: bool = False,
-) -> np.ndarray:
+    boundary_labels: npt.NDArray | None = None
+) -> npt.NDArray:
     """Apply post-processing transformations
     to a vector of frame labels.
 
@@ -430,10 +497,21 @@ def postprocess(
         If True, transform segments containing multiple labels
         into segments with a single label by taking a "majority vote",
         i.e. assign all time bins in the segment the most frequently
-        occurring label in the segment. This transform can only be
-        applied if the labelmap contains an 'unlabeled' label,
-        because unlabeled segments makes it possible to identify
-        the labeled segments. Default is False.
+        occurring label in the segment.
+        This transform requires either a background label
+        or a vector of boundary labels.
+        Default is False.
+    boundary_labels : numpy.ndarray, optional.
+        Vector of integers ``{0, 1}``, where ``1`` indicates a boundary,
+        and ``0`` indicates no boundary.
+        Output of one head of a frame classification model,
+        that has been trained to classify each frame as either
+        "boundary" or "no boundary".
+        Optional, default is None.
+        If supplied, this vector is used to find segments
+        before applying post-processing, instead
+        of recovering them from ``frame_labels`` using the
+        ``background_label``
 
     Returns
     -------
@@ -448,9 +526,14 @@ def postprocess(
     if len(uniq_frame_labels) == 1 and uniq_frame_labels[0] == background_label:
         return frame_labels  # -> no need to do any of the post-processing
 
-    segment_inds_list = to_inds_list(
-        frame_labels, background_label=background_label
-    )
+    if boundary_labels is not None:
+        segment_inds_list = segment_inds_list_from_boundary_labels(
+            boundary_labels
+        )
+    else:
+        segment_inds_list = segment_inds_list_from_class_labels(
+            frame_labels, background_label=background_label
+        )
 
     if min_segment_dur is not None:
         frame_labels, segment_inds_list = remove_short_segments(
