@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import torch
 
-from .. import metrics, nets
+from .. import metrics, nets, nn
 from .decorator import model
 from .frame_classification_model import FrameClassificationModel
 
@@ -56,12 +56,12 @@ class TweetyNet:
     """
 
     network = nets.TweetyNet
-    loss = torch.nn.CrossEntropyLoss
+    loss = nn.loss.CrossEntropyLoss
     optimizer = torch.optim.Adam
     metrics = {
         "acc": metrics.Accuracy,
         "levenshtein": metrics.Levenshtein,
         "character_error_rate": metrics.CharacterErrorRate,
-        "loss": torch.nn.CrossEntropyLoss,
+        "loss": nn.loss.CrossEntropyLoss,
     }
     default_config = {"optimizer": {"lr": 0.003}}
