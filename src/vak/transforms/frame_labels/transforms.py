@@ -35,13 +35,13 @@ class FromSegments:
 
     Attributes
     ----------
-    unlabeled_label : int
+    background_label : int
         Label assigned to time bins that do not have labels associated with them.
         Default is 0.
     """
 
-    def __init__(self, unlabeled_label: int = 0):
-        self.unlabeled_label = unlabeled_label
+    def __init__(self, background_label: int = 0):
+        self.background_label = background_label
 
     def __call__(
         self,
@@ -76,7 +76,7 @@ class FromSegments:
             onsets_s,
             offsets_s,
             time_bins,
-            unlabeled_label=self.unlabeled_label,
+            background_label=self.background_label,
         )
 
 
@@ -229,7 +229,7 @@ class PostProcess:
         Duration of a time bin in a spectrogram,
         e.g., as estimated from vector of times
         using ``vak.timebins.timebin_dur_from_vec``.
-    unlabeled_label : int
+    background_label : int
         Label that was given to segments that were not labeled in annotation,
         e.g. silent periods between annotated segments. Default is 0.
     min_segment_dur : float
@@ -250,12 +250,12 @@ class PostProcess:
     def __init__(
         self,
         timebin_dur: float,
-        unlabeled_label: int = 0,
+        background_label: int = 0,
         min_segment_dur: float | None = None,
         majority_vote: bool = False,
     ):
         self.timebin_dur = timebin_dur
-        self.unlabeled_label = unlabeled_label
+        self.background_label = background_label
         self.min_segment_dur = min_segment_dur
         self.majority_vote = majority_vote
 
@@ -278,7 +278,7 @@ class PostProcess:
         return F.postprocess(
             frame_labels,
             self.timebin_dur,
-            self.unlabeled_label,
+            self.background_label,
             self.min_segment_dur,
             self.majority_vote,
         )

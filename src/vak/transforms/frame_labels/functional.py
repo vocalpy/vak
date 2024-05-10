@@ -43,7 +43,7 @@ def from_segments(
     onsets_s: np.ndarray,
     offsets_s: np.ndarray,
     time_bins: np.ndarray,
-    unlabeled_label: int = 0,
+    background_label: int = 0,
 ) -> np.ndarray:
     """Make a vector of labels for a vector of frames,
     given labeled segments in the form of onset times,
@@ -60,7 +60,7 @@ def from_segments(
         1-d vector of floats, segment offsets in seconds.
     time_bins : numpy.ndarray
         1-d vector of floats, time in seconds for center of each time bin of a spectrogram.
-    unlabeled_label : int
+    background_label : int
         Label assigned to frames that do not have labels associated with them.
         Default is 0.
 
@@ -80,7 +80,7 @@ def from_segments(
             "labels_int must be a list or numpy.ndarray of integers"
         )
 
-    label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * unlabeled_label
+    label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * background_label
     onset_inds = [np.argmin(np.abs(time_bins - onset)) for onset in onsets_s]
     offset_inds = [
         np.argmin(np.abs(time_bins - offset)) for offset in offsets_s
@@ -253,7 +253,7 @@ def to_segments(
 
 
 def to_inds_list(
-    frame_labels: np.ndarray, unlabeled_label: int = 0
+    frame_labels: np.ndarray, background_label: int = 0
 ) -> list[np.ndarray]:
     """Given a vector of frame labels,
     returns a list of indexing vectors,
@@ -265,7 +265,7 @@ def to_inds_list(
         A vector where each element represents
         a label for a frame, either a single sample in audio
         or a single time bin from a spectrogram.
-    unlabeled_label : int
+    background_label : int
         Label that was given to segments that were not labeled in annotation,
         e.g. silent periods between annotated segments. Default is 0.
     return_inds : bool
@@ -277,7 +277,7 @@ def to_inds_list(
     segment_inds_list : list
         of numpy.ndarray, indices that will recover segments list from frame_labels.
     """
-    segment_inds = np.nonzero(frame_labels != unlabeled_label)[0]
+    segment_inds = np.nonzero(frame_labels != background_label)[0]
     return np.split(segment_inds, np.where(np.diff(segment_inds) != 1)[0] + 1)
 
 
@@ -286,7 +286,7 @@ def remove_short_segments(
     segment_inds_list: list[np.ndarray],
     timebin_dur: float,
     min_segment_dur: float | int,
-    unlabeled_label: int = 0,
+    background_label: int = 0,
 ) -> tuple[np.ndarray, list[np.ndarray]]:
     """Remove segments from vector of frame labels
     that are shorter than a specified duration.
@@ -309,7 +309,7 @@ def remove_short_segments(
         any segment with a duration less than min_segment_dur is
         removed from frame_labels. Default is None, in which case no
         segments are removed.
-    unlabeled_label : int
+    background_label : int
         Label that was given to segments that were not labeled in annotation,
         e.g. silent periods between annotated segments. Default is 0.
 
@@ -320,7 +320,7 @@ def remove_short_segments(
         a label for a frame, either a single sample in audio
         or a single time bin from a spectrogram.
         With segments whose duration is shorter than ``min_segment_dur``
-        set to ``unlabeled_label``
+        set to ``background_label``
     segment_inds_list : list
         Of numpy.ndarray, with arrays removed that represented
         segments in ``frame_labels`` that were shorter than ``min_segment_dur``.
@@ -329,7 +329,7 @@ def remove_short_segments(
 
     for segment_inds in segment_inds_list:
         if segment_inds.shape[-1] * timebin_dur < min_segment_dur:
-            frame_labels[segment_inds] = unlabeled_label
+            frame_labels[segment_inds] = background_label
             # DO NOT keep segment_inds array
         else:
             # do keep segment_inds array, don't change frame_labels
@@ -373,7 +373,7 @@ def take_majority_vote(
 def postprocess(
     frame_labels: np.ndarray,
     timebin_dur: float,
-    unlabeled_label: int = 0,
+    background_label: int = 0,
     min_segment_dur: float | None = None,
     majority_vote: bool = False,
 ) -> np.ndarray:
@@ -418,7 +418,7 @@ def postprocess(
         Duration of a time bin in a spectrogram,
         e.g., as estimated from vector of times
         using ``vak.timebins.timebin_dur_from_vec``.
-    unlabeled_label : int
+    background_label : int
         Label that was given to segments that were not labeled in annotation,
         e.g. silent periods between annotated segments. Default is 0.
     min_segment_dur : float
@@ -445,11 +445,11 @@ def postprocess(
     # handle the case when all time bins are predicted to be unlabeled
     # see https://github.com/NickleDave/vak/issues/383
     uniq_frame_labels = np.unique(frame_labels)
-    if len(uniq_frame_labels) == 1 and uniq_frame_labels[0] == unlabeled_label:
+    if len(uniq_frame_labels) == 1 and uniq_frame_labels[0] == background_label:
         return frame_labels  # -> no need to do any of the post-processing
 
     segment_inds_list = to_inds_list(
-        frame_labels, unlabeled_label=unlabeled_label
+        frame_labels, background_label=background_label
     )
 
     if min_segment_dur is not None:
@@ -458,7 +458,7 @@ def postprocess(
             segment_inds_list,
             timebin_dur,
             min_segment_dur,
-            unlabeled_label,
+            background_label,
         )
         if len(segment_inds_list) == 0:  # no segments left after removing
             return frame_labels  # -> no need to do any of the post-processing
