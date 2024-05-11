@@ -40,17 +40,18 @@ def predict_with_frame_classification_model(
     model_config: dict,
     dataset_config: dict,
     trainer_config: dict,
-    checkpoint_path,
-    labelmap_path,
-    num_workers=2,
-    timebins_key="t",
-    frames_standardizer_path=None,
-    annot_csv_filename=None,
-    output_dir=None,
-    min_segment_dur=None,
-    majority_vote=False,
-    save_net_outputs=False,
-):
+    checkpoint_path: str | pathlib.Path,
+    labelmap_path: str | pathlib.Path,
+    num_workers: int = 2,
+    timebins_key:str = "t",
+    frames_standardizer_path: str | pathlib.Path | None = None,
+    annot_csv_filename: str | None = None,
+    output_dir: str | pathlib.Path | None = None,
+    min_segment_dur: float | None = None,
+    majority_vote: bool = False,
+    save_net_outputs: bool = False,
+    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL,
+) -> None:
     """Make predictions on a dataset with a trained
     :class:`~vak.models.FrameClassificationModel`.
 
@@ -362,12 +363,12 @@ def predict_with_frame_classification_model(
         audio_fname = files.spect.find_audio_fname(frames_path)
         if target_type == "multi_frame_labels" or target_type == "binary_frame_labels":
             if majority_vote or min_segment_dur:
-                if "unlabeled" in labelmap:
+                if background_label in labelmap:
+                    background_label = labelmap[background_label]
+                elif "unlabeled" in labelmap:  # some backward compatibility here
                     background_label = labelmap["unlabeled"]
-                elif "background" in labelmap:
-                    background_label = labelmap["unlabackgroundbeled"]
                 else:
-                    background_label = 0
+                    background_label = 0  # set a default value anyway just to not throw an error
                 class_preds = transforms.frame_labels.postprocess(
                     class_preds,
                     timebin_dur=frame_dur,
@@ -411,14 +412,14 @@ def predict_with_frame_classification_model(
                     "so `majority_vote` will be set to True (to assign a single label to each segment determined by "
                     "a boundary)"
                 )
+            if background_label in labelmap:
+                background_label = labelmap[background_label]
+            elif "unlabeled" in labelmap:  # some backward compatibility here
+                background_label = labelmap["unlabeled"]
+            else:
+                background_label = 0  # set a default value anyway just to not throw an error
             # Notice here we *always* call post-process, with majority_vote=True
             # because we are using boundary labels
-            if "unlabeled" in labelmap:
-                background_label = labelmap["unlabeled"]
-            elif "background" in labelmap:
-                background_label = labelmap["unlabackgroundbeled"]
-            else:
-                background_label = 0
             class_preds = transforms.frame_labels.postprocess(
                 frame_labels=class_preds,
                 timebin_dur=frame_dur,
