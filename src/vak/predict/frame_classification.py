@@ -276,7 +276,7 @@ def predict_with_frame_classification_model(
     # ---------------- set up to convert predictions to annotation files -----------------------------------------------
     if dataset_config["name"] is None:
         # we assume this default for now -- prep'd datasets are always multi-class frame label
-        target_type = "multi_frame_label"
+        target_type = "multi_frame_labels"
     else:
         # we made sure we have this above when determining the kind of dataset
         target_type = dataset_config["params"]["target_type"]
@@ -362,14 +362,21 @@ def predict_with_frame_classification_model(
         audio_fname = files.spect.find_audio_fname(frames_path)
         if target_type == "multi_frame_labels" or target_type == "binary_frame_labels":
             if majority_vote or min_segment_dur:
-                class_pred = transforms.frame_labels.postprocess(
-                    class_pred,
+                if "unlabeled" in labelmap:
+                    background_label = labelmap["unlabeled"]
+                elif "background" in labelmap:
+                    background_label = labelmap["unlabackgroundbeled"]
+                else:
+                    background_label = 0
+                class_preds = transforms.frame_labels.postprocess(
+                    class_preds,
                     timebin_dur=frame_dur,
                     min_segment_dur=min_segment_dur,
                     majority_vote=majority_vote,
+                    background_label=background_label,
                 )
             labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
-                class_pred,
+                class_preds,
                 labelmap=labelmap,
                 frame_times=frame_times,
             )
@@ -387,18 +394,48 @@ def predict_with_frame_classification_model(
             annots.append(annot)
 
         elif target_type == "boundary_frame_labels":
-            boundary_times = frame_times[np.nonzero(boundary_preds)[0]]
+            boundary_inds = transforms.frame_labels.boundary_inds_from_boundary_labels(
+                boundary_preds,
+                force_boundary_first_ind=True,
+            )
+            boundary_times = frame_times[boundary_inds]  # fancy indexing
             df = pd.DataFrame.from_records({'boundary_time':  boundary_times})
             annots.append(
                 AnnotationDataFrame(df=df, audio_path=audio_fname)
                 )
         elif target_type == ("boundary_frame_labels", "multi_frame_labels"):
-            # TODO: fixme
-            # labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
-            #     class_pred,
-            #     labelmap=labelmap,
-            #     frame_times=frame_times,
-            # )
+            if majority_vote is False:
+                logger.warn(
+                    "`majority_vote` was set to False but `vak.predict.predict_with_frame_classification_model` "
+                    "determined that this model predicts both multi-class labels and boundary labels, "
+                    "so `majority_vote` will be set to True (to assign a single label to each segment determined by "
+                    "a boundary)"
+                )
+            # Notice here we *always* call post-process, with majority_vote=True
+            # because we are using boundary labels
+            if "unlabeled" in labelmap:
+                background_label = labelmap["unlabeled"]
+            elif "background" in labelmap:
+                background_label = labelmap["unlabackgroundbeled"]
+            else:
+                background_label = 0
+            class_preds = transforms.frame_labels.postprocess(
+                frame_labels=class_preds,
+                timebin_dur=frame_dur,
+                min_segment_dur=min_segment_dur,
+                majority_vote=True,
+                background_label=background_label,
+                boundary_labels=boundary_preds,
+            )
+            labels, onsets_s, offsets_s = transforms.frame_labels.to_segments(
+                class_preds,
+                labelmap=labelmap,
+                frame_times=frame_times,
+            )
+            if labels is None and onsets_s is None and offsets_s is None:
+                # handle the case when all time bins are predicted to be unlabeled
+                # see https://github.com/NickleDave/vak/issues/383
+                continue
             if labels is None and onsets_s is None and offsets_s is None:
                 # handle the case when all time bins are predicted to be unlabeled
                 # see https://github.com/NickleDave/vak/issues/383
