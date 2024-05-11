@@ -53,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#687](https://github.com/vocalpy/vak/issues/687),
   [#742](https://github.com/vocalpy/vak/issues/742), and
   [#745](https://github.com/vocalpy/vak/issues/745).
+- Add `datasets` module (after renaming existing `datasets` to `datapipes`)
+  with class for BioSoundSegBench dataset
+  [#755](https://github.com/vocalpy/vak/pull/755).
+  Fixes [#754](https://github.com/vocalpy/vak/issues/754).
 
 ### Changed
 - Rename config file option `csv_path` to `dataset_path`,
@@ -96,6 +100,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#753](https://github.com/vocalpy/vak/pull/753).
   Fixes [#737](https://github.com/vocalpy/vak/issues/737) and
   [#726](https://github.com/vocalpy/vak/issues/726).
+- Rename `datasets` module to `datapipes`,
+  so we can add another `datasets` module with built-in pre-prepped
+  static datatsets, and to indicate that these "pipes" are for
+  datasets prepared by `vak.prep`. Then refactor these datapipes
+  so they have default transforms that are configured via
+  arguments to the class
+  [#755](https://github.com/vocalpy/vak/pull/755).
+  Fixes [#574](https://github.com/vocalpy/vak/issues/574)
+  and [#724](https://github.com/vocalpy/vak/issues/724).
 
 ### Removed
 - Remove entry points since they are not being used
