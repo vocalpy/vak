@@ -25,7 +25,7 @@ __summary__ = (
 )
 __uri__ = "https://github.com/NickleDave/vak"
 
-__version__ = "1.0.0"
+__version__ = "1.0.0.post1"
 
 if base_dir is not None and os.path.exists(os.path.join(base_dir, ".commit")):
     with open(os.path.join(base_dir, ".commit")) as fp:
