@@ -10,7 +10,7 @@ Tests are in the same order as the module ``vak.transforms.frame_labels.function
 - post-processing transforms that can be used to "clean up" a vector of labeled timebins
   - to_inds_list: helper function used to find segments in a vector of labeled timebins
   - remove_short_segments: remove any segment less than a minimum duration
-  - take_majority_vote: take a "majority vote" within each segment bounded by the "unlabeled" label,
+  - take_majority_vote: take a "majority vote" within each segment bounded by the background label,
     and apply the most "popular" label within each segment to all timebins in that segment
 
 Additionally some of the functions have more than one unit test,
@@ -177,7 +177,7 @@ def test_to_labels_real_data(
         annot.seq.onsets_s,
         annot.seq.offsets_s,
         timebins,
-        background_label=labelmap["unlabeled"],
+        background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
     )
 
     labels = vak.transforms.frame_labels.to_labels(
@@ -229,7 +229,7 @@ def test_to_segments_real_data(
         annot.seq.onsets_s,
         annot.seq.offsets_s,
         timebins,
-        background_label=labelmap["unlabeled"],
+        background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
     )
 
     labels, onsets_s, offsets_s = vak.transforms.frame_labels.to_segments(

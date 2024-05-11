@@ -55,7 +55,7 @@ LABELMAPS_JSON = {
     "Bengalese-Finch-Song": {
         "syllable": {
             "bl26lb16": {
-                "unlabeled": 0,
+                "background": 0,
                 "a": 1,
                 "b": 2,
                 "c": 3,
@@ -65,7 +65,7 @@ LABELMAPS_JSON = {
                 "i": 7
             },
             "gr41rd51": {
-                "unlabeled": 0,
+                "background": 0,
                 "a": 1,
                 "b": 2,
                 "c": 3,
@@ -79,7 +79,7 @@ LABELMAPS_JSON = {
                 "m": 11
             },
             "gy6or6": {
-                "unlabeled": 0,
+                "background": 0,
                 "a": 1,
                 "b": 2,
                 "c": 3,
@@ -93,7 +93,7 @@ LABELMAPS_JSON = {
                 "k": 11
             },
             "or60yw70": {
-                "unlabeled": 0,
+                "background": 0,
                 "a": 1,
                 "b": 2,
                 "c": 3,
@@ -104,7 +104,7 @@ LABELMAPS_JSON = {
                 "i": 8
             },
             "Bird0": {
-                "unlabeled": 0,
+                "background": 0,
                 "0": 1,
                 "1": 2,
                 "2": 3,
@@ -117,7 +117,7 @@ LABELMAPS_JSON = {
                 "9": 10
             },
             "Bird4": {
-                "unlabeled": 0,
+                "background": 0,
                 "0": 1,
                 "1": 2,
                 "2": 3,
@@ -128,7 +128,7 @@ LABELMAPS_JSON = {
                 "7": 8
             },
             "Bird7": {
-                "unlabeled": 0,
+                "background": 0,
                 "0": 1,
                 "1": 2,
                 "2": 3,
@@ -138,7 +138,7 @@ LABELMAPS_JSON = {
                 "6": 7
             },
             "Bird9": {
-                "unlabeled": 0,
+                "background": 0,
                 "0": 1,
                 "1": 2,
                 "2": 3,
@@ -151,7 +151,7 @@ LABELMAPS_JSON = {
     "Canary-Song": {
         "syllable": {
             "llb3": {
-                "unlabeled": 0,
+                "background": 0,
                 "1": 1,
                 "10": 2,
                 "11": 3,
@@ -174,7 +174,7 @@ LABELMAPS_JSON = {
                 "9": 20
             },
             "llb11": {
-                "unlabeled": 0,
+                "background": 0,
                 "1": 1,
                 "10": 2,
                 "11": 3,
@@ -204,7 +204,7 @@ LABELMAPS_JSON = {
                 "9": 27
             },
             "llb16": {
-                "unlabeled": 0,
+                "background": 0,
                 "1": 1,
                 "10": 2,
                 "11": 3,
@@ -241,7 +241,7 @@ LABELMAPS_JSON = {
     "Human-Speech": {
         "phoneme": {
             "all": {
-                "unlabeled": 0,
+                "background": 0,
                 "aa": 1,
                 "ae": 2,
                 "ah": 3,
@@ -309,7 +309,7 @@ LABELMAPS_JSON = {
     "Mouse-Pup-Call": {
         "call": {
             "all": {
-                "unlabeled": 0,
+                "background": 0,
                 "BK": 1,
                 "BW": 2,
                 "GO": 3,
@@ -326,7 +326,7 @@ LABELMAPS_JSON = {
     "Zebra-Finch-Song": {
         "syllable": {
             "blu285": {
-                "unlabeled": 0,
+                "background": 0,
                 "syll_0": 1,
                 "syll_1": 2,
                 "syll_2": 3,

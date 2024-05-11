@@ -130,7 +130,7 @@ class TestToLabels:
             annot.seq.onsets_s,
             annot.seq.offsets_s,
             timebins,
-            background_label=labelmap["unlabeled"],
+            background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
         )
 
         to_labels_tfm = vak.transforms.frame_labels.ToLabels(
@@ -195,7 +195,7 @@ class TestToSegments:
             annot.seq.onsets_s,
             annot.seq.offsets_s,
             timebins,
-            background_label=labelmap["unlabeled"],
+            background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
         )
 
         to_segments_tfm = vak.transforms.frame_labels.ToSegments(

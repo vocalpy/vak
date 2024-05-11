@@ -203,7 +203,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
                     frame_times,
-                    unlabeled_label=labelmap["unlabeled"],
+                    background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
                 )
                 frame_labels = np.load(frame_labels_file_that_should_exist)
                 assert np.array_equal(frame_labels, expected_frame_labels)
