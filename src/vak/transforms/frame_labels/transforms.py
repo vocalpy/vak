@@ -199,12 +199,11 @@ class PostProcess:
     Optional post-processing
     consist of two transforms,
     that both rely on there being a label
-    that corresponds to the "unlabeled"
-    (or "background") class.
+    that corresponds to the background class.
     The first removes any segments that are
     shorter than a specified duration,
     by converting labels in those segments to the
-    "background" / "unlabeled" class label.
+    background class label.
     The second performs a "majority vote"
     transform within run of labels that is
     bordered on both sides by the "background" label.
