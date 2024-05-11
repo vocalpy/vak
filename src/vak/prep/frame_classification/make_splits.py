@@ -361,7 +361,7 @@ def make_splits(
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
                     frame_times,
-                    unlabeled_label=labelmap["unlabeled"],
+                    background_label=labelmap["unlabeled"],
                 )
                 frame_labels_npy_path = split_subdir / (
                     source_path.stem
