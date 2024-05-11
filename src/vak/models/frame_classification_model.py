@@ -232,13 +232,19 @@ class FrameClassificationModel(lightning.LightningModule):
         if len(target_types) == 1:
             class_logits = self.network(frames)
             loss = self.loss(class_logits, batch[target_types[0]])
+            self.log("train_loss", loss, on_step=True)
         else:
             multi_logits, boundary_logits = self.network(frames)
-            multi_loss = self.loss(multi_logits, batch["multi_frame_labels"])
-            boundary_loss = self.loss(boundary_logits, batch["boundary_frame_labels"])
-            loss = multi_loss + boundary_loss
+            loss = self.loss(
+                 multi_logits, boundary_logits, batch["multi_frame_labels"], batch["boundary_frame_labels"]
+                 )
+            if isinstance(loss, torch.Tensor):
+                 self.log("train_loss", loss, on_step=True)
+            elif isinstance(loss, dict):
+                 # this provides a mechanism to values for all terms of a loss function with multiple terms
+                 for loss_name, loss_val in loss.items():
+                      self.log(f"train_{loss_name}", loss_val, on_step=True)
 
-        self.log("train_loss", loss, on_step=True)
         return loss
 
     def validation_step(self, batch: tuple, batch_idx: int):
@@ -369,16 +375,27 @@ class FrameClassificationModel(lightning.LightningModule):
                         sync_dist=True,
                     )
                 else:
-                    multi_loss = self.loss(class_logits, target["multi_frame_labels"])
-                    boundary_loss = self.loss(boundary_logits, target["boundary_frame_labels"])
-                    loss = multi_loss + boundary_loss
-                    self.log(
-                        f"val_{metric_name}",
-                        loss,
-                        batch_size=1,
-                        on_step=True,
-                        sync_dist=True,
-                    )
+                    loss = self.loss(
+                        class_logits, boundary_logits, batch["multi_frame_labels"], batch["boundary_frame_labels"]
+                        )
+                    if isinstance(loss, torch.Tensor):
+                        self.log(
+                            f"val_{metric_name}",
+                            loss,
+                            batch_size=1,
+                            on_step=True,
+                            sync_dist=True,
+                        )
+                    elif isinstance(loss, dict):
+                        # this provides a mechanism to values for all terms of a loss function with multiple terms
+                        for loss_name, loss_val in loss.items():
+                            self.log(
+                                f"val_{loss_name}",
+                                loss_val,
+                                batch_size=1,
+                                on_step=True,
+                                sync_dist=True,
+                            )
             elif metric_name == "acc":
                 if len(target_types) == 1:
                     self.log(
