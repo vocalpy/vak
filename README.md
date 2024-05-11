@@ -16,9 +16,6 @@
 [![Build Status](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/vocalpy/vak/actions/workflows/ci-linux.yml/badge.svg)
 [![codecov](https://codecov.io/gh/vocalpy/vak/branch/main/graph/badge.svg?token=9Y4XXB2ELA)](https://codecov.io/gh/vocalpy/vak)
 
-<h3>🚧 vak version 1.0.0 is in development! 🚧 📣 Test out the alpha release: <code>pip install vak==1.0.0a3</code>. 📣 For more info, please see <a href="https://forum.vocalpy.org/t/vak-1-0-0a1-released/55"> this forum post<a>.</h3>
-
-
 `vak` is a Python framework for neural network models, 
 designed for researchers studying acoustic communication: 
 how and why animals communicate with sound.
