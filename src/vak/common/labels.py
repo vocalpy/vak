@@ -40,6 +40,11 @@ def to_map(
         e.g. a silent gap between vocalizations,
         will be assigned the integer
         that the background key maps to.
+    background_label: str, optional
+        The string label applied to segments belonging to the
+        background class.
+        Default is
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
     Returns
     -------
