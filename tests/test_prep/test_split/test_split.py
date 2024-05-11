@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import vak.common  # for constants
 import vak.common.annotation
 import vak.prep.spectrogram_dataset.spect_helper
 import vak.prep.split.split
@@ -276,7 +277,7 @@ def test_split_frame_classification_dataframe(
     labelmap_path = dataset_path / "labelmap.json"
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
-    labelset = set(key for key in labelmap.keys() if key != 'unlabeled')
+    labelset = set(key for key in labelmap.keys() if key != vak.common.constants.DEFAULT_BACKGROUND_LABEL)
 
     dataset_df_split = vak.prep.split.split.frame_classification_dataframe(
         dataset_df, dataset_path, labelset=labelset, train_dur=train_dur, val_dur=val_dur, test_dur=test_dur
@@ -321,7 +322,7 @@ def test_split_unit_dataframe(
     labelmap_path = dataset_path / "labelmap.json"
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
-    labelset = set(key for key in labelmap.keys() if key != 'unlabeled')
+    labelset = set(key for key in labelmap.keys() if key != vak.common.constants.DEFAULT_BACKGROUND_LABEL)
 
     dataset_df_split = vak.prep.split.split.unit_dataframe(
         dataset_df, dataset_path, labelset=labelset, train_dur=train_dur, val_dur=val_dur, test_dur=test_dur

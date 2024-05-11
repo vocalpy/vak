@@ -28,6 +28,7 @@ import itertools
 import numpy as np
 import pytest
 
+import vak.common  # for constants
 import vak.common.files.spect
 import vak.common.labels
 import vak.transforms.frame_labels
@@ -87,7 +88,7 @@ def test_from_segments(annot, spect_path, labelset):
         annot.seq.onsets_s,
         annot.seq.offsets_s,
         timebins,
-        background_label=labelmap['unlabeled'],
+        background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
     )
     assert lbl_tb.shape == timebins.shape
     assert all(
@@ -98,10 +99,10 @@ def test_from_segments(annot, spect_path, labelset):
 @pytest.mark.parametrize(
     "lbl_tb, labelmap, labels_expected_int",
     [
-        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {'unlabeled': 0, 'a': 1, 'b': 2}, [1, 2]),
-        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {'unlabeled': 0, '1': 1, '2': 2}, [1, 2]),
-        (np.array([0, 0, 21, 21, 0, 0, 22, 22, 0, 0]), {'unlabeled': 0, '21': 21, '22': 22}, [21, 22]),
-        (np.array([0, 0, 11, 11, 0, 0, 12, 12, 0, 0]), {'unlabeled': 0, '11': 11, '12': 12}, [11, 12]),
+        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, 'a': 1, 'b': 2}, [1, 2]),
+        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, '1': 1, '2': 2}, [1, 2]),
+        (np.array([0, 0, 21, 21, 0, 0, 22, 22, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, '21': 21, '22': 22}, [21, 22]),
+        (np.array([0, 0, 11, 11, 0, 0, 12, 12, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, '11': 11, '12': 12}, [11, 12]),
     ]
 )
 def test_to_labels(lbl_tb, labelmap, labels_expected_int):
@@ -109,7 +110,7 @@ def test_to_labels(lbl_tb, labelmap, labels_expected_int):
     # we can easily compare strings we get back with expected;
     # this is what core.eval does
     labelmap = vak.common.labels.multi_char_labels_to_single_char(
-        labelmap, skip=('unlabeled',)
+        labelmap, skip=(vak.common.constants.DEFAULT_BACKGROUND_LABEL,)
     )
     labelmap_inv = {v: k for k, v in labelmap.items()}
     labels_expected = ''.join([labelmap_inv[lbl_int] for lbl_int in labels_expected_int])
@@ -150,7 +151,7 @@ def test_to_labels_real_data(
     # we can easily compare strings we get back with expected;
     # this is what core.eval does
     labelmap = vak.common.labels.multi_char_labels_to_single_char(
-        labelmap, skip=('unlabeled',)
+        labelmap, skip=(vak.common.constants.DEFAULT_BACKGROUND_LABEL,)
     )
     TIMEBINS_KEY = "t"
 
@@ -323,13 +324,13 @@ def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, 
             0,
             np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0]),
         ),
-        # test MajorityVote works when there is no 'unlabeled' segment at start of vector
+        # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at start of vector
         (
             np.asarray([1, 1, 2, 1, 0, 0, 0, 0]),
             0,
             np.asarray([1, 1, 1, 1, 0, 0, 0, 0])
         ),
-        # test MajorityVote works when there is no 'unlabeled' segment at end of vector
+        # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at end of vector
         (
             np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1]),
             0,
@@ -389,14 +390,14 @@ POSTPROCESS_PARAMS_ARGVALS = [
         # majority vote converts second segment to label "a"
         np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0]),
     ),
-    # test MajorityVote works when there is no 'unlabeled' segment at start of vector
+    # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at start of vector
     (
         np.array([1, 1, 2, 1, 0, 0, 0, 0]),
         None,
         True,
         np.array([1, 1, 1, 1, 0, 0, 0, 0]),
     ),
-    # test MajorityVote works when there is no 'unlabeled' segment at end of vector
+    # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at end of vector
     (
         np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1]),
         None,
