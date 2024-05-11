@@ -37,9 +37,9 @@ root_results_dir = "/PATH/TO/FOLDER/results/train"
 batch_size = 8
 # num_epochs: number of training epochs, where an epoch is one iteration through all samples in training split
 num_epochs = 2
-# normalize_spectrograms: if true, normalize spectrograms per frequency bin, so mean of each is 0.0 and std is 1.0
+# standardize_frames: if true, standardize (normalize) frames (input to neural network) per frequency bin, so mean of each is 0.0 and std is 1.0
 # across the entire training split
-normalize_spectrograms = true
+standardize_frames = true
 # val_step: step number on which to compute metrics with validation set, every time step % val_step == 0
 # (a step is one batch fed through the network)
 # saves a checkpoint if the monitored evaluation metric improves (which is model specific)

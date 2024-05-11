@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from .. import config
+from .. import common, config
 from .. import predict as predict_module
 from ..common.logging import config_logging_for_cli, log_version
 
@@ -33,7 +33,7 @@ def predict(toml_path):
         force=True,
     )
     log_version(logger)
-    logger.info("Logging results to {}".format(cfg.prep.output_dir))
+    logger.info("Logging results to {}".format(cfg.predict.output_dir))
 
     if cfg.predict.dataset.path is None:
         raise ValueError(
@@ -49,8 +49,8 @@ def predict(toml_path):
         checkpoint_path=cfg.predict.checkpoint_path,
         labelmap_path=cfg.predict.labelmap_path,
         num_workers=cfg.predict.num_workers,
-        timebins_key=cfg.prep.spect_params.timebins_key,
-        spect_scaler_path=cfg.predict.spect_scaler_path,
+        timebins_key=cfg.prep.spect_params.timebins_key if cfg.prep else common.constants.TIMEBINS_KEY,
+        frames_standardizer_path=cfg.predict.frames_standardizer_path,
         annot_csv_filename=cfg.predict.annot_csv_filename,
         output_dir=cfg.predict.output_dir,
         min_segment_dur=cfg.predict.min_segment_dur,

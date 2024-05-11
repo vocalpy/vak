@@ -109,7 +109,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
             dataset_df
         )
         labelmap = vak.common.labels.to_map(
-            cfg.prep.labelset, map_unlabeled=map_unlabeled_segments
+            cfg.prep.labelset, map_background=map_unlabeled_segments
         )
     else:
         labelmap = None
@@ -141,17 +141,17 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
             dataset_df_with_splits.split == split
         ].copy()
 
-        assert vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME in split_df.columns
+        assert vak.datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME in split_df.columns
 
         frames_paths = split_df[
-            vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+            vak.datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
         ].values
 
         if purpose != "predict":
-            assert vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME in split_df.columns
+            assert vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME in split_df.columns
 
             frame_labels_paths = split_df[
-                vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+                vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME
             ].values
 
             annots = vak.common.annotation.from_df(split_df)
@@ -176,7 +176,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
 
             # NOTE we load frames to confirm we can and also to make indexing vectors we use to test,
             # see next code block
-            frames = vak.datasets.frame_classification.helper.load_frames(tmp_dataset_path / frames_path, input_type)
+            frames = vak.datapipes.frame_classification.helper.load_frames(tmp_dataset_path / frames_path, input_type)
             assert isinstance(frames, np.ndarray)
 
             # make indexing vectors that we use to test
@@ -203,7 +203,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
                     frame_times,
-                    unlabeled_label=labelmap["unlabeled"],
+                    background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
                 )
                 frame_labels = np.load(frame_labels_file_that_should_exist)
                 assert np.array_equal(frame_labels, expected_frame_labels)
@@ -217,7 +217,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
 
         sample_id_vec_path = (
             split_subdir /
-            vak.datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME
+            vak.datapipes.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME
         )
         assert sample_id_vec_path.exists()
 
@@ -227,7 +227,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
 
         inds_in_sample_vec_path = (
             split_subdir /
-            vak.datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME
+            vak.datapipes.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME
         )
         assert inds_in_sample_vec_path.exists()
 

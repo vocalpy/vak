@@ -13,10 +13,10 @@ def assert_train_output_matches_expected(cfg: vak.config.config.Config, model_na
                                          results_path: pathlib.Path):
     assert results_path.joinpath("labelmap.json").exists()
 
-    if cfg.train.normalize_spectrograms or cfg.train.spect_scaler_path:
-        assert results_path.joinpath("StandardizeSpect").exists()
+    if cfg.train.standardize_frames or cfg.train.frames_standardizer_path:
+        assert results_path.joinpath("FramesStandardizer").exists()
     else:
-        assert not results_path.joinpath("StandardizeSpect").exists()
+        assert not results_path.joinpath("FramesStandardizer").exists()
 
     model_path = results_path.joinpath(model_name)
     assert model_path.exists()
@@ -68,9 +68,9 @@ def test_train_frame_classification_model(
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
         checkpoint_path=cfg.train.checkpoint_path,
-        spect_scaler_path=cfg.train.spect_scaler_path,
+        frames_standardizer_path=cfg.train.frames_standardizer_path,
         results_path=results_path,
-        normalize_spectrograms=cfg.train.normalize_spectrograms,
+        standardize_frames=cfg.train.standardize_frames,
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
         ckpt_step=cfg.train.ckpt_step,
@@ -115,9 +115,9 @@ def test_continue_training(
         num_epochs=cfg.train.num_epochs,
         num_workers=cfg.train.num_workers,
         checkpoint_path=cfg.train.checkpoint_path,
-        spect_scaler_path=cfg.train.spect_scaler_path,
+        frames_standardizer_path=cfg.train.frames_standardizer_path,
         results_path=results_path,
-        normalize_spectrograms=cfg.train.normalize_spectrograms,
+        standardize_frames=cfg.train.standardize_frames,
         shuffle=cfg.train.shuffle,
         val_step=cfg.train.val_step,
         ckpt_step=cfg.train.ckpt_step,
@@ -131,7 +131,7 @@ def test_continue_training(
     'path_option_to_change',
     [
         {"table": "train", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
-        {"table": "train", "key": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "train", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/FramesStandardizer'},
     ]
 )
 def test_train_raises_file_not_found(
@@ -139,7 +139,7 @@ def test_train_raises_file_not_found(
 ):
     """Test that pre-conditions in `vak.train` raise FileNotFoundError
     when one of the following does not exist:
-    checkpoint_path, dataset_path, spect_scaler_path
+    checkpoint_path, dataset_path, frames_standardizer_path
     """
     keys_to_change = [
         {"table": "train", "key": "trainer", "value": trainer_table},
@@ -166,9 +166,9 @@ def test_train_raises_file_not_found(
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
             checkpoint_path=cfg.train.checkpoint_path,
-            spect_scaler_path=cfg.train.spect_scaler_path,
+            frames_standardizer_path=cfg.train.frames_standardizer_path,
             results_path=results_path,
-            normalize_spectrograms=cfg.train.normalize_spectrograms,
+            standardize_frames=cfg.train.standardize_frames,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,
@@ -216,9 +216,9 @@ def test_train_raises_not_a_directory(
             num_epochs=cfg.train.num_epochs,
             num_workers=cfg.train.num_workers,
             checkpoint_path=cfg.train.checkpoint_path,
-            spect_scaler_path=cfg.train.spect_scaler_path,
+            frames_standardizer_path=cfg.train.frames_standardizer_path,
             results_path=results_path,
-            normalize_spectrograms=cfg.train.normalize_spectrograms,
+            standardize_frames=cfg.train.standardize_frames,
             shuffle=cfg.train.shuffle,
             val_step=cfg.train.val_step,
             ckpt_step=cfg.train.ckpt_step,

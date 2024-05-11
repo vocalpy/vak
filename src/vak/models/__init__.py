@@ -1,8 +1,8 @@
 from . import decorator, definition, factory, registry
-from .factory import ModelFactory
 from .convencoder_umap import ConvEncoderUMAP
 from .decorator import model
 from .ed_tcn import ED_TCN
+from .factory import ModelFactory
 from .frame_classification_model import FrameClassificationModel
 from .get import get
 from .parametric_umap_model import ParametricUMAPModel

@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from attrs import asdict, define, field, validators
@@ -20,15 +19,18 @@ def is_valid_accelerator(instance, attribute, value):
     else:
         raise ValueError(
             f"Invalid value for 'accelerator' key in 'trainer' table of configuration file: {value}. "
-            "Value must be one of: {\"cpu\", \"gpu\", \"tpu\", \"ipu\"}"
+            'Value must be one of: {"cpu", "gpu", "tpu", "ipu"}'
         )
 
 
 def is_valid_devices(instance, attribute, value):
     """Check if ``devices`` is valid"""
     if not (
-        (isinstance(value, int)) or
-        (isinstance(value, list) and all([isinstance(el, int) for el in value]))
+        (isinstance(value, int))
+        or (
+            isinstance(value, list)
+            and all([isinstance(el, int) for el in value])
+        )
     ):
         raise ValueError(
             "Invalid value for 'devices' key in 'trainer' table of configuration file: {value}"
@@ -63,9 +65,10 @@ class TrainerConfig:
     Please see this issue: https://github.com/vocalpy/vak/issues/691
     If you need to use multiple GPUs, please use `vak` directly in a script.
     """
+
     accelerator: str = field(
         validator=is_valid_accelerator,
-        default=common.accelerator.get_default()
+        default=common.accelerator.get_default(),
     )
     devices: int | list[int] = field(
         validator=validators.optional(is_valid_devices),
@@ -87,12 +90,17 @@ class TrainerConfig:
 
         if self.accelerator in ("gpu", "tpu", "ipu"):
             if not (
-                (isinstance(self.devices, int) and self.devices == 1) or
-                (isinstance(self.devices, list) and len(self.devices) == 1 and all([isinstance(el, int) for el in self.devices]))
+                (isinstance(self.devices, int) and self.devices == 1)
+                or (
+                    isinstance(self.devices, list)
+                    and len(self.devices) == 1
+                    and all([isinstance(el, int) for el in self.devices])
+                )
             ):
                 raise ValueError(
                     "Setting a value for the `lightning.pytorch.Trainer` parameter `devices` that is not either 1 "
-                    "(meaning \"use a single GPU\") or a list with a single number (meaning \"use this exact GPU\") currently "
+                    '(meaning "use a single GPU") or a list with a single number '
+                    '(meaning "use this exact GPU") currently '
                     "breaks functionality for the command-line interface of `vak`. "
                     "Please see this issue: https://github.com/vocalpy/vak/issues/691"
                     "If you need to use multiple GPUs, please use `vak` directly in a script."
@@ -105,7 +113,8 @@ class TrainerConfig:
                 )
             if self.devices < 1:
                 raise ValueError(
-                    f"When value for 'accelerator' is 'cpu', value for `devices` should be an int > 0, but was: {self.devices}"
+                    "When value for 'accelerator' is 'cpu', value for `devices` "
+                    f"should be an int > 0, but was: {self.devices}"
                 )
 
     def asdict(self):

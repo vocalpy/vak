@@ -20,7 +20,7 @@ labelmap_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepos
 batch_size = 11
 num_workers = 16
 
-spect_scaler_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
+frames_standardizer_path = "~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/gy6or6/results_200620_165308/StandardizeSpect"
 output_dir = "./tests/data_for_tests/generated/results/eval/audio_cbin_annot_notmat/TweetyNet"
 
 [vak.eval.post_tfm_kwargs]

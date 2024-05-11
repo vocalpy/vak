@@ -6,14 +6,14 @@ import datetime
 import logging
 import pathlib
 
-import pandas as pd
 import lightning
+import pandas as pd
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import datapipes, models
 from ..common import validators
 from ..common.paths import generate_results_dir_name_as_path
-from ..datasets.parametric_umap import ParametricUMAPDataset
+from ..datapipes.parametric_umap import Datapipe
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +162,7 @@ def train_parametric_umap_model(
     logger.info(
         f"Loading dataset from path: {dataset_path}",
     )
-    metadata = datasets.parametric_umap.Metadata.from_dataset_path(
+    metadata = datapipes.parametric_umap.Metadata.from_dataset_path(
         dataset_path
     )
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
@@ -196,17 +196,11 @@ def train_parametric_umap_model(
         f"Total duration of training split from dataset (in s): {train_dur}",
     )
 
-    model_name = model_config["name"]
-    train_transform = transforms.defaults.get_default_transform(
-        model_name, "train"
-    )
-
     dataset_params = dataset_config["params"]
-    train_dataset = ParametricUMAPDataset.from_dataset_path(
+    train_dataset = Datapipe.from_dataset_path(
         dataset_path=dataset_path,
         split="train",
         subset=subset,
-        transform=train_transform,
         **dataset_params,
     )
     logger.info(
@@ -221,13 +215,9 @@ def train_parametric_umap_model(
 
     # ---------------- load validation set (if there is one) -----------------------------------------------------------
     if val_step:
-        transform = transforms.defaults.get_default_transform(
-            model_name, "eval"
-        )
-        val_dataset = ParametricUMAPDataset.from_dataset_path(
+        val_dataset = Datapipe.from_dataset_path(
             dataset_path=dataset_path,
             split="val",
-            transform=transform,
             **dataset_params,
         )
         logger.info(
@@ -242,6 +232,7 @@ def train_parametric_umap_model(
     else:
         val_loader = None
 
+    model_name = model_config["name"]
     model = models.get(
         model_name,
         model_config,

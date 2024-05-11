@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from dask.diagnostics import ProgressBar
 
-from ... import common, datasets
+from ... import common, datapipes
 from .. import split
 
 logger = logging.getLogger(__name__)
@@ -56,8 +56,8 @@ def make_index_vectors_for_each_subset(
     in the "train" directory split inside ``dataset_path``.
 
     The indexing vectors are used by
-    :class:`vak.datasets.frame_classification.WindowDataset`
-    and :class:`vak.datasets.frame_classification.FramesDataset`.
+    :class:`vak.datasets.frame_classification.TrainDatapipe`
+    and :class:`vak.datasets.frame_classification.InferDatapipe`.
     These vectors make it possible to work with files,
     to avoid loading the entire dataset into memory,
     and to avoid working with memory-mapped arrays.
@@ -103,7 +103,7 @@ def make_index_vectors_for_each_subset(
         logger.info(f"Making indexing vectors for subset: {subset}")
         subset_df = subsets_df[subsets_df.subset == subset].copy()
         frames_paths = subset_df[
-            datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+            datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
         ].values
 
         def _return_index_arrays(
@@ -116,7 +116,7 @@ def make_index_vectors_for_each_subset(
 
             frames_path = dataset_path / pathlib.Path(frames_path)
 
-            frames = datasets.frame_classification.helper.load_frames(
+            frames = datapipes.frame_classification.helper.load_frames(
                 frames_path, input_type
             )
 
@@ -151,7 +151,7 @@ def make_index_vectors_for_each_subset(
         np.save(
             dataset_path
             / "train"
-            / datasets.frame_classification.helper.sample_ids_array_filename_for_subset(
+            / datapipes.frame_classification.helper.sample_ids_array_filename_for_subset(
                 subset
             ),
             sample_id_vec,
@@ -162,7 +162,7 @@ def make_index_vectors_for_each_subset(
         np.save(
             dataset_path
             / "train"
-            / datasets.frame_classification.helper.inds_in_sample_array_filename_for_subset(
+            / datapipes.frame_classification.helper.inds_in_sample_array_filename_for_subset(
                 subset
             ),
             inds_in_sample_vec,
@@ -176,6 +176,7 @@ def make_subsets_from_dataset_df(
     num_replicates: int,
     dataset_path: pathlib.Path,
     labelmap: dict,
+    background_label : str = common.constants.DEFAULT_BACKGROUND_LABEL,
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
 
@@ -246,6 +247,11 @@ def make_subsets_from_dataset_df(
      input_type : str
          The type of input to the neural network model.
          One of {'audio', 'spect'}.
+    background_label: str, optional
+        The string label applied to segments belonging to the
+        background class.
+        Default is
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
      Returns
      -------
@@ -267,7 +273,7 @@ def make_subsets_from_dataset_df(
     # get just train split, to pass to split.dataframe
     # so we don't end up with other splits in the training set
     train_split_df = dataset_df[dataset_df["split"] == "train"].copy()
-    labelset = set([k for k in labelmap.keys() if k != "unlabeled"])
+    labelset = set([k for k in labelmap.keys() if k != background_label])
 
     # will concat after loop, then use ``csv_path`` to replace
     # original dataset df with this one

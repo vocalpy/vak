@@ -8,9 +8,9 @@ Tests are in the same order as the module ``vak.transforms.frame_labels.function
 - to_segments: transform to get back segment onsets, offsets, and labels from labeled timebins.
   Inverse of ``from_segments``.
 - post-processing transforms that can be used to "clean up" a vector of labeled timebins
-  - to_inds_list: helper function used to find segments in a vector of labeled timebins
+  - segment_inds_list_from_class_labels: helper function used to find segments in a vector of labeled timebins
   - remove_short_segments: remove any segment less than a minimum duration
-  - take_majority_vote: take a "majority vote" within each segment bounded by the "unlabeled" label,
+  - take_majority_vote: take a "majority vote" within each segment bounded by the background label,
     and apply the most "popular" label within each segment to all timebins in that segment
 
 Additionally some of the functions have more than one unit test,
@@ -28,6 +28,7 @@ import itertools
 import numpy as np
 import pytest
 
+import vak.common  # for constants
 import vak.common.files.spect
 import vak.common.labels
 import vak.transforms.frame_labels
@@ -87,7 +88,7 @@ def test_from_segments(annot, spect_path, labelset):
         annot.seq.onsets_s,
         annot.seq.offsets_s,
         timebins,
-        unlabeled_label=labelmap['unlabeled'],
+        background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
     )
     assert lbl_tb.shape == timebins.shape
     assert all(
@@ -98,10 +99,10 @@ def test_from_segments(annot, spect_path, labelset):
 @pytest.mark.parametrize(
     "lbl_tb, labelmap, labels_expected_int",
     [
-        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {'unlabeled': 0, 'a': 1, 'b': 2}, [1, 2]),
-        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {'unlabeled': 0, '1': 1, '2': 2}, [1, 2]),
-        (np.array([0, 0, 21, 21, 0, 0, 22, 22, 0, 0]), {'unlabeled': 0, '21': 21, '22': 22}, [21, 22]),
-        (np.array([0, 0, 11, 11, 0, 0, 12, 12, 0, 0]), {'unlabeled': 0, '11': 11, '12': 12}, [11, 12]),
+        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, 'a': 1, 'b': 2}, [1, 2]),
+        (np.array([0, 0, 1, 1, 0, 0, 2, 2, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, '1': 1, '2': 2}, [1, 2]),
+        (np.array([0, 0, 21, 21, 0, 0, 22, 22, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, '21': 21, '22': 22}, [21, 22]),
+        (np.array([0, 0, 11, 11, 0, 0, 12, 12, 0, 0]), {vak.common.constants.DEFAULT_BACKGROUND_LABEL: 0, '11': 11, '12': 12}, [11, 12]),
     ]
 )
 def test_to_labels(lbl_tb, labelmap, labels_expected_int):
@@ -109,7 +110,7 @@ def test_to_labels(lbl_tb, labelmap, labels_expected_int):
     # we can easily compare strings we get back with expected;
     # this is what core.eval does
     labelmap = vak.common.labels.multi_char_labels_to_single_char(
-        labelmap, skip=('unlabeled',)
+        labelmap, skip=(vak.common.constants.DEFAULT_BACKGROUND_LABEL,)
     )
     labelmap_inv = {v: k for k, v in labelmap.items()}
     labels_expected = ''.join([labelmap_inv[lbl_int] for lbl_int in labels_expected_int])
@@ -150,7 +151,7 @@ def test_to_labels_real_data(
     # we can easily compare strings we get back with expected;
     # this is what core.eval does
     labelmap = vak.common.labels.multi_char_labels_to_single_char(
-        labelmap, skip=('unlabeled',)
+        labelmap, skip=(vak.common.constants.DEFAULT_BACKGROUND_LABEL,)
     )
     TIMEBINS_KEY = "t"
 
@@ -177,7 +178,7 @@ def test_to_labels_real_data(
         annot.seq.onsets_s,
         annot.seq.offsets_s,
         timebins,
-        unlabeled_label=labelmap["unlabeled"],
+        background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
     )
 
     labels = vak.transforms.frame_labels.to_labels(
@@ -229,7 +230,7 @@ def test_to_segments_real_data(
         annot.seq.onsets_s,
         annot.seq.offsets_s,
         timebins,
-        unlabeled_label=labelmap["unlabeled"],
+        background_label=labelmap[vak.common.constants.DEFAULT_BACKGROUND_LABEL],
     )
 
     labels, onsets_s, offsets_s = vak.transforms.frame_labels.to_segments(
@@ -263,12 +264,12 @@ def test_to_segments_real_data(
         ),
     ],
 )
-def test_to_inds(frame_labels, seg_inds_list_expected):
+def test_segment_inds_list_from_class_labels(frame_labels, seg_inds_list_expected):
     """Test ``to_inds`` works as expected"""
     UNLABELED = 0
 
-    seg_inds_list = vak.transforms.frame_labels.to_inds_list(
-        frame_labels=frame_labels, unlabeled_label=UNLABELED
+    seg_inds_list = vak.transforms.frame_labels.segment_inds_list_from_class_labels(
+        frame_labels=frame_labels, background_label=UNLABELED
     )
     assert np.array_equal(seg_inds_list, seg_inds_list_expected)
 
@@ -296,15 +297,15 @@ def test_to_inds(frame_labels, seg_inds_list_expected):
 )
 def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, lbl_tb_expected):
     """Test ``remove_short_segments`` works as expected"""
-    segment_inds_list = vak.transforms.frame_labels.to_inds_list(
-        lbl_tb, unlabeled_label=unlabeled
+    segment_inds_list = vak.transforms.frame_labels.segment_inds_list_from_class_labels(
+        lbl_tb, background_label=unlabeled
     )
     lbl_tb_tfm, segment_inds_list_out = vak.transforms.frame_labels.remove_short_segments(
         lbl_tb,
         segment_inds_list,
         timebin_dur=timebin_dur,
         min_segment_dur=min_segment_dur,
-        unlabeled_label=unlabeled,
+        background_label=unlabeled,
     )
     assert np.array_equal(lbl_tb_tfm, lbl_tb_expected)
 
@@ -323,13 +324,13 @@ def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, 
             0,
             np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0]),
         ),
-        # test MajorityVote works when there is no 'unlabeled' segment at start of vector
+        # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at start of vector
         (
             np.asarray([1, 1, 2, 1, 0, 0, 0, 0]),
             0,
             np.asarray([1, 1, 1, 1, 0, 0, 0, 0])
         ),
-        # test MajorityVote works when there is no 'unlabeled' segment at end of vector
+        # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at end of vector
         (
             np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1]),
             0,
@@ -345,8 +346,8 @@ def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, 
 )
 def test_majority_vote(lbl_tb_in, unlabeled, lbl_tb_expected):
     """Test ``majority_vote`` works as expected"""
-    segment_inds_list = vak.transforms.frame_labels.to_inds_list(
-        lbl_tb_in, unlabeled_label=unlabeled
+    segment_inds_list = vak.transforms.frame_labels.segment_inds_list_from_class_labels(
+        lbl_tb_in, background_label=unlabeled
     )
     lbl_tb_maj_vote = vak.transforms.frame_labels.take_majority_vote(
         lbl_tb_in, segment_inds_list
@@ -389,14 +390,14 @@ POSTPROCESS_PARAMS_ARGVALS = [
         # majority vote converts second segment to label "a"
         np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0]),
     ),
-    # test MajorityVote works when there is no 'unlabeled' segment at start of vector
+    # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at start of vector
     (
         np.array([1, 1, 2, 1, 0, 0, 0, 0]),
         None,
         True,
         np.array([1, 1, 1, 1, 0, 0, 0, 0]),
     ),
-    # test MajorityVote works when there is no 'unlabeled' segment at end of vector
+    # test MajorityVote works when there is no vak.common.constants.DEFAULT_BACKGROUND_LABEL segment at end of vector
     (
         np.array([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1]),
         None,
@@ -451,17 +452,17 @@ POSTPROCESS_PARAMS_ARGVALS = [
 
 
 @pytest.mark.parametrize(
-    'lbl_tb, timebin_dur, unlabeled_label, min_segment_dur, majority_vote, lbl_tb_expected',
+    'lbl_tb, timebin_dur, background_label, min_segment_dur, majority_vote, lbl_tb_expected',
     POSTPROCESS_PARAMS_ARGVALS
 )
-def test_postprocess(lbl_tb, timebin_dur, unlabeled_label, min_segment_dur, majority_vote, lbl_tb_expected):
+def test_postprocess(lbl_tb, timebin_dur, background_label, min_segment_dur, majority_vote, lbl_tb_expected):
     """Test that ``trasnforms.frame_labels.postprocess`` works as expected.
     Specifically test that we recover an expected string of labels,
     as would be used to compute edit distance."""
     lbl_tb = vak.transforms.frame_labels.postprocess(
         lbl_tb,
         timebin_dur=timebin_dur,
-        unlabeled_label=UNLABELED_LABEL,
+        background_label=UNLABELED_LABEL,
         majority_vote=majority_vote,
         min_segment_dur=min_segment_dur,
     )

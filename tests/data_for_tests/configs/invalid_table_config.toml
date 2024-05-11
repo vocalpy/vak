@@ -23,7 +23,7 @@ transform_type = 'log_spect'
 [vak.trian]  # <-- invalid section 'trian' (instead of 'vak.train')
 model = 'TweetyNet'
 root_results_dir = '/home/user/data/subdir/'
-normalize_spectrograms = true
+standardize_frames = true
 num_epochs = 2
 batch_size = 11
 val_error_step = 1

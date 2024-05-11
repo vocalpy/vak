@@ -3,7 +3,7 @@ import pathlib
 
 import pytest
 
-import vak.datasets.frame_classification
+import vak.datapipes.frame_classification
 
 
 ARGNAMES = 'dataset_csv_filename, input_type, frame_dur'
@@ -23,8 +23,8 @@ class TestMetadata:
         ARGVALS
     )
     def test_metadata_init(self, dataset_csv_filename, input_type, frame_dur):
-        metadata = vak.datasets.frame_classification.Metadata(dataset_csv_filename, input_type, frame_dur)
-        assert isinstance(metadata, vak.datasets.frame_classification.Metadata)
+        metadata = vak.datapipes.frame_classification.Metadata(dataset_csv_filename, input_type, frame_dur)
+        assert isinstance(metadata, vak.datapipes.frame_classification.Metadata)
         for attr_name, attr_val in zip(
             ('dataset_csv_filename', 'input_type', 'frame_dur'),
             (dataset_csv_filename, input_type, frame_dur),
@@ -46,12 +46,12 @@ class TestMetadata:
             'input_type': input_type,
             'frame_dur': frame_dur,
         }
-        metadata_json_path = tmp_path / vak.datasets.frame_classification.Metadata.METADATA_JSON_FILENAME
+        metadata_json_path = tmp_path / vak.datapipes.frame_classification.Metadata.METADATA_JSON_FILENAME
         with metadata_json_path.open('w') as fp:
             json.dump(metadata_dict, fp, indent=4)
 
-        metadata = vak.datasets.frame_classification.Metadata.from_path(metadata_json_path)
-        assert isinstance(metadata, vak.datasets.frame_classification.Metadata)
+        metadata = vak.datapipes.frame_classification.Metadata.from_path(metadata_json_path)
+        assert isinstance(metadata, vak.datapipes.frame_classification.Metadata)
         for attr_name, attr_val in zip(
             ('dataset_csv_filename', 'input_type', 'frame_dur'),
             (dataset_csv_filename, input_type, frame_dur),
@@ -67,13 +67,13 @@ class TestMetadata:
         ARGVALS
     )
     def test_metadata_to_json(self, dataset_csv_filename, input_type, frame_dur, tmp_path):
-        metadata_to_json = vak.datasets.frame_classification.Metadata(dataset_csv_filename, input_type, frame_dur)
+        metadata_to_json = vak.datapipes.frame_classification.Metadata(dataset_csv_filename, input_type, frame_dur)
         mock_dataset_path = tmp_path / 'mock_dataset'
         mock_dataset_path.mkdir()
 
         metadata_to_json.to_json(dataset_path=mock_dataset_path)
-        expected_json_path = mock_dataset_path / vak.datasets.frame_classification.Metadata.METADATA_JSON_FILENAME
+        expected_json_path = mock_dataset_path / vak.datapipes.frame_classification.Metadata.METADATA_JSON_FILENAME
         assert expected_json_path.exists()
 
-        metadata_from_json = vak.datasets.frame_classification.Metadata.from_path(expected_json_path)
+        metadata_from_json = vak.datapipes.frame_classification.Metadata.from_path(expected_json_path)
         assert metadata_from_json == metadata_to_json

@@ -59,7 +59,7 @@ def test_predict_with_frame_classification_model(
         labelmap_path=cfg.predict.labelmap_path,
         num_workers=cfg.predict.num_workers,
         timebins_key=cfg.prep.spect_params.timebins_key,
-        spect_scaler_path=cfg.predict.spect_scaler_path,
+        frames_standardizer_path=cfg.predict.frames_standardizer_path,
         annot_csv_filename=cfg.predict.annot_csv_filename,
         output_dir=cfg.predict.output_dir,
         min_segment_dur=cfg.predict.min_segment_dur,
@@ -73,7 +73,7 @@ def test_predict_with_frame_classification_model(
             Path(output_dir).glob(f"*{vak.common.constants.NET_OUTPUT_SUFFIX}")
         )
 
-        metadata = vak.datasets.frame_classification.Metadata.from_dataset_path(cfg.predict.dataset.path)
+        metadata = vak.datapipes.frame_classification.Metadata.from_dataset_path(cfg.predict.dataset.path)
         dataset_csv_path = cfg.predict.dataset.path / metadata.dataset_csv_filename
         dataset_df = pd.read_csv(dataset_csv_path)
 
@@ -91,7 +91,7 @@ def test_predict_with_frame_classification_model(
     [
         {"table": "predict", "key": "checkpoint_path", "value": '/obviously/doesnt/exist/ckpt.pt'},
         {"table": "predict", "key": "labelmap_path", "value": '/obviously/doesnt/exist/labelmap.json'},
-        {"table": "predict", "key": "spect_scaler_path", "value": '/obviously/doesnt/exist/SpectScaler'},
+        {"table": "predict", "key": "frames_standardizer_path", "value": '/obviously/doesnt/exist/FramesStandardizer'},
     ]
 )
 def test_predict_with_frame_classification_model_raises_file_not_found(
@@ -130,7 +130,7 @@ def test_predict_with_frame_classification_model_raises_file_not_found(
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
             timebins_key=cfg.prep.spect_params.timebins_key,
-            spect_scaler_path=cfg.predict.spect_scaler_path,
+            frames_standardizer_path=cfg.predict.frames_standardizer_path,
             annot_csv_filename=cfg.predict.annot_csv_filename,
             output_dir=cfg.predict.output_dir,
             min_segment_dur=cfg.predict.min_segment_dur,
@@ -189,7 +189,7 @@ def test_predict_with_frame_classification_model_raises_not_a_directory(
             labelmap_path=cfg.predict.labelmap_path,
             num_workers=cfg.predict.num_workers,
             timebins_key=cfg.prep.spect_params.timebins_key,
-            spect_scaler_path=cfg.predict.spect_scaler_path,
+            frames_standardizer_path=cfg.predict.frames_standardizer_path,
             annot_csv_filename=cfg.predict.annot_csv_filename,
             output_dir=cfg.predict.output_dir,
             min_segment_dur=cfg.predict.min_segment_dur,

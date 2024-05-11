@@ -5,10 +5,12 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-from . import annotation
+from . import annotation, constants
 
 
-def to_map(labelset: set, map_unlabeled: bool = True) -> dict:
+def to_map(
+        labelset: set, map_background: bool = True, background_label: str = constants.DEFAULT_BACKGROUND_LABEL
+) -> dict:
     """Convert set of labels to `dict`
     mapping those labels to a series of consecutive integers
     from 0 to n inclusive,
@@ -18,21 +20,31 @@ def to_map(labelset: set, map_unlabeled: bool = True) -> dict:
     from annotations of a vocalization into
     a label for every time bin in a spectrogram of that vocalization.
 
-    If ``map_unlabeled`` is True, then the label 'unlabeled'
-    will be added to labelset, and will map to 0,
+    If ``map_background`` is True, then a label
+    will be added to labelset representing a background class
+    (any segment that is not labeled).
+    The default for this label is
+    :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
+    This string label will map to class index 0,
     so the total number of classes is n + 1.
 
     Parameters
     ----------
     labelset : set
         Set of labels used to annotate a dataset.
-    map_unlabeled : bool
-        If True, include key 'unlabeled' in mapping.
+    map_background : bool
+        If True, include key specified by
+        ``background_label`` in mapping.
         Any time bins in a spectrogram
         that do not have a label associated with them,
         e.g. a silent gap between vocalizations,
         will be assigned the integer
-        that the 'unlabeled' key maps to.
+        that the background key maps to.
+    background_label: str, optional
+        The string label applied to segments belonging to the
+        background class.
+        Default is
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
     Returns
     -------
@@ -45,11 +57,12 @@ def to_map(labelset: set, map_unlabeled: bool = True) -> dict:
         )
 
     labellist = []
-    if map_unlabeled is True:
-        labellist.append("unlabeled")
-
+    if map_background is True:
+        # NOTE we append background label *first*
+        labellist.append(background_label)
+    # **then** extend with the rest of the labels
     labellist.extend(sorted(list(labelset)))
-
+    # so that background_label maps to class index 0 by default in next line
     labelmap = dict(zip(labellist, range(len(labellist))))
     return labelmap
 
@@ -124,7 +137,7 @@ DUMMY_SINGLE_CHAR_LABELS = (*ALPHANUMERIC, *DUMMY_SINGLE_CHAR_LABELS)
 
 # added to fix https://github.com/NickleDave/vak/issues/373
 def multi_char_labels_to_single_char(
-    labelmap: dict, skip: tuple[str] = ("unlabeled",)
+    labelmap: dict, skip: tuple[str] = (constants.DEFAULT_BACKGROUND_LABEL,)
 ) -> dict:
     """Return a copy of a ``labelmap`` where any
     labels that are strings with multiple characters
@@ -146,9 +159,9 @@ def multi_char_labels_to_single_char(
         to integers. As returned by
         ``vak.labels.to_map``.
     skip : tuple
-        Of strings, labels to leave
-        as multiple characters.
-        Default is ('unlabeled',).
+        A tuple of labels to leave as multiple characters.
+        Default is a tuple containing just
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
     Returns
     -------

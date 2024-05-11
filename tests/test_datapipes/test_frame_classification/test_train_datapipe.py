@@ -1,10 +1,10 @@
 import pytest
 
 import vak
-import vak.datasets.frame_classification
+import vak.datapipes.frame_classification
 
 
-class TestWindowDataset:
+class TestTrainDatapipe:
     @pytest.mark.parametrize(
         'config_type, model_name, audio_format, spect_format, annot_format, split, transform_kwargs',
         [
@@ -23,14 +23,9 @@ class TestWindowDataset:
         cfg = vak.config.Config.from_toml_path(toml_path)
         cfg_command = getattr(cfg, config_type)
 
-        transform = vak.transforms.defaults.get_default_transform(
-            model_name, config_type, transform_kwargs
-        )
-
-        dataset = vak.datasets.frame_classification.WindowDataset.from_dataset_path(
+        dataset = vak.datapipes.frame_classification.TrainDatapipe.from_dataset_path(
             dataset_path=cfg_command.dataset.path,
             split=split,
             window_size=cfg_command.dataset.params['window_size'],
-            item_transform=transform,
         )
-        assert isinstance(dataset, vak.datasets.frame_classification.WindowDataset)
+        assert isinstance(dataset, vak.datapipes.frame_classification.TrainDatapipe)

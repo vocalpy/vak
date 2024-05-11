@@ -2,7 +2,7 @@
 frame classification task, where the source data consists of audio signals
 or spectrograms of varying lengths.
 
-Unlike :class:`vak.datasets.frame_classification.FramesDataset`,
+Unlike :class:`vak.datasets.frame_classification.InferDatapipe`,
 this class does not return entire samples
 from the source dataset.
 Instead each paired samples :math:`(x_i, y_i)`
@@ -19,22 +19,23 @@ The entire dataset consists of some number of windows
 from __future__ import annotations
 
 import pathlib
-from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from ...transforms import FramesStandardizer
+from ...transforms.defaults.frame_classification import TrainItemTransform
 from . import constants, helper
 from .metadata import Metadata
 
 
 def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
-    """Get indices of windows for a :class:`WindowDataset`,
+    """Get indices of windows for a :class:`TrainDatapipe`,
     given the number of frames in the dataset,
     the window size, and the stride.
 
-    This function is used by :class:`WindowDataset`
+    This function is used by :class:`TrainDatapipe`
     to compute the indices of windows in the dataset.
     The length of the vector of indices it returns
     is the number of windows in the dataset,
@@ -59,14 +60,14 @@ def get_window_inds(n_frames: int, window_size: int, stride: int = 1):
     return np.arange(stop=n_frames - (window_size - 1), step=stride)
 
 
-class WindowDataset:
+class TrainDatapipe:
     """Dataset used for training neural network models
     on the frame classification task,
     where the source data consists of audio signals
     or spectrograms of varying lengths.
 
     Unlike
-    :class:`vak.datasets.frame_classification.FramesDataset`,
+    :class:`vak.datasets.frame_classification.InferDatapipe`,
     this class does not return entire samples
     from the source dataset.
     Instead each paired samples :math:`(x_i, y_i)`
@@ -86,7 +87,7 @@ class WindowDataset:
     created by concatenating samples from the source
     data, e.g., audio files or spectrogram arrays.
     (This is true for
-    :class:`vak.datasets.frame_classification.FramesDataset`
+    :class:`vak.datasets.frame_classification.InferDatapipe`
     as well.)
     The dimensions of :math:`X`  will be (channels, ..., frames),
     i.e., audio will have dimensions (channels, samples)
@@ -144,6 +145,11 @@ class WindowDataset:
     window_size : int
         Size of windows to return;
         number of frames.
+    frames_standardizer : vak.transforms.FramesStandardizer, optional
+        Transform applied to frames, the input to the neural network model.
+        Optional, default is None.
+        If supplied, will be used with the transform applied to inputs and targets,
+        :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
     frame_dur: float
         Duration of a frame, i.e., a single sample in audio
         or a single timebin in a spectrogram.
@@ -152,16 +158,15 @@ class WindowDataset:
         are included in the dataset. The default is 1.
         Used to compute ``window_inds``,
         with the function
-        :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+        :func:`vak.datasets.frame_classification.train_datapipe.get_window_inds`.
     window_inds : numpy.ndarray, optional
         A vector of valid window indices for the dataset.
         If specified, this takes precedence over ``stride``.
-    transform : callable
-        The transform applied to the frames,
-         the input to the neural network :math:`x`.
-    target_transform : callable
-        The transform applied to the target for the output
-        of the neural network :math:`y`.
+    frames_standardizer : vak.transforms.FramesStandardizer, optional
+        Transform applied to frames, the input to the neural network model.
+        Optional, default is None.
+        If supplied, will be used with the transform applied to inputs and targets,
+        :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
     """
 
     def __init__(
@@ -174,12 +179,12 @@ class WindowDataset:
         inds_in_sample: npt.NDArray,
         window_size: int,
         frame_dur: float,
-        item_transform: Callable,
         stride: int = 1,
         subset: str | None = None,
         window_inds: npt.NDArray | None = None,
+        frames_standardizer: FramesStandardizer | None = None,
     ):
-        """Initialize a new instance of a WindowDataset.
+        """Initialize a new instance of a TrainDatapipe.
 
         Parameters
         ----------
@@ -210,15 +215,12 @@ class WindowDataset:
         frame_dur: float
             Duration of a frame, i.e., a single sample in audio
             or a single timebin in a spectrogram.
-        item_transform : callable
-            The transform applied to each item :math:`(x, y)`
-            that is returned by :meth:`WindowDataset.__getitem__`.
         stride : int
             The size of the stride used to determine which windows
             are included in the dataset. The default is 1.
             Used to compute ``window_inds``,
             with the function
-            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+            :func:`vak.datasets.frame_classification.train_datapipe.get_window_inds`.
         subset : str, optional
             Name of subset to use.
             If specified, this takes precedence over split.
@@ -227,11 +229,11 @@ class WindowDataset:
         window_inds : numpy.ndarray, optional
             A vector of valid window indices for the dataset.
             If specified, this takes precedence over ``stride``.
-        transform : callable
-            The transform applied to the input to the neural network :math:`x`.
-        target_transform : callable
-            The transform applied to the target for the output
-            of the neural network :math:`y`.
+        frames_standardizer : vak.transforms.FramesStandardizer, optional
+            Transform applied to frames, the input to the neural network model.
+            Optional, default is None.
+            If supplied, will be used with the transform applied to inputs and targets,
+            :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
         """
         from ... import (
             prep,
@@ -257,7 +259,7 @@ class WindowDataset:
             constants.FRAMES_PATH_COL_NAME
         ].values
         self.frame_labels_paths = self.dataset_df[
-            constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            constants.MULTI_FRAME_LABELS_PATH_COL_NAME
         ].values
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
@@ -269,7 +271,9 @@ class WindowDataset:
                 sample_ids.shape[-1], window_size, stride
             )
         self.window_inds = window_inds
-        self.item_transform = item_transform
+        self.item_transform = TrainItemTransform(
+            frames_standardizer=frames_standardizer
+        )
 
     @property
     def duration(self):
@@ -351,12 +355,12 @@ class WindowDataset:
         cls,
         dataset_path: str | pathlib.Path,
         window_size: int,
-        item_transform: Callable,
         stride: int = 1,
         split: str = "train",
         subset: str | None = None,
+        frames_standardizer: FramesStandardizer | None = None,
     ):
-        """Make a :class:`WindowDataset` instance,
+        """Make a :class:`TrainDatapipe` instance,
         given the path to a frame classification dataset.
 
         Parameters
@@ -374,7 +378,7 @@ class WindowDataset:
             are included in the dataset. The default is 1.
             Used to compute ``window_inds``,
             with the function
-            :func:`vak.datasets.frame_classification.window_dataset.get_window_inds`.
+            :func:`vak.datasets.frame_classification.train_datapipe.get_window_inds`.
         split : str
             The name of a split from the dataset,
             one of {'train', 'val', 'test'}.
@@ -383,15 +387,15 @@ class WindowDataset:
             If specified, this takes precedence over split.
             Subsets are typically taken from the training data
             for use when generating a learning curve.
-        transform : callable
-            The transform applied to the input to the neural network :math:`x`.
-        target_transform : callable
-            The transform applied to the target for the output
-            of the neural network :math:`y`.
+        frames_standardizer : vak.transforms.FramesStandardizer, optional
+            Transform applied to frames, the input to the neural network model.
+            Optional, default is None.
+            If supplied, will be used with the transform applied to inputs and targets,
+            :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
 
         Returns
         -------
-        dataset : vak.datasets.frame_classification.WindowDataset
+        dataset : vak.datasets.frame_classification.TrainDatapipe
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
@@ -437,8 +441,8 @@ class WindowDataset:
             inds_in_sample,
             window_size,
             frame_dur,
-            item_transform,
             stride,
             subset,
             window_inds,
+            frames_standardizer,
         )

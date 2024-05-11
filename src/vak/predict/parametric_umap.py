@@ -9,9 +9,9 @@ import pathlib
 import lightning
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import datapipes, models
 from ..common import validators
-from ..datasets.parametric_umap import ParametricUMAPDataset
+from ..datapipes.parametric_umap import Datapipe
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,6 @@ def predict_with_parametric_umap_model(
     checkpoint_path,
     num_workers=2,
     transform_params: dict | None = None,
-    dataset_params: dict | None = None,
-    timebins_key="t",
     output_dir=None,
 ):
     """Make predictions on a dataset with a trained
@@ -46,14 +44,6 @@ def predict_with_parametric_umap_model(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
-    transform_params: dict, optional
-        Parameters for data transform.
-        Passed as keyword arguments.
-        Optional, default is None.
-    dataset_params: dict, optional
-        Parameters for dataset.
-        Passed as keyword arguments.
-        Optional, default is None.
     timebins_key : str
         key for accessing vector of time bins in files. Default is 't'.
     annot_csv_filename : str
@@ -82,7 +72,7 @@ def predict_with_parametric_umap_model(
     logger.info(
         f"Loading metadata from dataset path: {dataset_path}",
     )
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(
+    metadata = datapipes.frame_classification.Metadata.from_dataset_path(
         dataset_path
     )
 
@@ -98,26 +88,15 @@ def predict_with_parametric_umap_model(
 
     # ---------------- load data for prediction ------------------------------------------------------------------------
     model_name = model_config["name"]
-    # TODO: fix this when we build transforms into datasets
-    transform_params = {
-        "padding": dataset_config["params"].get(
-            "padding",
-            models.convencoder_umap.get_default_padding(metadata.shape),
-        )
-    }
-    item_transform = transforms.defaults.get_default_transform(
-        model_name, "predict", transform_params
-    )
 
     dataset_csv_path = dataset_path / metadata.dataset_csv_filename
     logger.info(
         f"loading dataset to predict from csv path: {dataset_csv_path}"
     )
 
-    pred_dataset = ParametricUMAPDataset.from_dataset_path(
+    pred_dataset = Datapipe.from_dataset_path(
         dataset_path=dataset_path,
         split="predict",
-        transform=item_transform,
         **dataset_config["params"],
     )
 
@@ -153,11 +132,13 @@ def predict_with_parametric_umap_model(
     )
     model.load_state_dict_from_path(checkpoint_path)
 
-    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
+    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(
+        save_dir=output_dir
+    )
     trainer = lightning.pytorch.Trainer(
         accelerator=trainer_config["accelerator"],
         devices=trainer_config["devices"],
-        logger=trainer_logger
+        logger=trainer_logger,
     )
 
     logger.info(f"running predict method of {model_name}")

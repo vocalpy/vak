@@ -12,7 +12,7 @@ from . import functional as F
 __all__ = [
     "AddChannel",
     "PadToWindow",
-    "StandardizeSpect",
+    "FramesStandardizer",
     "ToFloatTensor",
     "ToLongTensor",
     "ViewAsWindowBatch",
@@ -21,7 +21,7 @@ __all__ = [
 
 # adapted from:
 # https://github.com/NickleDave/hybrid-vocal-classifier/blob/master/hvc/neuralnet/utils.py
-class StandardizeSpect:
+class FramesStandardizer:
     """transform that standardizes spectrograms so they are all
     on the same scale, by subtracting off the mean and dividing by the
     standard deviation from a 'fit' set of spectrograms.
@@ -29,9 +29,9 @@ class StandardizeSpect:
     Attributes
     ----------
     mean_freqs : numpy.ndarray
-        mean values for each frequency bin across the fit set of spectrograms
+        mean values for each row across the fit set of spectrograms
     std_freqs : numpy.ndarray
-        standard deviation for each frequency bin across the fit set of spectrograms
+        standard deviation for each row across the fit set of spectrograms
     non_zero_std : numpy.ndarray
         boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
     """
@@ -42,9 +42,9 @@ class StandardizeSpect:
         Parameters
         ----------
         mean_freqs : numpy.ndarray
-            vector of mean values for each frequency bin across the fit set of spectrograms
+            vector of mean values for each row across the fit set of spectrograms
         std_freqs : numpy.ndarray
-            vector of standard deviations for each frequency bin across the fit set of spectrograms
+            vector of standard deviations for each row across the fit set of spectrograms
         non_zero_std : numpy.ndarray
             boolean, indicates where std_freqs has non-zero values. Used to avoid divide-by-zero errors.
         """
@@ -77,6 +77,59 @@ class StandardizeSpect:
         self.non_zero_std = non_zero_std
 
     @classmethod
+    def fit_inputs_targets_csv_path(
+        cls,
+        inputs_targets_csv_path: str | pathlib.Path,
+        dataset_path: str | pathlib.Path,
+        split: str = "train",
+        subset: str | None = None,
+        frames_path_col_name: str | None = None,
+        frames_key: str | None = None,
+    ):
+        if frames_path_col_name is None:
+            from .. import datapipes
+
+            frames_path_col_name = (
+                datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
+            )
+        if frames_key is None:
+            frames_key = constants.SPECT_KEY
+
+        inputs_targets_csv_path = pathlib.Path(inputs_targets_csv_path)
+        if not inputs_targets_csv_path.exists():
+            raise FileNotFoundError(
+                f"`inputs_targets_csv_path` for dataset not found: {inputs_targets_csv_path}"
+            )
+
+        dataset_path = pathlib.Path(dataset_path)
+        if not dataset_path.exists() or not dataset_path.is_dir():
+            raise NotADirectoryError(
+                f"`dataset_path` not found, or not a directory: {dataset_path}"
+            )
+
+        df = pd.read_csv(inputs_targets_csv_path)
+        if subset:
+            df = df[df.split == split].copy()
+        else:
+            df = df[df.split == split].copy()
+        frames_paths = df[frames_path_col_name].values
+        frames = np.load(dataset_path / frames_paths[0])[frames_key]
+
+        # in spectrograms files, spectrograms are in orientation (freq bins, time bins)
+        # so we take mean and std across columns, i.e. time bins, i.e. axis 1
+        mean_freqs = np.mean(frames, axis=1)
+        std_freqs = np.std(frames, axis=1)
+
+        for frames_path in frames_paths[1:]:
+            frames = np.load(dataset_path / frames_path)[frames_key]
+            mean_freqs += np.mean(frames, axis=1)
+            std_freqs += np.std(frames, axis=1)
+        mean_freqs = mean_freqs / len(frames_paths)
+        std_freqs = std_freqs / len(frames_paths)
+        non_zero_std = np.argwhere(std_freqs != 0)
+        return cls(mean_freqs, std_freqs, non_zero_std)
+
+    @classmethod
     def fit_dataset_path(
         cls, dataset_path, split="train", subset: str | None = None
     ):
@@ -97,36 +150,15 @@ class StandardizeSpect:
         standardize_spect : StandardizeSpect
             Instance that has been fit to input data from split.
         """
-        from vak.datasets import frame_classification
-        from vak.datasets.frame_classification import Metadata
+        from vak.datapipes.frame_classification import Metadata
 
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
         dataset_csv_path = dataset_path / metadata.dataset_csv_filename
         dataset_path = dataset_csv_path.parent
-        dataset_df = pd.read_csv(dataset_csv_path)
-        if subset:
-            dataset_df = dataset_df[dataset_df.split == split].copy()
-        else:
-            dataset_df = dataset_df[dataset_df.split == split].copy()
-        frames_paths = dataset_df[
-            frame_classification.constants.FRAMES_PATH_COL_NAME
-        ].values
-        frames = np.load(dataset_path / frames_paths[0])[constants.SPECT_KEY]
-
-        # in files, spectrograms are in orientation (freq bins, time bins)
-        # so we take mean and std across columns, i.e. time bins, i.e. axis 1
-        mean_freqs = np.mean(frames, axis=1)
-        std_freqs = np.std(frames, axis=1)
-
-        for frames_path in frames_paths[1:]:
-            frames = np.load(dataset_path / frames_path)[constants.SPECT_KEY]
-            mean_freqs += np.mean(frames, axis=1)
-            std_freqs += np.std(frames, axis=1)
-        mean_freqs = mean_freqs / len(frames_paths)
-        std_freqs = std_freqs / len(frames_paths)
-        non_zero_std = np.argwhere(std_freqs != 0)
-        return cls(mean_freqs, std_freqs, non_zero_std)
+        return cls.fit_inputs_targets_csv_path(
+            dataset_csv_path, dataset_path, split, subset
+        )
 
     @classmethod
     def fit(cls, spect):
@@ -140,7 +172,7 @@ class StandardizeSpect:
         Notes
         -----
         Input should be spectrogram.
-        Fit function finds the mean and standard deviation of each frequency bin,
+        Fit function finds the mean and standard deviation of each row,
         which are used by `transform` method to scale other spectrograms.
         """
         # TODO: make this function accept list and/or ndarray with batch dimension
@@ -164,13 +196,13 @@ class StandardizeSpect:
         -------
         z_norm_spect : numpy.ndarray
             array standardized to same scale as set of spectrograms that
-            SpectScaler was fit with
+            :class:`vak.transforms.FramesStandardizer` was fit with
         """
         if any(
             [not hasattr(self, attr) for attr in ["mean_freqs", "std_freqs"]]
         ):
             raise AttributeError(
-                "SpectScaler properties are set to None,"
+                "FramesStandardizer properties are set to None,"
                 "must call fit method first to set the"
                 "value of these properties before calling"
                 "transform"

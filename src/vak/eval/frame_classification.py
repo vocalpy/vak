@@ -9,13 +9,13 @@ from collections import OrderedDict
 from datetime import datetime
 
 import joblib
-import pandas as pd
 import lightning
+import pandas as pd
 import torch.utils.data
 
-from .. import datasets, models, transforms
+from .. import datapipes, datasets, models, transforms
 from ..common import validators
-from ..datasets.frame_classification import FramesDataset
+from ..datapipes.frame_classification import InferDatapipe
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,7 @@ def eval_frame_classification_model(
     labelmap_path: str | pathlib.Path,
     output_dir: str | pathlib.Path,
     num_workers: int,
-    split: str = "test",
-    spect_scaler_path: str | pathlib.Path = None,
+    frames_standardizer_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
 ) -> None:
     """Evaluate a trained model.
@@ -54,14 +53,11 @@ def eval_frame_classification_model(
     num_workers : int
         Number of processes to use for parallel loading of data.
         Argument to torch.DataLoader. Default is 2.
-    split : str
-        Split of dataset on which model should be evaluated.
-        One of {'train', 'val', 'test'}. Default is 'test'.
-    spect_scaler_path : str, pathlib.Path
-        Path to a saved SpectScaler object used to normalize spectrograms.
-        If spectrograms were normalized and this is not provided, will give
-        incorrect results.
-        Default is None.
+    frames_standardizer_path : str, pathlib.Path
+        Path to a saved :class:`vak.transforms.FramesStandardizer`
+        object used to standardize (normalize) frames.
+        If frames were standardized during training and this is not provided,
+        will give incorrect results. Default is None.
     post_tfm_kwargs : dict
         Keyword arguments to post-processing transform.
         If None, then no additional clean-up is applied
@@ -77,7 +73,7 @@ def eval_frame_classification_model(
 
     Notes
     -----
-    Note that unlike :func:`core.predict`, this function
+    Note that unlike :func:`~vak.predict.predict`, this function
     can modify ``labelmap`` so that metrics like edit distance
     are correctly computed, by converting any string labels
     in ``labelmap`` with multiple characters
@@ -86,29 +82,21 @@ def eval_frame_classification_model(
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
-        (checkpoint_path, labelmap_path, spect_scaler_path),
-        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
+        (checkpoint_path, labelmap_path, frames_standardizer_path),
+        ("checkpoint_path", "labelmap_path", "frames_standardizer_path"),
     ):
-        if path is not None:  # because `spect_scaler_path` is optional
+        if path is not None:  # because `frames_standardizer_path` is optional
             if not validators.is_a_file(path):
                 raise FileNotFoundError(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
                 )
 
-    dataset_path = pathlib.Path(dataset_config["path"])
-    if not dataset_path.exists() or not dataset_path.is_dir():
-        raise NotADirectoryError(
-            f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+    model_name = model_config["name"]  # we use this var again below
+    if "window_size" not in dataset_config["params"]:
+        raise KeyError(
+            f"The `dataset_config` for frame classification model '{model_name}' must include a 'params' sub-table "
+            f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
         )
-
-    # we unpack `frame_dur` to log it, regardless of whether we use it with post_tfm below
-    metadata = datasets.frame_classification.Metadata.from_dataset_path(
-        dataset_path
-    )
-    frame_dur = metadata.frame_dur
-    logger.info(
-        f"Duration of a frame in dataset, in seconds: {frame_dur}",
-    )
 
     if not validators.is_a_directory(output_dir):
         raise NotADirectoryError(
@@ -118,42 +106,59 @@ def eval_frame_classification_model(
     # ---- get time for .csv file --------------------------------------------------------------------------------------
     timenow = datetime.now().strftime("%y%m%d_%H%M%S")
 
-    # ---------------- load data for evaluation ------------------------------------------------------------------------
-    if spect_scaler_path:
-        logger.info(f"loading spect scaler from path: {spect_scaler_path}")
-        spect_standardizer = joblib.load(spect_scaler_path)
+    # ---- load what we need to transform data -------------------------------------------------------------------------
+    if frames_standardizer_path:
+        logger.info(
+            f"loading frames standardizer from path: {frames_standardizer_path}"
+        )
+        frames_standardizer = joblib.load(frames_standardizer_path)
     else:
-        logger.info("not using a spect scaler")
-        spect_standardizer = None
+        logger.info("No `frames_standardizer_path` provided, not standardizing frames.")
+        frames_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
     with labelmap_path.open("r") as f:
         labelmap = json.load(f)
 
-    model_name = model_config["name"]
-    # TODO: move this into datapipe once each datapipe uses a fixed set of transforms
-    # that will require adding `spect_standardizer`` as a parameter to the datapipe,
-    # maybe rename to `frames_standardizer`?
-    try:
-        window_size = dataset_config["params"]["window_size"]
-    except KeyError as e:
-        raise KeyError(
-            f"The `dataset_config` for frame classification model '{model_name}' must include a 'params' sub-table "
-            f"that sets a value for 'window_size', but received a `dataset_config` that did not:\n{dataset_config}"
-        ) from e
-    transform_params = {
-        "spect_standardizer": spect_standardizer,
-        "window_size": window_size,
-    }
+    # ---------------- load data for evaluation ------------------------------------------------------------------------
+    if "split" in dataset_config["params"]:
+        split = dataset_config["params"]["split"]
+        # we do this convoluted thing to avoid 'TypeError: Dataset got multiple values for split`
+        del dataset_config["params"]["split"]
+    else:
+        split = "test"
+    # ---- *not* using a built-in dataset ------------------------------------------------------------------------------
+    if dataset_config["name"] is None:
+        dataset_path = pathlib.Path(dataset_config["path"])
+        if not dataset_path.exists() or not dataset_path.is_dir():
+            raise NotADirectoryError(
+                f"`dataset_path` not found or not recognized as a directory: {dataset_path}"
+            )
 
-    item_transform = transforms.defaults.get_default_transform(
-        model_name, "eval", transform_params
-    )
-    val_dataset = FramesDataset.from_dataset_path(
-        dataset_path=dataset_path,
-        split=split,
-        item_transform=item_transform,
-    )
+        # we unpack `frame_dur` to log it, regardless of whether we use it with post_tfm below
+        metadata = datapipes.frame_classification.Metadata.from_dataset_path(
+            dataset_path
+        )
+        frame_dur = metadata.frame_dur
+        logger.info(
+            f"Duration of a frame in dataset, in seconds: {frame_dur}",
+        )
+        val_dataset = InferDatapipe.from_dataset_path(
+            dataset_path=dataset_path,
+            split=split,
+            window_size=dataset_config["params"]["window_size"],
+            frames_standardizer=frames_standardizer,
+            return_padding_mask=True,
+        )
+    # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------# ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
+    else:
+        dataset_config["params"]["return_padding_mask"] = True
+        val_dataset = datasets.get(
+            dataset_config,
+            split=split,
+            frames_standardizer=frames_standardizer,
+        )
+
     val_loader = torch.utils.data.DataLoader(
         dataset=val_dataset,
         shuffle=False,
@@ -190,12 +195,14 @@ def eval_frame_classification_model(
 
     model.load_state_dict_from_path(checkpoint_path)
 
-    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=output_dir)
+    trainer_logger = lightning.pytorch.loggers.TensorBoardLogger(
+        save_dir=output_dir
+    )
     trainer = lightning.pytorch.Trainer(
         accelerator=trainer_config["accelerator"],
         devices=trainer_config["devices"],
-        logger=trainer_logger
-        )
+        logger=trainer_logger,
+    )
     # TODO: check for hasattr(model, test_step) and if so run test
     # below, [0] because validate returns list of dicts, length of no. of val loaders
     metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
@@ -211,7 +218,7 @@ def eval_frame_classification_model(
             ("model_name", model_name),
             ("checkpoint_path", checkpoint_path),
             ("labelmap_path", labelmap_path),
-            ("spect_scaler_path", spect_scaler_path),
+            ("frames_standardizer_path", frames_standardizer_path),
             ("dataset_path", dataset_path),
         ]
     )

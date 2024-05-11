@@ -21,7 +21,7 @@ def learning_curve(
     num_workers: int,
     results_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
-    normalize_spectrograms: bool = True,
+    standardize_frames: bool = True,
     shuffle: bool = True,
     val_step: int | None = None,
     ckpt_step: int | None = None,
@@ -79,9 +79,9 @@ def learning_curve(
         these arguments and how they work.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    normalize_spectrograms : bool
-        if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
-        Normalization is done by subtracting off the mean for each frequency bin
+    standardize_frames : bool
+        if True, use :class:`vak.transforms.FramesStandardizer` to standardize the frames.
+        Normalization is done by subtracting off the mean for each row
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     val_step : int
@@ -123,7 +123,7 @@ def learning_curve(
             num_workers=num_workers,
             results_path=results_path,
             post_tfm_kwargs=post_tfm_kwargs,
-            normalize_spectrograms=normalize_spectrograms,
+            standardize_frames=standardize_frames,
             shuffle=shuffle,
             val_step=val_step,
             ckpt_step=ckpt_step,

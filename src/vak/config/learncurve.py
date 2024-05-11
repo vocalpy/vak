@@ -10,7 +10,12 @@ from .model import ModelConfig
 from .train import TrainConfig
 from .trainer import TrainerConfig
 
-REQUIRED_KEYS = ("dataset", "model", "root_results_dir", "trainer",)
+REQUIRED_KEYS = (
+    "dataset",
+    "model",
+    "root_results_dir",
+    "trainer",
+)
 
 
 @define
@@ -45,9 +50,9 @@ class LearncurveConfig(TrainConfig):
         Argument to torch.DataLoader.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    normalize_spectrograms : bool
-        if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
-        Normalization is done by subtracting off the mean for each frequency bin
+    standardize_frames : bool
+        if True, use :class:`vak.transforms.FramesStandardizer` to standardize the frames.
+        Normalization is done by subtracting off the mean for each row
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     val_step : int
@@ -75,6 +80,7 @@ class LearncurveConfig(TrainConfig):
         See the docstring of the transform for more details on
         these arguments and how they work.
     """
+
     post_tfm_kwargs = field(
         validator=validators.optional(are_valid_post_tfm_kwargs),
         converter=converters.optional(convert_post_tfm_kwargs),
@@ -91,7 +97,8 @@ class LearncurveConfig(TrainConfig):
         by loading a valid configuration toml file with
         :func:`vak.config.parse.from_toml_path`,
         and then using key ``learncurve``,
-        i.e., ``LearncurveConfig.from_config_dict(config_dict['learncurve'])``."""
+        i.e., ``LearncurveConfig.from_config_dict(config_dict['learncurve'])``.
+        """
         for required_key in REQUIRED_KEYS:
             if required_key not in config_dict:
                 raise KeyError(

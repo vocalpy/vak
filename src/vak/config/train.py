@@ -8,7 +8,6 @@ from .dataset import DatasetConfig
 from .model import ModelConfig
 from .trainer import TrainerConfig
 
-
 REQUIRED_KEYS = (
     "dataset",
     "model",
@@ -49,9 +48,9 @@ class TrainConfig:
         Argument to torch.DataLoader.
     shuffle: bool
         if True, shuffle training data before each epoch. Default is True.
-    normalize_spectrograms : bool
-        if True, use spect.utils.data.SpectScaler to normalize the spectrograms.
-        Normalization is done by subtracting off the mean for each frequency bin
+    standardize_frames : bool
+        if True, use :class:`vak.transforms.FramesStandardizer` to standardize the frames.
+        Normalization is done by subtracting off the mean for each row
         of the training set and then dividing by the std for that frequency bin.
         This same normalization is then applied to validation + test data.
     val_step : int
@@ -71,8 +70,8 @@ class TrainConfig:
     checkpoint_path : str
         path to directory with checkpoint files saved by Torch, to reload model.
         Default is None, in which case a new model is initialized.
-    spect_scaler_path : str
-        path to a saved SpectScaler object used to normalize spectrograms.
+    frames_standardizer_path : str
+        path to a saved :class:`vak.transforms.FramesStandardizer` object used to standardize (normalize) frames.
         If spectrograms were normalized and this is not provided, will give
         incorrect results. Default is None.
     """
@@ -96,7 +95,7 @@ class TrainConfig:
         default=None,
     )
 
-    normalize_spectrograms = field(
+    standardize_frames = field(
         converter=bool_from_str,
         validator=validators.optional(instance_of(bool)),
         default=False,
@@ -126,7 +125,7 @@ class TrainConfig:
         converter=converters.optional(expanded_user_path),
         default=None,
     )
-    spect_scaler_path = field(
+    frames_standardizer_path = field(
         converter=converters.optional(expanded_user_path),
         default=None,
     )

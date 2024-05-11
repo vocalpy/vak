@@ -54,8 +54,8 @@ def prep_spectrogram_dataset(
         ``labelset`` is converted to a Python ``set`` using ``vak.converters.labelset_to_set``.
         See help for that function for details on how to specify labelset.
     load_spects : bool
-        if True, load spectrograms. If False, return a FramesDataset without spectograms loaded.
-        Default is True. Set to False when you want to create a FramesDataset for use
+        if True, load spectrograms. If False, return a InferDatapipe without spectograms loaded.
+        Default is True. Set to False when you want to create a InferDatapipe for use
         later, but don't want to load all the spectrograms into memory yet.
     audio_format : str
         format of audio files. One of {'wav', 'cbin'}.

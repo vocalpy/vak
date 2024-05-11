@@ -1,3 +1,15 @@
-from . import frame_classification, parametric_umap
+from . import biosoundsegbench
+from .biosoundsegbench import BioSoundSegBench, SplitsMetadata
+from .get import get
 
-__all__ = ["frame_classification", "parametric_umap"]
+__all__ = [
+    "biosoundsegbench",
+    "BioSoundSegBench",
+    "get",
+    "SplitsMetadata",
+]
+
+# TODO: make this a proper registry
+DATASETS = {
+    "BioSoundSegBench": BioSoundSegBench
+}

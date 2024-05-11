@@ -7,7 +7,7 @@ import warnings
 
 import crowsetta
 
-from ... import datasets
+from ... import datapipes
 from ...common import labels
 from ...common.converters import expanded_user_path, labelset_to_set
 from ...common.logging import config_logging_for_cli, log_version
@@ -296,7 +296,7 @@ def prep_parametric_umap_dataset(
     # we do this before creating array files since we need to load the labelmap to make frame label vectors
     if purpose != "predict":
         # TODO: add option to generate predict using existing dataset, so we can get labelmap from it
-        labelmap = labels.to_map(labelset, map_unlabeled=False)
+        labelmap = labels.to_map(labelset, map_background=False)
         logger.info(
             f"Number of classes in labelmap: {len(labelmap)}",
         )
@@ -333,7 +333,7 @@ def prep_parametric_umap_dataset(
     )  # index is False to avoid having "Unnamed: 0" column when loading
 
     # ---- save metadata -----------------------------------------------------------------------------------------------
-    metadata = datasets.parametric_umap.Metadata(
+    metadata = datapipes.parametric_umap.Metadata(
         dataset_csv_filename=str(dataset_csv_path.name),
         audio_format=audio_format,
         shape=shape,

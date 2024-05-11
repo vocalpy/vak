@@ -20,8 +20,8 @@ def assert_learncurve_output_matches_expected(cfg, model_name, results_path):
 
             assert replicate_path.joinpath("labelmap.json").exists()
 
-            if cfg.learncurve.normalize_spectrograms:
-                assert replicate_path.joinpath("StandardizeSpect").exists()
+            if cfg.learncurve.standardize_frames:
+                assert replicate_path.joinpath("FramesStandardizer").exists()
 
             eval_csv = sorted(replicate_path.glob(f"eval_{model_name}*csv"))
             assert len(eval_csv) == 1
@@ -75,7 +75,7 @@ def test_learning_curve_for_frame_classification_model(
         num_workers=cfg.learncurve.num_workers,
         results_path=results_path,
         post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
-        normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
+        standardize_frames=cfg.learncurve.standardize_frames,
         shuffle=cfg.learncurve.shuffle,
         val_step=cfg.learncurve.val_step,
         ckpt_step=cfg.learncurve.ckpt_step,
@@ -124,7 +124,7 @@ def test_learncurve_raises_not_a_directory(dir_option_to_change,
             num_workers=cfg.learncurve.num_workers,
             results_path=results_path,
             post_tfm_kwargs=cfg.learncurve.post_tfm_kwargs,
-            normalize_spectrograms=cfg.learncurve.normalize_spectrograms,
+            standardize_frames=cfg.learncurve.standardize_frames,
             shuffle=cfg.learncurve.shuffle,
             val_step=cfg.learncurve.val_step,
             ckpt_step=cfg.learncurve.ckpt_step,

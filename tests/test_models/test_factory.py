@@ -303,7 +303,7 @@ class TestModelFactory:
         cfg = vak.config.Config.from_toml_path(toml_path)
 
         # stuff we need just to be able to instantiate network
-        labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(cfg.prep.labelset, map_background=True)
 
         model_factory = vak.models.factory.ModelFactory(
             definition,

@@ -20,7 +20,7 @@ transform_type = "log_spect"
 # this .toml file should cause 'vak.config.parse.from_toml' to raise a ValueError
 # because it defines both a vak.train and a vak.learncurve section
 [vak.train]
-normalize_spectrograms = true
+standardize_frames = true
 batch_size = 11
 num_epochs = 2
 val_step = 50
@@ -35,7 +35,7 @@ accelerator = "gpu"
 devices = [0]
 
 [vak.learncurve]
-normalize_spectrograms = true
+standardize_frames = true
 batch_size = 11
 num_epochs = 2
 val_step = 50

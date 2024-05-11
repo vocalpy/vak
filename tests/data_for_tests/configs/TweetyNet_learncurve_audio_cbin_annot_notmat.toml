@@ -20,7 +20,7 @@ thresh = 6.25
 transform_type = "log_spect"
 
 [vak.learncurve]
-normalize_spectrograms = true
+standardize_frames = true
 batch_size = 11
 num_epochs = 2
 val_step = 50

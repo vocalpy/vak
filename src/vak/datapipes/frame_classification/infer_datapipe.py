@@ -1,22 +1,26 @@
-"""A dataset class used for neural network models with the
+"""A datapipe class used for neural network models with the
 frame classification task, where the source data consists of audio signals
 or spectrograms of varying lengths."""
 
 from __future__ import annotations
 
 import pathlib
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from ...transforms.defaults.frame_classification import InferItemTransform
 from . import constants, helper
 from .metadata import Metadata
 
+if TYPE_CHECKING:
+    from ...transforms import FramesStandardizer
 
-class FramesDataset:
-    """A dataset class used for
+
+class InferDatapipe:
+    """A datapipe class used for
     neural network models
     with the frame classification task,
     where the source data consists of audio signals
@@ -65,9 +69,14 @@ class FramesDataset:
     frame_dur: float
         Duration of a frame, i.e., a single sample in audio
         or a single timebin in a spectrogram.
-    item_transform : callable, optional
-        Transform applied to each item :math:`(x, y)`
-        returned by :meth:`FramesDataset.__getitem__`.
+    window_size : int
+        Size of windows to return;
+        number of frames.
+    frames_standardizer : vak.transforms.FramesStandardizer, optional
+        Transform applied to frames, the input to the neural network model.
+        Optional, default is None.
+        If supplied, will be used with the transform applied to inputs and targets,
+        :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
     """
 
     def __init__(
@@ -79,10 +88,14 @@ class FramesDataset:
         sample_ids: npt.NDArray,
         inds_in_sample: npt.NDArray,
         frame_dur: float,
-        item_transform: Callable,
+        window_size: int,
+        frames_standardizer: FramesStandardizer | None = None,
+        frames_padval: float = 0.0,
+        frame_labels_padval: int = -1,
+        return_padding_mask: bool = False,
         subset: str | None = None,
     ):
-        """Initialize a new instance of a FramesDataset.
+        """Initialize a new instance of an :class:`InferDatapipe`.
 
         Parameters
         ----------
@@ -110,14 +123,33 @@ class FramesDataset:
         frame_dur: float
             Duration of a frame, i.e., a single sample in audio
             or a single timebin in a spectrogram.
+        frames_standardizer : vak.transforms.FramesStandardizer, optional
+            Transform applied to frames, the input to the neural network model.
+            Optional, default is None.
+            If supplied, will be used with the transform applied to inputs and targets,
+            :class:`vak.transforms.defaults.frame_classification.InferItemTransform`.
+        window_size : int
+            Size of windows to return;
+            number of frames.
+        frames_padval : float
+            Value to pad frames with. Added to end of array, the "right side".
+            Argument to PadToWindow transform. Default is 0.0.
+        frame_labels_padval : int
+            Value to pad frame labels vector with. Added to the end of the array.
+            Argument to PadToWindow transform. Default is -1.
+            Used with ``ignore_index`` argument of :mod:`torch.nn.CrossEntropyLoss`.
+        return_padding_mask : bool
+            if True, the dictionary returned by ItemTransform classes will include
+            a boolean vector to use for cropping back down to size before padding.
+            padding_mask has size equal to width of padded array, i.e. original size
+            plus padding at the end, and has values of 1 where
+            columns in padded are from the original array,
+            and values of 0 where columns were added for padding.
         subset : str, optional
             Name of subset to use.
             If specified, this takes precedence over split.
             Subsets are typically taken from the training data
             for use when generating a learning curve.
-        item_transform : callable
-            The transform applied to each item :math:`(x, y)`
-            that is returned by :meth:`FramesDataset.__getitem__`.
         """
         from ... import (
             prep,
@@ -144,14 +176,20 @@ class FramesDataset:
         ].values
         if split != "predict":
             self.frame_labels_paths = self.dataset_df[
-                constants.FRAME_LABELS_NPY_PATH_COL_NAME
+                constants.MULTI_FRAME_LABELS_PATH_COL_NAME
             ].values
         else:
             self.frame_labels_paths = None
         self.sample_ids = sample_ids
         self.inds_in_sample = inds_in_sample
         self.frame_dur = float(frame_dur)
-        self.item_transform = item_transform
+        self.item_transform = InferItemTransform(
+            window_size,
+            frames_standardizer,
+            frames_padval,
+            frame_labels_padval,
+            return_padding_mask,
+        )
 
     @property
     def duration(self):
@@ -196,11 +234,15 @@ class FramesDataset:
     def from_dataset_path(
         cls,
         dataset_path: str | pathlib.Path,
-        item_transform: Callable,
+        window_size: int,
+        frames_standardizer: FramesStandardizer | None = None,
+        frames_padval: float = 0.0,
+        frame_labels_padval: int = -1,
+        return_padding_mask: bool = False,
         split: str = "val",
         subset: str | None = None,
     ):
-        """Make a :class:`FramesDataset` instance,
+        """Make a :class:`InferDatapipe` instance,
         given the path to a frame classification dataset.
 
         Parameters
@@ -210,9 +252,28 @@ class FramesDataset:
             frame classification dataset,
             as created by
             :func:`vak.prep.prep_frame_classification_dataset`.
-        item_transform : callable, optional
-            Transform applied to each item :math:`(x, y)`
-            returned by :meth:`FramesDataset.__getitem__`.
+        window_size : int
+            Size of windows to return;
+            number of frames.
+        frames_standardizer : vak.transforms.FramesStandardizer, optional
+            Transform applied to frames, the input to the neural network model.
+            Optional, default is None.
+            If supplied, will be used with the transform applied to inputs and targets,
+            :class:`vak.transforms.defaults.frame_classification.TrainItemTransform`.
+        frames_padval : float
+            Value to pad frames with. Added to end of array, the "right side".
+            Argument to PadToWindow transform. Default is 0.0.
+        frame_labels_padval : int
+            Value to pad frame labels vector with. Added to the end of the array.
+            Argument to PadToWindow transform. Default is -1.
+            Used with ``ignore_index`` argument of :mod:`torch.nn.CrossEntropyLoss`.
+        return_padding_mask : bool
+            if True, the dictionary returned by ItemTransform classes will include
+            a boolean vector to use for cropping back down to size before padding.
+            padding_mask has size equal to width of padded array, i.e. original size
+            plus padding at the end, and has values of 1 where
+            columns in padded are from the original array,
+            and values of 0 where columns were added for padding.
         split : str
             The name of a split from the dataset,
             one of {'train', 'val', 'test'}.
@@ -225,7 +286,7 @@ class FramesDataset:
 
         Returns
         -------
-        frames_dataset : FramesDataset
+        infer_datapipe : InferDatapipe
         """
         dataset_path = pathlib.Path(dataset_path)
         metadata = Metadata.from_dataset_path(dataset_path)
@@ -264,6 +325,10 @@ class FramesDataset:
             sample_ids,
             inds_in_sample,
             frame_dur,
-            item_transform,
+            window_size,
+            frames_standardizer,
+            frames_padval,
+            frame_labels_padval,
+            return_padding_mask,
             subset,
         )

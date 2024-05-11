@@ -18,7 +18,7 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
     log_path = sorted(dataset_path.glob('*log'))
     assert len(log_path) == 1
 
-    meta_json_path = dataset_path / vak.datasets.frame_classification.Metadata.METADATA_JSON_FILENAME
+    meta_json_path = dataset_path / vak.datapipes.frame_classification.Metadata.METADATA_JSON_FILENAME
     assert meta_json_path.exists()
 
     with meta_json_path.open('r') as fp:
@@ -40,16 +40,16 @@ def assert_prep_output_matches_expected(dataset_path, df_returned_by_prep):
             check_exact=check_exact,
         )
 
-    if vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME in df_returned_by_prep.columns:
+    if vak.datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME in df_returned_by_prep.columns:
         frames_paths = df_returned_by_prep[
-            vak.datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+            vak.datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
         ].values
         for frames_path in frames_paths:
             assert (dataset_path / frames_path).exists()
 
-    if vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME in df_returned_by_prep.columns:
+    if vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME in df_returned_by_prep.columns:
         frame_labels_paths = df_returned_by_prep[
-            vak.datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            vak.datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME
         ].values
         if not all([frame_labels_path is None for frame_labels_path in frame_labels_paths]):
             for frame_labels_path in frame_labels_paths:

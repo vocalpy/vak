@@ -11,15 +11,15 @@ that can create new instances of the model with its
 
 from __future__ import annotations
 
-from typing import Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Type
 
 import lightning
 
-from .definition import validate as validate_definition
 from .registry import register_model
 
 if TYPE_CHECKING:
     from .factory import ModelFactory
+
 
 class ModelDefinitionValidationError(Exception):
     """Exception raised when validating a model
@@ -75,10 +75,7 @@ def model(family: lightning.pytorch.LightningModule):
     def _model(definition: Type) -> ModelFactory:
         from .factory import ModelFactory  # avoid circular import
 
-        model_factory = ModelFactory(
-            definition,
-            family
-        )
+        model_factory = ModelFactory(definition, family)
         model_factory.__name__ = definition.__name__
         model_factory.__doc__ = definition.__doc__
         model_factory.__module__ = definition.__module__

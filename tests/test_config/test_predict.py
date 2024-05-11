@@ -10,7 +10,7 @@ class TestPredictConfig:
             'config_dict',
             [
                 {
-                    'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                    'frames_standardizer_path': '/home/user/results_181014_194418/spect_scaler',
                     'checkpoint_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt',
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                     'batch_size': 11,
@@ -53,7 +53,7 @@ class TestPredictConfig:
             'config_dict',
             [
                 {
-                    'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                    'frames_standardizer_path': '/home/user/results_181014_194418/spect_scaler',
                     'checkpoint_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt',
                     'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                     'batch_size': 11,
@@ -101,7 +101,7 @@ class TestPredictConfig:
                 # missing 'checkpoint_path', should raise KeyError
                 (
                     {
-                        'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                        'frames_standardizer_path': '/home/user/results_181014_194418/spect_scaler',
                         'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                         'batch_size': 11,
                         'num_workers': 16,
@@ -133,7 +133,7 @@ class TestPredictConfig:
                 # missing 'dataset', should raise KeyError
                 (
                     {
-                        'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                        'frames_standardizer_path': '/home/user/results_181014_194418/spect_scaler',
                         'checkpoint_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt',
                         'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                         'batch_size': 11,
@@ -163,7 +163,7 @@ class TestPredictConfig:
                 # missing 'model', should raise KeyError
                 (
                     {
-                        'spect_scaler_path': '/home/user/results_181014_194418/spect_scaler',
+                        'frames_standardizer_path': '/home/user/results_181014_194418/spect_scaler',
                         'checkpoint_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/TweetyNet/checkpoints/max-val-acc-checkpoint.pt',
                         'labelmap_path': '~/Documents/repos/coding/birdsong/TweetyNet/results/BFSongRepository/bl26lb16/results_200620_164245/labelmap.json',
                         'batch_size': 11,

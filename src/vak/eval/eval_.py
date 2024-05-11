@@ -22,8 +22,7 @@ def eval(
     num_workers: int,
     labelmap_path: str | pathlib.Path | None = None,
     batch_size: int | None = None,
-    split: str = "test",
-    spect_scaler_path: str | pathlib.Path = None,
+    frames_standardizer_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
     device: str | None = None,
 ) -> None:
@@ -56,10 +55,10 @@ def eval(
     split : str
         split of dataset on which model should be evaluated.
         One of {'train', 'val', 'test'}. Default is 'test'.
-    spect_scaler_path : str, pathlib.Path
-        path to a saved SpectScaler object used to normalize spectrograms.
-        If spectrograms were normalized and this is not provided, will give
-        incorrect results.
+    frames_standardizer_path : str, pathlib.Path
+        path to a saved FramesStandardizer object used to standardize frames.
+        If frames were standardized during training, and this is not provided,
+        then evaluation  will give incorrect results.
         Default is None.
     post_tfm_kwargs : dict
         Keyword arguments to post-processing transform.
@@ -88,10 +87,10 @@ def eval(
     """
     # ---- pre-conditions ----------------------------------------------------------------------------------------------
     for path, path_name in zip(
-        (checkpoint_path, labelmap_path, spect_scaler_path),
-        ("checkpoint_path", "labelmap_path", "spect_scaler_path"),
+        (checkpoint_path, labelmap_path, frames_standardizer_path),
+        ("checkpoint_path", "labelmap_path", "frames_standardizer_path"),
     ):
-        if path is not None:  # because `spect_scaler_path` is optional
+        if path is not None:  # because `frames_standardizer_path` is optional
             if not validators.is_a_file(path):
                 raise FileNotFoundError(
                     f"value for ``{path_name}`` not recognized as a file: {path}"
@@ -120,8 +119,7 @@ def eval(
             labelmap_path=labelmap_path,
             output_dir=output_dir,
             num_workers=num_workers,
-            split=split,
-            spect_scaler_path=spect_scaler_path,
+            frames_standardizer_path=frames_standardizer_path,
             post_tfm_kwargs=post_tfm_kwargs,
         )
     elif model_family == "ParametricUMAPModel":
@@ -133,7 +131,6 @@ def eval(
             output_dir=output_dir,
             batch_size=batch_size,
             num_workers=num_workers,
-            split=split,
         )
     else:
         raise ValueError(f"Model family not recognized: {model_family}")

@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from dask.diagnostics import ProgressBar
 
-from ... import common, datasets, transforms
+from ... import common, datapipes, transforms
 from .. import constants as prep_constants
 
 logger = logging.getLogger(__name__)
@@ -128,6 +128,7 @@ def make_splits(
     spect_key: str = "s",
     timebins_key: str = "t",
     freqbins_key: str = "f",
+    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL,
 ) -> pd.DataFrame:
     r"""Make each split of a frame classification dataset.
 
@@ -183,8 +184,8 @@ def make_splits(
 
     This function also creates two additional npy files for each split.
     These npy files are "indexing" vectors that
-    are used by :class:`vak.datasets.frame_classification.WindowDataset`
-    and :class:`vak.datasets.frame_classification.FramesDataset`.
+    are used by :class:`vak.datasets.frame_classification.TrainDatapipe`
+    and :class:`vak.datasets.frame_classification.InferDatapipe`.
     These vectors make it possible to work with files,
     to avoid loading the entire dataset into memory,
     and to avoid working with memory-mapped arrays.
@@ -235,6 +236,11 @@ def make_splits(
         Key for accessing vector of time bins in files. Default is 't'.
     freqbins_key : str
         key for accessing vector of frequency bins in files. Default is 'f'.
+    background_label: str, optional
+        The string label applied to segments belonging to the
+        background class.
+        Default is
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
     Returns
     -------
@@ -361,11 +367,11 @@ def make_splits(
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
                     frame_times,
-                    unlabeled_label=labelmap["unlabeled"],
+                    background_label=labelmap[background_label],
                 )
                 frame_labels_npy_path = split_subdir / (
                     source_path.stem
-                    + datasets.frame_classification.constants.FRAME_LABELS_EXT
+                    + datapipes.frame_classification.constants.MULTI_FRAME_LABELS_EXT
                 )
                 np.save(frame_labels_npy_path, frame_labels)
                 frame_labels_npy_path = str(
@@ -417,7 +423,7 @@ def make_splits(
         )
         np.save(
             split_subdir
-            / datasets.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME,
+            / datapipes.frame_classification.constants.SAMPLE_IDS_ARRAY_FILENAME,
             sample_id_vec,
         )
         inds_in_sample_vec = np.concatenate(
@@ -425,7 +431,7 @@ def make_splits(
         )
         np.save(
             split_subdir
-            / datasets.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME,
+            / datapipes.frame_classification.constants.INDS_IN_SAMPLE_ARRAY_FILENAME,
             inds_in_sample_vec,
         )
 
@@ -434,7 +440,7 @@ def make_splits(
         # Note that these are all in split dirs, written relative to ``dataset_path``.
         frames_paths = [str(sample.source_path) for sample in samples]
         split_df[
-            datasets.frame_classification.constants.FRAMES_PATH_COL_NAME
+            datapipes.frame_classification.constants.FRAMES_PATH_COL_NAME
         ] = frames_paths
 
         frame_labels_npy_paths = [
@@ -446,7 +452,7 @@ def make_splits(
             for sample in samples
         ]
         split_df[
-            datasets.frame_classification.constants.FRAME_LABELS_NPY_PATH_COL_NAME
+            datapipes.frame_classification.constants.MULTI_FRAME_LABELS_PATH_COL_NAME
         ] = frame_labels_npy_paths
         dataset_df_out.append(split_df)
 

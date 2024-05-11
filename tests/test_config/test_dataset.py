@@ -35,9 +35,9 @@ class TestDatasetConfig:
                 splits_path=splits_path,
             )
         assert isinstance(dataset_config, vak.config.dataset.DatasetConfig)
-        assert dataset_config.path == pathlib.Path(path)
+        assert dataset_config.path == vak.common.converters.expanded_user_path(path)
         if splits_path is not None:
-            assert dataset_config.splits_path == pathlib.Path(splits_path)
+            assert dataset_config.splits_path == vak.common.converters.expanded_user_path(splits_path)
         else:
             assert dataset_config.splits_path is None
         if name is not None:
@@ -74,9 +74,9 @@ class TestDatasetConfig:
     def test_from_config_dict(self, config_dict):
         dataset_config = vak.config.dataset.DatasetConfig.from_config_dict(config_dict)
         assert isinstance(dataset_config, vak.config.dataset.DatasetConfig)
-        assert dataset_config.path == pathlib.Path(config_dict['path'])
+        assert dataset_config.path == vak.common.converters.expanded_user_path(config_dict['path'])
         if 'splits_path' in config_dict:
-            assert dataset_config.splits_path == pathlib.Path(config_dict['splits_path'])
+            assert dataset_config.splits_path == vak.common.converters.expanded_user_path(config_dict['splits_path'])
         else:
             assert dataset_config.splits_path is None
         if 'name' in config_dict:
@@ -123,7 +123,7 @@ class TestDatasetConfig:
         for key in ('name', 'path', 'splits_path', 'params'):
             if key in config_dict:
                 if 'path' in key:
-                    assert dataset_config_as_dict[key] == pathlib.Path(config_dict[key])
+                    assert dataset_config_as_dict[key] == vak.common.converters.expanded_user_path(config_dict[key])
                 else:
                     assert dataset_config_as_dict[key] == config_dict[key]
             else:

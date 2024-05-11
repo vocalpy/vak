@@ -35,15 +35,9 @@ class TestParametricUMAPModel:
         train_cfg = vak.config.Config.from_toml_path(train_toml_path)
 
         # stuff we need just to be able to instantiate network
-        item_transform = vak.transforms.defaults.get_default_transform(
-            model_name,
-            "train",
-            transform_kwargs={},
-        )
-        train_dataset = vak.datasets.parametric_umap.ParametricUMAPDataset.from_dataset_path(
+        train_dataset = vak.datapipes.parametric_umap.Datapipe.from_dataset_path(
             dataset_path=train_cfg.train.dataset.path,
             split="train",
-            transform=item_transform,
         )
 
         # network is the one thing that has required args
