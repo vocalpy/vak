@@ -137,7 +137,7 @@ DUMMY_SINGLE_CHAR_LABELS = (*ALPHANUMERIC, *DUMMY_SINGLE_CHAR_LABELS)
 
 # added to fix https://github.com/NickleDave/vak/issues/373
 def multi_char_labels_to_single_char(
-    labelmap: dict, skip: tuple[str] = ("unlabeled",)
+    labelmap: dict, skip: tuple[str] = (constants.DEFAULT_BACKGROUND_LABEL,)
 ) -> dict:
     """Return a copy of a ``labelmap`` where any
     labels that are strings with multiple characters
@@ -159,9 +159,9 @@ def multi_char_labels_to_single_char(
         to integers. As returned by
         ``vak.labels.to_map``.
     skip : tuple
-        Of strings, labels to leave
-        as multiple characters.
-        Default is ('unlabeled',).
+        A tuple of labels to leave as multiple characters.
+        Default is a tuple containing just
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
     Returns
     -------
