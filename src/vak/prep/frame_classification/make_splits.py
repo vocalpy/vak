@@ -128,6 +128,7 @@ def make_splits(
     spect_key: str = "s",
     timebins_key: str = "t",
     freqbins_key: str = "f",
+    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL,
 ) -> pd.DataFrame:
     r"""Make each split of a frame classification dataset.
 
@@ -235,6 +236,11 @@ def make_splits(
         Key for accessing vector of time bins in files. Default is 't'.
     freqbins_key : str
         key for accessing vector of frequency bins in files. Default is 'f'.
+    background_label: str, optional
+        The string label applied to segments belonging to the
+        background class.
+        Default is
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
     Returns
     -------
@@ -361,7 +367,7 @@ def make_splits(
                     annot.seq.onsets_s,
                     annot.seq.offsets_s,
                     frame_times,
-                    background_label=labelmap["unlabeled"],
+                    background_label=labelmap[background_label],
                 )
                 frame_labels_npy_path = split_subdir / (
                     source_path.stem
