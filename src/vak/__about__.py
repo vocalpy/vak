@@ -21,7 +21,7 @@ except NameError:
 
 __title__ = "vak"
 __summary__ = (
-    "a neural network toolbox for animal vocalizations and bioacoustics"
+    "A neural network framework for researchers studying acoustic communication"
 )
 __uri__ = "https://github.com/NickleDave/vak"
 
