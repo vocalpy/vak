@@ -24,6 +24,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy.stats
 
+from ... import common
 from ...common.timebins import timebin_dur_from_vec
 from ...common.validators import column_or_1d, row_or_1d
 
@@ -94,7 +95,10 @@ def from_segments(
     return label_vec
 
 
-def to_labels(frame_labels: npt.NDArray, labelmap: dict) -> str:
+def to_labels(
+        frame_labels: npt.NDArray, labelmap: dict,
+        background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL
+) -> str:
     """Convert vector of frame labels to a string,
     one character for each continuous segment.
 
@@ -113,6 +117,11 @@ def to_labels(frame_labels: npt.NDArray, labelmap: dict) -> str:
     labelmap : dict
         That maps string labels to integers.
         The mapping is inverted to convert back to string labels.
+    background_label: str, optional
+        The string label applied to segments belonging to the
+        background class.
+        Default is
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
     Returns
     -------
@@ -127,9 +136,9 @@ def to_labels(frame_labels: npt.NDArray, labelmap: dict) -> str:
 
     labels = frame_labels[onset_inds]
 
-    # remove 'unlabeled' label
-    if "unlabeled" in labelmap:
-        labels = labels[labels != labelmap["unlabeled"]]
+    # remove background label
+    if background_label in labelmap:
+        labels = labels[labels != labelmap[background_label]]
 
     if len(labels) < 1:  # if removing all the 'unlabeled' leaves nothing
         return ""
@@ -147,6 +156,7 @@ def to_segments(
     labelmap: dict,
     frame_times: npt.NDArray,
     n_decimals_trunc: int = 5,
+    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     """Convert a vector of frame labels
     into segments in the form of onset indices,
@@ -193,13 +203,13 @@ def to_segments(
     """
     frame_labels = column_or_1d(frame_labels)
 
-    if "unlabeled" in labelmap:
+    if background_label in labelmap:
         # handle the case when all time bins are predicted to be unlabeled
         # see https://github.com/NickleDave/vak/issues/383
         uniq_frame_labels = np.unique(frame_labels)
         if (
             len(uniq_frame_labels) == 1
-            and uniq_frame_labels[0] == labelmap["unlabeled"]
+            and uniq_frame_labels[0] == labelmap[background_label]
         ):
             return None, None, None
 
@@ -216,9 +226,9 @@ def to_segments(
     onset_inds = np.concatenate((np.asarray([0]), onset_inds))
     labels = frame_labels[onset_inds]
 
-    # remove 'unlabeled' label
-    if "unlabeled" in labelmap:
-        keep = np.where(labels != labelmap["unlabeled"])[0]
+    # remove background label
+    if background_label in labelmap:
+        keep = np.where(labels != labelmap[background_label])[0]
         labels = labels[keep]
         onset_inds = onset_inds[keep]
         offset_inds = offset_inds[keep]
@@ -450,12 +460,11 @@ def postprocess(
     Optional post-processing
     consist of two transforms,
     that both rely on there being a label
-    that corresponds to the "unlabeled"
-    (or "background") class.
+    that corresponds to the background class.
     The first removes any segments that are
     shorter than a specified duration,
     by converting labels in those segments to the
-    "background" / "unlabeled" class label.
+    background class label.
     The second performs a "majority vote"
     transform within run of labels that is
     bordered on both sides by the "background" label.
