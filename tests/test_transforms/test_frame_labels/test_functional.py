@@ -8,7 +8,7 @@ Tests are in the same order as the module ``vak.transforms.frame_labels.function
 - to_segments: transform to get back segment onsets, offsets, and labels from labeled timebins.
   Inverse of ``from_segments``.
 - post-processing transforms that can be used to "clean up" a vector of labeled timebins
-  - to_inds_list: helper function used to find segments in a vector of labeled timebins
+  - segment_inds_list_from_class_labels: helper function used to find segments in a vector of labeled timebins
   - remove_short_segments: remove any segment less than a minimum duration
   - take_majority_vote: take a "majority vote" within each segment bounded by the background label,
     and apply the most "popular" label within each segment to all timebins in that segment
@@ -264,11 +264,11 @@ def test_to_segments_real_data(
         ),
     ],
 )
-def test_to_inds(frame_labels, seg_inds_list_expected):
+def test_segment_inds_list_from_class_labels(frame_labels, seg_inds_list_expected):
     """Test ``to_inds`` works as expected"""
     UNLABELED = 0
 
-    seg_inds_list = vak.transforms.frame_labels.to_inds_list(
+    seg_inds_list = vak.transforms.frame_labels.segment_inds_list_from_class_labels(
         frame_labels=frame_labels, background_label=UNLABELED
     )
     assert np.array_equal(seg_inds_list, seg_inds_list_expected)
@@ -297,7 +297,7 @@ def test_to_inds(frame_labels, seg_inds_list_expected):
 )
 def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, lbl_tb_expected):
     """Test ``remove_short_segments`` works as expected"""
-    segment_inds_list = vak.transforms.frame_labels.to_inds_list(
+    segment_inds_list = vak.transforms.frame_labels.segment_inds_list_from_class_labels(
         lbl_tb, background_label=unlabeled
     )
     lbl_tb_tfm, segment_inds_list_out = vak.transforms.frame_labels.remove_short_segments(
@@ -346,7 +346,7 @@ def test_remove_short_segments(lbl_tb, unlabeled, timebin_dur, min_segment_dur, 
 )
 def test_majority_vote(lbl_tb_in, unlabeled, lbl_tb_expected):
     """Test ``majority_vote`` works as expected"""
-    segment_inds_list = vak.transforms.frame_labels.to_inds_list(
+    segment_inds_list = vak.transforms.frame_labels.segment_inds_list_from_class_labels(
         lbl_tb_in, background_label=unlabeled
     )
     lbl_tb_maj_vote = vak.transforms.frame_labels.take_majority_vote(
