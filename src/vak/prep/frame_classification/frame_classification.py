@@ -310,7 +310,7 @@ def prep_frame_classification_dataset(
             dataset_df
         )
         labelmap = labels.to_map(
-            labelset, map_unlabeled=map_unlabeled_segments
+            labelset, map_background=map_unlabeled_segments
         )
         logger.info(
             f"Number of classes in labelmap: {len(labelmap)}",
