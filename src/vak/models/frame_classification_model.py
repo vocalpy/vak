@@ -11,7 +11,7 @@ from typing import Callable, Mapping
 import lightning
 import torch
 
-from .. import constants, transforms
+from .. import common, transforms
 from ..common import labels
 from .registry import model_family
 
