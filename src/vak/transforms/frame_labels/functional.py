@@ -13,7 +13,7 @@ This module is structured as followed:
 - post-processing transforms that can be used to "clean up" a vector of frame labels
   - segment_inds_list_from_class_labels: helper function used to find segments in a vector of frame labels
   - remove_short_segments: remove any segment less than a minimum duration
-  - take_majority_vote: take a "majority vote" within each segment bounded by the "unlabeled" label,
+  - take_majority_vote: take a "majority vote" within each segment bounded by the background label,
     and apply the most "popular" label within each segment to all timebins in that segment
   - postprocess: combines remove_short_segments and take_majority_vote in one transform
 """
