@@ -125,27 +125,27 @@ class TrainingReplicateMetadata:
 def metadata_from_splits_json_path(
         splits_json_path: pathlib.Path, datset_path: pathlib.Path
     ) -> TrainingReplicateMetadata:
+    name = splits_json_path.name
     try:
-        # Human-Speech doesn't have ID or data source in filename
-        # so it will raise a ValueError
-        name = splits_json_path.name
         (biosound_group,
-        id_,
-        timebin_dur_1st_half,
-        timebin_dur_2nd_half,
         unit,
+        id_,
+        frame_dur_1st_half,
+        frame_dur_2nd_half,
         data_source,
         train_dur_1st_half,
         train_dur_2nd_half,
         replicate_num,
         _, _
         ) = name.split('.')
+    # Human-Speech doesn't have ID or data source in filename
+    # so it will raise a ValueError
     except ValueError:
         name = splits_json_path.name
         (biosound_group,
-        timebin_dur_1st_half,
-        timebin_dur_2nd_half,
         unit,
+        frame_dur_1st_half,
+        frame_dur_2nd_half,
         train_dur_1st_half,
         train_dur_2nd_half,
         replicate_num,
@@ -155,8 +155,8 @@ def metadata_from_splits_json_path(
         data_source = None
     if id_ is not None:
         id_ = id_.split('-')[-1]
-    timebin_dur = float(
-        timebin_dur_1st_half.split('-')[-1] + '.' + timebin_dur_2nd_half.split('-')[0]
+    frame_dur = float(
+        frame_dur_1st_half.split('-')[-1] + '.' + frame_dur_2nd_half.split('-')[0]
     )
     train_dur = float(
         train_dur_1st_half.split('-')[-1] + '.' + train_dur_2nd_half.split('-')[0]
@@ -167,7 +167,7 @@ def metadata_from_splits_json_path(
     return TrainingReplicateMetadata(
         biosound_group,
         id_,
-        timebin_dur,
+        frame_dur,
         unit,
         data_source,
         train_dur,
