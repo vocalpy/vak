@@ -11,7 +11,7 @@ from typing import Callable, Mapping
 import lightning
 import torch
 
-from .. import transforms
+from .. import constants, transforms
 from ..common import labels
 from .registry import model_family
 
@@ -74,10 +74,10 @@ class FrameClassificationModel(lightning.LightningModule):
         to compute metrics that require strings, such as edit distance.
         If ``labelmap`` contains keys with multiple characters,
         this will be ``labelmap`` re-mapped so that all labels have
-        single characters (except "unlabeled"), to avoid artificially
-        changing the edit distance.
+        single characters (except the background label, if specified),
+        to avoid artificially changing the edit distance.
         See https://github.com/vocalpy/vak/issues/373 for more detail.
-        If all keys (except "unlabeled") are single-character,
+        If all keys (except background label) are single-character,
         then ``eval_labelmap`` will just be ``labelmap``.
     to_labels_eval : vak.transforms.frame_labels.ToLabels
         Instance of :class:`~vak.transforms.frame_labels.ToLabels`
@@ -94,6 +94,7 @@ class FrameClassificationModel(lightning.LightningModule):
         optimizer: torch.optim.Optimizer | None = None,
         metrics: dict | None = None,
         post_tfm: Callable | None = None,
+        background_label = common.constants.DEFAULT_BACKGROUND_LABEL,
     ):
         """Initialize a new instance of a
         :class:`~vak.models.frame_classification_model.FrameClassificationModel`.
@@ -122,6 +123,11 @@ class FrameClassificationModel(lightning.LightningModule):
             performance of the model.
         post_tfm : callable
             Post-processing transform applied to predictions.
+        background_label: str, optional
+            The string label applied to segments belonging to the
+            background class.
+            Default is
+            :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
         """
         super().__init__()
 
@@ -135,7 +141,7 @@ class FrameClassificationModel(lightning.LightningModule):
         # with single-character labels
         # so that we do not affect edit distance computation
         # see https://github.com/NickleDave/vak/issues/373
-        labelmap_keys = [lbl for lbl in labelmap.keys() if lbl != "unlabeled"]
+        labelmap_keys = [lbl for lbl in labelmap.keys() if lbl != background_label]
         if any(
             [len(label) > 1 for label in labelmap_keys]
         ):  # only re-map if necessary
