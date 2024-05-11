@@ -296,7 +296,7 @@ def prep_parametric_umap_dataset(
     # we do this before creating array files since we need to load the labelmap to make frame label vectors
     if purpose != "predict":
         # TODO: add option to generate predict using existing dataset, so we can get labelmap from it
-        labelmap = labels.to_map(labelset, map_unlabeled=False)
+        labelmap = labels.to_map(labelset, map_background=False)
         logger.info(
             f"Number of classes in labelmap: {len(labelmap)}",
         )
