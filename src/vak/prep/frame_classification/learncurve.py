@@ -176,6 +176,7 @@ def make_subsets_from_dataset_df(
     num_replicates: int,
     dataset_path: pathlib.Path,
     labelmap: dict,
+    background_label : str = common.constants.DEFAULT_BACKGROUND_LABEL,
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
 
@@ -267,7 +268,7 @@ def make_subsets_from_dataset_df(
     # get just train split, to pass to split.dataframe
     # so we don't end up with other splits in the training set
     train_split_df = dataset_df[dataset_df["split"] == "train"].copy()
-    labelset = set([k for k in labelmap.keys() if k != "unlabeled"])
+    labelset = set([k for k in labelmap.keys() if k != background_label])
 
     # will concat after loop, then use ``csv_path`` to replace
     # original dataset df with this one
