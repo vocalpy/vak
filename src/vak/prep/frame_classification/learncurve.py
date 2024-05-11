@@ -247,6 +247,11 @@ def make_subsets_from_dataset_df(
      input_type : str
          The type of input to the neural network model.
          One of {'audio', 'spect'}.
+    background_label: str, optional
+        The string label applied to segments belonging to the
+        background class.
+        Default is
+        :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
 
      Returns
      -------
