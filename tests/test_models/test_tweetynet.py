@@ -18,7 +18,7 @@ for labelset in (
 LABELMAPS = []
 for labelset in LABELSETS:
     LABELMAPS.append(
-        vak.common.labels.to_map(labelset, map_unlabeled=True)
+        vak.common.labels.to_map(labelset, map_background=True)
     )
 
 INPUT_SHAPES = (

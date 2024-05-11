@@ -58,7 +58,7 @@ class TestToLabels:
         # Note that we add an 'unlabeled' class because post-processing transforms *require* it
         # This is default, just making it explicit
         labelset = vak.common.converters.labelset_to_set(labelset)
-        labelmap = vak.common.labels.to_map(labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(labelset, map_background=True)
 
         to_labels_tfm = vak.transforms.frame_labels.ToLabels(
             labelmap=labelmap,
@@ -155,7 +155,7 @@ class TestToSegments:
         # Note that we add an 'unlabeled' class because post-processing transforms *require* it
         # This is default, just making it explicit
         labelset = vak.common.converters.labelset_to_set(labelset)
-        labelmap = vak.common.labels.to_map(labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(labelset, map_background=True)
 
         to_segments_tfm = vak.transforms.frame_labels.ToSegments(
             labelmap=labelmap,

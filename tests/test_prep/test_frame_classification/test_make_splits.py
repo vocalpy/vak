@@ -109,7 +109,7 @@ def test_make_splits(config_type, model_name, audio_format, spect_format, annot_
             dataset_df
         )
         labelmap = vak.common.labels.to_map(
-            cfg.prep.labelset, map_unlabeled=map_unlabeled_segments
+            cfg.prep.labelset, map_background=map_unlabeled_segments
         )
     else:
         labelmap = None

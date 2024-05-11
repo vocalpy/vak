@@ -33,7 +33,7 @@ class TestFrameClassificationModel:
         train_cfg = vak.config.Config.from_toml_path(train_toml_path)
 
         # stuff we need just to be able to instantiate network
-        labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_unlabeled=True)
+        labelmap = vak.common.labels.to_map(train_cfg.prep.labelset, map_background=True)
         train_dataset = vak.datapipes.frame_classification.TrainDatapipe.from_dataset_path(
             dataset_path=train_cfg.train.dataset.path,
             split="train",

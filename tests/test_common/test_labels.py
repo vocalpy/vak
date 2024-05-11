@@ -9,7 +9,7 @@ import vak.common.labels
 
 
 @pytest.mark.parametrize(
-    'labelset, map_unlabeled',
+    'labelset, map_background',
     [
         (
             set(list("abcde")),
@@ -29,14 +29,14 @@ import vak.common.labels
         )
     ]
 )
-def test_to_map(labelset, map_unlabeled):
-    labelmap = vak.common.labels.to_map(labelset, map_unlabeled=map_unlabeled)
+def test_to_map(labelset, map_background):
+    labelmap = vak.common.labels.to_map(labelset, map_background=map_background)
     assert isinstance(labelmap, dict)
-    if map_unlabeled:
-        # because map_unlabeled=True
+    if map_background:
+        # because map_background=True
         assert len(labelmap) == len(labelset) + 1
     else:
-        # because map_unlabeled=False
+        # because map_background=False
         assert len(labelmap) == len(labelset)
 
 
