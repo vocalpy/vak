@@ -20,9 +20,7 @@ except NameError:
 
 
 __title__ = "vak"
-__summary__ = (
-    "A neural network framework for researchers studying acoustic communication"
-)
+__summary__ = "A neural network framework for researchers studying acoustic communication"
 __uri__ = "https://github.com/NickleDave/vak"
 
 __version__ = "1.0.0.post2"

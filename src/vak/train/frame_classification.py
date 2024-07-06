@@ -200,19 +200,22 @@ def train_frame_classification_model(
                 "No `frames_standardizer_path` provided, not loading",
             )
             logger.info("Will standardize (normalize) frames")
-            frames_standardizer = transforms.FramesStandardizer.fit_dataset_path(
-                dataset_path,
-                split="train",
-                subset=subset,
+            frames_standardizer = (
+                transforms.FramesStandardizer.fit_dataset_path(
+                    dataset_path,
+                    split="train",
+                    subset=subset,
+                )
             )
             joblib.dump(
-                frames_standardizer, results_path.joinpath("FramesStandardizer")
+                frames_standardizer,
+                results_path.joinpath("FramesStandardizer"),
             )
         elif frames_standardizer_path is not None and not standardize_frames:
             raise ValueError(
                 "`frames_standardizer_path` provided but `standardize_frames` was False, these options conflict"
             )
-        # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
+        # ---- *yes* using a built-in dataset --------------------------------------------------------------------------
         else:
             # not standardize_frames and frames_standardizer_path is None:
             logger.info(
@@ -235,13 +238,13 @@ def train_frame_classification_model(
         # while still accepting a transform but defaulting to None)
         if "standardize_frames" not in dataset_config:
             logger.info(
-                f"Adding `standardize_frames` argument to dataset_config[\"params\"]: {standardize_frames}"
+                f'Adding `standardize_frames` argument to dataset_config["params"]: {standardize_frames}'
             )
             dataset_config["params"]["standardize_frames"] = standardize_frames
         train_dataset = datasets.get(
             dataset_config,
             split="train",
-            )
+        )
         logger.info(
             f"Duration of a frame in dataset, in seconds: {train_dataset.frame_dur}",
         )
@@ -249,13 +252,16 @@ def train_frame_classification_model(
         labelmap = train_dataset.labelmap
         with open(results_path.joinpath("labelmap.json"), "w") as fp:
             json.dump(labelmap, fp)
-        frames_standardizer = getattr(train_dataset.item_transform, 'frames_standardizer')
+        frames_standardizer = getattr(
+            train_dataset.item_transform, "frames_standardizer"
+        )
         if frames_standardizer is not None:
             logger.info(
-                f"Saving `frames_standardizer` from item transform on training dataset"
+                "Saving `frames_standardizer` from item transform on training dataset"
             )
             joblib.dump(
-                frames_standardizer, results_path.joinpath("FramesStandardizer")
+                frames_standardizer,
+                results_path.joinpath("FramesStandardizer"),
             )
 
     logger.info(
@@ -274,7 +280,9 @@ def train_frame_classification_model(
             f"Will measure error on validation set every {val_step} steps of training",
         )
         if dataset_config["name"] is None:
-            logger.info(f"Using validation split from dataset:\n{dataset_path}")
+            logger.info(
+                f"Using validation split from dataset:\n{dataset_path}"
+            )
             val_dur = get_split_dur(dataset_df, "val")
             logger.info(
                 f"Total duration of validation split from dataset (in s): {val_dur}",

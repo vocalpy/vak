@@ -176,7 +176,7 @@ def make_subsets_from_dataset_df(
     num_replicates: int,
     dataset_path: pathlib.Path,
     labelmap: dict,
-    background_label : str = common.constants.DEFAULT_BACKGROUND_LABEL,
+    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL,
 ) -> pd.DataFrame:
     """Make subsets of the training data split for a learning curve.
 

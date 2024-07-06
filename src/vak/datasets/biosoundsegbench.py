@@ -1,16 +1,16 @@
 """Class representing BioSoundSegBench dataset."""
+
 from __future__ import annotations
 
 import json
 import pathlib
-from typing import Callable, Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Literal
 
-from attrs import define
 import numpy as np
 import pandas as pd
-
 import torch
 import torchvision.transforms
+from attrs import define
 
 from .. import common, datapipes, transforms
 
@@ -113,6 +113,7 @@ class TrainingReplicateMetadata:
     pre-defined training replicate
     in the BioSoundSegBench dataset.
     """
+
     biosound_group: str
     id: str | None
     frame_dur: float
@@ -123,51 +124,57 @@ class TrainingReplicateMetadata:
 
 
 def metadata_from_splits_json_path(
-        splits_json_path: pathlib.Path, datset_path: pathlib.Path
-    ) -> TrainingReplicateMetadata:
+    splits_json_path: pathlib.Path, datset_path: pathlib.Path
+) -> TrainingReplicateMetadata:
+    name = splits_json_path.name
     try:
-        # Human-Speech doesn't have ID or data source in filename
-        # so it will raise a ValueError
-        name = splits_json_path.name
-        (biosound_group,
-        id_,
-        timebin_dur_1st_half,
-        timebin_dur_2nd_half,
-        unit,
-        data_source,
-        train_dur_1st_half,
-        train_dur_2nd_half,
-        replicate_num,
-        _, _
-        ) = name.split('.')
+        (
+            biosound_group,
+            unit,
+            id_,
+            frame_dur_1st_half,
+            frame_dur_2nd_half,
+            data_source,
+            train_dur_1st_half,
+            train_dur_2nd_half,
+            replicate_num,
+            _,
+            _,
+        ) = name.split(".")
+    # Human-Speech doesn't have ID or data source in filename
+    # so it will raise a ValueError
     except ValueError:
         name = splits_json_path.name
-        (biosound_group,
-        timebin_dur_1st_half,
-        timebin_dur_2nd_half,
-        unit,
-        train_dur_1st_half,
-        train_dur_2nd_half,
-        replicate_num,
-        _, _
-        ) = name.split('.')
+        (
+            biosound_group,
+            unit,
+            frame_dur_1st_half,
+            frame_dur_2nd_half,
+            train_dur_1st_half,
+            train_dur_2nd_half,
+            replicate_num,
+            _,
+            _,
+        ) = name.split(".")
         id_ = None
         data_source = None
     if id_ is not None:
-        id_ = id_.split('-')[-1]
-    timebin_dur = float(
-        timebin_dur_1st_half.split('-')[-1] + '.' + timebin_dur_2nd_half.split('-')[0]
+        id_ = id_.split("-")[-1]
+    frame_dur = float(
+        frame_dur_1st_half.split("-")[-1]
+        + "."
+        + frame_dur_2nd_half.split("-")[0]
     )
     train_dur = float(
-        train_dur_1st_half.split('-')[-1] + '.' + train_dur_2nd_half.split('-')[0]
+        train_dur_1st_half.split("-")[-1]
+        + "."
+        + train_dur_2nd_half.split("-")[0]
     )
-    replicate_num = int(
-            replicate_num.split('-')[-1]
-    )
+    replicate_num = int(replicate_num.split("-")[-1])
     return TrainingReplicateMetadata(
         biosound_group,
         id_,
-        timebin_dur,
+        frame_dur,
         unit,
         data_source,
         train_dur,
@@ -184,10 +191,9 @@ class TrainItemTransform:
         frames_standardizer: FramesStandardizer | None = None,
     ):
         from ..transforms import FramesStandardizer  # avoid circular import
+
         if frames_standardizer is not None:
-            if isinstance(
-                frames_standardizer, FramesStandardizer
-            ):
+            if isinstance(frames_standardizer, FramesStandardizer):
                 frames_transform = [frames_standardizer]
             else:
                 raise TypeError(
@@ -211,24 +217,30 @@ class TrainItemTransform:
         self.frame_labels_transform = transforms.ToLongTensor()
 
     def __call__(
-            self,
-            frames: torch.Tensor,
-            multi_frame_labels: torch.Tensor | None = None,
-            binary_frame_labels: torch.Tensor | None = None,
-            boundary_frame_labels: torch.Tensor | None = None,
-            ) -> dict:
+        self,
+        frames: torch.Tensor,
+        multi_frame_labels: torch.Tensor | None = None,
+        binary_frame_labels: torch.Tensor | None = None,
+        boundary_frame_labels: torch.Tensor | None = None,
+    ) -> dict:
         frames = self.frames_transform(frames)
         item = {
             "frames": frames,
         }
         if multi_frame_labels is not None:
-            item["multi_frame_labels"] = self.frame_labels_transform(multi_frame_labels)
+            item["multi_frame_labels"] = self.frame_labels_transform(
+                multi_frame_labels
+            )
 
         if binary_frame_labels is not None:
-            item["binary_frame_labels"] = self.frame_labels_transform(binary_frame_labels)
+            item["binary_frame_labels"] = self.frame_labels_transform(
+                binary_frame_labels
+            )
 
         if boundary_frame_labels is not None:
-            item["boundary_frame_labels"] = self.frame_labels_transform(boundary_frame_labels)
+            item["boundary_frame_labels"] = self.frame_labels_transform(
+                boundary_frame_labels
+            )
 
         return item
 
@@ -285,9 +297,7 @@ class InferItemTransform:
         self.channel_dim = channel_dim
 
         if frames_standardizer is not None:
-            if not isinstance(
-                frames_standardizer, FramesStandardizer
-            ):
+            if not isinstance(frames_standardizer, FramesStandardizer):
                 raise TypeError(
                     f"Invalid type for frames_standardizer: {type(frames_standardizer)}. "
                     "Should be an instance of vak.transforms.FramesStandardizer"
@@ -335,13 +345,19 @@ class InferItemTransform:
         }
 
         if multi_frame_labels is not None:
-            item["multi_frame_labels"] = self.frame_labels_transform(multi_frame_labels)
+            item["multi_frame_labels"] = self.frame_labels_transform(
+                multi_frame_labels
+            )
 
         if binary_frame_labels is not None:
-            item["binary_frame_labels"] = self.frame_labels_transform(binary_frame_labels)
+            item["binary_frame_labels"] = self.frame_labels_transform(
+                binary_frame_labels
+            )
 
         if boundary_frame_labels is not None:
-            item["boundary_frame_labels"] = self.frame_labels_transform(boundary_frame_labels)
+            item["boundary_frame_labels"] = self.frame_labels_transform(
+                boundary_frame_labels
+            )
 
         if padding_mask is not None:
             item["padding_mask"] = padding_mask
@@ -355,6 +371,7 @@ class InferItemTransform:
 
 class BioSoundSegBench:
     """Class representing BioSoundSegBench dataset."""
+
     def __init__(
         self,
         dataset_path: str | pathlib.Path,
@@ -369,7 +386,7 @@ class BioSoundSegBench:
         frame_labels_padval: int = -1,
         return_padding_mask: bool = False,
         return_frames_path: bool = False,
-        item_transform: Callable | None = None
+        item_transform: Callable | None = None,
     ):
         """BioSoundSegBench dataset."""
         # ---- validate args, roughly in order
@@ -387,7 +404,9 @@ class BioSoundSegBench:
 
         splits_path = pathlib.Path(splits_path)
         if not splits_path.exists():
-            tmp_splits_path = dataset_path / "splits" / "splits-jsons" / splits_path
+            tmp_splits_path = (
+                dataset_path / "splits" / "splits-jsons" / splits_path
+            )
             if not tmp_splits_path.exists():
                 raise FileNotFoundError(
                     f"Did not find `splits_path` using either absolute path ({splits_path})"
@@ -413,10 +432,9 @@ class BioSoundSegBench:
                 f"Valid `target_type` arguments are: {VALID_TARGET_TYPES}"
             )
         if isinstance(target_type, (list, tuple)):
-            if not all([
-                isinstance(target_type_, str)
-                for target_type_ in target_type
-            ]):
+            if not all(
+                [isinstance(target_type_, str) for target_type_ in target_type]
+            ):
                 types_in_target_types = set(
                     [type(target_type_) for target_type_ in target_type]
                 )
@@ -443,13 +461,15 @@ class BioSoundSegBench:
         self.training_replicate_metadata = metadata_from_splits_json_path(
             self.splits_path, self.dataset_path
         )
-        self.frame_dur = self.training_replicate_metadata.frame_dur * 1e-3  # convert from ms to s!
+        self.frame_dur = (
+            self.training_replicate_metadata.frame_dur * 1e-3
+        )  # convert from ms to s!
 
         if "multi_frame_labels" in target_type:
             labelmaps_json_path = self.dataset_path / "labelmaps.json"
             if not labelmaps_json_path.exists():
                 raise FileNotFoundError(
-                    "`target_type` includes \"multi_frame_labels\" but "
+                    '`target_type` includes "multi_frame_labels" but '
                     "'labelmaps.json' was not found in root of dataset path:\n"
                     f"{labelmaps_json_path}"
                 )
@@ -472,10 +492,10 @@ class BioSoundSegBench:
                         f"group '{group}', unit '{unit}', and id '{id}'. "
                         "Please check that splits_json path is correct."
                     )
-        elif target_type == ('binary_frame_labels',):
-            self.labelmap = {'no segment': 0, 'segment': 1}
-        elif target_type == ('boundary_frame_labels',):
-            self.labelmap = {'no boundary': 0, 'boundary': 1}
+        elif target_type == ("binary_frame_labels",):
+            self.labelmap = {"no segment": 0, "segment": 1}
+        elif target_type == ("boundary_frame_labels",):
+            self.labelmap = {"no boundary": 0, "boundary": 1}
 
         self.split = split
         split_df = pd.read_csv(self.splits_metadata.splits_csv_path)
@@ -508,15 +528,20 @@ class BioSoundSegBench:
         self.inds_in_sample = np.load(
             getattr(self.splits_metadata.inds_in_sample_vector_paths, split)
         )
-        self.window_inds = datapipes.frame_classification.train_datapipe.get_window_inds(
-            self.sample_ids.shape[-1], window_size, stride
+        self.window_inds = (
+            datapipes.frame_classification.train_datapipe.get_window_inds(
+                self.sample_ids.shape[-1], window_size, stride
+            )
         )
 
         if item_transform is None:
             if standardize_frames and frames_standardizer is None:
                 from ..transforms import FramesStandardizer
-                frames_standardizer = FramesStandardizer.fit_inputs_targets_csv_path(
-                    self.splits_metadata.splits_csv_path, self.dataset_path
+
+                frames_standardizer = (
+                    FramesStandardizer.fit_inputs_targets_csv_path(
+                        self.splits_metadata.splits_csv_path, self.dataset_path
+                    )
                 )
             if split == "train":
                 self.item_transform = TrainItemTransform(
@@ -580,7 +605,8 @@ class BioSoundSegBench:
             item["frames"] = spect_dict[common.constants.SPECT_KEY]
             for target_type in self.target_type:
                 item[target_type] = np.load(
-                    self.dataset_path / self.target_paths[target_type][sample_id]
+                    self.dataset_path
+                    / self.target_paths[target_type][sample_id]
                 )
 
         elif len(uniq_sample_ids) > 1:
@@ -592,9 +618,7 @@ class BioSoundSegBench:
             for sample_id in sorted(uniq_sample_ids):
                 frames_path = self.dataset_path / self.frames_paths[sample_id]
                 spect_dict = common.files.spect.load(frames_path)
-                item["frames"].append(
-                    spect_dict[common.constants.SPECT_KEY]
-                )
+                item["frames"].append(spect_dict[common.constants.SPECT_KEY])
                 for target_type in self.target_type:
                     item[target_type].append(
                         np.load(

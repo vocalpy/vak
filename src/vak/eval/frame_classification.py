@@ -113,7 +113,9 @@ def eval_frame_classification_model(
         )
         frames_standardizer = joblib.load(frames_standardizer_path)
     else:
-        logger.info("No `frames_standardizer_path` provided, not standardizing frames.")
+        logger.info(
+            "No `frames_standardizer_path` provided, not standardizing frames."
+        )
         frames_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
@@ -150,7 +152,7 @@ def eval_frame_classification_model(
             frames_standardizer=frames_standardizer,
             return_padding_mask=True,
         )
-    # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------# ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
+    # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
     else:
         dataset_config["params"]["return_padding_mask"] = True
         val_dataset = datasets.get(

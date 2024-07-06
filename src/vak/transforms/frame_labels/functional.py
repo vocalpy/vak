@@ -83,7 +83,9 @@ def from_segments(
             "labels_int must be a list or numpy.ndarray of integers"
         )
 
-    label_vec = np.ones((time_bins.shape[-1],), dtype="int8") * background_label
+    label_vec = (
+        np.ones((time_bins.shape[-1],), dtype="int8") * background_label
+    )
     onset_inds = [np.argmin(np.abs(time_bins - onset)) for onset in onsets_s]
     offset_inds = [
         np.argmin(np.abs(time_bins - offset)) for offset in offsets_s
@@ -96,8 +98,9 @@ def from_segments(
 
 
 def to_labels(
-        frame_labels: npt.NDArray, labelmap: dict,
-        background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL
+    frame_labels: npt.NDArray,
+    labelmap: dict,
+    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL,
 ) -> str:
     """Convert vector of frame labels to a string,
     one character for each continuous segment.
@@ -156,7 +159,7 @@ def to_segments(
     labelmap: dict,
     frame_times: npt.NDArray,
     n_decimals_trunc: int = 5,
-    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL
+    background_label: str = common.constants.DEFAULT_BACKGROUND_LABEL,
 ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
     """Convert a vector of frame labels
     into segments in the form of onset indices,
@@ -382,8 +385,7 @@ def take_majority_vote(
 
 
 def boundary_inds_from_boundary_labels(
-    boundary_labels: npt.NDArray,
-    force_boundary_first_ind: bool = True
+    boundary_labels: npt.NDArray, force_boundary_first_ind: bool = True
 ) -> npt.NDArray:
     """Return a :class:`numpy.ndarray` with the indices
     of boundaries, given a 1-D vector of boundary labels.
@@ -409,8 +411,7 @@ def boundary_inds_from_boundary_labels(
 
 
 def segment_inds_list_from_boundary_labels(
-    boundary_labels: npt.NDArray,
-    force_boundary_first_ind: bool = True
+    boundary_labels: npt.NDArray, force_boundary_first_ind: bool = True
 ) -> list[npt.NDArray]:
     """Given an array of boundary labels,
     return a list of :class:`numpy.ndarray` vectors,
@@ -434,7 +435,9 @@ def segment_inds_list_from_boundary_labels(
         Of fancy indexing arrays. Each array can be used to index
         one segment in ``frame_labels``.
     """
-    boundary_inds = boundary_inds_from_boundary_labels(boundary_labels, force_boundary_first_ind)
+    boundary_inds = boundary_inds_from_boundary_labels(
+        boundary_labels, force_boundary_first_ind
+    )
 
     # at the end of `boundary_inds``, insert an imaginary "last" boundary we use just with ``np.arange`` below
     np.insert(boundary_inds, boundary_inds.shape[0], boundary_labels.shape[0])
@@ -452,7 +455,7 @@ def postprocess(
     background_label: int = 0,
     min_segment_dur: float | None = None,
     majority_vote: bool = False,
-    boundary_labels: npt.NDArray | None = None
+    boundary_labels: npt.NDArray | None = None,
 ) -> npt.NDArray:
     """Apply post-processing transformations
     to a vector of frame labels.
@@ -532,7 +535,10 @@ def postprocess(
     # handle the case when all time bins are predicted to be unlabeled
     # see https://github.com/NickleDave/vak/issues/383
     uniq_frame_labels = np.unique(frame_labels)
-    if len(uniq_frame_labels) == 1 and uniq_frame_labels[0] == background_label:
+    if (
+        len(uniq_frame_labels) == 1
+        and uniq_frame_labels[0] == background_label
+    ):
         return frame_labels  # -> no need to do any of the post-processing
 
     if boundary_labels is not None:

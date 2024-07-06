@@ -94,7 +94,7 @@ def coverage(session) -> None:
     """
     session.install(".[test]")
     session.run(
-        "pytest", "--cov=./", "--cov-report=xml", *session.posargs
+        "pytest", "--slow-last", "--cov=./", "--cov-report=xml", *session.posargs
     )
 
 
