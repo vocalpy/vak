@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Require Python version >= 3.10 
+  (and update minimum required versions of other dependencies)
+  [#765](https://github.com/vocalpy/vak/pull/765).
+  Fixes [#762](https://github.com/vocalpy/vak/issues/762)
+  and [#763](https://github.com/vocalpy/vak/issues/763).
+
 ## 1.0.0 - 2024-05-11
 ### Added
 - Use `lightning` framework as back end, replaces
