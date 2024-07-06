@@ -215,7 +215,7 @@ def train_frame_classification_model(
             raise ValueError(
                 "`frames_standardizer_path` provided but `standardize_frames` was False, these options conflict"
             )
-        # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
+        # ---- *yes* using a built-in dataset --------------------------------------------------------------------------
         else:
             # not standardize_frames and frames_standardizer_path is None:
             logger.info(
@@ -257,7 +257,7 @@ def train_frame_classification_model(
         )
         if frames_standardizer is not None:
             logger.info(
-                f"Saving `frames_standardizer` from item transform on training dataset"
+                "Saving `frames_standardizer` from item transform on training dataset"
             )
             joblib.dump(
                 frames_standardizer,

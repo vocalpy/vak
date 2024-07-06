@@ -48,8 +48,6 @@ def get(
             f"Valid splits are: {common.constants.VALID_SPLITS}"
         )
 
-    from .. import datasets
-
     dataset_name = dataset_config["name"]
     try:
         dataset_class = DATASETS[dataset_name]
@@ -57,7 +55,7 @@ def get(
         raise ValueError(
             f"Invalid dataset name: {dataset_name}\n."
             f"Built-in dataset names are: {DATASETS.keys()}"
-        )
+        ) from e
     if frames_standardizer is not None:
         dataset_config["params"]["frames_standardizer"] = frames_standardizer
     dataset = dataset_class(

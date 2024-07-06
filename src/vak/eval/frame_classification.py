@@ -152,7 +152,7 @@ def eval_frame_classification_model(
             frames_standardizer=frames_standardizer,
             return_padding_mask=True,
         )
-    # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------# ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
+    # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
     else:
         dataset_config["params"]["return_padding_mask"] = True
         val_dataset = datasets.get(
