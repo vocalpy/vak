@@ -14,33 +14,33 @@ classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: Implementation :: CPython'
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {file = "LICENSE"}
 dependencies = [
-    "attrs >=19.3.0",
-    "crowsetta >=5.0.1",
-    "dask[dataframe] >=2.10.1",
+    "attrs >=23.1.0",
+    "crowsetta >=5.0.3",
+    "dask[dataframe] >=2024.5.0",
     "evfuncs >=0.3.4",
-    "joblib >=0.14.1",
-    "lightning >=2.0.7",
-    "matplotlib >=3.3.3",
-    "numpy >=1.18.1",
-    "pynndescent >=0.5.10",
-    "scipy >=1.4.1",
-    "SoundFile >=0.10.3",
-    "pandas >=1.0.1",
+    "joblib >=1.4.2",
+    "lightning >=2.2.4",
+    "matplotlib >=3.7.1",
+    "numpy >=1.24.0, <2.0",
+    "pynndescent >=0.5.12",
+    "scipy >=1.9.1",
+    "SoundFile >=0.12.1",
+    "pandas >=1.4.0",
     "tensorboard >=2.8.0",
     "tomlkit >=0.12.4",
-    "torch >= 2.0.1",
-    "torchvision >=0.15.2",
-    "tqdm >=4.42.1",
-    "umap-learn >=0.5.3",
+    "torch >= 2.3.0",
+    "torchvision >=0.18.0",
+    "tqdm >=4.66.4",
+    "umap-learn >=0.5.6",
 ]
 
 [project.optional-dependencies]

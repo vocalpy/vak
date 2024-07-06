@@ -68,7 +68,14 @@ def lint(session):
     session.run("flake8", "./src", "--max-line-length", "120")
 
 
-@nox.session
+TEST_PYTHONS = [
+    "3.10",
+    "3.11",
+    "3.12",
+]
+
+
+@nox.session(python=TEST_PYTHONS)
 def test(session) -> None:
     """
     Run the unit and regular tests.
