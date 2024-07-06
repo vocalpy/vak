@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Fixes [#762](https://github.com/vocalpy/vak/issues/762)
   and [#763](https://github.com/vocalpy/vak/issues/763).
 
+### Fixed
+- Make minor bugfixes to class representing 
+  BioSoundSegBench dataset
+  [#766](https://github.com/vocalpy/vak/pull/766).
+
 ## 1.0.0 - 2024-05-11
 ### Added
 - Use `lightning` framework as back end, replaces
