@@ -437,10 +437,6 @@ def predict_with_frame_classification_model(
                 # handle the case when all time bins are predicted to be unlabeled
                 # see https://github.com/NickleDave/vak/issues/383
                 continue
-            if labels is None and onsets_s is None and offsets_s is None:
-                # handle the case when all time bins are predicted to be unlabeled
-                # see https://github.com/NickleDave/vak/issues/383
-                continue
             seq = crowsetta.Sequence.from_keyword(
                 labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
             )
