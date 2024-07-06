@@ -10,6 +10,4 @@ __all__ = [
 ]
 
 # TODO: make this a proper registry
-DATASETS = {
-    "BioSoundSegBench": BioSoundSegBench
-}
+DATASETS = {"BioSoundSegBench": BioSoundSegBench}

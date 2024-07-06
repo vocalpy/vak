@@ -1,7 +1,8 @@
 """Helper function that gets instances of classes representing datasets built into :mod:`vak`."""
+
 from __future__ import annotations
 
-from typing import Literal, Mapping, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Mapping
 
 from .. import common
 
@@ -10,11 +11,12 @@ Dataset = Mapping
 if TYPE_CHECKING:
     from ..transforms import FramesStandardizer
 
+
 def get(
-        dataset_config: dict,
-        split: Literal["predict", "test", "train", "val"],
-        frames_standardizer: FramesStandardizer | None = None,
-        ) -> Dataset:
+    dataset_config: dict,
+    split: Literal["predict", "test", "train", "val"],
+    frames_standardizer: FramesStandardizer | None = None,
+) -> Dataset:
     """Get an instance of a dataset class from :mod:`vak.datasets`.
 
     Parameters
@@ -38,7 +40,7 @@ def get(
         raise KeyError(
             "A name is required to get a dataset, but "
             "`vak.datasets.get` received a `dataset_config` "
-            f"without a \"name\":\n{dataset_config}"
+            f'without a "name":\n{dataset_config}'
         )
     if split not in common.constants.VALID_SPLITS:
         raise ValueError(
@@ -47,6 +49,7 @@ def get(
         )
 
     from .. import datasets
+
     dataset_name = dataset_config["name"]
     try:
         dataset_class = DATASETS[dataset_name]
@@ -61,6 +64,6 @@ def get(
         dataset_path=dataset_config["path"],
         splits_path=dataset_config["splits_path"],
         split=split,
-        **dataset_config["params"]
+        **dataset_config["params"],
     )
     return dataset

@@ -9,7 +9,9 @@ from . import annotation, constants
 
 
 def to_map(
-        labelset: set, map_background: bool = True, background_label: str = constants.DEFAULT_BACKGROUND_LABEL
+    labelset: set,
+    map_background: bool = True,
+    background_label: str = constants.DEFAULT_BACKGROUND_LABEL,
 ) -> dict:
     """Convert set of labels to `dict`
     mapping those labels to a series of consecutive integers

@@ -113,7 +113,9 @@ def eval_frame_classification_model(
         )
         frames_standardizer = joblib.load(frames_standardizer_path)
     else:
-        logger.info("No `frames_standardizer_path` provided, not standardizing frames.")
+        logger.info(
+            "No `frames_standardizer_path` provided, not standardizing frames."
+        )
         frames_standardizer = None
 
     logger.info(f"loading labelmap from path: {labelmap_path}")
