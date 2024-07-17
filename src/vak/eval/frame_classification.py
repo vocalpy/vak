@@ -14,7 +14,7 @@ import pandas as pd
 import torch.utils.data
 
 from .. import datapipes, datasets, models, transforms
-from ..common import validators
+from ..common import constants, validators
 from ..datapipes.frame_classification import InferDatapipe
 
 logger = logging.getLogger(__name__)
@@ -179,6 +179,7 @@ def eval_frame_classification_model(
     if post_tfm_kwargs:
         post_tfm = transforms.frame_labels.PostProcess(
             timebin_dur=frame_dur,
+            background_label=labelmap[constants.DEFAULT_BACKGROUND_LABEL]
             **post_tfm_kwargs,
         )
     else:
