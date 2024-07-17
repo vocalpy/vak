@@ -24,6 +24,7 @@ dataloaders and models.
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 
 from . import functional as F
 
@@ -258,7 +259,7 @@ class PostProcess:
         self.min_segment_dur = min_segment_dur
         self.majority_vote = majority_vote
 
-    def __call__(self, frame_labels: np.ndarray) -> np.ndarray:
+    def __call__(self, frame_labels: np.ndarray, boundary_labels: npt.NDArray | None = None) -> np.ndarray:
         """Convert vector of frame labels into labels.
 
         Parameters
@@ -280,4 +281,5 @@ class PostProcess:
             self.background_label,
             self.min_segment_dur,
             self.majority_vote,
+            boundary_labels,
         )
