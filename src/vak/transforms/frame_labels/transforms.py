@@ -260,7 +260,8 @@ class PostProcess:
         self.majority_vote = majority_vote
 
     def __call__(self, frame_labels: np.ndarray, boundary_labels: npt.NDArray | None = None) -> np.ndarray:
-        """Convert vector of frame labels into labels.
+        """Apply post-processing transformations
+        to a vector of frame labels.
 
         Parameters
         ----------
