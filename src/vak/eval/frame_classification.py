@@ -187,7 +187,7 @@ def eval_frame_classification_model(
     if post_tfm_kwargs:
         post_tfm = transforms.frame_labels.PostProcess(
             timebin_dur=frame_dur,
-            background_label=labelmap[constants.DEFAULT_BACKGROUND_LABEL]
+            background_label=labelmap[constants.DEFAULT_BACKGROUND_LABEL],
             **post_tfm_kwargs,
         )
     else:
