@@ -384,7 +384,7 @@ class FrameClassificationModel(lightning.LightningModule):
                 elif target_types == ("multi_frame_labels", "boundary_frame_labels"):
                     class_preds_tfm = self.post_tfm(
                         class_preds.cpu().numpy(),
-                        boundary_labels=boundary_preds,
+                        boundary_labels=boundary_preds.cpu().numpy(),
                     )
                 class_preds_tfm_str = self.to_labels_eval(class_preds_tfm)
                 # convert back to tensor so we can compute accuracy
