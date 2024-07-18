@@ -245,8 +245,9 @@ def train_frame_classification_model(
             dataset_config,
             split="train",
         )
+        frame_dur = train_dataset.frame_dur
         logger.info(
-            f"Duration of a frame in dataset, in seconds: {train_dataset.frame_dur}",
+            f"Duration of a frame in dataset, in seconds: {frame_dur}",
         )
         # copy labelmap from dataset to new results_path
         labelmap = train_dataset.labelmap
