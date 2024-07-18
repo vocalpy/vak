@@ -154,6 +154,10 @@ def eval_frame_classification_model(
         )
     # ---- *yes* using a built-in dataset ------------------------------------------------------------------------------
     else:
+        # next line, we don't use dataset path in this code block,
+        # but we need it below when we build the DataFrame with eval results.
+        # we're unpacking it here just as we do above with a prep'd dataset
+        dataset_path = pathlib.Path(dataset_config["path"])
         dataset_config["params"]["return_padding_mask"] = True
         val_dataset = datasets.get(
             dataset_config,
