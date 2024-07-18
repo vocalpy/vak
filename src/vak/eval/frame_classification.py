@@ -164,6 +164,10 @@ def eval_frame_classification_model(
             split=split,
             frames_standardizer=frames_standardizer,
         )
+        frame_dur = val_dataset.frame_dur
+        logger.info(
+            f"Duration of a frame in dataset, in seconds: {frame_dur}",
+        )
 
     val_loader = torch.utils.data.DataLoader(
         dataset=val_dataset,
