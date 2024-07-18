@@ -453,7 +453,7 @@ class FrameClassificationModel(lightning.LightningModule):
                         )
                 else:
                     self.log(
-                        f"val_{metric_name}",
+                        f"val_multi_{metric_name}",
                         metric_callable(
                             class_preds, target["multi_frame_labels"]
                         ),
