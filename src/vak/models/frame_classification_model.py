@@ -259,12 +259,13 @@ class FrameClassificationModel(lightning.LightningModule):
             )
             if isinstance(loss, torch.Tensor):
                 self.log("train_loss", loss, on_step=True)
+                self.manual_backward(loss)
             elif isinstance(loss, dict):
                 # this provides a mechanism to values for all terms of a loss function with multiple terms
                 for loss_name, loss_val in loss.items():
                     self.log(f"train_{loss_name}", loss_val, on_step=True)
+                self.manual_backward(loss["loss"])
 
-        self.manual_backward(loss)
         opt.step()
 
         return loss
