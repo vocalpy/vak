@@ -401,6 +401,7 @@ def boundary_inds_from_boundary_labels(
         If ``True``, and the first index of ``boundary_labels`` is not classified as a boundary,
         force it to be a boundary.
     """
+    boundary_labels = row_or_1d(boundary_labels)
     boundary_inds = np.nonzero(boundary_labels)[0]
 
     if boundary_inds[0] != 0 and force_boundary_first_ind:
@@ -531,6 +532,7 @@ def postprocess(
         Vector of frame labels after post-processing is applied.
     """
     frame_labels = row_or_1d(frame_labels)
+    boundary_labels = row_or_1d(boundary_labels)
 
     # handle the case when all time bins are predicted to be unlabeled
     # see https://github.com/NickleDave/vak/issues/383
