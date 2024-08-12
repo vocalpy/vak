@@ -257,7 +257,7 @@ where to find those files when we need them below.
 root_results_dir = "/home/users/You/Data/vak_tutorial_data/vak/train/results"
 ```
 
-Here it's fine to use the same directory you created before, or make a new one if you prepare to keep the
+Here it's fine to use the same directory you created before, or make a new one if you prefer to keep the
 training data and the files from training the neural network separate.
 `vak` will make a new directory inside of `root_results_dir` to save the files related to training
 every time that you run the `train` command.
@@ -357,10 +357,18 @@ spect_scaler = "/home/users/You/Data/vak_tutorial_data/vak_output/results_{times
 ```
 
 The last path you need is actually in the TOML file that we used
-to train the neural network: `dataset_path`.
-You should copy that `dataset_path` option exactly as it is
-and then paste it at the bottom of the `[EVAL]` table
+to train the neural network: the dataset `path`.
+You should copy that `path` option exactly as it is
+and then paste it at the bottom of the `[vak.eval.dataset]` table
 in the configuration file for evaluation.
+
+```toml
+[vak.eval.dataset]
+# copy the dataset path from the train config file here;
+# we will use the "test" split from that dataset, that we already prepared
+path = "/home/users/You/Data/vak_tutorial_data/vak/prep/train/dataset_prepared_20240811"
+```
+
 We do this instead of preparing another dataset,
 because we already created a test split when we ran
 `vak prep` with the training configuration.

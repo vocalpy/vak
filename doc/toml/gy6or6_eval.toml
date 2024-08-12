@@ -66,12 +66,17 @@ min_segment_dur = 0.02
 
 # dataset.params = parameters used for datasets
 # for a frame classification model, we use dataset classes with a specific `window_size`
-[vak.eval.dataset.params]
-window_size = 176
+[vak.eval.dataset]
+path = "/copy/path/from/train/config/here"
+params = { window_size = 176 }
 
-# Note we do not specify any options for the model, and just use the defaults
-# We need to put this table here though so we know which model we are using
-[vak.eval.model.TweetyNet]
+# We put this table though vak knows which model we are using
+[vak.eval.model.TweetyNet.network]
+# hidden_size: the number of elements in the hidden state in the recurrent layer of the network
+# we trained with hidden size = 256 so we need to evaluate with the same hidden size;
+# otherwise we'll get an error about "shapes do not match" when torch tries to load the checkpoint
+hidden_size = 256
+
 
 # this sub-table configures the `lightning.pytorch.Trainer`
 [vak.eval.trainer]
