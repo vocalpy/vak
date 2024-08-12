@@ -366,7 +366,7 @@ in the configuration file for evaluation.
 [vak.eval.dataset]
 # copy the dataset path from the train config file here;
 # we will use the "test" split from that dataset, that we already prepared
-path = ""/home/users/You/Data/vak_tutorial_data/vak/prep/train/dataset_prepared_20240811"
+path = "/home/users/You/Data/vak_tutorial_data/vak/prep/train/dataset_prepared_20240811"
 ```
 
 We do this instead of preparing another dataset,
