@@ -21,7 +21,6 @@ from . import (
     tensorboard,
     timebins,
     timenow,
-    trainer,
     typing,
     validators,
 )
@@ -39,7 +38,6 @@ __all__ = [
     "tensorboard",
     "timebins",
     "timenow",
-    "trainer",
     "typing",
     "validators",
 ]
