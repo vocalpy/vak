@@ -8,13 +8,13 @@ import logging
 import pathlib
 import shutil
 
+import lightning
 import joblib
 import pandas as pd
 import torch.utils.data
 
 from .. import datapipes, datasets, models, transforms
 from ..common import validators
-from ..common.trainer import get_default_trainer
 from ..datapipes.frame_classification import InferDatapipe, TrainDatapipe
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,92 @@ logger = logging.getLogger(__name__)
 def get_split_dur(df: pd.DataFrame, split: str) -> float:
     """Get duration of a split in a dataset from a pandas DataFrame representing the dataset."""
     return df[df["split"] == split]["duration"].sum()
+
+
+def get_train_callbacks(
+    ckpt_root: str | pathlib.Path,
+    ckpt_step: int,
+    patience: int,
+    checkpoint_monitor: str = "val_acc",
+    early_stopping_monitor: str = "val_acc",
+    early_stopping_mode: str = "max",
+) -> list[lightning.pytorch.callbacks.Callback]:
+    ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
+        dirpath=ckpt_root,
+        filename="checkpoint",
+        every_n_train_steps=ckpt_step,
+        save_last=True,
+        verbose=True,
+    )
+    ckpt_callback.CHECKPOINT_NAME_LAST = "checkpoint"
+    ckpt_callback.FILE_EXTENSION = ".pt"
+
+    val_ckpt_callback = lightning.pytorch.callbacks.ModelCheckpoint(
+        monitor=checkpoint_monitor,
+        dirpath=ckpt_root,
+        save_top_k=1,
+        mode="max",
+        filename="max-val-acc-checkpoint",
+        auto_insert_metric_name=False,
+        verbose=True,
+    )
+    val_ckpt_callback.FILE_EXTENSION = ".pt"
+
+    early_stopping = lightning.pytorch.callbacks.EarlyStopping(
+        mode=early_stopping_mode,
+        monitor=early_stopping_monitor,
+        patience=patience,
+        verbose=True,
+    )
+
+    return [ckpt_callback, val_ckpt_callback, early_stopping]
+
+
+def get_trainer(
+    accelerator: str,
+    devices: int | list[int],
+    max_steps: int,
+    log_save_dir: str | pathlib.Path,
+    val_step: int,
+    callback_kwargs: dict | None = None,
+) -> lightning.pytorch.Trainer:
+    """Returns an instance of :class:`lightning.pytorch.Trainer`
+    with a default set of callbacks.
+
+    Used by :func:`vak.train.frame_classification`.
+    The default set of callbacks is provided by
+    :func:`get_default_train_callbacks`.
+
+    Parameters
+    ----------
+    accelerator : str
+    devices : int, list of int
+    max_steps : int
+    log_save_dir : str, pathlib.Path
+    val_step : int
+    default_callback_kwargs : dict, optional
+
+    Returns
+    -------
+    trainer : lightning.pytorch.Trainer
+
+    """
+    if callback_kwargs:
+        callbacks = get_train_callbacks(**callback_kwargs)
+    else:
+        callbacks = None
+
+    logger = lightning.pytorch.loggers.TensorBoardLogger(save_dir=log_save_dir)
+
+    trainer = lightning.pytorch.Trainer(
+        accelerator=accelerator,
+        devices=devices,
+        callbacks=callbacks,
+        val_check_interval=val_step,
+        max_steps=max_steps,
+        logger=logger,
+    )
+    return trainer
 
 
 def train_frame_classification_model(
@@ -335,18 +421,21 @@ def train_frame_classification_model(
     ckpt_root.mkdir()
     logger.info(f"training {model_name}")
     max_steps = num_epochs * len(train_loader)
-    default_callback_kwargs = {
-        "ckpt_root": ckpt_root,
-        "ckpt_step": ckpt_step,
-        "patience": patience,
-    }
-    trainer = get_default_trainer(
+    callback_kwargs = dict(
+        ckpt_root=ckpt_root,
+        ckpt_step=ckpt_step,
+        patience=patience,
+        checkpoint_monitor="val_multi_acc" if len(dataset_config["params"]["target_type"]) > 1 else "val_acc",
+        early_stopping_monitor="val_multi_acc" if len(dataset_config["params"]["target_type"]) > 1 else "val_acc",
+        early_stopping_mode="max",
+    )
+    trainer = get_trainer(
         accelerator=trainer_config["accelerator"],
         devices=trainer_config["devices"],
         max_steps=max_steps,
         log_save_dir=results_model_root,
         val_step=val_step,
-        default_callback_kwargs=default_callback_kwargs,
+        callback_kwargs=callback_kwargs,
     )
     train_time_start = datetime.datetime.now()
     logger.info(f"Training start time: {train_time_start.isoformat()}")
