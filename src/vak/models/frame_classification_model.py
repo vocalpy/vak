@@ -514,7 +514,11 @@ class FrameClassificationModel(lightning.LightningModule):
         # adding this method is so we can call learning rate scheduler after computing validation metrics
         scheduler = self.lr_schedulers()
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            scheduler.step(self.trainer.callback_metrics["val_acc"])
+            if "val_multi_acc" in self.trainer.callback_metrics:
+                # for segnotator, we plateau on multi-class frame accuracy
+                scheduler.step(self.trainer.callback_metrics["val_multi_acc"])
+            else:
+                scheduler.step(self.trainer.callback_metrics["val_acc"])
             lr = scheduler.get_last_lr()
             logger = self.logger.experiment
             logger.add_scalar('learning_rate', lr[-1], global_step=self.trainer.global_step)
