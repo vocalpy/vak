@@ -249,6 +249,7 @@ class FrameClassificationModel(lightning.LightningModule):
             class_logits = self.network(frames)
             loss = self.loss(class_logits, batch[target_types[0]])
             self.log("train_loss", loss, on_step=True)
+            self.manual_backward(loss)
         else:
             multi_logits, boundary_logits = self.network(frames)
             loss = self.loss(
