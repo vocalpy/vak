@@ -421,12 +421,21 @@ def train_frame_classification_model(
     ckpt_root.mkdir()
     logger.info(f"training {model_name}")
     max_steps = num_epochs * len(train_loader)
+    if isinstance(dataset_config["params"]["target_type"], list) and all([isinstance(target_type, str) for target_type in dataset_config["params"]["target_type"]]):
+        multiple_targets = True
+    elif isinstance(dataset_config["params"]["target_type"], str):
+        multiple_targets = False
+    else:
+        raise ValueError(
+            f'Invalid value for dataset_config["params"]["target_type"]: {dataset_config["params"]["target_type"], list}'
+        )
+
     callback_kwargs = dict(
         ckpt_root=ckpt_root,
         ckpt_step=ckpt_step,
         patience=patience,
-        checkpoint_monitor="val_multi_acc" if len(dataset_config["params"]["target_type"]) > 1 else "val_acc",
-        early_stopping_monitor="val_multi_acc" if len(dataset_config["params"]["target_type"]) > 1 else "val_acc",
+        checkpoint_monitor="val_multi_acc" if multiple_targets else "val_acc",
+        early_stopping_monitor="val_multi_acc" if multiple_targets else "val_acc",
         early_stopping_mode="max",
     )
     trainer = get_trainer(
