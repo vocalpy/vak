@@ -532,7 +532,8 @@ def postprocess(
         Vector of frame labels after post-processing is applied.
     """
     frame_labels = row_or_1d(frame_labels)
-    boundary_labels = row_or_1d(boundary_labels)
+    if boundary_labels is not None:
+        boundary_labels = row_or_1d(boundary_labels)
 
     # handle the case when all time bins are predicted to be unlabeled
     # see https://github.com/NickleDave/vak/issues/383
