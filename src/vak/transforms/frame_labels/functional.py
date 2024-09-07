@@ -404,9 +404,14 @@ def boundary_inds_from_boundary_labels(
     boundary_labels = row_or_1d(boundary_labels)
     boundary_inds = np.nonzero(boundary_labels)[0]
 
-    if boundary_inds[0] != 0 and force_boundary_first_ind:
-        # force there to be a boundary at index 0
-        np.insert(boundary_inds, 0, 0)
+    if force_boundary_first_ind:
+        if len(boundary_inds) == 0:
+            # handle edge case where no boundaries were predicted
+            boundary_inds = np.array([0])  # replace with a single boundary, at index 0
+        else:
+            if boundary_inds[0] != 0:
+                # force there to be a boundary at index 0
+                np.insert(boundary_inds, 0, 0)
 
     return boundary_inds
 
