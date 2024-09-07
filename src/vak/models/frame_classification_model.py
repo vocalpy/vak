@@ -516,7 +516,7 @@ class FrameClassificationModel(lightning.LightningModule):
         scheduler = self.lr_schedulers()
         if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
             if "val_multi_acc" in self.trainer.callback_metrics:
-                # for segnotator, we plateau on multi-class frame accuracy
+                # for case where we have multiple accuracies, we have scheduler on multi-class frame accuracy
                 scheduler.step(self.trainer.callback_metrics["val_multi_acc"])
             else:
                 scheduler.step(self.trainer.callback_metrics["val_acc"])
