@@ -468,8 +468,11 @@ def predict_with_frame_classification_model(
                 annot_path=annot_csv_path.name,
             )
             annots.append(annot)
-
-    if all([isinstance(annot, crowsetta.Annotation) for annot in annots]):
+    if len(annots) < 1:
+        # catch edge case where nothing was predicted
+        # FIXME: this should have columns that match GenericSeq
+        pd.DataFrame.from_records([]).to_csv(annot_csv_path)
+    elif all([isinstance(annot, crowsetta.Annotation) for annot in annots]):
         generic_seq = crowsetta.formats.seq.GenericSeq(annots=annots)
         generic_seq.to_file(annot_path=annot_csv_path)
     elif all([isinstance(annot, AnnotationDataFrame) for annot in annots]):

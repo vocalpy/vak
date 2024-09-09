@@ -130,7 +130,6 @@ class FrameClassificationModel(lightning.LightningModule):
             :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
         """
         super().__init__()
-
         self.network = network
         self.loss = loss
         self.optimizer = optimizer
@@ -365,9 +364,15 @@ class FrameClassificationModel(lightning.LightningModule):
             class_preds_str = self.to_labels_eval(class_preds.cpu().numpy())
 
             if self.post_tfm:
-                class_preds_tfm = self.post_tfm(
-                    class_preds.cpu().numpy(),
-                )
+                if target_types == ("multi_frame_labels",):
+                    class_preds_tfm = self.post_tfm(
+                        class_preds.cpu().numpy(),
+                    )
+                elif target_types == ("multi_frame_labels", "boundary_frame_labels"):
+                    class_preds_tfm = self.post_tfm(
+                        class_preds.cpu().numpy(),
+                        boundary_labels=boundary_preds.cpu().numpy(),
+                    )
                 class_preds_tfm_str = self.to_labels_eval(class_preds_tfm)
                 # convert back to tensor so we can compute accuracy
                 class_preds_tfm = torch.from_numpy(class_preds_tfm).to(
@@ -395,8 +400,8 @@ class FrameClassificationModel(lightning.LightningModule):
                     loss = self.loss(
                         class_logits,
                         boundary_logits,
-                        batch["multi_frame_labels"],
-                        batch["boundary_frame_labels"],
+                        target["multi_frame_labels"],
+                        target["boundary_frame_labels"],
                     )
                     if isinstance(loss, torch.Tensor):
                         self.log(
@@ -435,7 +440,7 @@ class FrameClassificationModel(lightning.LightningModule):
                         )
                 else:
                     self.log(
-                        f"val_{metric_name}",
+                        f"val_multi_{metric_name}",
                         metric_callable(
                             class_preds, target["multi_frame_labels"]
                         ),
