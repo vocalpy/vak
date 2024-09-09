@@ -130,8 +130,6 @@ class FrameClassificationModel(lightning.LightningModule):
             :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
         """
         super().__init__()
-        self.automatic_optimization = False  # so we can use learning rate scheduler
-
         self.network = network
         self.loss = loss
         self.optimizer = optimizer
@@ -174,13 +172,8 @@ class FrameClassificationModel(lightning.LightningModule):
         If None was passed in, an instance that was created
         with default arguments will be returned.
         """
-        optimizer = torch.optim.Adam(self.network.parameters(), lr=1e-3)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=4)
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": scheduler
-        }
-    
+        return self.optimizer
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Run a forward pass through this model's network.
 
@@ -215,8 +208,6 @@ class FrameClassificationModel(lightning.LightningModule):
             the loss function, ``self.loss``.
         """
         frames = batch["frames"]
-        opt = self.optimizers()
-        opt.zero_grad()
 
         # we repeat this code in validation step
         # because I'm assuming it's faster than a call to a staticmethod that factors it out
@@ -249,7 +240,6 @@ class FrameClassificationModel(lightning.LightningModule):
             class_logits = self.network(frames)
             loss = self.loss(class_logits, batch[target_types[0]])
             self.log("train_loss", loss, on_step=True)
-            self.manual_backward(loss)
         else:
             multi_logits, boundary_logits = self.network(frames)
             loss = self.loss(
@@ -260,14 +250,10 @@ class FrameClassificationModel(lightning.LightningModule):
             )
             if isinstance(loss, torch.Tensor):
                 self.log("train_loss", loss, on_step=True)
-                self.manual_backward(loss)
             elif isinstance(loss, dict):
                 # this provides a mechanism to values for all terms of a loss function with multiple terms
                 for loss_name, loss_val in loss.items():
                     self.log(f"train_{loss_name}", loss_val, on_step=True)
-                self.manual_backward(loss["loss"])
-
-        opt.step()
 
         return loss
 
@@ -510,19 +496,6 @@ class FrameClassificationModel(lightning.LightningModule):
                         on_step=True,
                         sync_dist=True,
                     )
-
-    def on_validation_end(self):
-        # adding this method is so we can call learning rate scheduler after computing validation metrics
-        scheduler = self.lr_schedulers()
-        if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            if "val_multi_acc" in self.trainer.callback_metrics:
-                # for case where we have multiple accuracies, we have scheduler on multi-class frame accuracy
-                scheduler.step(self.trainer.callback_metrics["val_multi_acc"])
-            else:
-                scheduler.step(self.trainer.callback_metrics["val_acc"])
-            lr = scheduler.get_last_lr()
-            logger = self.logger.experiment
-            logger.add_scalar('learning_rate', lr[-1], global_step=self.trainer.global_step)
 
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
