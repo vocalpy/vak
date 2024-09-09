@@ -247,6 +247,45 @@ def test_to_segments_real_data(
 
 
 @pytest.mark.parametrize(
+        "boundary_labels, boundary_inds_expected",
+        [
+            (
+                np.array([1,0,0,0,1,0,0]),
+                np.array([0,4])
+            ),
+        ]
+)
+def test_boundary_inds_from_boundary_labels(boundary_labels, boundary_inds_expected):
+    boundary_inds = vak.transforms.frame_labels.boundary_inds_from_boundary_labels(
+        boundary_labels
+    )
+    assert np.array_equal(boundary_inds, boundary_inds_expected)
+
+
+@pytest.mark.parametrize(
+        "boundary_labels, expected_exception",
+        [
+            # 3-d array should raise a ValueError, needs to be row or 1-d
+            (
+                np.array([[[1,0,0,0,1,0,0]]]),
+                ValueError
+            ),
+            # column vector should raise a ValueError, needs to be row or 1-d
+            (
+                np.array([[1],[0],[0]]),
+                ValueError
+            )
+
+        ]
+)
+def test_boundary_inds_from_boundary_labels(boundary_labels, expected_exception):
+    with pytest.raises(expected_exception):
+        vak.transforms.frame_labels.functional.segment_inds_list_from_boundary_labels(
+            boundary_labels
+        )
+
+
+@pytest.mark.parametrize(
     "frame_labels, seg_inds_list_expected",
     [
         (np.asarray([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0]), [np.array([4, 5, 6, 7])]),
