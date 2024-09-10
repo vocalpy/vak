@@ -1,4 +1,4 @@
-from . import biosoundsegbench
+from . import cmacbench
 from .cmacbench import CMACBench, SplitsMetadata
 from .get import get
 
