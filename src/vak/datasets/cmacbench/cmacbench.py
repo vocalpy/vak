@@ -61,7 +61,7 @@ class CMACBench(torch.utils.data.Dataset):
         return_frames_path: bool = False,
         item_transform: Callable | None = None,
     ):
-        """BioSoundSegBench dataset."""
+        """CMACBench dataset."""
         # ---- validate args, roughly in order
         dataset_path = pathlib.Path(dataset_path)
         if not dataset_path.exists() or not dataset_path.is_dir():
@@ -209,7 +209,7 @@ class CMACBench(torch.utils.data.Dataset):
 
         if item_transform is None:
             if standardize_frames and frames_standardizer is None:
-                from ..transforms import FramesStandardizer
+                from ...transforms import FramesStandardizer
 
                 frames_standardizer = (
                     FramesStandardizer.fit_inputs_targets_csv_path(
