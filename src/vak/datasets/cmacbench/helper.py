@@ -24,7 +24,7 @@ class IndsInSampleVectorPaths:
 @define
 class SplitsMetadata:
     """Class that represents metadata about dataset splits
-    in the BioSoundSegBench dataset, loaded from a json file"""
+    in the CMACBench dataset, loaded from a json file"""
 
     splits_csv_path: pathlib.Path
     sample_id_vector_paths: SampleIDVectorPaths
@@ -85,7 +85,7 @@ class SplitsMetadata:
 class TrainingReplicateMetadata:
     """Class representing metadata for a
     pre-defined training replicate
-    in the BioSoundSegBench dataset.
+    in the CMACBench dataset.
     """
 
     biosound_group: str
