@@ -3,22 +3,16 @@ from __future__ import annotations
 
 import json
 import pathlib
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import Callable, Literal
 
 import numpy as np
 import pandas as pd
 import torch
-import torchvision.transforms
-from attrs import define
 
 from ... import common, datapipes, transforms
 
-from .helper import metadata_from_splits_json_path, SplitsMetadata
+from .metadata import Metadata
 from .transforms import TrainItemTransform, InferItemTransform
-
-
-if TYPE_CHECKING:
-    from ...transforms import FramesStandardizer
 
 
 VALID_TARGET_TYPES = (
@@ -48,7 +42,7 @@ class CMACBench(torch.utils.data.Dataset):
     def __init__(
         self,
         dataset_path: str | pathlib.Path,
-        splits_path: str | pathlib.Path,
+        metadata_json_path: str | pathlib.Path,
         split: Literal["train", "val", "test"],
         window_size: int,
         target_type: str | list[str] | tuple[str] | None = None,
@@ -88,8 +82,8 @@ class CMACBench(torch.utils.data.Dataset):
             # if tmp_splits_path *does* exist, replace splits_path with it
             splits_path = tmp_splits_path
         self.splits_path = splits_path
-        self.splits_metadata = SplitsMetadata.from_paths(
-            json_path=splits_path, dataset_path=dataset_path
+        self.metadata = Metadata.from_paths(
+            json_path=metadata_json_path, dataset_path=dataset_path
         )
 
         if target_type is None and split != "predict":
