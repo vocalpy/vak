@@ -20,9 +20,13 @@ class DatasetConfig:
         Path to the directory that contains the dataset.
         Equivalent to the `root` parameter of :mod:`torchvision`
         datasets.
-    splits_path : pathlib.Path, optional
-        Path to file representing splits.
-        Default is None.
+    metadata_path : pathlib.Path, optional
+        Path to file containing metadata needed 
+        to work with dataset. Default is None.
+        If None, datasets prepared by ``vak`` 
+        use a default ``metadata.json`` file.
+        The built-in dataset :class:`~vak.datasets.CMACBench` 
+        requires the metadata path to be specified.
     name : str, optional
         Name of dataset. Only required for built-in datasets
         from the :mod:`~vak.datasets` module. Default is None.
@@ -34,7 +38,7 @@ class DatasetConfig:
     """
 
     path: pathlib.Path = field(converter=expanded_user_path)
-    splits_path: pathlib.Path | None = field(
+    metadata_path: pathlib.Path | None = field(
         converter=attr.converters.optional(expanded_user_path), default=None
     )
     name: str | None = field(
