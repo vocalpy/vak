@@ -42,7 +42,7 @@ class CMACBench(torch.utils.data.Dataset):
     def __init__(
         self,
         dataset_path: str | pathlib.Path,
-        metadata_json_path: str | pathlib.Path,
+        metadata_path: str | pathlib.Path,
         split: Literal["train", "val", "test"],
         window_size: int,
         target_type: str | list[str] | tuple[str] | None = None,
@@ -69,21 +69,8 @@ class CMACBench(torch.utils.data.Dataset):
                 f"Valid splits are: {common.constants.VALID_SPLITS}"
             )
 
-        splits_path = pathlib.Path(splits_path)
-        if not splits_path.exists():
-            tmp_splits_path = (
-                dataset_path / "splits" / "splits-jsons" / splits_path
-            )
-            if not tmp_splits_path.exists():
-                raise FileNotFoundError(
-                    f"Did not find `splits_path` using either absolute path ({splits_path})"
-                    f"or relative to `dataset_path` ({tmp_splits_path})"
-                )
-            # if tmp_splits_path *does* exist, replace splits_path with it
-            splits_path = tmp_splits_path
-        self.splits_path = splits_path
         self.metadata = Metadata.from_paths(
-            json_path=metadata_json_path, dataset_path=dataset_path
+            json_path=metadata_path, dataset_path=dataset_path
         )
 
         if target_type is None and split != "predict":
@@ -123,42 +110,12 @@ class CMACBench(torch.utils.data.Dataset):
             target_type = (target_type,)
         self.target_type = target_type
 
-        # this is a bit convoluted: we are setting metadata, to set frame dur,
-        # to be able to compute duration in property below
-        self.training_replicate_metadata = metadata_from_splits_json_path(
-            self.splits_path, self.dataset_path
-        )
-        self.frame_dur = (
-            self.training_replicate_metadata.frame_dur * 1e-3
-        )  # convert from ms to s!
+        self.frame_dur = self.metadata.frame_dur
 
         if "multi_frame_labels" in target_type:
-            labelmaps_json_path = self.dataset_path / "labelmaps.json"
-            if not labelmaps_json_path.exists():
-                raise FileNotFoundError(
-                    '`target_type` includes "multi_frame_labels" but '
-                    "'labelmaps.json' was not found in root of dataset path:\n"
-                    f"{labelmaps_json_path}"
-                )
-            with labelmaps_json_path.open("r") as fp:
-                labelmaps = json.load(fp)
-                group = self.training_replicate_metadata.biosound_group
-                unit = self.training_replicate_metadata.unit
-                id_ = self.training_replicate_metadata.id
-            if id_ is not None:
-                if group == "Mouse-Pup-Call":
-                    self.labelmap = labelmaps[group][unit]["all"]
-                else:
-                    self.labelmap = labelmaps[group][unit][id_]
-            else:
-                if group == "Human-Speech":
-                    self.labelmap = labelmaps[group][unit]["all"]
-                else:
-                    raise ValueError(
-                        "Unable to determine labelmap to use for "
-                        f"group '{group}', unit '{unit}', and id '{id}'. "
-                        "Please check that splits_json path is correct."
-                    )
+            labelmap_json_path = self.metadata.labelmap_json_path
+            with labelmap_json_path.open("r") as fp:
+                self.labelmap = json.load(fp)
         elif target_type == ("binary_frame_labels",):
             self.labelmap = {"no segment": 0, "segment": 1}
         elif target_type == ("boundary_frame_labels",):
