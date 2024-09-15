@@ -21,13 +21,13 @@ class IndsInSampleVectorPaths:
     test: pathlib.Path
 
 
-def _get_metadata_item(metadata: dict, key: str, metadata_json_path: pathlib.Path):
+def _get_metadata_item(metadata: dict, key: str, metadata_path: pathlib.Path):
         try:
             value = metadata[key]
         except KeyError as e:
             raise KeyError(
                 f"Metadata not found in `json_path`: {key}.\n"
-                f"`metadata_json_path`: {metadata_json_path}\n"
+                f"`metadata_path`: {metadata_path}\n"
                 f"Contents of `metadata`:\n{metadata}"
             ) from e
         return value
@@ -84,12 +84,12 @@ class Metadata:
     raw: dict
 
     @classmethod
-    def from_paths(cls, metadata_json_path, dataset_path):
+    def from_paths(cls, metadata_path, dataset_path):
         """Classmethod that loads metadata from path to `"metadata.json"` file
         and path to CMACBench dataset root.
         """
-        metadata_json_path = _path_absolute_or_relative_to_dataset_path(metadata_json_path, dataset_path, "metadata_json_path")
-        with metadata_json_path.open("r") as fp:
+        metadata_path = _path_absolute_or_relative_to_dataset_path(metadata_path, dataset_path, "metadata_path")
+        with metadata_path.open("r") as fp:
             metadata = json.load(fp)
 
         dataset_path = pathlib.Path(dataset_path)
@@ -98,10 +98,10 @@ class Metadata:
                 f"`dataset_path` not found or not a directory: {dataset_path}"
             )
 
-        splits_csv_path = _get_metadata_item(metadata, "splits_csv_path", metadata_json_path)
+        splits_csv_path = _get_metadata_item(metadata, "splits_csv_path", metadata_path)
         splits_csv_path = _path_absolute_or_relative_to_dataset_path(splits_csv_path, dataset_path, "splits_csv_path")
 
-        sample_id_vector_paths = _get_metadata_item(metadata, "sample_id_vec_path", metadata_json_path)
+        sample_id_vector_paths = _get_metadata_item(metadata, "sample_id_vec_path", metadata_path)
         sample_id_vector_paths = {
             split: _path_absolute_or_relative_to_dataset_path(
                 path, dataset_path, f"`sample_id_vector_path` for split '{split}'"
@@ -110,7 +110,7 @@ class Metadata:
         }
         sample_id_vector_paths = SampleIDVectorPaths(**sample_id_vector_paths)
 
-        inds_in_sample_vector_paths = _get_metadata_item(metadata, "inds_in_sample_vec_path", metadata_json_path)
+        inds_in_sample_vector_paths = _get_metadata_item(metadata, "inds_in_sample_vec_path", metadata_path)
         inds_in_sample_vector_paths = {
             split: _path_absolute_or_relative_to_dataset_path(
                 path, dataset_path, f"`inds_in_sample_vec_path` for split '{split}'"
@@ -121,10 +121,10 @@ class Metadata:
             **inds_in_sample_vector_paths
         )
 
-        frame_dur = _get_metadata_item(metadata, "frame_dur", metadata_json_path)
+        frame_dur = _get_metadata_item(metadata, "frame_dur", metadata_path)
         frame_dur = float(frame_dur)
 
-        labelmap_json_path = _get_metadata_item(metadata, "labelmap_json_path", metadata_json_path)
+        labelmap_json_path = _get_metadata_item(metadata, "labelmap_json_path", metadata_path)
         labelmap_json_path = _path_absolute_or_relative_to_dataset_path(labelmap_json_path, dataset_path, "labelmap_json_path")
 
         return cls(
