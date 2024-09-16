@@ -69,9 +69,7 @@ class CMACBench(torch.utils.data.Dataset):
                 f"Valid splits are: {common.constants.VALID_SPLITS}"
             )
 
-        self.metadata = Metadata.from_paths(
-            json_path=metadata_path, dataset_path=dataset_path
-        )
+        self.metadata = Metadata.from_paths(metadata_path, dataset_path)
 
         if target_type is None and split != "predict":
             raise ValueError(
@@ -122,7 +120,7 @@ class CMACBench(torch.utils.data.Dataset):
             self.labelmap = {"no boundary": 0, "boundary": 1}
 
         self.split = split
-        split_df = pd.read_csv(self.splits_metadata.splits_csv_path)
+        split_df = pd.read_csv(self.metadata.splits_csv_path)
         split_df = split_df[split_df.split == split].copy()
         self.split_df = split_df
 
@@ -147,10 +145,10 @@ class CMACBench(torch.utils.data.Dataset):
         # we need all these vectors for getting batches of windows during training
         # for other splits, we use these to determine the duration of the dataset
         self.sample_ids = np.load(
-            getattr(self.splits_metadata.sample_id_vector_paths, split)
+            getattr(self.metadata.sample_id_vector_paths, split)
         )
         self.inds_in_sample = np.load(
-            getattr(self.splits_metadata.inds_in_sample_vector_paths, split)
+            getattr(self.metadata.inds_in_sample_vector_paths, split)
         )
         self.window_inds = (
             datapipes.frame_classification.train_datapipe.get_window_inds(
@@ -164,7 +162,7 @@ class CMACBench(torch.utils.data.Dataset):
 
                 frames_standardizer = (
                     FramesStandardizer.fit_inputs_targets_csv_path(
-                        self.splits_metadata.splits_csv_path, self.dataset_path
+                        self.metadata.splits_csv_path, self.dataset_path
                     )
                 )
             if split == "train":
