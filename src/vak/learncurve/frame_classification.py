@@ -149,11 +149,12 @@ def learning_curve_for_frame_classification_model(
     dataset_df = dataset_df[
         (dataset_df.train_dur.notna()) & (dataset_df.replicate_num.notna())
     ]
-    train_durs = sorted(dataset_df["train_dur"].unique())
-    replicate_nums = [
-        int(replicate_num)
-        for replicate_num in sorted(dataset_df["replicate_num"].unique())
-    ]
+    train_durs = sorted(
+        [int(train_dur) for train_dur in dataset_df["train_dur"].unique()]
+    )
+    replicate_nums = sorted(
+        [int(replicate_num) for replicate_num in dataset_df["replicate_num"].unique()]
+    )
     to_do = []
     for train_dur in train_durs:
         for replicate_num in replicate_nums:
