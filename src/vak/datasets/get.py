@@ -60,7 +60,7 @@ def get(
         dataset_config["params"]["frames_standardizer"] = frames_standardizer
     dataset = dataset_class(
         dataset_path=dataset_config["path"],
-        splits_path=dataset_config["splits_path"],
+        metadata_path=dataset_config["metadata_path"],
         split=split,
         **dataset_config["params"],
     )
