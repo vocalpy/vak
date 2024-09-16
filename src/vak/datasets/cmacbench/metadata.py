@@ -37,8 +37,8 @@ def _path_absolute_or_relative_to_dataset_path(
         path: str | pathlib.Path, dataset_path: pathlib.Path, path_key: str
 ) -> pathlib.Path:
     path = pathlib.Path(path)
-    dataset_path = pathlib.Path(path)
-    if path.resolve().exists:
+    dataset_path = pathlib.Path(dataset_path)
+    if path.resolve().exists():
         return path.resolve()
     path_relative_to_dataset = dataset_path / path
     if not path_relative_to_dataset.exists():
@@ -88,6 +88,7 @@ class Metadata:
         """Classmethod that loads metadata from path to `"metadata.json"` file
         and path to CMACBench dataset root.
         """
+
         metadata_path = _path_absolute_or_relative_to_dataset_path(metadata_path, dataset_path, "metadata_path")
         with metadata_path.open("r") as fp:
             metadata = json.load(fp)
