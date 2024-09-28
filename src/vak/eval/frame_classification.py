@@ -146,7 +146,7 @@ def eval_frame_classification_model(
         logger.info(
             f"Duration of a frame in dataset, in seconds: {frame_dur}",
         )
-        val_dataset = InferDatapipe.from_dataset_path(
+        test_dataset = InferDatapipe.from_dataset_path(
             dataset_path=dataset_path,
             split=split,
             window_size=dataset_config["params"]["window_size"],
@@ -160,18 +160,18 @@ def eval_frame_classification_model(
         # we're unpacking it here just as we do above with a prep'd dataset
         dataset_path = pathlib.Path(dataset_config["path"])
         dataset_config["params"]["return_padding_mask"] = True
-        val_dataset = datasets.get(
+        test_dataset = datasets.get(
             dataset_config,
             split=split,
             frames_standardizer=frames_standardizer,
         )
-        frame_dur = val_dataset.frame_dur
+        frame_dur = test_dataset.frame_dur
         logger.info(
             f"Duration of a frame in dataset, in seconds: {frame_dur}",
         )
 
-    val_loader = torch.utils.data.DataLoader(
-        dataset=val_dataset,
+    test_loader = torch.utils.data.DataLoader(
+        dataset=test_dataset,
         shuffle=False,
         # batch size 1 because each spectrogram reshaped into a batch of windows
         batch_size=1,
@@ -179,7 +179,7 @@ def eval_frame_classification_model(
     )
 
     # ---------------- do the actual evaluating ------------------------------------------------------------------------
-    input_shape = val_dataset.shape
+    input_shape = test_dataset.shape
     # if dataset returns spectrogram reshaped into windows,
     # throw out the window dimension; just want to tell network (channels, height, width) shape
     if len(input_shape) == 4:
@@ -224,9 +224,9 @@ def eval_frame_classification_model(
         devices=trainer_config["devices"],
         logger=trainer_logger,
     )
-    # TODO: check for hasattr(model, test_step) and if so run test
+
     # below, [0] because validate returns list of dicts, length of no. of val loaders
-    metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
+    metric_vals = trainer.test(model, dataloaders=test_loader)[0]
     metric_vals = {f"avg_{k}": v for k, v in metric_vals.items()}
     for metric_name, metric_val in metric_vals.items():
         if metric_name.startswith("avg_"):
@@ -255,7 +255,18 @@ def eval_frame_classification_model(
     # throw away index below when saving to avoid extra column
     eval_df = pd.DataFrame(row, index=[0])
     eval_csv_path = output_dir.joinpath(f"eval_{model_name}_{timenow}.csv")
-    logger.info(f"saving csv with evaluation metrics at: {eval_csv_path}")
+    logger.info(f"saving csv with aggregated evaluation metrics at: {eval_csv_path}")
     eval_df.to_csv(
         eval_csv_path, index=False
     )  # index is False to avoid having "Unnamed: 0" column when loading
+
+    # now save the `split_df` with per-sample / per-item metrics added
+    # this allows for more fine-grained analysis
+    eval_split_df_with_metrics = pd.concat(
+        (test_dataset.split_df, model.test_metrics_df), axis=1
+    )
+    eval_split_with_metrics_csv_path = output_dir / f"eval-split-with-metrics-{model_name}_{timenow}.csv"
+    logger.info(f"saving csv with per-sample evaluation metrics at: {eval_csv_path}")
+    eval_split_df_with_metrics.to_csv(
+        eval_split_with_metrics_csv_path, index=False
+    )
