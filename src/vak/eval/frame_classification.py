@@ -7,6 +7,7 @@ import logging
 import pathlib
 from collections import OrderedDict
 from datetime import datetime
+import warnings
 
 import joblib
 import lightning
@@ -185,9 +186,18 @@ def eval_frame_classification_model(
         input_shape = input_shape[1:]
 
     if post_tfm_kwargs:
+        if constants.DEFAULT_BACKGROUND_LABEL in labelmap:
+            background_label = labelmap[constants.DEFAULT_BACKGROUND_LABEL]
+        else:
+            warnings.warn(
+                "Did not find `constants.DEFAULT_BACKGROUND_LABEL` in `labelmap`, defaulting to background class integer of 0.\n"
+                f"`constants.DEFAULT_BACKGROUND_LABEL`={constants.DEFAULT_BACKGROUND_LABEL}\n"
+                f"`labelmap`={labelmap}"
+            )
+            background_label = 0
         post_tfm = transforms.frame_labels.PostProcess(
             timebin_dur=frame_dur,
-            background_label=labelmap[constants.DEFAULT_BACKGROUND_LABEL],
+            background_label=background_label,
             **post_tfm_kwargs,
         )
     else:
