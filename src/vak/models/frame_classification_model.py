@@ -6,6 +6,7 @@ a window from a spectrogram."""
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from typing import Callable, Mapping
 
 import lightning
@@ -496,6 +497,285 @@ class FrameClassificationModel(lightning.LightningModule):
                         on_step=True,
                         sync_dist=True,
                     )
+
+    def test_step(self, batch: tuple, batch_idx: int):
+        """Perform one validation step.
+
+        Method required by ``lightning.pytorch.LightningModule``.
+        Logs metrics using ``self.log``
+
+        Parameters
+        ----------
+        batch : tuple
+            A batch from a dataloader.
+        batch_idx : int
+            The index of this batch in the dataloader.
+
+        Returns
+        -------
+        None
+        """
+        frames = batch["frames"]
+        # remove "batch" dimension added by collate_fn to frames
+        # TODO: fix this weirdness. Diff't collate_fn?
+        if frames.ndim in (5, 4):
+            if frames.shape[0] == 1:
+                frames = torch.squeeze(frames, dim=0)
+        else:
+            raise ValueError(f"invalid shape for frames: {frames.shape}")
+
+        # we repeat this code in training step
+        # because I'm assuming it's faster than a call to a staticmethod that factors it out
+        if (  # multi-class frame classificaton
+            "multi_frame_labels" in batch
+            and "binary_frame_labels" not in batch
+            and "boundary_frame_labels" not in batch
+        ):
+            target_types = ("multi_frame_labels",)
+        elif (  # binary frame classification
+            "binary_frame_labels" in batch
+            and "multi_frame_labels" not in batch
+            and "boundary_frame_labels" not in batch
+        ):
+            target_types = ("binary_frame_labels",)
+        elif (  # boundary "detection" -- i.e. different kind of binary frame classification
+            "boundary_frame_labels" in batch
+            and "multi_frame_labels" not in batch
+            and "binary_frame_labels" not in batch
+        ):
+            target_types = ("boundary_frame_labels",)
+        elif (  # multi-class frame classification *and* boundary detection
+            "multi_frame_labels" in batch
+            and "boundary_frame_labels" in batch
+            and "binary_frame_labels" not in batch
+        ):
+            target_types = ("multi_frame_labels", "boundary_frame_labels")
+
+        if len(target_types) == 1:
+            class_logits = self.network(frames)
+            boundary_logits = None
+        else:
+            class_logits, boundary_logits = self.network(frames)
+
+        # permute and flatten out
+        # so that it has shape (1, number classes, number of time bins)
+        # ** NOTICE ** just calling out.reshape(1, out.shape(1), -1) does not work, it will change the data
+        class_logits = class_logits.permute(1, 0, 2)
+        class_logits = torch.flatten(class_logits, start_dim=1)
+        class_logits = torch.unsqueeze(class_logits, dim=0)
+        # reduce to predictions, assuming class dimension is 1
+        class_preds = torch.argmax(
+            class_logits, dim=1
+        )  # y_pred has dims (batch size 1, predicted label per time bin)
+
+        if boundary_logits is not None:
+            boundary_logits = boundary_logits.permute(1, 0, 2)
+            boundary_logits = torch.flatten(boundary_logits, start_dim=1)
+            boundary_logits = torch.unsqueeze(boundary_logits, dim=0)
+            # reduce to predictions, assuming class dimension is 1
+            boundary_preds = torch.argmax(
+                boundary_logits, dim=1
+            )  # y_pred has dims (batch size 1, predicted label per time bin)
+
+        if "padding_mask" in batch:
+            padding_mask = batch[
+                "padding_mask"
+            ]  # boolean: 1 where valid, 0 where padding
+            # remove "batch" dimension added by collate_fn
+            # because this extra dimension just makes it confusing to use the mask as indices
+            if padding_mask.ndim == 2:
+                if padding_mask.shape[0] == 1:
+                    padding_mask = torch.squeeze(padding_mask, dim=0)
+            else:
+                raise ValueError(
+                    f"invalid shape for padding mask: {padding_mask.shape}"
+                )
+
+            class_logits = class_logits[:, :, padding_mask]
+            class_preds = class_preds[:, padding_mask]
+
+            if boundary_logits is not None:
+                boundary_logits = boundary_logits[:, :, padding_mask]
+                boundary_preds = boundary_preds[:, padding_mask]
+
+        if "multi_frame_labels" in target_types:
+            multi_frame_labels_str = self.to_labels_eval(
+                batch["multi_frame_labels"].cpu().numpy()
+            )
+            class_preds_str = self.to_labels_eval(class_preds.cpu().numpy())
+
+            if self.post_tfm:
+                if target_types == ("multi_frame_labels",):
+                    class_preds_tfm = self.post_tfm(
+                        class_preds.cpu().numpy(),
+                    )
+                elif target_types == ("multi_frame_labels", "boundary_frame_labels"):
+                    class_preds_tfm = self.post_tfm(
+                        class_preds.cpu().numpy(),
+                        boundary_labels=boundary_preds.cpu().numpy(),
+                    )
+                class_preds_tfm_str = self.to_labels_eval(class_preds_tfm)
+                # convert back to tensor so we can compute accuracy
+                class_preds_tfm = torch.from_numpy(class_preds_tfm).to(
+                    self.device
+                )
+
+        if len(target_types) == 1:
+            target = batch[target_types[0]]
+        else:
+            target = {
+                target_type: batch[target_type] for target_type in target_types
+            }
+
+        # we append these 'records' to self.test_metric_records, a list,
+        # and then use that to build a dataframe of per-item metrics 
+        # inside `self.on_test_epoch_end`
+        test_metric_record = {}
+        for metric_name, metric_callable in self.metrics.items():
+            if metric_name == "loss":
+                if len(target_types) == 1:
+                    loss = metric_callable(class_logits, target)
+                    self.log(
+                        f"val_{metric_name}",
+                        loss,
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+                    # so we can build a pandas.DataFrame we convert the tensor to scalar float vlaue
+                    test_metric_record[f"val_{metric_name}"] = loss.item()
+                else:
+                    loss = self.loss(
+                        class_logits,
+                        boundary_logits,
+                        target["multi_frame_labels"],
+                        target["boundary_frame_labels"],
+                    )
+                    if isinstance(loss, torch.Tensor):
+                        self.log(
+                            f"val_{metric_name}",
+                            loss,
+                            batch_size=1,
+                            on_step=True,
+                            sync_dist=True,
+                        )
+                        test_metric_record[f"val_{metric_name}"] = loss.item()
+                    elif isinstance(loss, dict):
+                        # this provides a mechanism to values for all terms of a loss function with multiple terms
+                        for loss_name, loss_val in loss.items():
+                            self.log(
+                                f"val_{loss_name}",
+                                loss_val,
+                                batch_size=1,
+                                on_step=True,
+                                sync_dist=True,
+                            )
+                            test_metric_record[f"val_{loss_name}"] = loss_val.item()
+            elif metric_name == "acc":
+                if len(target_types) == 1:
+                    acc = metric_callable(class_preds, target)
+                    self.log(
+                        f"val_{metric_name}",
+                        acc,
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+                    test_metric_record[f"val_{metric_name}"] = acc
+                    if self.post_tfm and "multi_frame_labels" in target_types:
+                        acc_tfm = metric_callable(class_preds_tfm, target)
+                        self.log(
+                            f"val_{metric_name}_tfm",
+                            acc_tfm,
+                            batch_size=1,
+                            on_step=True,
+                            sync_dist=True,
+                        )
+                        test_metric_record[f"val_{metric_name}_tfm"] = acc_tfm
+                else:
+                    multi_acc = metric_callable(
+                            class_preds, target["multi_frame_labels"]
+                        )
+                    self.log(
+                        f"val_multi_{metric_name}",
+                        multi_acc,
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+                    test_metric_record[f"val_multi_{metric_name}"] = multi_acc
+
+                    boundary_acc = metric_callable(
+                            boundary_preds, target["boundary_frame_labels"]
+                        )
+                    self.log(
+                        f"val_boundary_{metric_name}",
+                        boundary_acc,
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+                    test_metric_record[f"val_boundary_{metric_name}"] = boundary_acc
+                    if self.post_tfm and "multi_frame_labels" in target_types:
+                        multi_acc_tfm = metric_callable(
+                                class_preds_tfm, target["multi_frame_labels"]
+                            )
+                        self.log(
+                            f"val_multi_{metric_name}_tfm",
+                            multi_acc_tfm,
+                            batch_size=1,
+                            on_step=True,
+                            sync_dist=True,
+                        )
+                        test_metric_record[f"val_multi_{metric_name}_tfm"] = multi_acc_tfm
+            elif (
+                metric_name == "levenshtein"
+                or metric_name == "character_error_rate"
+            ) and "multi_frame_labels" in target_types:
+                # cast as float to ensure we convert lev distance (integer number of edits) to float, 
+                # to squelch warning from lightning
+                edit_dist = float(
+                        metric_callable(
+                            class_preds_str, multi_frame_labels_str
+                        )
+                    )
+                self.log(
+                    f"val_{metric_name}",
+                    edit_dist,
+                    batch_size=1,
+                    on_step=True,
+                    sync_dist=True,
+                )
+                test_metric_record[f"val_{metric_name}"] = edit_dist
+                if self.post_tfm:
+                    edit_dist_tfm = float(
+                            metric_callable(
+                                class_preds_tfm_str, multi_frame_labels_str
+                            )
+                        )
+                    self.log(
+                        f"val_{metric_name}_tfm",
+                        edit_dist_tfm,
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+                    test_metric_record[f"val_{metric_name}_tfm"] = edit_dist_tfm
+        self.test_metrics_records.append(test_metric_record)
+
+    def on_test_epoch_start(self) -> None:
+        # feels cleaner to do this here instead of __init__;
+        # in worst case (unlikely) if we did it in __init__,
+        # someone could call `test` multiple times, and end up making
+        # a bigger and bigger DataFrame til they finally run out of memory.
+        self.test_metrics_records = []
+        self.test_metrics_df = None
+
+    def on_test_epoch_end(self) -> None:
+        import pandas as pd
+        self.test_metrics_df = pd.DataFrame.from_records(
+            self.test_metrics_records
+        )
 
     def predict_step(self, batch: tuple, batch_idx: int):
         """Perform one prediction step.
