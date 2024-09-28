@@ -209,8 +209,8 @@ class CMACBench(torch.utils.data.Dataset):
         """number of batches"""
         if self.split == "train":
             return len(self.window_inds)
-        else:
-            return len(np.unique(self.sample_ids))
+        else:  # for val, test, predict, len is the number of rows in the split df
+            return len(self.split_df)
 
     def _getitem_train(self, idx):
         window_idx = self.window_inds[idx]
