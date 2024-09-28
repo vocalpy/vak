@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import pathlib
+import warnings
 
 import crowsetta
 import joblib
@@ -312,7 +313,9 @@ def predict_with_frame_classification_model(
         spect_format = common.constants.DEFAULT_SPECT_FORMAT
 
     annots = []
-    logger.info("converting predictions to annotations")
+    logger.info(
+        f"Converting {len(pred_dict)} predictions to annotations"
+        )
     for ind, batch in enumerate(progress_bar):
         padding_mask, frames_path = batch["padding_mask"], batch["frames_path"]
         padding_mask = np.squeeze(padding_mask)
@@ -401,6 +404,10 @@ def predict_with_frame_classification_model(
             if labels is None and onsets_s is None and offsets_s is None:
                 # handle the case when all time bins are predicted to be unlabeled
                 # see https://github.com/NickleDave/vak/issues/383
+                warnings.warn(
+                    f"No segments in predicted annotations for audio file: {audio_fname}"
+                    "\nFile will be absent from predicted annotations."
+                )
                 continue
             seq = crowsetta.Sequence.from_keyword(
                 labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
@@ -456,7 +463,11 @@ def predict_with_frame_classification_model(
             )
             if labels is None and onsets_s is None and offsets_s is None:
                 # handle the case when all time bins are predicted to be unlabeled
-                # see https://github.com/NickleDave/vak/issues/383
+                # see https://github.com/NickleDave/vak/issues/393
+                warnings.warn(
+                    f"No segments in predicted annotations for audio file: {audio_fname}"
+                    "\nFile will be absent from predicted annotations."
+                )
                 continue
             seq = crowsetta.Sequence.from_keyword(
                 labels=labels, onsets_s=onsets_s, offsets_s=offsets_s
