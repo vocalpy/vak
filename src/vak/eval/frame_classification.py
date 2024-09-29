@@ -262,9 +262,17 @@ def eval_frame_classification_model(
 
     # now save the `split_df` with per-sample / per-item metrics added
     # this allows for more fine-grained analysis
+    # if for some reason the split csv has an existing "index" column we remove it, to avoid confusion
+    split_df = test_dataset.split_df
+    if "index" in split_df:
+        split_df = split_df.drop(columns="index")
+    # we also reset the (true) index to avoid incorrect results when we `concat` with the metrics DataFrame
+    split_df = split_df.reset_index(drop=True)
+    
     eval_split_df_with_metrics = pd.concat(
         (test_dataset.split_df, model.test_metrics_df), axis=1
     )
+
     eval_split_with_metrics_csv_path = output_dir / f"eval-split-with-metrics-{model_name}_{timenow}.csv"
     logger.info(f"saving csv with per-sample evaluation metrics at: {eval_csv_path}")
     eval_split_df_with_metrics.to_csv(
