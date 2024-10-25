@@ -421,14 +421,17 @@ def train_frame_classification_model(
     ckpt_root.mkdir()
     logger.info(f"training {model_name}")
     max_steps = num_epochs * len(train_loader)
-    if isinstance(dataset_config["params"]["target_type"], list) and all([isinstance(target_type, str) for target_type in dataset_config["params"]["target_type"]]):
-        multiple_targets = True
-    elif isinstance(dataset_config["params"]["target_type"], str):
-        multiple_targets = False
+    if "target_type" in dataset_config["params"]:
+        if isinstance(dataset_config["params"]["target_type"], list) and all([isinstance(target_type, str) for target_type in dataset_config["params"]["target_type"]]):
+            multiple_targets = True
+        elif isinstance(dataset_config["params"]["target_type"], str):
+            multiple_targets = False
+        else:
+            raise ValueError(
+                f'Invalid value for dataset_config["params"]["target_type"]: {dataset_config["params"]["target_type"], list}'
+            )
     else:
-        raise ValueError(
-            f'Invalid value for dataset_config["params"]["target_type"]: {dataset_config["params"]["target_type"], list}'
-        )
+        multiple_targets = False
 
     callback_kwargs = dict(
         ckpt_root=ckpt_root,
