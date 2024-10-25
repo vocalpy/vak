@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- Fix bug that caused `vak train` to throw KeyError
+  [#781](https://github.com/vocalpy/vak/pull/781).
+  Fixes [#779](https://github.com/vocalpy/vak/issues/779)
+
 ## 1.0.2
 ### Fixed
 - Make fixes to `FrameClassificationModel` so it works with `BioSoundSegBench` dataset
