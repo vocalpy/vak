@@ -9,7 +9,7 @@
 
 [![DOI](https://zenodo.org/badge/173566541.svg)](https://zenodo.org/badge/latestdoi/173566541)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-27-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-28-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version](https://badge.fury.io/py/vak.svg)](https://badge.fury.io/py/vak)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
@@ -226,6 +226,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://danielmuellerkomorowska.com"><img src="https://avatars.githubusercontent.com/u/16190451?v=4?s=100" width="100px;" alt="Daniel Müller-Komorowska"/><br /><sub><b>Daniel Müller-Komorowska</b></sub></a><br /><a href="https://github.com/vocalpy/vak/commits?author=danielmk" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/meriablue"><img src="https://avatars.githubusercontent.com/u/175237938?v=4?s=100" width="100px;" alt="meriablue"/><br /><sub><b>meriablue</b></sub></a><br /><a href="https://github.com/vocalpy/vak/commits?author=meriablue" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/henricombrink"><img src="https://avatars.githubusercontent.com/u/38145248?v=4?s=100" width="100px;" alt="Henri Combrink"/><br /><sub><b>Henri Combrink</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3Ahenricombrink" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/milaXT"><img src="https://avatars.githubusercontent.com/u/105045066?v=4?s=100" width="100px;" alt="milaXT"/><br /><sub><b>milaXT</b></sub></a><br /><a href="https://github.com/vocalpy/vak/issues?q=author%3AmilaXT" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
