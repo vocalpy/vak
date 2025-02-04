@@ -1,3 +1,9 @@
+"""Get source files for a dataset, or make them.
+
+Gets either audio or spectrogram files from ``data dir``,
+possibly paired with annotation files."""
+from __future__ import annotations
+
 import logging
 import pathlib
 
