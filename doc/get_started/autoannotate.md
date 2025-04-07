@@ -77,6 +77,13 @@ Before going through this tutorial, you'll need to:
    {download}`gy6or6_eval.toml <../toml/gy6or6_eval.toml>`,
    and {download}`gy6or6_predict.toml <../toml/gy6or6_predict.toml>`
 
+:::{hint}
+The config files in this tutorial have options that make the tutorial run fast, so you can quickly learn the steps to using vak; they will not necessarily give you the best performing models. 
+Click the following link to download a train config file with additional options that will improve performance. See comments in the file for more information.
+
+{download}`gy6or6_train.toml <../toml/gy6or6_train_good.toml>`
+:::
+
 ## Overview
 
 There are five steps to using `vak` to automate annotating vocalizations
