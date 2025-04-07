@@ -28,9 +28,20 @@ fft_size = 512
 # step_size: size of step to take when computing spectra with FFT for spectrogram
 # also known as hop size
 step_size = 64
+# qualitatively, we find that log transforming the spectrograms improves performance;
+# think of this as increasing the contrast between high power and low power regions
 transform_type = "log_spect"
+# specifying cutoff frequencies of the spectrogram can (1) make the model more 
+# computationally efficient and (2) improve performance by only fitting the model 
+# to parts of the spectrum that are relevant for sounds of interest.
+# Note these cutoffs are applied by computing the whole spectrogram first 
+# and then throwing away frequencies above and below the cutoffs;
+# we do not apply a bandpass filter to the audio.
 freq_cutoffs = [500, 8000]
-# if for some reason you observe significant model size reduction after applying the frequency cutoffs, consider increasing the RNN's hidden state size (hidden_size parameters)
+# Note that for the TweetyNet model, the default is to set the hidden_size of the RNN
+# equal to the input_size, so if you reduce the size of the spectrogram, this will reduce the
+# hidden size of the RNN. If you observe impaired performance of TweetyNet after applying the frequency cutoffs, 
+# consider manually specifying a larger hidden (see `[vak.train.model.TweetyNet]` table below).
 
 # TRAIN: options for training model
 [vak.train]
@@ -62,8 +73,10 @@ num_workers = 4
 # dataset.params = parameters used for datasets
 # for a frame classification model, we use dataset classes with a specific `window_size`
 [vak.train.dataset.params]
-# bigger windows work better. 
+# Bigger windows work better. 
 # For frame classification models, prefer smaller batch sizes with bigger windows
+# Intuitively, bigger windows give the model more "contexts" for each frame per batch.
+# See https://github.com/vocalpy/Nicholson-Cohen-SfN-2023-poster for more detail
 window_size = 2000
 
 # To indicate the model to train, we use a "dotted key" with `model` followed by the string name of the model.
