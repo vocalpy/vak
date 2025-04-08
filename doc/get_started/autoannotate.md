@@ -83,14 +83,15 @@ so you can quickly get acquainted with the steps to using vak;
 these options will not necessarily give you the best performing models. 
 Click the following link to download a config file for training models 
 that modifies and adds options to improve performance. 
+
+{download}`gy6or6_train_better.toml <../toml/gy6or6_train_better.toml>`
+
 The main change is the increase in window size.
 For more detail on increasing window size, 
 see this project:  
 <https://github.com/vocalpy/Nicholson-Cohen-SfN-2023-poster>.
 For more information on other options that are added or changed, 
 please see the comments in the file.
-
-{download}`gy6or6_train_better.toml <../toml/gy6or6_train_better.toml>`
 :::
 
 ## Overview
