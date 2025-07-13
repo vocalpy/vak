@@ -23,24 +23,24 @@ requires-python = ">=3.11"
 readme = "README.md"
 license = {file = "LICENSE"}
 dependencies = [
-    "attrs >=23.1.0",
+    "attrs >=25.3.0",
     "crowsetta >=5.1.1",
-    "dask[dataframe] >=2024.5.0",
+    "dask[dataframe] >=2025.5.1",
     "evfuncs >=0.3.4",
-    "joblib >=1.4.2",
+    "joblib >=1.5.1",
     "lightning >=2.2.4",
-    "matplotlib >=3.7.1",
-    "numpy >=1.26.0, <2.0",
-    "pynndescent >=0.5.12",
+    "matplotlib >=3.9.0",
+    "numpy >=1.26.0",
+    "pynndescent >=0.5.13",
     "scipy >=1.12.0",
-    "SoundFile >=0.12.1",
+    "SoundFile >=0.13.1",
     "pandas >=2.1.0",
     "tensorboard >=2.8.0",
     "tomlkit >=0.12.4",
-    "torch >= 2.3.0",
-    "torchvision >=0.18.0",
-    "tqdm >=4.66.4",
-    "umap-learn >=0.5.6",
+    "torch >= 2.7.0",
+    "torchvision >=0.22.1",
+    "tqdm >=4.67.1",
+    "umap-learn >=0.5.9",
 ]
 
 [project.optional-dependencies]
