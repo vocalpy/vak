@@ -99,29 +99,6 @@ To install `vak` with `pip`, run:
 pip install vak
 ```
 
-(install-tweetynet)=
-
-## Installing a neural network model
-
-Finally you'll want to install a neural network model to train!
-`vak` was developed to benchmark a neural network model,
-[TweetyNet](https://github.com/yardencsGitHub/tweetynet).
-We use this model in the tutorial: {ref}`autoannotate`.
-
-### With `conda`
-
-```shell
-conda install tweetynet -c conda-forge
-```
-
-### With `pip`
-
-(You can use `pip` inside a `conda` environment.)
-
-```shell
-pip install tweetynet
-```
-
 ## Getting help
 
 If you need help or have questions about installation, 
