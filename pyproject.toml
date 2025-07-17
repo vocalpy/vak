@@ -24,7 +24,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 dependencies = [
     "attrs >=25.3.0",
-    "crowsetta >=5.1.1",
+    "crowsetta >=5.1.2",
     "dask[dataframe] >=2025.5.1",
     "evfuncs >=0.3.4",
     "joblib >=1.5.1",
