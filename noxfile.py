@@ -63,7 +63,7 @@ def dev(session: nox.Session) -> None:
     session.run(python, "-m", "pip", "install", "-e", ".[dev,test,doc]", external=True)
 
 
-@nox.session(python=TEST_PYTHONS[1]))
+@nox.session(python=TEST_PYTHONS[1])
 def lint(session):
     """
     Run the linter.
