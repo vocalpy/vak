@@ -23,5 +23,7 @@ jobs:
           nox -s test-data-download-source
           nox -s test-data-download-generated-ci
           nox -s coverage --verbose
-      - name: upload code coverage
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
