@@ -101,7 +101,7 @@ def get_umap_graph(
 
     # get nearest neighbors
     nnd = NNDescent(
-        X.reshape((len(X), np.product(np.shape(X)[1:]))),
+        X.reshape((len(X), np.prod(np.shape(X)[1:]))),
         n_neighbors=n_neighbors,
         metric=metric,
         n_trees=n_trees,
