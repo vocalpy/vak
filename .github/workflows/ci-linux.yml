@@ -19,7 +19,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: excitedleigh/setup-nox@v2.1.0
+      - uses: wntrblm/nox@2024.04.15
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: run tests
         run: |
           nox -s test-data-download-source
