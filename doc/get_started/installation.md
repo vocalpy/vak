@@ -47,7 +47,7 @@ To create a new virtual environment that contains `vak`
 and all the libraries it depends on, open your terminal and run:
 
 ```shell
-conda create --name vak-env python=3.9 vak -c pytorch -c conda-forge
+conda create --name vak-env python=3.12 vak -c pytorch -c conda-forge
 ```
 
 Notice that we specify the Python version and the `vak` version.
@@ -82,9 +82,9 @@ according to the instructions on [pytorch.org](https://pytorch.org/),
 before installing `vak`. For example:  
 
 ```console
-C:\You> conda create -n vak-env python==3.9
+C:\You> conda create -n vak-env python=3.12
 C:\You> conda activate vak-env
-(vak-env) C:\You> pip install torch===1.10.2 torchvision===0.11.3 -f https://download.pytorch.org/whl/torch_stable.html
+(vak-env) C:\You> pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 (vak-env) C:\You> pip install vak
 (vak-env) C:\You> pip install tweetynet
 ```
@@ -97,29 +97,6 @@ To install `vak` with `pip`, run:
 
 ```shell
 pip install vak
-```
-
-(install-tweetynet)=
-
-## Installing a neural network model
-
-Finally you'll want to install a neural network model to train!
-`vak` was developed to benchmark a neural network model,
-[TweetyNet](https://github.com/yardencsGitHub/tweetynet).
-We use this model in the tutorial: {ref}`autoannotate`.
-
-### With `conda`
-
-```shell
-conda install tweetynet -c conda-forge
-```
-
-### With `pip`
-
-(You can use `pip` inside a `conda` environment.)
-
-```shell
-pip install tweetynet
 ```
 
 ## Getting help

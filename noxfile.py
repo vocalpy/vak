@@ -32,7 +32,14 @@ def build(session: nox.Session) -> None:
     session.run("flit", "build")
 
 
-@nox.session(python="3.10.7")
+TEST_PYTHONS = [
+    "3.11",
+    "3.12",
+    "3.13",
+]
+
+
+@nox.session(python=TEST_PYTHONS[1])
 def dev(session: nox.Session) -> None:
     """
     Sets up a python development environment for the project.
@@ -56,7 +63,7 @@ def dev(session: nox.Session) -> None:
     session.run(python, "-m", "pip", "install", "-e", ".[dev,test,doc]", external=True)
 
 
-@nox.session(python="3.10")
+@nox.session(python=TEST_PYTHONS[1])
 def lint(session):
     """
     Run the linter.
@@ -66,13 +73,6 @@ def lint(session):
     session.run("isort", "./src")
     session.run("black", "./src", "--line-length=79")
     session.run("flake8", "./src", "--max-line-length", "120")
-
-
-TEST_PYTHONS = [
-    "3.10",
-    "3.11",
-    "3.12",
-]
 
 
 @nox.session(python=TEST_PYTHONS)
