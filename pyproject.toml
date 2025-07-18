@@ -38,7 +38,7 @@ dependencies = [
     "tensorboard >=2.8.0",
     "tomlkit >=0.12.4",
     "torch >= 2.7.0",
-    "torchvision >=0.22.1",
+    "torchvision >=0.22.0",
     "tqdm >=4.67.1",
     "umap-learn >=0.5.9",
 ]
