@@ -449,6 +449,21 @@ def train_frame_classification_model(
         val_step=val_step,
         callback_kwargs=callback_kwargs,
     )
+    from lightning.pytorch.callbacks import ModelCheckpoint
+
+    # Force unconditional checkpointing every 500 steps
+    unconditional_ckpt = ModelCheckpoint(
+        dirpath=ckpt_root,
+        every_n_train_steps=500,  # matches your config
+        save_top_k=-1,            # don't limit to "best" ckpt
+        save_last=True,           # also save the last one at end
+        save_on_train_epoch_end=False,
+        filename="step-{step}",
+    )
+
+    trainer.callbacks.append(unconditional_ckpt)
+    logger.info("Appended unconditional ModelCheckpoint callback.")
+
     train_time_start = datetime.datetime.now()
     logger.info(f"Training start time: {train_time_start.isoformat()}")
     trainer.fit(
