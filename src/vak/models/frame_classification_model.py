@@ -130,6 +130,11 @@ class FrameClassificationModel(lightning.LightningModule):
             :const:`vak.common.constants.DEFAULT_BACKGROUND_LABEL`.
         """
         super().__init__()
+
+        if isinstance(optimizer, dict):
+           optimizer = {k: v for k, v in optimizer.items() if k != "name"}
+           optimizer = torch.optim.Adam(self.parameters(), **optimizer)
+
         self.network = network
         self.loss = loss
         self.optimizer = optimizer
