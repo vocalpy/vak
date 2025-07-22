@@ -113,7 +113,7 @@ class FramesStandardizer:
         else:
             df = df[df.split == split].copy()
         frames_paths = df[frames_path_col_name].values
-        frames = np.load(dataset_path / frames_paths[0])[frames_key]
+        frames = np.load(dataset_path / frames_paths[0], allow_pickle=True)[frames_key]
 
         # in spectrograms files, spectrograms are in orientation (freq bins, time bins)
         # so we take mean and std across columns, i.e. time bins, i.e. axis 1
