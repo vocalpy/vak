@@ -474,6 +474,7 @@ def train_frame_classification_model(
         model=model,
         train_dataloaders=train_loader,
         val_dataloaders=val_loader,
+        ckpt_path=str(checkpoint_path) if checkpoint_path is not None else None,
     )
     train_time_stop = datetime.datetime.now()
     logger.info(f"Training stop time: {train_time_stop.isoformat()}")
