@@ -416,9 +416,9 @@ def train_frame_classification_model(
         model.load_state_dict_from_path(checkpoint_path)
 
     results_model_root = results_path.joinpath(model_name)
-    results_model_root.mkdir()
+    results_model_root.mkdir(exist_ok=True)
     ckpt_root = results_model_root.joinpath("checkpoints")
-    ckpt_root.mkdir()
+    ckpt_root.mkdir(exist_ok=True)
     logger.info(f"training {model_name}")
     max_steps = num_epochs * len(train_loader)
     if "target_type" in dataset_config["params"]:
