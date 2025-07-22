@@ -12,6 +12,7 @@ import lightning
 import joblib
 import pandas as pd
 import torch.utils.data
+import torch
 
 from .. import datapipes, datasets, models, transforms
 from ..common import validators
@@ -466,6 +467,9 @@ def train_frame_classification_model(
 
     train_time_start = datetime.datetime.now()
     logger.info(f"Training start time: {train_time_start.isoformat()}")
+    print(f"[VAK DEBUG] len(train_loader): {len(train_loader)}"),
+    print(f"[VAK DEBUG] len(train_dataset): {len(train_dataset)}"),
+    torch.set_float32_matmul_precision("high")
     trainer.fit(
         model=model,
         train_dataloaders=train_loader,
