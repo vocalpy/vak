@@ -161,11 +161,15 @@ def get_or_make_source_files(
             )
 
     elif input_type == "audio":
-        source_files_df = prep_audio_dataset(
-            audio_format,
-            data_dir,
-            annot_format,
-            labelset,
+        source_files_df = prep_spectrogram_dataset(
+            data_dir=data_dir,
+            audio_format=audio_format,
+            annot_format=annot_format,
+            labelset=set(labelset),
+            spect_format=spect_format,
+            spect_params=spect_params,
+            spect_output_dir=spect_output_dir,
+            audio_dask_bag_kwargs=audio_dask_bag_kwargs
         )
         if source_files_df.empty:
             raise ValueError(
