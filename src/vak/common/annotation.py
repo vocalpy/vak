@@ -383,9 +383,9 @@ def _map_using_notated_path(
             annotated_file
         )
         try:
-            annot = audio_filename_annot_map[
-                audio_filename_from_annotated_file
-            ]
+            match_key = annotated_file.stem
+            annot = annotated_filename_annot_map[match_key]
+            
         except KeyError as e:
             raise MapUsingNotatedPathError(
                 "Could not map an annotation to an annotated file path "
@@ -424,48 +424,6 @@ def _map_using_ext(
     method: str,
     annotated_ext: str | None = None,
 ) -> dict:
-    """Map a list of annotated files to a :class:`list` of
-    :class:`crowsetta.Annotation` instances,
-    by either removing the extension of the annotation format,
-    or replacing it with the extension of the annotated file format.
-
-    This function assumes a one-to-one mapping between
-    annotation files and the files they annotate.
-
-    and that the name of the annotated file is
-    the name of the annotation file with its
-    format-specific extension removed,
-    e.g., a file in a csv-based format named 'bird1.wav.csv'
-    annotates a file named `bird1.wav`.
-
-    One of two helper functions used by
-    :func:`~.vak.annotation.map_annotated_to_annot`.
-
-    Parameters
-    ----------
-    annotated_files : list
-        List of paths to the annotated files.
-    annot_list : list
-        List of ``crowsetta.Annotation`` instances.
-    annot_format : str
-        String name of annotation format
-        Valid names are listed in
-        ``vak.constants.VALID_ANNOT_FORMATS``.
-    method: str
-        The "method" used to determine the annotated
-        file name from the annotation file name.
-        One of {'remove', 'replace'}.
-        Corresponds to either removing the extension
-        for the annotation file format, or replacing
-        its extension with the extension of the annotated
-        format.
-
-    Returns
-    -------
-    annotated_annot_map : dict
-        Where each key is path to annotated file, and
-        its value is the corresponding ``crowsetta.Annotation``.
-    """
     if method not in {"remove", "replace"}:
         raise ValueError(
             f"`method` must be one of: {{'remove', 'replace'}}, but was: '{method}'"
@@ -477,188 +435,99 @@ def _map_using_ext(
 
     if method == "replace":
         if annotated_ext is None:
-            annotated_ext_set = set(
-                [annotated_file.suffix for annotated_file in annotated_files]
-            )
+            annotated_ext_set = {annotated_file.suffix for annotated_file in annotated_files}
             if len(annotated_ext_set) > 1:
                 raise ValueError(
                     "Found more than one extension in annotated files, "
-                    "unclear which extension to use when mapping to annotations "
-                    f"with 'replace' method. Extensions found: {annotated_ext_set}"
+                    f"unclear which extension to use. Extensions found: {annotated_ext_set}"
                 )
             annotated_ext = annotated_ext_set.pop()
 
     annot_class = crowsetta.formats.by_name(annot_format)
 
-    # ---- make the dict that maps name of annotated files to crowsetta.Annotations
-    # We do this using names instead of using the full paths so that this function
-    # can be directory agnostic, i.e., we ignore the parent path and just use the filename
-    # to do the matching. Currently `vak` assumes at a higher level that annotation files
-    # and annotated files exist in the same `data_dir` but I am trying to write this
-    # function in a slightly more general way. Not obvious to me if there's a way this could backfire.
-    # For this function we assume 1:1 mapping between annotated and annotation files,
-    # so they probably need to be unique filenames anyway regardless of what dir they are in?
+    # Build dict: stem of annotation file -> Annotation
     annotated_filename_annot_map = {}
     for annot in annot_list:
         annotated_name = None
-        if isinstance(annot_class.ext, str):
-            # NOTE that by convention the `ext` attribute
-            # of all Crowsetta annotation format classes
-            # begins with a period
-            annotated_name = annot.annot_path.name.replace(annot_class.ext, "")
-        elif isinstance(annot_class.ext, tuple):
-            # handle the case where an annotation format can have multiple extensions,
-            # e.g., ``Format.ext == ('.csv', '.txt')``
-            for ext in annot_class.ext:
-                if annot.annot_path.name.endswith(ext):
-                    annotated_name = annot.annot_path.name.replace(ext, "")
-                    break
+        ext_list = [annot_class.ext] if isinstance(annot_class.ext, str) else annot_class.ext
+
+        for ext in ext_list:
+            if annot.annot_path.name.endswith(ext):
+                annotated_name = annot.annot_path.name[: -len(ext)]
+                break
 
         if annotated_name is None:
             raise MapUsingExtensionError(
-                "Could not determine annotated file from annotation path, "
-                f"using extension '{annot_class.ext}' from class '{annot_class.__name__}' "
-                f"associated with format '{annot_format}'. "
-                f"Annotation path was:\n{annot.annot_path}"
+                f"Could not determine annotated file from annotation path: {annot.annot_path}"
             )
 
-        # NOTE we don't have to do anything else for method=='remove'
-        # since we just removed the extension
         if method == "replace":
             annotated_name = annotated_name + annotated_ext
 
-        annotated_filename_annot_map[annotated_name] = annot
+        annotated_filename_annot_map[pathlib.Path(annotated_name).stem] = annot
 
-    annotated_annot_map = {}  # this is what we will return
-    # Make a copy of ``annotated_files`` from which
-    # we remove files after mapping them to annotation,
-    # to validate that function worked,
-    # by making sure there are no items left in this copy after the loop.
-    # If there is 1:1 mapping then there should be no items left.
+    annotated_annot_map = {}
     annotated_files_copy = copy.deepcopy(annotated_files)
+
     for annotated_file in annotated_files:
+        match_key = annotated_file.stem
         try:
-            annot = annotated_filename_annot_map[annotated_file.name]
-            annotated_files_copy.remove(annotated_file)
+            annot = annotated_filename_annot_map[match_key]
         except KeyError as e:
             raise MapUsingExtensionError(
-                f"Did not find an annotation that produced annotated file: {annotated_file}"
+                f"Did not find an annotation for file: {annotated_file}"
             ) from e
         annotated_annot_map[annotated_file] = annot
+        annotated_files_copy.remove(annotated_file)
 
     if len(annotated_files_copy) > 0:
         raise MapUsingExtensionError(
-            "Could not map the following source files to annotations: "
-            f"{annotated_files_copy}"
+            f"Could not map the following files: {annotated_files_copy}"
         )
-    # we return dict[str: annot] since we will always have paths as strings in DataFrame columns
-    # and we want to use those strings to index into this dictionary
+
     return {str(path): annot for path, annot in annotated_annot_map.items()}
 
 
+
 def map_annotated_to_annot(
-    annotated_files: Union[list, np.array],
+    annotated_files: Union[list, np.ndarray],
     annot_list: list[crowsetta.Annotation],
     annot_format: str,
-    annotated_ext: str | None = None,
+    annotated_ext: str | None = ".npz",
 ) -> dict:
-    """Map annotated files,
-    i.e. audio or spectrogram files,
-    to their corresponding annotations.
-
-    This function implements the three different ways that
-    vak can map annotated files to their annotations.
-    The first is when a single annotation file contains
-    multiple annotations, and so the format by necessity
-    must include the file annotated by each annotation.
-    The second assumes that the annotated file can be determined
-    programmatically by removing the extension from the annotation file,
-    e.g. 'bird1.wav.csv' -> 'bird1.wav'.
-    The third assumes that the annotated file can be determined
-    by replacing the extension of the annotation file
-    with the extension of the annotated file,
-    e.g. 'bird1.csv' -> 'bird1.wav'.
-
-    Returns a :class:`dict` where each key
-    is a path to an annotated file,
-    and the value for each key
-    is a :class:`crowsetta.Annotation`.
-
-    Mapping is done with two helper functions,
-    :func:`~vak.annotation._map_using_notated_path` and
-    :func:`~vak.annotation._map_using_ext`.
-
-    The function :func:`~vak.annotation._map_using_notated_path`
-    is used for annotation formats that include
-    the name of the annotated file.
-    The names of these formats (in :module:`crowsetta`) are:
-    {'birdsong-recognition-dataset', 'generic-seq', 'yarden'}.
-
-    The other function is are used for all other formats,
-    and it assumes a one-to-one mapping from annotation file
-    to annotated file.
-    It assumes that the name of the annotated file
-    can be found by removing the extension of the annotation
-    format, e.g., 'bird1.wav.csv` -> 'bird1.wav'.
-    The second, that is used if the first fails,
-    assumes the name of the annotated file
-    can be found by replacing the extension of the annotation
-    format with the extension of the annotated files.
-
-    Parameters
-    ----------
-    annotated_files : list
-        Of paths to audio or spectrogram files.
-    annot_list : list
-        Of Annotations corresponding to files in annotated_files
-    annotated_ext : str
-        Extension of annotated files.
-        Default is None, in which case this function will
-        look for extensions of any valid audio format
-        (listed as ``vak.constants.VALID_AUDIO_FORMAT``).
-        Specifying the format provides a slight speed up.
-
-    Notes
-    -----
-    For more detail, please see
-    the page on file naming conventions in the
-    reference section of the documentation:
-    https://vak.readthedocs.io/en/latest/reference/filenames.html
     """
-    if isinstance(
-        annotated_files, np.ndarray
-    ):  # e.g., vak DataFrame['spect_path'].values
+    Force 1:1 mapping of .txt (annotations) to .npz (spectrograms) using stem-based replacement.
+
+    This skips fallback logic and forces annotation file names to match spectrograms by replacing .txt → .npz.
+    """
+
+    if isinstance(annotated_files, np.ndarray):
         annotated_files = annotated_files.tolist()
 
-    if annot_format in (
-        "birdsong-recognition-dataset",
-        "yarden",
-        "generic-seq",
-    ):
-        annotated_annot_map = _map_using_notated_path(
-            annotated_files, annot_list
-        )
-    else:
+    # Get the format class from crowsetta
+    annot_class = crowsetta.formats.by_name(annot_format)
+
+    # Build filename stem map
+    annotated_filename_annot_map = {}
+    for annot in annot_list:
+        annot_stem = annot.annot_path.stem
+        base_key = f"{annot_stem}.npz"
+        spect_key = f"{annot_stem}.spect.npz"
+        annotated_name = f"{annot_stem}.npz"
+        annotated_filename_annot_map[annotated_name] = annot
+
+    annotated_annot_map = {}
+    for file in annotated_files:
+        filename = pathlib.Path(file).name
         try:
-            annotated_annot_map = _map_using_ext(
-                annotated_files, annot_list, annot_format, method="remove"
+            annot = annotated_filename_annot_map[filename]
+        except KeyError:
+            raise ValueError(
+                f"Could not find annotation for file: {file}\n"
+                f"Looked for key: {filename}\n"
+                f"Available keys: {list(annotated_filename_annot_map.keys())}"
             )
-        except MapUsingExtensionError:
-            try:
-                annotated_annot_map = _map_using_ext(
-                    annotated_files,
-                    annot_list,
-                    annot_format,
-                    method="replace",
-                    annotated_ext=annotated_ext,
-                )
-            except MapUsingExtensionError as e:
-                raise ValueError(
-                    "Could not map annotated files to annotations.\n"
-                    "Please see this section in the `vak` documentation:\n"
-                    "https://vak.readthedocs.io/en/latest/howto/howto_prep_annotate.html"
-                    "#how-does-vak-know-which-annotations-go-with-which-annotated-files"
-                ) from e
+        annotated_annot_map[str(file)] = annot
 
     return annotated_annot_map
 
