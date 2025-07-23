@@ -171,21 +171,14 @@ def prep(
         )
 
     if input_type == "audio" and spect_format is not None:
-        raise ValueError(
-            f"``input_type`` was set to 'audio' but a ``spect_format`` was specified: '{spect_format}'.\n"
-            f"Please only provide a ``spect_format`` argument when the input type to the neural network "
-            f"model is spectrograms."
-        )
+        logger.warning(
+        "input_type='audio' and spect_format is set — assuming user intends to generate spectrograms.")
 
     if audio_format is None and spect_format is None:
         raise ValueError("Must specify either audio_format or spect_format")
 
     if audio_format and spect_format:
-        raise ValueError(
-            "Cannot specify both audio_format and spect_format, "
-            "unclear whether to compute spectrograms from audio files or "
-            "use pre-computed spectrograms from existing array files."
-        )
+        logger.warning("input_type='audio' and both formats set — assuming you want to compute spectrograms from audio files.")
 
     # we have to use an if-else here since args may vary across dataset prep functions
     # but we still define DATASET_TYPE_FUNC_MAP in vak.prep.constants
