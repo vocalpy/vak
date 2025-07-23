@@ -84,6 +84,8 @@ def prep_audio_dataset(
         :const:`vak.prep.audio_dataset.DF_COLUMNS`.
     """
     # pre-conditions ---------------------------------------------------------------------------------------------------
+    print(f"DEBUG -- audio_format param actually received: {audio_format}")
+    print(f"DEBUG -- data_dir param actually received: {data_dir}")
     if audio_format not in constants.VALID_AUDIO_FORMATS:
         raise ValueError(
             f"audio format must be one of '{constants.VALID_AUDIO_FORMATS}'; "
