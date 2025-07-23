@@ -17,51 +17,21 @@ logger = logging.getLogger(__name__)
 def find_audio_fname(
     spect_path: str | pathlib.Path, audio_ext: str | None = None
 ):
-    """finds name of audio file in a path to a spectrogram file,
-    if one is present.
-
-    Checks for any extension that is a valid audio file format
-    and returns path up to and including that extension,
-    i.e. with the spectrogram file extension removed.
+    """Custom patch: directly infer audio filename by replacing .npz with .wav.
 
     Parameters
     ----------
-    spect_path : str, Path
-        path to a spectrogram file
-    audio_ext : str
-        extension associated with an audio file format, used to
-        find audio file name in spect_path.
-        Default is None. If None, search for any valid audio format
-        (as defined by vak.config.constants.VALID_AUDIO_FORMATS)
+    spect_path : str or Path
+        Path to a .npz spectrogram file
 
     Returns
     -------
     audio_fname : str
-        name of audio file found in spect_path
+        Name of audio file inferred from spectrogram filename
     """
-    if audio_ext is None:
-        audio_ext = constants.VALID_AUDIO_FORMATS
-    elif type(audio_ext) is str:
-        audio_ext = [audio_ext]
-    else:
-        raise TypeError(f"invalid type for audio_ext: {type(audio_ext)}")
-
-    # We force spect_path to be a pathlib.Path and only use name attribute
-    # so we don't have to worry about handling whitespace elsewhere in the path
-    spect_fname = pathlib.Path(spect_path).name
-
-    audio_fnames = []
-    for ext in audio_ext:
-        audio_fnames.append(find_fname(spect_fname, ext))
-    # remove Nones
-    audio_fnames = [fname for fname in audio_fnames if fname is not None]
-
-    if len(audio_fnames) == 1:
-        return audio_fnames[0]
-    else:
-        raise ValueError(
-            f"unable to determine filename of audio file from: {spect_path}"
-        )
+    spect_path = pathlib.Path(spect_path)
+    audio_fname = spect_path.with_suffix(".wav").name
+    return audio_fname
 
 
 def load(spect_path: str | pathlib.Path, spect_format: str | None = None):
