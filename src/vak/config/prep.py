@@ -215,7 +215,8 @@ class PrepConfig:
 
     def __attrs_post_init__(self):
         if self.audio_format is not None and self.spect_format is not None:
-            raise ValueError("cannot specify audio_format and spect_format")
+            if self.input_type != "audio":
+                raise ValueError("cannot specify audio_format and spect_format")
 
         if self.audio_format is None and self.spect_format is None:
             raise ValueError(
