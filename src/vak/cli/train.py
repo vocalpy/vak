@@ -31,10 +31,11 @@ def train(toml_path):
         )
 
     # ---- set up directory to save output -----------------------------------------------------------------------------
-    results_path = generate_results_dir_name_as_path(
-        cfg.train.root_results_dir
-    )
-    results_path.mkdir(parents=True)
+    if hasattr(cfg.train, "checkpoint_path") and cfg.train.checkpoint_path:
+       results_path = Path(cfg.train.checkpoint_path).parents[2]
+    else:
+        results_path = generate_results_dir_name_as_path(cfg.train.root_results_dir)
+    results_path.mkdir(parents=True, exist_ok=True)
     # copy config file into results dir now that we've made the dir
     shutil.copy(toml_path, results_path)
 
