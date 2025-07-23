@@ -148,7 +148,7 @@ def make_dataframe_of_spect_files(
     # ---- get a list of spectrogram files + associated annotation files -----------------------------------------------
     if spect_dir:  # then get spect_files from that dir
         # note we already validated format above
-        spect_files = sorted(pathlib.Path(spect_dir).glob(f"*{spect_format}"))
+        spect_files = sorted(pathlib.Path(spect_dir).glob("*.npz"))
 
     if spect_files:  # (or if we just got them from spect_dir)
         if annot_list:
