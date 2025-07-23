@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import json
 import logging
-import pathlib
+from pathlib import Path
 import warnings
 
 import crowsetta.formats.seq
@@ -24,6 +24,28 @@ from .make_splits import make_splits
 from .source_files import get_or_make_source_files
 
 logger = logging.getLogger(__name__)
+def patch_source_file_column_to_npy(df, dataset_root):
+    """
+    Replace `.wav` with `.npy` in the `source_file` column of a DataFrame,
+    ensuring it points to the generated spectrograms, not raw audio.
+    
+    Args:
+        df (pd.DataFrame): DataFrame returned by make_splits or similar.
+        dataset_root (str or Path): Root of the dataset (contains train/val/test folders).
+    
+    Returns:
+        pd.DataFrame: Modified DataFrame with corrected paths.
+    """
+    from pathlib import Path
+    dataset_root = Path(dataset_root)
+
+    def fix_path(row):
+        old_path = Path(row["source_file"])
+        expected_npy = dataset_root / row["split"] / old_path.name.replace(".wav", ".npy")
+        return str(expected_npy)
+
+    df["source_file"] = df.apply(fix_path, axis=1)
+    return df
 
 
 def prep_frame_classification_dataset(
@@ -151,10 +173,7 @@ def prep_frame_classification_dataset(
         )
 
     if input_type == "audio" and spect_format is not None:
-        raise ValueError(
-            f"Input type was 'audio' but a ``spect_format`` was specified: '{spect_format}'. "
-            f"Please specify ``audio_format`` only."
-        )
+        logger.warning("input_type='audio' and spect_format is set — assuming intent to generate spectrograms from audio files.")
 
     if input_type == "audio" and audio_format is None:
         raise ValueError(
@@ -167,11 +186,8 @@ def prep_frame_classification_dataset(
         )
 
     if audio_format and spect_format:
-        raise ValueError(
-            "Cannot specify both ``audio_format`` and ``spect_format``, "
-            "unclear whether to create spectrograms from audio files or "
-            "use already-generated spectrograms from array files"
-        )
+        logger.warning("input_type='audio' and spect_format is set — assuming intent to generate spectrograms from audio files.")
+
 
     if labelset is not None:
         labelset = labelset_to_set(labelset)
@@ -348,6 +364,20 @@ def prep_frame_classification_dataset(
 
     # ---- save csv file that captures provenance of source data -------------------------------------------------------
     logger.info(f"Saving dataset csv file: {dataset_csv_path}")
+    if "source_file" not in dataset_df.columns:
+        # Recreate source_file column based on `audio_file` or `spect_file` if needed
+        if "audio_path" in dataset_df.columns:
+            dataset_df["source_file"] = dataset_df.apply(
+                lambda row: str((Path(dataset_path) / row["split"] / (Path(row["audio_path"]).name + ".npy"))),
+                axis=1)
+        elif "spect_file" in dataset_df.columns:
+            dataset_df["source_file"] = dataset_df.apply(
+                lambda row: str((Path(dataset_path) / row["split"] / (Path(row["spect_file"]).name + ".npy"))),
+                axis=1)
+        else:
+            raise KeyError("Cannot patch source_file column: no audio_path or spect_file column found.")
+
+    dataset_df = patch_source_file_column_to_npy(dataset_df, dataset_path)
     dataset_df.to_csv(
         dataset_csv_path, index=False
     )  # index is False to avoid having "Unnamed: 0" column when loading
