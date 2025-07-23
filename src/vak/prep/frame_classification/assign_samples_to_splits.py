@@ -1,21 +1,21 @@
-"""Assign samples in a dataset to splits.
-
-Given a set of source files represented by a dataframe,
-assign each sample (row) to a split.
-
-Helper function called by :func:`vak.prep.frame_classification.prep_frame_classification_dataset`.
-"""
-
 from __future__ import annotations
 
 import logging
 import pathlib
+import re
+from collections import defaultdict
 
 import pandas as pd
 
 from .. import dataset_df_helper, split
 
 logger = logging.getLogger(__name__)
+
+
+def extract_prefix(filename: str) -> str:
+    """Extracts session prefix from a filename.
+    Adjust regex if needed to suit your naming convention."""
+    return re.sub(r'_S\d+\.wav$', '', filename)
 
 
 def assign_samples_to_splits(
@@ -30,59 +30,38 @@ def assign_samples_to_splits(
     """Assign samples in a dataset to splits.
 
     Given a set of source files represented by a dataframe,
-    assign each sample (row) to a split.
-
-    Helper function called by :func:`vak.prep.frame_classification.prep_frame_classification_dataset`.
+    assign each sample (row) to a split, respecting session-level grouping.
 
     If no durations are specified for splits,
     or the purpose is either `'eval'` or `'predict'`,
-    then all rows in the dataframe
-    will be assigned to ``purpose``.
+    then all rows in the dataframe will be assigned to ``purpose``.
 
     Parameters
     ----------
     purpose : str
-        Purpose of the dataset.
         One of {'train', 'eval', 'predict', 'learncurve'}.
-        These correspond to commands of the vak command-line interface.
-    train_dur : float
-        Total duration of training set, in seconds.
-        When creating a learning curve,
-        training subsets of shorter duration
-        will be drawn from this set. Default is None.
-    val_dur : float
-        Total duration of validation set, in seconds.
-        Default is None.
-    test_dur : float
-        Total duration of test set, in seconds.
-        Default is None.
     dataset_df : pandas.DataFrame
         That represents a dataset.
     dataset_path : pathlib.Path
         Path to csv saved from ``dataset_df``.
-    labelset : str, list, set
-        Set of unique labels for vocalizations. Strings or integers.
-        Default is ``None``. If not ``None``, then files will be skipped
-        where the associated annotation
-        contains labels not found in ``labelset``.
-        ``labelset`` is converted to a Python ``set`` using
-        :func:`vak.converters.labelset_to_set`.
-        See help for that function for details on how to specify ``labelset``.
+    train_dur : float
+        Duration of training set (seconds). Default is None.
+    val_dur : float
+        Duration of validation set (seconds). Default is None.
+    test_dur : float
+        Duration of test set (seconds). Default is None.
+    labelset : set | None
+        Labels to use. If given, will drop samples with other labels.
 
     Returns
     -------
     dataset_df : pandas.DataFrame
-        The same ``dataset_df`` with a `'split'` column added,
-        where each element in that column assigns the corresponding
-        row to one of the splits in the dataset.
+        With a new `'split'` column assigning each sample to a dataset split.
     """
-
-    # ---- (possibly) split into train / val / test sets ---------------------------------------------
-    # catch case where user specified duration for just training set, raise a helpful error instead of failing silently
     if (purpose == "train" or purpose == "learncurve") and (
         (train_dur is not None and train_dur > 0)
         and (val_dur is None or val_dur == 0)
-        and (test_dur is None or val_dur == 0)
+        and (test_dur is None or test_dur == 0)
     ):
         raise ValueError(
             "A duration specified for just training set, but prep function does not currently support creating a "
@@ -91,48 +70,81 @@ def assign_samples_to_splits(
             "zero for test_dur (and val_dur, if a validation set will be used)"
         )
 
-    if all(
-        [dur is None for dur in (train_dur, val_dur, test_dur)]
-    ) or purpose in (
-        "eval",
-        "predict",
-    ):
-        # then we're not going to split
+    if all([dur is None for dur in (train_dur, val_dur, test_dur)]) or purpose in ("eval", "predict"):
         logger.info("Will not split dataset.")
-        do_split = False
-    else:
-        if val_dur is not None and train_dur is None and test_dur is None:
-            raise ValueError(
-                "cannot specify only val_dur, unclear how to split dataset into training and test sets"
-            )
+        split_name = "test" if purpose == "eval" else "predict" if purpose == "predict" else purpose
+        return dataset_df_helper.add_split_col(dataset_df, split=split_name)
+
+    logger.info("Will split dataset.")
+
+    MAX_FILE_DURATION_FOR_ASSESS = 100  # seconds
+    short_df = dataset_df[dataset_df["duration"] <= MAX_FILE_DURATION_FOR_ASSESS].copy()
+    long_df = dataset_df[dataset_df["duration"] > MAX_FILE_DURATION_FOR_ASSESS].copy()
+
+    long_dur = long_df["duration"].sum()
+    remaining_train_dur = max(train_dur - long_dur, 0)
+
+    short_total = short_df["duration"].sum()
+    required_short_dur = remaining_train_dur + (val_dur or 0) + (test_dur or 0)
+
+    if short_total < required_short_dur:
+        raise ValueError(
+            f"Insufficient short files to meet split durations: need {required_short_dur}s, "
+            f"but only {short_total}s available."
+        )
+
+    logger.info("Using session-aware splitting strategy.")
+    short_df = short_df.sample(frac=1, random_state=42).reset_index(drop=True)  # shuffle for fairness
+    short_df["prefix"] = short_df["audio_path"].apply(lambda p: extract_prefix(pathlib.Path(p).name))
+
+    grouped = defaultdict(list)
+    for _, row in short_df.iterrows():
+        grouped[row["prefix"]].append(row)
+
+    train_rows, val_rows, test_rows = [], [], []
+    durs = {"train": remaining_train_dur, "val": val_dur or 0, "test": test_dur or 0}
+
+    for prefix, rows in grouped.items():
+        session_rows = pd.DataFrame(rows)
+        session_rows["split"] = None
+        session_dur = session_rows["duration"].sum()
+
+        if len(session_rows) == 1:
+            target = max(durs, key=lambda k: durs[k])  # assign where we need more
+        elif len(session_rows) == 2:
+            targets = sorted(durs, key=durs.get, reverse=True)[:2]
+            session_rows.iloc[0, session_rows.columns.get_loc("split")] = targets[0]
+            session_rows.iloc[1, session_rows.columns.get_loc("split")] = targets[1]
+            train_rows.append(session_rows[session_rows["split"] == "train"])
+            val_rows.append(session_rows[session_rows["split"] == "val"])
+            test_rows.append(session_rows[session_rows["split"] == "test"])
+            continue
         else:
-            logger.info("Will split dataset.")
-            do_split = True
+            targets = ["train", "val", "test"]
+            for i, target in enumerate(targets):
+                durs[target] -= session_rows.iloc[i]["duration"]
+                session_rows.iloc[i, session_rows.columns.get_loc("split")] = target
+            for i in range(3, len(session_rows)):
+                session_rows.iloc[i, session_rows.columns.get_loc("split")] = "train"
+                durs["train"] -= session_rows.iloc[i]["duration"]
+            train_rows.append(session_rows[session_rows["split"] == "train"])
+            val_rows.append(session_rows[session_rows["split"] == "val"])
+            test_rows.append(session_rows[session_rows["split"] == "test"])
+            continue
 
-    if do_split:
-        dataset_df = split.frame_classification_dataframe(
-            dataset_df,
-            dataset_path,
-            labelset=labelset,
-            train_dur=train_dur,
-            val_dur=val_dur,
-            test_dur=test_dur,
-        )
+        durs[target] -= session_dur
+        session_rows["split"] = target
+        if target == "train":
+            train_rows.append(session_rows)
+        elif target == "val":
+            val_rows.append(session_rows)
+        else:
+            test_rows.append(session_rows)
 
-    elif (
-        do_split is False
-    ):  # add a split column, but assign everything to the same 'split'
-        # ideally we would just say split=purpose in call to add_split_col, but
-        # we have to special case, because "eval" looks for a 'test' split (not an "eval" split)
-        if purpose == "eval":
-            split_name = (
-                "test"  # 'split_name' to avoid name clash with split package
-            )
-        elif purpose == "predict":
-            split_name = "predict"
+    final_df = pd.concat(train_rows + val_rows + test_rows, ignore_index=True)
+    final_df.drop(columns=["prefix"], inplace=True)
 
-        dataset_df = dataset_df_helper.add_split_col(
-            dataset_df, split=split_name
-        )
+    long_df = dataset_df_helper.add_split_col(long_df, split="train")
+    dataset_df = pd.concat([final_df, long_df], axis=0, ignore_index=True)
 
     return dataset_df
