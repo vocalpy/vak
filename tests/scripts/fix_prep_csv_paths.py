@@ -14,12 +14,12 @@ GENERATED_TEST_DATA = PROJ_ROOT / "tests" / "data_for_tests" / "generated"
 
 def main():
     """loads csv files created by `prep` and changes the parent of paths so it's
-    the local file system, instead of what's on my laptop.
+    the local file system, instead of what's on my laptop.`
     To get tests to run on CI without FileNotFound errors"""
     prep_csvs = sorted(GENERATED_TEST_DATA.glob("**/*prep*csv"))
     for prep_csv in prep_csvs:
         vak_df = pd.read_csv(prep_csv)
-        for path_column_name in ("spect_path", "audio_path", "annot_path"):
+        for path_column_name in ("audio_path", "annot_path"):
             paths = vak_df[path_column_name].values.tolist()
             paths = [str(path) for path in paths]
             new_column = []
