@@ -200,7 +200,7 @@ def predict_with_frame_classification_model(
         # we need "target_type" below when converting predictions to annotations,
         # but fail early here if we don't have it
         if "target_type" not in dataset_config["params"]:
-            from ..datasets.biosoundsegbench import VALID_TARGET_TYPES
+            from ..datasets.cmacbench import VALID_TARGET_TYPES
 
             raise ValueError(
                 "The dataset table in the configuration file requires a 'target_type' "

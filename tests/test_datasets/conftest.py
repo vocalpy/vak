@@ -340,7 +340,7 @@ LABELMAPS_JSON = {
 
 
 @pytest.fixture
-def mock_biosoundsegbench_dataset(tmp_path):
+def mock_cmacbench_dataset(tmp_path):
     dataset_path = tmp_path / "BioSoundSegBench"
     dataset_path.mkdir()
     splits_dir = dataset_path / "splits"
