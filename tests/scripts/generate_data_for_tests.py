@@ -145,7 +145,7 @@ def generate_test_data(
             for config_metadata in command_config_metadata:
                 config_path = vaktestdata.constants.GENERATED_TEST_CONFIGS_ROOT / config_metadata.filename
                 logger.info(
-                    f"n\Running 'vak {command}', using config: {config_path.name}"
+                    f"\nRunning 'vak {command}', using config: {config_path.name}"
                 )
                 vak.cli.cli.cli(command, config_path)
 

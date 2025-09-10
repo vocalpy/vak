@@ -182,7 +182,7 @@ def test_data_download_source(session) -> None:
 TEST_DATA_GENERATE_SCRIPT = './tests/scripts/generate_data_for_tests.py'
 
 
-@nox.session(name='test-data-generate', python="3.10")
+@nox.session(name='test-data-generate', python=TEST_PYTHONS[1])
 def test_data_generate(session) -> None:
     """Produced 'generated' test data, by running TEST_DATA_GENERATE_SCRIPT on 'source' test data."""
     session.install(".[test]")
@@ -259,6 +259,9 @@ def test_data_download_generated_all(session) -> None:
         tf.extractall(path='.')
     session.log('Fixing paths in .csv files')
     session.install("pandas")
+    session.run(
+        "python", "./tests/scripts/fix_prep_csv_paths.py"
+    )
 
 
 GENERATED_TEST_DATA_CI_URL = 'https://osf.io/un2zs/download'
@@ -273,3 +276,8 @@ def test_data_download_generated_ci(session) -> None:
     session.log(f'Extracting downloaded tar: {GENERATED_TEST_DATA_CI_TAR}')
     with tarfile.open(GENERATED_TEST_DATA_CI_TAR, "r:gz") as tf:
         tf.extractall(path='.')
+    session.log('Fixing paths in .csv files')
+    session.install("pandas")
+    session.run(
+        "python", "./tests/scripts/fix_prep_csv_paths.py"
+    )

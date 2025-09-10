@@ -5,7 +5,9 @@ import pathlib
 from .config_metadata import ConfigMetadata
 
 HERE = pathlib.Path(__file__).parent
-TEST_DATA_ROOT = HERE / ".." / ".." / "data_for_tests"
+# next line: we `resolve` so we don't end up with a weird path that uses ".." / ".." in the csv files representing data,
+# which makes it hard to "re-root" paths, e.g. by finding "tests/data_for_tests" and replacing the parent path before it
+TEST_DATA_ROOT = (HERE / ".." / ".." / "data_for_tests").resolve()
 CONFIG_METADATA_JSON_PATH = TEST_DATA_ROOT / "configs" / "configs.json"
 with CONFIG_METADATA_JSON_PATH.open('r') as fp:
     CONFIG_METADATA_LIST = json.load(fp)['config_metadata']
