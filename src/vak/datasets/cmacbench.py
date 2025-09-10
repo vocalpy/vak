@@ -1,4 +1,4 @@
-"""Class representing BioSoundSegBench dataset."""
+"""Class representing CMACBench dataset."""
 
 from __future__ import annotations
 
@@ -35,6 +35,9 @@ BOUNDARY_FRAME_LABELS_PATH_COL_NAME = "boundary_frame_labels_path"
 
 @define
 class SampleIDVectorPaths:
+    """Class that represents paths 
+    to npy files containing sample ID vectors.
+    """
     train: pathlib.Path
     val: pathlib.Path
     test: pathlib.Path
@@ -42,6 +45,11 @@ class SampleIDVectorPaths:
 
 @define
 class IndsInSampleVectorPaths:
+    """Class that represents paths 
+    to npy files containing vectors of 
+    indices within each sample/item
+    from the dataset.
+    """
     train: pathlib.Path
     val: pathlib.Path
     test: pathlib.Path
@@ -50,7 +58,7 @@ class IndsInSampleVectorPaths:
 @define
 class SplitsMetadata:
     """Class that represents metadata about dataset splits
-    in the BioSoundSegBench dataset, loaded from a json file"""
+    in the CMACBench dataset, loaded from a json file"""
 
     splits_csv_path: pathlib.Path
     sample_id_vector_paths: SampleIDVectorPaths
@@ -111,7 +119,7 @@ class SplitsMetadata:
 class TrainingReplicateMetadata:
     """Class representing metadata for a
     pre-defined training replicate
-    in the BioSoundSegBench dataset.
+    in the CMACBench dataset.
     """
 
     biosound_group: str
@@ -124,7 +132,7 @@ class TrainingReplicateMetadata:
 
 
 def metadata_from_splits_json_path(
-    splits_json_path: pathlib.Path, datset_path: pathlib.Path
+    splits_json_path: pathlib.Path
 ) -> TrainingReplicateMetadata:
     name = splits_json_path.name
     try:
@@ -184,7 +192,7 @@ def metadata_from_splits_json_path(
 
 class TrainItemTransform:
     """Default transform used when training frame classification models
-    with :class:`BioSoundSegBench` dataset."""
+    with :class:`CMACBench` dataset."""
 
     def __init__(
         self,
@@ -247,7 +255,7 @@ class TrainItemTransform:
 
 class InferItemTransform:
     """Default transform used when running inference on classification models
-    with :class:`BioSoundSegBench` dataset, for evaluation or to generate new predictions.
+    with :class:`CMACBench` dataset, for evaluation or to generate new predictions.
 
     Returned item includes frames reshaped into a stack of windows,
     with padded added to make reshaping possible.
@@ -369,8 +377,11 @@ class InferItemTransform:
         return item
 
 
-class BioSoundSegBench:
-    """Class representing BioSoundSegBench dataset."""
+class CMACBench:
+    """Class representing CMACBench dataset.
+    
+    https://github.com/vocalpy/CMACBench
+    """
 
     def __init__(
         self,
@@ -388,7 +399,7 @@ class BioSoundSegBench:
         return_frames_path: bool = False,
         item_transform: Callable | None = None,
     ):
-        """BioSoundSegBench dataset."""
+        """CMACBench dataset."""
         # ---- validate args, roughly in order
         dataset_path = pathlib.Path(dataset_path)
         if not dataset_path.exists() or not dataset_path.is_dir():

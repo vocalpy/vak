@@ -1,13 +1,13 @@
-from . import biosoundsegbench
-from .biosoundsegbench import BioSoundSegBench, SplitsMetadata
+from . import cmacbench
+from .cmacbench import CMACBench, SplitsMetadata
 from .get import get
 
 __all__ = [
-    "biosoundsegbench",
-    "BioSoundSegBench",
+    "cmacbench",
+    "CMACBench",
     "get",
     "SplitsMetadata",
 ]
 
 # TODO: make this a proper registry
-DATASETS = {"BioSoundSegBench": BioSoundSegBench}
+DATASETS = {"CMACBench": CMACBench}
