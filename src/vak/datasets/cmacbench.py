@@ -470,7 +470,7 @@ class CMACBench:
         # this is a bit convoluted: we are setting metadata, to set frame dur,
         # to be able to compute duration in property below
         self.training_replicate_metadata = metadata_from_splits_json_path(
-            self.splits_path, self.dataset_path
+            self.splits_path
         )
         self.frame_dur = (
             self.training_replicate_metadata.frame_dur * 1e-3
