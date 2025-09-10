@@ -4,7 +4,7 @@ import pytest
 import vak.datasets
 
 
-class TestBioSoundSegBench:
+class TestCMACBench:
     @pytest.mark.parametrize(
             'split, window_size, target_type',
             [
@@ -30,16 +30,16 @@ class TestBioSoundSegBench:
                 ),
             ]
     )
-    def test_init(self, split, window_size, target_type, mock_biosoundsegbench_dataset):
-        dataset_path, splits_path = mock_biosoundsegbench_dataset
-        dataset = vak.datasets.BioSoundSegBench(
+    def test_init(self, split, window_size, target_type, mock_cmacbench_dataset):
+        dataset_path, splits_path = mock_cmacbench_dataset
+        dataset = vak.datasets.CMACBench(
             dataset_path,
             splits_path,
             split,
             window_size,
             target_type,
         )
-        assert isinstance(dataset, vak.datasets.BioSoundSegBench)
+        assert isinstance(dataset, vak.datasets.CMACBench)
 
     @pytest.mark.parametrize(
             'dataset_path, splits_path, split, window_size, target_type, expected_exception',
@@ -110,17 +110,17 @@ class TestBioSoundSegBench:
             ]
     )
     def test_init_raises(
-            self, dataset_path, splits_path, split, window_size, target_type, expected_exception, mock_biosoundsegbench_dataset
+            self, dataset_path, splits_path, split, window_size, target_type, expected_exception, mock_cmacbench_dataset
         ):
         if dataset_path is None and splits_path is not None:
-            dataset_path, _ = mock_biosoundsegbench_dataset
+            dataset_path, _ = mock_cmacbench_dataset
         elif dataset_path is not None and splits_path is None:
-            _, splits_path = mock_biosoundsegbench_dataset
+            _, splits_path = mock_cmacbench_dataset
         elif dataset_path is None and splits_path is None:
-            dataset_path, splits_path = mock_biosoundsegbench_dataset
+            dataset_path, splits_path = mock_cmacbench_dataset
 
         with pytest.raises(expected_exception):
-            dataset = vak.datasets.BioSoundSegBench(
+            dataset = vak.datasets.CMACBench(
                 dataset_path,
                 splits_path,
                 split,
