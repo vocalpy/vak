@@ -17,7 +17,7 @@ def main(args=None):
     if args is None:
         parser = cli.get_parser()
         args = parser.parse_args()
-    cli.cli(command=args.command, config_file=args.configfile)
+    cli.cli(args)
 
 
 if __name__ == "__main__":
