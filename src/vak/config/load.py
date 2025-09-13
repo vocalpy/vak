@@ -1,4 +1,4 @@
-"""Functions to parse toml config files."""
+"""Functions to load TOML configuration files."""
 
 from __future__ import annotations
 
