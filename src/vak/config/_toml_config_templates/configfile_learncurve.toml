@@ -1,0 +1,59 @@
+# [vak.learncurve]: options for running the learning curve
+# that estimates model performance 
+# as a function of training set size
+[vak.learncurve]
+# root_results_dir: directory where results should be saved, as a sub-directory within `root_results_dir`
+root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/TweetyNet"
+# batch_size: number of samples from dataset per batch fed into network
+batch_size = 11
+# num_epochs: number of training epochs, where an epoch is one iteration through all samples in training split
+num_epochs = 2
+# standardize_frames: if true, standardize (normalize) frames (input to neural network) per frequency bin, so mean of each is 0.0 and std is 1.0
+# across the entire training split
+standardize_frames = true
+# val_step: step number on which to compute metrics with validation set, every time step % val_step == 0
+# (a step is one batch fed through the network)
+# saves a checkpoint if the monitored evaluation metric improves (which is model specific)
+val_step = 50
+# ckpt_step: step number on which to save a checkpoint (as a backup, regardless of validation metrics)
+ckpt_step = 200
+# patience: number of validation steps to wait before stopping training early
+# if the monitored evaluation metrics does not improve after `patience` validation steps,
+# then we stop training
+patience = 4
+# num_workers: number of workers to use when loading data with multiprocessing
+num_workers = 16
+
+[vak.learncurve.post_tfm_kwargs]
+majority_vote = true
+min_segment_dur = 0.02
+
+[vak.learncurve.dataset]
+# params : parameters that configure the `vak.datapipes` or `vak.datasets` class
+# for a frame classification model, we use dataset classes with a specific `window_size`
+# Bigger windows work better. 
+# For frame classification models, prefer smaller batch sizes with bigger windows
+# Intuitively, bigger windows give the model more "contexts" for each frame per batch.
+# See https://github.com/vocalpy/Nicholson-Cohen-SfN-2023-poster for more detail
+params = { window_size = 88 }
+# path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
+
+# TweetyNet.network: we specify options for the model's network in this table
+# To indicate the model to train, we use a "dotted key" with `model` followed by the string name of the model.
+# This name must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
+# We use another dotted key to indicate options for configuring the model, e.g. `TweetyNet.optimizer`
+[vak.train.model.TweetyNet.optimizer]
+# vak.train.model.TweetyNet.optimizer: we specify options for the model's optimizer in this table
+# lr: the learning rate
+lr = 0.001
+
+[vak.learncurve.model.TweetyNet.network]
+# hidden_size: the number of elements in the hidden state in the recurrent layer of the network
+hidden_size = 256
+
+# this sub-table configures the `lightning.pytorch.Trainer`
+[vak.learncurve.trainer]
+# setting to 'gpu' means "train models on 'gpu' (not 'cpu')"
+accelerator = "gpu"
+# use the first GPU (numbering starts from 0)
+devices = [0]

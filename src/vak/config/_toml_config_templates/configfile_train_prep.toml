@@ -5,23 +5,21 @@ dataset_type = "frame classification"
 # input_type: input to model, either audio ("audio") or spectrogram ("spect")
 input_type = "spect"
 # data_dir: directory with data to use when preparing dataset
-data_dir = "/Users/davidnicholson/Documents/repos/vocalpy/vak/tests/scripts/vaktestdata/../../data_for_tests/generated/spect-output-dir/audio_cbin_annot_notmat/gy6or6/032312"
+data_dir = "/PATH/TO/FOLDER/gyor6/032212"
 # output_dir: directory where dataset will be created (as a sub-directory within output_dir)
-output_dir = "./tests/data_for_tests/generated/prep/learncurve/audio_cbin_annot_notmat/TweetyNet"
+output_dir = "/PATH/TO/FOLDER/prep/train"
 # audio_format: format of audio, either wav or cbin
-spect_format = "npz"
+audio_format = "wav"
 # annot_format: format of annotations
-annot_format = "notmat"
+annot_format = "simple-seq"
 # labelset: string or array with unique set of labels used in annotations
 labelset = "iabcdefghjk"
 # train_dur: duration of training split in dataset, in seconds
-train_dur = 50
+train_dur = 2000
 # val_dur: duration of validation split in dataset, in seconds
-val_dur = 15
+val_dur = 170
 # test_dur: duration of test split in dataset, in seconds
-test_dur = 30
-train_set_durs = [ 4, 6,]
-num_replicates = 2
+test_dur = 350
 
 # [vak.prep.spect_params]: parameters for computing spectrograms
 [vak.prep.spect_params]
@@ -39,20 +37,18 @@ transform_type = "log_spect"
 # Note these cutoffs are applied by computing the whole spectrogram first 
 # and then throwing away frequencies above and below the cutoffs;
 # we do not apply a bandpass filter to the audio.
-freq_cutoffs = [ 500, 10000,]
+freq_cutoffs = [500, 8000]
 # Note that for the TweetyNet model, the default is to set the hidden_size of the RNN
 # equal to the input_size, so if you reduce the size of the spectrogram, this will reduce the
 # hidden size of the RNN. If you observe impaired performance of TweetyNet after applying the frequency cutoffs, 
 # consider manually specifying a larger hidden (see `[vak.train.model.TweetyNet]` table below).
 
-# learncurve: options for running the learning curve
-# that estimates model performance 
-# as a function of training set size
-[vak.learncurve]
+# [vak.train]: options for training model
+[vak.train]
 # root_results_dir: directory where results should be saved, as a sub-directory within `root_results_dir`
-root_results_dir = "./tests/data_for_tests/generated/results/learncurve/audio_cbin_annot_notmat/TweetyNet"
+root_results_dir = "/PATH/TO/FOLDER/results/train"
 # batch_size: number of samples from dataset per batch fed into network
-batch_size = 11
+batch_size = 8
 # num_epochs: number of training epochs, where an epoch is one iteration through all samples in training split
 num_epochs = 2
 # standardize_frames: if true, standardize (normalize) frames (input to neural network) per frequency bin, so mean of each is 0.0 and std is 1.0
@@ -61,45 +57,44 @@ standardize_frames = true
 # val_step: step number on which to compute metrics with validation set, every time step % val_step == 0
 # (a step is one batch fed through the network)
 # saves a checkpoint if the monitored evaluation metric improves (which is model specific)
-val_step = 50
+val_step = 1000
 # ckpt_step: step number on which to save a checkpoint (as a backup, regardless of validation metrics)
-ckpt_step = 200
+ckpt_step = 500
 # patience: number of validation steps to wait before stopping training early
 # if the monitored evaluation metrics does not improve after `patience` validation steps,
 # then we stop training
-patience = 4
+patience = 6
 # num_workers: number of workers to use when loading data with multiprocessing
-num_workers = 16
+num_workers = 4
+# device: name of device to run model on, one of "cuda", "cpu"
 
-[vak.learncurve.post_tfm_kwargs]
-majority_vote = true
-min_segment_dur = 0.02
+# dataset_path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
 
-[vak.learncurve.dataset]
-# params : parameters that configure the `vak.datapipes` or `vak.datasets` class
+# dataset.params = parameters used for datasets
 # for a frame classification model, we use dataset classes with a specific `window_size`
+[vak.train.dataset.params]
 # Bigger windows work better. 
 # For frame classification models, prefer smaller batch sizes with bigger windows
 # Intuitively, bigger windows give the model more "contexts" for each frame per batch.
 # See https://github.com/vocalpy/Nicholson-Cohen-SfN-2023-poster for more detail
-params = { window_size = 88 }
-# path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
+window_size = 2000
 
 # TweetyNet.network: we specify options for the model's network in this table
 # To indicate the model to train, we use a "dotted key" with `model` followed by the string name of the model.
 # This name must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
 # We use another dotted key to indicate options for configuring the model, e.g. `TweetyNet.optimizer`
+[vak.train.model.TweetyNet]
 [vak.train.model.TweetyNet.optimizer]
 # vak.train.model.TweetyNet.optimizer: we specify options for the model's optimizer in this table
 # lr: the learning rate
 lr = 0.001
 
-[vak.learncurve.model.TweetyNet.network]
+[vak.train.model.TweetyNet.network]
 # hidden_size: the number of elements in the hidden state in the recurrent layer of the network
 hidden_size = 256
 
 # this sub-table configures the `lightning.pytorch.Trainer`
-[vak.learncurve.trainer]
+[vak.train.trainer]
 # setting to 'gpu' means "train models on 'gpu' (not 'cpu')"
 accelerator = "gpu"
 # use the first GPU (numbering starts from 0)

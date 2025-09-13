@@ -1,32 +1,4 @@
-[vak.prep]
-# dataset_type: corresponds to the model family such as "frame classification" or "parametric umap"
-dataset_type = "frame classification"
-# input_type: input to model, either audio ("audio") or spectrogram ("spect")
-input_type = "spect"
-# data_dir: directory with data to use when preparing dataset
-data_dir = "/PATH/TO/FOLDER/gy6or6/032212"
-# output_dir: directory where dataset will be created (as a sub-directory within output_dir)
-output_dir = "/PATH/TO/FOLDER/prep/train"
-# audio_format: format of audio, either wav or cbin
-audio_format = "wav"
-# annot_format: format of annotations
-annot_format = "simple-seq"
-# labelset: string or array with unique set of labels used in annotations
-labelset = "iabcdefghjk"
-# train_dur: duration of training split in dataset, in seconds
-train_dur = 50
-# val_dur: duration of validation split in dataset, in seconds
-val_dur = 15
-
-# SPECT_PARAMS: parameters for computing spectrograms
-[vak.prep.spect_params]
-# fft_size: size of window used for Fast Fourier Transform, in number of samples
-fft_size = 512
-# step_size: size of step to take when computing spectra with FFT for spectrogram
-# also known as hop size
-step_size = 64
-
-# EVAL: options for evaluating a trained model. This is done using the "test" split.
+# [vak.eval]: options for evaluating a trained model. This is done using the "test" split in a dataset by default.
 [vak.eval]
 # checkpoint_path: path to saved model checkpoint
 checkpoint_path = "/PATH/TO/FOLDER/results/train/RESULTS_TIMESTAMP/TweetyNet/checkpoints/max-val-acc-checkpoint.pt"
@@ -49,7 +21,7 @@ output_dir = "/PATH/TO/FOLDER/results/eval"
 # dataset_path : path to dataset created by prep
 # ADD THE dataset_path OPTION FROM THE TRAIN FILE HERE (we already created a test split when we ran `vak prep` with that config)
 
-# EVAL.post_tfm_kwargs: options for post-processing
+# [vak.eval.post_tfm_kwargs]: options for post-processing
 [vak.eval.post_tfm_kwargs]
 # both these transforms require that there is an "unlabeled" label,
 # and they will only be applied to segments that are bordered on both sides
@@ -70,15 +42,15 @@ min_segment_dur = 0.02
 path = "/copy/path/from/train/config/here"
 params = { window_size = 176 }
 
-# We put this table though vak knows which model we are using
+# [vak.eval.model.TweetyNet]: We put this table so vak knows which model we are using
+# We then add additional sub-tables to configure the model, e.g., [vak.eval.model.TweetyNet.network]
 [vak.eval.model.TweetyNet.network]
 # hidden_size: the number of elements in the hidden state in the recurrent layer of the network
 # we trained with hidden size = 256 so we need to evaluate with the same hidden size;
 # otherwise we'll get an error about "shapes do not match" when torch tries to load the checkpoint
 hidden_size = 256
 
-
-# this sub-table configures the `lightning.pytorch.Trainer`
+# [vak.eval.trainer]: this sub-table configures the `lightning.pytorch.Trainer`
 [vak.eval.trainer]
 # setting to 'gpu' means "train models on 'gpu' (not 'cpu')"
 accelerator = "gpu"
