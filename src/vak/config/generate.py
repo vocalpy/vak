@@ -1,6 +1,8 @@
 import importlib.resources
 import pathlib
-import shutil
+
+import tomlkit
+
 
 CONFIGFILE_KIND_FILENAME_MAP = {
     "train": "configfile_train.toml",
@@ -8,6 +10,11 @@ CONFIGFILE_KIND_FILENAME_MAP = {
     "predict": "configfile_predict.toml",
     "learncurve": "configfile_learncurve.toml",
 }
+
+# next line: can't use `.items()`, we'll get `RuntimeError` about dictionary changed sized during iteration
+for key in list(CONFIGFILE_KIND_FILENAME_MAP.keys()):
+    val = CONFIGFILE_KIND_FILENAME_MAP[key]
+    CONFIGFILE_KIND_FILENAME_MAP[f"{key}_prep"] = val.replace(key, f"{key}_prep")
 
 
 def generate(
@@ -43,8 +50,32 @@ def generate(
             f"Destination for generated config file `dst` is already a file that exists:\n{dst}\n"
             "Please specify a value for the `--dst` argument that will not overwrite an existing file."
         )
-    filename = CONFIGFILE_KIND_FILENAME_MAP[kind]
-    src = pathlib.Path(
-        importlib.resources.files("vak.config").joinpath(filename)
+    
+    # for now, we "add a prep section" by using a naming convention
+    # and loading an existing toml file that has a `[vak.prep]` table
+    if add_prep:
+        kind = f"{kind}_prep"
+
+    try:
+        src_filename = CONFIGFILE_KIND_FILENAME_MAP[kind]
+    except KeyError:
+        raise ValueError(
+            f"Invalid kind: {kind}"
+        )
+    
+    src_path = pathlib.Path(
+        importlib.resources.files("vak.config._toml_config_templates").joinpath(src_filename)
     )
-    shutil.copy(src, dst)
+    # even though we are loading an existing file,
+    # we use tomlkit to load and dump.
+    # TODO: add "interactive" arg and use tomlkit with `input` to interactively build config file
+    with src_path.open("r") as fp:
+        tomldoc = tomlkit.load(fp)
+
+    if dst.is_dir():
+        dst_path = dst / src_filename
+    else:
+        dst_path = dst
+
+    with dst_path.open("w") as fp:
+        tomlkit.dump(tomldoc, fp)
