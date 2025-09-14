@@ -17,6 +17,7 @@ from . import (
 from .config import Config
 from .dataset import DatasetConfig
 from .eval import EvalConfig
+from .generate import generate
 from .learncurve import LearncurveConfig
 from .model import ModelConfig
 from .predict import PredictConfig
@@ -29,6 +30,7 @@ __all__ = [
     "config",
     "dataset",
     "eval",
+    "generate",
     "learncurve",
     "model",
     "load",
