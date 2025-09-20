@@ -1,6 +1,15 @@
+import argparse
 import pathlib
 
 import pytest
+
+import vak.cli.cli
+
+
+def test_get_parser():
+    """Smoke test that just makes sure we get back a parser as expected"""
+    parser = vak.cli.cli.get_parser()
+    assert isinstance(parser, argparse.ArgumentParser)
 
 
 def test_parser_usage(parser,
