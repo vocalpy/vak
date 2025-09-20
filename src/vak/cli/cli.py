@@ -185,14 +185,16 @@ def get_parser():
     """returns ArgumentParser instance used by main()"""
     parser = argparse.ArgumentParser(
         prog="vak",
-        description="vak command-line interface",
+        description="Vak command-line interface",
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
     # create sub-parser
     sub_parsers = parser.add_subparsers(
-        help='Commands for vak command-line interface',
+        title="Command",
+        description="Commands for the vak command-line interface",
         dest="command",
+        required=True,
     )
 
     for cli_command in CLI_COMMANDS:
