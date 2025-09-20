@@ -2,6 +2,8 @@
 Invokes __main__ when the module is run as a script.
 Example: python -m vak --help
 """
+import sys
+
 from .cli import cli
 
 
@@ -14,9 +16,16 @@ def main(args=None):
 
     ``args`` is used for unit testing only
     """
+    parser = cli.get_parser()
+
+    if len(sys.argv) < 2:
+        parser.print_help()
+        sys.exit(1)
+
     if args is None:
-        parser = cli.get_parser()
         args = parser.parse_args()
+    else:
+        args = parser.parse_args(args)
     cli.cli(args)
 
 
