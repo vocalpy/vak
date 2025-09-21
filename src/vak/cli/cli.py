@@ -2,38 +2,37 @@
 import argparse
 import pathlib
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Callable
 
 
 def eval(args):
     from .eval import eval
 
-    eval(toml_path=args.config_file)
+    eval(toml_path=args.configfile)
 
 
 def train(args):
     from .train import train
 
-    train(toml_path=args.config_file)
+    train(toml_path=args.configfile)
 
 
 def learncurve(args):
     from .learncurve import learning_curve
 
-    learning_curve(toml_path=args.config_file)
+    learning_curve(toml_path=args.configfile)
 
 
 def predict(args):
     from .predict import predict
 
-    predict(toml_path=args.config_file)
+    predict(toml_path=args.configfile)
 
 
 def prep(args):
     from .prep import prep
 
-    prep(toml_path=args.config_file)
+    prep(toml_path=args.configfile)
 
 
 def configfile(args):
@@ -89,7 +88,7 @@ def add_single_arg_configfile_to_command(
     """
     cli_command_parser.add_argument(
         "configfile",
-        type=Path,
+        type=pathlib.Path,
         help="name of TOML configuration file to use \n"
         f"$ vak {cli_command.name} ./configs/config_rat01337.toml",
     )
@@ -128,7 +127,7 @@ def add_args_to_configfile_command(
         help="Adding this option will add a 'prep' table to the TOML configuration file. Default is False."
     )
     cli_command_parser.add_argument(
-        "-dst",
+        "--dst",
         type=pathlib.Path,
         default=pathlib.Path.cwd(),
         help="Destination, where TOML configuration file should be generated. Default is current working directory."
@@ -216,15 +215,15 @@ CLI_COMMAND_FUNCTION_MAP = {
 }
 
 
-def cli(args):
+def cli(args: argparse.Namespace):
     """Execute the commands of the command-line interface.
 
     Parameters
     ----------
-    command : string
-        One of {'prep', 'train', 'eval', 'predict', 'learncurve'}
-    config_file : str, Path
-        path to a config.toml file
+    args : argparse.Namespace
+        Result of calling :meth:`ArgumentParser.parse_args` 
+        on the :class:`ArgumentParser` instance returned by 
+        :func:`vak.cli.cli.get_parser`.
     """
     if args.command in CLI_COMMAND_FUNCTION_MAP:
         CLI_COMMAND_FUNCTION_MAP[args.command](args)
