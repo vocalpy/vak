@@ -36,17 +36,6 @@ def prep(args):
 
 
 def configfile(args):
-    print(
-        f"Generating TOML configuration file of kind: {args.kind}"
-    )
-    if args.add_prep:
-        print(
-            f"Will add prep table"
-        )
-    else:
-        print(
-            f"Will not add prep table"
-        )
     from ..config.generate import generate
     generate(
         kind=args.kind,
