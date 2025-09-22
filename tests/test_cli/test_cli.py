@@ -96,6 +96,66 @@ def test_cli(
         mock_cli_function.assert_called()
 
 
-def test_configfile():
-    # FIXME test that configfile works the way we expect
-    assert False
+@pytest.mark.parametrize(
+    'args_list, cli_helper_function, module, function_name',
+    [
+        (
+            ['prep', DUMMY_CONFIGFILE_STR],
+            vak.cli.cli.prep,
+            vak.cli.prep,
+            "prep",
+        ),
+        (
+            ['train', DUMMY_CONFIGFILE_STR],
+            vak.cli.cli.train,
+            vak.cli.train,
+            "train",
+        ),
+        (
+            ['learncurve', DUMMY_CONFIGFILE_STR],
+            vak.cli.cli.learncurve,
+            vak.cli.learncurve,
+            "learning_curve",
+        ),
+        (
+            ['eval', DUMMY_CONFIGFILE_STR],
+            vak.cli.cli.eval,
+            vak.cli.eval,
+            "eval",
+        ),
+        (
+            ['predict', DUMMY_CONFIGFILE_STR],
+            vak.cli.cli.predict,
+            vak.cli.predict,
+            "predict",
+        ),
+        (
+            ['configfile', 'train', '--add-prep', '--dst', DUMMY_CONFIGFILE_STR],
+            vak.cli.cli.configfile,
+            vak.config.generate,
+            "generate",
+        ),
+    ]
+)
+def test_cli_helper_functions(
+    args_list, cli_helper_function, module, function_name, parser
+):
+    """Test that helper functions we use to map commands to actual functions in the cli module
+    or elsewhere call those functions as expected"""
+    # this feels like I'm testing low-level implementation details
+    # but I feel like I should have some unit tests for what's happening in this module
+    args = parser.parse_args(args_list)
+
+    with mock.patch.object(module, function_name, autospec=True) as mock_cli_function:
+        cli_helper_function(args)
+    
+    if args.command == "configfile":
+        mock_call = mock.call(
+            kind=args.kind, add_prep=args.add_prep, dst=args.dst
+        )
+    else:
+        mock_call = mock.call(toml_path=args.configfile)
+
+    assert mock_cli_function.mock_calls == [
+        mock_call
+    ]
