@@ -20,14 +20,9 @@ for key in list(CONFIGFILE_KIND_FILENAME_MAP.keys()):
 def generate(
     kind: str,
     add_prep: bool = False,
-    dst: str | pathlib.Path = pathlib.Path.cwd(),
+    dst: str | pathlib.Path | None = None,
 ) -> None:
-    """Generate a TOML configuration file
-
-    This is the function called by 
-    :func:`vak.cli.cli.generate` 
-    when a user runs the command ``vak configfile``
-    using the command-line interface.
+    """Generate a TOML configuration file for :mod:`vak`
 
     Parameters
     ----------
@@ -43,7 +38,20 @@ def generate(
         or a directory, in which case a default filename 
         will be used.
         The default `dst` is the current working directory.
+
+    Notes
+    -----
+    This is the function called by 
+    :func:`vak.cli.cli.generate` 
+    when a user runs the command ``vak configfile``
+    using the command-line interface.
+
     """
+    if dst is None:
+        # we can't make this the default value of the parameter in the function signature
+        # since it would get the value at import time, and we need the value at runtime
+        dst = pathlib.Path.cwd()
+
     dst = pathlib.Path(dst)
     if not dst.is_dir() and dst.exists():
         raise ValueError(
