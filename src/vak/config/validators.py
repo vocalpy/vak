@@ -79,7 +79,7 @@ def are_tables_valid(config_dict, toml_path=None):
     from ..cli.cli import CLI_COMMANDS  # avoid circular import
 
     cli_commands_besides_prep = [
-        command for command in CLI_COMMANDS if command != "prep"
+        command.name for command in CLI_COMMANDS if command.name != "prep"
     ]
     tables_that_are_commands_besides_prep = [
         table for table in tables if table in cli_commands_besides_prep
