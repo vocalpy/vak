@@ -21,13 +21,23 @@ DUMMY_CONFIGFILE = './configs/config_2018-12-17.toml'
     ]
 )
 def test_main(args_list):
-    """Test that :func:`vak.__main__.main` calls the function we expect through :func:`vak.cli.cli`"""
+    """Test that :func:`vak.__main__.main` calls the function we expect through :func:`vak.cli.cli`
+    
+    Notes
+    -----
+    We mock these and call it a unit test 
+    because actually calling and running :func:vak.cli.prep` 
+    would be expensive. 
+    
+    The exception is `vak configfile` 
+    that we test directly (in other test functions below).
+    """
     command = args_list[0]
     mock_cli_function = mock.Mock(name=f'mock_{command}')
     with mock.patch.dict(
         vak.cli.cli.CLI_COMMAND_FUNCTION_MAP, {command: mock_cli_function}
     ):
-        # we can't do this with `subprocess` since the function won't be mocked in the subprocess,
+        # wAFAICT e can't do this with `subprocess` since the function won't be mocked in the subprocess,
         # so we need to test indirectly with `arg_list` passed into `main`
         vak.__main__.main(args_list)
         mock_cli_function.assert_called()
@@ -43,3 +53,10 @@ def test___main__prints_help_with_no_args(parser, capsys):
     output = result.stdout.rstrip()
      
     assert output == expected_output
+
+
+def test_configfile_command():
+    # FIXME: copy whatever unit tests we write for `vak.config.generate.generate`
+    # FIXME: except we change the actual part of the test where we call the function
+    # FIXME: and we're going to use an `args_list` instead of providing parameters directly
+    assert False
