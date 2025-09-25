@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 
-import vak.config.generate
+import vak.config
 
 
 @pytest.mark.parametrize(
@@ -151,9 +151,9 @@ def test_generate(kind, add_prep, dst_name, tmp_path):
 
     if dst_name is None:
         os.chdir(dst)
-        vak.config.generate.generate(kind=kind, add_prep=add_prep)
+        vak.config.generate(kind=kind, add_prep=add_prep)
     else:
-        vak.config.generate.generate(kind=kind, add_prep=add_prep, dst=dst)
+        vak.config.generate(kind=kind, add_prep=add_prep, dst=dst)
 
     if dst.is_dir():
         # we need to get the actual generated TOML
@@ -189,7 +189,7 @@ def test_generate_raises_FileExistsError(tmp_path):
     with dst.open("w") as fp:
         fp.write("[fake.config]")
     with pytest.raises(FileExistsError):
-        vak.config.generate.generate("train", add_prep=True, dst=dst)
+        vak.config.generate("train", add_prep=True, dst=dst)
 
 
 
@@ -200,4 +200,4 @@ def test_generate_raises_ValueError(tmp_path):
     with dst.open("w") as fp:
         fp.write("[fake.config]")
     with pytest.raises(FileExistsError):
-        vak.config.generate.generate("train", add_prep=True, dst=dst)
+        vak.config.generate("train", add_prep=True, dst=dst)
