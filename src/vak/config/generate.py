@@ -39,13 +39,32 @@ def generate(
         will be used.
         The default `dst` is the current working directory.
 
+    Examples
+    --------
+
+    Generate a TOML configuration file in the current working directory to prepare a dataset and train a model.
+
+    >>> vak.config.generate.generate("train", add_prep=True)
+
+    Generate a TOML configuration file in a specified directory to train a model, e.g. on an existing dataset.
+
+    >>> import pathlib
+    >>> dst = pathlib.Path("./data/configs")
+    >>> vak.config.generate.generate("train", add_prep=True, dst=dst)
+
+    Generate a TOML configuration file with a specific file name to train a model, e.g. on an existing dataset.
+
+    >>> import pathlib
+    >>> dst = pathlib.Path("./data/configs/train-bfsongrepo.toml")
+    >>> vak.config.generate.generate("train", add_prep=True, dst=dst)
+
+
     Notes
     -----
     This is the function called by 
     :func:`vak.cli.cli.generate` 
     when a user runs the command ``vak configfile``
     using the command-line interface.
-
     """
     if dst is None:
         # we can't make this the default value of the parameter in the function signature
