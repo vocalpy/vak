@@ -36,8 +36,8 @@ def prep(args):
 
 
 def configfile(args):
-    from ..config.generate import generate
-    generate(
+    from .. import config
+    config.generate(
         kind=args.kind,
         add_prep=args.add_prep,
         dst=args.dst,
