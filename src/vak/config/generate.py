@@ -22,7 +22,7 @@ def generate(
     add_prep: bool = False,
     dst: str | pathlib.Path | None = None,
 ) -> None:
-    """Generate a TOML configuration file for :mod:`vak`
+    """Generate a TOML configuration file for :mod:`vak`.
 
     Parameters
     ----------
@@ -59,6 +59,11 @@ def generate(
             "Please specify a value for the `--dst` argument that will not overwrite an existing file."
         )
     
+    if not dst.is_dir() and dst.suffix != ".toml":
+        raise ValueError(
+            f"If `dst` is a path that ends in a filename, not a directory, then the extension must be '.toml', but was: {dst.suffix}"
+        )
+
     # for now, we "add a prep section" by using a naming convention
     # and loading an existing toml file that has a `[vak.prep]` table
     if add_prep:
