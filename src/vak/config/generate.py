@@ -54,7 +54,7 @@ def generate(
 
     dst = pathlib.Path(dst)
     if not dst.is_dir() and dst.exists():
-        raise ValueError(
+        raise FileExistsError(
             f"Destination for generated config file `dst` is already a file that exists:\n{dst}\n"
             "Please specify a value for the `--dst` argument that will not overwrite an existing file."
         )
