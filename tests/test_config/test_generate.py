@@ -182,8 +182,21 @@ def test_generate(kind, add_prep, dst_name, tmp_path):
         assert "prep" not in cfg_dict
 
 
-def test_generate_raises(tmp_path):
+def test_generate_raises_FileExistsError(tmp_path):
+    """Test that func:`vak.config.generate.generate` raises
+    a FileExistsError if `dst` already exists"""
     dst = tmp_path / "fake.config.toml"
+    with dst.open("w") as fp:
+        fp.write("[fake.config]")
+    with pytest.raises(FileExistsError):
+        vak.config.generate.generate("train", add_prep=True, dst=dst)
+
+
+
+def test_generate_raises_ValueError(tmp_path):
+    """Test that :func:`vak.config.generate.generate` raises
+    a ValueError if `dst` is a path to a filename but the extension is not '.toml'"""
+    dst = tmp_path / "fake.config.json"
     with dst.open("w") as fp:
         fp.write("[fake.config]")
     with pytest.raises(FileExistsError):
