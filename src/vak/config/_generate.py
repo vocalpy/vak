@@ -44,19 +44,19 @@ def generate(
 
     Generate a TOML configuration file in the current working directory to prepare a dataset and train a model.
 
-    >>> vak.config.generate.generate("train", add_prep=True)
+    >>> vak.config.generate("train", add_prep=True)
 
     Generate a TOML configuration file in a specified directory to train a model, e.g. on an existing dataset.
 
     >>> import pathlib
     >>> dst = pathlib.Path("./data/configs")
-    >>> vak.config.generate.generate("train", add_prep=True, dst=dst)
+    >>> vak.config.generate("train", add_prep=True, dst=dst)
 
     Generate a TOML configuration file with a specific file name to train a model, e.g. on an existing dataset.
 
     >>> import pathlib
     >>> dst = pathlib.Path("./data/configs/train-bfsongrepo.toml")
-    >>> vak.config.generate.generate("train", add_prep=True, dst=dst)
+    >>> vak.config.generate("train", add_prep=True, dst=dst)
 
 
     Notes
