@@ -137,7 +137,6 @@ import vak.config
 )
 def test_generate(kind, add_prep, dst_name, tmp_path):
     """Test :func:`vak.config.generate.generate`"""
-    # FIXME: handle case where `dst` is a filename -- handle .toml extension
     if dst_name is None:
         dst = tmp_path / "tmp-dst-None"
     else:
