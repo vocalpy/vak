@@ -20,7 +20,7 @@ def is_1d_tensor(y: torch.Tensor, name: str | None = None) -> bool:
 
     Examples
     --------
-    >>> y = np.array([0, 1, 2])
+    >>> y = torch.tensor([0, 1, 2])
     >>> vocalpy.validators.is_1d_ndarray(y)
     True
     """
@@ -72,28 +72,25 @@ def is_valid_boundaries_tensor(y: torch.Tensor, name: str | None = None) -> bool
 
     Examples
     --------
-    >>> vocalpy.validators.is_valid_boundaries_array(np.array([1, 2, 3], dtype=np.int16))
+    >>> vocalpy.validators.is_valid_boundaries_array(torch.tensor([1, 2, 3], dtype=np.int16))
     True
-    >>> vocalpy.validators.is_valid_boundaries_array(np.array([1.0, 2.0, 3.0], dtype=np.float32))
+    >>> vocalpy.validators.is_valid_boundaries_array(torch.tensor([1.0, 2.0, 3.0], dtype=np.float32))
     True
-    >>> vocalpy.validators.is_valid_boundaries_array(np.array([], dtype=np.float32))
+    >>> vocalpy.validators.is_valid_boundaries_array(torch.tensor([], dtype=np.float32))
     True
-    >>> vocalpy.validators.is_valid_boundaries_array(np.array([1.0], dtype=np.float32))
+    >>> vocalpy.validators.is_valid_boundaries_array(torch.tensor([1.0], dtype=np.float32))
     True
     """
-    is_1d_ndarray(y, name)
+    is_1d_tensor(y, name)
 
     if name:
         name += " "
     else:
         name = ""
 
-    if not (
-        issubclass(y.dtype.type, torch.floating)
-        or issubclass(y.dtype.type, torch.integer)
-    ):
+    if not torch.is_floating_point(y):
         raise TypeError(
-            f"Dtype of boundaries array {name}must be either float or int but was: {y.dtype}"
+            f"Dtype of boundaries array {name}must be floating point but was: {y.dtype}"
         )
 
     if not torch.all(y >= 0.0):
@@ -101,7 +98,7 @@ def is_valid_boundaries_tensor(y: torch.Tensor, name: str | None = None) -> bool
             f"Values of boundaries tensor {name}must all be non-negative"
         )
 
-    if y.size <= 1:
+    if y.numel() <= 1:
         # It's a valid boundary array but there's no boundaries or just one boundary,
         # so we don't check that values are strictly increasing
         return True
