@@ -1,4 +1,4 @@
-import pathlib
+import subprocess
 from unittest import mock
 
 import pytest
@@ -6,73 +6,57 @@ import pytest
 import vak
 
 
-@pytest.fixture
-def parser():
-    return vak.__main__.get_parser()
-
-
-def test_parser_usage(parser,
-                      capsys):
-    with pytest.raises(SystemExit):
-        parser.parse_args(args=[''])
-    captured = capsys.readouterr()
-    assert captured.err.startswith(
-        "usage: vak [-h] command configfile"
-    )
-
-
-def test_parser_help(parser,
-                     capsys):
-    with pytest.raises(SystemExit):
-        parser.parse_args(['-h'])
-    captured = capsys.readouterr()
-    assert captured.out.startswith(
-        "usage: vak [-h] command configfile"
-    )
-
-
 DUMMY_CONFIGFILE = './configs/config_2018-12-17.toml'
 
 
 @pytest.mark.parametrize(
-    'command, raises',
+    'args_list',
     [
-        ('prep', False),
-        ('train', False),
-        ('learncurve', False),
-        ('eval', False),
-        ('predict', False),
-        ('not-a-valid-command', True),
+        ['prep', DUMMY_CONFIGFILE],
+        ['train', DUMMY_CONFIGFILE],
+        ['learncurve', DUMMY_CONFIGFILE],
+        ['eval', DUMMY_CONFIGFILE],
+        ['predict', DUMMY_CONFIGFILE],
+        ['configfile', 'train', '--add-prep', '--dst', DUMMY_CONFIGFILE]
     ]
 )
-def test_parser(command,
-                raises,
-                parser,
-                capsys):
-    if raises:
-        with pytest.raises(SystemExit):
-            parser.parse_args([command, DUMMY_CONFIGFILE])
-    else:
-        args = parser.parse_args([command, DUMMY_CONFIGFILE])
-        assert args.command == command
-        assert args.configfile == pathlib.Path(DUMMY_CONFIGFILE)
-
-
-@pytest.mark.parametrize(
-    'command',
-    [
-        'prep',
-        'train',
-        'learncurve',
-        'eval',
-        'predict',
-    ]
-)
-def test_main(command,
-              parser):
-    args = parser.parse_args([command, DUMMY_CONFIGFILE])
+def test_main(args_list):
+    """Test that :func:`vak.__main__.main` calls the function we expect through :func:`vak.cli.cli`
+    
+    Notes
+    -----
+    We mock these and call it a unit test 
+    because actually calling and running :func:vak.cli.prep` 
+    would be expensive. 
+    
+    The exception is `vak configfile` 
+    that we test directly (in other test functions below).
+    """
+    command = args_list[0]
     mock_cli_function = mock.Mock(name=f'mock_{command}')
-    with mock.patch.dict(vak.cli.cli.COMMAND_FUNCTION_MAP,
-                         {command: mock_cli_function}) as mock_command_function_map:
-        vak.__main__.main(args)
+    with mock.patch.dict(
+        vak.cli.cli.CLI_COMMAND_FUNCTION_MAP, {command: mock_cli_function}
+    ):
+        # wAFAICT e can't do this with `subprocess` since the function won't be mocked in the subprocess,
+        # so we need to test indirectly with `arg_list` passed into `main`
+        vak.__main__.main(args_list)
         mock_cli_function.assert_called()
+
+
+def test___main__prints_help_with_no_args(parser, capsys):
+    """Test that if we don't pass in any args, we get """
+    parser.print_help()
+    expected_output = capsys.readouterr().out.rstrip()
+
+    # doing this by calling a `subprocess` is slow but lets us test the CLI directly
+    result = subprocess.run("vak", capture_output=True, text=True)  # call `vak` at CLI with no help
+    output = result.stdout.rstrip()
+     
+    assert output == expected_output
+
+
+def test_configfile_command():
+    # FIXME: copy whatever unit tests we write for `vak.config.generate.generate`
+    # FIXME: except we change the actual part of the test where we call the function
+    # FIXME: and we're going to use an `args_list` instead of providing parameters directly
+    assert False
