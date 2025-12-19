@@ -43,7 +43,7 @@ dependencies = [
     "umap-learn >=0.5.9",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "twine >=3.3.0",
     "black >=23.7.0",
