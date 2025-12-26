@@ -48,7 +48,7 @@ def dev(session: nox.Session) -> None:
     # Use the venv's interpreter to install the project along with
     # all it's dev dependencies, this ensures it's installed in the right way
     pyproject = nox.project.load_toml("pyproject.toml")
-    session.install(*nox.project.dependency_groups(pyproject, "dev"))
+    session.run(python, "-m", "pip", "install", *nox.project.dependency_groups(pyproject, "dev"), external=True)
     session.run(python, "-m", "pip", "install", "-e", ".", external=True)
 
 
