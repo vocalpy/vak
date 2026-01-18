@@ -8,6 +8,7 @@ from .dataset import *
 from .device import *
 from .trainer import *
 from .model import *
+from .parser import *
 from .path import *
 from .source_files import *
 from .spect import *
