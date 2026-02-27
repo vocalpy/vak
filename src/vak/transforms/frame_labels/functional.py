@@ -17,12 +17,12 @@ This module is structured as followed:
     and apply the most "popular" label within each segment to all timebins in that segment
   - postprocess: combines remove_short_segments and take_majority_vote in one transform
 """
-
 from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
 import scipy.stats
+import torch
 
 from ... import common
 from ...common.timebins import timebin_dur_from_vec
@@ -36,6 +36,7 @@ __all__ = [
     "remove_short_segments",
     "take_majority_vote",
     "segment_inds_list_from_class_labels",
+    "to_boundary_times",
     "to_labels",
     "to_segments",
 ]
@@ -514,7 +515,7 @@ def postprocess(
     majority_vote : bool
         If True, transform segments containing multiple labels
         into segments with a single label by taking a "majority vote",
-        i.e. assign all time bins in the segment the most frequently
+        i.e. assign all time bins in the segment the most frequentlygt
         occurring label in the segment.
         This transform requires either a background label
         or a vector of boundary labels.
@@ -573,3 +574,90 @@ def postprocess(
         frame_labels = take_majority_vote(frame_labels, segment_inds_list)
 
     return frame_labels
+
+
+def to_boundary_times(
+    frame_labels: torch.LongTensor,
+    frame_times: torch.FloatTensor,
+    padval: float = common.constants.DEFAULT_BOUNDARY_TIMES_PADVAL,
+) -> torch.FloatTensor:
+    """Convert a 1-dimensional tensor of integer frame labels
+    to a tensor of float boundary times.
+
+    Parameters
+    ----------
+    frame_labels : torch.LongTensor
+        Vector of class labels for each frame.
+    frame_times : torch.FloatTensor
+        The time for each frame, e.g.,
+        the vector of bin center times 
+        that is computed for a spectrogram.
+
+    Notes
+    -----
+    By convention, this function places a boundary 
+    at the first frame of any continuous run of a 
+    single integer class. E.g.,
+
+    ```
+    [0, 0, 0, 1, 1, 1, 0, 0, 2, 2, 0, 0, 1, 1, 0, 0]
+     ^        ^        ^     ^     ^     ^     ^
+    ```
+    (where carets (``^``) indicate boundaries).
+    In other words, the start index of any segment 
+    is considered a boundary.
+    """
+    from vak.common import validators
+    validators.is_2d_tensor(frame_labels)
+    validators.is_2d_tensor(frame_times)
+
+    if frame_labels.shape[0] != frame_times.shape[0]:
+        raise ValueError(
+            "`frame_labels` and `frame_times` should have same batch size but "
+            f"frame_labels.shape[0]={frame_labels.shape[0]} != frame_times.shape[0]={frame_times.shape[0]}"
+        )
+
+    if frame_labels.shape[1] != frame_times.shape[1]:
+        raise ValueError(
+            "`frame_labels` and `frame_times` should have same length (number of frames), but "
+            f"`frame_labels.shape[1]={frame_labels.shape[-1]} != frame_times.shape[1]={frame_times.shape[-1]}"
+        )
+
+    if not isinstance(padval, float):
+        raise TypeError(
+            f"Type of `padval` must be float but was {type(padval)}"
+        )
+    if padval >= 0.0:
+        raise ValueError(
+            "`padval` must be a negative number, to avoid clashing with valid boundary times, "
+            f"but was: {padval}"
+        )
+
+    frame_labels_batch = torch.unbind(frame_labels)
+    frame_times_batch = torch.unbind(frame_times)
+
+    boundary_times_batch = []
+    for frame_labels_item, frame_times_item in zip(
+        frame_labels_batch, frame_times_batch
+    ):
+        # a boundary occurs in frame labels
+        # wherever the first-order difference is not 0.
+        # **Notice** we add +1 because this is the first-order difference,
+        # so the actually change occurs at :math:`i`=np.diff(frame_labels) + 1.
+        boundary_inds = torch.nonzero(
+            torch.diff(frame_labels_item), as_tuple=True,
+        )[0] + 1
+        # We force the first index to be a boundary.
+        boundary_inds = torch.cat(
+            (torch.LongTensor([0]).to(boundary_inds.device), boundary_inds)
+        )
+
+        boundary_times_item = frame_times_item[boundary_inds]
+        boundary_times_batch.append(boundary_times_item)
+
+    boundary_times_batch = torch.nn.utils.rnn.pad_sequence(
+        boundary_times_batch, batch_first=True,
+        padding_value=padval, padding_side="right",
+    )
+
+    return boundary_times_batch
