@@ -7,7 +7,7 @@ from typing import List, Literal, Mapping, Tuple
 import attr
 import torch
 
-from . import validators
+from vak.common import validators
 
 
 def find_hits(

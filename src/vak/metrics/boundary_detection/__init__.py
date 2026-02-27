@@ -1,6 +1,5 @@
 from . import (
     functional,
-    validators,
 )
 
 from ._boundary_detection import (
@@ -9,6 +8,5 @@ from ._boundary_detection import (
 
 __all__ = [
     "functional",
-    "validators",
     "PrecisionRecallFScoreRVal",
 ]
