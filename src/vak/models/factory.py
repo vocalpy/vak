@@ -119,15 +119,29 @@ class ModelFactory:
 
         if inspect.isclass(self.definition.loss):
             loss_kwargs = config.get(
-                "loss", self.definition.default_config["loss"]
+                "loss"
             )
+            # ModelConfig.loss defaults to an empty dict, 
+            # so we special case to catch that.
+            # This may just end up replacing that empty dict
+            # with the empty dict from the default config,
+            # but leaving for now since I want to get rid of this whole complicated machinery anyway
+            if loss_kwargs is None or loss_kwargs == {}:
+                loss_kwargs = self.definition.default_config["loss"]
             loss = self.definition.loss(**loss_kwargs)
         else:
             loss = self.definition.loss
 
         metrics_config = config.get(
-            "metrics", self.definition.default_config["metrics"]
+            "metrics",
         )
+        # As above with loss, ModelConfig.metrics defaults to an empty dict, 
+        # so we special case to catch that.
+        # This may just end up replacing that empty dict
+        # with the empty dict from the default config,
+        # but leaving for now since I want to get rid of this whole complicated machinery anyway
+        if metrics_config is None or metrics_config == {}:
+            metrics_config = self.definition.default_config["metrics"]
         metrics = {}
         for metric_name, metric_class in self.definition.metrics.items():
             metrics_class_kwargs = metrics_config.get(metric_name, {})
