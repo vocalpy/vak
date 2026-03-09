@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import torch
 
-from .. import metrics, nets, nn
+from .. import common, metrics, nets, nn
 from .decorator import model
 from .frame_classification_model import FrameClassificationModel
 
@@ -63,5 +63,15 @@ class TweetyNet:
         "levenshtein": metrics.Levenshtein,
         "character_error_rate": metrics.CharacterErrorRate,
         "loss": nn.loss.CrossEntropyLoss,
+        "precision_recall_fscore_rval": metrics.boundary_detection.PrecisionRecallFScoreRVal,
     }
-    default_config = {"optimizer": {"lr": 0.003}}
+    default_config = {
+        "optimizer": {"lr": 0.003},
+        "metrics": {
+            "precision_recall_fscore_rval": {
+                "metrics": ["precision", "recall", "fscore", "rval"],
+                "tolerance": 0.01,
+                "ignore_val": common.constants.DEFAULT_BOUNDARY_TIMES_PADVAL,
+            },
+        }
+    }
