@@ -213,7 +213,17 @@ class InferDatapipe:
 
     def __getitem__(self, idx):
         frames_path = self.dataset_path / self.frames_paths[idx]
-        frames = self._load_frames(frames_path)
+        
+        from vak import common
+        if self.input_type == "audio":
+            frames, _ = common.constants.AUDIO_FORMAT_FUNC_MAP[
+                constants.FRAME_CLASSIFICATION_DATASET_AUDIO_FORMAT
+            ](frames_path)
+        elif self.input_type == "spect":
+            spect_dict = common.files.spect.load(frames_path)
+            frames = spect_dict[common.constants.SPECT_KEY]
+            frame_times = spect_dict[common.constants.TIMEBINS_KEY]
+
         item = {"frames": frames, "frames_path": frames_path}
         if self.frame_labels_paths is not None:
             frame_labels = np.load(
@@ -223,6 +233,8 @@ class InferDatapipe:
 
         if self.item_transform:
             item = self.item_transform(**item)
+
+        item["frame_times"] = frame_times
 
         return item
 
