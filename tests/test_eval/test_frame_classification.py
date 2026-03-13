@@ -2,13 +2,11 @@
 import pytest
 
 import vak.config
-import vak.common.constants
-import vak.common.paths
 import vak.eval.frame_classification
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
-def assert_eval_output_matches_expected(model_name, output_dir):
+def assert_eval_saves_one_csv(model_name, output_dir):
     eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
     assert len(eval_csv) == 1
 
@@ -22,9 +20,13 @@ POST_TFM_KWARGS = [
     # use ToLabelsWithPostprocessing with *just* majority_vote
     {'majority_vote': True, 'min_segment_dur': None},
     # use ToLabelsWithPostprocessing with *just* min_segment_dur
-    {'majority_vote': False, 'min_segment_dur': 0.002},
+    # NOTE the value of `min_segment_dur=0.05` will make metrics after post-processing *worse*
+    # but we do that to make sure that this parameter **alone** is having some effect.
+    # For our current test data, the "good" value of 0.01 we used can in some cases 
+    # have no effect; we want to be sure that's not due to some bug
+    {'majority_vote': False, 'min_segment_dur': 0.05},
     # use ToLabelsWithPostprocessing with majority_vote *and* min_segment_dur
-    {'majority_vote': True, 'min_segment_dur': 0.002},
+    {'majority_vote': True, 'min_segment_dur': 0.05},
 ]
 
 
@@ -69,7 +71,7 @@ def test_eval_frame_classification_model(
     )
     cfg = vak.config.Config.from_toml_path(toml_path)
 
-    vak.eval.frame_classification.eval_frame_classification_model(
+    metric_vals: dict = vak.eval.frame_classification.eval_frame_classification_model(
         model_config=cfg.eval.model.asdict(),
         dataset_config=cfg.eval.dataset.asdict(),
         trainer_config=cfg.eval.trainer.asdict(),
@@ -81,7 +83,34 @@ def test_eval_frame_classification_model(
         post_tfm_kwargs=post_tfm_kwargs,
     )
 
-    assert_eval_output_matches_expected(cfg.eval.model.name, output_dir)
+    assert_eval_saves_one_csv(cfg.eval.model.name, output_dir)
+
+    # REGRESSION TEST: these assertions test that
+    # we fixed https://github.com/vocalpy/vak/issues/821
+    # Long-term this may not be the right place to test this, 
+    # but it will work to get out a quick fix;
+    # NOTE also this is fragile -- I expect the transforms to change the metrics 
+    # for this exact data, but of course you could have a case where 
+    # neither `majority_vote` nor `min_segment_dur` have any effect 
+    # even when `majority_vote=True` and `min_segment_dur > 0.0
+    if post_tfm_kwargs is not None:
+        if post_tfm_kwargs["majority_vote"] is True or (
+            post_tfm_kwargs["min_segment_dur"] is not None and post_tfm_kwargs["min_segment_dur"] > 0.0
+        ):
+            for metric_name in (
+                "acc", "levenshtein", "character_error_rate",
+            ):
+                wout_tfm = metric_vals[f"val_{metric_name}_epoch"]
+                with_tfm = metric_vals[f"val_{metric_name}_tfm_epoch"]
+                assert wout_tfm != with_tfm
+            # for IR metrics, sometimes recall is unchanged
+            # we mainly want to be sure they are not *all* literally the sma value
+            assert not all(
+                [
+                    metric_vals[f"val_{ir_metric_name}_epoch"] == metric_vals[f"val_{ir_metric_name}_tfm_epoch"]
+                    for ir_metric_name in ("precision", "recall", "fscore", "rval")
+                ]
+            )
 
 
 @pytest.mark.parametrize(
