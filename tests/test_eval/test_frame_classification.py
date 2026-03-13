@@ -6,7 +6,7 @@ import vak.eval.frame_classification
 
 
 # written as separate function so we can re-use in tests/unit/test_cli/test_eval.py
-def assert_eval_output_matches_expected(model_name, output_dir):
+def assert_eval_saves_one_csv(model_name, output_dir):
     eval_csv = sorted(output_dir.glob(f"eval_{model_name}*csv"))
     assert len(eval_csv) == 1
 
@@ -83,7 +83,7 @@ def test_eval_frame_classification_model(
         post_tfm_kwargs=post_tfm_kwargs,
     )
 
-    assert_eval_output_matches_expected(cfg.eval.model.name, output_dir)
+    assert_eval_saves_one_csv(cfg.eval.model.name, output_dir)
 
     # REGRESSION TEST: these assertions test that
     # we fixed https://github.com/vocalpy/vak/issues/821
