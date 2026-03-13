@@ -2,8 +2,6 @@
 import pytest
 
 import vak.config
-import vak.common.constants
-import vak.common.paths
 import vak.eval.frame_classification
 
 
