@@ -135,9 +135,28 @@ def to_labels(
     """
     frame_labels = row_or_1d(frame_labels)
 
+    # NOTE this works differently from `to_boundary_times`;
+    # In that function we do `nonzero(diff(frame_labels))[0] + 1`
+    # to get the indices of boundary times
+    # (the start of a segment, by convention).
+    # Instead, here  we call `diff(frame_labels)` and 
+    # *importantly* we cast that `astype(bool)`.
+    # Because `diff` will only be non-zero at boundaries, 
+    # those elements will be True and all others will be False.
+    # This lets us insert one more `True` as index zero  
+    # to shift all other `True`s to the right by one,
+    # and then use the **boolean** vector to index into 
+    # frame labels to get the label at the start of each segment.
+    # This is equivalent to adding +1 to the result of 
+    # nonzero(diff(frame_labels)) to get the (integer) indices, 
+    # and *only after* that, adding a `0` at the start of 
+    # the (integer) indexing vector.
+    # We just avoid getting the numeric indices here.
+    # Adding this big verbose comment because I was afraid this was a bug,
+    # after adding `to_boundary_times` and then getting confused 
+    # (because I didn't read this closely enough).
     onset_inds = np.diff(frame_labels, axis=0).astype(bool)
     onset_inds = np.insert(onset_inds, 0, True)
-
     labels = frame_labels[onset_inds]
 
     # remove background label
