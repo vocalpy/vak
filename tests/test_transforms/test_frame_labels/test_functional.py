@@ -25,6 +25,7 @@ Testing with real data complements this.
 import copy
 import itertools
 
+import torch
 import numpy as np
 import pytest
 
@@ -507,3 +508,162 @@ def test_postprocess(lbl_tb, timebin_dur, background_label, min_segment_dur, maj
     )
 
     assert np.all(np.equal(lbl_tb, lbl_tb_expected))
+
+
+@pytest.mark.parametrize(
+        'frame_labels, frame_times, padval, expected_boundary_times, expected_exception',
+        [
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]]),
+                (torch.arange(13) * 0.1)[None,:],
+                None,
+                torch.tensor([[0.0, 0.3, 0.6, 0.9, 1.1]]),
+                None,
+            ),
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]]),
+                torch.stack([torch.arange(13) * 0.1, torch.arange(13) * 0.1]),
+                None,
+                torch.tensor([[0.0, 0.3, 0.6, 0.9, 1.1], [0.0, 0.3, 0.6, 0.9, 1.1]]),
+                None,
+            ),
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1]]),
+                torch.stack([torch.arange(13) * 0.1, torch.arange(13) * 0.1]),
+                None,
+                torch.tensor([[0.0, 0.3, 0.6, 0.9, 1.1], [0.0, 0.3, 0.6, 0.9, vak.common.constants.DEFAULT_BOUNDARY_TIMES_PADVAL]]),
+                None,
+            ),
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]]),
+                torch.stack([torch.arange(13) * 0.1, torch.arange(13) * 0.1]),
+                None,
+                torch.tensor([
+                    [0.0, 0.3, 0.6, 0.9, 1.1], 
+                    [0.0, 0.3, 0.6, vak.common.constants.DEFAULT_BOUNDARY_TIMES_PADVAL, vak.common.constants.DEFAULT_BOUNDARY_TIMES_PADVAL]]),
+                None,
+            ),
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1]]),
+                torch.stack([torch.arange(13) * 0.1, torch.arange(13) * 0.1]),
+                -500.0,
+                torch.tensor([[0.0, 0.3, 0.6, 0.9, 1.1], [0.0, 0.3, 0.6, 0.9, -500.0]]),
+                None,
+            ),
+            (
+                torch.LongTensor([
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]
+                ]),
+                torch.stack([torch.arange(13) * 0.1, torch.arange(13) * 0.1, torch.arange(13) * 0.1]),
+                -500.0,
+                torch.tensor([
+                    [0.0, 0.3, 0.6, 0.9, 1.1],
+                    [0.0, 0.3, 0.6, -500, -500],
+                    [0.0, 0.3, 0.6, 0.9, 1.1],
+                ]),
+                None,
+            ),
+            # TypeError: `frame_labels` not a tensor
+            (
+                [[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]],
+                (torch.arange(13) * 0.1)[None,:],
+                None,
+                None,
+                TypeError,
+            ),
+            # TypeError: `frame_times` not a tensor
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]]),
+                [i * 0.1 for i in range(13)],
+                None,
+                None,
+                TypeError,
+            ),
+
+            # ValueError: `frame_labels` not 2-D
+            (
+                torch.LongTensor([0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]),
+                (torch.arange(13) * 0.1)[None,:],
+                None,
+                None,
+                ValueError,
+            ),
+            # ValueError: `frame_times` not 2-D
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]]),
+                torch.arange(13) * 0.1,
+                None,
+                None,
+                ValueError,
+            ),
+            # ValueError: frame_labels.shape[0] != frame_times.shape[0]
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]]),
+                (torch.arange(13) * 0.1)[None,:],
+                None,
+                None,
+                ValueError,
+            ),
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]]),
+                torch.stack([torch.arange(13) * 0.1, torch.arange(13) * 0.1]),
+                None,
+                None,
+                ValueError,
+            ),
+            # ValueError: frame_labels.shape[1] != frame_times.shape[1]
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0]]),
+                (torch.arange(6) * 0.1)[None,:],
+                None,
+                None,
+                ValueError,
+            ),
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1]]),
+                (torch.arange(13) * 0.1)[None,:],
+                None,
+                None,
+                ValueError,
+            ),
+            # ValueError: padval can't be positive
+            (
+                torch.LongTensor([[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1]]),
+                torch.stack([torch.arange(13) * 0.1, torch.arange(13) * 0.1]),
+                500.0,
+                None,
+                ValueError,
+            ),
+        ]
+)
+def test_to_boundary_times(
+    frame_labels, frame_times, padval, expected_boundary_times, expected_exception,
+):
+    if expected_exception is None:
+        if padval is None:  # test default `padval``
+            out = vak.transforms.frame_labels.functional.to_boundary_times(
+                frame_labels, frame_times
+            )
+        else:
+            out = vak.transforms.frame_labels.functional.to_boundary_times(
+                frame_labels, frame_times, padval=padval
+            )
+
+        assert isinstance(out, torch.FloatTensor)
+        torch.testing.assert_close(
+            out, expected_boundary_times
+        )
+
+    else:
+        if padval is None:  # test default `padval``
+            with pytest.raises(expected_exception):
+                vak.transforms.frame_labels.functional.to_boundary_times(
+                    frame_labels, frame_times
+                )
+        else:
+            with pytest.raises(expected_exception):
+                vak.transforms.frame_labels.functional.to_boundary_times(
+                    frame_labels, frame_times, padval=padval
+                )

@@ -329,6 +329,10 @@ def _map_using_notated_path(
         Where each key is path to annotated file, and
         its value is the corresponding ``crowsetta.Annotation``.
     """
+    # "cast" `annotated_files` to list;
+    # need this because accessing .values on a pandas.Series in new versions gives us an ArrowStringArray
+    # that does not have a `remove` method like a list
+    annotated_files = list(annotated_files)
     # First check that we don't have duplicate keys that would cause this to fail silently
     keys = []
     for annot in annot_list:

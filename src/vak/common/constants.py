@@ -62,3 +62,5 @@ SPECT_FORMAT_EXT_MAP = {
 VALID_SPLITS = ("predict", "test", "train", "val")
 
 DEFAULT_BACKGROUND_LABEL = "background"
+
+DEFAULT_BOUNDARY_TIMES_PADVAL = -100.0

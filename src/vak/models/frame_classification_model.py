@@ -377,7 +377,7 @@ class FrameClassificationModel(lightning.LightningModule):
                 # convert back to tensor so we can compute accuracy
                 class_preds_tfm = torch.from_numpy(class_preds_tfm).to(
                     self.device
-                )
+                )[None,:]  # make 2-D like class preds; so it works with `to_boundary_times`
 
         if len(target_types) == 1:
             target = batch[target_types[0]]
@@ -412,7 +412,7 @@ class FrameClassificationModel(lightning.LightningModule):
                             sync_dist=True,
                         )
                     elif isinstance(loss, dict):
-                        # this provides a mechanism to values for all terms of a loss function with multiple terms
+                        # log values for all terms of a loss function with multiple terms
                         for loss_name, loss_val in loss.items():
                             self.log(
                                 f"val_{loss_name}",
@@ -492,6 +492,35 @@ class FrameClassificationModel(lightning.LightningModule):
                                 class_preds_tfm_str, multi_frame_labels_str
                             )
                         ),
+                        batch_size=1,
+                        on_step=True,
+                        sync_dist=True,
+                    )
+            elif metric_name == "precision_recall_fscore_rval":
+                frame_times = batch["frame_times"]
+                # FIXME: get target boundary times directly from ground truth annotations
+                target_boundary_times = transforms.frame_labels.to_boundary_times(target, frame_times)
+                preds_boundary_times = transforms.frame_labels.to_boundary_times(class_preds, frame_times)
+                ir_metrics_dict = metric_callable(preds_boundary_times, target_boundary_times)
+                ir_metrics_dict = {
+                    f"val_{metric_name}": metric_val
+                    for metric_name, metric_val in ir_metrics_dict.items()
+                }
+                self.log_dict(
+                    ir_metrics_dict,
+                    batch_size=1,
+                    on_step=True,
+                    sync_dist=True,
+                )
+                if self.post_tfm:
+                    preds_boundary_times_tfm = transforms.frame_labels.to_boundary_times(class_preds_tfm, frame_times)
+                    ir_metrics_dict_tfm = metric_callable(preds_boundary_times_tfm, target_boundary_times)
+                    ir_metrics_dict_tfm = {
+                        f"val_{metric_name}_tfm": metric_val
+                        for metric_name, metric_val in ir_metrics_dict_tfm.items()
+                    }
+                    self.log_dict(
+                        ir_metrics_dict_tfm,
                         batch_size=1,
                         on_step=True,
                         sync_dist=True,
