@@ -556,6 +556,15 @@ def postprocess(
     frame_labels : numpy.ndarray
         Vector of frame labels after post-processing is applied.
     """
+    # NOTE: we need to clone to avoid mutating tensors inside a model,
+    # since calling `torch.tensor.numpy()` inside the model gives us 
+    # a numpy array that shares memory with the tensor.
+    # Not doing so can make metrics wrong, 
+    # e.g., for frame labels *before* post-processing, 
+    # if we mutate that tensor here.
+    # see:https://github.com/vocalpy/vak/issues/821
+    frame_labels = np.copy(frame_labels)
+
     frame_labels = row_or_1d(frame_labels)
     if boundary_labels is not None:
         boundary_labels = row_or_1d(boundary_labels)
