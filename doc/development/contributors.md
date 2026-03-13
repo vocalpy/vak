@@ -80,19 +80,7 @@ Please take a look at these resources to learn about Git and pull requests:
 
 And please don't hesitate to {ref}`ask questions <getting-help>`.
 
-#### Writing commit messages
-
-We follow the convention of beginning a git commit message
-with an abbreviation that indicates the reason for the commit.
-This convention is used by several Python data science libraries.
-The standard abbreviations we use to start the commit message with are
-
-```{eval-rst}
-.. include:: commit-abbreviations.rst
-```
-
 (dev-env)=
-
 ## Setting up a development environment
 
 This section describes how to set up an environment for development.
@@ -221,7 +209,6 @@ After completing these steps, you are ready for development!
 
 ### vak Code Overview
 
-
 The source code for vak is located in the directory `./src/vak`. When contributing
 code, be sure to follow the general guidelines in the
 {ref}`dev-workflow` section.
@@ -283,3 +270,59 @@ anyway.
 We will help you create the tests and sort out any kind of problem during code review.
 It's OK if you can't or don't know how to test something.
 Leave a comment in the pull request and we'll help you out.
+
+#### Writing commit messages
+
+We follow the convention of beginning a git commit message
+with an abbreviation that indicates the reason for the commit.
+This convention is used by several core scientific Python libraries.
+The standard abbreviations we use to start the commit message with are
+
+```{eval-rst}
+.. include:: commit-abbreviations.rst
+```
+
+Commit messages should additionally follow 
+[these rules](https://cbea.ms/git-commit/):
+
+1. Separate subject from body with a blank line
+2. Limit the subject line to 50 characters
+3. Capitalize the subject line
+4. Do not end the subject line with a period
+5. Use the imperative mood in the subject line
+6. Wrap the body at 72 characters
+7. Use the body to explain what and why vs. how
+
+(In some cases it may not be easy to write a subject line 
+that is 50 characters or less. Other rules)
+
+#### Editing the commit history of a branch
+
+We merge all commits in pull requests (see next section).
+To minimize the number of commits 
+and make it easy to read the commits in a sequence, 
+please rewrite your commit history 
+with an interactive rebase in git. 
+A detailed description of how to do so is here:
+https://numpy.org/devdocs/dev/development_workflow.html#rewriting-commit-history
+
+#### Merging pull requests
+
+(This requires you to have maintainer rights on the repo.)  
+
+Pull request should be merged with a merge commit, 
+not a squash merge, 
+to ensure that contributors get credit,
+as discussed 
+[here](https://github.com/jupyterhub/team-compass/issues/686#issuecomment-1767629271) 
+and [here](https://github.com/earthaccess-dev/earthaccess/issues/348#issuecomment-2116441844).
+
+The merge commit should use the same abbreviations 
+as other commits. Additionally it should state any issues 
+it closes, with a suffix of the form, `",fix #78 #79`, 
+and then finally the pull request number in parentheses.
+
+E.g.,
+```console
+ENH: Add boundary detection IR metrics, fix #744 (#820)
+```
