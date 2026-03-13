@@ -1,5 +1,4 @@
 """Function that evaluates trained models in the frame classification family."""
-
 from __future__ import annotations
 
 import json
@@ -30,7 +29,7 @@ def eval_frame_classification_model(
     num_workers: int,
     frames_standardizer_path: str | pathlib.Path = None,
     post_tfm_kwargs: dict | None = None,
-) -> None:
+) -> dict[str, torch.Tensor]:
     """Evaluate a trained model.
 
     Parameters
@@ -215,10 +214,11 @@ def eval_frame_classification_model(
         logger=trainer_logger,
     )
     # TODO: check for hasattr(model, test_step) and if so run test
+
     # below, [0] because validate returns list of dicts, length of no. of val loaders
     metric_vals = trainer.validate(model, dataloaders=val_loader)[0]
-    metric_vals = {f"avg_{k}": v for k, v in metric_vals.items()}
-    for metric_name, metric_val in metric_vals.items():
+    metric_vals_for_df = {f"avg_{k}": v for k, v in metric_vals.items()}
+    for metric_name, metric_val in metric_vals_for_df.items():
         if metric_name.startswith("avg_"):
             logger.info(f"{metric_name}: {metric_val:0.5f}")
 
@@ -237,7 +237,7 @@ def eval_frame_classification_model(
     # order metrics by name to be extra sure they will be consistent across runs
     row.update(
         sorted(
-            [(k, v) for k, v in metric_vals.items() if k.startswith("avg_")]
+            [(k, v) for k, v in metric_vals_for_df.items() if k.startswith("avg_")]
         )
     )
 
@@ -249,3 +249,6 @@ def eval_frame_classification_model(
     eval_df.to_csv(
         eval_csv_path, index=False
     )  # index is False to avoid having "Unnamed: 0" column when loading
+
+    return metric_vals
+
