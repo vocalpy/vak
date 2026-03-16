@@ -1,0 +1,56 @@
+# [vak.train]: options for training model
+[vak.train]
+# root_results_dir: directory where results should be saved, as a sub-directory within `root_results_dir`
+root_results_dir = "/PATH/TO/FOLDER/results/train"
+# batch_size: number of samples from dataset per batch fed into network
+batch_size = 8
+# num_epochs: number of training epochs, where an epoch is one iteration through all samples in training split
+num_epochs = 2
+# standardize_frames: if true, standardize (normalize) frames (input to neural network) per frequency bin, so mean of each is 0.0 and std is 1.0
+# across the entire training split
+standardize_frames = true
+# val_step: step number on which to compute metrics with validation set, every time step % val_step == 0
+# (a step is one batch fed through the network)
+# saves a checkpoint if the monitored evaluation metric improves (which is model specific)
+val_step = 1000
+# ckpt_step: step number on which to save a checkpoint (as a backup, regardless of validation metrics)
+ckpt_step = 500
+# patience: number of validation steps to wait before stopping training early
+# if the monitored evaluation metrics does not improve after `patience` validation steps,
+# then we stop training
+patience = 6
+# num_workers: number of workers to use when loading data with multiprocessing
+num_workers = 4
+# device: name of device to run model on, one of "cuda", "cpu"
+
+# dataset_path : path to dataset created by prep. This will be added when you run `vak prep`, you don't have to add it
+
+# dataset.params = parameters used for datasets
+# for a frame classification model, we use dataset classes with a specific `window_size`
+[vak.train.dataset.params]
+# Bigger windows work better. 
+# For frame classification models, prefer smaller batch sizes with bigger windows
+# Intuitively, bigger windows give the model more "contexts" for each frame per batch.
+# See https://github.com/vocalpy/Nicholson-Cohen-SfN-2023-poster for more detail
+window_size = 2000
+
+# TweetyNet.network: we specify options for the model's network in this table
+# To indicate the model to train, we use a "dotted key" with `model` followed by the string name of the model.
+# This name must be a name within `vak.models` or added e.g. with `vak.model.decorators.model`
+# We use another dotted key to indicate options for configuring the model, e.g. `TweetyNet.optimizer`
+[vak.train.model.TweetyNet]
+[vak.train.model.TweetyNet.optimizer]
+# vak.train.model.TweetyNet.optimizer: we specify options for the model's optimizer in this table
+# lr: the learning rate
+lr = 0.001
+
+[vak.train.model.TweetyNet.network]
+# hidden_size: the number of elements in the hidden state in the recurrent layer of the network
+hidden_size = 256
+
+# this sub-table configures the `lightning.pytorch.Trainer`
+[vak.train.trainer]
+# setting to 'gpu' means "train models on 'gpu' (not 'cpu')"
+accelerator = "gpu"
+# use the first GPU (numbering starts from 0)
+devices = [0]

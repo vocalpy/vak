@@ -51,7 +51,7 @@ def purpose_from_toml(
 # note NO LOGGING -- we configure logger inside `core.prep`
 # so we can save log file inside dataset directory
 
-# see https://github.com/NickleDave/vak/issues/334
+# see https://github.com/vocalpy/vak/issues/334
 TABLES_PREP_SHOULD_PARSE = "prep"
 
 
